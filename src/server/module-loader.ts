@@ -52,9 +52,13 @@ export class ModuleLoader extends EventTarget {
 
   private scenariosWatcher: FSWatcher | undefined;
 
+  private versionedScenariosWatcher: FSWatcher | undefined;
+
   private readonly contextRegistry: ContextRegistry;
 
   private readonly scenariosPath: string | undefined;
+
+  private readonly versionedScenariosPath: string | undefined;
 
   private readonly scenarioRegistry: ScenarioRegistry | undefined;
 
@@ -73,6 +77,7 @@ export class ModuleLoader extends EventTarget {
     contextRegistry = new ContextRegistry(),
     scenariosPath?: string,
     scenarioRegistry?: ScenarioRegistry,
+    versionedScenariosPath?: string,
   ) {
     super();
     this.basePath = toForwardSlashPath(basePath);
@@ -82,6 +87,10 @@ export class ModuleLoader extends EventTarget {
       scenariosPath === undefined
         ? undefined
         : toForwardSlashPath(scenariosPath);
+    this.versionedScenariosPath =
+      versionedScenariosPath === undefined
+        ? undefined
+        : toForwardSlashPath(versionedScenariosPath);
     this.scenarioRegistry = scenarioRegistry;
     this.fileDiscovery = new FileDiscovery(this.basePath);
   }
@@ -168,15 +177,44 @@ export class ModuleLoader extends EventTarget {
           const pathName = toForwardSlashPath(pathNameOriginal);
 
           if (eventName === "unlink") {
-            const fileKey = this.scenarioFileKey(pathName);
+            const fileKey = this.scenarioFileKey(pathName, scenariosPath);
             this.scenarioRegistry?.remove(fileKey);
             return;
           }
 
-          void this.loadScenarioFile(pathName);
+          void this.loadScenarioFile(pathName, scenariosPath);
         },
       );
       await once(this.scenariosWatcher, "ready");
+    }
+
+    if (this.versionedScenariosPath && this.scenarioRegistry) {
+      const JS_EXTENSIONS = ["js", "mjs", "cjs", "ts", "mts", "cts"];
+      const versionedScenariosPath = this.versionedScenariosPath;
+
+      this.versionedScenariosWatcher = watch(
+        versionedScenariosPath,
+        CHOKIDAR_OPTIONS,
+      ).on("all", (eventName: string, pathNameOriginal: string) => {
+        if (!JS_EXTENSIONS.some((ext) => pathNameOriginal.endsWith(`.${ext}`)))
+          return;
+
+        if (!["add", "change", "unlink"].includes(eventName)) return;
+
+        const pathName = toForwardSlashPath(pathNameOriginal);
+
+        if (eventName === "unlink") {
+          const fileKey = this.scenarioFileKey(
+            pathName,
+            versionedScenariosPath,
+          );
+          this.scenarioRegistry?.remove(fileKey);
+          return;
+        }
+
+        void this.loadScenarioFile(pathName, versionedScenariosPath);
+      });
+      await once(this.versionedScenariosWatcher, "ready");
     }
   }
 
@@ -184,6 +222,7 @@ export class ModuleLoader extends EventTarget {
   public async stopWatching(): Promise<void> {
     await this.watcher?.close();
     await this.scenariosWatcher?.close();
+    await this.versionedScenariosWatcher?.close();
   }
 
   private isContextFile(pathName: string): boolean {
@@ -209,6 +248,7 @@ export class ModuleLoader extends EventTarget {
   private async loadScenarios(): Promise<void> {
     if (!this.scenariosPath || !this.scenarioRegistry) return;
 
+    // Load shared (fallback) scenarios first.
     try {
       const fileDiscovery = new FileDiscovery(this.scenariosPath);
       const files = await fileDiscovery.findFiles();
@@ -217,16 +257,41 @@ export class ModuleLoader extends EventTarget {
       );
 
       await Promise.all(
-        loadableFiles.map((file) => this.loadScenarioFile(file)),
+        loadableFiles.map((file) =>
+          this.loadScenarioFile(file, this.scenariosPath!),
+        ),
       );
     } catch {
       // Scenarios directory does not exist yet — that's fine.
     }
+
+    // Load version-specific scenarios second so they take precedence over
+    // shared ones with the same file key.
+    if (this.versionedScenariosPath) {
+      try {
+        const fileDiscovery = new FileDiscovery(this.versionedScenariosPath);
+        const files = await fileDiscovery.findFiles();
+        const loadableFiles = files.filter((file) =>
+          this.shouldLoadScenarioFile(file),
+        );
+
+        await Promise.all(
+          loadableFiles.map((file) =>
+            this.loadScenarioFile(file, this.versionedScenariosPath!),
+          ),
+        );
+      } catch {
+        // Versioned scenarios directory does not exist yet — that's fine.
+      }
+    }
   }
 
-  private scenarioFileKey(pathName: string): string {
+  private scenarioFileKey(
+    pathName: string,
+    baseScenariosPath?: string,
+  ): string {
     const normalizedScenariosPath = toForwardSlashPath(
-      this.scenariosPath ?? "",
+      baseScenariosPath ?? this.scenariosPath ?? "",
     );
     const directory = pathDirname(
       pathName.slice(normalizedScenariosPath.length),
@@ -242,10 +307,13 @@ export class ModuleLoader extends EventTarget {
     return url.slice(1); // strip leading "/"
   }
 
-  private async loadScenarioFile(pathName: string): Promise<void> {
+  private async loadScenarioFile(
+    pathName: string,
+    baseScenariosPath?: string,
+  ): Promise<void> {
     if (!this.scenariosPath || !this.scenarioRegistry) return;
 
-    const fileKey = this.scenarioFileKey(pathName);
+    const fileKey = this.scenarioFileKey(pathName, baseScenariosPath);
 
     try {
       const doImport =

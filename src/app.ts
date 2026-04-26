@@ -72,6 +72,7 @@ type Scenario$ = {
   loadContext: (path: string) => Record<string, unknown>;
   route: (path: string) => unknown;
   routes: Record<string, unknown>;
+  version: string;
 };
 
 export async function runStartupScenario(
@@ -79,6 +80,7 @@ export async function runStartupScenario(
   contextRegistry: ContextRegistry,
   config: Pick<Config, "port">,
   openApiDocument?: Parameters<typeof createRouteFunction>[2],
+  version = "",
 ): Promise<void> {
   const indexModule = scenarioRegistry.getModule("index");
 
@@ -92,6 +94,7 @@ export async function runStartupScenario(
       contextRegistry.find(path) as Record<string, unknown>,
     route: createRouteFunction(config.port, "localhost", openApiDocument),
     routes: {},
+    version,
   };
 
   await (indexModule["startup"] as (ctx: Scenario$) => Promise<void> | void)(
@@ -336,6 +339,7 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
         primaryRunner.contextRegistry,
         { port: config.port },
         primaryRunner.openApiDocument,
+        primaryRunner.version,
       );
 
       const server = koaApp.listen({

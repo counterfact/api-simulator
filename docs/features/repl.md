@@ -100,6 +100,13 @@ Tab completion supports both modes: in single-API sessions, `.scenario <Tab>` su
 | `.scenario pets/resetAll` | `scenarios/pets.ts` | `resetAll` |
 | `.scenario pets/orders/pending` | `scenarios/pets/orders.ts` | `pending` |
 
+**Version-scoped directories:** when a spec has a non-empty `version`, scenario files are resolved from two directories in order of precedence:
+
+1. `<basePath>/<group>/<version>/scenarios/` — version-specific (searched first)
+2. `<basePath>/<group>/scenarios/` — shared fallback
+
+Files present in both directories use the version-specific copy. Files only in the shared directory are still available to all versions.
+
 A scenario function receives a single argument with `{ context, loadContext, routes, route }`:
 
 ```ts
@@ -139,6 +146,20 @@ import type { Scenario } from "../types/_.context.js";
 export const startup: Scenario = ($) => {
   $.context.addPet({ name: "Fluffy", status: "available", photoUrls: [] });
   $.context.addPet({ name: "Rex", status: "sold", photoUrls: [] });
+};
+```
+
+In multi-version setups, `$.version` contains the runner's version string (e.g. `"v2"`), or `""` for unversioned runners. Use it to branch initialization logic per version:
+
+```ts
+// scenarios/index.ts
+import type { Scenario } from "../types/_.context.js";
+
+export const startup: Scenario = ($) => {
+  if ($.version === "v2") {
+    $.context.featureFlags = { newPagination: true };
+  }
+  $.context.addPet({ name: "Fluffy", status: "available", photoUrls: [] });
 };
 ```
 

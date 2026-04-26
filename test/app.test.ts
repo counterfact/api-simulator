@@ -440,6 +440,48 @@ describe("counterfact", () => {
     expect(typeof receivedContext.routes).toBe("object");
   });
 
+  it("passes version to startup $ when provided", async () => {
+    const scenarioRegistry = new ScenarioRegistry();
+    const contextRegistry = new ContextRegistry();
+    let receivedVersion: unknown;
+
+    scenarioRegistry.add("index", {
+      startup: ($: any) => {
+        receivedVersion = $.version;
+      },
+    });
+
+    await (app as any).runStartupScenario(
+      scenarioRegistry,
+      contextRegistry,
+      mockConfig,
+      undefined,
+      "v2",
+    );
+
+    expect(receivedVersion).toBe("v2");
+  });
+
+  it("passes version = '' to startup $ for unversioned runners", async () => {
+    const scenarioRegistry = new ScenarioRegistry();
+    const contextRegistry = new ContextRegistry();
+    let receivedVersion: unknown;
+
+    scenarioRegistry.add("index", {
+      startup: ($: any) => {
+        receivedVersion = $.version;
+      },
+    });
+
+    await (app as any).runStartupScenario(
+      scenarioRegistry,
+      contextRegistry,
+      mockConfig,
+    );
+
+    expect(receivedVersion).toBe("");
+  });
+
   it("does nothing if there is no index module", async () => {
     const scenarioRegistry = new ScenarioRegistry();
     const contextRegistry = new ContextRegistry();

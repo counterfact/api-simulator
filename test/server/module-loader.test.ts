@@ -491,4 +491,138 @@ export const notAFunction = 42;`,
       expect(scenarioRegistry.getFileKeys()).toHaveLength(0);
     });
   });
+
+  it("loads version-specific scenarios when versionedScenariosPath is provided", async () => {
+    const { ScenarioRegistry } =
+      await import("../../src/server/scenario-registry.js");
+
+    await usingTemporaryFiles(async ($) => {
+      await $.add("routes/package.json", '{ "type": "module" }');
+      await $.add("scenarios/index.js", `export function sharedFn() {}`);
+      await $.add("scenarios/shared.js", `export function fallbackFn() {}`);
+      await $.add("scenarios/package.json", '{ "type": "module" }');
+      await $.add("v2/scenarios/index.js", `export function versionedFn() {}`);
+      await $.add("v2/scenarios/package.json", '{ "type": "module" }');
+
+      const registry = new Registry();
+      const scenarioRegistry = new ScenarioRegistry();
+      const loader = new ModuleLoader(
+        $.path("routes"),
+        registry,
+        undefined,
+        $.path("scenarios"),
+        scenarioRegistry,
+        $.path("v2/scenarios"),
+      );
+
+      await loader.load();
+
+      expect(scenarioRegistry.getExportedFunctionNames("index")).toContain(
+        "versionedFn",
+      );
+      // Shared-only file (no versioned counterpart) is still accessible.
+      expect(scenarioRegistry.getExportedFunctionNames("shared")).toContain(
+        "fallbackFn",
+      );
+    });
+  });
+
+  it("version-specific scenario takes precedence over shared scenario with the same key", async () => {
+    const { ScenarioRegistry } =
+      await import("../../src/server/scenario-registry.js");
+
+    await usingTemporaryFiles(async ($) => {
+      await $.add("routes/package.json", '{ "type": "module" }');
+      await $.add(
+        "scenarios/index.js",
+        `export function setup() { return "shared"; }`,
+      );
+      await $.add("scenarios/package.json", '{ "type": "module" }');
+      await $.add(
+        "v2/scenarios/index.js",
+        `export function setup() { return "versioned"; }`,
+      );
+      await $.add("v2/scenarios/package.json", '{ "type": "module" }');
+
+      const registry = new Registry();
+      const scenarioRegistry = new ScenarioRegistry();
+      const loader = new ModuleLoader(
+        $.path("routes"),
+        registry,
+        undefined,
+        $.path("scenarios"),
+        scenarioRegistry,
+        $.path("v2/scenarios"),
+      );
+
+      await loader.load();
+
+      const module = scenarioRegistry.getModule("index");
+      expect(typeof module?.["setup"]).toBe("function");
+      expect((module?.["setup"] as () => string)()).toBe("versioned");
+    });
+  });
+
+  it("falls back to shared scenarios for files not present in the version-specific directory", async () => {
+    const { ScenarioRegistry } =
+      await import("../../src/server/scenario-registry.js");
+
+    await usingTemporaryFiles(async ($) => {
+      await $.add("routes/package.json", '{ "type": "module" }');
+      await $.add("scenarios/shared.js", `export function sharedOnly() {}`);
+      await $.add("scenarios/package.json", '{ "type": "module" }');
+      await $.add(
+        "v2/scenarios/versioned.js",
+        `export function versionedOnly() {}`,
+      );
+      await $.add("v2/scenarios/package.json", '{ "type": "module" }');
+
+      const registry = new Registry();
+      const scenarioRegistry = new ScenarioRegistry();
+      const loader = new ModuleLoader(
+        $.path("routes"),
+        registry,
+        undefined,
+        $.path("scenarios"),
+        scenarioRegistry,
+        $.path("v2/scenarios"),
+      );
+
+      await loader.load();
+
+      expect(scenarioRegistry.getExportedFunctionNames("shared")).toContain(
+        "sharedOnly",
+      );
+      expect(scenarioRegistry.getExportedFunctionNames("versioned")).toContain(
+        "versionedOnly",
+      );
+    });
+  });
+
+  it("does not throw when the versioned scenarios directory does not exist", async () => {
+    const { ScenarioRegistry } =
+      await import("../../src/server/scenario-registry.js");
+
+    await usingTemporaryFiles(async ($) => {
+      await $.add("routes/package.json", '{ "type": "module" }');
+      await $.add("scenarios/index.js", `export function sharedFn() {}`);
+      await $.add("scenarios/package.json", '{ "type": "module" }');
+
+      const registry = new Registry();
+      const scenarioRegistry = new ScenarioRegistry();
+      const loader = new ModuleLoader(
+        $.path("routes"),
+        registry,
+        undefined,
+        $.path("scenarios"),
+        scenarioRegistry,
+        $.path("v2/scenarios"), // does not exist
+      );
+
+      await expect(loader.load()).resolves.toBeUndefined();
+      expect(scenarioRegistry.getExportedFunctionNames("index")).toContain(
+        "sharedFn",
+      );
+    });
+  });
 });

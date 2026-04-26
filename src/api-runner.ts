@@ -157,6 +157,7 @@ export class ApiRunner {
       this.contextRegistry,
       pathJoin(modulesPath, "scenarios"),
       this.scenarioRegistry,
+      version ? pathJoin(modulesPath, version, "scenarios") : undefined,
     );
   }
 
