@@ -58,7 +58,9 @@ export class Specification {
   public async load(urlOrPath: string): Promise<void> {
     try {
       this.rootRequirement = new Requirement(
-        (await bundle(urlOrPath)) as RequirementData,
+        (await bundle(urlOrPath, {
+          resolve: { http: { safeUrlResolver: false } },
+        })) as RequirementData,
         urlOrPath,
         this,
       );

@@ -1,0 +1,13 @@
+diff --git a/node_modules/@apidevtools/json-schema-ref-parser/dist/lib/util/url.js b/node_modules/@apidevtools/json-schema-ref-parser/dist/lib/util/url.js
+index 1234567..abcdefg 100644
+--- a/node_modules/@apidevtools/json-schema-ref-parser/dist/lib/util/url.js
++++ b/node_modules/@apidevtools/json-schema-ref-parser/dist/lib/util/url.js
+@@ -4,7 +4,7 @@
+ const jsonPointerSlash = /~1/g;
+ const jsonPointerTilde = /~0/g;
+ import { isWindows } from "./is-windows.js";
+-const isAbsoluteWin32Path = /^[a-zA-Z]:\\/;
++const isAbsoluteWin32Path = /^[a-zA-Z]:[/\\]/;
+ // RegExp patterns to URL-encode special characters in local filesystem paths
+ const urlEncodePatterns = [
+     [/\?/g, "%3F"],
