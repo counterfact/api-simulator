@@ -100,8 +100,8 @@ export class OperationTypeCoder extends TypeCoder {
   }
 
   /**
-   * Generates and exports a named parameter type (e.g. `ListPets_Query`) from
-   * `modulePath` and returns the exported type name.
+   * Generates and exports a named parameter type (e.g. `ListPets_Query`) and
+   * returns the exported type name.
    *
    * Returns `"never"` without creating an export when `inlineType` is
    * `"never"`.
@@ -110,14 +110,12 @@ export class OperationTypeCoder extends TypeCoder {
    * @param parameterKind - `"query"`, `"path"`, `"headers"`, or `"cookie"`.
    * @param inlineType - The inline TypeScript type string to export.
    * @param baseName - The base identifier prefix for the exported type name.
-   * @param modulePath - The repository-relative path of the type file.
    */
   public exportParameterType(
     script: Script,
     parameterKind: string,
     inlineType: string,
     baseName: string,
-    modulePath: string,
   ): string {
     if (inlineType === "never") {
       return "never";
@@ -134,7 +132,6 @@ export class OperationTypeCoder extends TypeCoder {
       inlineType,
       parameterKind,
     );
-    coder._modulePath = modulePath;
 
     return script.export(coder, true);
   }
@@ -229,13 +226,8 @@ export class OperationTypeCoder extends TypeCoder {
    *
    * @param script - The script to write imports and parameter-type exports into.
    * @param baseName - Identifier prefix used for named parameter-type exports.
-   * @param modulePath - Repository-relative path for parameter-type exports.
    */
-  protected buildDollarArgType(
-    script: Script,
-    baseName: string,
-    modulePath: string,
-  ): string {
+  protected buildDollarArgType(script: Script, baseName: string): string {
     const xType = script.importSharedType("WideOperationArgument");
 
     script.importSharedType("OmitValueWhenNever");
@@ -311,21 +303,18 @@ export class OperationTypeCoder extends TypeCoder {
       "query",
       queryType,
       baseName,
-      modulePath,
     );
     const pathTypeName = this.exportParameterType(
       script,
       "path",
       pathType,
       baseName,
-      modulePath,
     );
     const headersTypeName = this.exportParameterType(
       script,
       "headers",
       headersType,
       baseName,
-      modulePath,
     );
 
     const cookieTypeName = this.exportParameterType(
@@ -333,7 +322,6 @@ export class OperationTypeCoder extends TypeCoder {
       "cookie",
       cookieType,
       baseName,
-      modulePath,
     );
 
     const versionLiteralType =
@@ -385,8 +373,7 @@ export class OperationTypeCoder extends TypeCoder {
     script.importSharedType("COUNTERFACT_RESPONSE");
 
     const baseName = this.getOperationBaseName();
-    const modulePath = this.modulePath();
-    const dollarArgType = this.buildDollarArgType(script, baseName, modulePath);
+    const dollarArgType = this.buildDollarArgType(script, baseName);
 
     return `($: ${dollarArgType}) => MaybePromise<COUNTERFACT_RESPONSE>`;
   }
@@ -469,6 +456,6 @@ export class VersionedArgTypeCoder extends OperationTypeCoder {
     script.comments = READ_ONLY_COMMENTS;
     const baseName = this.getOperationBaseName();
 
-    return this.buildDollarArgType(script, baseName, this.modulePath());
+    return this.buildDollarArgType(script, baseName);
   }
 }

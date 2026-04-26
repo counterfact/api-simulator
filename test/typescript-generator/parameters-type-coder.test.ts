@@ -125,6 +125,24 @@ describe("a ParametersTypeCoder", () => {
       new Requirement({}, "/components/parameters/foo"),
     );
 
-    expect(coder.modulePath()).toBe("parameters/parameters.types.ts");
+    expect(coder.modulePath()).toBe("types/paths/parameters.parameters.ts");
+  });
+
+  it("includes the version in modulePath when version is set", () => {
+    const coder = new ParametersTypeCoder(
+      new Requirement({}, "/components/parameters/foo"),
+      "v1",
+    );
+
+    expect(coder.modulePath()).toBe("types/v1/paths/parameters.parameters.ts");
+  });
+
+  it("omits the version segment from modulePath when version is empty", () => {
+    const coder = new ParametersTypeCoder(
+      new Requirement({}, "/components/parameters/foo"),
+      "",
+    );
+
+    expect(coder.modulePath()).toBe("types/paths/parameters.parameters.ts");
   });
 });

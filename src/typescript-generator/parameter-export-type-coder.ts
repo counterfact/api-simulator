@@ -1,3 +1,4 @@
+import { pathJoin } from "../util/forward-slash-path.js";
 import { TypeCoder } from "./type-coder.js";
 import type { Requirement } from "./requirement.js";
 
@@ -5,7 +6,6 @@ export class ParameterExportTypeCoder extends TypeCoder {
   public _typeName: string;
   public _typeCode: string;
   public _parameterKind: string;
-  public _modulePath!: string;
 
   public constructor(
     requirement: Requirement,
@@ -34,7 +34,16 @@ export class ParameterExportTypeCoder extends TypeCoder {
   }
 
   public override modulePath(): string {
-    // Use the same module path as the parent operation
-    return this._modulePath;
+    const pathString = this.requirement.url
+      .split("/")
+      .at(-2)!
+      .replaceAll("~1", "/");
+
+    return `${pathJoin(
+      "types",
+      this.version,
+      "paths",
+      pathString === "/" ? "/index" : pathString,
+    )}.types.ts`;
   }
 }

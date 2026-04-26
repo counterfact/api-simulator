@@ -62,6 +62,6 @@ export class ParametersTypeCoder extends TypeCoder {
       .at(-2)!
       .replaceAll("~1", "/");
 
-    return `${pathJoin("parameters", pathString)}.types.ts`;
+    return `${pathJoin("types", this.version, "paths", pathString)}.parameters.ts`;
   }
 }
