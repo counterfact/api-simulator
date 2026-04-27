@@ -1,5 +1,74 @@
 # counterfact
 
+## 2.11.0
+
+### Minor Changes
+
+- a58241f: generator: emit `types/versions.ts` with `Versions`, `VersionsGTE`, and `Versioned` types
+
+  When at least one `SpecConfig` entry has a non-empty `version` field, the code generator now writes `types/versions.ts` to the `basePath` root. The file exports:
+  - `Versions` — a union of all distinct version strings in config-declaration order
+  - `VersionsGTE` — a map from each version to the set of versions that are >= it
+  - `Versioned<T, V>` — a utility type that narrows the `$` argument of a route handler to a specific API version
+
+  `Versioned` is also exported from `counterfact-types/index.ts` in its generic form (with explicit `TVersions` and `TVersionsGTE` type parameters) for use outside of the generated file.
+
+  No file is written when no spec defines a `version`.
+
+- 4bb9493: Add runtime implementation of `$.minVersion()` for versioned route handlers.
+
+  When multiple versioned specs share the same API group, each request's `$`
+  argument now includes:
+  - `version` — a string identifying which version is handling the request
+    (e.g. `"v1"`, `"v2"`).
+  - `minVersion(min)` — a method that returns `true` when the current version
+    is greater than or equal to `min` in the declared version order, and
+    `false` otherwise.
+
+  The version order is determined by the position of each spec in the `specs`
+  array passed to `counterfact()` (first entry = oldest version).
+
+  For unversioned runners (`version` is not set), neither `version` nor
+  `minVersion` is present on `$`.
+
+- af44d5b: `OperationTypeCoder` now emits version-mapped handler types for multi-version APIs.
+
+  When two or more versioned specs share the same operation path, the shared
+  `types/paths/<path>.types.ts` file exports a merged `HTTP_<METHOD>` type
+  whose `$` argument is `Versioned<{ v1: …; v2: … }>` (a union of each
+  version's strongly-typed argument object). Each version's `$`-argument type
+  is emitted to `types/<version>/paths/<path>.types.ts` and imported by the
+  shared file.
+
+  Single-spec (unversioned) output is unchanged for full backwards compatibility.
+
+  A new `Versioned<T>` utility type is exported from `counterfact-types/index.js`.
+
+- 142bcdd: When a `SpecConfig` entry declares both `group` and `version`, the server now automatically mounts that spec's routes under `/<group>/<version>` without requiring an explicit `prefix`.
+
+  The derivation rules are:
+
+  | `prefix` provided? | `group` set? | `version` set? | Derived prefix          |
+  | ------------------ | ------------ | -------------- | ----------------------- |
+  | Yes                | any          | any            | use the explicit prefix |
+  | No                 | Yes          | Yes            | `/<group>/<version>`    |
+  | No                 | Yes          | No             | `/<group>`              |
+  | No                 | No           | No             | `""` (root)             |
+
+  Two specs with the same `group` but different `version` values can coexist on a single server instance — validation now checks uniqueness on the `(group, version)` pair instead of `group` alone.
+
+  **Migration note:** `SpecConfig.prefix` is now an optional field (`prefix?: string`). Specs that omit `prefix` will have it derived automatically; pass an explicit `prefix: ""` to force the root prefix.
+
+### Patch Changes
+
+- 161deca: Fix documentation inconsistencies: complete CLI reference table, correct programmatic API example in FAQ, fix invalid JS syntax and broken link in without-openapi guide, and fix formatting in programmatic-api guide.
+- 6d19132: Fix TypeScript error caused by combining a mapped type and explicit properties in the same generated response object type.
+
+  When an OpenAPI spec defines a `default` response alongside explicit status codes (e.g. `200`, `400`), the generated `ResponseBuilderFactory` type argument now uses an intersection (`{ 200: ..., 400: ... } & { [statusCode in Exclude<HttpStatusCode, 200 | 400>]: ... }`) instead of mixing both in a single object literal, which TypeScript does not allow.
+
+- bce607e: Update usage link in REPL and CLI banner to point to the new GitHub docs URL.
+- dd4abb8: Generated `$`-arg types now include a `version` property. For versioned specs the property is a string literal (e.g. `version: "v3"`); for unversioned specs it is `never` (omitted at runtime by `OmitValueWhenNever`).
+
 ## 2.10.0
 
 ### Minor Changes
