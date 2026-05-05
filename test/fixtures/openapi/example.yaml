@@ -557,8 +557,26 @@ paths:
           description: Service is alive
 
   # -----------------------------------------------------------------------
-  # Additional properties (free-form object)
+  # Deprecated security scheme
   # -----------------------------------------------------------------------
+  /legacy-status:
+    get:
+      operationId: getLegacyStatus
+      description: Status endpoint that requires the deprecated legacyApiKey scheme
+      security:
+        - legacyApiKey: []
+      responses:
+        "200":
+          description: Service status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+
+
   /metadata:
     put:
       operationId: setMetadata
@@ -931,3 +949,9 @@ components:
       type: apiKey
       in: header
       name: x-api-key
+    legacyApiKey:
+      type: apiKey
+      in: header
+      name: x-legacy-api-key
+      deprecated: true
+      description: Deprecated – use apiKey instead

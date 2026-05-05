@@ -1105,28 +1105,54 @@ describe("jsdoc() with security scheme deprecation", () => {
   });
 
   it("returns empty string when all security schemes are non-deprecated", () => {
-    const coder = new OperationTypeCoder(makeRequirement(), "", "get", [
-      { name: "apiKey", type: "apiKey", deprecated: false },
-    ]);
+    const coder = new OperationTypeCoder(
+      makeRequirement({ security: [{ apiKey: [] }] }),
+      "",
+      "get",
+      [{ name: "apiKey", type: "apiKey", deprecated: false }],
+    );
 
     expect(coder.jsdoc()).toBe("");
   });
 
-  it("emits @deprecated with scheme name when a security scheme is deprecated", () => {
-    const coder = new OperationTypeCoder(makeRequirement(), "", "get", [
-      { name: "legacyAuth", type: "apiKey", deprecated: true },
-    ]);
+  it("emits @deprecated with scheme name when the operation uses a deprecated scheme", () => {
+    const coder = new OperationTypeCoder(
+      makeRequirement({ security: [{ legacyAuth: [] }] }),
+      "",
+      "get",
+      [{ name: "legacyAuth", type: "apiKey", deprecated: true }],
+    );
 
     expect(coder.jsdoc()).toBe(
       "/**\n * @deprecated The security scheme 'legacyAuth' is deprecated.\n */\n",
     );
   });
 
-  it("emits @deprecated for the first deprecated scheme when multiple are deprecated", () => {
-    const coder = new OperationTypeCoder(makeRequirement(), "", "get", [
-      { name: "oldScheme", type: "apiKey", deprecated: true },
-      { name: "anotherOld", type: "http", scheme: "basic", deprecated: true },
-    ]);
+  it("does not emit @deprecated when the operation does not reference the deprecated scheme", () => {
+    const coder = new OperationTypeCoder(
+      // Operation uses 'apiKey', NOT 'legacyAuth'
+      makeRequirement({ security: [{ apiKey: [] }] }),
+      "",
+      "get",
+      [
+        { name: "apiKey", type: "apiKey", deprecated: false },
+        { name: "legacyAuth", type: "apiKey", deprecated: true },
+      ],
+    );
+
+    expect(coder.jsdoc()).not.toContain("@deprecated");
+  });
+
+  it("emits @deprecated for the first deprecated scheme when multiple are used and deprecated", () => {
+    const coder = new OperationTypeCoder(
+      makeRequirement({ security: [{ oldScheme: [] }, { anotherOld: [] }] }),
+      "",
+      "get",
+      [
+        { name: "oldScheme", type: "apiKey", deprecated: true },
+        { name: "anotherOld", type: "http", scheme: "basic", deprecated: true },
+      ],
+    );
 
     expect(coder.jsdoc()).toContain(
       "@deprecated The security scheme 'oldScheme' is deprecated.",
@@ -1135,7 +1161,10 @@ describe("jsdoc() with security scheme deprecation", () => {
 
   it("combines operation description with security scheme @deprecated", () => {
     const coder = new OperationTypeCoder(
-      makeRequirement({ description: "Fetch a pet" }),
+      makeRequirement({
+        description: "Fetch a pet",
+        security: [{ deprecatedKey: [] }],
+      }),
       "",
       "get",
       [{ name: "deprecatedKey", type: "apiKey", deprecated: true }],
@@ -1150,9 +1179,64 @@ describe("jsdoc() with security scheme deprecation", () => {
   });
 
   it("does not include @deprecated when scheme has deprecated: false", () => {
-    const coder = new OperationTypeCoder(makeRequirement(), "", "get", [
-      { name: "currentKey", type: "apiKey", deprecated: false },
-      { name: "basicAuth", type: "http", scheme: "basic" },
+    const coder = new OperationTypeCoder(
+      makeRequirement({ security: [{ currentKey: [] }, { basicAuth: [] }] }),
+      "",
+      "get",
+      [
+        { name: "currentKey", type: "apiKey", deprecated: false },
+        { name: "basicAuth", type: "http", scheme: "basic" },
+      ],
+    );
+
+    expect(coder.jsdoc()).not.toContain("@deprecated");
+  });
+
+  it("uses global security when operation has no security field", () => {
+    const specification = new Specification();
+    const rootRequirement = new Requirement(
+      {
+        security: [{ legacyGlobal: [] }],
+        paths: {
+          "/pets": {
+            get: { parameters: [], responses: { 200: {} } },
+          },
+        },
+      },
+      "spec.yaml",
+      specification,
+    );
+    specification.rootRequirement = rootRequirement;
+
+    const operationReq = rootRequirement.select("paths/~1pets/get")!;
+    const coder = new OperationTypeCoder(operationReq, "", "get", [
+      { name: "legacyGlobal", type: "apiKey", deprecated: true },
+    ]);
+
+    expect(coder.jsdoc()).toContain(
+      "@deprecated The security scheme 'legacyGlobal' is deprecated.",
+    );
+  });
+
+  it("operation-level empty security opts out of global deprecated scheme", () => {
+    const specification = new Specification();
+    const rootRequirement = new Requirement(
+      {
+        security: [{ legacyGlobal: [] }],
+        paths: {
+          "/pets": {
+            get: { parameters: [], responses: { 200: {} }, security: [] },
+          },
+        },
+      },
+      "spec.yaml",
+      specification,
+    );
+    specification.rootRequirement = rootRequirement;
+
+    const operationReq = rootRequirement.select("paths/~1pets/get")!;
+    const coder = new OperationTypeCoder(operationReq, "", "get", [
+      { name: "legacyGlobal", type: "apiKey", deprecated: true },
     ]);
 
     expect(coder.jsdoc()).not.toContain("@deprecated");

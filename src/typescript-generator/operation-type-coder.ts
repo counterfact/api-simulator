@@ -95,8 +95,24 @@ export class OperationTypeCoder extends TypeCoder {
   }
 
   public override jsdoc(): string {
+    // Determine which security scheme names this operation actually uses.
+    // An operation-level `security` array overrides the global one; an
+    // explicit empty array (`security: []`) means the operation opts out.
+    const operationSecurity = this.requirement.data["security"] as
+      | Record<string, unknown>[]
+      | undefined;
+
+    const globalSecurity = this.requirement.specification?.rootRequirement
+      ?.data?.["security"] as Record<string, unknown>[] | undefined;
+
+    const securityReqs = operationSecurity ?? globalSecurity ?? [];
+    const usedSchemeNames = new Set(
+      securityReqs.flatMap((req) => Object.keys(req)),
+    );
+
     const deprecatedScheme = this.securitySchemes.find(
-      ({ deprecated }) => deprecated === true,
+      ({ name, deprecated }) =>
+        deprecated === true && name !== undefined && usedSchemeNames.has(name),
     );
 
     if (!deprecatedScheme) {
