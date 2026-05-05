@@ -1,17 +1,10 @@
 import { printObject } from "./printers.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
+import { STREAMING_CONTENT_TYPES } from "./streaming-content-types.js";
 import { TypeCoder } from "./type-coder.js";
 import type { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
 import { pathJoin } from "../util/forward-slash-path.js";
-
-const STREAMING_CONTENT_TYPES = new Set([
-  "text/event-stream",
-  "application/jsonl",
-  "application/x-ndjson",
-  "application/ndjson",
-  "application/json-seq",
-]);
 
 export class ResponseTypeCoder extends TypeCoder {
   public openApi2MediaTypes: string[];

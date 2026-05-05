@@ -7,18 +7,11 @@ import { READ_ONLY_COMMENTS } from "./read-only-comments.js";
 import { RESERVED_WORDS } from "./reserved-words.js";
 import { ResponsesTypeCoder } from "./responses-type-coder.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
+import { STREAMING_CONTENT_TYPES } from "./streaming-content-types.js";
 import { TypeCoder } from "./type-coder.js";
 import { Requirement } from "./requirement.js";
 import type { RequirementData } from "./requirement.js";
 import type { Script } from "./script.js";
-
-const STREAMING_CONTENT_TYPES = new Set([
-  "text/event-stream",
-  "application/jsonl",
-  "application/x-ndjson",
-  "application/ndjson",
-  "application/json-seq",
-]);
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words
 
