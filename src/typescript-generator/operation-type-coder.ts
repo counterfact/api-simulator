@@ -37,8 +37,10 @@ function sanitizeIdentifier(value: string): string {
 }
 
 export interface SecurityScheme {
+  name?: string;
   scheme?: string;
   type?: string;
+  deprecated?: boolean;
 }
 
 /**
@@ -93,7 +95,19 @@ export class OperationTypeCoder extends TypeCoder {
   }
 
   public override jsdoc(): string {
-    return buildJsDoc(this.requirement.data);
+    const deprecatedScheme = this.securitySchemes.find(
+      ({ deprecated }) => deprecated === true,
+    );
+
+    if (!deprecatedScheme) {
+      return buildJsDoc(this.requirement.data);
+    }
+
+    const schemeName = deprecatedScheme.name ?? "(unnamed)";
+
+    return buildJsDoc(this.requirement.data, {
+      deprecatedMessage: `The security scheme '${schemeName}' is deprecated.`,
+    });
   }
 
   public override names(): Generator<string> {
