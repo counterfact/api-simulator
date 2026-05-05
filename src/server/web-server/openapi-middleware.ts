@@ -34,12 +34,13 @@ export function openapiMiddleware(
 
     const openApiDocument = (await bundle(document.path)) as {
       host?: string;
-      servers?: { description: string; url: string }[];
+      servers?: { name?: string; description: string; url: string }[];
     };
 
     openApiDocument.servers ??= [];
 
     openApiDocument.servers.unshift({
+      name: "Counterfact",
       description: "Counterfact",
       url: document.baseUrl,
     });
