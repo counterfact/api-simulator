@@ -17,6 +17,7 @@ type HttpMethods =
   | "PATCH"
   | "POST"
   | "PUT"
+  | "QUERY"
   | "TRACE";
 
 const ALL_HTTP_METHODS: HttpMethods[] = [
@@ -27,6 +28,7 @@ const ALL_HTTP_METHODS: HttpMethods[] = [
   "PATCH",
   "POST",
   "PUT",
+  "QUERY",
   "TRACE",
 ];
 
@@ -68,9 +70,10 @@ interface Module {
   GET?: (requestData: RequestData) => UserDefinedResponse;
   HEAD?: (requestData: RequestData) => UserDefinedResponse;
   OPTIONS?: (requestData: RequestData) => UserDefinedResponse;
-  PATCH?: (requestData: RequestData) => UserDefinedResponse;
+  PATCH?: (requestData: RequestDataWithBody) => UserDefinedResponse;
   POST?: (requestData: RequestDataWithBody) => UserDefinedResponse;
   PUT?: (requestData: RequestDataWithBody) => UserDefinedResponse;
+  QUERY?: (requestData: RequestDataWithBody) => UserDefinedResponse;
   TRACE?: (requestData: RequestData) => UserDefinedResponse;
 }
 
