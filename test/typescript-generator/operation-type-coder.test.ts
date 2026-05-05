@@ -1128,7 +1128,9 @@ describe("jsdoc() with security scheme deprecation", () => {
       { name: "anotherOld", type: "http", scheme: "basic", deprecated: true },
     ]);
 
-    expect(coder.jsdoc()).toContain("@deprecated The security scheme 'oldScheme' is deprecated.");
+    expect(coder.jsdoc()).toContain(
+      "@deprecated The security scheme 'oldScheme' is deprecated.",
+    );
   });
 
   it("combines operation description with security scheme @deprecated", () => {
