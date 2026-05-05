@@ -1,5 +1,48 @@
 # counterfact
 
+## 2.12.0
+
+### Minor Changes
+
+- 3502d41: Add native support for the `QUERY` HTTP method (OpenAPI 3.2). The `QUERY` method is safe and idempotent but allows a request body, making it useful for complex search and filter operations.
+  - `HttpMethods` in `src/server/registry.ts` now includes `"QUERY"`.
+  - The `Module` interface exposes a `QUERY` handler that receives a request body.
+  - `HTTP_METHODS` in `src/migrate/update-route-types.ts` now includes `"QUERY"` so the migration helper recognises `HTTP_QUERY` type imports.
+  - The MSW integration's `allowedMethods` list now includes `"query"`.
+  - The Koa middleware already passes the request body for any method that is not `GET` or `HEAD`, so `QUERY` requests forward their body to the handler automatically.
+
+### Patch Changes
+
+- fda8f18: Add "Multiple API Versions" pattern to docs/patterns/. The new page explains how to configure multiple versioned specs and use `$.minVersion()` to share route handlers across versions without duplication.
+
+  Also rewrites the patterns index introduction: the single long paragraph is now split into labelled sections (Getting started, Organizing state, Runtime control, Versioned and multi-spec APIs, Long-term reliability, Integration strategies) followed by a complete pattern table.
+
+- a6dc7e8: Updated dependency `precinct` to `12.3.1`.
+- a71e047: Updated dependency `@apidevtools/json-schema-ref-parser` to `15.3.1`.
+- 4224be0: Updated dependency `@swc/core` to `1.15.32`.
+- eed59b8: Updated dependency `astro` to `^6.0.0`.
+- e88e792: Updated dependency `@jest/globals` to `30.3.0`.
+  Updated dependency `@types/debug` to `4.1.12`.
+  Updated dependency `@typescript-eslint/eslint-plugin` to `8.58.0`.
+  Updated dependency `@typescript-eslint/parser` to `8.58.0`.
+  Updated dependency `eslint-plugin-n` to `17.24.0`.
+  Updated dependency `eslint-plugin-promise` to `7.2.1`.
+  Updated dependency `eslint-plugin-regexp` to `3.0.0`.
+  Updated dependency `eslint-plugin-security` to `4.0.0`.
+  Updated dependency `posthog-node` to `5.28.11`.
+  Updated dependency `tsx` to `4.21.0`.
+- ca7c067: Updated dependency `@typescript-eslint/eslint-plugin` to `8.59.1`.
+  Updated dependency `@typescript-eslint/parser` to `8.59.1`.
+- 68b730f: Updated dependency `json-schema-faker` to `0.6.1`.
+- 15b4c1b: Updated dependency `typescript` to `6.0.3`.
+- dd4e758: Updated dependency `prettier` to `3.8.3`.
+- d8258a9: Updated dependency `eslint-plugin-jest` to `29.15.2`.
+- 7a38b14: Updated dependency `@types/debug` to `4.1.13`.
+- 47d07e4: Updated dependency `@changesets/cli` to `2.31.0`.
+- 6d582b4: Updated dependency `eslint` to `10.3.0`.
+- e1bad83: Updated dependency `eslint-plugin-regexp` to `3.1.0`.
+- 35abb32: Upgrade `@apidevtools/json-schema-ref-parser` from 15.1.3 to 15.3.5. The new version includes a built-in fix for Windows paths using forward slashes (`C:/...`), making the `patch-package` patch unnecessary.
+
 ## 2.11.0
 
 ### Minor Changes
