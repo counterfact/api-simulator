@@ -87,7 +87,8 @@ export function createKoaApp({
       ctx.body !== null &&
       ctx.body !== undefined &&
       typeof ctx.body === "object" &&
-      !Buffer.isBuffer(ctx.body)
+      !Buffer.isBuffer(ctx.body) &&
+      typeof (ctx.body as { pipe?: unknown }).pipe !== "function"
     ) {
       ctx.body = JSON.stringify(ctx.body, null, 2);
       ctx.type = "application/json";

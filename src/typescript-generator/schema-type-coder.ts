@@ -172,13 +172,22 @@ export class SchemaTypeCoder extends TypeCoder {
   }
 
   public override writeCode(script: Script): string {
-    const { allOf, anyOf, oneOf, type, format } = this.requirement.data as {
+    const { allOf, anyOf, oneOf, type, format, itemSchema } = this.requirement
+      .data as {
       allOf?: unknown[];
       anyOf?: unknown[];
       oneOf?: unknown[];
       type?: string;
       format?: string;
+      itemSchema?: unknown;
     };
+
+    if (itemSchema) {
+      return `AsyncIterable<${new SchemaTypeCoder(
+        this.requirement.get("itemSchema")!,
+        this.version,
+      ).write(script)}>`;
+    }
 
     if (allOf ?? anyOf ?? oneOf) {
       return this.writeGroup(script, { allOf, anyOf, oneOf });

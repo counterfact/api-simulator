@@ -5,6 +5,14 @@ import type { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
 import { pathJoin } from "../util/forward-slash-path.js";
 
+const STREAMING_CONTENT_TYPES = new Set([
+  "text/event-stream",
+  "application/jsonl",
+  "application/x-ndjson",
+  "application/ndjson",
+  "application/json-seq",
+]);
+
 export class ResponseTypeCoder extends TypeCoder {
   public openApi2MediaTypes: string[];
 
@@ -31,12 +39,32 @@ export class ResponseTypeCoder extends TypeCoder {
     if (response.has("content")) {
       return response
         .get("content")!
-        .map((content, mediaType): [string, string] => [
-          mediaType,
-          `{ 
-            schema:  ${content.has("schema") ? new SchemaTypeCoder(content.get("schema")!, this.version).write(script) : "unknown"}
+        .map((content, mediaType): [string, string] => {
+          let schemaType: string;
+
+          if (
+            content.has("itemSchema") &&
+            STREAMING_CONTENT_TYPES.has(mediaType)
+          ) {
+            schemaType = `AsyncIterable<${new SchemaTypeCoder(
+              content.get("itemSchema")!,
+              this.version,
+            ).write(script)}>`;
+          } else {
+            schemaType = content.has("schema")
+              ? new SchemaTypeCoder(content.get("schema")!, this.version).write(
+                  script,
+                )
+              : "unknown";
+          }
+
+          return [
+            mediaType,
+            `{ 
+            schema:  ${schemaType}
          }`,
-        ]);
+          ];
+        });
     }
 
     return this.openApi2MediaTypes.map((mediaType): [string, string] => [

@@ -499,4 +499,183 @@ describe("koa middleware", () => {
     expect(ctx.body).toStrictEqual(binaryData);
     expect(ctx.type).toBe("application/octet-stream");
   });
+
+  it("converts an AsyncIterable body to a Readable stream formatted as SSE", async () => {
+    const registry = new Registry();
+
+    async function* events() {
+      yield { id: 1, message: "hello" };
+      yield { id: 2, message: "world" };
+    }
+
+    registry.add("/events", {
+      GET() {
+        return {
+          body: events(),
+          contentType: "text/event-stream",
+          status: 200,
+        };
+      },
+    });
+
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const middleware = routesMiddleware(CONFIG.prefix, dispatcher, CONFIG);
+
+    const ctx = {
+      req: { path: "/events" },
+      request: { headers: {}, method: "GET", path: "/events" },
+      set: jest.fn(),
+      type: undefined as string | undefined,
+      body: undefined as unknown,
+    };
+
+    // @ts-expect-error - not obvious how to make TS happy here, and it's just a unit test
+    await middleware(ctx, async () => {
+      await Promise.resolve(undefined);
+    });
+
+    expect(ctx.status).toBe(200);
+    expect(ctx.type).toBe("text/event-stream");
+
+    // Body should be a readable stream
+    const { Readable } = await import("node:stream");
+    expect(ctx.body).toBeInstanceOf(Readable);
+
+    // Collect streamed data
+    const chunks: string[] = [];
+
+    for await (const chunk of ctx.body as AsyncIterable<string>) {
+      chunks.push(String(chunk));
+    }
+
+    expect(chunks).toStrictEqual([
+      'data: {"id":1,"message":"hello"}\n\n',
+      'data: {"id":2,"message":"world"}\n\n',
+    ]);
+  });
+
+  it("converts an AsyncIterable body to a Readable stream formatted as JSONL", async () => {
+    const registry = new Registry();
+
+    async function* lines() {
+      yield { a: 1 };
+      yield { a: 2 };
+    }
+
+    registry.add("/lines", {
+      GET() {
+        return {
+          body: lines(),
+          contentType: "application/jsonl",
+          status: 200,
+        };
+      },
+    });
+
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const middleware = routesMiddleware(CONFIG.prefix, dispatcher, CONFIG);
+
+    const ctx = {
+      req: { path: "/lines" },
+      request: { headers: {}, method: "GET", path: "/lines" },
+      set: jest.fn(),
+      type: undefined as string | undefined,
+      body: undefined as unknown,
+    };
+
+    // @ts-expect-error - not obvious how to make TS happy here, and it's just a unit test
+    await middleware(ctx, async () => {
+      await Promise.resolve(undefined);
+    });
+
+    expect(ctx.type).toBe("application/jsonl");
+
+    const chunks: string[] = [];
+
+    for await (const chunk of ctx.body as AsyncIterable<string>) {
+      chunks.push(String(chunk));
+    }
+
+    expect(chunks).toStrictEqual(['{"a":1}\n', '{"a":2}\n']);
+  });
+
+  it("converts an AsyncIterable body to a Readable stream formatted as JSON-seq", async () => {
+    const registry = new Registry();
+
+    async function* records() {
+      yield "alpha";
+      yield "beta";
+    }
+
+    registry.add("/records", {
+      GET() {
+        return {
+          body: records(),
+          contentType: "application/json-seq",
+          status: 200,
+        };
+      },
+    });
+
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const middleware = routesMiddleware(CONFIG.prefix, dispatcher, CONFIG);
+
+    const ctx = {
+      req: { path: "/records" },
+      request: { headers: {}, method: "GET", path: "/records" },
+      set: jest.fn(),
+      type: undefined as string | undefined,
+      body: undefined as unknown,
+    };
+
+    // @ts-expect-error - not obvious how to make TS happy here, and it's just a unit test
+    await middleware(ctx, async () => {
+      await Promise.resolve(undefined);
+    });
+
+    expect(ctx.type).toBe("application/json-seq");
+
+    const chunks: string[] = [];
+
+    for await (const chunk of ctx.body as AsyncIterable<string>) {
+      chunks.push(String(chunk));
+    }
+
+    expect(chunks).toStrictEqual(['\x1e"alpha"\n', '\x1e"beta"\n']);
+  });
+
+  it("sets Cache-Control and X-Accel-Buffering headers for text/event-stream responses", async () => {
+    const registry = new Registry();
+
+    async function* empty() {}
+
+    registry.add("/sse", {
+      GET() {
+        return {
+          body: empty(),
+          contentType: "text/event-stream",
+          status: 200,
+        };
+      },
+    });
+
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const middleware = routesMiddleware(CONFIG.prefix, dispatcher, CONFIG);
+
+    const ctx = {
+      req: { path: "/sse" },
+      request: { headers: {}, method: "GET", path: "/sse" },
+      set: jest.fn(),
+      type: undefined as string | undefined,
+      body: undefined as unknown,
+    };
+
+    // @ts-expect-error - not obvious how to make TS happy here, and it's just a unit test
+    await middleware(ctx, async () => {
+      await Promise.resolve(undefined);
+    });
+
+    expect(ctx.set).toHaveBeenCalledWith("Cache-Control", "no-cache");
+    expect(ctx.set).toHaveBeenCalledWith("X-Accel-Buffering", "no");
+  });
 });
