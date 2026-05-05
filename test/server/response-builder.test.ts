@@ -435,6 +435,63 @@ describe("a response builder", () => {
         type: "text/plain",
       });
     });
+
+    it("prefers dataValue over value when calling random()", async () => {
+      const operationWithDataValue: OpenApiOperation = {
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                examples: {
+                  success: {
+                    description: "a success response",
+                    summary: "success",
+                    dataValue: { id: 99, name: "from-data-value" },
+                    value: { id: 1, name: "from-value" },
+                  },
+                },
+                schema: { type: "object" },
+              },
+            },
+          },
+        },
+      };
+
+      const response =
+        await createResponseBuilder(operationWithDataValue)[200]?.random();
+
+      expect(response?.content).toStrictEqual([
+        { body: { id: 99, name: "from-data-value" }, type: "application/json" },
+      ]);
+    });
+
+    it("falls back to value when dataValue is absent in random()", async () => {
+      const operationValueOnly: OpenApiOperation = {
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                examples: {
+                  success: {
+                    description: "a success response",
+                    summary: "success",
+                    value: { id: 1, name: "from-value" },
+                  },
+                },
+                schema: { type: "object" },
+              },
+            },
+          },
+        },
+      };
+
+      const response =
+        await createResponseBuilder(operationValueOnly)[200]?.random();
+
+      expect(response?.content).toStrictEqual([
+        { body: { id: 1, name: "from-value" }, type: "application/json" },
+      ]);
+    });
   });
 
   describe("selects a named example from an Open API operation object", () => {
