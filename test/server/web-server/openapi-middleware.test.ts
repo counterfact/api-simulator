@@ -55,10 +55,11 @@ describe("openapiMiddleware", () => {
       );
 
       const doc = yaml.load(response.text) as {
-        servers: { description: string; url: string }[];
+        servers: { name: string; description: string; url: string }[];
       };
 
       expect(doc.servers[0]).toStrictEqual({
+        name: "Counterfact",
         description: "Counterfact",
         url: "//localhost:3100",
       });
