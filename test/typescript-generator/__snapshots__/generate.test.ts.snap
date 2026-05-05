@@ -33,6 +33,7 @@ import type { Pet } from "../components/schemas/Pet.js";
 export type addPet = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -73,6 +74,7 @@ export type addPet = (
 export type updatePet = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -149,6 +151,7 @@ import type { Pet } from "../../components/schemas/Pet.js";
 export type findPetsByStatus = (
   $: OmitValueWhenNever<{
     query: findPetsByStatus_Query;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -220,6 +223,7 @@ import type { Pet } from "../../components/schemas/Pet.js";
 export type findPetsByTags = (
   $: OmitValueWhenNever<{
     query: findPetsByTags_Query;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -301,6 +305,7 @@ import type { Pet } from "../../components/schemas/Pet.js";
 export type getPetById = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getPetById_Path;
     headers: never;
     cookie: never;
@@ -344,6 +349,7 @@ export type getPetById = (
 export type updatePetWithForm = (
   $: OmitValueWhenNever<{
     query: updatePetWithForm_Query;
+    querystring: never;
     path: updatePetWithForm_Path;
     headers: never;
     cookie: never;
@@ -368,6 +374,7 @@ export type updatePetWithForm = (
 export type deletePet = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: deletePet_Path;
     headers: deletePet_Headers;
     cookie: never;
@@ -450,6 +457,7 @@ import type { ApiResponse } from "../../../components/schemas/ApiResponse.js";
 export type uploadFile = (
   $: OmitValueWhenNever<{
     query: uploadFile_Query;
+    querystring: never;
     path: uploadFile_Path;
     headers: never;
     cookie: never;
@@ -518,6 +526,7 @@ import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts
 export type getInventory = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -573,6 +582,7 @@ import type { Order } from "../../components/schemas/Order.js";
 export type placeOrder = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -639,6 +649,7 @@ import type { Order } from "../../../components/schemas/Order.js";
 export type getOrderById = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getOrderById_Path;
     headers: never;
     cookie: never;
@@ -685,6 +696,7 @@ export type getOrderById = (
 export type deleteOrder = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: deleteOrder_Path;
     headers: never;
     cookie: never;
@@ -757,6 +769,7 @@ import type { User } from "../components/schemas/User.js";
 export type createUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -816,6 +829,7 @@ import type { User } from "../../components/schemas/User.js";
 export type createUsersWithListInput = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -879,6 +893,7 @@ import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts
 export type loginUser = (
   $: OmitValueWhenNever<{
     query: loginUser_Query;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -954,6 +969,7 @@ import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 export type logoutUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -1013,6 +1029,7 @@ import type { User } from "../../components/schemas/User.js";
 export type getUserByName = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getUserByName_Path;
     headers: never;
     cookie: never;
@@ -1059,6 +1076,7 @@ export type getUserByName = (
 export type updateUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: updateUser_Path;
     headers: never;
     cookie: never;
@@ -1086,6 +1104,7 @@ export type updateUser = (
 export type deleteUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: deleteUser_Path;
     headers: never;
     cookie: never;
@@ -1309,6 +1328,7 @@ import type { HttpStatusCode } from "../../counterfact-types/index.ts";
 export type getRoot = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -1366,6 +1386,7 @@ import type { InternalServerError } from "../#/components/responses/InternalServ
 export type getCount = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -1422,6 +1443,7 @@ import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 export type helloKitty = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -1479,6 +1501,7 @@ import type { BadRequest } from "../../#/components/responses/BadRequest.js";
 export type sayHello = (
   $: OmitValueWhenNever<{
     query: sayHello_Query;
+    querystring: never;
     path: sayHello_Path;
     headers: sayHello_Headers;
     cookie: never;
@@ -1560,6 +1583,7 @@ import type { BadRequest } from "../#/components/responses/BadRequest.js";
 export type getPathOne = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -1612,6 +1636,7 @@ import type { ResponseBuilderFactory } from "../../../../counterfact-types/index
 export type weirdColonPath = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -1678,6 +1703,7 @@ import type { Error } from "../components/schemas/Error.js";
 export type listUsers = (
   $: OmitValueWhenNever<{
     query: listUsers_Query;
+    querystring: never;
     path: never;
     headers: listUsers_Headers;
     cookie: never;
@@ -1718,6 +1744,7 @@ export type listUsers = (
 export type createUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -1816,6 +1843,7 @@ import type { PatchUserRequest } from "../../components/schemas/PatchUserRequest
 export type getUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getUser_Path;
     headers: never;
     cookie: never;
@@ -1849,6 +1877,7 @@ export type getUser = (
 export type replaceUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: replaceUser_Path;
     headers: never;
     cookie: never;
@@ -1882,6 +1911,7 @@ export type replaceUser = (
 export type patchUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: patchUser_Path;
     headers: never;
     cookie: never;
@@ -1915,6 +1945,7 @@ export type patchUser = (
 export type deleteUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: deleteUser_Path;
     headers: never;
     cookie: never;
@@ -1999,6 +2030,7 @@ import type { BadRequest } from "../#/components/responses/BadRequest.js";
 export type createEvent = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -2049,6 +2081,7 @@ import type { NotFound } from "../../#/components/responses/NotFound.js";
 export type getProduct = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getProduct_Path;
     headers: never;
     cookie: never;
@@ -2107,6 +2140,7 @@ import type { Error } from "../components/schemas/Error.js";
 export type uploadFile = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -2178,6 +2212,7 @@ import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts
 export type listItemsLegacy = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: listItemsLegacy_Cookie;
@@ -2235,6 +2270,7 @@ import type { NotFound } from "../../#/components/responses/NotFound.js";
 export type getReport = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getReport_Path;
     headers: getReport_Headers;
     cookie: never;
@@ -2302,6 +2338,7 @@ import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 export type ping = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -2352,6 +2389,7 @@ import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 export type setMetadata = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -2407,6 +2445,7 @@ import type { Pageable } from "../components/schemas/Pageable.js";
 export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: HTTP_GET_Query;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;

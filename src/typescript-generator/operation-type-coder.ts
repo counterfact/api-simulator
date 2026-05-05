@@ -386,10 +386,30 @@ export class OperationTypeCoder extends TypeCoder {
       modulePath,
     );
 
+    // OpenAPI 3.2 querystring parameter: the entire query string treated as a
+    // single typed object (similar to requestBody for query strings).
+    const querystringParam = parameters?.find(
+      (parameter) => (parameter.get("in")?.data as string) === "querystring",
+    );
+    const querystringType =
+      querystringParam?.has("schema") === true
+        ? new SchemaTypeCoder(
+            querystringParam.get("schema")!,
+            this.version,
+          ).write(script)
+        : "never";
+    const querystringTypeName = this.exportParameterType(
+      script,
+      "querystring",
+      querystringType,
+      baseName,
+      modulePath,
+    );
+
     const versionLiteralType =
       this.version !== "" ? `"${this.version}"` : "never";
 
-    return `OmitValueWhenNever<{ query: ${queryTypeName}, path: ${pathTypeName}, headers: ${headersTypeName}, cookie: ${cookieTypeName}, body: ${bodyType}, context: ${contextTypeImportName}, response: ${responseType}, x: ${xType}, proxy: ${proxyType}, user: ${this.userType()}, delay: ${delayType}, version: ${versionLiteralType} }>`;
+    return `OmitValueWhenNever<{ query: ${queryTypeName}, querystring: ${querystringTypeName}, path: ${pathTypeName}, headers: ${headersTypeName}, cookie: ${cookieTypeName}, body: ${bodyType}, context: ${contextTypeImportName}, response: ${responseType}, x: ${xType}, proxy: ${proxyType}, user: ${this.userType()}, delay: ${delayType}, version: ${versionLiteralType} }>`;
   }
 
   public override writeCode(script: Script): string {

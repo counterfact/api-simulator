@@ -114,6 +114,7 @@ export const GET: HTTP_GET = ($) => {
 | --- | --- | --- |
 | `$.path` | typed object | Path parameters from the URL |
 | `$.query` | typed object | Query string parameters |
+| `$.querystring` | typed object | Entire query string as a single typed object (OpenAPI 3.2 `in: querystring` parameters) |
 | `$.headers` | typed object | Request headers |
 | `$.body` | typed object | Parsed request body |
 | `$.context` | `Context` instance | Shared state for this route subtree |
