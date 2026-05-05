@@ -41,6 +41,33 @@ describe("a dispatcher", () => {
     expect(response.body).toBe("hello");
   });
 
+  it("dispatches a QUERY request to a server and returns the response", async () => {
+    const registry = new Registry();
+
+    registry.add("/search", {
+      // @ts-expect-error - not creating an entire request object
+      QUERY({ body }: { body: { filter: string } }) {
+        return {
+          body: `results for: ${body.filter}`,
+          status: 200,
+        };
+      },
+    });
+
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const response = await dispatcher.request({
+      body: { filter: "dogs" },
+      headers: {},
+      method: "QUERY",
+      path: "/search",
+      query: {},
+      req: { path: "/search" },
+    });
+
+    expect(response.body).toBe("results for: dogs");
+    expect(response.status).toBe(200);
+  });
+
   it("converts a string return value to a full response object with content-type text/plain", async () => {
     const registry = new Registry();
 

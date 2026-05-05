@@ -2,9 +2,15 @@ import { defineConfig } from "astro/config";
 import { visit } from "unist-util-visit";
 
 /**
- * Rehype plugin that strips .md extensions from local href attributes so that
- * cross-document links written as `[text](./other.md)` (valid on GitHub) are
- * transformed to `./other` when rendered to HTML on the site.
+ * Rehype plugin that rewrites local `.md` hrefs so that cross-document links
+ * written as `[text](./other.md)` (valid on GitHub) resolve correctly on the
+ * published site.
+ *
+ * Two cases are handled:
+ *  - `./foo/index.md`  → `./foo/`   (index files map to directory URLs)
+ *  - `./foo/bar.md`    → `./foo/bar` (regular files just strip the extension)
+ *
+ * Query strings and anchors are preserved in both cases.
  */
 function rehypeStripMdLinks() {
   return (tree) => {
@@ -17,8 +23,9 @@ function rehypeStripMdLinks() {
         !node.properties.href.startsWith("tel:")
       ) {
         node.properties.href = node.properties.href.replace(
-          /\.md(\?[^#]*)?(#.*)?$/,
-          (_, query, anchor) => `${query ?? ""}${anchor ?? ""}`,
+          /(\/index)?\.md(\?[^#]*)?(#.*)?$/,
+          (_, trailingIndex, query, anchor) =>
+            `${trailingIndex ? "/" : ""}${query ?? ""}${anchor ?? ""}`,
         );
       }
     });
