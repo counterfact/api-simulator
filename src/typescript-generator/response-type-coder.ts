@@ -1,5 +1,6 @@
 import { printObject } from "./printers.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
+import { STREAMING_CONTENT_TYPES } from "./streaming-content-types.js";
 import { TypeCoder } from "./type-coder.js";
 import type { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
@@ -31,12 +32,32 @@ export class ResponseTypeCoder extends TypeCoder {
     if (response.has("content")) {
       return response
         .get("content")!
-        .map((content, mediaType): [string, string] => [
-          mediaType,
-          `{ 
-            schema:  ${content.has("schema") ? new SchemaTypeCoder(content.get("schema")!, this.version).write(script) : "unknown"}
+        .map((content, mediaType): [string, string] => {
+          let schemaType: string;
+
+          if (
+            content.has("itemSchema") &&
+            STREAMING_CONTENT_TYPES.has(mediaType)
+          ) {
+            schemaType = `AsyncIterable<${new SchemaTypeCoder(
+              content.get("itemSchema")!,
+              this.version,
+            ).write(script)}>`;
+          } else {
+            schemaType = content.has("schema")
+              ? new SchemaTypeCoder(content.get("schema")!, this.version).write(
+                  script,
+                )
+              : "unknown";
+          }
+
+          return [
+            mediaType,
+            `{ 
+            schema:  ${schemaType}
          }`,
-        ]);
+          ];
+        });
     }
 
     return this.openApi2MediaTypes.map((mediaType): [string, string] => [

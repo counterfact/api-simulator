@@ -344,6 +344,19 @@ export function createResponseBuilder(
         };
       },
 
+      stream(
+        this: ResponseBuilder,
+        iterable: AsyncIterable<unknown>,
+        contentType = "text/event-stream",
+      ) {
+        return {
+          body: iterable,
+          contentType,
+          headers: this.headers,
+          status: this.status,
+        };
+      },
+
       status: Number.parseInt(statusCode, 10),
 
       text(this: ResponseBuilder, body: unknown) {

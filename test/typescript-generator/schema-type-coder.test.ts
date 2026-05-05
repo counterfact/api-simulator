@@ -499,4 +499,30 @@ describe("a SchemaTypeCoder", () => {
 
     expect(coder.jsdoc()).toBe("");
   });
+
+  it("generates AsyncIterable<T> when the schema has itemSchema", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({
+        itemSchema: { type: "object", properties: { id: { type: "integer" } } },
+      }),
+    );
+
+    const expected = await format("type x = AsyncIterable<{ id?: number }>;");
+
+    await expect(format(`type x = ${coder.write({})}`)).resolves.toStrictEqual(
+      expected,
+    );
+  });
+
+  it("generates AsyncIterable<string> when itemSchema is a string type", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({ itemSchema: { type: "string" } }),
+    );
+
+    const expected = await format("type x = AsyncIterable<string>;");
+
+    await expect(format(`type x = ${coder.write({})}`)).resolves.toStrictEqual(
+      expected,
+    );
+  });
 });

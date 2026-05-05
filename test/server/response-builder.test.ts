@@ -604,4 +604,46 @@ describe("a response builder", () => {
       ]);
     });
   });
+
+  describe("stream()", () => {
+    async function* makeStream(items: unknown[]) {
+      for (const item of items) {
+        yield item;
+      }
+    }
+
+    it("returns a response object with body set to the async iterable", () => {
+      const iterable = makeStream([{ id: 1 }]);
+      const response = createResponseBuilder({ responses: {} })[200]?.stream(
+        iterable,
+      );
+
+      expect(response?.body).toBe(iterable);
+    });
+
+    it("defaults content type to text/event-stream", () => {
+      const response = createResponseBuilder({ responses: {} })[200]?.stream(
+        makeStream([]),
+      );
+
+      expect(response?.contentType).toBe("text/event-stream");
+    });
+
+    it("accepts a custom content type", () => {
+      const response = createResponseBuilder({ responses: {} })[200]?.stream(
+        makeStream([]),
+        "application/jsonl",
+      );
+
+      expect(response?.contentType).toBe("application/jsonl");
+    });
+
+    it("preserves the status code", () => {
+      const response = createResponseBuilder({ responses: {} })[202]?.stream(
+        makeStream([]),
+      );
+
+      expect(response?.status).toBe(202);
+    });
+  });
 });
