@@ -80,7 +80,7 @@ function rehypeStripMdLinks() {
       // Strip the extension; index files map to their parent directory.
       let cleanUrl;
       if (absPath.endsWith("/index.md")) {
-        cleanUrl = absPath.slice(0, -"/index.md".length) || "/docs";
+        cleanUrl = absPath.slice(0, -"/index.md".length);
       } else {
         cleanUrl = absPath.slice(0, -".md".length);
       }

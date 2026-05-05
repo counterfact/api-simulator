@@ -17,6 +17,8 @@ jobs:
   check-links:
     name: Check for broken links
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check Out Repo
         uses: actions/checkout@v6
