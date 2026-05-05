@@ -299,7 +299,9 @@ export function createResponseBuilder(
                   ? oneOf(
                       Object.values(content[type]?.examples ?? []).map(
                         (example) =>
-                          "dataValue" in example ? example.dataValue : example.value,
+                          "dataValue" in example
+                            ? example.dataValue
+                            : example.value,
                       ),
                     )
                   : await generate(

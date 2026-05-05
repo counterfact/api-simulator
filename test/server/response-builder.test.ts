@@ -457,8 +457,9 @@ describe("a response builder", () => {
         },
       };
 
-      const response =
-        await createResponseBuilder(operationWithDataValue)[200]?.random();
+      const response = await createResponseBuilder(
+        operationWithDataValue,
+      )[200]?.random();
 
       expect(response?.content).toStrictEqual([
         { body: { id: 99, name: "from-data-value" }, type: "application/json" },
