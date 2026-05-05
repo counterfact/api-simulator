@@ -2,7 +2,10 @@
  * Builds a JSDoc comment string from OpenAPI schema metadata.
  * Returns an empty string if there is no relevant metadata.
  */
-export function buildJsDoc(data: Record<string, unknown>): string {
+export function buildJsDoc(
+  data: Record<string, unknown>,
+  { deprecatedMessage }: { deprecatedMessage?: string } = {},
+): string {
   const lines: string[] = [];
 
   const description = data["description"] as string | undefined;
@@ -47,8 +50,12 @@ export function buildJsDoc(data: Record<string, unknown>): string {
     lines.push(` * @example ${JSON.stringify(exampleValue)}`);
   }
 
-  if (deprecated === true) {
-    lines.push(` * @deprecated`);
+  if (deprecated === true || deprecatedMessage) {
+    lines.push(
+      deprecatedMessage
+        ? ` * @deprecated ${deprecatedMessage}`
+        : ` * @deprecated`,
+    );
   }
 
   if (lines.length === 0) {

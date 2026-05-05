@@ -152,9 +152,12 @@ export class CodeGenerator extends EventTarget {
       "#/components/securitySchemes",
     );
 
-    const securitySchemes = Object.values(
+    const securitySchemes = Object.entries(
       (securityRequirement?.data as Record<string, unknown>) ?? {},
-    ) as SecurityScheme[];
+    ).map(([name, scheme]) => ({
+      ...(scheme as SecurityScheme),
+      name,
+    }));
 
     const HTTP_VERBS = new Set([
       "get",

@@ -1086,3 +1086,75 @@ describe("version property in the generated $ arg type", () => {
     expect(result).toContain("version: never");
   });
 });
+
+// ---------------------------------------------------------------------------
+// jsdoc() with deprecated security schemes
+// ---------------------------------------------------------------------------
+
+describe("jsdoc() with security scheme deprecation", () => {
+  const makeRequirement = (operationData = {}) =>
+    new Requirement(
+      { parameters: [], responses: { 200: {} }, ...operationData },
+      "#/paths/pets/get",
+    );
+
+  it("returns empty string when there are no security schemes", () => {
+    const coder = new OperationTypeCoder(makeRequirement(), "", "get", []);
+
+    expect(coder.jsdoc()).toBe("");
+  });
+
+  it("returns empty string when all security schemes are non-deprecated", () => {
+    const coder = new OperationTypeCoder(makeRequirement(), "", "get", [
+      { name: "apiKey", type: "apiKey", deprecated: false },
+    ]);
+
+    expect(coder.jsdoc()).toBe("");
+  });
+
+  it("emits @deprecated with scheme name when a security scheme is deprecated", () => {
+    const coder = new OperationTypeCoder(makeRequirement(), "", "get", [
+      { name: "legacyAuth", type: "apiKey", deprecated: true },
+    ]);
+
+    expect(coder.jsdoc()).toBe(
+      "/**\n * @deprecated The security scheme 'legacyAuth' is deprecated.\n */\n",
+    );
+  });
+
+  it("emits @deprecated for the first deprecated scheme when multiple are deprecated", () => {
+    const coder = new OperationTypeCoder(makeRequirement(), "", "get", [
+      { name: "oldScheme", type: "apiKey", deprecated: true },
+      { name: "anotherOld", type: "http", scheme: "basic", deprecated: true },
+    ]);
+
+    expect(coder.jsdoc()).toContain(
+      "@deprecated The security scheme 'oldScheme' is deprecated.",
+    );
+  });
+
+  it("combines operation description with security scheme @deprecated", () => {
+    const coder = new OperationTypeCoder(
+      makeRequirement({ description: "Fetch a pet" }),
+      "",
+      "get",
+      [{ name: "deprecatedKey", type: "apiKey", deprecated: true }],
+    );
+
+    const result = coder.jsdoc();
+
+    expect(result).toContain("Fetch a pet");
+    expect(result).toContain(
+      "@deprecated The security scheme 'deprecatedKey' is deprecated.",
+    );
+  });
+
+  it("does not include @deprecated when scheme has deprecated: false", () => {
+    const coder = new OperationTypeCoder(makeRequirement(), "", "get", [
+      { name: "currentKey", type: "apiKey", deprecated: false },
+      { name: "basicAuth", type: "http", scheme: "basic" },
+    ]);
+
+    expect(coder.jsdoc()).not.toContain("@deprecated");
+  });
+});
