@@ -6,9 +6,13 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "check-links": "astro preview --port 4321 & SERVER_PID=$!; sleep 5 && linkinator http://localhost:4321 --recurse --skip 'https://|http://(?!localhost)' --verbosity error; EXIT=$?; kill $SERVER_PID 2>/dev/null; exit $EXIT"
   },
   "dependencies": {
     "astro": "^6.0.0"
+  },
+  "devDependencies": {
+    "linkinator": "^7.6.1"
   }
 }

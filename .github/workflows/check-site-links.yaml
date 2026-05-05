@@ -1,0 +1,41 @@
+name: Check site for broken links
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "site/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "site/**"
+  workflow_dispatch:
+
+jobs:
+  check-links:
+    name: Check for broken links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        working-directory: site
+        run: npm ci
+
+      - name: Build site
+        working-directory: site
+        run: npm run build
+
+      - name: Check links
+        working-directory: site
+        run: npm run check-links
