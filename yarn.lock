@@ -292,7 +292,7 @@
   dependencies:
     "@babel/types" "^7.27.3"
 
-"@babel/parser@^7.29.2":
+"@babel/parser@^7.29.0", "@babel/parser@^7.29.2":
   version "7.29.3"
   resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.29.3.tgz#116f70a77958307fceac27747573032f8a62f88e"
   integrity sha512-b3ctpQwp+PROvU/cttc4OYl4MzfJUWy6FZg+PMXfzmt/+39iHVF0sDfqay8TQM3JA2EUOyKcFZt75jWriQijsA==
@@ -727,6 +727,14 @@
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/@dependents/detective-less/-/detective-less-5.0.1.tgz#e6c5b502f0d26a81da4170c1ccd848a6eaa68470"
   integrity sha512-Y6+WUMsTFWE5jb20IFP4YGa5IrGY/+a/FbOSjDF/wz9gepU2hwCYSXRHP/vPwBvwcY3SVMASt4yXxbXNXigmZQ==
+  dependencies:
+    gonzales-pe "^4.3.0"
+    node-source-walk "^7.0.1"
+
+"@dependents/detective-less@^5.0.3":
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/@dependents/detective-less/-/detective-less-5.0.3.tgz#5c6a5849eacac27cf0a657a65c1d94fcd1e6843b"
+  integrity sha512-v6oD9Ukp+N7V4n6p5I/+mM5fIohSfkrDSGlFm5w/pYmchvbk+sMIHsLxrFJ5Lnujewj1BzWL0K84d88lwZAMQA==
   dependencies:
     gonzales-pe "^4.3.0"
     node-source-walk "^7.0.1"
@@ -3099,17 +3107,17 @@ detect-newline@^3.1.0:
   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-3.1.0.tgz#576f5dfc63ae1a192ff192d8ad3af6308991b651"
   integrity sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==
 
-detective-amd@^6.0.1:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/detective-amd/-/detective-amd-6.0.1.tgz#71eb13b5d9b17222d7b4de3fb89a8e684d8b9a23"
-  integrity sha512-TtyZ3OhwUoEEIhTFoc1C9IyJIud3y+xYkSRjmvCt65+ycQuc3VcBrPRTMWoO/AnuCyOB8T5gky+xf7Igxtjd3g==
+detective-amd@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/detective-amd/-/detective-amd-6.1.0.tgz#7ac35f55325af5df974bb0fe4fdcac032719dc31"
+  integrity sha512-fmI6LGMvotqd49QaA3ZYw+q0aGp2yXmMjzIuY6fH9j9YFIXY/73yDhMwhX9cPbhWd+AH06NH1Di/LKOuCH0Ubg==
   dependencies:
     ast-module-types "^6.0.1"
     escodegen "^2.1.0"
-    get-amd-module-type "^6.0.1"
+    get-amd-module-type "^6.0.2"
     node-source-walk "^7.0.1"
 
-detective-cjs@^6.1.0:
+detective-cjs@^6.1.1:
   version "6.1.1"
   resolved "https://registry.yarnpkg.com/detective-cjs/-/detective-cjs-6.1.1.tgz#b7c78b649dbdfa0bba228ab28c9707f4a04d5fd7"
   integrity sha512-pSh7mkCKEtLlmANqLu3KDFS3NV8Hx41jy/JF1/gAWOgU+Uo5QTkeI1tWNP4dWGo4L0E9j18Ez9EPsTleautKqA==
@@ -3124,18 +3132,33 @@ detective-es6@^5.0.1:
   dependencies:
     node-source-walk "^7.0.1"
 
-detective-postcss@^7.0.1:
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/detective-postcss/-/detective-postcss-7.0.1.tgz#f5822d8988339fb56851fcdb079d51fbcff114db"
-  integrity sha512-bEOVpHU9picRZux5XnwGsmCN4+8oZo7vSW0O0/Enq/TO5R2pIAP2279NsszpJR7ocnQt4WXU0+nnh/0JuK4KHQ==
+detective-es6@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/detective-es6/-/detective-es6-5.0.2.tgz#afca245be54cbb8bb316591b182cbf9bc8243dc0"
+  integrity sha512-+qHHGYhjupiVs4rnIpI9nZ5B130A4AmE35ZX1w33hb46vcZ7T3jfDbvmPw0FhWtMHn5BS5HHu7ZtnZ53bMcXZA==
   dependencies:
-    is-url "^1.2.4"
+    node-source-walk "^7.0.1"
+
+detective-postcss@^8.0.3:
+  version "8.0.3"
+  resolved "https://registry.yarnpkg.com/detective-postcss/-/detective-postcss-8.0.3.tgz#a947494e55a68d0a271d4593714b51be7efe3014"
+  integrity sha512-0AQjxn13b14tLmeXQq0QAFXSP6vBZhWFfmEazyFQ+JVlVwfrYlKF6dGy4R06hqAiSZ9cRvFx0FW4uvVnx0WXiw==
+  dependencies:
+    is-url-superb "^4.0.0"
     postcss-values-parser "^6.0.2"
 
 detective-sass@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/detective-sass/-/detective-sass-6.0.1.tgz#fcf5aa51bebf7b721807be418418470ee2409f8a"
   integrity sha512-jSGPO8QDy7K7pztUmGC6aiHkexBQT4GIH+mBAL9ZyBmnUIOFbkfZnO8wPRRJFP/QP83irObgsZHCoDHZ173tRw==
+  dependencies:
+    gonzales-pe "^4.3.0"
+    node-source-walk "^7.0.1"
+
+detective-sass@^6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/detective-sass/-/detective-sass-6.0.2.tgz#3f3a4791884aba353fc26de9090bc8df32dfd0c4"
+  integrity sha512-i3xpXHDKS0qI2aFW4asQ7fqlPK00ndOVZELvQapFJCaF0VxYmsNWtd0AmvXbTLMk7bfO5VdIeorhY9KfmHVoVA==
   dependencies:
     gonzales-pe "^4.3.0"
     node-source-walk "^7.0.1"
@@ -3148,12 +3171,20 @@ detective-scss@^5.0.1:
     gonzales-pe "^4.3.0"
     node-source-walk "^7.0.1"
 
+detective-scss@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/detective-scss/-/detective-scss-5.0.2.tgz#19c02ee085e1c994cc2bd409f6d5f7d36b15220a"
+  integrity sha512-9JOEMZ8pDh3ShXmftq7hoQqqJsClaGgxo1hghfCeFlmKf5TC/Twtwb0PAaK8dXwpg9Z0uCmEYSrCxO+kel2eEg==
+  dependencies:
+    gonzales-pe "^4.3.0"
+    node-source-walk "^7.0.1"
+
 detective-stylus@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/detective-stylus/-/detective-stylus-5.0.1.tgz#57d54a0b405305ee16655e42008b38a827a9f179"
   integrity sha512-Dgn0bUqdGbE3oZJ+WCKf8Dmu7VWLcmRJGc6RCzBgG31DLIyai9WAoEhYRgIHpt/BCRMrnXLbGWGPQuBUrnF0TA==
 
-detective-typescript@^14.1.0, detective-typescript@^14.1.1:
+detective-typescript@^14.1.0, detective-typescript@^14.1.2:
   version "14.1.2"
   resolved "https://registry.yarnpkg.com/detective-typescript/-/detective-typescript-14.1.2.tgz#130208ab8d0d219931ae73947ce56814a462b6d3"
   integrity sha512-bIeEn0eVi/JRsE1YizBR2ilnMlWRAIBJJ6kXCKNFxEEWhUcEY3R6I3KYIAy48ieURbD1hcb3Ebvl8AqeoPMSzg==
@@ -4232,10 +4263,10 @@ gensync@^1.0.0-beta.2:
   resolved "https://registry.yarnpkg.com/gensync/-/gensync-1.0.0-beta.2.tgz#32a6ee76c3d7f52d46b2b1ae5d93fea8580a25e0"
   integrity sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==
 
-get-amd-module-type@^6.0.1:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/get-amd-module-type/-/get-amd-module-type-6.0.1.tgz#191f479ae8706c246b52bf402fbe1bb0965d9f1e"
-  integrity sha512-MtjsmYiCXcYDDrGqtNbeIYdAl85n+5mSv2r3FbzER/YV3ZILw4HNNIw34HuV5pyl0jzs6GFYU1VHVEefhgcNHQ==
+get-amd-module-type@^6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/get-amd-module-type/-/get-amd-module-type-6.0.2.tgz#257604e956bc7ec3f48da209c8a7e5ba4470a2fa"
+  integrity sha512-7zShVYAYtMnj9S65CfN+hvpBCByfuB1OY8xID01nZEzXTZbx4YyysAfi+nMl95JSR6odt4q8TCj2W63KAoyVLQ==
   dependencies:
     ast-module-types "^6.0.1"
     node-source-walk "^7.0.1"
@@ -5004,11 +5035,6 @@ is-url-superb@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/is-url-superb/-/is-url-superb-4.0.0.tgz#b54d1d2499bb16792748ac967aa3ecb41a33a8c2"
   integrity sha512-GI+WjezhPPcbM+tqE9LnmsY5qqjwHzTvjJ36wxYX5ujNXefSUJ/T17r5bqDV8yLhcgB59KTPNOc9O9cmHTPWsA==
-
-is-url@^1.2.4:
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/is-url/-/is-url-1.2.4.tgz#04a4df46d28c4cff3d73d01ff06abeb318a1aa52"
-  integrity sha512-ITvGim8FhRiYe4IQ5uHSkj7pVaPDrCTkNd3yq3cV7iZAcJdHTUMPMEHcqSOy9xZ9qFenQCvi+2wjH9a1nXqHww==
 
 is-weakmap@^2.0.2:
   version "2.0.2"
@@ -6088,10 +6114,10 @@ mkdirp@^1.0.4:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
 
-module-definition@^6.0.1:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/module-definition/-/module-definition-6.0.1.tgz#47e73144cc5a9aa31f3380166fddf8e962ccb2e4"
-  integrity sha512-FeVc50FTfVVQnolk/WQT8MX+2WVcDnTGiq6Wo+/+lJ2ET1bRVi3HG3YlJUfqagNMc/kUlFSoR96AJkxGpKz13g==
+module-definition@^6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/module-definition/-/module-definition-6.0.2.tgz#d72a3613dbf6fe7247ebef64f11fddc2cd18b83b"
+  integrity sha512-SvAU3lB0+Yjbq55yHY3wkRZBOh+fhU1SnIF3IFbTewv6mtAh7yUT8ACHAJ2mGIJ7tCes2QuCL/cl6m0JSZ/ArA==
   dependencies:
     ast-module-types "^6.0.1"
     node-source-walk "^7.0.1"
@@ -6194,6 +6220,13 @@ node-source-walk@^7.0.1:
   integrity sha512-3VW/8JpPqPvnJvseXowjZcirPisssnBuDikk6JIZ8jQzF7KJQX52iPFX4RYYxLycYH7IbMRSPUOga/esVjy5Yg==
   dependencies:
     "@babel/parser" "^7.26.7"
+
+node-source-walk@^7.0.2:
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/node-source-walk/-/node-source-walk-7.0.2.tgz#b075259cb40c3158570447be7bd4decffd207694"
+  integrity sha512-71kFFjYaSshDTA8/a2HiTYPLdASWjLJxUyJxGE+ffxU+KhxSBtM9kiLUX+R2yooFdSFKMFpi4n3PFtDy6qXv8A==
+  dependencies:
+    "@babel/parser" "^7.29.0"
 
 noms@0.0.0:
   version "0.0.0"
@@ -6606,7 +6639,7 @@ postcss-values-parser@^6.0.2:
     is-url-superb "^4.0.0"
     quote-unquote "^1.0.0"
 
-postcss@^8.5.10:
+postcss@^8.5.10, postcss@^8.5.14:
   version "8.5.14"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.14.tgz#a66c2d7808fadf69ebb5b84a03f8bafd76c4919c"
   integrity sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg==
@@ -6627,25 +6660,25 @@ powershell-utils@^0.1.0:
   resolved "https://registry.yarnpkg.com/powershell-utils/-/powershell-utils-0.1.0.tgz#5a42c9a824fb4f2f251ccb41aaae73314f5d6ac2"
   integrity sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==
 
-precinct@12.3.1:
-  version "12.3.1"
-  resolved "https://registry.yarnpkg.com/precinct/-/precinct-12.3.1.tgz#8d9eb1afa9537917092402d11b34aeab5236fbeb"
-  integrity sha512-wGyTIvtxh2S2NAHxTJj0YymxWOIcEDotu17yHoQUd2Bz2C07LrS28L1nvXDMxrCHvHmV6KTlaIQy5PzRm7Y8rg==
+precinct@12.3.2:
+  version "12.3.2"
+  resolved "https://registry.yarnpkg.com/precinct/-/precinct-12.3.2.tgz#0d6a15d2e9951744a24f5de6ab27c9b269365119"
+  integrity sha512-JbJevI1K80z8e/WIyDt/4vUN/4qcfBSKKqOjJA4mosPPPb7zODKRJQV7YN7apVWN3k58nZYm/vEsLgEGYmnxwg==
   dependencies:
-    "@dependents/detective-less" "^5.0.1"
+    "@dependents/detective-less" "^5.0.3"
     commander "^12.1.0"
-    detective-amd "^6.0.1"
-    detective-cjs "^6.1.0"
-    detective-es6 "^5.0.1"
-    detective-postcss "^7.0.1"
-    detective-sass "^6.0.1"
-    detective-scss "^5.0.1"
+    detective-amd "^6.1.0"
+    detective-cjs "^6.1.1"
+    detective-es6 "^5.0.2"
+    detective-postcss "^8.0.3"
+    detective-sass "^6.0.2"
+    detective-scss "^5.0.2"
     detective-stylus "^5.0.1"
-    detective-typescript "^14.1.1"
+    detective-typescript "^14.1.2"
     detective-vue2 "^2.3.0"
-    module-definition "^6.0.1"
-    node-source-walk "^7.0.1"
-    postcss "^8.5.10"
+    module-definition "^6.0.2"
+    node-source-walk "^7.0.2"
+    postcss "^8.5.14"
     typescript "^5.9.3"
 
 prelude-ls@^1.2.1:
