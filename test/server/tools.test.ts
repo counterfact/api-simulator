@@ -61,4 +61,50 @@ describe("tools", () => {
       await tools.randomFromSchema({ examples: [5], type: "integer" }),
     ).toBe(5);
   });
+
+  it("randomFromSchema() supports prefixItems tuples", async () => {
+    const tools = new Tools();
+    const value = await tools.randomFromSchema({
+      items: false,
+      maxItems: 2,
+      minItems: 2,
+      prefixItems: [{ type: "string" }, { type: "integer" }],
+      type: "array",
+    });
+
+    expect(Array.isArray(value)).toBe(true);
+    expect(value).toHaveLength(2);
+    expect(typeof value[0]).toBe("string");
+    expect(typeof value[1]).toBe("number");
+  });
+
+  it("randomFromSchema() supports unevaluatedProperties: false", async () => {
+    const tools = new Tools();
+    const value = (await tools.randomFromSchema({
+      properties: {
+        only: { type: "string" },
+      },
+      required: ["only"],
+      type: "object",
+      unevaluatedProperties: false,
+    })) as Record<string, unknown>;
+
+    expect(Object.keys(value)).toStrictEqual(["only"]);
+  });
+
+  it("randomFromSchema() supports unevaluatedItems: false", async () => {
+    const tools = new Tools();
+    const value = await tools.randomFromSchema({
+      maxItems: 2,
+      minItems: 2,
+      prefixItems: [{ type: "string" }, { type: "integer" }],
+      type: "array",
+      unevaluatedItems: false,
+    });
+
+    expect(Array.isArray(value)).toBe(true);
+    expect(value).toHaveLength(2);
+    expect(typeof value[0]).toBe("string");
+    expect(typeof value[1]).toBe("number");
+  });
 });
