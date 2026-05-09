@@ -389,7 +389,8 @@ export class OperationTypeCoder extends TypeCoder {
     // OpenAPI 3.2 querystring parameter: the entire query string treated as a
     // single typed object (similar to requestBody for query strings).
     const querystringParam = parameters?.find(
-      (parameter) => (parameter.get("in")?.data as string) === "querystring",
+      (parameter) =>
+        (parameter.get("in")?.data as unknown as string) === "querystring",
     );
     const querystringType =
       querystringParam?.has("schema") === true
