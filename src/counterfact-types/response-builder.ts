@@ -28,7 +28,6 @@ export interface ResponseBuilder {
   status?: number;
   stream: (
     iterable: AsyncIterable<unknown>,
-    contentType?: string,
   ) => { body: AsyncIterable<unknown>; contentType: string; status?: number };
   text: (body: unknown) => ResponseBuilder;
   xml: (body: unknown) => ResponseBuilder;

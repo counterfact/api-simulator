@@ -621,7 +621,7 @@ describe("a response builder", () => {
       expect(response?.body).toBe(iterable);
     });
 
-    it("defaults content type to text/event-stream", () => {
+    it("defaults content type to text/event-stream when spec has no streaming content type", () => {
       const response = createResponseBuilder({ responses: {} })[200]?.stream(
         makeStream([]),
       );
@@ -629,11 +629,16 @@ describe("a response builder", () => {
       expect(response?.contentType).toBe("text/event-stream");
     });
 
-    it("accepts a custom content type", () => {
-      const response = createResponseBuilder({ responses: {} })[200]?.stream(
-        makeStream([]),
-        "application/jsonl",
-      );
+    it("infers the content type from the spec", () => {
+      const response = createResponseBuilder({
+        responses: {
+          "200": {
+            content: {
+              "application/jsonl": { schema: {} },
+            },
+          },
+        },
+      })[200]?.stream(makeStream([]));
 
       expect(response?.contentType).toBe("application/jsonl");
     });

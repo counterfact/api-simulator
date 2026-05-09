@@ -181,7 +181,7 @@ export const GET: HTTP_GET = ($) => {
 
 Counterfact supports OpenAPI 3.2 sequential media types.  When your spec uses `itemSchema` on a `text/event-stream`, `application/jsonl`, or `application/json-seq` content type, the generated handler type expresses the body as `AsyncIterable<T>`.
 
-Use `$.response[<status>].stream(iterable, contentType?)` to return a stream from any route handler.  The content type defaults to `"text/event-stream"`.
+Use `$.response[<status>].stream(iterable)` to return a stream from any route handler.  The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).
 
 ```ts
 export const GET: HTTP_GET = ($) => {
