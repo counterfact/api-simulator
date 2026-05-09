@@ -229,6 +229,57 @@ describe("path item non-HTTP-verb fields", () => {
   });
 });
 
+describe("OpenAPI 3.2 additionalOperations", () => {
+  it("generates handlers for additionalOperations entries alongside standard methods", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const spec = {
+        openapi: "3.2.0",
+        info: { title: "Test", version: "1.0.0" },
+        paths: {
+          "/links": {
+            get: {
+              operationId: "getLinks",
+              responses: { "200": { description: "OK" } },
+            },
+            additionalOperations: {
+              LINK: {
+                operationId: "linkResource",
+                responses: { "200": { description: "OK" } },
+              },
+            },
+          },
+        },
+      };
+
+      await $.add("openapi.json", JSON.stringify(spec));
+
+      const repository = new Repository();
+
+      repository.writeFiles = async () => {
+        await Promise.resolve(undefined);
+      };
+
+      const codeGenerator = new CodeGenerator(
+        $.path("openapi.json"),
+        $.path(""),
+        {
+          routes: true,
+          types: true,
+        },
+      );
+
+      await codeGenerator.generate(repository);
+      await repository.finished();
+
+      const routeScript = repository.scripts.get("routes/links.ts");
+
+      expect(routeScript).toBeDefined();
+      expect(await routeScript!.contents()).toContain("export const GET");
+      expect(await routeScript!.contents()).toContain("export const LINK");
+    });
+  });
+});
+
 describe("$self document identity", () => {
   it("generates correct TypeScript output for a spec with $self and relative $refs", async () => {
     await usingTemporaryFiles(async ($) => {

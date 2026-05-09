@@ -68,6 +68,61 @@ describe("a dispatcher", () => {
     expect(response.status).toBe(200);
   });
 
+  it("dispatches a custom method request defined in additionalOperations", async () => {
+    const registry = new Registry();
+
+    registry.add("/links", {
+      // @ts-expect-error - not creating an entire request object
+      LINK() {
+        return {
+          body: "linked",
+          status: 200,
+        };
+      },
+    });
+
+    const openApiDocument: OpenApiDocument = {
+      paths: {
+        "/links": {
+          additionalOperations: {
+            LINK: {
+              operationId: "linkResource",
+              responses: {
+                200: {
+                  content: {
+                    "text/plain": {
+                      schema: {
+                        type: "string",
+                      },
+                    },
+                  },
+                  description: "OK",
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const dispatcher = new Dispatcher(
+      registry,
+      new ContextRegistry(),
+      openApiDocument,
+    );
+    const response = await dispatcher.request({
+      body: "",
+      headers: {},
+      method: "LINK",
+      path: "/links",
+      query: {},
+      req: { path: "/links" },
+    });
+
+    expect(response.body).toBe("linked");
+    expect(response.status).toBe(200);
+  });
+
   it("converts a string return value to a full response object with content-type text/plain", async () => {
     const registry = new Registry();
 

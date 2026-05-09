@@ -12,6 +12,7 @@ import { waitForEvent } from "../util/wait-for-event.js";
 import { OperationCoder } from "./operation-coder.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
 import { pruneRoutes } from "./prune.js";
+import type { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
 import { Specification } from "./specification.js";
 
@@ -167,26 +168,44 @@ export class CodeGenerator extends EventTarget {
       "trace",
     ]);
 
+    const operationMethodsForPath = (
+      pathDefinition: Requirement,
+    ): Array<[Requirement, string]> =>
+      pathDefinition.flatMap((operation, requestMethod) => {
+        if (requestMethod === "additionalOperations") {
+          return operation.map(
+            (additionalOperation, additionalMethod): [Requirement, string] => [
+              additionalOperation,
+              additionalMethod.toLowerCase(),
+            ],
+          );
+        }
+
+        if (!HTTP_VERBS.has(requestMethod)) {
+          return [];
+        }
+
+        return [[operation, requestMethod]];
+      });
+
     paths.forEach((pathDefinition, key: string) => {
       debug("processing path %s", key);
 
       const path = key === "/" ? "/index" : key;
-      pathDefinition.forEach((operation, requestMethod: string) => {
-        if (!HTTP_VERBS.has(requestMethod)) {
-          return;
-        }
-
-        repository
-          .get(`routes${path}.ts`)
-          .export(
-            new OperationCoder(
-              operation,
-              this.version,
-              requestMethod,
-              securitySchemes,
-            ),
-          );
-      });
+      operationMethodsForPath(pathDefinition).forEach(
+        ([operation, requestMethod]) => {
+          repository
+            .get(`routes${path}.ts`)
+            .export(
+              new OperationCoder(
+                operation,
+                this.version,
+                requestMethod,
+                securitySchemes,
+              ),
+            );
+        },
+      );
     });
 
     debug("telling the repository to write the files to %s", destination);

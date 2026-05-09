@@ -7,7 +7,7 @@ import koaProxy from "koa-proxies";
 import type { Config } from "../config.js";
 import type { Dispatcher } from "../dispatcher.js";
 import { isProxyEnabledForPath } from "../is-proxy-enabled-for-path.js";
-import type { HttpMethods } from "../registry.js";
+import type { RequestMethod } from "../registry.js";
 
 declare module "koa" {
   interface Request {
@@ -126,7 +126,7 @@ export function routesMiddleware(
 
     const path = ctx.request.path.slice(prefix.length);
 
-    const method = ctx.request.method as HttpMethods;
+    const method = ctx.request.method as RequestMethod;
 
     if (isProxyEnabledForPath(path, config) && proxyUrl) {
       return proxy("/", { changeOrigin: true, target: proxyUrl })(ctx, next);
