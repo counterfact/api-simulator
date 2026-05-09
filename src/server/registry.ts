@@ -79,7 +79,7 @@ interface Module {
 
 type CounterfactResponseObject = {
   appendedHeaders?: [string, string][];
-  body?: Uint8Array | string;
+  body?: AsyncIterable<unknown> | Uint8Array | string;
   content?: {
     body: unknown;
     type: MediaType;

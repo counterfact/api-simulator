@@ -1,3 +1,5 @@
+import { Readable } from "node:stream";
+
 import createDebug from "debug";
 import Koa from "koa";
 import bodyParser from "koa-bodyparser";
@@ -87,7 +89,8 @@ export function createKoaApp({
       ctx.body !== null &&
       ctx.body !== undefined &&
       typeof ctx.body === "object" &&
-      !Buffer.isBuffer(ctx.body)
+      !Buffer.isBuffer(ctx.body) &&
+      !(ctx.body instanceof Readable)
     ) {
       ctx.body = JSON.stringify(ctx.body, null, 2);
       ctx.type = "application/json";

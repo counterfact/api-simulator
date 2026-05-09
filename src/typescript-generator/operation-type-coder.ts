@@ -7,6 +7,7 @@ import { READ_ONLY_COMMENTS } from "./read-only-comments.js";
 import { RESERVED_WORDS } from "./reserved-words.js";
 import { ResponsesTypeCoder } from "./responses-type-coder.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
+import { STREAMING_CONTENT_TYPES } from "./streaming-content-types.js";
 import { TypeCoder } from "./type-coder.js";
 import { Requirement } from "./requirement.js";
 import type { RequirementData } from "./requirement.js";
@@ -155,13 +156,32 @@ export class OperationTypeCoder extends TypeCoder {
             : Number.parseInt(responseCode, 10);
 
         if (response.has("content")) {
-          return response.get("content")!.map(
-            (content, contentType) => `{  
+          return response.get("content")!.map((content, contentType) => {
+            let bodyType: string;
+
+            if (
+              content.has("itemSchema") &&
+              STREAMING_CONTENT_TYPES.has(contentType)
+            ) {
+              bodyType = `AsyncIterable<${new SchemaTypeCoder(
+                content.get("itemSchema")!,
+                this.version,
+              ).write(script)}>`;
+            } else {
+              bodyType = content.has("schema")
+                ? new SchemaTypeCoder(
+                    content.get("schema")!,
+                    this.version,
+                  ).write(script)
+                : "unknown";
+            }
+
+            return `{  
               status: ${status}, 
               contentType?: "${contentType}",
-              body?: ${content.has("schema") ? new SchemaTypeCoder(content.get("schema")!, this.version).write(script) : "unknown"}
-            }`,
-          );
+              body?: ${bodyType}
+            }`;
+          });
         }
 
         if (response.has("schema")) {

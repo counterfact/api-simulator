@@ -7,6 +7,7 @@ import {
 } from "./operation-type-coder.js";
 import type { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
+import { STREAMING_CONTENT_TYPES } from "./streaming-content-types.js";
 
 /**
  * Generates the default route handler stub for a single OpenAPI operation.
@@ -60,6 +61,29 @@ export class OperationCoder extends Coder {
         return $.response[${
           firstStatusCode === "default" ? 200 : firstStatusCode
         }].empty();
+      }`;
+    }
+
+    // Detect streaming responses (OpenAPI 3.2 itemSchema)
+    const content = firstResponse.content as
+      | Record<string, { itemSchema?: unknown }>
+      | undefined;
+    const hasStreamingContent =
+      content !== undefined &&
+      Object.keys(content).some(
+        (ct) =>
+          STREAMING_CONTENT_TYPES.has(ct) &&
+          content[ct]?.itemSchema !== undefined,
+      );
+
+    if (hasStreamingContent) {
+      return `async ($) => {
+        async function* items() {
+          // yield items here
+        }
+        return $.response[${
+          firstStatusCode === "default" ? 200 : firstStatusCode
+        }].stream(items());
       }`;
     }
 

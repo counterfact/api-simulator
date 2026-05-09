@@ -116,6 +116,102 @@ describe("a ResponsesTypeCoder", () => {
         ["application/json", "{ \n            schema:  unknown\n         }"],
       ]);
     });
+
+    it("generates AsyncIterable<T> when content has itemSchema and is text/event-stream", () => {
+      const coder = new ResponseTypeCoder({ data: {} });
+      const response = new Requirement({
+        content: {
+          "text/event-stream": {
+            itemSchema: { type: "string" },
+          },
+        },
+      });
+
+      const result = coder.buildContentObjectType({}, response);
+
+      expect(result).toStrictEqual([
+        [
+          "text/event-stream",
+          "{ \n            schema:  AsyncIterable<string>\n         }",
+        ],
+      ]);
+    });
+
+    it("generates AsyncIterable<T> for application/jsonl with itemSchema", () => {
+      const coder = new ResponseTypeCoder({ data: {} });
+      const response = new Requirement({
+        content: {
+          "application/jsonl": {
+            itemSchema: { type: "number" },
+          },
+        },
+      });
+
+      const result = coder.buildContentObjectType({}, response);
+
+      expect(result).toStrictEqual([
+        [
+          "application/jsonl",
+          "{ \n            schema:  AsyncIterable<number>\n         }",
+        ],
+      ]);
+    });
+
+    it("generates AsyncIterable<T> for application/json-seq with itemSchema", () => {
+      const coder = new ResponseTypeCoder({ data: {} });
+      const response = new Requirement({
+        content: {
+          "application/json-seq": {
+            itemSchema: { type: "string" },
+          },
+        },
+      });
+
+      const result = coder.buildContentObjectType({}, response);
+
+      expect(result).toStrictEqual([
+        [
+          "application/json-seq",
+          "{ \n            schema:  AsyncIterable<string>\n         }",
+        ],
+      ]);
+    });
+
+    it("falls back to schema type when itemSchema is absent for a streaming content type", () => {
+      const coder = new ResponseTypeCoder({ data: {} });
+      const response = new Requirement({
+        content: {
+          "text/event-stream": {
+            schema: { type: "string" },
+          },
+        },
+      });
+
+      const result = coder.buildContentObjectType({}, response);
+
+      expect(result).toStrictEqual([
+        ["text/event-stream", "{ \n            schema:  string\n         }"],
+      ]);
+    });
+
+    it("ignores itemSchema for non-streaming content types", () => {
+      const coder = new ResponseTypeCoder({ data: {} });
+      const response = new Requirement({
+        content: {
+          "application/json": {
+            itemSchema: { type: "string" },
+            schema: { type: "object" },
+          },
+        },
+      });
+
+      const result = coder.buildContentObjectType({}, response);
+
+      // Should use schema, not itemSchema, because application/json is not a streaming type
+      expect(result).toStrictEqual([
+        ["application/json", "{ \n            schema:  {}\n         }"],
+      ]);
+    });
   });
 
   describe("modulePath", () => {
