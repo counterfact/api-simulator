@@ -1,6 +1,6 @@
 import { buildJsDoc } from "./jsdoc.js";
 import { TypeCoder } from "./type-coder.js";
-import type { Requirement } from "./requirement.js";
+import { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
 import { pathJoin } from "../util/forward-slash-path.js";
 
@@ -153,6 +153,29 @@ export class SchemaTypeCoder extends TypeCoder {
         this.version,
       ).write(script),
     );
+
+    // Include the default schema from discriminator.defaultMapping (OpenAPI 3.2)
+    if (!allOf) {
+      const { discriminator } = this.requirement.data as {
+        discriminator?: {
+          propertyName?: string;
+          mapping?: Record<string, string>;
+          defaultMapping?: string;
+        };
+      };
+
+      if (discriminator?.defaultMapping) {
+        const defaultRequirement = new Requirement(
+          { $ref: discriminator.defaultMapping },
+          "",
+          this.requirement.specification,
+        );
+
+        types.push(
+          new SchemaTypeCoder(defaultRequirement, this.version).write(script),
+        );
+      }
+    }
 
     return types.join(allOf ? " & " : " | ");
   }

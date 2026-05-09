@@ -61,6 +61,128 @@ describe("end-to-end test", () => {
   });
 });
 
+describe("$ref resolution for components/mediaTypes (OpenAPI 3.2)", () => {
+  it("loads and bundles a spec with $ref pointing to components/mediaTypes without errors", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const spec = {
+        openapi: "3.1.0",
+        info: { title: "Test", version: "1.0.0" },
+        components: {
+          mediaTypes: {
+            JsonPayload: {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/example": {
+            get: {
+              operationId: "getExample",
+              responses: {
+                "200": {
+                  description: "OK",
+                  content: {
+                    "application/json": {
+                      $ref: "#/components/mediaTypes/JsonPayload",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      await $.add("openapi.json", JSON.stringify(spec));
+
+      const basePath = $.path("");
+      const repository = new Repository();
+
+      repository.writeFiles = async () => {};
+
+      const codeGenerator = new CodeGenerator(
+        $.path("openapi.json"),
+        basePath,
+        { routes: true, types: true },
+      );
+
+      await expect(codeGenerator.generate(repository)).resolves.toBeUndefined();
+    });
+  });
+
+  it("generates correct TypeScript types for a response that references components/mediaTypes via $ref", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const spec = {
+        openapi: "3.1.0",
+        info: { title: "Test", version: "1.0.0" },
+        components: {
+          mediaTypes: {
+            JsonPayload: {
+              schema: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/example": {
+            get: {
+              operationId: "getExample",
+              responses: {
+                "200": {
+                  description: "OK",
+                  content: {
+                    "application/json": {
+                      $ref: "#/components/mediaTypes/JsonPayload",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      await $.add("openapi.json", JSON.stringify(spec));
+
+      const basePath = $.path("");
+      const repository = new Repository();
+
+      repository.writeFiles = async () => {};
+
+      const codeGenerator = new CodeGenerator(
+        $.path("openapi.json"),
+        basePath,
+        { routes: true, types: true },
+      );
+
+      await codeGenerator.generate(repository);
+      await repository.finished();
+
+      const scripts = [...repository.scripts.entries()];
+      const typesEntry = scripts.find(([path]) =>
+        path.includes("example.types.ts"),
+      );
+
+      expect(typesEntry).toBeDefined();
+
+      const [, typesScript] = typesEntry!;
+      const typesContent = await typesScript.contents();
+
+      expect(typesContent).toContain('"application/json"');
+      expect(typesContent).toContain("name");
+    });
+  });
+});
+
 describe("path item non-HTTP-verb fields", () => {
   it("ignores summary and description at the path item level without throwing", async () => {
     await usingTemporaryFiles(async ($) => {
