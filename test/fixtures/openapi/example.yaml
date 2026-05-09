@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   version: 1.0.0
   title: Sample API
@@ -383,7 +383,9 @@ paths:
       operationId: createEvent
       description: >
         Accept a polymorphic event. The request body may be any one of the
-        known event subtypes (oneOf), demonstrating discriminator support.
+        known event subtypes (oneOf), demonstrating discriminator support
+        including the OpenAPI 3.2 defaultMapping field, which specifies the
+        fallback schema when the discriminator value is absent or unrecognised.
       requestBody:
         required: true
         content:
@@ -399,6 +401,7 @@ paths:
                   click: "#/components/schemas/ClickEvent"
                   purchase: "#/components/schemas/PurchaseEvent"
                   signup: "#/components/schemas/SignUpEvent"
+                defaultMapping: "#/components/schemas/BaseEvent"
       responses:
         "202":
           description: Event accepted
