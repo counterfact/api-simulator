@@ -583,6 +583,104 @@ paths:
                 additionalProperties: true
 
   # -----------------------------------------------------------------------
+  # XML serialisation: nodeType field (OpenAPI 3.2)
+  # Each endpoint demonstrates one xml.nodeType value so that the JSON-to-XML
+  # serialiser can be exercised end-to-end from an OpenAPI document.
+  # -----------------------------------------------------------------------
+
+  # nodeType: attribute — property rendered as an XML attribute
+  /xml/book:
+    get:
+      operationId: getXmlBook
+      description: Returns a book as XML; the id field uses nodeType attribute
+      responses:
+        "200":
+          description: A book record
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/XmlBook"
+              examples:
+                default:
+                  value:
+                    id: 1
+                    title: "OpenAPI for Dummies"
+                    author: "Jane Doe"
+
+  # nodeType: text — property inlined as the parent element's text content
+  /xml/note:
+    get:
+      operationId: getXmlNote
+      description: Returns a note whose body is serialised as a text node
+      responses:
+        "200":
+          description: A note
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/XmlNote"
+              examples:
+                default:
+                  value:
+                    body: "Remember to buy milk"
+
+  # nodeType: cdata — property wrapped in a CDATA section
+  /xml/snippet:
+    get:
+      operationId: getXmlSnippet
+      description: Returns a code snippet inside a CDATA section
+      responses:
+        "200":
+          description: A code snippet
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/XmlSnippet"
+              examples:
+                default:
+                  value:
+                    code: "<b>Hello</b> & welcome"
+
+  # nodeType: none — property omitted from the XML output
+  /xml/secret:
+    get:
+      operationId: getXmlSecret
+      description: Returns a record where the password field is omitted from XML
+      responses:
+        "200":
+          description: A record with a hidden field
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/XmlSecret"
+              examples:
+                default:
+                  value:
+                    username: "alice"
+                    password: "hunter2"
+
+  # nodeType: element — array wrapped in a parent element (synonym for wrapped)
+  /xml/playlist:
+    get:
+      operationId: getXmlPlaylist
+      description: Returns a playlist whose tracks array is wrapped with nodeType element
+      responses:
+        "200":
+          description: A playlist
+          content:
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/XmlPlaylist"
+              examples:
+                default:
+                  value:
+                    name: "Favourites"
+                    tracks:
+                      - "Song A"
+                      - "Song B"
+                      - "Song C"
+
+  # -----------------------------------------------------------------------
   # Bug: Query Params of Type Object do not explode #1933
   # -----------------------------------------------------------------------
   /explodable-parameters:
@@ -959,6 +1057,82 @@ components:
             referralCode:
               type: string
               nullable: true
+
+    # XML nodeType schemas (OpenAPI 3.2)
+    # These demonstrate each xml.nodeType value in a schema definition.
+
+    # nodeType: attribute — id rendered as an XML attribute
+    XmlBook:
+      title: XmlBook
+      type: object
+      xml:
+        name: book
+      properties:
+        id:
+          type: integer
+          xml:
+            nodeType: attribute
+        title:
+          type: string
+        author:
+          type: string
+
+    # nodeType: text — body serialised as direct text content of <note>
+    XmlNote:
+      title: XmlNote
+      type: object
+      xml:
+        name: note
+      properties:
+        body:
+          type: string
+          xml:
+            nodeType: text
+
+    # nodeType: cdata — code wrapped in a CDATA section
+    XmlSnippet:
+      title: XmlSnippet
+      type: object
+      xml:
+        name: snippet
+      properties:
+        code:
+          type: string
+          xml:
+            nodeType: cdata
+
+    # nodeType: none — password omitted entirely from XML output
+    XmlSecret:
+      title: XmlSecret
+      type: object
+      xml:
+        name: secret
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          xml:
+            nodeType: none
+
+    # nodeType: element — tracks array wrapped with a <tracks> element
+    XmlPlaylist:
+      title: XmlPlaylist
+      type: object
+      xml:
+        name: playlist
+      properties:
+        name:
+          type: string
+        tracks:
+          type: array
+          xml:
+            name: tracks
+            nodeType: element
+          items:
+            type: string
+            xml:
+              name: track
 
   # -----------------------------------------------------------------------
   # Security schemes
