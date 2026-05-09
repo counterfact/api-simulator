@@ -4,7 +4,7 @@
 
 <br>
 
-![MIT License](https://img.shields.io/badge/license-MIT-blue) [![Coverage Status](https://coveralls.io/repos/github/counterfact/api-simulator/badge.svg)](https://coveralls.io/github/pmcelhaney/counterfact) ![friction 0%](https://img.shields.io/badge/friction-0%25-brightgreen) ![Swagger 2.0](https://img.shields.io/badge/Swagger-2.0-85EA2D) ![OpenAPI 3.0-3.2](https://img.shields.io/badge/OpenAPI-3.0%20%7C%203.1%20%7C%203.2-6BA539)
+![MIT License](https://img.shields.io/badge/license-MIT-blue) [![Coverage Status](https://coveralls.io/repos/github/counterfact/api-simulator/badge.svg)](https://coveralls.io/github/pmcelhaney/counterfact) ![friction 0%](https://img.shields.io/badge/friction-0%25-brightgreen) ![Swagger 2.0](https://img.shields.io/badge/Swagger-2.0-85EA2D) ![OpenAPI 3.0-3.2](https://img.shields.io/badge/OpenAPI-3.x-6BA539)
 
 </div>
 
