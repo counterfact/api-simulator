@@ -351,6 +351,38 @@ exports[`an OperationTypeCoder generates an auth object for basic authentication
 "
 `;
 
+exports[`an OperationTypeCoder generates required api key auth and cookie for apiKey security 1`] = `
+"type TestType = (
+  $: OmitValueWhenNever<{
+    query: never;
+    path: never;
+    headers: never;
+    cookie: HTTP_GET_Cookie;
+    body: never;
+    context: ExternalType;
+    response: ResponseBuilderFactory<{
+      [statusCode in HttpStatusCode]: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
+          };
+        };
+        examples: {};
+      };
+    }>;
+    x: SharedType;
+    proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: { apiKey?: string };
+    user: never;
+    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+    version: never;
+  }>,
+) => MaybePromise<COUNTERFACT_RESPONSE>;
+"
+`;
+
 exports[`an OperationTypeCoder generates required api key auth and headers for apiKey security 1`] = `
 "type TestType = (
   $: OmitValueWhenNever<{

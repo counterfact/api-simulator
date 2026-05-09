@@ -145,7 +145,7 @@ This behaviour follows the OpenAPI 3.x defaults (`style: form`, `explode: true`)
 
 When a request includes HTTP Basic credentials, they're available at `$.auth.username` and `$.auth.password`.
 
-When your OpenAPI document defines an `apiKey` security scheme, Counterfact also exposes that value at `$.auth.apiKey`.
+When your OpenAPI document defines an `apiKey` security scheme (`in: header`, `in: query`, or `in: cookie`), Counterfact also exposes that value at `$.auth.apiKey`.
 
 Support for other security schemes (OAuth 2, OpenID Connect, mutual TLS) is planned. [Open an issue](https://github.com/pmcelhaney/counterfact/issues) to help prioritize.
 

@@ -268,7 +268,9 @@ export class OperationTypeCoder extends TypeCoder {
         ({ in: location, name, type }) =>
           type === "apiKey" &&
           typeof name === "string" &&
-          (location === "header" || location === "query"),
+          (location === "header" ||
+            location === "query" ||
+            location === "cookie"),
       )
       .map(({ in: location, name }) => ({
         in: location,

@@ -294,10 +294,12 @@ export class Dispatcher {
         ({ in: location, name, type }) =>
           type === "apiKey" &&
           typeof name === "string" &&
-          (location === "header" || location === "query"),
+          (location === "header" ||
+            location === "query" ||
+            location === "cookie"),
       )
       .map(({ in: location, name }) => ({
-        in: location as "header" | "query",
+        in: location as "cookie" | "header" | "query",
         name: name as string,
         required: true,
         schema: { type: "string" },
@@ -306,11 +308,12 @@ export class Dispatcher {
 
   private authWithApiKey(
     auth: DispatcherRequest["auth"],
+    cookie: Record<string, string>,
     headers: Record<string, string>,
     query: Record<string, string | string[]>,
   ): DispatcherRequest["auth"] {
-    const apiKeyScheme = this.apiKeySecurityParameters().find(
-      (parameter) => parameter.in === "header" || parameter.in === "query",
+    const apiKeyScheme = this.apiKeySecurityParameters().find((parameter) =>
+      ["cookie", "header", "query"].includes(parameter.in),
     );
 
     if (!apiKeyScheme) {
@@ -320,9 +323,11 @@ export class Dispatcher {
     const apiKey =
       apiKeyScheme.in === "query"
         ? query[apiKeyScheme.name]
-        : Object.entries(headers).find(
-            ([key]) => key.toLowerCase() === apiKeyScheme.name.toLowerCase(),
-          )?.[1];
+        : apiKeyScheme.in === "cookie"
+          ? cookie[apiKeyScheme.name]
+          : Object.entries(headers).find(
+              ([key]) => key.toLowerCase() === apiKeyScheme.name.toLowerCase(),
+            )?.[1];
 
     const normalizedApiKey = Array.isArray(apiKey) ? apiKey[0] : apiKey;
 
@@ -532,9 +537,15 @@ export class Dispatcher {
     }
 
     const operation = this.operationForPathAndMethod(matchedPath, method);
+    const requestCookie = parseCookies(headers.cookie ?? headers.Cookie ?? "");
 
     if (this.config?.validateRequests !== false) {
-      const validation = validateRequest(operation, { body, headers, query });
+      const validation = validateRequest(operation, {
+        body,
+        cookie: requestCookie,
+        headers,
+        query,
+      });
 
       if (!validation.valid) {
         return {
@@ -561,7 +572,7 @@ export class Dispatcher {
       path,
       this.parameterTypes(operation?.parameters),
     )({
-      auth: this.authWithApiKey(auth, headers, query),
+      auth: this.authWithApiKey(auth, requestCookie, headers, query),
       body,
       context: this.contextRegistry.find(matchedPath),
 
@@ -574,7 +585,7 @@ export class Dispatcher {
         return new Promise((resolve) => setTimeout(resolve, delayInMs));
       },
 
-      cookie: parseCookies(headers.cookie ?? headers.Cookie ?? ""),
+      cookie: requestCookie,
 
       headers,
 
