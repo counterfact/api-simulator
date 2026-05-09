@@ -83,6 +83,44 @@ describe("koa middleware", () => {
     expect(ctx.body).toBe("Hello, Homer!");
   });
 
+  it("passes the request body to a QUERY handler", async () => {
+    const registry = new Registry();
+
+    registry.add("/search", {
+      // @ts-expect-error - not obvious how to make TS happy here, and it's just a unit test
+      QUERY({ body }: { body: { filter: string } }) {
+        return {
+          body: `results for: ${body.filter}`,
+        };
+      },
+    });
+
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const middleware = routesMiddleware(CONFIG.prefix, dispatcher, CONFIG);
+
+    const ctx = {
+      req: {
+        path: "/search",
+      },
+
+      request: {
+        body: { filter: "cats" },
+        headers: {},
+        method: "QUERY",
+        path: "/search",
+      },
+
+      set: jest.fn(),
+    } as unknown as ParameterizedContext;
+
+    await middleware(ctx, async () => {
+      await Promise.resolve(undefined);
+    });
+
+    expect(ctx.status).toBe(200);
+    expect(ctx.body).toBe("results for: cats");
+  });
+
   it("passes the status code", async () => {
     const registry = new Registry();
 

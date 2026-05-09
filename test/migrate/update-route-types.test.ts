@@ -105,6 +105,55 @@ export const POST: HTTP_POST = ($) => {
       });
     });
 
+    it("migrates HTTP_QUERY to operationId-based type name", async () => {
+      const openApiSpec = {
+        openapi: "3.2.0",
+        paths: {
+          "/search": {
+            query: {
+              operationId: "searchItems",
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: { type: "object" },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  description: "Success",
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const routeFile = `import type { HTTP_QUERY } from "../types/paths/search.types.ts";
+
+export const QUERY: HTTP_QUERY = ($) => {
+  return { status: 200 };
+};
+`;
+
+      await usingTemporaryFiles(async ($) => {
+        await $.add("openapi.json", JSON.stringify(openApiSpec));
+        await $.add("routes/search.ts", routeFile);
+        const migrated = await updateRouteTypes(
+          $.path(""),
+          $.path("openapi.json"),
+        );
+
+        expect(migrated).toBe(true);
+
+        const updatedContent = await $.read("routes/search.ts");
+
+        expect(updatedContent).toContain("import type { searchItems }");
+        expect(updatedContent).toContain("export const QUERY: searchItems");
+        expect(updatedContent).not.toContain("HTTP_QUERY");
+      });
+    });
+
     it("migrates multiple HTTP methods in the same file", async () => {
       const openApiSpec = {
         openapi: "3.0.0",

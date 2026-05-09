@@ -8,8 +8,10 @@ export async function getStaticPaths() {
   for (const doc of docs) {
     // Serve at the clean URL (e.g. /docs/getting-started)
     routes.push({ params: { slug: doc.id }, props: { doc, isMdAlias: false } });
-    // Also serve at the .md URL (e.g. /docs/getting-started.md) so that
-    // links written with .md extensions in the source work on the site too.
+    // Also serve at the .md URL (e.g. /docs/getting-started.md) as a redirect
+    // to the clean URL.  Without this, static pages served under the .md path
+    // have a different base path (/docs/getting-started.md/) which breaks
+    // all relative links inside the document.
     routes.push({
       params: { slug: `${doc.id}.md` },
       props: { doc, isMdAlias: true },
@@ -19,6 +21,16 @@ export async function getStaticPaths() {
 }
 
 const { doc, isMdAlias } = Astro.props;
+
+// Canonical URL always points to the clean (no .md) path.
+const canonicalPath = `/docs/${doc.id}`;
+
+// For .md alias pages, redirect to the clean URL so that relative links inside
+// the rendered document always resolve against the clean base path.
+if (isMdAlias) {
+  return Astro.redirect(canonicalPath, 301);
+}
+
 const { Content, headings } = await render(doc);
 
 const titleFromHeading = headings.find((h) => h.depth === 1)?.text;
@@ -28,9 +40,6 @@ const titleFromSlug = doc.id
   .replace(/-/g, " ")
   .replace(/\b\w/g, (c) => c.toUpperCase());
 const title = titleFromHeading ?? titleFromSlug;
-
-// Canonical URL always points to the clean (no .md) path.
-const canonicalPath = `/docs/${doc.id}`;
 ---
 
 <DocLayout title={title} canonicalPath={canonicalPath}>

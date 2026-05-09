@@ -280,6 +280,50 @@ describe("a registry", () => {
     stderrSpy.mockRestore();
   });
 
+  it("registers and routes a QUERY request", async () => {
+    const registry = new Registry();
+
+    registry.add("/search", {
+      QUERY({ body }: { body: { filter: string } }) {
+        return {
+          body: `results for: ${body.filter}`,
+          headers: {},
+          status: 200,
+        };
+      },
+    });
+
+    expect(registry.exists("QUERY", "/search")).toBe(true);
+    expect(registry.exists("GET", "/search")).toBe(false);
+
+    const props = {
+      context: {},
+      headers: {},
+      matchedPath: "",
+      path: {},
+      query: {},
+      body: { filter: "cats" },
+    };
+
+    // @ts-expect-error - not creating an entire request object
+    const response = await registry.endpoint("QUERY", "/search")(props);
+
+    expect(response?.body).toBe("results for: cats");
+    expect(response?.status).toBe(200);
+  });
+
+  it("includes QUERY in allowedMethods", () => {
+    const registry = new Registry();
+
+    registry.add("/search", {
+      QUERY() {
+        return { status: 200 };
+      },
+    });
+
+    expect(registry.allowedMethods("/search")).toContain("QUERY");
+  });
+
   it("lists all of the routes", () => {
     const registry = new Registry();
 

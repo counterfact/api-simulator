@@ -22,6 +22,7 @@ const allowedMethods = [
   "delete",
   "patch",
   "options",
+  "query",
 ] as const;
 
 export type MockRequest = DispatcherRequest & { rawPath: string };

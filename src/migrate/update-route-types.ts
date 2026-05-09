@@ -21,6 +21,7 @@ const HTTP_METHODS = [
   "PATCH",
   "HEAD",
   "OPTIONS",
+  "QUERY",
 ] as const;
 
 type HttpMethod = (typeof HTTP_METHODS)[number];
