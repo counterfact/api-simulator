@@ -3,6 +3,8 @@
   "rangeStrategy": "update-lockfile",
   "enabledManagers": ["npm", "github-actions"],
   "gitIgnoredAuthors": ["github+renovate@scharley.me"],
+  "automergeType": "pr",
+  "platformAutomerge": true,
   "packageRules": [
     {
       "matchManagers": ["npm"],
