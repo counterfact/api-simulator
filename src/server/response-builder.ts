@@ -345,10 +345,7 @@ export function createResponseBuilder(
         };
       },
 
-      stream(
-        this: ResponseBuilder,
-        iterable: AsyncIterable<unknown>,
-      ) {
+      stream(this: ResponseBuilder, iterable: AsyncIterable<unknown>) {
         const response =
           operation.responses[this.status ?? "default"] ??
           operation.responses.default;

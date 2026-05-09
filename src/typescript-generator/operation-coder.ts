@@ -71,7 +71,9 @@ export class OperationCoder extends Coder {
     const hasStreamingContent =
       content !== undefined &&
       Object.keys(content).some(
-        (ct) => STREAMING_CONTENT_TYPES.has(ct) && content[ct].itemSchema !== undefined,
+        (ct) =>
+          STREAMING_CONTENT_TYPES.has(ct) &&
+          content[ct].itemSchema !== undefined,
       );
 
     if (hasStreamingContent) {
