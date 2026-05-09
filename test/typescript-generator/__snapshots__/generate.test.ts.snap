@@ -2443,7 +2443,10 @@ exports[`end-to-end test generates the same code for the example that it did on 
 "routes/stream/events.ts:import type { streamEvents } from "../../types/paths/stream/events.types.js";
 
 export const GET: streamEvents = async ($) => {
-  return $.response[200].random();
+  async function* items() {
+    // yield items here
+  }
+  return $.response[200].stream(items());
 };
 "
 `;
