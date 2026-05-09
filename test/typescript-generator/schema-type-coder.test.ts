@@ -315,6 +315,103 @@ describe("a SchemaTypeCoder", () => {
     );
   });
 
+  it("includes discriminator.defaultMapping schema in anyOf union type", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({
+        anyOf: [{ type: "string" }, { type: "number" }],
+        discriminator: {
+          propertyName: "petType",
+          defaultMapping: "#/components/schemas/DefaultSchema",
+        },
+      }),
+    );
+
+    const script = {
+      importType() {
+        return "DefaultSchema";
+      },
+    };
+
+    const expected = await format("type x = string | number | DefaultSchema;");
+
+    await expect(
+      format(`type x = ${coder.write(script)}`),
+    ).resolves.toStrictEqual(expected);
+  });
+
+  it("includes discriminator.defaultMapping schema in oneOf union type", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({
+        oneOf: [{ type: "string" }],
+        discriminator: {
+          propertyName: "petType",
+          defaultMapping: "#/components/schemas/DefaultSchema",
+        },
+      }),
+    );
+
+    const script = {
+      importType() {
+        return "DefaultSchema";
+      },
+    };
+
+    const expected = await format("type x = string | DefaultSchema;");
+
+    await expect(
+      format(`type x = ${coder.write(script)}`),
+    ).resolves.toStrictEqual(expected);
+  });
+
+  it("does not add a defaultMapping type for allOf schemas", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({
+        allOf: [{ type: "string" }, { type: "number" }],
+        discriminator: {
+          propertyName: "petType",
+          defaultMapping: "#/components/schemas/DefaultSchema",
+        },
+      }),
+    );
+
+    const expected = await format("type x = string & number;");
+
+    await expect(format(`type x = ${coder.write({})}`)).resolves.toStrictEqual(
+      expected,
+    );
+  });
+
+  it("does not add extra types for oneOf with discriminator but no defaultMapping", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({
+        oneOf: [{ type: "string" }, { type: "number" }],
+        discriminator: {
+          propertyName: "petType",
+        },
+      }),
+    );
+
+    const expected = await format("type x = string | number;");
+
+    await expect(format(`type x = ${coder.write({})}`)).resolves.toStrictEqual(
+      expected,
+    );
+  });
+
+  it("does not add a defaultMapping type when discriminator is absent", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({
+        anyOf: [{ type: "string" }, { type: "number" }],
+      }),
+    );
+
+    const expected = await format("type x = string | number;");
+
+    await expect(format(`type x = ${coder.write({})}`)).resolves.toStrictEqual(
+      expected,
+    );
+  });
+
   it("generates a type declaration for not (unknown)", async () => {
     const coder = new SchemaTypeCoder(
       new Requirement({

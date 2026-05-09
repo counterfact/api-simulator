@@ -1990,10 +1990,11 @@ import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { ClickEvent } from "../components/schemas/ClickEvent.js";
 import type { PurchaseEvent } from "../components/schemas/PurchaseEvent.js";
 import type { SignUpEvent } from "../components/schemas/SignUpEvent.js";
+import type { BaseEvent } from "../components/schemas/BaseEvent.js";
 import type { BadRequest } from "../#/components/responses/BadRequest.js";
 
 /**
- * Accept a polymorphic event. The request body may be any one of the known event subtypes (oneOf), demonstrating discriminator support.
+ * Accept a polymorphic event. The request body may be any one of the known event subtypes (oneOf), demonstrating discriminator support including the OpenAPI 3.2 defaultMapping field, which specifies the fallback schema when the discriminator value is absent or unrecognised.
  *
  */
 export type createEvent = (
@@ -2002,7 +2003,7 @@ export type createEvent = (
     path: never;
     headers: never;
     cookie: never;
-    body: ClickEvent | PurchaseEvent | SignUpEvent;
+    body: ClickEvent | PurchaseEvent | SignUpEvent | BaseEvent;
     context: Context;
     response: ResponseBuilderFactory<{
       202: {
@@ -2720,6 +2721,21 @@ export type SignUpEvent = BaseEvent & {
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 48`] = `
+"types/components/schemas/BaseEvent.ts:export type BaseEvent = {
+  /**
+   * Discriminator field
+   */
+  type: string;
+  /**
+   * @format date-time
+   */
+  occurredAt: string;
+  sessionId?: string;
+};
+"
+`;
+
+exports[`end-to-end test generates the same code for the example that it did on the last test run 49`] = `
 "types/components/schemas/Product.ts:export type Product = {
   /**
    * @format int64
@@ -2753,7 +2769,7 @@ exports[`end-to-end test generates the same code for the example that it did on 
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 49`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 50`] = `
 "types/components/schemas/Pageable.ts:export type Pageable = {
   /**
    * @format int32
@@ -2768,7 +2784,7 @@ exports[`end-to-end test generates the same code for the example that it did on 
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 50`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 51`] = `
 "types/components/schemas/LogEntry.ts:/**
  * A single log entry streamed via Server-Sent Events
  */
@@ -2790,21 +2806,6 @@ export type LogEntry = {
    * Optional structured metadata attached to the log entry
    */
   context?: { [key: string]: unknown };
-};
-"
-`;
-
-exports[`end-to-end test generates the same code for the example that it did on the last test run 51`] = `
-"types/components/schemas/BaseEvent.ts:export type BaseEvent = {
-  /**
-   * Discriminator field
-   */
-  type: string;
-  /**
-   * @format date-time
-   */
-  occurredAt: string;
-  sessionId?: string;
 };
 "
 `;
