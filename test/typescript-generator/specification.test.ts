@@ -95,6 +95,58 @@ describe("a Specification", () => {
     expect(requirement.data).toStrictEqual(person);
   });
 
+  it("preserves $self and resolves relative $refs in a spec with $self", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.yaml",
+        [
+          "openapi: '3.2.0'",
+          "$self: 'https://example.com/openapi.yaml'",
+          "info:",
+          "  title: Test With Self",
+          "  version: '1.0.0'",
+          "paths:",
+          "  /pets:",
+          "    get:",
+          "      responses:",
+          "        '200':",
+          "          description: OK",
+          "          content:",
+          "            application/json:",
+          "              schema:",
+          "                $ref: 'components/pet.yaml#/schemas/Pet'",
+        ].join("\n"),
+      );
+      await $.add(
+        "components/pet.yaml",
+        [
+          "schemas:",
+          "  Pet:",
+          "    type: object",
+          "    properties:",
+          "      name:",
+          "        type: string",
+        ].join("\n"),
+      );
+
+      const specification = await Specification.fromFile(
+        $.path("openapi.yaml"),
+      );
+
+      // $self should be preserved verbatim in the bundled document
+      expect(specification.rootRequirement.data["$self"]).toBe(
+        "https://example.com/openapi.yaml",
+      );
+
+      // The relative $ref should have been resolved by the bundler;
+      // navigating through the Requirement tree should reach the Pet schema.
+      const schema = specification.rootRequirement.select(
+        "paths/~1pets/get/responses/200/content/application~1json/schema",
+      );
+      expect(schema?.data["type"]).toBe("object");
+    });
+  });
+
   it("resolves $ref pointing to a components/mediaTypes entry (OpenAPI 3.2)", () => {
     const jsonPayload = {
       schema: {

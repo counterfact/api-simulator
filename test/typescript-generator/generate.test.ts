@@ -229,6 +229,70 @@ describe("path item non-HTTP-verb fields", () => {
   });
 });
 
+describe("$self document identity", () => {
+  it("generates correct TypeScript output for a spec with $self and relative $refs", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.yaml",
+        [
+          "openapi: '3.2.0'",
+          "$self: 'https://example.com/openapi.yaml'",
+          "info:",
+          "  title: Pet API",
+          "  version: '1.0.0'",
+          "paths:",
+          "  /pets:",
+          "    get:",
+          "      operationId: listPets",
+          "      responses:",
+          "        '200':",
+          "          description: OK",
+          "          content:",
+          "            application/json:",
+          "              schema:",
+          "                $ref: 'components/pet.yaml#/schemas/Pet'",
+        ].join("\n"),
+      );
+      await $.add(
+        "components/pet.yaml",
+        [
+          "schemas:",
+          "  Pet:",
+          "    type: object",
+          "    properties:",
+          "      name:",
+          "        type: string",
+        ].join("\n"),
+      );
+
+      const basePath = $.path("");
+      const repository = new Repository();
+
+      repository.writeFiles = async () => {
+        await Promise.resolve(undefined);
+      };
+
+      const codeGenerator = new CodeGenerator(
+        $.path("openapi.yaml"),
+        basePath,
+        {
+          routes: true,
+          types: true,
+        },
+      );
+
+      // Code generation should succeed without errors
+      await expect(codeGenerator.generate(repository)).resolves.toBeUndefined();
+
+      await repository.finished();
+
+      // A route file for /pets should have been generated
+      const scripts = [...repository.scripts.keys()];
+      expect(scripts.some((s) => s.includes("routes/pets.ts"))).toBe(true);
+    });
+  });
+});
+
 describe("_.context type generation", () => {
   it("generates a fallback _.context.ts when no routes directory exists", async () => {
     await usingTemporaryFiles(async ($) => {

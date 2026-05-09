@@ -2,6 +2,7 @@ interface XmlHints {
   attribute?: boolean;
   name?: string;
   namespace?: string;
+  nodeType?: "attribute" | "cdata" | "element" | "none" | "text";
   prefix?: string;
   wrapped?: boolean;
 }
@@ -41,6 +42,20 @@ function xmlEscape(xmlString: string): string {
   });
 }
 
+function resolveNodeType(
+  schema: Schema | undefined,
+): "attribute" | "cdata" | "element" | "none" | "text" {
+  if (schema?.xml?.nodeType !== undefined) {
+    return schema.xml.nodeType;
+  }
+
+  if (schema?.xml?.attribute || schema?.attribute) {
+    return "attribute";
+  }
+
+  return "element";
+}
+
 function objectToXml(
   json: object,
   schema: Schema | undefined,
@@ -52,15 +67,36 @@ function objectToXml(
 
   Object.entries(json).forEach(([key, value]) => {
     const properties = schema?.properties?.[key];
+    const nodeType = resolveNodeType(properties);
+    const xmlName = properties?.xml?.name ?? key;
 
-    if (properties?.attribute) {
-      attributes.push(` ${key}="${xmlEscape(String(value))}"`);
-    } else {
-      xml.push(jsonToXml(value, properties, key));
+    switch (nodeType) {
+      case "attribute": {
+        attributes.push(` ${xmlName}="${xmlEscape(String(value))}"`);
+        break;
+      }
+
+      case "text": {
+        xml.push(xmlEscape(String(value)));
+        break;
+      }
+
+      case "cdata": {
+        xml.push(`<![CDATA[${String(value)}]]>`);
+        break;
+      }
+
+      case "none": {
+        break;
+      }
+
+      default: {
+        xml.push(jsonToXml(value, properties, key));
+      }
     }
   });
 
-  return `<${name}${attributes.join("")}>${String(xml.join(""))}</${name}>`;
+  return `<${name}${attributes.join("")}>${xml.join("")}</${name}>`;
 }
 
 /**
@@ -85,7 +121,7 @@ export function jsonToXml(
       .map((item) => jsonToXml(item, schema?.items, name))
       .join("");
 
-    if (schema?.xml?.wrapped) {
+    if (schema?.xml?.wrapped || schema?.xml?.nodeType === "element") {
       return `<${name}>${items}</${name}>`;
     }
 
