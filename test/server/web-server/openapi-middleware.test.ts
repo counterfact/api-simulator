@@ -150,6 +150,92 @@ describe("openapiMiddleware", () => {
     });
   });
 
+  it("preserves $self and resolves relative $refs in a spec with $self", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.yaml",
+        [
+          "openapi: '3.2.0'",
+          "$self: 'https://example.com/openapi.yaml'",
+          "info:",
+          "  title: Test With Self",
+          "  version: '1.0.0'",
+          "paths:",
+          "  /pets:",
+          "    get:",
+          "      responses:",
+          "        '200':",
+          "          description: OK",
+          "          content:",
+          "            application/json:",
+          "              schema:",
+          "                $ref: 'components/pet.yaml#/schemas/Pet'",
+        ].join("\n"),
+      );
+      await $.add(
+        "components/pet.yaml",
+        [
+          "schemas:",
+          "  Pet:",
+          "    type: object",
+          "    properties:",
+          "      name:",
+          "        type: string",
+        ].join("\n"),
+      );
+
+      const app = new Koa();
+
+      app.use(
+        openapiMiddleware("/counterfact/openapi", {
+          path: $.path("openapi.yaml"),
+          baseUrl: "//localhost:3100",
+        }),
+      );
+
+      const response = await request(app.callback()).get(
+        "/counterfact/openapi",
+      );
+
+      expect(response.status).toBe(200);
+
+      const doc = yaml.load(response.text) as {
+        $self?: string;
+        paths: {
+          "/pets": {
+            get: {
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref?: string;
+                        type?: string;
+                        properties?: object;
+                      };
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+
+      // $self should be preserved verbatim in the bundled document
+      expect(doc["$self"]).toBe("https://example.com/openapi.yaml");
+
+      const schema =
+        doc.paths["/pets"].get.responses["200"].content["application/json"]
+          .schema;
+
+      // bundle() inlines external $refs - no external file reference should remain
+      expect(schema.$ref).toBeUndefined();
+      // The schema should be fully resolved with its type
+      expect(schema.type).toBe("object");
+    });
+  });
+
   it("does not handle requests to other paths", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(
