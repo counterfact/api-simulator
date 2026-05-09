@@ -67,9 +67,7 @@ export class Requirement {
    * @throws When `isReference` is `false` or the specification is not set.
    */
   public reference(): Requirement {
-    return this.specification!.getRequirement(
-      (this.data as Record<string, unknown>)["$ref"] as string,
-    );
+    return this.specification!.getRequirement(this.refUrl!);
   }
 
   /**
@@ -107,7 +105,11 @@ export class Requirement {
       return undefined;
     }
 
-    const objectData = this.data as Record<string, unknown>;
+    if (typeof this.data !== "object" || this.data === null) {
+      return undefined;
+    }
+
+    const objectData = this.data;
     const child = new Requirement(
       objectData[key] as RequirementData,
       `${this.url}/${this.escapeJsonPointer(key)}`,
