@@ -20,9 +20,7 @@ export class ResponseTypeCoder extends TypeCoder {
   }
 
   public override names(): Generator<string> {
-    return super.names(
-      (this.requirement.data["$ref"] as string).split("/").at(-1),
-    );
+    return super.names((this.requirement.refUrl as string).split("/").at(-1));
   }
 
   public buildContentObjectType(
@@ -139,11 +137,7 @@ export class ResponseTypeCoder extends TypeCoder {
   }
 
   public override modulePath(): string {
-    return pathJoin(
-      "types",
-      this.version,
-      this.requirement.data["$ref"]! + ".ts",
-    );
+    return pathJoin("types", this.version, this.requirement.refUrl! + ".ts");
   }
 
   public override writeCode(script: Script): string {

@@ -6,9 +6,7 @@ import { pathJoin } from "../util/forward-slash-path.js";
 
 export class SchemaTypeCoder extends TypeCoder {
   public override names(): Generator<string> {
-    return super.names(
-      (this.requirement.data["$ref"] as string | undefined)?.split("/").at(-1),
-    );
+    return super.names(this.requirement.refUrl?.split("/").at(-1));
   }
 
   public override jsdoc(): string {
@@ -190,7 +188,7 @@ export class SchemaTypeCoder extends TypeCoder {
     return pathJoin(
       "types",
       this.version,
-      (this.requirement.data["$ref"] as string).replace(/^#\//u, "") + ".ts",
+      (this.requirement.refUrl as string).replace(/^#\//u, "") + ".ts",
     );
   }
 

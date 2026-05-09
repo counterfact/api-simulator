@@ -244,6 +244,12 @@ export class Dispatcher {
     }
 
     for (const parameter of parameters) {
+      // querystring parameters represent the entire query string as a single
+      // typed object; they are not individually coerced by name.
+      if (parameter.in === "querystring") {
+        continue;
+      }
+
       const type = parameter?.type ?? parameter?.schema?.type;
 
       if (type !== undefined) {
@@ -531,6 +537,9 @@ export class Dispatcher {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- object params are reconstructed and typed by generated route types
       query: processedQuery as any,
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- typed by generated route types; entire query string as a single object
+      querystring: processedQuery as any,
 
       // @ts-expect-error - Might be pushing the limits of what TypeScript can do here
       response: createResponseBuilder(
