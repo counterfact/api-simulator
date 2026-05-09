@@ -515,6 +515,35 @@ describe("an OperationTypeCoder", () => {
     ).resolves.toMatchSnapshot();
   });
 
+  it("generates required api key auth and headers for apiKey security", async () => {
+    const requirement = new Requirement(
+      {
+        responses: {
+          default: {
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Example" },
+              },
+            },
+          },
+        },
+      },
+      "#/paths/hello/get",
+    );
+
+    const coder = new OperationTypeCoder(requirement, "", "get", [
+      {
+        in: "header",
+        name: "api_key",
+        type: "apiKey",
+      },
+    ]);
+
+    await expect(
+      format(`type TestType =${coder.write(dummyScript)}`),
+    ).resolves.toMatchSnapshot();
+  });
+
   it("uses operationId for type names when available", () => {
     const coder = new OperationTypeCoder(
       new Requirement({ operationId: "addPet" }, "#/paths/pet/post"),

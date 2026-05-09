@@ -34,6 +34,7 @@ const ALL_HTTP_METHODS: HttpMethods[] = [
 
 interface RequestData {
   auth?: {
+    apiKey?: string;
     password?: string;
     username?: string;
   };

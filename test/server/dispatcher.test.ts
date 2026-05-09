@@ -309,6 +309,103 @@ describe("a dispatcher", () => {
     ).toStrictEqual(authHeader);
   });
 
+  it("adds api key auth from configured header security schemes", async () => {
+    const registry = new Registry();
+
+    registry.add("/a", {
+      GET({ auth }) {
+        return {
+          body: auth?.apiKey,
+        };
+      },
+    });
+
+    const openApiDocument: OpenApiDocument = {
+      components: {
+        securitySchemes: {
+          apiKeyAuth: {
+            in: "header",
+            name: "api_key",
+            type: "apiKey",
+          },
+        },
+      },
+      paths: {
+        "/a": {
+          get: {
+            responses: { 200: { description: "ok" } },
+          },
+        },
+      },
+    };
+
+    const dispatcher = new Dispatcher(
+      registry,
+      new ContextRegistry(),
+      openApiDocument,
+    );
+
+    const response = await dispatcher.request({
+      body: "",
+      headers: { api_key: "top-secret" },
+      method: "GET",
+      path: "/a",
+      query: {},
+      req: { path: "/a" },
+    });
+
+    expect(response.body).toBe("top-secret");
+  });
+
+  it("requires api key parameters from configured security schemes", async () => {
+    const registry = new Registry();
+
+    registry.add("/a", {
+      GET() {
+        return {
+          body: "ok",
+        };
+      },
+    });
+
+    const openApiDocument: OpenApiDocument = {
+      components: {
+        securitySchemes: {
+          apiKeyAuth: {
+            in: "header",
+            name: "api_key",
+            type: "apiKey",
+          },
+        },
+      },
+      paths: {
+        "/a": {
+          get: {
+            responses: { 200: { description: "ok" } },
+          },
+        },
+      },
+    };
+
+    const dispatcher = new Dispatcher(
+      registry,
+      new ContextRegistry(),
+      openApiDocument,
+    );
+
+    const response = await dispatcher.request({
+      body: "",
+      headers: {},
+      method: "GET",
+      path: "/a",
+      query: {},
+      req: { path: "/a" },
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toContain("header parameter 'api_key' is required");
+  });
+
   it("passes the query params", async () => {
     const registry = new Registry();
 

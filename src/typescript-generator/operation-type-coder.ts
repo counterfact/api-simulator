@@ -37,6 +37,8 @@ function sanitizeIdentifier(value: string): string {
 }
 
 export interface SecurityScheme {
+  in?: "cookie" | "header" | "query";
+  name?: string;
   scheme?: string;
   type?: string;
 }
@@ -222,6 +224,31 @@ export class OperationTypeCoder extends TypeCoder {
   }
 
   /**
+   * Returns the TypeScript type for the `auth` argument.
+   *
+   * Includes basic-auth credentials when present and `apiKey` when at least one
+   * apiKey security scheme is configured.
+   */
+  public authType(): string {
+    const fields = new Set<string>();
+
+    if (
+      this.securitySchemes.some(
+        ({ scheme, type }) => type === "http" && scheme === "basic",
+      )
+    ) {
+      fields.add("username?: string");
+      fields.add("password?: string");
+    }
+
+    if (this.securitySchemes.some(({ type }) => type === "apiKey")) {
+      fields.add("apiKey?: string");
+    }
+
+    return fields.size === 0 ? "never" : `{${[...fields].join(", ")}}`;
+  }
+
+  /**
    * Returns the effective parameters for this operation by merging path-item-level
    * parameters with operation-level parameters. Per the OpenAPI specification,
    * operation-level parameters override path-item-level parameters that share
@@ -236,22 +263,39 @@ export class OperationTypeCoder extends TypeCoder {
   protected getEffectiveParameters(): Requirement | undefined {
     const operationParams = this.requirement.get("parameters");
     const pathItemParams = this.requirement.parent?.get("parameters");
+    const apiKeyParameters = this.securitySchemes
+      .filter(
+        ({ in: location, name, type }) =>
+          type === "apiKey" &&
+          typeof name === "string" &&
+          (location === "header" || location === "query"),
+      )
+      .map(({ in: location, name }) => ({
+        in: location,
+        name,
+        required: true,
+        schema: { type: "string" },
+      }));
 
-    if (!pathItemParams) {
+    if (!pathItemParams && !operationParams && apiKeyParameters.length === 0) {
+      return undefined;
+    }
+
+    if (!pathItemParams && apiKeyParameters.length === 0) {
       return operationParams;
     }
 
-    if (!operationParams) {
+    if (!operationParams && apiKeyParameters.length === 0) {
       return pathItemParams;
     }
 
     // Merge using a Map keyed on `${in}:${name}`.
-    // Path-level params are added first; operation-level overrides them.
-    const pathData = pathItemParams.data as unknown as Record<
-      string,
-      unknown
-    >[];
-    const opData = operationParams.data as unknown as Record<string, unknown>[];
+    // Path-level params are added first; operation-level and security-level
+    // params override them.
+    const pathData =
+      (pathItemParams?.data as unknown as Record<string, unknown>[]) ?? [];
+    const opData =
+      (operationParams?.data as unknown as Record<string, unknown>[]) ?? [];
 
     const map = new Map<string, Record<string, unknown>>();
 
@@ -260,6 +304,10 @@ export class OperationTypeCoder extends TypeCoder {
     }
 
     for (const p of opData) {
+      map.set(`${p.in as string}:${p.name as string}`, p);
+    }
+
+    for (const p of apiKeyParameters) {
       map.set(`${p.in as string}:${p.name as string}`, p);
     }
 
@@ -389,7 +437,7 @@ export class OperationTypeCoder extends TypeCoder {
     const versionLiteralType =
       this.version !== "" ? `"${this.version}"` : "never";
 
-    return `OmitValueWhenNever<{ query: ${queryTypeName}, path: ${pathTypeName}, headers: ${headersTypeName}, cookie: ${cookieTypeName}, body: ${bodyType}, context: ${contextTypeImportName}, response: ${responseType}, x: ${xType}, proxy: ${proxyType}, user: ${this.userType()}, delay: ${delayType}, version: ${versionLiteralType} }>`;
+    return `OmitValueWhenNever<{ query: ${queryTypeName}, path: ${pathTypeName}, headers: ${headersTypeName}, cookie: ${cookieTypeName}, body: ${bodyType}, context: ${contextTypeImportName}, response: ${responseType}, x: ${xType}, proxy: ${proxyType}, auth: ${this.authType()}, user: ${this.userType()}, delay: ${delayType}, version: ${versionLiteralType} }>`;
   }
 
   public override writeCode(script: Script): string {

@@ -50,6 +50,16 @@ function mergeParameters(
 
 export interface OpenApiDocument {
   basePath?: string;
+  components?: {
+    securitySchemes?: Record<
+      string,
+      {
+        in?: "cookie" | "header" | "query";
+        name?: string;
+        type?: string;
+      }
+    >;
+  };
   paths: {
     [key: string]: {
       [key in Lowercase<HttpMethods>]?: OpenApiOperation;
@@ -104,6 +114,7 @@ interface ParameterTypes {
 
 export type DispatcherRequest = {
   auth?: {
+    apiKey?: string;
     password?: string;
     username?: string;
   };
@@ -275,6 +286,53 @@ export class Dispatcher {
     return undefined;
   }
 
+  private apiKeySecurityParameters(): OpenApiParameters[] {
+    const schemes = this.openApiDocument?.components?.securitySchemes;
+
+    return Object.values(schemes ?? {})
+      .filter(
+        ({ in: location, name, type }) =>
+          type === "apiKey" &&
+          typeof name === "string" &&
+          (location === "header" || location === "query"),
+      )
+      .map(({ in: location, name }) => ({
+        in: location as "header" | "query",
+        name: name as string,
+        required: true,
+        schema: { type: "string" },
+      }));
+  }
+
+  private authWithApiKey(
+    auth: DispatcherRequest["auth"],
+    headers: Record<string, string>,
+    query: Record<string, string | string[]>,
+  ): DispatcherRequest["auth"] {
+    const apiKeyScheme = this.apiKeySecurityParameters().find(
+      (parameter) => parameter.in === "header" || parameter.in === "query",
+    );
+
+    if (!apiKeyScheme) {
+      return auth;
+    }
+
+    const apiKey =
+      apiKeyScheme.in === "query"
+        ? query[apiKeyScheme.name]
+        : Object.entries(headers).find(
+            ([key]) => key.toLowerCase() === apiKeyScheme.name.toLowerCase(),
+          )?.[1];
+
+    const normalizedApiKey = Array.isArray(apiKey) ? apiKey[0] : apiKey;
+
+    if (normalizedApiKey === undefined) {
+      return auth;
+    }
+
+    return { ...auth, apiKey: normalizedApiKey };
+  }
+
   /**
    * Resolves the OpenAPI operation for `path` and `method`, merging any
    * top-level `produces` array from the document root and any path-item-level
@@ -320,14 +378,26 @@ export class Dispatcher {
         ? { ...operation, parameters: mergedParameters }
         : operation;
 
+    const apiKeyParameters = this.apiKeySecurityParameters();
+    const operationWithSecurity =
+      apiKeyParameters.length > 0
+        ? {
+            ...mergedOperation,
+            parameters: mergeParameters(
+              mergedOperation.parameters ?? [],
+              apiKeyParameters,
+            ),
+          }
+        : mergedOperation;
+
     if (this.openApiDocument?.produces) {
       return {
         produces: this.openApiDocument.produces,
-        ...mergedOperation,
+        ...operationWithSecurity,
       };
     }
 
-    return mergedOperation;
+    return operationWithSecurity;
   }
 
   private normalizeResponse(
@@ -491,7 +561,7 @@ export class Dispatcher {
       path,
       this.parameterTypes(operation?.parameters),
     )({
-      auth,
+      auth: this.authWithApiKey(auth, headers, query),
       body,
       context: this.contextRegistry.find(matchedPath),
 
