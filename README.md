@@ -4,7 +4,7 @@
 
 <br>
 
-![MIT License](https://img.shields.io/badge/license-MIT-blue) [![Coverage Status](https://coveralls.io/repos/github/counterfact/api-simulator/badge.svg)](https://coveralls.io/github/pmcelhaney/counterfact) ![friction 0%](https://img.shields.io/badge/friction-0%25-brightgreen)
+![MIT License](https://img.shields.io/badge/license-MIT-blue) [![Coverage Status](https://coveralls.io/repos/github/counterfact/api-simulator/badge.svg)](https://coveralls.io/github/pmcelhaney/counterfact) ![friction 0%](https://img.shields.io/badge/friction-0%25-brightgreen) ![Swagger 2.0](https://img.shields.io/badge/Swagger-2.0-85EA2D) ![OpenAPI 3.0-3.2](https://img.shields.io/badge/OpenAPI-3.x-6BA539)
 
 </div>
 
@@ -17,6 +17,7 @@ Mock servers make it easy to get started, but hard to keep going.<br>
 Counterfact is an API simulator without those limits. 
 
 Point it at an [OpenAPI](https://www.openapis.org) document and get a live, stateful API in seconds. 
+Supports Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2.
 - Type-safe TypeScript handlers for every endpoint  
 - Hot reloading as you edit  
 - Shared state across routes  
