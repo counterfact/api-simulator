@@ -28,7 +28,7 @@ export class Coder {
    */
   public get id(): string {
     if (this.requirement.isReference) {
-      return `${this.constructor.name}@${this.requirement.data["$ref"] as string}`;
+      return `${this.constructor.name}@${this.requirement.refUrl as string}`;
     }
 
     return `${this.constructor.name}@${this.requirement.url}`;

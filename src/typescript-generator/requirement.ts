@@ -1,8 +1,11 @@
 import type { Specification } from "./specification.js";
 
-export type RequirementData = Record<string, unknown> & {
-  $ref?: string;
-};
+export type RequirementData =
+  | (Record<string, unknown> & { $ref?: string })
+  | string
+  | number
+  | boolean
+  | null;
 
 /**
  * A node in the dereferenced OpenAPI spec tree.
@@ -39,7 +42,23 @@ export class Requirement {
 
   /** `true` when this node is a JSON Reference (`$ref`) rather than inline data. */
   public get isReference(): boolean {
-    return this.data["$ref"] !== undefined;
+    return (
+      typeof this.data === "object" &&
+      this.data !== null &&
+      this.data["$ref"] !== undefined
+    );
+  }
+
+  /**
+   * When this node is a JSON Reference, returns the raw `$ref` URL string.
+   * Returns `undefined` for non-reference (inline) nodes.
+   */
+  public get refUrl(): string | undefined {
+    if (typeof this.data !== "object" || this.data === null) {
+      return undefined;
+    }
+
+    return this.data["$ref"] as string | undefined;
   }
 
   /**
@@ -48,7 +67,9 @@ export class Requirement {
    * @throws When `isReference` is `false` or the specification is not set.
    */
   public reference(): Requirement {
-    return this.specification!.getRequirement(this.data["$ref"] as string);
+    return this.specification!.getRequirement(
+      (this.data as Record<string, unknown>)["$ref"] as string,
+    );
   }
 
   /**
@@ -61,6 +82,10 @@ export class Requirement {
   public has(item: string): boolean {
     if (this.isReference) {
       return this.reference().has(item);
+    }
+
+    if (typeof this.data !== "object" || this.data === null) {
+      return false;
     }
 
     return item in this.data;
@@ -82,8 +107,9 @@ export class Requirement {
       return undefined;
     }
 
+    const objectData = this.data as Record<string, unknown>;
     const child = new Requirement(
-      this.data[key] as RequirementData,
+      objectData[key] as RequirementData,
       `${this.url}/${this.escapeJsonPointer(key)}`,
       this.specification,
     );
@@ -140,6 +166,10 @@ export class Requirement {
    * @param callback - Called for each child with `(child, key)`.
    */
   public forEach(callback: (value: Requirement, key: string) => void): void {
+    if (typeof this.data !== "object" || this.data === null) {
+      return;
+    }
+
     Object.keys(this.data).forEach((key) => {
       callback(this.select(this.escapeJsonPointer(key) as string)!, key);
     });
