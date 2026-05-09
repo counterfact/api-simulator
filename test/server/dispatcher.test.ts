@@ -874,6 +874,120 @@ describe("a dispatcher", () => {
     });
   });
 
+  it("exposes $.querystring as the entire parsed query string for querystring parameters", async () => {
+    const registry = new Registry();
+
+    registry.add("/search", {
+      // @ts-expect-error - not obvious how to make TS happy here, and it's just a unit test
+      GET({ querystring, response }) {
+        return response["200"]?.json(querystring);
+      },
+    });
+
+    const openApiDocument: OpenApiDocument = {
+      paths: {
+        "/search": {
+          get: {
+            parameters: [
+              {
+                in: "querystring",
+                name: "q",
+                schema: {
+                  type: "object",
+                  properties: {
+                    filter: { type: "string" },
+                    page: { type: "integer" },
+                  },
+                },
+              },
+            ],
+            responses: {
+              200: {
+                content: {
+                  "application/json": {
+                    schema: { type: "object" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const dispatcher = new Dispatcher(
+      registry,
+      new ContextRegistry(),
+      openApiDocument,
+    );
+    const result = await dispatcher.request({
+      body: "",
+      headers: {},
+      method: "GET",
+      path: "/search",
+      query: { filter: "active", page: "2" },
+      req: { path: "/search" },
+    });
+
+    expect(result.body).toStrictEqual({ filter: "active", page: "2" });
+  });
+
+  it("does not break existing query parameters when a querystring parameter is present", async () => {
+    const registry = new Registry();
+
+    registry.add("/items", {
+      // @ts-expect-error - not obvious how to make TS happy here, and it's just a unit test
+      GET({ query, querystring, response }) {
+        return response["200"]?.json({ query, querystring });
+      },
+    });
+
+    const openApiDocument: OpenApiDocument = {
+      paths: {
+        "/items": {
+          get: {
+            parameters: [
+              {
+                in: "querystring",
+                name: "qs",
+                schema: { type: "object" },
+              },
+            ],
+            responses: {
+              200: {
+                content: {
+                  "application/json": {
+                    schema: { type: "object" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const dispatcher = new Dispatcher(
+      registry,
+      new ContextRegistry(),
+      openApiDocument,
+    );
+    const result = await dispatcher.request({
+      body: "",
+      headers: {},
+      method: "GET",
+      path: "/items",
+      query: { foo: "bar" },
+      req: { path: "/items" },
+    });
+
+    // Both $.query and $.querystring should reflect the parsed query
+    expect(result.body).toStrictEqual({
+      query: { foo: "bar" },
+      querystring: { foo: "bar" },
+    });
+  });
+
   it("converts path-level parameters to numbers when defined at path item level", async () => {
     const registry = new Registry();
 

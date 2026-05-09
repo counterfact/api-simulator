@@ -2,18 +2,23 @@
  * Builds a JSDoc comment string from OpenAPI schema metadata.
  * Returns an empty string if there is no relevant metadata.
  */
-export function buildJsDoc(data: Record<string, unknown>): string {
+export function buildJsDoc(data: unknown): string {
+  if (typeof data !== "object" || data === null) {
+    return "";
+  }
+
+  const record = data as Record<string, unknown>;
   const lines: string[] = [];
 
-  const description = data["description"] as string | undefined;
-  const summary = data["summary"] as string | undefined;
-  const example = data["example"];
-  const examples = data["examples"] as
+  const description = record["description"] as string | undefined;
+  const summary = record["summary"] as string | undefined;
+  const example = record["example"];
+  const examples = record["examples"] as
     | Record<string, { value?: unknown }>
     | undefined;
-  const defaultValue = data["default"];
-  const format = data["format"] as string | undefined;
-  const deprecated = data["deprecated"] as boolean | undefined;
+  const defaultValue = record["default"];
+  const format = record["format"] as string | undefined;
+  const deprecated = record["deprecated"] as boolean | undefined;
 
   const mainText = description ?? summary;
 

@@ -6,7 +6,14 @@
  */
 export interface OpenApiParameters {
   explode?: boolean;
-  in: "body" | "cookie" | "formData" | "header" | "path" | "query";
+  in:
+    | "body"
+    | "cookie"
+    | "formData"
+    | "header"
+    | "path"
+    | "query"
+    | "querystring";
   name: string;
   required?: boolean;
   schema?: {

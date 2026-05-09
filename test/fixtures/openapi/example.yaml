@@ -707,6 +707,58 @@ paths:
                 type: object
                 additionalProperties: true
 
+  # -----------------------------------------------------------------------
+  # OpenAPI 3.2 querystring parameter (entire query string as typed object)
+  # -----------------------------------------------------------------------
+  /search:
+    get:
+      operationId: search
+      description: Search with the entire query string treated as a typed object (OpenAPI 3.2 querystring parameter)
+      parameters:
+        - in: querystring
+          name: q
+          required: false
+          schema:
+            type: object
+            properties:
+              term:
+                type: string
+                description: The search term
+              maxResults:
+                type: integer
+                minimum: 1
+                maximum: 100
+                default: 10
+              tags:
+                type: array
+                items:
+                  type: string
+            additionalProperties: false
+          description: Full query string parsed as a structured search object
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: string
+                  total:
+                    type: integer
+              examples:
+                default:
+                  value:
+                    results:
+                      - "Result A"
+                      - "Result B"
+                    total: 2
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
 components:
   # -----------------------------------------------------------------------
   # Reusable responses
