@@ -363,6 +363,29 @@ describe("a SchemaTypeCoder", () => {
     ).resolves.toStrictEqual(expected);
   });
 
+  it("includes discriminator.defaultMapping schema when discriminator.propertyName is absent", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({
+        anyOf: [{ type: "string" }],
+        discriminator: {
+          defaultMapping: "#/components/schemas/DefaultSchema",
+        },
+      }),
+    );
+
+    const script = {
+      importType() {
+        return "DefaultSchema";
+      },
+    };
+
+    const expected = await format("type x = string | DefaultSchema;");
+
+    await expect(
+      format(`type x = ${coder.write(script)}`),
+    ).resolves.toStrictEqual(expected);
+  });
+
   it("does not add a defaultMapping type for allOf schemas", async () => {
     const coder = new SchemaTypeCoder(
       new Requirement({
