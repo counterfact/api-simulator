@@ -144,7 +144,7 @@
     "open": "11.0.0",
     "patch-package": "8.0.1",
     "posthog-node": "5.33.3",
-    "precinct": "12.3.1",
+    "precinct": "12.3.2",
     "prettier": "3.8.3",
     "recast": "0.23.11",
     "tsx": "4.21.0",
