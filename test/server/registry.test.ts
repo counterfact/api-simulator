@@ -324,6 +324,38 @@ describe("a registry", () => {
     expect(registry.allowedMethods("/search")).toContain("QUERY");
   });
 
+  it("accepts arbitrary HTTP methods", async () => {
+    const registry = new Registry();
+
+    registry.add("/links", {
+      LINK() {
+        return {
+          body: "linked",
+          headers: {},
+          status: 200,
+        };
+      },
+    });
+
+    expect(registry.exists("LINK", "/links")).toBe(true);
+    expect(registry.allowedMethods("/links")).toContain("LINK");
+    expect(registry.pathExistsWithAnyMethod("/links", "GET")).toBe(true);
+
+    // @ts-expect-error - not creating an entire request object
+    const response = await registry.endpoint(
+      "LINK",
+      "/links",
+    )({
+      headers: {},
+      matchedPath: "",
+      path: {},
+      query: {},
+    });
+
+    expect(response?.body).toBe("linked");
+    expect(response?.status).toBe(200);
+  });
+
   it("lists all of the routes", () => {
     const registry = new Registry();
 

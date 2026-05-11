@@ -24,7 +24,7 @@ export class OpenApiDocument extends EventTarget {
   public paths: {
     [key: string]: {
       [key in Lowercase<HttpMethods>]?: OpenApiOperation;
-    };
+    } & { additionalOperations?: Record<string, OpenApiOperation> };
   } = {};
 
   public produces?: string[];
@@ -47,7 +47,7 @@ export class OpenApiDocument extends EventTarget {
         paths: {
           [key: string]: {
             [key in Lowercase<HttpMethods>]?: OpenApiOperation;
-          };
+          } & { additionalOperations?: Record<string, OpenApiOperation> };
         };
         produces?: string[];
       };

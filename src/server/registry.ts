@@ -20,7 +20,9 @@ type HttpMethods =
   | "QUERY"
   | "TRACE";
 
-const ALL_HTTP_METHODS: HttpMethods[] = [
+type RequestMethod = HttpMethods | (string & {});
+
+const DEFAULT_HTTP_METHODS: HttpMethods[] = [
   "DELETE",
   "GET",
   "HEAD",
@@ -66,6 +68,9 @@ type UserDefinedResponse =
   | string;
 
 interface Module {
+  [method: string]:
+    | ((requestData: RequestDataWithBody) => UserDefinedResponse)
+    | undefined;
   DELETE?: (requestData: RequestData) => UserDefinedResponse;
   GET?: (requestData: RequestData) => UserDefinedResponse;
   HEAD?: (requestData: RequestData) => UserDefinedResponse;
@@ -157,6 +162,7 @@ export class Registry {
   private readonly moduleTree = new ModuleTree();
 
   private middlewares: Map<string, MiddlewareFunction> = new Map();
+  private readonly methodNames: Set<string> = new Set(DEFAULT_HTTP_METHODS);
 
   public constructor() {
     this.middlewares.set("", ($, respondTo) => respondTo($));
@@ -175,6 +181,9 @@ export class Registry {
    */
   public add(url: string, module: Module) {
     this.moduleTree.add(url, module);
+    for (const methodName of Object.keys(module)) {
+      this.methodNames.add(methodName.toUpperCase());
+    }
   }
 
   /**
@@ -205,8 +214,33 @@ export class Registry {
    * @param method - HTTP method (e.g. `"GET"`).
    * @param url - The request URL.
    */
-  public exists(method: HttpMethods, url: string) {
-    return Boolean(this.handler(url, method).module?.[method]);
+  private methodFromModule(module: Module | undefined, method: string) {
+    if (module === undefined) {
+      return undefined;
+    }
+
+    return (
+      module[method] ??
+      module[method.toUpperCase()] ??
+      module[method.toLowerCase()]
+    );
+  }
+
+  public exists(method: RequestMethod, url: string) {
+    return (
+      this.methodFromModule(this.handler(url, method).module, method) !==
+      undefined
+    );
+  }
+
+  private methodsForPath(url: string): string[] {
+    return [...this.methodNames].filter(
+      (method) =>
+        this.methodFromModule(
+          this.moduleTree.match(url, method)?.module,
+          method,
+        ) !== undefined,
+    );
   }
 
   /**
@@ -240,10 +274,10 @@ export class Registry {
    */
   public pathExistsWithAnyMethod(
     url: string,
-    excludeMethod: HttpMethods,
+    excludeMethod: RequestMethod,
   ): boolean {
-    return ALL_HTTP_METHODS.filter((method) => method !== excludeMethod).some(
-      (method) => this.moduleTree.match(url, method) !== undefined,
+    return this.methodsForPath(url).some(
+      (method) => method.toUpperCase() !== excludeMethod.toUpperCase(),
     );
   }
 
@@ -255,9 +289,7 @@ export class Registry {
    * @param url - The request URL.
    */
   public allowedMethods(url: string): string {
-    return ALL_HTTP_METHODS.filter((method) =>
-      Boolean(this.moduleTree.match(url, method)?.module?.[method]),
-    ).join(", ");
+    return this.methodsForPath(url).join(", ");
   }
 
   /**
@@ -274,7 +306,7 @@ export class Registry {
    *   for each of `header`, `path`, and `query`.
    */
   public endpoint(
-    httpRequestMethod: HttpMethods,
+    httpRequestMethod: RequestMethod,
     url: string,
     parameterTypes: {
       header?: Map<string, string>;
@@ -295,7 +327,7 @@ export class Registry {
       });
     }
 
-    const execute = handler.module?.[httpRequestMethod];
+    const execute = this.methodFromModule(handler.module, httpRequestMethod);
 
     if (!execute) {
       debug(`Could not find a ${httpRequestMethod} method matching ${url}\n`);
@@ -372,6 +404,7 @@ export class Registry {
 export type {
   CounterfactResponseObject,
   HttpMethods,
+  RequestMethod,
   Module,
   RequestDataWithBody,
   MiddlewareFunction,
