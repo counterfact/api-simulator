@@ -681,6 +681,87 @@ paths:
                       - "Song C"
 
   # -----------------------------------------------------------------------
+  # OpenAPI 3.2 additionalOperations for custom HTTP methods
+  # -----------------------------------------------------------------------
+  /relationships/{targetId}:
+    get:
+      operationId: getRelationship
+      parameters:
+        - in: path
+          name: targetId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Relationship status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  linked:
+                    type: boolean
+                  targetId:
+                    type: string
+              examples:
+                linked:
+                  value:
+                    linked: true
+                    targetId: "u-001"
+    additionalOperations:
+      LINK:
+        operationId: linkRelationship
+        parameters:
+          - in: path
+            name: targetId
+            required: true
+            schema:
+              type: string
+        responses:
+          "200":
+            description: Relationship created
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    linked:
+                      type: boolean
+                    targetId:
+                      type: string
+                examples:
+                  created:
+                    value:
+                      linked: true
+                      targetId: "u-001"
+      UNLINK:
+        operationId: unlinkRelationship
+        parameters:
+          - in: path
+            name: targetId
+            required: true
+            schema:
+              type: string
+        responses:
+          "200":
+            description: Relationship removed
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    linked:
+                      type: boolean
+                    targetId:
+                      type: string
+                examples:
+                  removed:
+                    value:
+                      linked: false
+                      targetId: "u-001"
+
+  # -----------------------------------------------------------------------
   # Bug: Query Params of Type Object do not explode #1933
   # -----------------------------------------------------------------------
   /explodable-parameters:
