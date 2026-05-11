@@ -46,8 +46,12 @@ describe("sendTelemetry", () => {
 describe("hashTelemetryLocation", () => {
   it("hashes API file locations without preserving the raw path", () => {
     const hash = hashTelemetryLocation("/tmp/openapi.yaml");
+    const sameInputHash = hashTelemetryLocation("/tmp/openapi.yaml");
+    const differentInputHash = hashTelemetryLocation("/tmp/other.yaml");
 
     expect(hash).not.toContain("/tmp/openapi.yaml");
     expect(hash).toMatch(/^[a-f0-9]{64}$/u);
+    expect(sameInputHash).toBe(hash);
+    expect(differentInputHash).not.toBe(hash);
   });
 });

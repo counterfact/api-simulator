@@ -247,9 +247,11 @@ function buildProgram(version: string, taglines: string[]): Command {
     debug("source: %s", source);
     debug("destination: %s", destination);
 
-    sendTelemetry(
-      "counterfact_started",
-      buildStartupTelemetryProperties(options, source, version, specs),
+    const startupTelemetryProperties = buildStartupTelemetryProperties(
+      options,
+      source,
+      version,
+      specs,
     );
 
     const openBrowser = options.open;
@@ -380,6 +382,7 @@ function buildProgram(version: string, taglines: string[]): Command {
       process.exit(1);
     }
     debug("started server");
+    sendTelemetry("counterfact_started", startupTelemetryProperties);
 
     await updateCheckPromise;
 
