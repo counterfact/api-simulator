@@ -301,7 +301,7 @@ export class Dispatcher {
       .map(({ in: location, name }) => ({
         in: location as "cookie" | "header" | "query",
         name: name as string,
-        required: true,
+        required: false,
         schema: { type: "string" },
       }));
   }
