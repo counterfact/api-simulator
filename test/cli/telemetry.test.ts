@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 
-import { isTelemetryEnabled, sendTelemetry } from "../../src/cli/telemetry.js";
+import {
+  hashTelemetryLocation,
+  isTelemetryEnabled,
+  sendTelemetry,
+} from "../../src/cli/telemetry.js";
 
 describe("isTelemetryEnabled", () => {
   const originalEnv = process.env;
@@ -34,7 +38,16 @@ describe("isTelemetryEnabled", () => {
 describe("sendTelemetry", () => {
   it("does not throw when called", () => {
     expect(() => {
-      sendTelemetry("1.0.0");
+      sendTelemetry("counterfact_started", { version: "1.0.0" });
     }).not.toThrow();
+  });
+});
+
+describe("hashTelemetryLocation", () => {
+  it("hashes API file locations without preserving the raw path", () => {
+    const hash = hashTelemetryLocation("/tmp/openapi.yaml");
+
+    expect(hash).not.toContain("/tmp/openapi.yaml");
+    expect(hash).toMatch(/^[a-f0-9]{64}$/u);
   });
 });

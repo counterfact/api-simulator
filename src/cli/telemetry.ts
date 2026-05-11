@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 
 import { PostHog } from "posthog-node";
 
@@ -19,11 +19,22 @@ export function isTelemetryEnabled(): boolean {
   return true;
 }
 
+export function hashTelemetryLocation(location: string): string {
+  return createHash("sha256").update(location).digest("hex");
+}
+
 /**
  * Fires a telemetry event to PostHog.  Fire-and-forget — never blocks
  * startup and never surfaces errors to the user.
  */
-export function sendTelemetry(version: string): void {
+export function sendTelemetry(
+  event: string,
+  properties: Record<string, unknown> = {},
+): void {
+  if (!isTelemetryEnabled()) {
+    return;
+  }
+
   const telemetryKey = process.env["POSTHOG_API_KEY"] ?? POSTHOG_API_KEY;
   const telemetryHost = process.env["POSTHOG_HOST"] ?? POSTHOG_HOST;
 
@@ -32,13 +43,13 @@ export function sendTelemetry(version: string): void {
 
     posthog.capture({
       distinctId: randomUUID(),
-      event: "counterfact_started",
+      event,
       properties: {
-        version,
         nodeVersion: process.version,
         platform: process.platform,
         arch: process.arch,
         source: "counterfact-cli",
+        ...properties,
       },
     });
 

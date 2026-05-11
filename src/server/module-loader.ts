@@ -19,6 +19,7 @@ import { ModuleDependencyGraph } from "./module-dependency-graph.js";
 import type { Module, Registry } from "./registry.js";
 import { ScenarioRegistry } from "./scenario-registry.js";
 import { uncachedImport } from "./uncached-import.js";
+import { sendTelemetry } from "../cli/telemetry.js";
 import {
   toForwardSlashPath,
   pathDirname,
@@ -122,6 +123,10 @@ export class ModuleLoader extends EventTarget {
         }
 
         const parts = nodePath.parse(pathName.replace(this.basePath, ""));
+        sendTelemetry("file_change_detected", {
+          changeType: eventName,
+          fileType: this.isContextFile(pathName) ? "context" : "route",
+        });
         const url = unescapePathForWindows(
           toForwardSlashPath(`/${parts.dir}/${parts.name}`).replaceAll(
             /\/+/gu,

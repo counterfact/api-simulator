@@ -5,6 +5,7 @@ import type { ContextRegistry } from "../server/context-registry.js";
 import type { OpenApiDocument } from "../server/dispatcher.js";
 import type { Registry } from "../server/registry.js";
 import type { ScenarioRegistry } from "../server/scenario-registry.js";
+import { sendTelemetry } from "../cli/telemetry.js";
 
 import { RawHttpClient } from "./raw-http-client.js";
 import { createRouteFunction } from "./route-builder.js";
@@ -410,6 +411,7 @@ export function startRepl(
 
   replServer.defineCommand("counterfact", {
     action() {
+      sendTelemetry("repl_command_used", { command: "counterfact" });
       print(
         "This is a read-eval-print loop (REPL), the same as the one you get when you run node with no arguments.",
       );
@@ -439,6 +441,7 @@ export function startRepl(
 
   replServer.defineCommand("proxy", {
     action(text: string) {
+      sendTelemetry("repl_command_used", { command: "proxy" });
       if (text === "help" || text === "") {
         print(".proxy [on|off] - turn the proxy on/off at the root level");
         print(".proxy [on|off] <path-prefix> - turn the proxy on for a path");
@@ -485,6 +488,7 @@ export function startRepl(
 
   replServer.defineCommand("scenario", {
     async action(text: string) {
+      sendTelemetry("repl_command_used", { command: "scenario" });
       const trimmedText = text.trim();
       const parsedArgs = trimmedText.split(/\s+/u).filter(Boolean);
       const usage = isMultiApi

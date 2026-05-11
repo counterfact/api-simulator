@@ -1,6 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { normalizeSpecOption } from "../../src/cli/run.js";
+import {
+  buildStartupTelemetryProperties,
+  normalizeSpecOption,
+} from "../../src/cli/run.js";
 
 describe("normalizeSpecOption", () => {
   describe("when given undefined", () => {
@@ -124,5 +127,52 @@ describe("normalizeSpecOption", () => {
         },
       ]);
     });
+  });
+});
+
+describe("buildStartupTelemetryProperties", () => {
+  it("hashes OpenAPI file locations in single-spec mode", () => {
+    const properties = buildStartupTelemetryProperties(
+      {
+        port: 3100,
+        updateCheck: true,
+        validateRequest: true,
+        validateResponse: true,
+      },
+      "/tmp/openapi.yaml",
+      "1.2.3",
+    );
+
+    expect(properties["mode"]).toBe("single-spec");
+    expect(properties["apiFileLocationHashes"]).toEqual([
+      expect.stringMatching(/^[a-f0-9]{64}$/u),
+    ]);
+    expect(JSON.stringify(properties)).not.toContain("/tmp/openapi.yaml");
+  });
+
+  it("tracks multi-spec startup mode and hashes each API source", () => {
+    const properties = buildStartupTelemetryProperties(
+      {
+        generate: true,
+        port: 3100,
+        updateCheck: true,
+        validateRequest: true,
+        validateResponse: true,
+      },
+      "_",
+      "1.2.3",
+      [
+        { source: "https://example.com/v1/openapi.yaml", group: "v1" },
+        { source: "/tmp/v2/openapi.yaml", group: "v2" },
+      ],
+    );
+
+    expect(properties["mode"]).toBe("multi-spec");
+    expect(properties["generateRoutes"]).toBe(true);
+    expect(properties["generateTypes"]).toBe(true);
+    expect(properties["apiFileLocationHashes"]).toEqual([
+      expect.stringMatching(/^[a-f0-9]{64}$/u),
+      expect.stringMatching(/^[a-f0-9]{64}$/u),
+    ]);
   });
 });
