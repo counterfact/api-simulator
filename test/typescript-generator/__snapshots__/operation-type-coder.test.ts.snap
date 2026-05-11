@@ -4,6 +4,7 @@ exports[`an OperationTypeCoder falls back to root level produces (OpenAPI 2) 1`]
 "type TestType = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -36,6 +37,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2 wit
 "type TestType = (
   $: OmitValueWhenNever<{
     query: HTTP_GET_Query;
+    querystring: never;
     path: HTTP_GET_Path;
     headers: HTTP_GET_Headers;
     cookie: never;
@@ -91,6 +93,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2) 1`
 "type TestType = (
   $: OmitValueWhenNever<{
     query: HTTP_GET_Query;
+    querystring: never;
     path: HTTP_GET_Path;
     headers: HTTP_GET_Headers;
     cookie: never;
@@ -146,6 +149,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2, co
 "type TestType = (
   $: OmitValueWhenNever<{
     query: HTTP_GET_Query;
+    querystring: never;
     path: HTTP_GET_Path;
     headers: HTTP_GET_Headers;
     cookie: never;
@@ -201,6 +205,7 @@ exports[`an OperationTypeCoder generates a complex post operation 1`] = `
 "type TestType = (
   $: OmitValueWhenNever<{
     query: HTTP_GET_Query;
+    querystring: never;
     path: HTTP_GET_Path;
     headers: HTTP_GET_Headers;
     cookie: never;
@@ -259,6 +264,7 @@ exports[`an OperationTypeCoder generates a simple get operation (OpenAPI 2) 1`] 
 "type TestType = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -291,6 +297,7 @@ exports[`an OperationTypeCoder generates a simple get operation 1`] = `
 "type TestType = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -323,6 +330,7 @@ exports[`an OperationTypeCoder generates an auth object for basic authentication
 "type TestType = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: never;
@@ -355,6 +363,7 @@ exports[`an OperationTypeCoder generates required api key auth and cookie for ap
 "type TestType = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: never;
     cookie: HTTP_GET_Cookie;
@@ -387,6 +396,7 @@ exports[`an OperationTypeCoder generates required api key auth and headers for a
 "type TestType = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: HTTP_GET_Headers;
     cookie: never;

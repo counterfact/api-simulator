@@ -130,6 +130,10 @@ export type GenericResponseBuilderInner<
     : (name: ExampleNames<Response>) => COUNTERFACT_RESPONSE;
   text: MaybeShortcut<["text/plain"], Response>;
   xml: MaybeShortcut<["application/xml", "text/xml"], Response>;
+  stream: MaybeShortcut<
+    ["text/event-stream", "application/jsonl", "application/json-seq"],
+    Response
+  >;
 }>;
 
 /**

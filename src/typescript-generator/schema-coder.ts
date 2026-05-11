@@ -15,7 +15,7 @@ function scrubSchema(schema: Record<string, unknown>): Record<string, unknown> {
 export class SchemaCoder extends Coder {
   public override names(): Generator<string> {
     return super.names(
-      `${(this.requirement.data["$ref"] as string).split("/").at(-1)}Schema`,
+      `${(this.requirement.refUrl as string).split("/").at(-1)}Schema`,
     );
   }
 
@@ -58,7 +58,7 @@ export class SchemaCoder extends Coder {
   }
 
   public override modulePath(): string {
-    return `types/${this.requirement.data["$ref"] as string}.ts`;
+    return `types/${this.requirement.refUrl as string}.ts`;
   }
 
   public override writeCode(script: Script): string {
@@ -72,6 +72,8 @@ export class SchemaCoder extends Coder {
       return this.arraySchema(script);
     }
 
-    return JSON.stringify(scrubSchema(this.requirement.data));
+    return JSON.stringify(
+      scrubSchema(this.requirement.data as Record<string, unknown>),
+    );
   }
 }

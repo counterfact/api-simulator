@@ -26,8 +26,7 @@ export class ParametersTypeCoder extends TypeCoder {
         return this.requirement.get(index)!;
       })
       .filter(
-        (parameter) =>
-          (parameter.get("in")!.data as unknown as string) === this.placement,
+        (parameter) => (parameter.get("in")!.data as string) === this.placement,
       )
       .map((parameter) => {
         const name = parameter.get("name")?.data as string | undefined;

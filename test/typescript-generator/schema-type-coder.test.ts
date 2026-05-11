@@ -363,6 +363,52 @@ describe("a SchemaTypeCoder", () => {
     ).resolves.toStrictEqual(expected);
   });
 
+  it("includes discriminator.defaultMapping schema when discriminator.propertyName is absent", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({
+        anyOf: [{ type: "string" }],
+        discriminator: {
+          defaultMapping: "#/components/schemas/DefaultSchema",
+        },
+      }),
+    );
+
+    const script = {
+      importType() {
+        return "DefaultSchema";
+      },
+    };
+
+    const expected = await format("type x = string | DefaultSchema;");
+
+    await expect(
+      format(`type x = ${coder.write(script)}`),
+    ).resolves.toStrictEqual(expected);
+  });
+
+  it("includes discriminator.defaultMapping schema in oneOf when discriminator.propertyName is absent", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({
+        oneOf: [{ type: "string" }],
+        discriminator: {
+          defaultMapping: "#/components/schemas/DefaultSchema",
+        },
+      }),
+    );
+
+    const script = {
+      importType() {
+        return "DefaultSchema";
+      },
+    };
+
+    const expected = await format("type x = string | DefaultSchema;");
+
+    await expect(
+      format(`type x = ${coder.write(script)}`),
+    ).resolves.toStrictEqual(expected);
+  });
+
   it("does not add a defaultMapping type for allOf schemas", async () => {
     const coder = new SchemaTypeCoder(
       new Requirement({
@@ -595,5 +641,31 @@ describe("a SchemaTypeCoder", () => {
     const coder = new SchemaTypeCoder(new Requirement({ type: "string" }));
 
     expect(coder.jsdoc()).toBe("");
+  });
+
+  it("generates AsyncIterable<T> when the schema has itemSchema", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({
+        itemSchema: { type: "object", properties: { id: { type: "integer" } } },
+      }),
+    );
+
+    const expected = await format("type x = AsyncIterable<{ id?: number }>;");
+
+    await expect(format(`type x = ${coder.write({})}`)).resolves.toStrictEqual(
+      expected,
+    );
+  });
+
+  it("generates AsyncIterable<string> when itemSchema is a string type", async () => {
+    const coder = new SchemaTypeCoder(
+      new Requirement({ itemSchema: { type: "string" } }),
+    );
+
+    const expected = await format("type x = AsyncIterable<string>;");
+
+    await expect(format(`type x = ${coder.write({})}`)).resolves.toStrictEqual(
+      expected,
+    );
   });
 });

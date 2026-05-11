@@ -33,6 +33,7 @@ import type { Pet } from "../components/schemas/Pet.js";
 export type addPet = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: addPet_Headers;
     cookie: never;
@@ -74,6 +75,7 @@ export type addPet = (
 export type updatePet = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: updatePet_Headers;
     cookie: never;
@@ -155,6 +157,7 @@ import type { Pet } from "../../components/schemas/Pet.js";
 export type findPetsByStatus = (
   $: OmitValueWhenNever<{
     query: findPetsByStatus_Query;
+    querystring: never;
     path: never;
     headers: findPetsByStatus_Headers;
     cookie: never;
@@ -229,6 +232,7 @@ import type { Pet } from "../../components/schemas/Pet.js";
 export type findPetsByTags = (
   $: OmitValueWhenNever<{
     query: findPetsByTags_Query;
+    querystring: never;
     path: never;
     headers: findPetsByTags_Headers;
     cookie: never;
@@ -313,6 +317,7 @@ import type { Pet } from "../../components/schemas/Pet.js";
 export type getPetById = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getPetById_Path;
     headers: getPetById_Headers;
     cookie: never;
@@ -357,6 +362,7 @@ export type getPetById = (
 export type updatePetWithForm = (
   $: OmitValueWhenNever<{
     query: updatePetWithForm_Query;
+    querystring: never;
     path: updatePetWithForm_Path;
     headers: updatePetWithForm_Headers;
     cookie: never;
@@ -382,6 +388,7 @@ export type updatePetWithForm = (
 export type deletePet = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: deletePet_Path;
     headers: deletePet_Headers;
     cookie: never;
@@ -469,6 +476,7 @@ import type { ApiResponse } from "../../../components/schemas/ApiResponse.js";
 export type uploadFile = (
   $: OmitValueWhenNever<{
     query: uploadFile_Query;
+    querystring: never;
     path: uploadFile_Path;
     headers: uploadFile_Headers;
     cookie: never;
@@ -540,6 +548,7 @@ import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts
 export type getInventory = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: getInventory_Headers;
     cookie: never;
@@ -598,6 +607,7 @@ import type { Order } from "../../components/schemas/Order.js";
 export type placeOrder = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: placeOrder_Headers;
     cookie: never;
@@ -667,6 +677,7 @@ import type { Order } from "../../../components/schemas/Order.js";
 export type getOrderById = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getOrderById_Path;
     headers: getOrderById_Headers;
     cookie: never;
@@ -714,6 +725,7 @@ export type getOrderById = (
 export type deleteOrder = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: deleteOrder_Path;
     headers: deleteOrder_Headers;
     cookie: never;
@@ -791,6 +803,7 @@ import type { User } from "../components/schemas/User.js";
 export type createUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: createUser_Headers;
     cookie: never;
@@ -853,6 +866,7 @@ import type { User } from "../../components/schemas/User.js";
 export type createUsersWithListInput = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: createUsersWithListInput_Headers;
     cookie: never;
@@ -919,6 +933,7 @@ import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts
 export type loginUser = (
   $: OmitValueWhenNever<{
     query: loginUser_Query;
+    querystring: never;
     path: never;
     headers: loginUser_Headers;
     cookie: never;
@@ -997,6 +1012,7 @@ import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 export type logoutUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: logoutUser_Headers;
     cookie: never;
@@ -1059,6 +1075,7 @@ import type { User } from "../../components/schemas/User.js";
 export type getUserByName = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getUserByName_Path;
     headers: getUserByName_Headers;
     cookie: never;
@@ -1106,6 +1123,7 @@ export type getUserByName = (
 export type updateUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: updateUser_Path;
     headers: updateUser_Headers;
     cookie: never;
@@ -1134,6 +1152,7 @@ export type updateUser = (
 export type deleteUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: deleteUser_Path;
     headers: deleteUser_Headers;
     cookie: never;
@@ -1364,6 +1383,7 @@ import type { HttpStatusCode } from "../../counterfact-types/index.ts";
 export type getRoot = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: getRoot_Headers;
     cookie: never;
@@ -1424,6 +1444,7 @@ import type { InternalServerError } from "../#/components/responses/InternalServ
 export type getCount = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: getCount_Headers;
     cookie: never;
@@ -1483,6 +1504,7 @@ import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 export type helloKitty = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: helloKitty_Headers;
     cookie: never;
@@ -1543,6 +1565,7 @@ import type { BadRequest } from "../../#/components/responses/BadRequest.js";
 export type sayHello = (
   $: OmitValueWhenNever<{
     query: sayHello_Query;
+    querystring: never;
     path: sayHello_Path;
     headers: sayHello_Headers;
     cookie: never;
@@ -1626,6 +1649,7 @@ import type { BadRequest } from "../#/components/responses/BadRequest.js";
 export type getPathOne = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: getPathOne_Headers;
     cookie: never;
@@ -1681,6 +1705,7 @@ import type { ResponseBuilderFactory } from "../../../../counterfact-types/index
 export type weirdColonPath = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: weirdColonPath_Headers;
     cookie: never;
@@ -1750,6 +1775,7 @@ import type { Error } from "../components/schemas/Error.js";
 export type listUsers = (
   $: OmitValueWhenNever<{
     query: listUsers_Query;
+    querystring: never;
     path: never;
     headers: listUsers_Headers;
     cookie: never;
@@ -1791,6 +1817,7 @@ export type listUsers = (
 export type createUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: createUser_Headers;
     cookie: never;
@@ -1895,6 +1922,7 @@ import type { PatchUserRequest } from "../../components/schemas/PatchUserRequest
 export type getUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getUser_Path;
     headers: getUser_Headers;
     cookie: never;
@@ -1929,6 +1957,7 @@ export type getUser = (
 export type replaceUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: replaceUser_Path;
     headers: replaceUser_Headers;
     cookie: never;
@@ -1963,6 +1992,7 @@ export type replaceUser = (
 export type patchUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: patchUser_Path;
     headers: patchUser_Headers;
     cookie: never;
@@ -1997,6 +2027,7 @@ export type patchUser = (
 export type deleteUser = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: deleteUser_Path;
     headers: deleteUser_Headers;
     cookie: never;
@@ -2091,6 +2122,7 @@ import type { BadRequest } from "../#/components/responses/BadRequest.js";
 export type createEvent = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: createEvent_Headers;
     cookie: never;
@@ -2144,6 +2176,7 @@ import type { NotFound } from "../../#/components/responses/NotFound.js";
 export type getProduct = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getProduct_Path;
     headers: getProduct_Headers;
     cookie: never;
@@ -2205,6 +2238,7 @@ import type { Error } from "../components/schemas/Error.js";
 export type uploadFile = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: uploadFile_Headers;
     cookie: never;
@@ -2279,6 +2313,7 @@ import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts
 export type listItemsLegacy = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: listItemsLegacy_Headers;
     cookie: listItemsLegacy_Cookie;
@@ -2339,6 +2374,7 @@ import type { NotFound } from "../../#/components/responses/NotFound.js";
 export type getReport = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: getReport_Path;
     headers: getReport_Headers;
     cookie: never;
@@ -2408,6 +2444,7 @@ import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 export type ping = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: ping_Headers;
     cookie: never;
@@ -2461,6 +2498,7 @@ import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 export type setMetadata = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: setMetadata_Headers;
     cookie: never;
@@ -2519,6 +2557,7 @@ import type { XmlBook } from "../../components/schemas/XmlBook.js";
 export type getXmlBook = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: getXmlBook_Headers;
     cookie: never;
@@ -2579,6 +2618,7 @@ import type { XmlNote } from "../../components/schemas/XmlNote.js";
 export type getXmlNote = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: getXmlNote_Headers;
     cookie: never;
@@ -2639,6 +2679,7 @@ import type { XmlSnippet } from "../../components/schemas/XmlSnippet.js";
 export type getXmlSnippet = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: getXmlSnippet_Headers;
     cookie: never;
@@ -2699,6 +2740,7 @@ import type { XmlSecret } from "../../components/schemas/XmlSecret.js";
 export type getXmlSecret = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: getXmlSecret_Headers;
     cookie: never;
@@ -2759,6 +2801,7 @@ import type { XmlPlaylist } from "../../components/schemas/XmlPlaylist.js";
 export type getXmlPlaylist = (
   $: OmitValueWhenNever<{
     query: never;
+    querystring: never;
     path: never;
     headers: getXmlPlaylist_Headers;
     cookie: never;
@@ -2819,6 +2862,7 @@ import type { Pageable } from "../components/schemas/Pageable.js";
 export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: HTTP_GET_Query;
+    querystring: never;
     path: never;
     headers: HTTP_GET_Headers;
     cookie: never;
@@ -2855,6 +2899,143 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 43`] = `
+"routes/stream/events.ts:import type { streamEvents } from "../../types/paths/stream/events.types.js";
+
+export const GET: streamEvents = async ($) => {
+  async function* items() {
+    // yield items here
+  }
+  return $.response[200].stream(items());
+};
+"
+`;
+
+exports[`end-to-end test generates the same code for the example that it did on the last test run 44`] = `
+"types/paths/stream/events.types.ts:// This code was automatically generated from an OpenAPI description.
+// Do not edit this file. Edit the OpenAPI file instead.
+// For more information, see https://github.com/pmcelhaney/counterfact/blob/main/docs/faq.md
+
+import type { WideOperationArgument } from "../../../counterfact-types/index.ts";
+import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
+import type { MaybePromise } from "../../../counterfact-types/index.ts";
+import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
+import type { Context } from "@@CONTEXT_FILE_TOKEN@@";
+import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
+import type { LogEntry } from "../../components/schemas/LogEntry.js";
+
+/**
+ * Stream a series of server-sent events. Each event conforms to the LogEntry schema. Demonstrates OpenAPI 3.2 itemSchema support for sequential media types.
+ *
+ */
+export type streamEvents = (
+  $: OmitValueWhenNever<{
+    query: never;
+    querystring: never;
+    path: never;
+    headers: streamEvents_Headers;
+    cookie: never;
+    body: never;
+    context: Context;
+    response: ResponseBuilderFactory<{
+      200: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "text/event-stream": {
+            schema: AsyncIterable<LogEntry>;
+          };
+        };
+        examples: {};
+      };
+    }>;
+    x: WideOperationArgument;
+    proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: { username?: string; password?: string; apiKey?: string };
+    user: { username?: string; password?: string };
+    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+    version: never;
+  }>,
+) => MaybePromise<COUNTERFACT_RESPONSE>;
+
+export type streamEvents_Headers = { "x-api-key": string };
+"
+`;
+
+exports[`end-to-end test generates the same code for the example that it did on the last test run 45`] = `
+"routes/search.ts:import type { search } from "../types/paths/search.types.js";
+
+export const GET: search = async ($) => {
+  return $.response[200].random();
+};
+"
+`;
+
+exports[`end-to-end test generates the same code for the example that it did on the last test run 46`] = `
+"types/paths/search.types.ts:// This code was automatically generated from an OpenAPI description.
+// Do not edit this file. Edit the OpenAPI file instead.
+// For more information, see https://github.com/pmcelhaney/counterfact/blob/main/docs/faq.md
+
+import type { WideOperationArgument } from "../../counterfact-types/index.ts";
+import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
+import type { MaybePromise } from "../../counterfact-types/index.ts";
+import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
+import type { Context } from "@@CONTEXT_FILE_TOKEN@@";
+import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
+import type { BadRequest } from "../#/components/responses/BadRequest.js";
+
+/**
+ * Search with the entire query string treated as a typed object (OpenAPI 3.2 querystring parameter)
+ */
+export type search = (
+  $: OmitValueWhenNever<{
+    query: never;
+    querystring: search_Querystring;
+    path: never;
+    headers: search_Headers;
+    cookie: never;
+    body: never;
+    context: Context;
+    response: ResponseBuilderFactory<{
+      200: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: { results?: Array<string>; total?: number };
+          };
+        };
+        examples: {
+          default: unknown;
+        };
+      };
+      400: BadRequest;
+    }>;
+    x: WideOperationArgument;
+    proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: { username?: string; password?: string; apiKey?: string };
+    user: { username?: string; password?: string };
+    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+    version: never;
+  }>,
+) => MaybePromise<COUNTERFACT_RESPONSE>;
+
+export type search_Headers = { "x-api-key": string };
+
+export type search_Querystring = {
+  /**
+   * The search term
+   */
+  term?: string;
+  /**
+   * @default 10
+   */
+  maxResults?: number;
+  tags?: Array<string>;
+};
+"
+`;
+
+exports[`end-to-end test generates the same code for the example that it did on the last test run 47`] = `
 "types/#/components/responses/InternalServerError.ts:import type { Error } from "../../../components/schemas/Error.js";
 
 export type InternalServerError = {
@@ -2870,7 +3051,7 @@ export type InternalServerError = {
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 44`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 48`] = `
 "types/#/components/responses/BadRequest.ts:import type { Error } from "../../../components/schemas/Error.js";
 
 export type BadRequest = {
@@ -2886,14 +3067,14 @@ export type BadRequest = {
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 45`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 49`] = `
 "types/components/schemas/Recursive.ts:import type { Recursive } from "./Recursive.js";
 
 export type Recursive = Recursive;
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 46`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 50`] = `
 "types/components/schemas/UserList.ts:import type { User } from "./User.js";
 
 export type UserList = {
@@ -2905,7 +3086,7 @@ export type UserList = {
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 47`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 51`] = `
 "types/#/components/responses/Unauthorized.ts:import type { Error } from "../../../components/schemas/Error.js";
 
 export type Unauthorized = {
@@ -2921,7 +3102,7 @@ export type Unauthorized = {
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 48`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 52`] = `
 "types/components/schemas/CreateUserRequest.ts:export type CreateUserRequest = {
   name: string;
   /**
@@ -2937,7 +3118,7 @@ exports[`end-to-end test generates the same code for the example that it did on 
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 49`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 53`] = `
 "types/components/schemas/User.ts:export type User = {
   /**
    * Opaque unique identifier
@@ -2969,7 +3150,7 @@ exports[`end-to-end test generates the same code for the example that it did on 
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 50`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 54`] = `
 "types/components/schemas/Error.ts:/**
  * A generic error message suitable for 4xx and 5xx responses
  */
@@ -2990,7 +3171,7 @@ export type Error = {
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 51`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 55`] = `
 "types/#/components/responses/NotFound.ts:import type { Error } from "../../../components/schemas/Error.js";
 
 export type NotFound = {
@@ -3006,7 +3187,7 @@ export type NotFound = {
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 52`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 56`] = `
 "types/components/schemas/PatchUserRequest.ts:/**
  * All fields are optional; only provided fields are updated (JSON Merge Patch semantics). Setting a nullable field to null clears it.
  *
@@ -3024,7 +3205,7 @@ export type PatchUserRequest = {
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 53`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 57`] = `
 "types/components/schemas/ClickEvent.ts:import type { BaseEvent } from "./BaseEvent.js";
 
 export type ClickEvent = BaseEvent & {
@@ -3037,7 +3218,7 @@ export type ClickEvent = BaseEvent & {
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 54`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 58`] = `
 "types/components/schemas/PurchaseEvent.ts:import type { BaseEvent } from "./BaseEvent.js";
 
 export type PurchaseEvent = BaseEvent & {
@@ -3061,7 +3242,7 @@ export type PurchaseEvent = BaseEvent & {
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 55`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 59`] = `
 "types/components/schemas/SignUpEvent.ts:import type { BaseEvent } from "./BaseEvent.js";
 
 export type SignUpEvent = BaseEvent & {
@@ -3075,7 +3256,7 @@ export type SignUpEvent = BaseEvent & {
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 56`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 60`] = `
 "types/components/schemas/BaseEvent.ts:export type BaseEvent = {
   /**
    * Discriminator field
@@ -3090,7 +3271,7 @@ exports[`end-to-end test generates the same code for the example that it did on 
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 57`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 61`] = `
 "types/components/schemas/Product.ts:export type Product = {
   /**
    * @format int64
@@ -3124,32 +3305,32 @@ exports[`end-to-end test generates the same code for the example that it did on 
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 58`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 62`] = `
 "types/components/schemas/XmlBook.ts:export type XmlBook = { id?: number; title?: string; author?: string };
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 59`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 63`] = `
 "types/components/schemas/XmlNote.ts:export type XmlNote = { body?: string };
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 60`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 64`] = `
 "types/components/schemas/XmlSnippet.ts:export type XmlSnippet = { code?: string };
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 61`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 65`] = `
 "types/components/schemas/XmlSecret.ts:export type XmlSecret = { username?: string; password?: string };
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 62`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 66`] = `
 "types/components/schemas/XmlPlaylist.ts:export type XmlPlaylist = { name?: string; tracks?: Array<string> };
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 63`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 67`] = `
 "types/components/schemas/Pageable.ts:export type Pageable = {
   /**
    * @format int32
@@ -3164,12 +3345,38 @@ exports[`end-to-end test generates the same code for the example that it did on 
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 64`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 68`] = `
+"types/components/schemas/LogEntry.ts:/**
+ * A single log entry streamed via Server-Sent Events
+ */
+export type LogEntry = {
+  /**
+   * ISO 8601 timestamp of the log event
+   * @format date-time
+   */
+  timestamp: string;
+  /**
+   * Severity level
+   */
+  level: "DEBUG" | "INFO" | "WARN" | "ERROR";
+  /**
+   * Human-readable log message
+   */
+  message: string;
+  /**
+   * Optional structured metadata attached to the log entry
+   */
+  context?: { [key: string]: unknown };
+};
+"
+`;
+
+exports[`end-to-end test generates the same code for the example that it did on the last test run 69`] = `
 ".cache
 "
 `;
 
-exports[`end-to-end test generates the same code for the example that it did on the last test run 65`] = `
+exports[`end-to-end test generates the same code for the example that it did on the last test run 70`] = `
 "This directory contains compiled JS files from the paths directory. Do not edit these files directly.
 "
 `;
