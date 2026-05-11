@@ -91,6 +91,22 @@ describe("applyOverlayActions", () => {
     }).not.toThrow();
   });
 
+  it("ignores __proto__ keys to prevent prototype pollution", () => {
+    const document: Record<string, unknown> = { info: { title: "Safe" } };
+
+    // Simulate a malicious overlay action that tries to set __proto__
+    applyOverlayActions(document, [
+      {
+        target: "$.info",
+        update: { __proto__: { polluted: true } } as Record<string, unknown>,
+      },
+    ]);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- checking prototype pollution
+    expect((Object.prototype as any).polluted).toBeUndefined();
+    expect(document.info).not.toHaveProperty("polluted");
+  });
+
   it("adds a new key when the update introduces a property not present in target", () => {
     const document: Record<string, unknown> = { info: { title: "Original" } };
 

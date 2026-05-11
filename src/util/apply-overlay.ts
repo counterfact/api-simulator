@@ -25,6 +25,11 @@ function deepMerge(
   source: Record<string, unknown>,
 ): void {
   for (const [key, value] of Object.entries(source)) {
+    // Guard against prototype pollution attacks.
+    if (key === "__proto__" || key === "constructor" || key === "prototype") {
+      continue;
+    }
+
     if (
       typeof value === "object" &&
       value !== null &&
