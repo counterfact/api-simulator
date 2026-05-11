@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import type { IncomingHttpHeaders } from "node:http";
 
 import createDebug from "debug";
@@ -37,6 +38,47 @@ const HEADERS_TO_DROP = new Set([
   "trailer",
   "trailers",
 ]);
+
+/**
+ * SSE/JSONL/JSON-seq formatter map. Each entry maps a content-type to the
+ * function that serialises a single stream item into the wire format.
+ */
+const STREAMING_FORMATTERS: Record<string, (item: unknown) => string> = {
+  "text/event-stream": (item) => `data: ${JSON.stringify(item)}\n\n`,
+  "application/json-seq": (item) => `\x1e${JSON.stringify(item)}\n`,
+};
+
+function defaultStreamFormatter(item: unknown): string {
+  return `${JSON.stringify(item)}\n`;
+}
+
+function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
+  return (
+    value !== null &&
+    value !== undefined &&
+    typeof value === "object" &&
+    Symbol.asyncIterator in (value as object)
+  );
+}
+
+/**
+ * Converts an `AsyncIterable` to a Node.js `Readable` stream, serialising
+ * each item according to the given content type.
+ */
+function asyncIterableToReadable(
+  iterable: AsyncIterable<unknown>,
+  contentType: string,
+): Readable {
+  const formatter = STREAMING_FORMATTERS[contentType] ?? defaultStreamFormatter;
+
+  async function* generate() {
+    for await (const item of iterable) {
+      yield formatter(item);
+    }
+  }
+
+  return Readable.from(generate());
+}
 
 function addCors(
   ctx: Koa.ExtendableContext,
@@ -156,7 +198,19 @@ export function routesMiddleware(
       req: { path: "", ...ctx.req },
     });
 
-    ctx.body = response.body;
+    if (isAsyncIterable(response.body)) {
+      const contentType = response.contentType ?? "application/jsonl";
+
+      ctx.type = contentType;
+      ctx.body = asyncIterableToReadable(response.body, contentType);
+
+      if (contentType === "text/event-stream") {
+        ctx.set("Cache-Control", "no-cache");
+        ctx.set("X-Accel-Buffering", "no");
+      }
+    } else {
+      ctx.body = response.body;
+    }
 
     if (
       response.contentType !== undefined &&

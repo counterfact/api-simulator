@@ -788,6 +788,76 @@ paths:
                 type: object
                 additionalProperties: true
 
+  # -----------------------------------------------------------------------
+  # Streaming: Server-Sent Events (OpenAPI 3.2 itemSchema)
+  # -----------------------------------------------------------------------
+  /stream/events:
+    get:
+      operationId: streamEvents
+      description: >
+        Stream a series of server-sent events. Each event conforms to the
+        LogEntry schema. Demonstrates OpenAPI 3.2 itemSchema support for
+        sequential media types.
+      responses:
+        "200":
+          description: An SSE stream of log entries
+          content:
+            text/event-stream:
+              itemSchema:
+                $ref: "#/components/schemas/LogEntry"
+
+  # -----------------------------------------------------------------------
+  # OpenAPI 3.2 querystring parameter (entire query string as typed object)
+  # -----------------------------------------------------------------------
+  /search:
+    get:
+      operationId: search
+      description: Search with the entire query string treated as a typed object (OpenAPI 3.2 querystring parameter)
+      parameters:
+        - in: querystring
+          name: q
+          required: false
+          schema:
+            type: object
+            properties:
+              term:
+                type: string
+                description: The search term
+              maxResults:
+                type: integer
+                minimum: 1
+                maximum: 100
+                default: 10
+              tags:
+                type: array
+                items:
+                  type: string
+            additionalProperties: false
+          description: Full query string parsed as a structured search object
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: string
+                  total:
+                    type: integer
+              examples:
+                default:
+                  value:
+                    results:
+                      - "Result A"
+                      - "Result B"
+                    total: 2
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
 components:
   # -----------------------------------------------------------------------
   # Reusable responses
@@ -822,6 +892,29 @@ components:
   # Schemas
   # -----------------------------------------------------------------------
   schemas:
+    # Log entry emitted by the /stream/events SSE endpoint
+    LogEntry:
+      title: LogEntry
+      description: A single log entry streamed via Server-Sent Events
+      type: object
+      required: [timestamp, level, message]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of the log event
+        level:
+          type: string
+          enum: [DEBUG, INFO, WARN, ERROR]
+          description: Severity level
+        message:
+          type: string
+          description: Human-readable log message
+        context:
+          type: object
+          additionalProperties: true
+          description: Optional structured metadata attached to the log entry
+
     # Generic error envelope
     Error:
       title: Error

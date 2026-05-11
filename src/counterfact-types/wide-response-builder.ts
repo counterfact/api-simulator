@@ -23,4 +23,5 @@ export interface WideResponseBuilder {
   random: () => MaybePromise<WideResponseBuilder>;
   text: (body: unknown) => WideResponseBuilder;
   xml: (body: unknown) => WideResponseBuilder;
+  stream: (body: AsyncIterable<unknown>) => WideResponseBuilder;
 }

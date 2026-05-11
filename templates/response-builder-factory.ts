@@ -86,6 +86,10 @@ export type ResponseBuilder<
         : (name: ExampleNames<Response>) => void;
       text: MaybeShortcut<"text/plain", Response>;
       xml: MaybeShortcut<"text/xml", Response>;
+      stream: MaybeShortcut<
+        "text/event-stream" | "application/jsonl" | "application/json-seq",
+        Response
+      >;
     }>;
 
 export type ResponseBuilderFactory<

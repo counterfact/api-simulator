@@ -7,6 +7,7 @@ import type {
   ResponseBuilder,
 } from "../counterfact-types/index.js";
 import type { Config } from "./config.js";
+import { STREAMING_CONTENT_TYPES } from "../typescript-generator/streaming-content-types.js";
 
 const DEFAULT_GENERATE_OPTIONS = {
   useExamplesValue: true,
@@ -347,6 +348,24 @@ export function createResponseBuilder(
             body,
             type,
           })),
+        };
+      },
+
+      stream(this: ResponseBuilder, iterable: AsyncIterable<unknown>) {
+        const response =
+          operation.responses[this.status ?? "default"] ??
+          operation.responses.default;
+
+        const contentTypes = Object.keys(response?.content ?? {});
+        const contentType =
+          contentTypes.find((ct) => STREAMING_CONTENT_TYPES.has(ct)) ??
+          "text/event-stream";
+
+        return {
+          body: iterable,
+          contentType,
+          headers: this.headers,
+          status: this.status,
         };
       },
 

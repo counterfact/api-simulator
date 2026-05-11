@@ -774,6 +774,80 @@ describe("an OperationTypeCoder", () => {
     expect(result).toContain("path: HTTP_GET_Path");
   });
 
+  it("generates a strongly-typed querystring type from a querystring parameter", () => {
+    const requirement = new Requirement(
+      {
+        operationId: "searchItems",
+        parameters: [
+          {
+            in: "querystring",
+            name: "q",
+            schema: {
+              type: "object",
+              properties: {
+                filter: { type: "string" },
+                page: { type: "integer" },
+              },
+            },
+          },
+        ],
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                schema: { type: "array", items: { type: "string" } },
+              },
+            },
+          },
+        },
+      },
+      "#/paths/items/get",
+    );
+
+    const scriptWithExportTracking = {
+      ...dummyScript,
+      exports: {},
+      export(coder) {
+        const name = coder.names().next().value;
+        this.exports[name] = coder;
+        return name;
+      },
+    };
+
+    const coder = new OperationTypeCoder(requirement, "", "get");
+    const result = coder.write(scriptWithExportTracking);
+
+    expect(scriptWithExportTracking.exports).toHaveProperty(
+      "searchItems_Querystring",
+    );
+    expect(result).toContain("querystring: searchItems_Querystring");
+    expect(result).not.toContain("querystring: never");
+  });
+
+  it("uses querystring: never when no querystring parameter is present", () => {
+    const requirement = new Requirement(
+      {
+        operationId: "listItems",
+        parameters: [{ in: "query", name: "name", schema: { type: "string" } }],
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                schema: { type: "array", items: { type: "string" } },
+              },
+            },
+          },
+        },
+      },
+      "#/paths/items/get",
+    );
+
+    const coder = new OperationTypeCoder(requirement, "", "get");
+    const result = coder.write(dummyScript);
+
+    expect(result).toContain("querystring: never");
+  });
+
   it("merges path-level and operation-level parameters (operation-level overrides)", () => {
     const specification = new Specification();
     const rootRequirement = new Requirement(
