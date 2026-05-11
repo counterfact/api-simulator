@@ -1,0 +1,269 @@
+import { describe, expect, it } from "@jest/globals";
+
+import { usingTemporaryFiles } from "using-temporary-files";
+
+import {
+  applyOverlayActions,
+  applyOverlays,
+  loadOverlay,
+} from "../../src/util/apply-overlay.js";
+
+describe("applyOverlayActions", () => {
+  it("merges an update into a matched node", () => {
+    const document = {
+      info: { title: "Original", version: "1.0.0" },
+    };
+
+    applyOverlayActions(document, [
+      { target: "$.info", update: { title: "Updated" } },
+    ]);
+
+    expect(document.info.title).toBe("Updated");
+    expect(document.info.version).toBe("1.0.0");
+  });
+
+  it("deep-merges nested objects", () => {
+    const document: Record<string, unknown> = {
+      info: {
+        contact: { name: "Alice", email: "alice@example.com" },
+      },
+    };
+
+    applyOverlayActions(document, [
+      {
+        target: "$.info",
+        update: { contact: { name: "Bob" } },
+      },
+    ]);
+
+    const info = document.info as { contact: { name: string; email: string } };
+    expect(info.contact.name).toBe("Bob");
+    expect(info.contact.email).toBe("alice@example.com");
+  });
+
+  it("removes a matched node from an object", () => {
+    const document: Record<string, unknown> = {
+      paths: {
+        "/pets": { get: {} },
+        "/users": { get: {} },
+      },
+    };
+
+    applyOverlayActions(document, [
+      { target: "$.paths['/pets']", remove: true },
+    ]);
+
+    const paths = document.paths as Record<string, unknown>;
+    expect(paths["/pets"]).toBeUndefined();
+    expect(paths["/users"]).toBeDefined();
+  });
+
+  it("applies multiple actions in order", () => {
+    const document: Record<string, unknown> = {
+      info: { title: "Original", description: "Keep this" },
+    };
+
+    applyOverlayActions(document, [
+      { target: "$.info", update: { title: "Step 1" } },
+      { target: "$.info", update: { title: "Step 2" } },
+    ]);
+
+    const info = document.info as { title: string; description: string };
+    expect(info.title).toBe("Step 2");
+    expect(info.description).toBe("Keep this");
+  });
+
+  it("does nothing when no nodes match the target", () => {
+    const document = { info: { title: "Original" } };
+
+    applyOverlayActions(document, [
+      { target: "$.nonexistent", update: { title: "Should not apply" } },
+    ]);
+
+    expect(document.info.title).toBe("Original");
+  });
+
+  it("does not throw for an empty actions array", () => {
+    const document = { info: { title: "Original" } };
+
+    expect(() => {
+      applyOverlayActions(document, []);
+    }).not.toThrow();
+  });
+
+  it("adds a new key when the update introduces a property not present in target", () => {
+    const document: Record<string, unknown> = { info: { title: "Original" } };
+
+    applyOverlayActions(document, [
+      { target: "$.info", update: { license: { name: "MIT" } } },
+    ]);
+
+    const info = document.info as { license?: { name: string } };
+    expect(info.license?.name).toBe("MIT");
+  });
+});
+
+describe("loadOverlay", () => {
+  it("parses a valid YAML overlay file", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "overlay.yaml",
+        [
+          "overlay: 1.0.0",
+          "info:",
+          "  title: My Overlay",
+          "  version: 1.0.0",
+          "actions:",
+          "  - target: $.info",
+          "    update:",
+          "      title: Updated Title",
+        ].join("\n"),
+      );
+
+      const overlay = await loadOverlay($.path("overlay.yaml"));
+
+      expect(overlay.actions).toHaveLength(1);
+      expect(overlay.actions[0]?.target).toBe("$.info");
+      expect(overlay.actions[0]?.update).toStrictEqual({
+        title: "Updated Title",
+      });
+    });
+  });
+
+  it("parses a valid JSON overlay file", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "overlay.json",
+        JSON.stringify({
+          overlay: "1.0.0",
+          info: { title: "JSON Overlay", version: "1.0.0" },
+          actions: [{ target: "$.info", update: { title: "From JSON" } }],
+        }),
+      );
+
+      const overlay = await loadOverlay($.path("overlay.json"));
+
+      expect(overlay.actions[0]?.update?.title).toBe("From JSON");
+    });
+  });
+
+  it("throws when the overlay file does not exist", async () => {
+    await expect(loadOverlay("/nonexistent/overlay.yaml")).rejects.toThrow(
+      "Could not read overlay file",
+    );
+  });
+
+  it("throws when the overlay file is missing the 'overlay' field", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "bad.yaml",
+        "actions:\n  - target: $.info\n    update:\n      title: Bad",
+      );
+
+      await expect(loadOverlay($.path("bad.yaml"))).rejects.toThrow(
+        "does not appear to be a valid OpenAPI overlay file",
+      );
+    });
+  });
+
+  it("throws when the overlay file is missing the 'actions' field", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("bad.yaml", "overlay: 1.0.0\ninfo:\n  title: No actions");
+
+      await expect(loadOverlay($.path("bad.yaml"))).rejects.toThrow(
+        "does not appear to be a valid OpenAPI overlay file",
+      );
+    });
+  });
+
+  it("throws when the overlay file contains invalid YAML", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("bad.yaml", "overlay: 1.0.0\nactions: [unclosed");
+
+      await expect(loadOverlay($.path("bad.yaml"))).rejects.toThrow(
+        "Could not parse overlay file",
+      );
+    });
+  });
+});
+
+describe("applyOverlays", () => {
+  it("applies overlays from files to the document", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "overlay.yaml",
+        [
+          "overlay: 1.0.0",
+          "info:",
+          "  title: My Overlay",
+          "  version: 1.0.0",
+          "actions:",
+          "  - target: $.info",
+          "    update:",
+          "      title: Applied Title",
+        ].join("\n"),
+      );
+
+      const document: Record<string, unknown> = {
+        info: { title: "Original", version: "1.0.0" },
+      };
+
+      await applyOverlays(document, [$.path("overlay.yaml")]);
+
+      expect((document.info as { title: string }).title).toBe("Applied Title");
+    });
+  });
+
+  it("applies multiple overlay files in order", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "overlay1.yaml",
+        [
+          "overlay: 1.0.0",
+          "info:",
+          "  title: Overlay 1",
+          "  version: 1.0.0",
+          "actions:",
+          "  - target: $.info",
+          "    update:",
+          "      title: First",
+        ].join("\n"),
+      );
+
+      await $.add(
+        "overlay2.yaml",
+        [
+          "overlay: 1.0.0",
+          "info:",
+          "  title: Overlay 2",
+          "  version: 1.0.0",
+          "actions:",
+          "  - target: $.info",
+          "    update:",
+          "      title: Second",
+        ].join("\n"),
+      );
+
+      const document: Record<string, unknown> = {
+        info: { title: "Original" },
+      };
+
+      await applyOverlays(document, [
+        $.path("overlay1.yaml"),
+        $.path("overlay2.yaml"),
+      ]);
+
+      expect((document.info as { title: string }).title).toBe("Second");
+    });
+  });
+
+  it("is a no-op when overlayPaths is empty", async () => {
+    const document: Record<string, unknown> = {
+      info: { title: "Original" },
+    };
+
+    await applyOverlays(document, []);
+
+    expect((document.info as { title: string }).title).toBe("Original");
+  });
+});

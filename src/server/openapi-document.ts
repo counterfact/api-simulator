@@ -3,6 +3,7 @@ import createDebug from "debug";
 import { dereference } from "@apidevtools/json-schema-ref-parser";
 
 import type { OpenApiOperation } from "../counterfact-types/index.js";
+import { applyOverlays } from "../util/apply-overlay.js";
 import { waitForEvent } from "../util/wait-for-event.js";
 import { CHOKIDAR_OPTIONS } from "./constants.js";
 import type { HttpMethods } from "./registry.js";
@@ -19,6 +20,12 @@ export class OpenApiDocument extends EventTarget {
   /** The path or URL of the OpenAPI source file. */
   public readonly source: string;
 
+  /**
+   * Optional ordered list of overlay file paths/URLs to apply after each
+   * load of the document.
+   */
+  public readonly overlays: readonly string[];
+
   public basePath?: string;
 
   public paths: {
@@ -31,9 +38,10 @@ export class OpenApiDocument extends EventTarget {
 
   private watcher: FSWatcher | undefined;
 
-  public constructor(source: string) {
+  public constructor(source: string, overlays: readonly string[] = []) {
     super();
     this.source = source;
+    this.overlays = overlays;
   }
 
   /**
@@ -51,6 +59,14 @@ export class OpenApiDocument extends EventTarget {
         };
         produces?: string[];
       };
+
+      if (this.overlays.length > 0) {
+        await applyOverlays(
+          data as unknown as Record<string, unknown>,
+          this.overlays,
+        );
+      }
+
       this.basePath = data.basePath;
       this.paths = data.paths;
       this.produces = data.produces;

@@ -1,6 +1,7 @@
 import { bundle } from "@apidevtools/json-schema-ref-parser";
 import createDebug from "debug";
 
+import { applyOverlays } from "../util/apply-overlay.js";
 import { Requirement, type RequirementData } from "./requirement.js";
 
 const debug = createDebug("counterfact:typescript-generator:specification");
@@ -28,12 +29,17 @@ export class Specification {
    * Loads the OpenAPI document at `urlOrPath`, bundles all external `$ref`
    * references, and returns a fully initialised {@link Specification}.
    *
-   * @param urlOrPath - A local file path or HTTP(S) URL.
+   * @param urlOrPath   - A local file path or HTTP(S) URL.
+   * @param overlays    - Optional ordered list of overlay file paths/URLs to
+   *   apply after loading the document.
    * @throws When the document cannot be found or parsed.
    */
-  public static async fromFile(urlOrPath: string): Promise<Specification> {
+  public static async fromFile(
+    urlOrPath: string,
+    overlays: readonly string[] = [],
+  ): Promise<Specification> {
     const specification = new Specification();
-    await specification.load(urlOrPath);
+    await specification.load(urlOrPath, overlays);
     return specification;
   }
 
@@ -50,20 +56,30 @@ export class Specification {
   }
 
   /**
-   * Loads (or reloads) the specification from `urlOrPath`.
+   * Loads (or reloads) the specification from `urlOrPath`, then applies any
+   * overlay files listed in `overlays` in order.
    *
    * @param urlOrPath - A local file path or HTTP(S) URL.
+   * @param overlays  - Optional ordered list of overlay file paths/URLs.
    * @throws When the document cannot be found or parsed.
    */
-  public async load(urlOrPath: string): Promise<void> {
+  public async load(
+    urlOrPath: string,
+    overlays: readonly string[] = [],
+  ): Promise<void> {
     try {
-      this.rootRequirement = new Requirement(
-        (await bundle(urlOrPath, {
-          resolve: { http: { safeUrlResolver: false } },
-        })) as RequirementData,
-        urlOrPath,
-        this,
-      );
+      const document = (await bundle(urlOrPath, {
+        resolve: { http: { safeUrlResolver: false } },
+      })) as RequirementData;
+
+      if (overlays.length > 0) {
+        await applyOverlays(
+          document as unknown as Record<string, unknown>,
+          overlays,
+        );
+      }
+
+      this.rootRequirement = new Requirement(document, urlOrPath, this);
     } catch (error) {
       const details = error instanceof Error ? error.message : String(error);
       throw new Error(

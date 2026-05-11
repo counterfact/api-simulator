@@ -19,6 +19,11 @@ export interface Config {
   };
   /** Path or URL to the OpenAPI document. Use `"_"` to skip spec loading. */
   openApiPath: string;
+  /**
+   * Optional ordered list of overlay file paths/URLs to apply to the OpenAPI
+   * document after loading.  Overlays are applied in the order listed.
+   */
+  overlays?: readonly string[];
   /** TCP port the HTTP server listens on. */
   port: number;
   /**

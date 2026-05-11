@@ -28,6 +28,7 @@ type SpecOptionEntry = {
   prefix?: string;
   group?: string;
   version?: string;
+  overlays?: string[];
 };
 type SpecOption = string | SpecOptionEntry | SpecOptionEntry[] | undefined;
 
@@ -36,7 +37,7 @@ type SpecOption = string | SpecOptionEntry | SpecOptionEntry[] | undefined;
  * CLI flag) into an array of {@link SpecConfig} objects, or `undefined` when
  * the option is a plain string (single OpenAPI document path).
  *
- * - **Array**: each entry is mapped to `{source, prefix, group, version}` with defaults.
+ * - **Array**: each entry is mapped to `{source, prefix, group, version, overlays}` with defaults.
  * - **Object**: wrapped in a single-element array.
  * - **String / undefined**: returns `undefined` — caller handles the string
  *   case (it shifts the positional argument) and the `undefined` case
@@ -55,6 +56,7 @@ export function normalizeSpecOption(
       prefix: entry.prefix,
       group: entry.group ?? "",
       version: entry.version,
+      overlays: entry.overlays,
     }));
   }
 
@@ -69,6 +71,7 @@ export function normalizeSpecOption(
         prefix: specOption.prefix,
         group: specOption.group ?? "",
         version: specOption.version,
+        overlays: specOption.overlays,
       },
     ];
   }
@@ -99,6 +102,7 @@ function buildProgram(version: string, taglines: string[]): Command {
       generateRoutes?: boolean;
       generateTypes?: boolean;
       open?: boolean;
+      overlay?: string[];
       port: number;
       prefix: string;
       prune?: boolean;
@@ -214,6 +218,7 @@ function buildProgram(version: string, taglines: string[]): Command {
       },
 
       openApiPath: source,
+      overlays: options.overlay ?? [],
       port: options.port,
       proxyPaths: new Map([["", Boolean(options.proxyUrl)]]),
       proxyUrl: options.proxyUrl ?? "",
@@ -417,6 +422,12 @@ function buildProgram(version: string, taglines: string[]): Command {
     .option(
       "--spec <string>",
       "path or URL to OpenAPI document (alternative to the positional [openapi.yaml] argument)",
+    )
+    .option(
+      "--overlay <path>",
+      "path or URL to an OpenAPI overlay file to apply (repeatable)",
+      (value: string, previous: string[]) => [...previous, value],
+      [] as string[],
     )
     .option("--no-update-check", "disable the npm update check on startup")
     .option(
