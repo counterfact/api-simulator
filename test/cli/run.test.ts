@@ -144,6 +144,9 @@ describe("buildStartupTelemetryProperties", () => {
     );
 
     expect(properties["mode"]).toBe("single-spec");
+    expect(properties["updateCheck"]).toBe(true);
+    expect(properties["validateRequest"]).toBe(true);
+    expect(properties["validateResponse"]).toBe(true);
     expect(properties["apiFileLocationHashes"]).toEqual([
       expect.stringMatching(/^[a-f0-9]{64}$/u),
     ]);
@@ -174,5 +177,21 @@ describe("buildStartupTelemetryProperties", () => {
       expect.stringMatching(/^[a-f0-9]{64}$/u),
       expect.stringMatching(/^[a-f0-9]{64}$/u),
     ]);
+  });
+
+  it("tracks without-openapi mode when source is '_'", () => {
+    const properties = buildStartupTelemetryProperties(
+      {
+        port: 3100,
+        updateCheck: true,
+        validateRequest: true,
+        validateResponse: true,
+      },
+      "_",
+      "1.2.3",
+    );
+
+    expect(properties["mode"]).toBe("without-openapi");
+    expect(properties["apiFileLocationHashes"]).toEqual([]);
   });
 });

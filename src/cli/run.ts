@@ -111,7 +111,7 @@ export function buildStartupTelemetryProperties(
     .map((apiSource) => hashTelemetryLocation(apiSource));
 
   return {
-    alwaysFakeOptionals: options.alwaysFakeOptionals ?? false,
+    alwaysFakeOptionals: Boolean(options.alwaysFakeOptionals),
     apiFileLocationHashes,
     buildCache: Boolean(options.buildCache),
     generateRoutes:
@@ -128,9 +128,9 @@ export function buildStartupTelemetryProperties(
     prune: Boolean(options.prune),
     repl: Boolean(options.repl),
     serve: Boolean(options.serve),
-    updateCheck: options.updateCheck !== false,
-    validateRequest: options.validateRequest !== false,
-    validateResponse: options.validateResponse !== false,
+    updateCheck: Boolean(options.updateCheck),
+    validateRequest: Boolean(options.validateRequest),
+    validateResponse: Boolean(options.validateResponse),
     version,
     watchRoutes: Boolean(options.watch) || Boolean(options.watchRoutes),
     watchTypes: Boolean(options.watch) || Boolean(options.watchTypes),
