@@ -82,7 +82,9 @@ export function normalizeSpecOption(
 
 /**
  * Subset of resolved CLI options that are intentionally included in startup
- * telemetry. Values are recorded as booleans/numbers only.
+ * telemetry. Only non-sensitive flags are captured and all values are sent as
+ * booleans/numbers (no raw file paths or free-form user input) to preserve
+ * privacy while still allowing high-level usage analysis.
  */
 type StartupTelemetryOptions = {
   alwaysFakeOptionals?: boolean;
