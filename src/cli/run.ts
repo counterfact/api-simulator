@@ -80,6 +80,10 @@ export function normalizeSpecOption(
   return undefined;
 }
 
+/**
+ * Subset of resolved CLI options that are intentionally included in startup
+ * telemetry. Values are recorded as booleans/numbers only.
+ */
 type StartupTelemetryOptions = {
   alwaysFakeOptionals?: boolean;
   buildCache?: boolean;
