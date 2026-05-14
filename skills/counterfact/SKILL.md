@@ -39,5 +39,4 @@ reload and a REPL.
 
 ## Documentation
 
-- https://countefact.dev
 - https://counterfact.dev
