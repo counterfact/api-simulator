@@ -17,6 +17,8 @@ jobs:
   check-links:
     name: Check for broken links
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_POSTHOG_API_KEY: phc_msXmBxiL8FVugNMLCx9bnPQGqfEMqmyBjnVkKhHkN3m7
     permissions:
       contents: read
     steps:

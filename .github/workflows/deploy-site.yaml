@@ -19,6 +19,8 @@ jobs:
   build:
     name: Build Astro site
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_POSTHOG_API_KEY: phc_msXmBxiL8FVugNMLCx9bnPQGqfEMqmyBjnVkKhHkN3m7
     steps:
       - name: Checkout
         uses: actions/checkout@v6
