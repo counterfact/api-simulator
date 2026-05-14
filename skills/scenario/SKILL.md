@@ -26,6 +26,7 @@ A scenario is a function receiving `$` and using it to access context and route
 helpers.
 
 ```ts
+// Path is relative to the scenarios directory in generated output.
 import type { Scenario } from "../types/_.context.js";
 
 export const startup: Scenario = ($) => {
