@@ -10,8 +10,11 @@ const { title = "Counterfact — API Simulator", canonicalPath } = Astro.props;
 const canonicalUrl = canonicalPath
   ? `https://counterfact.dev${canonicalPath}`
   : undefined;
-const posthogApiKey = "phc_msXmBxiL8FVugNMLCx9bnPQGqfEMqmyBjnVkKhHkN3m7";
-const posthogHost = "https://us.i.posthog.com";
+const posthogApiKey =
+  import.meta.env.PUBLIC_POSTHOG_API_KEY ??
+  "phc_msXmBxiL8FVugNMLCx9bnPQGqfEMqmyBjnVkKhHkN3m7";
+const posthogHost =
+  import.meta.env.PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
 ---
 
 <!doctype html>
@@ -59,7 +62,9 @@ const posthogHost = "https://us.i.posthog.com";
             return `${u.toString(1)}.people (stub)`;
           };
           o =
-            "init capture register register_once register_for_session unregister unregister_for_session reset config set_config set_person_properties set_person_properties_for_flags set_group_properties set_property_for_flags unset_property_for_flags identify alias setPersonProperties setPersonPropertiesForFlags setGroupProperties setPropertyForFlags unsetPropertyForFlags people.set people.set_once people.unset people.increment people.append people.remove people.union people.track_charge people.clear_charges people.delete_user people.setDisplayName people.set_display_name people.setPersonPropertiesOnce get_distinct_id getDistinctId get_property getProperty getSessionProperty get_session_recording_url getSessionRecordingUrl get_feature_flag getFeatureFlag get_feature_flag_payload getFeatureFlagPayload is_feature_enabled isFeatureEnabled reload_feature_flags reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId registerPerson register_person parse_mode resetGroups group setPersonPropertiesForFeatureFlags startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_surveys getSurveys renderSurvey canRenderSurvey identifyWithGroups setPersonPropertiesOnceForFlags setPersonPropertiesOnceForFlags";
+            "init capture register register_once register_for_session unregister unregister_for_session reset config set_config set_person_properties set_person_properties_for_flags set_group_properties set_property_for_flags unset_property_for_flags identify alias setPersonProperties setPersonPropertiesForFlags setGroupProperties setPropertyForFlags unsetPropertyForFlags people.set people.set_once people.unset people.increment people.append people.remove people.union people.track_charge people.clear_charges people.delete_user people.setDisplayName people.set_display_name people.setPersonPropertiesOnce get_distinct_id getDistinctId get_property getProperty getSessionProperty get_session_recording_url getSessionRecordingUrl get_feature_flag getFeatureFlag get_feature_flag_payload getFeatureFlagPayload is_feature_enabled isFeatureEnabled reload_feature_flags reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId registerPerson register_person parse_mode resetGroups group setPersonPropertiesForFeatureFlags startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_surveys getSurveys renderSurvey canRenderSurvey identifyWithGroups setPersonPropertiesOnceForFlags setPersonPropertiesOnceForFlags".split(
+              " ",
+            );
           for (n = 0; n < o.length; n++) g(u, o[n]);
           e._i.push([i, s, a]);
         };
