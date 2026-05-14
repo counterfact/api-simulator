@@ -6,6 +6,7 @@ interface Props {
   canonicalPath?: string;
 }
 
+const googleAnalyticsId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 const { title = "Counterfact — API Simulator", canonicalPath } = Astro.props;
 const canonicalUrl = canonicalPath
   ? `https://counterfact.dev${canonicalPath}`
@@ -19,6 +20,22 @@ const canonicalUrl = canonicalPath
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {googleAnalyticsId && (
+      <>
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+        ></script>
+        <script is:inline define:vars={{ googleAnalyticsId }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag("js", new Date());
+          gtag("config", googleAnalyticsId);
+        </script>
+      </>
+    )}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

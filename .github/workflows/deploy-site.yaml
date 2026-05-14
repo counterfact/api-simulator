@@ -19,6 +19,8 @@ jobs:
   build:
     name: Build Astro site
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_GOOGLE_ANALYTICS_ID: G-2QHMETF62T
     steps:
       - name: Checkout
         uses: actions/checkout@v6
