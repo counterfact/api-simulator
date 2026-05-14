@@ -20,7 +20,8 @@ Implement or update route behavior in generated route files.
 - Route handlers must stay thin.
 - Business logic must be delegated to a context class in an appropriate
   `_.context.ts` file.
-- Do **not** create unit tests in this skill.
+- Do **not** create unit tests in this skill; routes are HTTP adapters and
+  behavior should be validated through context tests and integration-level flows.
 
 ## Step-by-step
 

@@ -42,7 +42,8 @@ Typical `$` usage in scenarios:
 
 - Keep reusable business operations in contexts; scenarios orchestrate calls.
 - Keep scenarios focused on setup flows and fixtures.
-- Do **not** create unit tests in this skill.
+- Do **not** create unit tests in this skill; scenario behavior should be checked
+  through end-to-end route behavior and manual/acceptance flows.
 
 ## References
 
