@@ -29,6 +29,7 @@ const posthogHost =
       rel="stylesheet"
     />
     <script is:inline define:vars={{ posthogApiKey, posthogHost }}>
+      // Official PostHog browser loader snippet (kept close to upstream).
       !(function (t, e) {
         let o, n, p, r;
         if (e.__SV) return;
@@ -45,10 +46,8 @@ const posthogHost =
           ((p = t.createElement("script")).type = "text/javascript"),
             (p.async = !0),
             (p.src = `${posthogHost}/static/array.js`),
-            (r = t.getElementsByTagName("script")[0]).parentNode?.insertBefore(
-              p,
-              r,
-            );
+            (r = t.getElementsByTagName("script")[0]),
+            r.parentNode && r.parentNode.insertBefore(p, r);
           let u = e;
           void 0 !== a ? (u = e[a] = []) : (a = "posthog");
           u.people = u.people || [];
@@ -76,6 +75,7 @@ const posthogHost =
       if (posthogApiKey) {
         posthog.init(posthogApiKey, {
           api_host: posthogHost,
+          // Track page views only for the website.
           autocapture: false,
           capture_pageview: true,
           person_profiles: "identified_only",
