@@ -18,7 +18,8 @@ Implement or update route behavior in generated route files.
 - Use the `$` API in every handler (`$.path`, `$.query`, `$.body`, `$.response`,
   `$.context`, `$.loadContext`).
 - Route handlers must stay thin.
-- Business logic must be delegated to a context class in `_.context.ts`.
+- Business logic must be delegated to a context class in an appropriate
+  `_.context.ts` file.
 - Do **not** create unit tests in this skill.
 
 ## Step-by-step

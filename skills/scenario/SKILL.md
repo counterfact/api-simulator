@@ -36,7 +36,7 @@ export const startup: Scenario = ($) => {
 Typical `$` usage in scenarios:
 
 - `$.context` for state changes
-- `$.route("/path")` (or route builder helpers) for cross-context actions
+- `$.route("/path")` for calling routes from scenario setup flows
 
 ## Required rules
 

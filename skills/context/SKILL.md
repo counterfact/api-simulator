@@ -31,7 +31,7 @@ inline.
 
 ## Required rules
 
-- Any behavior change in context code must include unit tests.
+- Any new or modified context method must include unit tests.
 - Test the Context class directly (no server boot required).
 - Do not populate dummy data directly in context changes.
 - Delegate dummy data creation/seeding to scenario modules under `scenarios/`.
@@ -47,5 +47,3 @@ inline.
 ## References
 
 - https://counterfact.dev/docs/features/state.html
-- https://counterfact.dev/docs/patterns/test-context-not-handlers.html
-- https://counterfact.dev/docs/patterns/mock-with-dummy-data.html
