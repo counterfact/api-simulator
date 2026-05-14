@@ -42,7 +42,7 @@ inline.
 2. Keep route files calling these methods via `$.context`.
 3. Add/adjust unit tests for the changed context methods.
 4. If sample data is needed, add/update a scenario function instead of hardcoding
-   defaults in context constructors.
+    defaults in context constructors.
 
 ## References
 

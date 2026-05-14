@@ -26,7 +26,7 @@ Implement or update route behavior in generated route files.
 
 ## Step-by-step
 
-1. Open the target file under `routes/` (for example `routes/pet/{petId}.ts`).
+1. Open the target file under `routes/` (e.g. `routes/pet/{petId}.ts`).
 2. Read input using `$` (`$.path`, `$.query`, `$.body`).
 3. Call a context method for logic/state changes.
 4. Return a response using `$.response[status]`.
