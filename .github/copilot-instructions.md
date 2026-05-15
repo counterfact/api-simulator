@@ -45,6 +45,22 @@ it("example", async () => {
   - Update the relevant docs under `docs/` (e.g. `docs/usage.md`, `docs/getting-started.md`, or `docs/reference.md`) to reflect the change. If the change introduces a new feature or modifies existing behaviour, document it there.
 - When touching server startup or CLI behaviour, run the black-box tests: `yarn build` then `yarn test:black-box` (requires Python 3 with `pip install -r test-black-box/requirements.txt`).
 
+## Decision and Learning Log (when changing code)
+
+For every non-trivial code change, keep a short running log:
+
+- If a PR is being updated, add or update a `## Decision and learning log` section in the PR description.
+- If there is no PR description context, include the same section in the final handoff message.
+
+Include:
+
+- Key decisions made and why those options were chosen.
+- Incorrect assumptions or alternative approaches that were revised during the task.
+- What instruction wording, missing context, or examples would have made the task clearer.
+- Lessons learned from code review feedback, including what changed after review and what to do differently next time.
+
+Keep entries concise, concrete, and tied to observable outcomes in the task.
+
 ## Context
 
 Counterfact is a TypeScript-based mock server generator that transforms OpenAPI/Swagger specifications into live, stateful mock APIs with hot reload, a terminal REPL, and a built-in Swagger UI. Developers run it with a single command and receive fully typed route-handler files they can edit while the server is running.
