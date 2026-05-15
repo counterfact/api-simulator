@@ -134,6 +134,7 @@ export class ApiRunner {
       config.basePath + this.subdirectory,
       config.generate,
       version,
+      config.overlays ?? [],
     );
 
     this.dispatcher = new Dispatcher(
@@ -195,7 +196,7 @@ export class ApiRunner {
     const openApiDocument =
       config.openApiPath === "_"
         ? undefined
-        : await loadOpenApiDocument(config.openApiPath);
+        : await loadOpenApiDocument(config.openApiPath, config.overlays ?? []);
 
     return new ApiRunner(
       config,
