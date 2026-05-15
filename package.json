@@ -78,8 +78,7 @@
     "go:petstore2": "yarn build && yarn counterfact  https://petstore.swagger.io/v2/swagger.json out",
     "go:example": "yarn build && node ./bin/counterfact.js ./test/fixtures/openapi/example.yaml out",
     "go:multiple-apis": "yarn build && node ./bin/counterfact.js --config ./test/fixtures/config/multiple-apis.yaml",
-    "counterfact": "./bin/counterfact.js",
-    "postinstall": "patch-package"
+    "counterfact": "./bin/counterfact.js"
   },
   "devDependencies": {
     "@changesets/cli": "2.31.0",
@@ -142,7 +141,6 @@
     "koa2-swagger-ui": "5.12.0",
     "node-fetch": "3.3.2",
     "open": "11.0.0",
-    "patch-package": "8.0.1",
     "posthog-node": "5.34.0",
     "precinct": "12.3.2",
     "prettier": "3.8.3",
