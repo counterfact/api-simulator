@@ -1,5 +1,15 @@
 # counterfact
 
+## 2.12.1
+
+### Patch Changes
+
+- 78d3fcd: Updated dependency `tsx` to `4.22.0`.
+- 5f07e3a: Updated dependency `astro` to `6.3.2`.
+- ebb4567: Updated dependency `posthog-node` to `5.34.2`.
+- f3b6bbc: Updated dependency `astro` to `6.3.3`.
+- d247ff9: Updated dependency `eslint` to `10.4.0`.
+
 ## 2.12.0
 
 ### Minor Changes
