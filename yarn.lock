@@ -1441,17 +1441,17 @@
   resolved "https://registry.yarnpkg.com/@pkgr/core/-/core-0.2.9.tgz#d229a7b7f9dac167a156992ef23c7f023653f53b"
   integrity sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==
 
-"@posthog/core@1.29.1":
-  version "1.29.1"
-  resolved "https://registry.yarnpkg.com/@posthog/core/-/core-1.29.1.tgz#8934ab202d1a6ff4c8e067d2ba631c4ec03de0d7"
-  integrity sha512-q+/t/DZALr50YTE0dFgfGSS9EgwcyAlqsn+JS61wLkwdcDM5yu/YTDM8oMKmJupsyjSZlVkDuHZAMd4ab7AxzQ==
+"@posthog/core@1.29.2":
+  version "1.29.2"
+  resolved "https://registry.yarnpkg.com/@posthog/core/-/core-1.29.2.tgz#a4969c118277238fcc91cf6654be477501c9dc95"
+  integrity sha512-DYhR0Sl7pVdUXa+C9poCVjTj3D6SI9P7RLhIhr74YyHeHuCGL/MZsDEWcz3ul3qHDIhZU9myIUjID890QiQw+g==
   dependencies:
-    "@posthog/types" "1.373.4"
+    "@posthog/types" "1.373.5"
 
-"@posthog/types@1.373.4":
-  version "1.373.4"
-  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.373.4.tgz#292806732ee7705cbe33c8c743208a4749791d12"
-  integrity sha512-n+0AbGRYYsbi+CQXQi2rF1lwTSyASlaogcw4YSkzB5KeMa4Y6nhNb7+TTnu9aVor+BycsQYCa2OsBrMMbaTekw==
+"@posthog/types@1.373.5":
+  version "1.373.5"
+  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.373.5.tgz#5b334c8aa695d2676f1ca350f0c2491a36f4690c"
+  integrity sha512-K7STCnRG/WBE1q0BwEkIcrJB5OqECaymsQj6Hp4Ntvaek4dqHkZGfp6hxwIPqQPjlOXwidwPLo+XGsn+CoZUyw==
 
 "@rtsao/scc@^1.1.0":
   version "1.1.0"
@@ -6659,12 +6659,12 @@ postcss@^8.5.10, postcss@^8.5.14:
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
 
-posthog-node@5.34.1:
-  version "5.34.1"
-  resolved "https://registry.yarnpkg.com/posthog-node/-/posthog-node-5.34.1.tgz#99163d559edad0833a36547ac388d172775f5290"
-  integrity sha512-kGl0kSfh2+Ey3KL5Sji3yv9W5xwPK9sTkINRoFqCh9fbYXWWY6Zwi5Psv2QmRcbYiMJBk/iecnoOKVDRRga6PA==
+posthog-node@5.34.2:
+  version "5.34.2"
+  resolved "https://registry.yarnpkg.com/posthog-node/-/posthog-node-5.34.2.tgz#cf1022a0e5b8885e1d0c404a85522801fa3c5ef5"
+  integrity sha512-lGp7zyyvzNZqrto3CPq3nQzVn9ZUg5tApE8jNh12Cu8kOqT9KTABZ8kMgiybfzxVttSdE3m25RsBPLBHkxCWDg==
   dependencies:
-    "@posthog/core" "1.29.1"
+    "@posthog/core" "1.29.2"
 
 powershell-utils@^0.1.0:
   version "0.1.0"
