@@ -1,6 +1,6 @@
 {
   "name": "counterfact",
-  "version": "2.11.0",
+  "version": "2.12.0",
   "description": "Generate a TypeScript-based mock server from an OpenAPI spec in seconds — with stateful routes, hot reload, and REPL support.",
   "type": "module",
   "main": "./dist/app.js",
@@ -78,8 +78,7 @@
     "go:petstore2": "yarn build && yarn counterfact  https://petstore.swagger.io/v2/swagger.json out",
     "go:example": "yarn build && node ./bin/counterfact.js ./test/fixtures/openapi/example.yaml out",
     "go:multiple-apis": "yarn build && node ./bin/counterfact.js --config ./test/fixtures/config/multiple-apis.yaml",
-    "counterfact": "./bin/counterfact.js",
-    "postinstall": "patch-package"
+    "counterfact": "./bin/counterfact.js"
   },
   "devDependencies": {
     "@changesets/cli": "2.31.0",
@@ -96,8 +95,8 @@
     "@types/koa-proxy": "1.0.8",
     "@types/koa-static": "4.0.4",
     "@types/node": "22",
-    "@typescript-eslint/eslint-plugin": "8.59.2",
-    "@typescript-eslint/parser": "8.59.2",
+    "@typescript-eslint/eslint-plugin": "8.59.3",
+    "@typescript-eslint/parser": "8.59.3",
     "copyfiles": "2.4.1",
     "eslint": "10.3.0",
     "eslint-formatter-github-annotations": "0.1.0",
@@ -142,12 +141,11 @@
     "koa2-swagger-ui": "5.12.0",
     "node-fetch": "3.3.2",
     "open": "11.0.0",
-    "patch-package": "8.0.1",
-    "posthog-node": "5.33.4",
+    "posthog-node": "5.34.1",
     "precinct": "12.3.2",
     "prettier": "3.8.3",
     "recast": "0.23.11",
-    "tsx": "4.21.0",
+    "tsx": "4.22.0",
     "typescript": "6.0.3"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
