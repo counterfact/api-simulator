@@ -283,3 +283,70 @@ describe("applyOverlays", () => {
     expect((document.info as { title: string }).title).toBe("Original");
   });
 });
+
+describe("fixture overlays applied to example.yaml", () => {
+  const fixturesDir = new URL(
+    "../../test/fixtures/openapi",
+    import.meta.url,
+  ).pathname;
+
+  it("update-info.yaml patches the API title and adds contact info", async () => {
+    const { Specification } = await import(
+      "../../src/typescript-generator/specification.js"
+    );
+
+    const spec = await Specification.fromFile(
+      `${fixturesDir}/example.yaml`,
+      [`${fixturesDir}/overlays/update-info.yaml`],
+    );
+
+    const info = spec.rootRequirement.data as {
+      info: { title: string; description: string; contact?: { email: string } };
+    };
+
+    expect(info.info.title).toBe("Sample API (Staging)");
+    expect(info.info.description).toBe(
+      "Staging environment — not for production use.",
+    );
+    expect(info.info.contact?.email).toBe("platform@example.com");
+  });
+
+  it("remove-deprecated.yaml removes the /legacy/items path", async () => {
+    const { Specification } = await import(
+      "../../src/typescript-generator/specification.js"
+    );
+
+    const spec = await Specification.fromFile(
+      `${fixturesDir}/example.yaml`,
+      [`${fixturesDir}/overlays/remove-deprecated.yaml`],
+    );
+
+    const paths = spec.rootRequirement.data as {
+      paths: Record<string, unknown>;
+    };
+
+    expect(paths.paths["/legacy/items"]).toBeUndefined();
+    // Other paths should be unaffected
+    expect(paths.paths["/users"]).toBeDefined();
+  });
+
+  it("add-extensions.yaml sets x-internal on targeted operations", async () => {
+    const { Specification } = await import(
+      "../../src/typescript-generator/specification.js"
+    );
+
+    const spec = await Specification.fromFile(
+      `${fixturesDir}/example.yaml`,
+      [`${fixturesDir}/overlays/add-extensions.yaml`],
+    );
+
+    const paths = spec.rootRequirement.data as {
+      paths: Record<string, { get?: Record<string, unknown> }>;
+    };
+
+    expect(paths.paths["/count"]?.get?.["x-internal"]).toBe(true);
+    expect(paths.paths["/ping"]?.get?.["x-internal"]).toBe(true);
+    // Unaffected operations should not have the extension
+    expect(paths.paths["/users"]?.get?.["x-internal"]).toBeUndefined();
+  });
+});
