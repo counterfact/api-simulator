@@ -7714,10 +7714,10 @@ tsutils@^3.0.0, tsutils@^3.17.1:
   dependencies:
     tslib "^1.8.1"
 
-tsx@4.22.0:
-  version "4.22.0"
-  resolved "https://registry.yarnpkg.com/tsx/-/tsx-4.22.0.tgz#9588cadbf41915d4256ae3df69cb65210537f7ab"
-  integrity sha512-8ccZMPD69s1AbKXx0C5ddTNZfNjwV04iIKgjZmKfKxMynEtSYcK0Lh7iQFh53fI5Yu4pb9usgAiqyPmEONaALg==
+tsx@4.22.1:
+  version "4.22.1"
+  resolved "https://registry.yarnpkg.com/tsx/-/tsx-4.22.1.tgz#1dca9e3c349cf8d1038b32be989af49db07ce075"
+  integrity sha512-TvncJykhxAzFCk0VQZKBTClall4Pm7qXDSodb6uxi8QFa8X8mT6ABjxxsQ2opDRYxG7AzcRWXaFtruz5HJKuWg==
   dependencies:
     esbuild "~0.28.0"
   optionalDependencies:
