@@ -8,9 +8,8 @@ Security fixes are currently provided for:
 
 | Version | Supported |
 | --- | --- |
-| `main` branch | ✅ |
-| Latest npm release (`2.x`) | ✅ |
-| Older releases | ❌ |
+| Latest major npm release (currently `2.x`) | ✅ |
+| Older major releases | ❌ |
 
 ## Reporting a Vulnerability
 
