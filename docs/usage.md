@@ -62,7 +62,7 @@ Common questions about state, types, hot reload, code generation, and regenerati
 
 Counterfact records startup options, hot-reload change categories (route/context/OpenAPI), and REPL command names. API file locations are hashed and command arguments are never sent.
 
-→ [Telemetry discussion](./telemetry-discussion/index.html)
+→ [Telemetry discussion](https://counterfact.dev/telemetry-discussion)
 
 ---
 
