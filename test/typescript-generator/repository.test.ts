@@ -169,6 +169,36 @@ describe("a Repository", () => {
       });
     });
 
+    it("prepends missing imports when appending to a route file without existing imports", async () => {
+      await usingTemporaryFiles(async ($) => {
+        await $.add("openapi.json", JSON.stringify(specWithGet));
+
+        await new CodeGenerator($.path("openapi.json"), $.path(""), {
+          routes: true,
+          types: true,
+        }).generate();
+
+        const original = await $.read("routes/pet.ts");
+        await $.remove("routes/pet.ts");
+        await $.add(
+          "routes/pet.ts",
+          original.replace(/^import\s+type[^\n]*\n/gmu, ""),
+        );
+
+        await $.remove("openapi.json");
+        await $.add("openapi.json", JSON.stringify(specWithGetAndPost));
+
+        await new CodeGenerator($.path("openapi.json"), $.path(""), {
+          routes: true,
+          types: true,
+        }).generate();
+
+        const finalContent = await $.read("routes/pet.ts");
+        expect(finalContent.startsWith("import type { addPet }")).toBe(true);
+        expect(finalContent).toContain("export const POST");
+      });
+    });
+
     it("does not modify an existing route file when no new methods are present", async () => {
       await usingTemporaryFiles(async ($) => {
         await $.add("openapi.json", JSON.stringify(specWithGetAndPost));

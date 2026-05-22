@@ -249,13 +249,20 @@ export class Context {
       Array.from(
         existingContent.matchAll(/^export\s+const\s+(\w+)/gmu),
         (m) => m[1],
-      ),
+      ).filter((name): name is string => name !== undefined),
     );
 
     // All named exports in the generated content together with their type names.
     const generatedExports = Array.from(
       generatedContent.matchAll(/^export\s+const\s+(\w+)\s*:\s*(\w+)/gmu),
       (m) => ({ methodName: m[1], typeName: m[2] }),
+    ).filter(
+      (
+        value,
+      ): value is {
+        methodName: string;
+        typeName: string;
+      } => value.methodName !== undefined && value.typeName !== undefined,
     );
 
     const newExports = generatedExports.filter(
@@ -329,16 +336,15 @@ export class Context {
       if (importMatches.length > 0) {
         const lastImport = importMatches[importMatches.length - 1];
 
-        if (lastImport.index === undefined) {
-          debug(
-            `could not determine last import position in ${fullPath}; skipping import insertion`,
-          );
+        const importIndex = lastImport?.index;
+        const insertPos =
+          importIndex === undefined
+            ? 0
+            : (() => {
+                const lineEnd = existingContent.indexOf("\n", importIndex);
 
-          return;
-        }
-
-        const lineEnd = existingContent.indexOf("\n", lastImport.index);
-        const insertPos = lineEnd === -1 ? existingContent.length : lineEnd + 1;
+                return lineEnd === -1 ? existingContent.length : lineEnd + 1;
+              })();
 
         updatedContent =
           existingContent.slice(0, insertPos) +
