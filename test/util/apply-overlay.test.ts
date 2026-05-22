@@ -285,20 +285,16 @@ describe("applyOverlays", () => {
 });
 
 describe("fixture overlays applied to example.yaml", () => {
-  const fixturesDir = new URL(
-    "../../test/fixtures/openapi",
-    import.meta.url,
-  ).pathname;
+  const fixturesDir = new URL("../../test/fixtures/openapi", import.meta.url)
+    .pathname;
 
   it("update-info.yaml patches the API title and adds contact info", async () => {
-    const { Specification } = await import(
-      "../../src/typescript-generator/specification.js"
-    );
+    const { Specification } =
+      await import("../../src/typescript-generator/specification.js");
 
-    const spec = await Specification.fromFile(
-      `${fixturesDir}/example.yaml`,
-      [`${fixturesDir}/overlays/update-info.yaml`],
-    );
+    const spec = await Specification.fromFile(`${fixturesDir}/example.yaml`, [
+      `${fixturesDir}/overlays/update-info.yaml`,
+    ]);
 
     const info = spec.rootRequirement.data as {
       info: { title: string; description: string; contact?: { email: string } };
@@ -312,14 +308,12 @@ describe("fixture overlays applied to example.yaml", () => {
   });
 
   it("remove-deprecated.yaml removes the /legacy/items path", async () => {
-    const { Specification } = await import(
-      "../../src/typescript-generator/specification.js"
-    );
+    const { Specification } =
+      await import("../../src/typescript-generator/specification.js");
 
-    const spec = await Specification.fromFile(
-      `${fixturesDir}/example.yaml`,
-      [`${fixturesDir}/overlays/remove-deprecated.yaml`],
-    );
+    const spec = await Specification.fromFile(`${fixturesDir}/example.yaml`, [
+      `${fixturesDir}/overlays/remove-deprecated.yaml`,
+    ]);
 
     const paths = spec.rootRequirement.data as {
       paths: Record<string, unknown>;
@@ -331,14 +325,12 @@ describe("fixture overlays applied to example.yaml", () => {
   });
 
   it("add-extensions.yaml sets x-internal on targeted operations", async () => {
-    const { Specification } = await import(
-      "../../src/typescript-generator/specification.js"
-    );
+    const { Specification } =
+      await import("../../src/typescript-generator/specification.js");
 
-    const spec = await Specification.fromFile(
-      `${fixturesDir}/example.yaml`,
-      [`${fixturesDir}/overlays/add-extensions.yaml`],
-    );
+    const spec = await Specification.fromFile(`${fixturesDir}/example.yaml`, [
+      `${fixturesDir}/overlays/add-extensions.yaml`,
+    ]);
 
     const paths = spec.rootRequirement.data as {
       paths: Record<string, { get?: Record<string, unknown> }>;
