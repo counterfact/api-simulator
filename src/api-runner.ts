@@ -77,6 +77,12 @@ export class ApiRunner {
   public readonly prefix: string;
 
   /**
+   * Ordered list of overlay file paths/URLs applied to the OpenAPI document
+   * after loading.  Empty when no overlays are configured.
+   */
+  public readonly overlays: readonly string[];
+
+  /**
    * Optional group name that places generated code in a subdirectory.
    * Defaults to `""` (no subdirectory).
    */
@@ -122,6 +128,7 @@ export class ApiRunner {
     this.openApiDocument = openApiDocument;
     this.openApiPath = config.openApiPath;
     this.prefix = config.prefix;
+    this.overlays = config.overlays ?? [];
 
     this.registry = new Registry();
     this.contextRegistry = new ContextRegistry();

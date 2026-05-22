@@ -43,6 +43,7 @@ export function createKoaApp({
       openapiMiddleware(`/counterfact/openapi${runner.subdirectory}`, {
         path: runner.openApiPath,
         baseUrl: `//localhost:${config.port}${runner.prefix}`,
+        overlays: runner.overlays,
       }),
     );
 
