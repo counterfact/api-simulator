@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "@jest/globals";
 
 import { usingTemporaryFiles } from "using-temporary-files";
@@ -285,8 +287,9 @@ describe("applyOverlays", () => {
 });
 
 describe("fixture overlays applied to example.yaml", () => {
-  const fixturesDir = new URL("../../test/fixtures/openapi", import.meta.url)
-    .pathname;
+  const fixturesDir = fileURLToPath(
+    new URL("../../test/fixtures/openapi", import.meta.url),
+  );
 
   it("update-info.yaml patches the API title and adds contact info", async () => {
     const { Specification } =
