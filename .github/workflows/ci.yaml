@@ -71,9 +71,6 @@ jobs:
       - name: Install Packages
         if: steps.docs-only.outputs.docs_only != 'true'
         run: yarn install --frozen-lockfile --network-timeout 100000
-      - name: Patch packages
-        if: steps.docs-only.outputs.docs_only != 'true'
-        run: yarn patch-package
       - name: ESlint
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         run: yarn eslint -f github-annotations .

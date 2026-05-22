@@ -4,6 +4,7 @@ import { dereference } from "@apidevtools/json-schema-ref-parser";
 
 import type { OpenApiOperation } from "../counterfact-types/index.js";
 import { waitForEvent } from "../util/wait-for-event.js";
+import { sendTelemetry } from "../cli/telemetry.js";
 import { CHOKIDAR_OPTIONS } from "./constants.js";
 import type { HttpMethods } from "./registry.js";
 
@@ -35,7 +36,7 @@ export class OpenApiDocument extends EventTarget {
   public paths: {
     [key: string]: {
       [key in Lowercase<HttpMethods>]?: OpenApiOperation;
-    };
+    } & { additionalOperations?: Record<string, OpenApiOperation> };
   } = {};
 
   public produces?: string[];
@@ -68,7 +69,7 @@ export class OpenApiDocument extends EventTarget {
         paths: {
           [key: string]: {
             [key in Lowercase<HttpMethods>]?: OpenApiOperation;
-          };
+          } & { additionalOperations?: Record<string, OpenApiOperation> };
         };
         produces?: string[];
       };
@@ -98,6 +99,10 @@ export class OpenApiDocument extends EventTarget {
     }
 
     this.watcher = watch(this.source, CHOKIDAR_OPTIONS).on("change", () => {
+      sendTelemetry("file_change_detected", {
+        changeType: "change",
+        fileType: "openapi",
+      });
       void (async () => {
         try {
           await this.load();

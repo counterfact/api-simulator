@@ -6,6 +6,7 @@ import fetch, { Headers } from "node-fetch";
 import type { ContextRegistry } from "./context-registry.js";
 import type {
   HttpMethods,
+  RequestMethod,
   CounterfactResponseObject,
   Registry,
 } from "./registry.js";
@@ -63,7 +64,10 @@ export interface OpenApiDocument {
   paths: {
     [key: string]: {
       [key in Lowercase<HttpMethods>]?: OpenApiOperation;
-    } & { parameters?: OpenApiParameters[] };
+    } & {
+      additionalOperations?: Record<string, OpenApiOperation>;
+      parameters?: OpenApiParameters[];
+    };
   };
   produces?: string[];
 }
@@ -122,7 +126,7 @@ export type DispatcherRequest = {
   headers: {
     [key: string]: string;
   };
-  method: HttpMethods;
+  method: RequestMethod;
   path: string;
   query: {
     [key: string]: string | string[];
@@ -277,7 +281,10 @@ export class Dispatcher {
   private findPathItem(path: string):
     | ({
         [key in Lowercase<HttpMethods>]?: OpenApiOperation;
-      } & { parameters?: OpenApiParameters[] })
+      } & {
+        additionalOperations?: Record<string, OpenApiOperation>;
+        parameters?: OpenApiParameters[];
+      })
     | undefined {
     if (!this.openApiDocument) {
       return undefined;
@@ -359,7 +366,7 @@ export class Dispatcher {
    */
   public operationForPathAndMethod(
     path: string,
-    method: HttpMethods,
+    method: RequestMethod,
   ): OpenApiOperation | undefined {
     const pathItem = this.findPathItem(path);
 
@@ -367,7 +374,12 @@ export class Dispatcher {
       return undefined;
     }
 
-    const operation = pathItem[method.toLowerCase() as Lowercase<HttpMethods>];
+    const normalizedMethod = method.toLowerCase();
+    const operation =
+      pathItem[normalizedMethod as Lowercase<HttpMethods>] ??
+      pathItem.additionalOperations?.[method] ??
+      pathItem.additionalOperations?.[method.toUpperCase()] ??
+      pathItem.additionalOperations?.[normalizedMethod];
 
     if (operation === undefined) {
       return undefined;

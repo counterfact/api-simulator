@@ -1,5 +1,109 @@
 # counterfact
 
+## 2.12.0
+
+### Minor Changes
+
+- 3502d41: Add native support for the `QUERY` HTTP method (OpenAPI 3.2). The `QUERY` method is safe and idempotent but allows a request body, making it useful for complex search and filter operations.
+  - `HttpMethods` in `src/server/registry.ts` now includes `"QUERY"`.
+  - The `Module` interface exposes a `QUERY` handler that receives a request body.
+  - `HTTP_METHODS` in `src/migrate/update-route-types.ts` now includes `"QUERY"` so the migration helper recognises `HTTP_QUERY` type imports.
+  - The MSW integration's `allowedMethods` list now includes `"query"`.
+  - The Koa middleware already passes the request body for any method that is not `GET` or `HEAD`, so `QUERY` requests forward their body to the handler automatically.
+
+- 5aa3326: Add support for OpenAPI 3.2 `querystring` parameter location: generates a typed `$.querystring` property on the route handler argument and populates it at runtime with the full parsed query string
+- 8e15211: Add support for OpenAPI 3.2 streaming responses and Server-Sent Events (SSE) via `itemSchema`.
+  - `SchemaTypeCoder` now recognises `itemSchema` in a schema object and emits `AsyncIterable<T>`.
+  - `ResponseTypeCoder` and `OperationTypeCoder` detect `itemSchema` on streaming content types (`text/event-stream`, `application/jsonl`, `application/x-ndjson`, `application/ndjson`, `application/json-seq`) and emit `AsyncIterable<T>` as the body type instead of a plain schema type.
+  - `CounterfactResponseObject.body` now accepts `AsyncIterable<unknown>` in addition to `Uint8Array | string`.
+  - The response builder (`$.response[200].stream(iterable, contentType?)`) exposes a `stream()` helper that returns a response with the async iterable as the body. The content type defaults to `text/event-stream`.
+  - `routes-middleware` converts `AsyncIterable` response bodies into Node.js `Readable` streams, serialising each item in the appropriate wire format:
+    - `text/event-stream` → `data: <json>\n\n`
+    - `application/json-seq` → `\x1e<json>\n`
+    - everything else (JSONL / ndjson) → `<json>\n`
+  - SSE responses also receive `Cache-Control: no-cache` and `X-Accel-Buffering: no` headers automatically.
+  - The JSON-serialisation middleware in `create-koa-app` now skips Node.js `Readable` stream bodies so they are piped directly to the client.
+
+- 1329973: Support OpenAPI 3.2 `xml.nodeType` field in JSON-to-XML serialisation.
+  - `nodeType: "attribute"` serialises the value as an XML attribute.
+  - `nodeType: "text"` serialises the value as an XML text node (no child element wrapper).
+  - `nodeType: "cdata"` serialises the value as a CDATA section.
+  - `nodeType: "none"` omits the property from the XML output entirely.
+  - `nodeType: "element"` wraps the value in a child element (default behaviour); for arrays it is a synonym for the deprecated `xml.wrapped: true`.
+  - The deprecated `xml.attribute: true` continues to behave identically to `nodeType: "attribute"`.
+  - The deprecated `xml.wrapped: true` continues to behave identically to `nodeType: "element"` for arrays.
+
+### Patch Changes
+
+- 1302457: Add regression tests confirming that `$ref` references to `#/components/mediaTypes/...` entries (OpenAPI 3.2) are resolved correctly during bundling and code generation.
+  - `specification.test.ts` now includes two tests: one that navigates to a `components/mediaTypes` entry via `getRequirement`, and one that verifies transparent `$ref` following through such an entry.
+  - `generate.test.ts` now includes two end-to-end tests: one that verifies code generation completes without error for a spec using a `$ref` to a media type component, and one that verifies the generated TypeScript types include the correct schema from the referenced media type.
+
+- 7bbcf63: OpenAPI 3.2: include `discriminator.defaultMapping` schema in generated union types for `anyOf`/`oneOf` schemas
+- 63dd7b2: Add privacy-preserving telemetry for startup options, file-change categories, and REPL command usage.
+- fda8f18: Add "Multiple API Versions" pattern to docs/patterns/. The new page explains how to configure multiple versioned specs and use `$.minVersion()` to share route handlers across versions without duplication.
+
+  Also rewrites the patterns index introduction: the single long paragraph is now split into labelled sections (Getting started, Organizing state, Runtime control, Versioned and multi-spec APIs, Long-term reliability, Integration strategies) followed by a complete pattern table.
+
+- 1a868ba: Document support for Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2 in the README and getting started docs.
+- 16f890f: Prefer `dataValue` over `value` in OpenAPI 3.2 Example Objects
+
+  When building example responses, Counterfact now checks for the `dataValue`
+  field (introduced in OpenAPI 3.2) and uses it in preference to the existing
+  `value` field. If `dataValue` is absent, the existing `value` field is used as
+  before, maintaining full backward compatibility with OpenAPI 3.0 and 3.1 specs.
+
+- b024920: Add regression tests verifying that OpenAPI 3.2 `$self` document-identity field is preserved through bundling and that relative `$ref` values in specs with `$self` resolve correctly. Covers `Specification.fromFile()`, the OpenAPI middleware, and end-to-end code generation.
+- 0cb8959: Support OpenAPI 3.2 additionalOperations generation and runtime routing for custom HTTP methods.
+- 424fbf0: Remove patch-package dependency and postinstall script. The patches for http-proxy and tsutils are no longer needed since those packages are no longer direct dependencies. Removing the postinstall script also eliminates a potential security concern with pnpm's strictDepBuilds setting.
+- a6dc7e8: Updated dependency `precinct` to `12.3.1`.
+- b435371: Updated dependency `@jest/globals` to `30.4.0`.
+  Updated dependency `jest` to `30.4.0`.
+- fd5914c: Updated dependency `@swc/core` to `1.15.33`.
+- da1de4b: Updated dependency `posthog-node` to `5.33.7`.
+- a71e047: Updated dependency `@apidevtools/json-schema-ref-parser` to `15.3.1`.
+- 4224be0: Updated dependency `@swc/core` to `1.15.32`.
+- eed59b8: Updated dependency `astro` to `^6.0.0`.
+- 01ff516: Updated dependency `precinct` to `12.3.2`.
+- f282f46: Updated dependency `@typescript-eslint/eslint-plugin` to `8.59.3`.
+  Updated dependency `@typescript-eslint/parser` to `8.59.3`.
+- e88e792: Updated dependency `@jest/globals` to `30.3.0`.
+  Updated dependency `@types/debug` to `4.1.12`.
+  Updated dependency `@typescript-eslint/eslint-plugin` to `8.58.0`.
+  Updated dependency `@typescript-eslint/parser` to `8.58.0`.
+  Updated dependency `eslint-plugin-n` to `17.24.0`.
+  Updated dependency `eslint-plugin-promise` to `7.2.1`.
+  Updated dependency `eslint-plugin-regexp` to `3.0.0`.
+  Updated dependency `eslint-plugin-security` to `4.0.0`.
+  Updated dependency `posthog-node` to `5.28.11`.
+  Updated dependency `tsx` to `4.21.0`.
+- 3a312a1: Updated dependency `eslint-plugin-n` to `18.0.1`.
+- ca7c067: Updated dependency `@typescript-eslint/eslint-plugin` to `8.59.1`.
+  Updated dependency `@typescript-eslint/parser` to `8.59.1`.
+- c08ddca: Updated dependency `posthog-node` to `5.34.0`.
+- 68b730f: Updated dependency `json-schema-faker` to `0.6.1`.
+- 15b4c1b: Updated dependency `typescript` to `6.0.3`.
+- ae5328c: Updated dependency `posthog-node` to `5.33.4`.
+- 96e36c5: Updated dependency `astro` to `6.3.1`.
+  Updated dependency `linkinator` to `7.6.1`.
+- 7379948: Updated dependency `astro` to `^6.3.0`.
+- dd4e758: Updated dependency `prettier` to `3.8.3`.
+- 10148fd: Updated dependency `posthog-node` to `5.33.3`.
+- d8258a9: Updated dependency `eslint-plugin-jest` to `29.15.2`.
+- 7a38b14: Updated dependency `@types/debug` to `4.1.13`.
+- 7b937f7: Updated dependency `@jest/globals` to `30.4.1`.
+  Updated dependency `jest` to `30.4.1`.
+- 47d07e4: Updated dependency `@changesets/cli` to `2.31.0`.
+- 1516af8: Updated dependency `jest` to `30.4.2`.
+- ba32e07: Updated dependency `posthog-node` to `5.34.1`.
+- 6d582b4: Updated dependency `eslint` to `10.3.0`.
+- 89d4554: Updated dependency `fs-extra` to `11.3.5`.
+- 1a51c4f: Updated dependency `@typescript-eslint/eslint-plugin` to `8.59.2`.
+  Updated dependency `@typescript-eslint/parser` to `8.59.2`.
+- e1bad83: Updated dependency `eslint-plugin-regexp` to `3.1.0`.
+- b459631: Set `name: "Counterfact"` on the injected server entry in the served OpenAPI document. OpenAPI 3.2-aware tools (e.g. Swagger UI) use the `name` field as the primary label for a server entry in the server selector.
+- 35abb32: Upgrade `@apidevtools/json-schema-ref-parser` from 15.1.3 to 15.3.5. The new version includes a built-in fix for Windows paths using forward slashes (`C:/...`), making the `patch-package` patch unnecessary.
+
 ## 2.11.0
 
 ### Minor Changes

@@ -73,6 +73,7 @@ OpenAPI spec (YAML or JSON, local or URL)
 ## Route handlers
 
 Every generated route file exports a named function per HTTP method. The function receives a single `$` parameter that exposes everything from the request and a response builder typed to the spec.
+For OpenAPI 3.2 specs, operations under `paths[*].additionalOperations` are also generated and routed (for example `LINK`, `UNLINK`, or `LOCK`).
 
 ### Default: random schema-valid response
 
