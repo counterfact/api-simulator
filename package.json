@@ -142,7 +142,7 @@
     "node-fetch": "3.3.2",
     "open": "11.0.0",
     "posthog-node": "5.34.6",
-    "precinct": "12.3.2",
+    "precinct": "13.0.0",
     "prettier": "3.8.3",
     "recast": "0.23.11",
     "tsx": "4.22.3",
