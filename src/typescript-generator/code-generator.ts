@@ -223,33 +223,35 @@ export class CodeGenerator extends EventTarget {
   }
 
   /**
-   * Starts watching the OpenAPI document for changes.
+   * Starts watching the OpenAPI document and any overlay files for changes.
    *
-   * Has no effect when `openApiPath` is a URL (HTTP sources are not watched).
+   * Has no effect when neither source is watchable (for example, an HTTP
+   * OpenAPI source with no local overlays).
    * Resolves once the watcher is ready.
    */
   public async watch() {
-    if (this.openapiPath.startsWith("http")) {
+    const watchablePaths = this.openapiPath.startsWith("http")
+      ? [...this.overlays]
+      : [this.openapiPath, ...this.overlays];
+
+    if (watchablePaths.length === 0) {
       return;
     }
 
-    this.watcher = watch(this.openapiPath, CHOKIDAR_OPTIONS).on(
-      "change",
-      () => {
-        void this.generate().then(
-          () => {
-            this.dispatchEvent(new Event("generate"));
+    this.watcher = watch(watchablePaths, CHOKIDAR_OPTIONS).on("change", () => {
+      void this.generate().then(
+        () => {
+          this.dispatchEvent(new Event("generate"));
 
-            return true;
-          },
-          () => {
-            this.dispatchEvent(new Event("failed"));
+          return true;
+        },
+        () => {
+          this.dispatchEvent(new Event("failed"));
 
-            return false;
-          },
-        );
-      },
-    );
+          return false;
+        },
+      );
+    });
 
     await waitForEvent(this.watcher, "ready");
   }
