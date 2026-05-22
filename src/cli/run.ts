@@ -15,7 +15,11 @@ import { pathResolve } from "../util/forward-slash-path.js";
 import { loadConfigFile } from "../util/load-config-file.js";
 import { createIntroduction } from "./banner.js";
 import { checkForUpdates } from "./check-for-updates.js";
-import { isTelemetryEnabled, sendTelemetry } from "./telemetry.js";
+import {
+  hashTelemetryLocation,
+  isTelemetryEnabled,
+  sendTelemetry,
+} from "./telemetry.js";
 
 const debug = createDebug("counterfact:cli:run");
 
@@ -77,6 +81,69 @@ export function normalizeSpecOption(
   }
 
   return undefined;
+}
+
+/**
+ * Subset of resolved CLI options that are intentionally included in startup
+ * telemetry. Only non-sensitive flags are captured and all values are sent as
+ * booleans/numbers (no raw file paths or free-form user input) to preserve
+ * privacy while still allowing high-level usage analysis.
+ */
+type StartupTelemetryOptions = {
+  alwaysFakeOptionals?: boolean;
+  buildCache?: boolean;
+  generate?: boolean;
+  generateRoutes?: boolean;
+  generateTypes?: boolean;
+  open?: boolean;
+  port: number;
+  prune?: boolean;
+  repl?: boolean;
+  serve?: boolean;
+  updateCheck: boolean;
+  validateRequest: boolean;
+  validateResponse: boolean;
+  watch?: boolean;
+  watchRoutes?: boolean;
+  watchTypes?: boolean;
+};
+
+export function buildStartupTelemetryProperties(
+  options: StartupTelemetryOptions,
+  source: string,
+  version: string,
+  specs?: SpecConfig[],
+): Record<string, unknown> {
+  const apiSources = specs?.map((spec) => spec.source) ?? [source];
+  const apiFileLocationHashes = apiSources
+    .filter((apiSource) => apiSource !== "_")
+    .map((apiSource) => hashTelemetryLocation(apiSource));
+
+  return {
+    alwaysFakeOptionals: Boolean(options.alwaysFakeOptionals),
+    apiFileLocationHashes,
+    buildCache: Boolean(options.buildCache),
+    generateRoutes:
+      Boolean(options.generate) || Boolean(options.generateRoutes),
+    generateTypes: Boolean(options.generate) || Boolean(options.generateTypes),
+    mode:
+      specs !== undefined
+        ? "multi-spec"
+        : source === "_"
+          ? "without-openapi"
+          : "single-spec",
+    openBrowser: Boolean(options.open),
+    port: options.port,
+    prune: Boolean(options.prune),
+    repl: Boolean(options.repl),
+    serve: Boolean(options.serve),
+    updateCheck: Boolean(options.updateCheck),
+    validateRequest: Boolean(options.validateRequest),
+    validateResponse: Boolean(options.validateResponse),
+    version,
+    watchRoutes: Boolean(options.watch) || Boolean(options.watchRoutes),
+    watchTypes: Boolean(options.watch) || Boolean(options.watchTypes),
+  };
 }
 
 /**
@@ -185,6 +252,13 @@ function buildProgram(version: string, taglines: string[]): Command {
     debug("options: %o", options);
     debug("source: %s", source);
     debug("destination: %s", destination);
+
+    const startupTelemetryProperties = buildStartupTelemetryProperties(
+      options,
+      source,
+      version,
+      specs,
+    );
 
     const openBrowser = options.open;
     const url = `http://localhost:${options.port}${options.prefix}`;
@@ -315,6 +389,7 @@ function buildProgram(version: string, taglines: string[]): Command {
       process.exit(1);
     }
     debug("started server");
+    sendTelemetry("counterfact_started", startupTelemetryProperties);
 
     await updateCheckPromise;
 
@@ -477,11 +552,6 @@ export async function runCli(argv: string[]): Promise<void> {
     taglines = taglinesFile.split("\n").slice(0, -1);
   } catch {
     taglines = ["counterfact — mock API server"];
-  }
-
-  // Fire telemetry once on startup — fire-and-forget, never blocks.
-  if (isTelemetryEnabled()) {
-    sendTelemetry(version);
   }
 
   debug("running counterfact CLI v%s", version);
