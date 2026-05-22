@@ -76,6 +76,7 @@ export function validateRequest(
   operation: OpenApiOperation | undefined,
   request: {
     body: unknown;
+    cookie: Record<string, string>;
     headers: Record<string, string>;
     query: Record<string, unknown>;
   },
@@ -92,6 +93,7 @@ export function validateRequest(
   // by the registry before the route handler is called.
   errors.push(...findMissingRequired(parameters, "query", request.query));
   errors.push(...findMissingRequired(parameters, "header", request.headers));
+  errors.push(...findMissingRequired(parameters, "cookie", request.cookie));
 
   // Validate request body (OpenAPI 3.x requestBody)
   if (operation.requestBody?.content !== undefined) {

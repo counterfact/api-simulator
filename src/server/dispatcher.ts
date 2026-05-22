@@ -51,6 +51,16 @@ function mergeParameters(
 
 export interface OpenApiDocument {
   basePath?: string;
+  components?: {
+    securitySchemes?: Record<
+      string,
+      {
+        in?: "cookie" | "header" | "query";
+        name?: string;
+        type?: string;
+      }
+    >;
+  };
   paths: {
     [key: string]: {
       [key in Lowercase<HttpMethods>]?: OpenApiOperation;
@@ -108,6 +118,7 @@ interface ParameterTypes {
 
 export type DispatcherRequest = {
   auth?: {
+    apiKey?: string;
     password?: string;
     username?: string;
   };
@@ -288,6 +299,56 @@ export class Dispatcher {
     return undefined;
   }
 
+  private apiKeySecurityParameters(): OpenApiParameters[] {
+    const schemes = this.openApiDocument?.components?.securitySchemes;
+
+    return Object.values(schemes ?? {})
+      .filter(
+        ({ in: location, name, type }) =>
+          type === "apiKey" &&
+          typeof name === "string" &&
+          (location === "header" ||
+            location === "query" ||
+            location === "cookie"),
+      )
+      .map(({ in: location, name }) => ({
+        in: location as "cookie" | "header" | "query",
+        name: name as string,
+        required: false,
+        schema: { type: "string" },
+      }));
+  }
+
+  private authWithApiKey(
+    auth: DispatcherRequest["auth"],
+    cookie: Record<string, string>,
+    headers: Record<string, string>,
+    query: Record<string, string | string[]>,
+  ): DispatcherRequest["auth"] {
+    const apiKeyScheme = this.apiKeySecurityParameters().find((parameter) =>
+      ["cookie", "header", "query"].includes(parameter.in),
+    );
+
+    if (!apiKeyScheme) {
+      return auth;
+    }
+
+    const apiKey =
+      apiKeyScheme.in === "query"
+        ? query[apiKeyScheme.name]
+        : apiKeyScheme.in === "cookie"
+          ? cookie[apiKeyScheme.name]
+          : Object.entries(headers).find(
+              ([key]) => key.toLowerCase() === apiKeyScheme.name.toLowerCase(),
+            )?.[1];
+
+    const normalizedApiKey = Array.isArray(apiKey)
+      ? (apiKey[0] ?? "")
+      : (apiKey ?? "");
+
+    return { ...auth, apiKey: normalizedApiKey };
+  }
+
   /**
    * Resolves the OpenAPI operation for `path` and `method`, merging any
    * top-level `produces` array from the document root and any path-item-level
@@ -338,14 +399,26 @@ export class Dispatcher {
         ? { ...operation, parameters: mergedParameters }
         : operation;
 
+    const apiKeyParameters = this.apiKeySecurityParameters();
+    const operationWithSecurity =
+      apiKeyParameters.length > 0
+        ? {
+            ...mergedOperation,
+            parameters: mergeParameters(
+              mergedOperation.parameters ?? [],
+              apiKeyParameters,
+            ),
+          }
+        : mergedOperation;
+
     if (this.openApiDocument?.produces) {
       return {
         produces: this.openApiDocument.produces,
-        ...mergedOperation,
+        ...operationWithSecurity,
       };
     }
 
-    return mergedOperation;
+    return operationWithSecurity;
   }
 
   private normalizeResponse(
@@ -480,9 +553,15 @@ export class Dispatcher {
     }
 
     const operation = this.operationForPathAndMethod(matchedPath, method);
+    const requestCookie = parseCookies(headers.cookie ?? headers.Cookie ?? "");
 
     if (this.config?.validateRequests !== false) {
-      const validation = validateRequest(operation, { body, headers, query });
+      const validation = validateRequest(operation, {
+        body,
+        cookie: requestCookie,
+        headers,
+        query,
+      });
 
       if (!validation.valid) {
         return {
@@ -509,7 +588,7 @@ export class Dispatcher {
       path,
       this.parameterTypes(operation?.parameters),
     )({
-      auth,
+      auth: this.authWithApiKey(auth, requestCookie, headers, query),
       body,
       context: this.contextRegistry.find(matchedPath),
 
@@ -522,7 +601,7 @@ export class Dispatcher {
         return new Promise((resolve) => setTimeout(resolve, delayInMs));
       },
 
-      cookie: parseCookies(headers.cookie ?? headers.Cookie ?? ""),
+      cookie: requestCookie,
 
       headers,
 
