@@ -107,9 +107,11 @@ export class Repository {
   /**
    * Waits for all scripts to finish, then writes each one to disk.
    *
-   * Route files (`routes/…`) are never overwritten if they already exist on
-   * disk, preserving user edits.  Type files (`types/…`) are always
-   * overwritten.
+   * Route files (`routes/…`) are never fully overwritten if they already exist
+   * on disk, preserving user edits.  However, if the generated script contains
+   * HTTP-method handler exports that are absent from the existing file, those
+   * new exports (and their `import type` statements) are appended to the file.
+   * Type files (`types/…`) are always overwritten.
    *
    * @param destination - Absolute path to the output root directory.
    * @param options - Controls which artefacts are written.
@@ -138,16 +140,24 @@ export class Repository {
         const shouldWriteRoutes = routes && path.startsWith("routes");
         const shouldWriteTypes = types && !path.startsWith("routes");
 
-        if (
-          shouldWriteRoutes &&
-          (await fs
+        if (shouldWriteRoutes) {
+          const fileExists = await fs
             .stat(fullPath)
             .then((stat) => stat.isFile())
-            .catch(() => false))
-        ) {
-          debug(`not overwriting ${fullPath}\n`);
+            .catch(() => false);
 
-          return;
+          if (fileExists) {
+            debug(`route file exists, checking for new handlers: ${fullPath}`);
+            await this.appendNewHandlers(
+              fullPath,
+              contents.replaceAll(
+                CONTEXT_FILE_TOKEN,
+                this.findContextPath(destination, path),
+              ),
+            );
+
+            return;
+          }
         }
 
         if (shouldWriteRoutes || shouldWriteTypes) {
@@ -214,6 +224,117 @@ export class Context {
 }
 `,
     );
+  }
+
+  /**
+   * Appends any HTTP-method handler exports that appear in `generatedContent`
+   * but are absent from the existing file at `fullPath`.
+   *
+   * For each new export the corresponding `import type` statement is inserted
+   * after the last existing import line (or prepended when no imports exist),
+   * and the export block is appended at the end of the file.
+   *
+   * @param fullPath - Absolute path of the route file to update.
+   * @param generatedContent - The fully-generated file content (used as the
+   *   source of new import and export statements).
+   */
+  private async appendNewHandlers(
+    fullPath: string,
+    generatedContent: string,
+  ): Promise<void> {
+    const existingContent = await fs.readFile(fullPath, "utf8");
+
+    // Names already exported by the existing file (e.g. GET, POST).
+    const existingExportNames = new Set<string>(
+      Array.from(
+        existingContent.matchAll(/^export\s+const\s+(\w+)/gmu),
+        (m) => m[1],
+      ),
+    );
+
+    // All named exports in the generated content together with their type names.
+    const generatedExports = Array.from(
+      generatedContent.matchAll(/^export\s+const\s+(\w+)\s*:\s*(\w+)/gmu),
+      (m) => ({ methodName: m[1], typeName: m[2] }),
+    );
+
+    const newExports = generatedExports.filter(
+      ({ methodName }) => !existingExportNames.has(methodName),
+    );
+
+    if (newExports.length === 0) {
+      debug(`no new handlers to append to ${fullPath}`);
+
+      return;
+    }
+
+    debug(
+      `appending ${newExports.length} new handler(s) to ${fullPath}: %o`,
+      newExports.map(({ methodName }) => methodName),
+    );
+
+    const newImportLines: string[] = [];
+    const newExportBlocks: string[] = [];
+
+    for (const { methodName, typeName } of newExports) {
+      // Find the `import type { TypeName } from "..."` line for this type.
+      const importMatch = generatedContent.match(
+        new RegExp(
+          `^import\\s+type\\s+\\{[^}]*\\b${typeName}\\b[^}]*\\}\\s+from\\s+["'][^"']+["'];`,
+          "mu",
+        ),
+      );
+
+      if (importMatch?.[0] && !existingContent.includes(importMatch[0])) {
+        newImportLines.push(importMatch[0]);
+      }
+
+      // Find the export block: from `export const METHOD` to the closing `};`.
+      const startMatch = new RegExp(
+        `^export\\s+const\\s+${methodName}\\b`,
+        "mu",
+      ).exec(generatedContent);
+
+      if (startMatch) {
+        const fromExport = generatedContent.slice(startMatch.index);
+        const closingIndex = fromExport.indexOf("\n};");
+
+        if (closingIndex !== -1) {
+          // Include the closing `};` (3 chars: \n, }, ;)
+          newExportBlocks.push(fromExport.slice(0, closingIndex + 3));
+        }
+      }
+    }
+
+    let updatedContent = existingContent;
+
+    // Insert new import lines right after the last existing import statement.
+    if (newImportLines.length > 0) {
+      const importMatches = [...existingContent.matchAll(/^import\s[^\n]*/gmu)];
+
+      if (importMatches.length > 0) {
+        const lastImport = importMatches[importMatches.length - 1];
+        const lineEnd = existingContent.indexOf("\n", lastImport.index!);
+        const insertPos = lineEnd === -1 ? existingContent.length : lineEnd + 1;
+
+        updatedContent =
+          existingContent.slice(0, insertPos) +
+          newImportLines.join("\n") +
+          "\n" +
+          existingContent.slice(insertPos);
+      } else {
+        updatedContent = newImportLines.join("\n") + "\n" + existingContent;
+      }
+    }
+
+    // Append new export blocks at the end of the file.
+    if (newExportBlocks.length > 0) {
+      const separator = updatedContent.endsWith("\n") ? "\n" : "\n\n";
+      updatedContent += separator + newExportBlocks.join("\n\n") + "\n";
+    }
+
+    await fs.writeFile(fullPath, updatedContent);
+    debug(`appended new handlers to ${fullPath}`);
   }
 
   /**
