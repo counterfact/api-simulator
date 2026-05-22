@@ -66,7 +66,9 @@ function objectToXml(
   const attributes: string[] = [];
 
   Object.entries(json).forEach(([key, value]) => {
-    const properties = schema?.properties?.[key];
+    const properties = Reflect.get(schema?.properties ?? {}, key) as
+      | Schema
+      | undefined;
     const nodeType = resolveNodeType(properties);
     const xmlName = properties?.xml?.name ?? key;
 

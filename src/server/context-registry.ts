@@ -47,7 +47,8 @@ function cloneForCache(value: unknown): unknown {
       : {};
 
   for (const key of Object.keys(value)) {
-    clone[key] = cloneForCache((value as Record<string, unknown>)[key]);
+    const propertyValue = Reflect.get(value as Record<string, unknown>, key);
+    Reflect.set(clone, key, cloneForCache(propertyValue));
   }
 
   return clone;
@@ -162,9 +163,10 @@ export class ContextRegistry extends EventTarget {
 
     const context = this.find(path);
 
-    for (const property in updatedContext) {
-      if (updatedContext[property] !== this.cache.get(path)?.[property]) {
-        context[property] = updatedContext[property];
+    const cachedContext = this.cache.get(path);
+    for (const [property, updatedValue] of Object.entries(updatedContext)) {
+      if (updatedValue !== Reflect.get(cachedContext ?? {}, property)) {
+        Reflect.set(context, property, updatedValue);
       }
     }
 
@@ -183,7 +185,7 @@ export class ContextRegistry extends EventTarget {
     const result: Record<string, Context> = {};
 
     for (const [path, context] of this.entries.entries()) {
-      result[path] = context;
+      Reflect.set(result, path, context);
     }
 
     return result;

@@ -198,14 +198,21 @@ function buildProgram(version: string, taglines: string[]): Command {
       options.config !== undefined,
     );
     debug("fileConfig: %o", fileConfig);
+    const knownOptionKeys = new Set(
+      program.options.map((option) => option.attributeName()),
+    );
 
     // Apply config file values for any option that was not explicitly set on
     // the command line (i.e. its source is "default" or it was never defined).
     for (const [key, value] of Object.entries(fileConfig)) {
+      if (!knownOptionKeys.has(key)) {
+        continue;
+      }
+
       const optionSource = program.getOptionValueSource(key);
 
       if (optionSource !== "cli") {
-        (options as Record<string, unknown>)[key] = value;
+        Reflect.set(options, key, value);
       }
     }
 
@@ -245,7 +252,7 @@ function buildProgram(version: string, taglines: string[]): Command {
       )
     ) {
       for (const action of actions) {
-        (options as Record<string, unknown>)[action] = true;
+        Reflect.set(options, action, true);
       }
     }
 

@@ -98,16 +98,19 @@ export class RouteBuilder {
     const method = this._method.toLowerCase();
     const normalizedPath = this.routePath.toLowerCase();
 
-    for (const key of Object.keys(this._openApiDocument.paths)) {
-      if (key.toLowerCase() === normalizedPath) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (this._openApiDocument.paths[key] as any)[
-          method
-        ] as OpenApiOperationExtended;
-      }
+    const pathItem = Object.entries(this._openApiDocument.paths).find(
+      ([path]) => path.toLowerCase() === normalizedPath,
+    )?.[1] as Record<string, unknown> | undefined;
+
+    if (pathItem === undefined) {
+      return undefined;
     }
 
-    return undefined;
+    const operation = Object.entries(pathItem).find(
+      ([pathMethod]) => pathMethod.toLowerCase() === method,
+    )?.[1];
+
+    return operation as OpenApiOperationExtended | undefined;
   }
 
   private clone(overrides: {

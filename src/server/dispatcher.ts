@@ -94,12 +94,12 @@ function parseCookies(cookieHeader: string): Record<string, string> {
     const key = part.slice(0, eqIndex).trim();
     const value = part.slice(eqIndex + 1).trim();
 
-    if (key && !(key in cookies)) {
+    if (key && !Reflect.has(cookies, key)) {
       try {
-        cookies[key] = decodeURIComponent(value);
+        Reflect.set(cookies, key, decodeURIComponent(value));
       } catch (error) {
         debug("could not decode cookie value for key %s: %o", key, error);
-        cookies[key] = value;
+        Reflect.set(cookies, key, value);
       }
     }
   }
@@ -170,9 +170,9 @@ export function collectExplodedObjectParams(
     const obj: Record<string, unknown> = {};
 
     for (const key of Object.keys(properties)) {
-      if (key in result) {
-        obj[key] = result[key];
-        delete result[key];
+      if (Reflect.has(result, key)) {
+        Reflect.set(obj, key, Reflect.get(result, key));
+        Reflect.deleteProperty(result, key);
       }
     }
 
@@ -268,10 +268,37 @@ export class Dispatcher {
       const type = parameter?.type ?? parameter?.schema?.type;
 
       if (type !== undefined) {
-        types[parameter.in].set(
-          parameter.name,
-          type === "integer" ? "number" : type,
-        );
+        const normalizedType = type === "integer" ? "number" : type;
+
+        switch (parameter.in) {
+          case "body": {
+            types.body.set(parameter.name, normalizedType);
+            break;
+          }
+          case "cookie": {
+            types.cookie.set(parameter.name, normalizedType);
+            break;
+          }
+          case "formData": {
+            types.formData.set(parameter.name, normalizedType);
+            break;
+          }
+          case "header": {
+            types.header.set(parameter.name, normalizedType);
+            break;
+          }
+          case "path": {
+            types.path.set(parameter.name, normalizedType);
+            break;
+          }
+          case "query": {
+            types.query.set(parameter.name, normalizedType);
+            break;
+          }
+          default: {
+            break;
+          }
+        }
       }
     }
 
@@ -290,10 +317,12 @@ export class Dispatcher {
       return undefined;
     }
 
-    for (const key in this.openApiDocument.paths) {
-      if (key.toLowerCase() === path.toLowerCase()) {
-        return this.openApiDocument.paths[key];
-      }
+    const match = Object.entries(this.openApiDocument.paths).find(
+      ([pathKey]) => pathKey.toLowerCase() === path.toLowerCase(),
+    );
+
+    if (match !== undefined) {
+      return match[1];
     }
 
     return undefined;
@@ -373,11 +402,13 @@ export class Dispatcher {
     }
 
     const normalizedMethod = method.toLowerCase();
-    const operation =
-      pathItem[normalizedMethod as Lowercase<HttpMethods>] ??
-      pathItem.additionalOperations?.[method] ??
-      pathItem.additionalOperations?.[method.toUpperCase()] ??
-      pathItem.additionalOperations?.[normalizedMethod];
+    const operationForMethod = Object.entries(pathItem).find(
+      ([name]) => name.toLowerCase() === normalizedMethod,
+    )?.[1] as OpenApiOperation | undefined;
+    const additionalOperation = Object.entries(
+      pathItem.additionalOperations ?? {},
+    ).find(([name]) => name.toLowerCase() === normalizedMethod)?.[1];
+    const operation = operationForMethod ?? additionalOperation;
 
     if (operation === undefined) {
       return undefined;

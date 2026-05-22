@@ -1,4 +1,5 @@
 import { generate, type JsonSchema } from "json-schema-faker";
+/* eslint-disable security/detect-object-injection -- OpenAPI response/content maps are spec-defined dictionaries accessed by status code, media type, and example name. */
 
 import { jsonToXml } from "./json-to-xml.js";
 import type {

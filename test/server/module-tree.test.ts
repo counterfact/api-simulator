@@ -9,12 +9,16 @@ function add(
   method: string = "GET",
 ) {
   const module: { [key: string]: () => { body: string } } = {};
-  module[method] = () => ({ body: name });
+  Reflect.set(module, method, () => ({ body: name }));
   moduleTree.add(url, module);
 }
 
 function match(moduleTree: ModuleTree, path: string, method: string = "GET") {
-  return moduleTree.match(path, method)?.module[method]?.()?.body;
+  const handler = Reflect.get(
+    moduleTree.match(path, method)?.module ?? {},
+    method,
+  ) as (() => { body: string }) | undefined;
+  return handler?.().body;
 }
 
 it("returns undefined for /", () => {

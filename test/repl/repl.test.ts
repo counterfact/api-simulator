@@ -82,11 +82,17 @@ class ReplHarness {
   }
 
   public call(name: string, options: string) {
-    this.server.commands[name]?.action.call(this.mock, options);
+    const command = Object.entries(this.server.commands).find(
+      ([commandName]) => commandName === name,
+    )?.[1];
+    command?.action.call(this.mock, options);
   }
 
   public async callAsync(name: string, options: string): Promise<void> {
-    await this.server.commands[name]?.action.call(this.mock, options);
+    const command = Object.entries(this.server.commands).find(
+      ([commandName]) => commandName === name,
+    )?.[1];
+    await command?.action.call(this.mock, options);
   }
 
   public isReset() {

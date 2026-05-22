@@ -34,16 +34,16 @@ function deepMerge(
       typeof value === "object" &&
       value !== null &&
       !Array.isArray(value) &&
-      typeof target[key] === "object" &&
-      target[key] !== null &&
-      !Array.isArray(target[key])
+      typeof Reflect.get(target, key) === "object" &&
+      Reflect.get(target, key) !== null &&
+      !Array.isArray(Reflect.get(target, key))
     ) {
       deepMerge(
-        target[key] as Record<string, unknown>,
+        Reflect.get(target, key) as Record<string, unknown>,
         value as Record<string, unknown>,
       );
     } else {
-      target[key] = value;
+      Reflect.set(target, key, value);
     }
   }
 }
@@ -85,7 +85,7 @@ export function applyOverlayActions(
         if (Array.isArray(parent)) {
           parent.splice(Number(parentProperty), 1);
         } else {
-          delete (parent as Record<string, unknown>)[String(parentProperty)];
+          Reflect.deleteProperty(parent, String(parentProperty));
         }
       }
     } else if (action.update !== undefined) {

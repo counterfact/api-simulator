@@ -146,7 +146,11 @@ function castParameters(
   const copy: { [key: string]: boolean | number | string } = {};
 
   Object.entries(parameters).forEach(([key, value]) => {
-    copy[key] = castParameter(value, parameterTypes.get(key) ?? "string");
+    Reflect.set(
+      copy,
+      key,
+      castParameter(value, parameterTypes.get(key) ?? "string"),
+    );
   });
 
   return copy;
@@ -221,9 +225,9 @@ export class Registry {
     }
 
     return (
-      module[method] ??
-      module[method.toUpperCase()] ??
-      module[method.toLowerCase()]
+      Reflect.get(module, method) ??
+      Reflect.get(module, method.toUpperCase()) ??
+      Reflect.get(module, method.toLowerCase())
     );
   }
 

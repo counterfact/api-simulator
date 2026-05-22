@@ -43,10 +43,10 @@ const HEADERS_TO_DROP = new Set([
  * SSE/JSONL/JSON-seq formatter map. Each entry maps a content-type to the
  * function that serialises a single stream item into the wire format.
  */
-const STREAMING_FORMATTERS: Record<string, (item: unknown) => string> = {
-  "text/event-stream": (item) => `data: ${JSON.stringify(item)}\n\n`,
-  "application/json-seq": (item) => `\x1e${JSON.stringify(item)}\n`,
-};
+const STREAMING_FORMATTERS = new Map<string, (item: unknown) => string>([
+  ["text/event-stream", (item) => `data: ${JSON.stringify(item)}\n\n`],
+  ["application/json-seq", (item) => `\x1e${JSON.stringify(item)}\n`],
+]);
 
 function defaultStreamFormatter(item: unknown): string {
   return `${JSON.stringify(item)}\n`;
@@ -69,7 +69,8 @@ function asyncIterableToReadable(
   iterable: AsyncIterable<unknown>,
   contentType: string,
 ): Readable {
-  const formatter = STREAMING_FORMATTERS[contentType] ?? defaultStreamFormatter;
+  const formatter =
+    STREAMING_FORMATTERS.get(contentType) ?? defaultStreamFormatter;
 
   async function* generate() {
     for await (const item of iterable) {
