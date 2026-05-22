@@ -26,6 +26,18 @@ const OPENAPI = {
   },
 };
 
+const overlayForType = (type: string) =>
+  [
+    "overlay: 1.0.0",
+    "info:",
+    "  title: Example overlay",
+    "  version: 1.0.0",
+    "actions:",
+    "  - target: $.components.schemas.Example",
+    "    update:",
+    `      type: ${type}`,
+  ].join("\n");
+
 describe("a CodeGenerator", () => {
   if (process.platform === "win32") {
     // Not sure why these tests are failing on Windows
@@ -96,6 +108,35 @@ describe("a CodeGenerator", () => {
       await generator.watch();
 
       await add("openapi.json", JSON.stringify(changed));
+
+      await waitForEvent(generator, "generate");
+
+      const exampleComponent = await read(
+        "./out/types/components/schemas/Example.ts",
+      );
+
+      await generator.stopWatching();
+
+      expect(exampleComponent).toContain("export type Example = number;\n");
+    });
+  });
+
+  it("updates the code when an overlay file changes", async () => {
+    await usingTemporaryFiles(async ({ add, path, read }) => {
+      await add("openapi.json", JSON.stringify(OPENAPI));
+      await add("overlay.yaml", overlayForType("string"));
+
+      const generator = new CodeGenerator(
+        path("./openapi.json"),
+        path("./out"),
+        { routes: true, types: true },
+        "",
+        [path("./overlay.yaml")],
+      );
+
+      await generator.watch();
+
+      await add("overlay.yaml", overlayForType("integer"));
 
       await waitForEvent(generator, "generate");
 
