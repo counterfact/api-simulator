@@ -1,0 +1,9 @@
+overlay: 1.0.0
+info:
+  title: Remove deprecated paths
+  version: 1.0.0
+actions:
+  # Remove the deprecated /legacy/items endpoint entirely so that clients
+  # and code-generation tools no longer see it.
+  - target: $.paths['/legacy/items']
+    remove: true

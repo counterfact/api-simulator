@@ -236,6 +236,133 @@ describe("openapiMiddleware", () => {
     });
   });
 
+  it("applies overlay update actions to the served document", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.yaml",
+        "openapi: '3.0.0'\ninfo:\n  title: Original Title\n  version: '1.0.0'\npaths: {}\n",
+      );
+      await $.add(
+        "overlay.yaml",
+        [
+          "overlay: 1.0.0",
+          "info:",
+          "  title: Overlay",
+          "  version: 1.0.0",
+          "actions:",
+          "  - target: $.info",
+          "    update:",
+          "      title: Patched Title",
+        ].join("\n"),
+      );
+
+      const app = new Koa();
+
+      app.use(
+        openapiMiddleware("/counterfact/openapi", {
+          path: $.path("openapi.yaml"),
+          baseUrl: "//localhost:3100",
+          overlays: [$.path("overlay.yaml")],
+        }),
+      );
+
+      const response = await request(app.callback()).get(
+        "/counterfact/openapi",
+      );
+
+      expect(response.status).toBe(200);
+      const doc = yaml.load(response.text) as { info: { title: string } };
+
+      expect(doc.info.title).toBe("Patched Title");
+    });
+  });
+
+  it("applies overlay remove actions to the served document", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.yaml",
+        [
+          "openapi: '3.0.0'",
+          "info:",
+          "  title: Test",
+          "  version: '1.0.0'",
+          "paths:",
+          "  /keep:",
+          "    get:",
+          "      responses:",
+          "        '200':",
+          "          description: OK",
+          "  /remove-me:",
+          "    get:",
+          "      responses:",
+          "        '200':",
+          "          description: OK",
+        ].join("\n"),
+      );
+      await $.add(
+        "overlay.yaml",
+        [
+          "overlay: 1.0.0",
+          "info:",
+          "  title: Overlay",
+          "  version: 1.0.0",
+          "actions:",
+          "  - target: \"$.paths['/remove-me']\"",
+          "    remove: true",
+        ].join("\n"),
+      );
+
+      const app = new Koa();
+
+      app.use(
+        openapiMiddleware("/counterfact/openapi", {
+          path: $.path("openapi.yaml"),
+          baseUrl: "//localhost:3100",
+          overlays: [$.path("overlay.yaml")],
+        }),
+      );
+
+      const response = await request(app.callback()).get(
+        "/counterfact/openapi",
+      );
+
+      expect(response.status).toBe(200);
+      const doc = yaml.load(response.text) as {
+        paths: Record<string, unknown>;
+      };
+
+      expect(Object.keys(doc.paths)).toContain("/keep");
+      expect(Object.keys(doc.paths)).not.toContain("/remove-me");
+    });
+  });
+
+  it("serves the original document without modification when no overlays are specified", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.yaml",
+        "openapi: '3.0.0'\ninfo:\n  title: Unchanged\n  version: '1.0.0'\npaths: {}\n",
+      );
+
+      const app = new Koa();
+
+      app.use(
+        openapiMiddleware("/counterfact/openapi", {
+          path: $.path("openapi.yaml"),
+          baseUrl: "//localhost:3100",
+        }),
+      );
+
+      const response = await request(app.callback()).get(
+        "/counterfact/openapi",
+      );
+
+      expect(response.status).toBe(200);
+      const doc = yaml.load(response.text) as { info: { title: string } };
+
+      expect(doc.info.title).toBe("Unchanged");
+    });
+  });
+
   it("does not handle requests to other paths", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(

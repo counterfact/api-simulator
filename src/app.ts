@@ -65,6 +65,14 @@ export interface SpecConfig {
    * `VersionsGTE`, and `Versioned` types.
    */
   version?: string;
+  /**
+   * Optional ordered list of OpenAPI overlay file paths/URLs to apply to the
+   * spec after it is loaded.  Overlays are applied in the order listed.
+   *
+   * Each entry is a path or URL to an OpenAPI overlay document (version 1.0.0)
+   * containing `actions` that modify the loaded spec via JSONPath targeting.
+   */
+  overlays?: string[];
 }
 
 type Scenario$ = {
@@ -243,7 +251,14 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
   const runners = await Promise.all(
     normalizedSpecs.map((spec) =>
       ApiRunner.create(
-        { ...config, openApiPath: spec.source, prefix: spec.prefix },
+        {
+          ...config,
+          openApiPath: spec.source,
+          // Per-spec overlays take precedence; fall back to config-level overlays
+          // so that the --overlay CLI flag works in single-spec mode.
+          overlays: spec.overlays ?? config.overlays ?? [],
+          prefix: spec.prefix,
+        },
         spec.group,
         spec.version ?? "",
         versionsByGroup.get(spec.group) ?? [],

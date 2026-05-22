@@ -1,0 +1,15 @@
+overlay: 1.0.0
+info:
+  title: Add x-internal extension to selected operations
+  version: 1.0.0
+actions:
+  # Mark the /count endpoint as internal so it can be filtered out of
+  # public-facing documentation.
+  - target: $.paths['/count'].get
+    update:
+      x-internal: true
+
+  # Mark the /ping endpoint as internal for the same reason.
+  - target: $.paths['/ping'].get
+    update:
+      x-internal: true

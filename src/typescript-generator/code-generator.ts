@@ -32,6 +32,8 @@ export class CodeGenerator extends EventTarget {
 
   private readonly version: string;
 
+  private readonly overlays: readonly string[];
+
   private readonly generateOptions: {
     prune?: boolean;
     routes?: boolean;
@@ -45,11 +47,13 @@ export class CodeGenerator extends EventTarget {
     destination: string,
     generateOptions: { prune?: boolean; routes?: boolean; types?: boolean },
     version = "",
+    overlays: readonly string[] = [],
   ) {
     super();
     this.openapiPath = openApiPath;
     this.destination = destination;
     this.version = version;
+    this.overlays = overlays;
     this.generateOptions = generateOptions;
   }
 
@@ -130,7 +134,10 @@ export class CodeGenerator extends EventTarget {
 
     debug("creating specification from %s", this.openapiPath);
 
-    const specification = await Specification.fromFile(this.openapiPath);
+    const specification = await Specification.fromFile(
+      this.openapiPath,
+      this.overlays,
+    );
 
     debug("created specification: $o", specification);
 
