@@ -90,7 +90,7 @@
     "@types/debug": "4.1.13",
     "@types/jest": "30.0.0",
     "@types/js-yaml": "4.0.9",
-    "@types/koa": "3.0.2",
+    "@types/koa": "3.0.3",
     "@types/koa-bodyparser": "4.3.13",
     "@types/koa-proxy": "1.0.8",
     "@types/koa-static": "4.0.4",
