@@ -206,6 +206,7 @@ function buildProgram(version: string, taglines: string[]): Command {
     // the command line (i.e. its source is "default" or it was never defined).
     for (const [key, value] of Object.entries(fileConfig)) {
       if (!knownOptionKeys.has(key)) {
+        debug("ignoring unknown config key %s", key);
         continue;
       }
 

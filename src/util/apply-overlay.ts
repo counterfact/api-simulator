@@ -30,16 +30,18 @@ function deepMerge(
       continue;
     }
 
+    const existingValue = Reflect.get(target, key);
+
     if (
       typeof value === "object" &&
       value !== null &&
       !Array.isArray(value) &&
-      typeof Reflect.get(target, key) === "object" &&
-      Reflect.get(target, key) !== null &&
-      !Array.isArray(Reflect.get(target, key))
+      typeof existingValue === "object" &&
+      existingValue !== null &&
+      !Array.isArray(existingValue)
     ) {
       deepMerge(
-        Reflect.get(target, key) as Record<string, unknown>,
+        existingValue as Record<string, unknown>,
         value as Record<string, unknown>,
       );
     } else {

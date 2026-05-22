@@ -116,6 +116,35 @@ interface ParameterTypes {
   query: Map<string, string>;
 }
 
+function parameterTypeMap(
+  parameterIn: OpenApiParameters["in"],
+  types: ParameterTypes,
+): Map<string, string> | undefined {
+  switch (parameterIn) {
+    case "body": {
+      return types.body;
+    }
+    case "cookie": {
+      return types.cookie;
+    }
+    case "formData": {
+      return types.formData;
+    }
+    case "header": {
+      return types.header;
+    }
+    case "path": {
+      return types.path;
+    }
+    case "query": {
+      return types.query;
+    }
+    default: {
+      return undefined;
+    }
+  }
+}
+
 export type DispatcherRequest = {
   auth?: {
     apiKey?: string;
@@ -269,36 +298,10 @@ export class Dispatcher {
 
       if (type !== undefined) {
         const normalizedType = type === "integer" ? "number" : type;
-
-        switch (parameter.in) {
-          case "body": {
-            types.body.set(parameter.name, normalizedType);
-            break;
-          }
-          case "cookie": {
-            types.cookie.set(parameter.name, normalizedType);
-            break;
-          }
-          case "formData": {
-            types.formData.set(parameter.name, normalizedType);
-            break;
-          }
-          case "header": {
-            types.header.set(parameter.name, normalizedType);
-            break;
-          }
-          case "path": {
-            types.path.set(parameter.name, normalizedType);
-            break;
-          }
-          case "query": {
-            types.query.set(parameter.name, normalizedType);
-            break;
-          }
-          default: {
-            break;
-          }
-        }
+        parameterTypeMap(parameter.in, types)?.set(
+          parameter.name,
+          normalizedType,
+        );
       }
     }
 
