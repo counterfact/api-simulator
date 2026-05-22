@@ -277,6 +277,17 @@ export class Context {
     const newExportBlocks: string[] = [];
 
     for (const { methodName, typeName } of newExports) {
+      // Both names come from \w+ captures so they are safe identifiers, but
+      // guard explicitly to satisfy static analysis and avoid RegExp injection.
+      if (!/^\w+$/u.test(typeName) || !/^\w+$/u.test(methodName)) {
+        debug(
+          `skipping handler with unsafe name – methodName: %s, typeName: %s`,
+          methodName,
+          typeName,
+        );
+        continue;
+      }
+
       // Find the `import type { TypeName } from "..."` line for this type.
       const importMatch = generatedContent.match(
         new RegExp(
@@ -290,6 +301,9 @@ export class Context {
       }
 
       // Find the export block: from `export const METHOD` to the closing `};`.
+      // The generated code is always Prettier-formatted, so the closing brace
+      // and semicolon of every top-level arrow-function export appear on their
+      // own line as `\n};`.
       const startMatch = new RegExp(
         `^export\\s+const\\s+${methodName}\\b`,
         "mu",
@@ -314,7 +328,16 @@ export class Context {
 
       if (importMatches.length > 0) {
         const lastImport = importMatches[importMatches.length - 1];
-        const lineEnd = existingContent.indexOf("\n", lastImport.index!);
+
+        if (lastImport.index === undefined) {
+          debug(
+            `could not determine last import position in ${fullPath}; skipping import insertion`,
+          );
+
+          return;
+        }
+
+        const lineEnd = existingContent.indexOf("\n", lastImport.index);
         const insertPos = lineEnd === -1 ? existingContent.length : lineEnd + 1;
 
         updatedContent =
