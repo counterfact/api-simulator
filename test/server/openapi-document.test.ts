@@ -5,6 +5,15 @@ import { waitForEvent } from "../../src/util/wait-for-event.js";
 
 const OPENAPI = {
   openapi: "3.0.3",
+  components: {
+    securitySchemes: {
+      apiKeyAuth: {
+        in: "header",
+        name: "api_key",
+        type: "apiKey",
+      },
+    },
+  },
   info: { title: "Test", version: "1.0.0" },
   paths: {
     "/example": {
@@ -54,6 +63,20 @@ describe("OpenApiDocument", () => {
       await doc.load();
 
       expect(Object.keys(doc.paths)).toContain("/example");
+    });
+  });
+
+  it("loads and exposes security schemes from the source file", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("openapi.json", JSON.stringify(OPENAPI));
+
+      const doc = new OpenApiDocument($.path("openapi.json"));
+
+      await doc.load();
+
+      expect(doc.components?.securitySchemes).toStrictEqual(
+        OPENAPI.components.securitySchemes,
+      );
     });
   });
 
