@@ -245,6 +245,7 @@ export class Context {
     const existingContent = await fs.readFile(fullPath, "utf8");
 
     // Names already exported by the existing file (e.g. GET, POST).
+    // RegExp match groups are typed as optional strings, so narrow defensively.
     const existingExportNames = new Set<string>(
       Array.from(
         existingContent.matchAll(/^export\s+const\s+(\w+)/gmu),
