@@ -573,6 +573,33 @@ describe("an OperationTypeCoder", () => {
     ).resolves.toMatchSnapshot();
   });
 
+  it("generates auth.apiKey as a required string for apiKey security", () => {
+    const requirement = new Requirement(
+      {
+        responses: {
+          default: {
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Example" },
+              },
+            },
+          },
+        },
+      },
+      "#/paths/hello/get",
+    );
+
+    const coder = new OperationTypeCoder(requirement, "", "get", [
+      {
+        in: "header",
+        name: "api_key",
+        type: "apiKey",
+      },
+    ]);
+
+    expect(coder.write(dummyScript)).toContain("auth: {apiKey: string}");
+  });
+
   it("uses operationId for type names when available", () => {
     const coder = new OperationTypeCoder(
       new Requirement({ operationId: "addPet" }, "#/paths/pet/post"),

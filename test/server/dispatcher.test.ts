@@ -412,6 +412,54 @@ describe("a dispatcher", () => {
     expect(response.body).toBe("top-secret");
   });
 
+  it("defaults api key auth to an empty string when missing from the request", async () => {
+    const registry = new Registry();
+
+    registry.add("/a", {
+      GET({ auth }) {
+        return {
+          body: auth?.apiKey,
+        };
+      },
+    });
+
+    const openApiDocument: OpenApiDocument = {
+      components: {
+        securitySchemes: {
+          apiKeyAuth: {
+            in: "header",
+            name: "api_key",
+            type: "apiKey",
+          },
+        },
+      },
+      paths: {
+        "/a": {
+          get: {
+            responses: { 200: { description: "ok" } },
+          },
+        },
+      },
+    };
+
+    const dispatcher = new Dispatcher(
+      registry,
+      new ContextRegistry(),
+      openApiDocument,
+    );
+
+    const response = await dispatcher.request({
+      body: "",
+      headers: {},
+      method: "GET",
+      path: "/a",
+      query: {},
+      req: { path: "/a" },
+    });
+
+    expect(response.body).toBe("");
+  });
+
   it("adds api key auth from configured cookie security schemes", async () => {
     const registry = new Registry();
 

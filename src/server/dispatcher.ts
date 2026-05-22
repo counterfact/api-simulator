@@ -342,11 +342,9 @@ export class Dispatcher {
               ([key]) => key.toLowerCase() === apiKeyScheme.name.toLowerCase(),
             )?.[1];
 
-    const normalizedApiKey = Array.isArray(apiKey) ? apiKey[0] : apiKey;
-
-    if (normalizedApiKey === undefined) {
-      return auth;
-    }
+    const normalizedApiKey = Array.isArray(apiKey)
+      ? (apiKey[0] ?? "")
+      : (apiKey ?? "");
 
     return { ...auth, apiKey: normalizedApiKey };
   }

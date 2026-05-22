@@ -383,7 +383,7 @@ exports[`an OperationTypeCoder generates required api key auth and cookie for ap
     }>;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -416,7 +416,7 @@ exports[`an OperationTypeCoder generates required api key auth and headers for a
     }>;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;

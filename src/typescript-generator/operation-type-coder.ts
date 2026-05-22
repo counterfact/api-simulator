@@ -262,7 +262,7 @@ export class OperationTypeCoder extends TypeCoder {
     }
 
     if (this.securitySchemes.some(({ type }) => type === "apiKey")) {
-      fields.add("apiKey?: string");
+      fields.add("apiKey: string");
     }
 
     return fields.size === 0 ? "never" : `{${[...fields].join(", ")}}`;

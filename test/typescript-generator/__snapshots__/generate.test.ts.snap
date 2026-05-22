@@ -62,7 +62,7 @@ export type addPet = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -116,7 +116,7 @@ export type updatePet = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -186,7 +186,7 @@ export type findPetsByStatus = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -261,7 +261,7 @@ export type findPetsByTags = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -352,7 +352,7 @@ export type getPetById = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -378,7 +378,7 @@ export type updatePetWithForm = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -404,7 +404,7 @@ export type deletePet = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -496,7 +496,7 @@ export type uploadFile = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -568,7 +568,7 @@ export type getInventory = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -633,7 +633,7 @@ export type placeOrder = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -712,7 +712,7 @@ export type getOrderById = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -747,7 +747,7 @@ export type deleteOrder = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -826,7 +826,7 @@ export type createUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -898,7 +898,7 @@ export type createUsersWithListInput = (
     >;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -965,7 +965,7 @@ export type loginUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1028,7 +1028,7 @@ export type logoutUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1110,7 +1110,7 @@ export type getUserByName = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1139,7 +1139,7 @@ export type updateUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1174,7 +1174,7 @@ export type deleteUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey?: string };
+    auth: { apiKey: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1405,7 +1405,7 @@ export type getRoot = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1465,7 +1465,7 @@ export type getCount = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1526,7 +1526,7 @@ export type helloKitty = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1592,7 +1592,7 @@ export type sayHello = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1670,7 +1670,7 @@ export type getPathOne = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1725,7 +1725,7 @@ export type weirdColonPath = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1804,7 +1804,7 @@ export type listUsers = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1851,7 +1851,7 @@ export type createUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1944,7 +1944,7 @@ export type getUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1979,7 +1979,7 @@ export type replaceUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2014,7 +2014,7 @@ export type patchUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2044,7 +2044,7 @@ export type deleteUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2139,7 +2139,7 @@ export type createEvent = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2197,7 +2197,7 @@ export type getProduct = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2274,7 +2274,7 @@ export type uploadFile = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2333,7 +2333,7 @@ export type listItemsLegacy = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2401,7 +2401,7 @@ export type getReport = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2460,7 +2460,7 @@ export type ping = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2518,7 +2518,7 @@ export type setMetadata = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2579,7 +2579,7 @@ export type getXmlBook = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2640,7 +2640,7 @@ export type getXmlNote = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2701,7 +2701,7 @@ export type getXmlSnippet = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2762,7 +2762,7 @@ export type getXmlSecret = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2823,7 +2823,7 @@ export type getXmlPlaylist = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2890,7 +2890,7 @@ export type getRelationship = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2940,7 +2940,7 @@ export type linkRelationship = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2972,7 +2972,7 @@ export type unlinkRelationship = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -3037,7 +3037,7 @@ export type HTTP_GET = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -3105,7 +3105,7 @@ export type streamEvents = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -3167,7 +3167,7 @@ export type search = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey?: string };
+    auth: { username?: string; password?: string; apiKey: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
