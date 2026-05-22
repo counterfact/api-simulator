@@ -364,6 +364,150 @@ describe("a dispatcher", () => {
     ).toStrictEqual(authHeader);
   });
 
+  it("adds api key auth from configured header security schemes", async () => {
+    const registry = new Registry();
+
+    registry.add("/a", {
+      GET({ auth }) {
+        return {
+          body: auth?.apiKey,
+        };
+      },
+    });
+
+    const openApiDocument: OpenApiDocument = {
+      components: {
+        securitySchemes: {
+          apiKeyAuth: {
+            in: "header",
+            name: "api_key",
+            type: "apiKey",
+          },
+        },
+      },
+      paths: {
+        "/a": {
+          get: {
+            responses: { 200: { description: "ok" } },
+          },
+        },
+      },
+    };
+
+    const dispatcher = new Dispatcher(
+      registry,
+      new ContextRegistry(),
+      openApiDocument,
+    );
+
+    const response = await dispatcher.request({
+      body: "",
+      headers: { api_key: "top-secret" },
+      method: "GET",
+      path: "/a",
+      query: {},
+      req: { path: "/a" },
+    });
+
+    expect(response.body).toBe("top-secret");
+  });
+
+  it("defaults api key auth to an empty string when missing from the request", async () => {
+    const registry = new Registry();
+
+    registry.add("/a", {
+      GET({ auth }) {
+        return {
+          body: auth?.apiKey,
+        };
+      },
+    });
+
+    const openApiDocument: OpenApiDocument = {
+      components: {
+        securitySchemes: {
+          apiKeyAuth: {
+            in: "header",
+            name: "api_key",
+            type: "apiKey",
+          },
+        },
+      },
+      paths: {
+        "/a": {
+          get: {
+            responses: { 200: { description: "ok" } },
+          },
+        },
+      },
+    };
+
+    const dispatcher = new Dispatcher(
+      registry,
+      new ContextRegistry(),
+      openApiDocument,
+    );
+
+    const response = await dispatcher.request({
+      body: "",
+      headers: {},
+      method: "GET",
+      path: "/a",
+      query: {},
+      req: { path: "/a" },
+    });
+
+    expect(response.body).toBe("");
+  });
+
+  it("adds api key auth from configured cookie security schemes", async () => {
+    const registry = new Registry();
+
+    registry.add("/a", {
+      GET({ auth }) {
+        return {
+          body: auth?.apiKey,
+        };
+      },
+    });
+
+    const openApiDocument: OpenApiDocument = {
+      components: {
+        securitySchemes: {
+          apiKeyAuth: {
+            in: "cookie",
+            name: "api_key_cookie",
+            type: "apiKey",
+          },
+        },
+      },
+      paths: {
+        "/a": {
+          get: {
+            responses: { 200: { description: "ok" } },
+          },
+        },
+      },
+    };
+
+    const dispatcher = new Dispatcher(
+      registry,
+      new ContextRegistry(),
+      openApiDocument,
+    );
+
+    const response = await dispatcher.request({
+      body: "",
+      headers: { cookie: "api_key_cookie=top-secret-cookie" },
+      method: "GET",
+      path: "/a",
+      query: {},
+      req: { path: "/a" },
+    });
+
+    expect(response.body).toBe("top-secret-cookie");
+  });
+
   it("passes the query params", async () => {
     const registry = new Registry();
 

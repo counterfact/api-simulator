@@ -24,6 +24,7 @@ exports[`an OperationTypeCoder falls back to root level produces (OpenAPI 2) 1`]
     }>;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -79,6 +80,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2 wit
     >;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -134,6 +136,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2) 1`
     >;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -189,6 +192,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2, co
     >;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -247,6 +251,7 @@ exports[`an OperationTypeCoder generates a complex post operation 1`] = `
     >;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -279,6 +284,7 @@ exports[`an OperationTypeCoder generates a simple get operation (OpenAPI 2) 1`] 
     }>;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -311,6 +317,7 @@ exports[`an OperationTypeCoder generates a simple get operation 1`] = `
     }>;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -343,7 +350,74 @@ exports[`an OperationTypeCoder generates an auth object for basic authentication
     }>;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
+    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+    version: never;
+  }>,
+) => MaybePromise<COUNTERFACT_RESPONSE>;
+"
+`;
+
+exports[`an OperationTypeCoder generates required api key auth and cookie for apiKey security 1`] = `
+"type TestType = (
+  $: OmitValueWhenNever<{
+    query: never;
+    querystring: never;
+    path: never;
+    headers: never;
+    cookie: HTTP_GET_Cookie;
+    body: never;
+    context: ExternalType;
+    response: ResponseBuilderFactory<{
+      [statusCode in HttpStatusCode]: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
+          };
+        };
+        examples: {};
+      };
+    }>;
+    x: SharedType;
+    proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: { apiKey: string };
+    user: never;
+    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+    version: never;
+  }>,
+) => MaybePromise<COUNTERFACT_RESPONSE>;
+"
+`;
+
+exports[`an OperationTypeCoder generates required api key auth and headers for apiKey security 1`] = `
+"type TestType = (
+  $: OmitValueWhenNever<{
+    query: never;
+    querystring: never;
+    path: never;
+    headers: HTTP_GET_Headers;
+    cookie: never;
+    body: never;
+    context: ExternalType;
+    response: ResponseBuilderFactory<{
+      [statusCode in HttpStatusCode]: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
+          };
+        };
+        examples: {};
+      };
+    }>;
+    x: SharedType;
+    proxy: (url: string) => COUNTERFACT_RESPONSE;
+    auth: { apiKey: string };
+    user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,

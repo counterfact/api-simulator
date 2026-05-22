@@ -145,7 +145,9 @@ This behaviour follows the OpenAPI 3.x defaults (`style: form`, `explode: true`)
 
 When a request includes HTTP Basic credentials, they're available at `$.auth.username` and `$.auth.password`.
 
-Support for other security schemes (API key, OAuth 2, OpenID Connect, mutual TLS) is planned. [Open an issue](https://github.com/pmcelhaney/counterfact/issues) to help prioritize.
+When your OpenAPI document defines an `apiKey` security scheme (`in: header`, `in: query`, or `in: cookie`), Counterfact always includes `$.auth.apiKey`. If the request omits the key, `$.auth.apiKey` defaults to an empty string.
+
+Support for other security schemes (OAuth 2, OpenID Connect, mutual TLS) is planned. [Open an issue](https://github.com/pmcelhaney/counterfact/issues) to help prioritize.
 
 ## Simulating latency: `$.delay()`
 

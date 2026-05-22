@@ -29,6 +29,17 @@ export class OpenApiDocument extends EventTarget {
 
   public basePath?: string;
 
+  public components?: {
+    securitySchemes?: Record<
+      string,
+      {
+        in?: "cookie" | "header" | "query";
+        name?: string;
+        type?: string;
+      }
+    >;
+  };
+
   public paths: {
     [key: string]: {
       [key in Lowercase<HttpMethods>]?: OpenApiOperation;
@@ -53,6 +64,16 @@ export class OpenApiDocument extends EventTarget {
     try {
       const data = (await dereference(this.source)) as {
         basePath?: string;
+        components?: {
+          securitySchemes?: Record<
+            string,
+            {
+              in?: "cookie" | "header" | "query";
+              name?: string;
+              type?: string;
+            }
+          >;
+        };
         paths: {
           [key: string]: {
             [key in Lowercase<HttpMethods>]?: OpenApiOperation;
@@ -69,6 +90,7 @@ export class OpenApiDocument extends EventTarget {
       }
 
       this.basePath = data.basePath;
+      this.components = data.components;
       this.paths = data.paths;
       this.produces = data.produces;
     } catch (error) {
