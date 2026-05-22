@@ -38,6 +38,13 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - Shipping behavior changes without docs + changeset updates.
 - Breaking backward compatibility unintentionally (CLI defaults, regeneration guarantees, response semantics).
 - Relying only on broad tests; skip targeted tests for touched areas.
+- Writing task-specific "decision logs" without turning repeatable lessons into durable instructions.
+
+## Embedding learnings into guidance
+
+- When a non-trivial task reveals repeatable guidance, update the relevant skill file in the same PR, or create a new skill if applicable.
+- Put subsystem-specific learnings in the matching skill (`counterfact-cli-runtime`, `counterfact-runtime-architecture`, or `counterfact-generator-internals`).
+- Put cross-cutting learnings in `.github/copilot-instructions.md` only when they do not belong to a single subsystem skill.
 
 ## How to validate the change
 
