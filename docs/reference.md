@@ -462,6 +462,16 @@ Run `npx counterfact@latest --help` for the full list.
 
 ---
 
+## Admin API spec
+
+The core Admin API is documented in a reverse-engineered OpenAPI document:
+
+- [`docs/admin-api.openapi.yaml`](./admin-api.openapi.yaml)
+
+The spec reflects the default mount path (`/_counterfact/api`). In multi-spec mode, Counterfact appends each runner's subdirectory to this base path.
+
+---
+
 ## See also
 
 - [Getting started](./getting-started.md)
