@@ -18,7 +18,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
   - `counterfact [spec] [destination]`
 - Start in OpenAPI-free mode:
   - `counterfact` (equivalent to default `spec` of `_`)
-  - `counterfact _ api`
+  - `counterfact _ api` (same positional form `counterfact [spec] [destination]` with `spec` set to `_`)
 - Use named flags for generation, watching, serving, REPL, validation, proxying, overlays, admin API, and config-file loading.
 
 ### Accepted inputs
@@ -342,7 +342,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 ### Outputs and side effects
 
 - Generates strongly typed handler signatures and payload contracts.
-- Emits generated JSDoc from non-empty OpenAPI descriptions on supported elements (for example operations, parameters, and schemas); missing/empty descriptions yield no generated JSDoc for those elements.
+- Emits generated JSDoc from non-empty OpenAPI descriptions on supported elements (e.g., operations, parameters, and schemas); missing/empty descriptions yield no generated JSDoc for those elements.
 - Emits group-local `types/versions.ts` when any spec in group is versioned.
 
 ### Deterministic requirements
@@ -415,7 +415,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ### Notable edge cases
 
-- Paths containing colon characters are routable (for example `/path/with:colon`), even though `:` can be special in some routing systems.
+- Paths containing colon characters are routable (e.g., `/path/with:colon`), even though `:` can be special in some routing systems.
 - OpenAPI-free mode (`spec` = `_`) allows manually authored routes without spec-driven generation.
 - Overlay remove/update actions can remove endpoints or alter served examples.
 - Multi-API serves different specs under distinct prefixes/groups in one process.
