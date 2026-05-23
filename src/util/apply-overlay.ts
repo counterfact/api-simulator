@@ -45,7 +45,8 @@ function deepMerge(
         value as Record<string, unknown>,
       );
     } else {
-      Object.assign(target, { [key]: value });
+      // eslint-disable-next-line security/detect-object-injection -- keys are filtered for prototype-pollution vectors above.
+      target[key] = value;
     }
   }
 }

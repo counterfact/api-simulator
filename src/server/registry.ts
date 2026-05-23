@@ -146,9 +146,11 @@ function castParameters(
   const castedParameters: { [key: string]: boolean | number | string } = {};
 
   for (const [key, value] of Object.entries(parameters)) {
-    Object.assign(castedParameters, {
-      [key]: castParameter(value, parameterTypes.get(key) ?? "string"),
-    });
+    // eslint-disable-next-line security/detect-object-injection -- key comes from parsed request parameter entries.
+    castedParameters[key] = castParameter(
+      value,
+      parameterTypes.get(key) ?? "string",
+    );
   }
 
   return castedParameters;
