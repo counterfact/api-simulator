@@ -212,7 +212,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 ### Outputs and side effects
 
 - Changed handlers are picked up without process restart.
-- In-memory context state survives route hot reload.
+- In-memory context state is preserved during route hot reload.
 - Local spec edits can update generated behavior (e.g., example-driven outputs) without restart when watch paths are active.
 
 ### Deterministic requirements
@@ -342,7 +342,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 ### Outputs and side effects
 
 - Generates strongly typed handler signatures and payload contracts.
-- Emits generated JSDoc from OpenAPI descriptions.
+- Emits generated JSDoc from non-empty OpenAPI descriptions; missing/empty descriptions produce no JSDoc for that field.
 - Emits group-local `types/versions.ts` when any spec in group is versioned.
 
 ### Deterministic requirements
