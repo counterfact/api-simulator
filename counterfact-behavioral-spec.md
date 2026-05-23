@@ -1,6 +1,6 @@
 # Counterfact Behavioral Specification
 
-## 0) Scope and compatibility target
+## 1) Scope and compatibility target
 
 This document specifies Counterfact as a black-box system: observed CLI behavior, generated artifacts, runtime behavior, REPL behavior, and configuration semantics.
 
@@ -10,7 +10,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 1) User-facing commands and CLI behavior
+## 2) User-facing commands and CLI behavior
 
 ### What the user can do
 
@@ -72,7 +72,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 2) Inputs, outputs, flags, defaults, and error behavior
+## 3) Inputs, outputs, flags, defaults, and error behavior
 
 ### What the user can do
 
@@ -114,7 +114,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 3) Generated project/file behavior
+## 4) Generated project/file behavior
 
 ### What the user can do
 
@@ -157,7 +157,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 4) Runtime behavior
+## 5) Runtime behavior
 
 ### What the user can do
 
@@ -198,7 +198,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 5) Route handler loading and hot reload behavior
+## 6) Route handler loading and hot reload behavior
 
 ### What the user can do
 
@@ -227,7 +227,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 ### Example behaviors
 
 - Editing a route to return binary via `$.response[200].binary(...)` eventually changes live response bytes/content-type.
-- Rewriting local spec example from `original` to `reloaded` eventually changes returned response example.
+- Rewriting local spec example from `original` to `reloaded` changes returned response content after reload is detected (observable via polling).
 
 ### Testable assertions
 
@@ -237,7 +237,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 6) REPL behavior
+## 7) REPL behavior
 
 ### What the user can do
 
@@ -270,7 +270,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 ### Error behavior
 
 - Missing/invalid scenario command args show usage guidance.
-- If `startup` scenario export is absent, startup scenario is skipped without error.
+- If `startup` scenario export is absent, server startup continues normally and no startup scenario effects are observed.
 - Route builder `send()` throws when required parameters are missing.
 
 ### Example behaviors
@@ -286,7 +286,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 7) Context/state behavior
+## 8) Context/state behavior
 
 ### What the user can do
 
@@ -326,7 +326,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 8) Type generation behavior
+## 9) Type generation behavior
 
 ### What the user can do
 
@@ -342,7 +342,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 ### Outputs and side effects
 
 - Generates strongly typed handler signatures and payload contracts.
-- Emits generated JSDoc from non-empty OpenAPI descriptions; missing/empty descriptions produce no JSDoc for that field.
+- Emits generated JSDoc from non-empty OpenAPI descriptions on supported elements (for example operations, parameters, and schemas); missing/empty descriptions yield no generated JSDoc for those elements.
 - Emits group-local `types/versions.ts` when any spec in group is versioned.
 
 ### Deterministic requirements
@@ -367,7 +367,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 9) Configuration behavior
+## 10) Configuration behavior
 
 ### What the user can do
 
@@ -411,11 +411,11 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 10) Edge cases and observable failure modes
+## 11) Edge cases and observable failure modes
 
 ### Notable edge cases
 
-- Paths containing colon characters are routable.
+- Paths containing colon characters are routable (for example `/path/with:colon`), even though `:` can be special in some routing systems.
 - OpenAPI-free mode (`spec` = `_`) allows manually authored routes without spec-driven generation.
 - Overlay remove/update actions can remove endpoints or alter served examples.
 - Multi-API serves different specs under distinct prefixes/groups in one process.
@@ -444,7 +444,7 @@ This document specifies Counterfact as a black-box system: observed CLI behavior
 
 ---
 
-## 11) Conformance test matrix (minimum)
+## 12) Conformance test matrix (minimum)
 
 An alternative implementation should pass at least these black-box checks:
 
