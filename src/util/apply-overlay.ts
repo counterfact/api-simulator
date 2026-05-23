@@ -45,7 +45,7 @@ function deepMerge(
         value as Record<string, unknown>,
       );
     } else {
-      Reflect.set(target, key, value);
+      Object.assign(target, { [key]: value });
     }
   }
 }

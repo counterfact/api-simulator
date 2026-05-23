@@ -143,17 +143,12 @@ function castParameters(
   parameters: { [key: string]: string | number | boolean } = {},
   parameterTypes: Map<string, string> = new Map(),
 ) {
-  const copy: { [key: string]: boolean | number | string } = {};
-
-  Object.entries(parameters).forEach(([key, value]) => {
-    Reflect.set(
-      copy,
+  return Object.fromEntries(
+    Object.entries(parameters).map(([key, value]) => [
       key,
       castParameter(value, parameterTypes.get(key) ?? "string"),
-    );
-  });
-
-  return copy;
+    ]),
+  ) as { [key: string]: boolean | number | string };
 }
 
 /**

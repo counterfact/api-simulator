@@ -46,9 +46,10 @@ function cloneForCache(value: unknown): unknown {
       ? (Object.create(proto) as Record<string, unknown>)
       : {};
 
-  for (const key of Object.keys(value)) {
-    const propertyValue = Reflect.get(value as Record<string, unknown>, key);
-    Reflect.set(clone, key, cloneForCache(propertyValue));
+  for (const [key, propertyValue] of Object.entries(
+    value as Record<string, unknown>,
+  )) {
+    Object.assign(clone, { [key]: cloneForCache(propertyValue) });
   }
 
   return clone;
@@ -166,7 +167,7 @@ export class ContextRegistry extends EventTarget {
     const cachedContext = this.cache.get(path);
     for (const [property, updatedValue] of Object.entries(updatedContext)) {
       if (updatedValue !== Reflect.get(cachedContext ?? {}, property)) {
-        Reflect.set(context, property, updatedValue);
+        Object.assign(context, { [property]: updatedValue });
       }
     }
 
@@ -185,7 +186,7 @@ export class ContextRegistry extends EventTarget {
     const result: Record<string, Context> = {};
 
     for (const [path, context] of this.entries.entries()) {
-      Reflect.set(result, path, context);
+      Object.assign(result, { [path]: context });
     }
 
     return result;

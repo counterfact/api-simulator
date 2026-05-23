@@ -8,8 +8,9 @@ function add(
   name: string,
   method: string = "GET",
 ) {
-  const module: { [key: string]: () => { body: string } } = {};
-  Reflect.set(module, method, () => ({ body: name }));
+  const module = Object.fromEntries([[method, () => ({ body: name })]]) as {
+    [key: string]: () => { body: string };
+  };
   moduleTree.add(url, module);
 }
 

@@ -82,7 +82,7 @@ export interface OpenApiDocument {
  * @returns A record mapping cookie name to decoded value.
  */
 function parseCookies(cookieHeader: string): Record<string, string> {
-  const cookies: Record<string, string> = {};
+  const cookies = new Map<string, string>();
 
   for (const part of cookieHeader.split(";")) {
     const eqIndex = part.indexOf("=");
@@ -94,17 +94,17 @@ function parseCookies(cookieHeader: string): Record<string, string> {
     const key = part.slice(0, eqIndex).trim();
     const value = part.slice(eqIndex + 1).trim();
 
-    if (key && !Reflect.has(cookies, key)) {
+    if (key && !cookies.has(key)) {
       try {
-        Reflect.set(cookies, key, decodeURIComponent(value));
+        cookies.set(key, decodeURIComponent(value));
       } catch (error) {
         debug("could not decode cookie value for key %s: %o", key, error);
-        Reflect.set(cookies, key, value);
+        cookies.set(key, value);
       }
     }
   }
 
-  return cookies;
+  return Object.fromEntries(cookies);
 }
 
 interface ParameterTypes {
@@ -196,17 +196,17 @@ export function collectExplodedObjectParams(
     const properties = parameter.schema?.properties;
     if (!properties) continue;
 
-    const obj: Record<string, unknown> = {};
+    const objectEntries: [string, unknown][] = [];
 
     for (const key of Object.keys(properties)) {
       if (Reflect.has(result, key)) {
-        Reflect.set(obj, key, Reflect.get(result, key));
+        objectEntries.push([key, Reflect.get(result, key)]);
         Reflect.deleteProperty(result, key);
       }
     }
 
-    if (Object.keys(obj).length > 0) {
-      result[parameter.name] = obj;
+    if (objectEntries.length > 0) {
+      result[parameter.name] = Object.fromEntries(objectEntries);
     }
   }
 

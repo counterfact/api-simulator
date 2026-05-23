@@ -213,7 +213,7 @@ function buildProgram(version: string, taglines: string[]): Command {
       const optionSource = program.getOptionValueSource(key);
 
       if (optionSource !== "cli") {
-        Reflect.set(options, key, value);
+        program.setOptionValueWithSource(key, value, "config");
       }
     }
 
@@ -253,7 +253,7 @@ function buildProgram(version: string, taglines: string[]): Command {
       )
     ) {
       for (const action of actions) {
-        Reflect.set(options, action, true);
+        program.setOptionValueWithSource(action, true, "default");
       }
     }
 

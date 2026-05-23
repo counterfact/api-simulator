@@ -656,7 +656,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
-        Reflect.set(this.exports, name, coder);
+        Object.assign(this.exports, { [name]: coder });
         return name;
       },
     };
@@ -703,7 +703,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
-        Reflect.set(this.exports, name, coder);
+        Object.assign(this.exports, { [name]: coder });
         return name;
       },
     };
@@ -754,7 +754,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
-        Reflect.set(this.exports, name, coder);
+        Object.assign(this.exports, { [name]: coder });
         return name;
       },
     };
@@ -845,7 +845,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
-        Reflect.set(this.exports, name, coder);
+        Object.assign(this.exports, { [name]: coder });
         return name;
       },
     };
@@ -894,7 +894,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
-        Reflect.set(this.exports, name, coder);
+        Object.assign(this.exports, { [name]: coder });
         return name;
       },
     };
@@ -990,7 +990,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
-        Reflect.set(this.exports, name, coder);
+        Object.assign(this.exports, { [name]: coder });
         return name;
       },
     };
