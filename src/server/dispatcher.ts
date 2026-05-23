@@ -76,7 +76,9 @@ export interface OpenApiDocument {
  * Parses the `Cookie` request header into a key/value map.
  *
  * Duplicate keys are silently dropped (first occurrence wins) and values are
- * percent-decoded where possible.
+ * percent-decoded where possible. The implementation uses an internal `Map`
+ * for safe keyed accumulation, then returns a plain object for downstream
+ * request/auth helpers.
  *
  * @param cookieHeader - The raw `Cookie` header string.
  * @returns A record mapping cookie name to decoded value.

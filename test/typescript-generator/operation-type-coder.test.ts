@@ -51,6 +51,19 @@ const dummyScript = {
   path: ".",
 };
 
+function createScriptWithExportTracking() {
+  return {
+    ...dummyScript,
+    exports: {},
+    export(coder) {
+      const name = coder.names().next().value;
+      // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
+      this.exports[name] = coder;
+      return name;
+    },
+  };
+}
+
 describe("an OperationTypeCoder", () => {
   it("generates a list of potential names", () => {
     const coder = new OperationTypeCoder(
@@ -651,16 +664,7 @@ describe("an OperationTypeCoder", () => {
       "#/paths/pet~1search~1{id}/get",
     );
 
-    const scriptWithExportTracking = {
-      ...dummyScript,
-      exports: {},
-      export(coder) {
-        const name = coder.names().next().value;
-        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
-        this.exports[name] = coder;
-        return name;
-      },
-    };
+    const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(requirement, "", "get");
     const result = coder.write(scriptWithExportTracking);
@@ -699,16 +703,7 @@ describe("an OperationTypeCoder", () => {
       "#/paths/pet/get",
     );
 
-    const scriptWithExportTracking = {
-      ...dummyScript,
-      exports: {},
-      export(coder) {
-        const name = coder.names().next().value;
-        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
-        this.exports[name] = coder;
-        return name;
-      },
-    };
+    const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(requirement, "", "get");
     const result = coder.write(scriptWithExportTracking);
@@ -751,16 +746,7 @@ describe("an OperationTypeCoder", () => {
       "#/paths/session/get",
     );
 
-    const scriptWithExportTracking = {
-      ...dummyScript,
-      exports: {},
-      export(coder) {
-        const name = coder.names().next().value;
-        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
-        this.exports[name] = coder;
-        return name;
-      },
-    };
+    const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(requirement, "", "get");
     const result = coder.write(scriptWithExportTracking);
@@ -843,16 +829,7 @@ describe("an OperationTypeCoder", () => {
       "paths/~1stuff~1{stuffId}/get",
     )!;
 
-    const scriptWithExportTracking = {
-      ...dummyScript,
-      exports: {},
-      export(coder) {
-        const name = coder.names().next().value;
-        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
-        this.exports[name] = coder;
-        return name;
-      },
-    };
+    const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(operationReq, "", "get");
     const result = coder.write(scriptWithExportTracking);
@@ -893,16 +870,7 @@ describe("an OperationTypeCoder", () => {
       "#/paths/items/get",
     );
 
-    const scriptWithExportTracking = {
-      ...dummyScript,
-      exports: {},
-      export(coder) {
-        const name = coder.names().next().value;
-        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
-        this.exports[name] = coder;
-        return name;
-      },
-    };
+    const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(requirement, "", "get");
     const result = coder.write(scriptWithExportTracking);
@@ -990,16 +958,7 @@ describe("an OperationTypeCoder", () => {
       "paths/~1stuff~1{stuffId}/get",
     )!;
 
-    const scriptWithExportTracking = {
-      ...dummyScript,
-      exports: {},
-      export(coder) {
-        const name = coder.names().next().value;
-        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
-        this.exports[name] = coder;
-        return name;
-      },
-    };
+    const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(operationReq, "", "get");
     const result = coder.write(scriptWithExportTracking);
