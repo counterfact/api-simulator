@@ -1,5 +1,83 @@
 # counterfact
 
+## 2.13.0
+
+### Minor Changes
+
+- 999e331: Add support for OpenAPI 3.2 `querystring` parameter location: generates a typed `$.querystring` property on the route handler argument and populates it at runtime with the full parsed query string
+- f301764: Add support for OpenAPI Overlays (v1.0.0). Overlays allow you to apply targeted modifications to an OpenAPI document without editing the original file.
+  - New `--overlay <path>` CLI flag (repeatable) applies overlay files in order before code generation and server startup.
+  - `SpecConfig` now accepts an `overlays?: string[]` field for programmatic use and multi-spec config files.
+  - Each overlay file is a YAML/JSON document with an `overlay` version field and an `actions` array. Each action targets nodes with a JSONPath expression and either merges an `update` object or removes matched nodes.
+  - Overlays are applied to both the code-generator pipeline (`Specification.fromFile`) and the runtime server pipeline (`OpenApiDocument.load`).
+  - The new `applyOverlays` / `applyOverlayActions` / `loadOverlay` utilities are exported from `src/util/apply-overlay.ts`.
+
+  Example overlay file (`my-overlay.yaml`):
+
+  ```yaml
+  overlay: 1.0.0
+  info:
+    title: My Overlay
+    version: 1.0.0
+  actions:
+    - target: $.info
+      update:
+        description: Patched by overlay
+    - target: $.paths['/internal']
+      remove: true
+  ```
+
+  Usage:
+
+  ```bash
+  counterfact openapi.yaml ./out --overlay my-overlay.yaml
+  ```
+
+- 999e331: Add support for OpenAPI 3.2 streaming responses and Server-Sent Events (SSE) via `itemSchema`.
+  - `SchemaTypeCoder` now recognises `itemSchema` in a schema object and emits `AsyncIterable<T>`.
+  - `ResponseTypeCoder` and `OperationTypeCoder` detect `itemSchema` on streaming content types (`text/event-stream`, `application/jsonl`, `application/x-ndjson`, `application/ndjson`, `application/json-seq`) and emit `AsyncIterable<T>` as the body type instead of a plain schema type.
+  - `CounterfactResponseObject.body` now accepts `AsyncIterable<unknown>` in addition to `Uint8Array | string`.
+  - The response builder (`$.response[200].stream(iterable, contentType?)`) exposes a `stream()` helper that returns a response with the async iterable as the body. The content type defaults to `text/event-stream`.
+  - `routes-middleware` converts `AsyncIterable` response bodies into Node.js `Readable` streams, serialising each item in the appropriate wire format:
+    - `text/event-stream` → `data: <json>\n\n`
+    - `application/json-seq` → `\x1e<json>\n`
+    - everything else (JSONL / ndjson) → `<json>\n`
+  - SSE responses also receive `Cache-Control: no-cache` and `X-Accel-Buffering: no` headers automatically.
+  - The JSON-serialisation middleware in `create-koa-app` now skips Node.js `Readable` stream bodies so they are piped directly to the client.
+
+### Patch Changes
+
+- cc22776: Fix telemetry discussion docs links to use the counterfact/api-simulator discussion URL and canonical site path.
+- 7cf869e: Ensure $.auth.apiKey is always present for apiKey security schemes and defaults to an empty string when missing.
+- 475d337: Support OpenAPI apiKey security by generating api key request params and exposing $.auth.apiKey.
+- 999e331: Updated dependency `@jest/globals` to `30.4.0`.
+  Updated dependency `jest` to `30.4.0`.
+- 7f32551: Updated dependency `precinct` to `13.0.0`.
+- 999e331: Updated dependency `precinct` to `12.3.2`.
+- 999e331: Updated dependency `eslint-plugin-n` to `18.0.1`.
+- 1ebf53d: Updated dependency `astro` to `6.3.5`.
+- 78d3fcd: Updated dependency `tsx` to `4.22.0`.
+- dc627e8: Updated dependency `tsx` to `4.22.3`.
+- 999e331: Updated dependency `posthog-node` to `5.33.4`.
+- 999e331: Updated dependency `astro` to `^6.3.0`.
+- 5f07e3a: Updated dependency `astro` to `6.3.2`.
+- 3bfa8bd: Updated dependency `astro` to `6.3.6`.
+- 999e331: Updated dependency `posthog-node` to `5.33.3`.
+- d2b3136: Updated dependency `tsx` to `4.22.2`.
+- 030ab35: Updated dependency `@typescript-eslint/eslint-plugin` to `8.59.4`.
+  Updated dependency `@typescript-eslint/parser` to `8.59.4`.
+- ebb4567: Updated dependency `posthog-node` to `5.34.2`.
+- b723586: Updated dependency `@types/koa` to `3.0.3`.
+- 999e331: Updated dependency `@jest/globals` to `30.4.1`.
+  Updated dependency `jest` to `30.4.1`.
+- f3b6bbc: Updated dependency `astro` to `6.3.3`.
+- d247ff9: Updated dependency `eslint` to `10.4.0`.
+- 779c1f3: Updated dependency `tsx` to `4.22.1`.
+- 454debc: Updated dependency `posthog-node` to `5.34.6`.
+- 999e331: Updated dependency `fs-extra` to `11.3.5`.
+- 999e331: Updated dependency `@typescript-eslint/eslint-plugin` to `8.59.2`.
+  Updated dependency `@typescript-eslint/parser` to `8.59.2`.
+
 ## 2.12.0
 
 ### Minor Changes
