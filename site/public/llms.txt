@@ -1,0 +1,38 @@
+# Counterfact
+
+> Counterfact is an API simulator that turns an OpenAPI/Swagger spec into a live, stateful, programmable mock server. It generates type-safe TypeScript route handlers, supports hot reload with state preservation, includes an interactive REPL, and starts in one command—no infrastructure required.
+
+Counterfact is designed for frontend developers waiting on a backend, test engineers who need clean reproducible state, and AI agents that need a stable API to work against during development. Unlike static mock servers, Counterfact lets you write real handler logic, share state across routes, and control behavior at runtime without restarting.
+
+Supports Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2. Requires Node ≥ 22.
+
+```sh
+npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
+```
+
+## Documentation
+
+- [Getting Started](https://counterfact.dev/docs/getting-started): Step-by-step walkthrough covering code generation, state management, the REPL, and hybrid proxy mode.
+- [Usage](https://counterfact.dev/docs/usage): Full feature documentation including routes, context, middleware, streaming, auth, and more.
+- [Reference](https://counterfact.dev/docs/reference): Complete reference for the `$` parameter, response builder methods, CLI flags, hot reload, REPL commands, and programmatic API.
+- [FAQ](https://counterfact.dev/docs/faq): Common questions about state, TypeScript types, regeneration, and programmatic use.
+- [How Counterfact Compares](https://counterfact.dev/docs/comparison): Side-by-side comparison with json-server, WireMock, Prism, Microcks, and MSW.
+
+## Patterns
+
+- [Explore a New API](https://counterfact.dev/docs/patterns/explore-new-api): Use Counterfact to experiment with a third-party API before integrating it.
+- [Simulate Failures](https://counterfact.dev/docs/patterns/simulate-failures): Inject errors, timeouts, and edge cases to test resilience.
+- [Simulate Latency](https://counterfact.dev/docs/patterns/simulate-latency): Add artificial delays to handlers to test loading and timeout behavior.
+- [Hybrid Proxy](https://counterfact.dev/docs/patterns/hybrid-proxy): Forward some routes to a real backend while mocking others.
+- [Automated Integration Tests](https://counterfact.dev/docs/patterns/automated-integration-tests): Start Counterfact in a test suite's beforeAll/afterAll for real HTTP integration tests.
+- [Agentic Sandbox](https://counterfact.dev/docs/patterns/agentic-sandbox): Use Counterfact as a stable, cost-free API sandbox for AI agents during development.
+- [AI-Assisted Implementation](https://counterfact.dev/docs/patterns/ai-assisted-implementation): How AI coding assistants can implement route handlers guided by generated types.
+- [Scenario Scripts](https://counterfact.dev/docs/patterns/scenario-scripts): Pre-seed state and orchestrate multi-step API interactions programmatically.
+- [REPL Inspection](https://counterfact.dev/docs/patterns/repl-inspection): Inspect and manipulate live server state without touching files.
+- [Reference Implementation](https://counterfact.dev/docs/patterns/reference-implementation): Use Counterfact as a living reference implementation of your OpenAPI contract.
+- [Executable Spec](https://counterfact.dev/docs/patterns/executable-spec): Treat your Counterfact handlers as an executable, always-accurate specification.
+
+## Source Code
+
+- [GitHub Repository](https://github.com/counterfact/api-simulator): Source code, issues, and contributions.
+- [Example Petstore](https://github.com/counterfact/example-petstore): A fully implemented Swagger Petstore example built with Counterfact.
