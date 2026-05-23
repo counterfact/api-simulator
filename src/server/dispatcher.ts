@@ -104,6 +104,8 @@ function parseCookies(cookieHeader: string): Record<string, string> {
     }
   }
 
+  // Keep returning a plain record because downstream auth/header helpers use
+  // object-key lookups and spread semantics.
   return Object.fromEntries(cookies);
 }
 

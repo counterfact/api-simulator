@@ -8,7 +8,6 @@ import {
 import { Repository } from "../../src/typescript-generator/repository.js";
 import { Requirement } from "../../src/typescript-generator/requirement.js";
 import { Specification } from "../../src/typescript-generator/specification.js";
-/* eslint-disable security/detect-object-injection -- tests assign generated export names into local tracking objects. */
 
 function format(code) {
   return formatCode(code, { parser: "typescript" });
@@ -657,6 +656,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
+        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
         this.exports[name] = coder;
         return name;
       },
@@ -704,6 +704,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
+        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
         this.exports[name] = coder;
         return name;
       },
@@ -755,6 +756,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
+        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
         this.exports[name] = coder;
         return name;
       },
@@ -846,6 +848,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
+        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
         this.exports[name] = coder;
         return name;
       },
@@ -895,6 +898,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
+        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
         this.exports[name] = coder;
         return name;
       },
@@ -991,6 +995,7 @@ describe("an OperationTypeCoder", () => {
       exports: {},
       export(coder) {
         const name = coder.names().next().value;
+        // eslint-disable-next-line security/detect-object-injection -- test stores generated type names as keys for assertions.
         this.exports[name] = coder;
         return name;
       },

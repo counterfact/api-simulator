@@ -213,7 +213,8 @@ function buildProgram(version: string, taglines: string[]): Command {
       const optionSource = program.getOptionValueSource(key);
 
       if (optionSource !== "cli") {
-        program.setOptionValueWithSource(key, value, "config");
+        // eslint-disable-next-line security/detect-object-injection -- key is validated against known Commander option names above.
+        (options as Record<string, unknown>)[key] = value;
       }
     }
 
@@ -253,7 +254,8 @@ function buildProgram(version: string, taglines: string[]): Command {
       )
     ) {
       for (const action of actions) {
-        program.setOptionValueWithSource(action, true, "default");
+        // eslint-disable-next-line security/detect-object-injection -- action names come from the local allowlist above.
+        (options as Record<string, unknown>)[action] = true;
       }
     }
 
