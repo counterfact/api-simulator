@@ -1418,17 +1418,17 @@
   resolved "https://registry.yarnpkg.com/@pkgr/core/-/core-0.2.9.tgz#d229a7b7f9dac167a156992ef23c7f023653f53b"
   integrity sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==
 
-"@posthog/core@1.29.5":
-  version "1.29.5"
-  resolved "https://registry.yarnpkg.com/@posthog/core/-/core-1.29.5.tgz#7b3d8f8844140e23e29330f02ce791aa852dd06e"
-  integrity sha512-Jm5AE95EwBRqO6J8+skDufyf5rnEcmOvjYArCKCOzD4mWdH1xGpfcRXj5TEyZII3mD04Kr7pw9aP2ZbAHQGu2A==
+"@posthog/core@1.29.6":
+  version "1.29.6"
+  resolved "https://registry.yarnpkg.com/@posthog/core/-/core-1.29.6.tgz#1647ed5137623f07acaafabf4d09d444f6719763"
+  integrity sha512-qLA/4xTzxG1FabliYjsOy5pTC9XZWA225MHnpCmqGBoDVGL4sKKgLixMK2dpsHZbSo6AHpBLUfqkvTsh2YxZcQ==
   dependencies:
-    "@posthog/types" "1.374.2"
+    "@posthog/types" "1.374.3"
 
-"@posthog/types@1.374.2":
-  version "1.374.2"
-  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.374.2.tgz#b6bd0e17122e8cc6fd1e094dfc4e30ebdeffb1ee"
-  integrity sha512-ZghQSFMi+HFJNPvPjBoyY/jWQ+q6mSQVtWQxOHMSbBidUZjsyYbxYxBFbHy2qWLNe4mEpX+Wqir2Q4I/4AVvJQ==
+"@posthog/types@1.374.3":
+  version "1.374.3"
+  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.374.3.tgz#a30d7e3b4dad19246af7f9192944ba9baf97ee13"
+  integrity sha512-AewLXVP/JR0iUTcY3wkYeDomNDAEWagX6g+39U61HyYcnWOjxzEVPsMGV2VdVjaAP2lRtkIOc00EzoIc9fIZ+Q==
 
 "@rtsao/scc@^1.1.0":
   version "1.1.0"
@@ -5597,11 +5597,6 @@ jsonfile@^6.0.1:
   optionalDependencies:
     graceful-fs "^4.1.6"
 
-jsonify@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/jsonify/-/jsonify-0.0.1.tgz#2aa3111dae3d34a0f151c63f3a45d995d9420978"
-  integrity sha512-2/Ki0GcmuqSrgFyelQq9M05y7PS0mEwuIzrf3f1fPqkVDVRvZrPZtVSMHxdgo8Aq0sxAOb/cr2aqqA3LeWHVPg==
-
 jsonpath-plus@10.4.0:
   version "10.4.0"
   resolved "https://registry.yarnpkg.com/jsonpath-plus/-/jsonpath-plus-10.4.0.tgz#73cf545c231afda21452150b7a2a58e48e109702"
@@ -6537,12 +6532,12 @@ postcss@^8.5.15:
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
 
-posthog-node@5.34.6:
-  version "5.34.6"
-  resolved "https://registry.yarnpkg.com/posthog-node/-/posthog-node-5.34.6.tgz#33b994466fcda0fc4f4bf3882793a6ce65ae1bf6"
-  integrity sha512-oDjagFRkmCbWJBxG1FVU3kOGC6dxNpR849q8ARrZSBK3zWz4zJox6V5EjrATKM9RXKvAmbCSFoxYaOYTzp3phA==
+posthog-node@5.34.7:
+  version "5.34.7"
+  resolved "https://registry.yarnpkg.com/posthog-node/-/posthog-node-5.34.7.tgz#c0dc45a7fcd6368e81133a4e646bccd5dd8f4e43"
+  integrity sha512-OwZ7k6KnJqvhda+CeZnj0fStHmSiKSpHlbFYnC8thn+fwkMgDRi6L1FVfscbrC+c226I78u91LJq6MTAt0qrCw==
   dependencies:
-    "@posthog/core" "1.29.5"
+    "@posthog/core" "1.29.6"
 
 powershell-utils@^0.1.0:
   version "0.1.0"
