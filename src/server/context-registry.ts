@@ -46,11 +46,8 @@ function cloneForCache(value: unknown): unknown {
       ? (Object.create(proto) as Record<string, unknown>)
       : {};
 
-  for (const [key, propertyValue] of Object.entries(
-    value as Record<string, unknown>,
-  )) {
-    // eslint-disable-next-line security/detect-object-injection -- keys come from this object's own enumerable properties.
-    clone[key] = cloneForCache(propertyValue);
+  for (const key of Object.keys(value)) {
+    clone[key] = cloneForCache((value as Record<string, unknown>)[key]);
   }
 
   return clone;
@@ -165,11 +162,9 @@ export class ContextRegistry extends EventTarget {
 
     const context = this.find(path);
 
-    const cachedContext = this.cache.get(path);
-    for (const [property, updatedValue] of Object.entries(updatedContext)) {
-      if (updatedValue !== Reflect.get(cachedContext ?? {}, property)) {
-        // eslint-disable-next-line security/detect-object-injection -- updated keys are from the loaded context object's own entries.
-        context[property] = updatedValue;
+    for (const property in updatedContext) {
+      if (updatedContext[property] !== this.cache.get(path)?.[property]) {
+        context[property] = updatedContext[property];
       }
     }
 
@@ -188,7 +183,6 @@ export class ContextRegistry extends EventTarget {
     const result: Record<string, Context> = {};
 
     for (const [path, context] of this.entries.entries()) {
-      // eslint-disable-next-line security/detect-object-injection -- path keys are internal registry entries.
       result[path] = context;
     }
 

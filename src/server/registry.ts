@@ -143,17 +143,13 @@ function castParameters(
   parameters: { [key: string]: string | number | boolean } = {},
   parameterTypes: Map<string, string> = new Map(),
 ) {
-  const castedParameters: { [key: string]: boolean | number | string } = {};
+  const copy: { [key: string]: boolean | number | string } = {};
 
-  for (const [key, value] of Object.entries(parameters)) {
-    // eslint-disable-next-line security/detect-object-injection -- key comes from parsed request parameter entries.
-    castedParameters[key] = castParameter(
-      value,
-      parameterTypes.get(key) ?? "string",
-    );
-  }
+  Object.entries(parameters).forEach(([key, value]) => {
+    copy[key] = castParameter(value, parameterTypes.get(key) ?? "string");
+  });
 
-  return castedParameters;
+  return copy;
 }
 
 /**
@@ -225,9 +221,9 @@ export class Registry {
     }
 
     return (
-      Reflect.get(module, method) ??
-      Reflect.get(module, method.toUpperCase()) ??
-      Reflect.get(module, method.toLowerCase())
+      module[method] ??
+      module[method.toUpperCase()] ??
+      module[method.toLowerCase()]
     );
   }
 

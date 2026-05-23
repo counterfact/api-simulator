@@ -184,10 +184,7 @@ export class ModuleTree {
   }
 
   private fileModuleDefined(file: File, method: string) {
-    return (
-      Reflect.get(file.module as { [key: string]: unknown }, method) !==
-      undefined
-    );
+    return (file.module as { [key: string]: unknown })[method] !== undefined;
   }
 
   private buildMatch(

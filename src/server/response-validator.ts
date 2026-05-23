@@ -28,9 +28,8 @@ export function validateResponse(
     response.status !== undefined ? String(response.status) : undefined;
 
   const responseSpec =
-    (statusKey !== undefined
-      ? Reflect.get(operation.responses, statusKey)
-      : undefined) ?? operation.responses.default;
+    (statusKey !== undefined ? operation.responses[statusKey] : undefined) ??
+    operation.responses.default;
 
   if (!responseSpec) {
     return { errors: [], valid: true };
@@ -41,8 +40,7 @@ export function validateResponse(
 
   for (const [name, headerSpec] of Object.entries(specHeaders)) {
     const actualValue =
-      Reflect.get(actualHeaders, name) ??
-      Reflect.get(actualHeaders, name.toLowerCase());
+      actualHeaders[name] ?? actualHeaders[name.toLowerCase()];
 
     if (headerSpec.required === true && actualValue === undefined) {
       errors.push(`response header '${name}' is required`);

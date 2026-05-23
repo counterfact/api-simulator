@@ -76,15 +76,13 @@ export interface OpenApiDocument {
  * Parses the `Cookie` request header into a key/value map.
  *
  * Duplicate keys are silently dropped (first occurrence wins) and values are
- * percent-decoded where possible. The implementation uses an internal `Map`
- * for safe keyed accumulation, then returns a plain object for downstream
- * request/auth helpers.
+ * percent-decoded where possible.
  *
  * @param cookieHeader - The raw `Cookie` header string.
  * @returns A record mapping cookie name to decoded value.
  */
 function parseCookies(cookieHeader: string): Record<string, string> {
-  const cookies = new Map<string, string>();
+  const cookies: Record<string, string> = {};
 
   for (const part of cookieHeader.split(";")) {
     const eqIndex = part.indexOf("=");
@@ -96,19 +94,17 @@ function parseCookies(cookieHeader: string): Record<string, string> {
     const key = part.slice(0, eqIndex).trim();
     const value = part.slice(eqIndex + 1).trim();
 
-    if (key && !cookies.has(key)) {
+    if (key && !(key in cookies)) {
       try {
-        cookies.set(key, decodeURIComponent(value));
+        cookies[key] = decodeURIComponent(value);
       } catch (error) {
         debug("could not decode cookie value for key %s: %o", key, error);
-        cookies.set(key, value);
+        cookies[key] = value;
       }
     }
   }
 
-  // Keep returning a plain record because downstream auth/header helpers use
-  // object-key lookups and spread semantics.
-  return Object.fromEntries(cookies);
+  return cookies;
 }
 
 interface ParameterTypes {
@@ -118,35 +114,6 @@ interface ParameterTypes {
   header: Map<string, string>;
   path: Map<string, string>;
   query: Map<string, string>;
-}
-
-function parameterTypeMap(
-  parameterIn: OpenApiParameters["in"],
-  types: ParameterTypes,
-): Map<string, string> | undefined {
-  switch (parameterIn) {
-    case "body": {
-      return types.body;
-    }
-    case "cookie": {
-      return types.cookie;
-    }
-    case "formData": {
-      return types.formData;
-    }
-    case "header": {
-      return types.header;
-    }
-    case "path": {
-      return types.path;
-    }
-    case "query": {
-      return types.query;
-    }
-    default: {
-      return undefined;
-    }
-  }
 }
 
 export type DispatcherRequest = {
@@ -200,18 +167,17 @@ export function collectExplodedObjectParams(
     const properties = parameter.schema?.properties;
     if (!properties) continue;
 
-    const objectEntries: [string, unknown][] = [];
+    const obj: Record<string, unknown> = {};
 
     for (const key of Object.keys(properties)) {
-      if (Reflect.has(result, key)) {
-        // eslint-disable-next-line security/detect-object-injection -- key is constrained to declared OpenAPI object-property names.
-        objectEntries.push([key, result[key]]);
-        Reflect.deleteProperty(result, key);
+      if (key in result) {
+        obj[key] = result[key];
+        delete result[key];
       }
     }
 
-    if (objectEntries.length > 0) {
-      result[parameter.name] = Object.fromEntries(objectEntries);
+    if (Object.keys(obj).length > 0) {
+      result[parameter.name] = obj;
     }
   }
 
@@ -302,10 +268,9 @@ export class Dispatcher {
       const type = parameter?.type ?? parameter?.schema?.type;
 
       if (type !== undefined) {
-        const normalizedType = type === "integer" ? "number" : type;
-        parameterTypeMap(parameter.in, types)?.set(
+        types[parameter.in].set(
           parameter.name,
-          normalizedType,
+          type === "integer" ? "number" : type,
         );
       }
     }
@@ -325,12 +290,10 @@ export class Dispatcher {
       return undefined;
     }
 
-    const match = Object.entries(this.openApiDocument.paths).find(
-      ([pathKey]) => pathKey.toLowerCase() === path.toLowerCase(),
-    );
-
-    if (match !== undefined) {
-      return match[1];
+    for (const key in this.openApiDocument.paths) {
+      if (key.toLowerCase() === path.toLowerCase()) {
+        return this.openApiDocument.paths[key];
+      }
     }
 
     return undefined;
@@ -410,13 +373,11 @@ export class Dispatcher {
     }
 
     const normalizedMethod = method.toLowerCase();
-    const operationForMethod = Object.entries(pathItem).find(
-      ([name]) => name.toLowerCase() === normalizedMethod,
-    )?.[1] as OpenApiOperation | undefined;
-    const additionalOperation = Object.entries(
-      pathItem.additionalOperations ?? {},
-    ).find(([name]) => name.toLowerCase() === normalizedMethod)?.[1];
-    const operation = operationForMethod ?? additionalOperation;
+    const operation =
+      pathItem[normalizedMethod as Lowercase<HttpMethods>] ??
+      pathItem.additionalOperations?.[method] ??
+      pathItem.additionalOperations?.[method.toUpperCase()] ??
+      pathItem.additionalOperations?.[normalizedMethod];
 
     if (operation === undefined) {
       return undefined;

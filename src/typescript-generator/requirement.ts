@@ -111,7 +111,7 @@ export class Requirement {
 
     const objectData = this.data;
     const child = new Requirement(
-      Reflect.get(objectData, key) as RequirementData,
+      objectData[key] as RequirementData,
       `${this.url}/${this.escapeJsonPointer(key)}`,
       this.specification,
     );

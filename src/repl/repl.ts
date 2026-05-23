@@ -97,9 +97,7 @@ function getScenarioCompletions(
     }
 
     const selectedGroup = args[0] ?? "";
-    const selectedRegistry = Object.entries(groupedScenarioRegistries).find(
-      ([group]) => group === selectedGroup,
-    )?.[1];
+    const selectedRegistry = groupedScenarioRegistries[selectedGroup];
 
     if (selectedRegistry === undefined) {
       const scenarioPartial = hasTrailingWhitespace
@@ -567,9 +565,7 @@ export function startRepl(
         return;
       }
 
-      const fn = Object.entries(module).find(
-        ([name]) => name === functionName,
-      )?.[1];
+      const fn = module[functionName];
 
       if (typeof fn !== "function") {
         print(

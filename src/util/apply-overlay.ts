@@ -30,22 +30,19 @@ function deepMerge(
       continue;
     }
 
-    const existingValue = Reflect.get(target, key);
-
     if (
       typeof value === "object" &&
       value !== null &&
       !Array.isArray(value) &&
-      typeof existingValue === "object" &&
-      existingValue !== null &&
-      !Array.isArray(existingValue)
+      typeof target[key] === "object" &&
+      target[key] !== null &&
+      !Array.isArray(target[key])
     ) {
       deepMerge(
-        existingValue as Record<string, unknown>,
+        target[key] as Record<string, unknown>,
         value as Record<string, unknown>,
       );
     } else {
-      // eslint-disable-next-line security/detect-object-injection -- keys are filtered for prototype-pollution vectors above.
       target[key] = value;
     }
   }
@@ -88,7 +85,7 @@ export function applyOverlayActions(
         if (Array.isArray(parent)) {
           parent.splice(Number(parentProperty), 1);
         } else {
-          Reflect.deleteProperty(parent, String(parentProperty));
+          delete (parent as Record<string, unknown>)[String(parentProperty)];
         }
       }
     } else if (action.update !== undefined) {

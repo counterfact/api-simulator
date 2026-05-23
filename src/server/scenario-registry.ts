@@ -50,9 +50,7 @@ export class ScenarioRegistry {
 
     if (!module) return [];
 
-    return Object.entries(module)
-      .filter(([, value]) => typeof value === "function")
-      .map(([name]) => name);
+    return Object.keys(module).filter((k) => typeof module[k] === "function");
   }
 
   /**
