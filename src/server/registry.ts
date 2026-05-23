@@ -143,12 +143,15 @@ function castParameters(
   parameters: { [key: string]: string | number | boolean } = {},
   parameterTypes: Map<string, string> = new Map(),
 ) {
-  return Object.fromEntries(
-    Object.entries(parameters).map(([key, value]) => [
-      key,
-      castParameter(value, parameterTypes.get(key) ?? "string"),
-    ]),
-  ) as { [key: string]: boolean | number | string };
+  const castedParameters: { [key: string]: boolean | number | string } = {};
+
+  for (const [key, value] of Object.entries(parameters)) {
+    Object.assign(castedParameters, {
+      [key]: castParameter(value, parameterTypes.get(key) ?? "string"),
+    });
+  }
+
+  return castedParameters;
 }
 
 /**

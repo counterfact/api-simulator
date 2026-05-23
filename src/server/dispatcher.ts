@@ -200,7 +200,8 @@ export function collectExplodedObjectParams(
 
     for (const key of Object.keys(properties)) {
       if (Reflect.has(result, key)) {
-        objectEntries.push([key, Reflect.get(result, key)]);
+        // eslint-disable-next-line security/detect-object-injection -- key is constrained to declared OpenAPI object-property names.
+        objectEntries.push([key, result[key]]);
         Reflect.deleteProperty(result, key);
       }
     }
