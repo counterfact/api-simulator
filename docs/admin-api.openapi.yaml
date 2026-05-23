@@ -25,7 +25,7 @@ paths:
       responses:
         "200":
           description: Current contexts grouped by path.
-    
+
   /_counterfact/api/contexts/{path}:
     parameters:
       - in: path
