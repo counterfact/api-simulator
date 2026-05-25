@@ -118,6 +118,12 @@ export class ChaosRule {
    * @param value - A number between `0` (never) and `1` (always). Default is `1`.
    */
   public probability(value: number): this {
+    if (!Number.isFinite(value) || value < 0 || value > 1) {
+      throw new RangeError(
+        `Chaos rule probability must be a number between 0 and 1. Received: ${String(value)}`,
+      );
+    }
+
     this._probability = value;
     this.touch();
     return this;

@@ -102,6 +102,20 @@ describe("ChaosRule", () => {
       }
     });
 
+    it("throws when probability is outside [0, 1]", () => {
+      const rule = new ChaosRule("").always();
+
+      expect(() => rule.probability(-0.1)).toThrow(
+        "Chaos rule probability must be a number between 0 and 1",
+      );
+      expect(() => rule.probability(1.1)).toThrow(
+        "Chaos rule probability must be a number between 0 and 1",
+      );
+      expect(() => rule.probability(Number.NaN)).toThrow(
+        "Chaos rule probability must be a number between 0 and 1",
+      );
+    });
+
     it("overrides status code", () => {
       const rule = new ChaosRule("").always().status(500);
       const result = rule.tryApply({ body: "ok", status: 200 });
