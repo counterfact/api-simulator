@@ -41,9 +41,6 @@ export class ApiRunner {
   /** Registry of loaded scenario modules (used by the REPL). */
   public readonly scenarioRegistry: ScenarioRegistry;
 
-  /** Stores active chaos rules; injected into the dispatcher. */
-  public readonly chaosRegistry: ChaosRegistry;
-
   /** Generates `types/_.context.ts` and the default `scenarios/index.ts`. */
   public readonly scenarioFileGenerator: ScenarioFileGenerator;
 
@@ -115,6 +112,7 @@ export class ApiRunner {
     group: string,
     version = "",
     versions: readonly string[] = [],
+    chaosRegistry: ChaosRegistry,
   ) {
     this.group = group;
     this.version = version;
@@ -137,7 +135,6 @@ export class ApiRunner {
     this.registry = new Registry();
     this.contextRegistry = new ContextRegistry();
     this.scenarioRegistry = new ScenarioRegistry();
-    this.chaosRegistry = new ChaosRegistry();
 
     this.scenarioFileGenerator = new ScenarioFileGenerator(modulesPath);
 
@@ -156,7 +153,7 @@ export class ApiRunner {
       config,
       version,
       versions,
-      this.chaosRegistry,
+      chaosRegistry,
     );
 
     this.transpiler = new Transpiler(
@@ -191,6 +188,7 @@ export class ApiRunner {
     group = "",
     version = "",
     versions: readonly string[] = [],
+    chaosRegistry = new ChaosRegistry(),
   ): Promise<ApiRunner> {
     const nativeTs = await runtimeCanExecuteErasableTs();
 
@@ -218,6 +216,7 @@ export class ApiRunner {
       group,
       version,
       versions,
+      chaosRegistry,
     );
   }
 

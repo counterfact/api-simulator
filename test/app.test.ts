@@ -6,6 +6,7 @@ import { usingTemporaryFiles } from "using-temporary-files";
 
 import * as app from "../src/app";
 import { ApiRunner } from "../src/api-runner";
+import { ChaosRegistry } from "../src/server/chaos";
 import { ContextRegistry } from "../src/server/context-registry";
 import { ScenarioRegistry } from "../src/server/scenario-registry";
 
@@ -72,13 +73,16 @@ describe("counterfact", () => {
       "v1",
       "",
       [],
+      expect.any(ChaosRegistry),
     );
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ openApiPath: "_", prefix: "/api/v2" }),
       "v2",
       "",
       [],
+      expect.any(ChaosRegistry),
     );
+    expect(spy.mock.calls[0]?.[4]).toBe(spy.mock.calls[1]?.[4]);
 
     spy.mockRestore();
   });
@@ -252,12 +256,14 @@ describe("counterfact", () => {
       "my-api",
       "v1",
       ["v1", "v2"],
+      expect.any(ChaosRegistry),
     );
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ prefix: "/my-api/v2" }),
       "my-api",
       "v2",
       ["v1", "v2"],
+      expect.any(ChaosRegistry),
     );
 
     spy.mockRestore();
@@ -277,6 +283,7 @@ describe("counterfact", () => {
       "my-api",
       "v1",
       ["v1"],
+      expect.any(ChaosRegistry),
     );
 
     spy.mockRestore();
@@ -294,6 +301,7 @@ describe("counterfact", () => {
       "my-api",
       "",
       [],
+      expect.any(ChaosRegistry),
     );
 
     spy.mockRestore();

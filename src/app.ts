@@ -6,6 +6,7 @@ import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import { ApiRunner } from "./api-runner.js";
 import { startRepl as startReplServer } from "./repl/repl.js";
 import { createRouteFunction } from "./repl/route-builder.js";
+import { ChaosRegistry } from "./server/chaos.js";
 import type { Config } from "./server/config.js";
 import { ContextRegistry } from "./server/context-registry.js";
 import { createKoaApp } from "./server/web-server/create-koa-app.js";
@@ -248,6 +249,8 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
     }
   }
 
+  const chaosRegistry = new ChaosRegistry();
+
   const runners = await Promise.all(
     normalizedSpecs.map((spec) =>
       ApiRunner.create(
@@ -262,6 +265,7 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
         spec.group,
         spec.version ?? "",
         versionsByGroup.get(spec.group) ?? [],
+        chaosRegistry,
       ),
     ),
   );
@@ -394,7 +398,7 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
           registry: runner.registry,
           scenarioRegistry: runner.scenarioRegistry,
         })),
-        primaryRunner.chaosRegistry,
+        chaosRegistry,
       ),
   };
 }
