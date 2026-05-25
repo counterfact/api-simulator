@@ -461,11 +461,11 @@ chaos("/orders").next().transformBody((body) => ({
 
 ### Fault simulation pattern
 
-`chaos()` is Counterfact's fault-injection API and can be used from the REPL or in setup code.
-Use `always()` to keep the rule active and `probability(...)` to make only a fraction of matching requests fail.
+`chaos()` is Counterfact's fault-injection API and is available as a global in the Live REPL.
+Use `always()` to keep the rule active for every matching request, and `probability(...)` to decide whether each individual request actually fails.
 
 ```ts
-// Rule stays active, but only 20% of /payments requests fail with 503.
+// Evaluate this rule for every /payments request, but fail only ~20% with 503.
 chaos("/payments")
   .always()
   .probability(0.2)
