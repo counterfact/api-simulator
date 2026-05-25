@@ -16,7 +16,9 @@ let _sequence = 0;
 /**
  * Delay used by `timeout()` to simulate a server-side connection timeout.
  * Set to the maximum 32-bit signed integer (~24.8 days), which exceeds any
- * practical HTTP client timeout.
+ * practical HTTP client timeout. This value is chosen because Node.js
+ * `setTimeout` clamps values larger than a 32-bit signed integer, so this
+ * is the largest delay that reliably works across all Node.js versions.
  */
 export const CHAOS_TIMEOUT_DELAY_MS = 2_147_483_647;
 
@@ -273,8 +275,11 @@ export class ChaosRule {
     }
 
     // Apply body modifications.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- chaos body can be any value; Koa serializes objects to JSON
-    let body: any = response.body;
+    // The body is typed as unknown here because chaos rules may replace it
+    // with any value (including plain objects that Koa will serialize to JSON).
+    // The cast to CounterfactResponseObject['body'] is applied below when
+    // setting the result property.
+    let body: unknown = response.body;
 
     if (this._body !== UNSET) {
       body = this._body;
@@ -284,7 +289,8 @@ export class ChaosRule {
 
     const result: CounterfactResponseObject = {
       ...response,
-      body,
+      // Cast is safe: Koa serializes object bodies to JSON at the middleware level.
+      body: body as CounterfactResponseObject["body"],
       headers,
     };
 

@@ -10,6 +10,13 @@ import { Dispatcher } from "../../src/server/dispatcher.js";
 import { Registry } from "../../src/server/registry.js";
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/** Number of iterations for probability boundary tests. */
+const PROBABILITY_TEST_ITERATIONS = 20;
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -82,7 +89,7 @@ describe("ChaosRule", () => {
       const rule = new ChaosRule("").always().probability(0);
       const response = { body: "ok", status: 200 };
       // With probability 0, every call returns null
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < PROBABILITY_TEST_ITERATIONS; i++) {
         expect(rule.tryApply(response)).toBeNull();
       }
     });
@@ -90,7 +97,7 @@ describe("ChaosRule", () => {
     it("always fires with probability(1)", () => {
       const rule = new ChaosRule("").always().probability(1);
       const response = { body: "ok", status: 200 };
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < PROBABILITY_TEST_ITERATIONS; i++) {
         expect(rule.tryApply(response)).not.toBeNull();
       }
     });
