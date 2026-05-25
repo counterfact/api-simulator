@@ -215,7 +215,9 @@ npx counterfact@latest my-api.yaml api --generate-types
 
 ## Will regenerating overwrite my changes?
 
-No. Counterfact only writes files that don't already exist. Your custom route logic is safe when you regenerate after a spec update. New routes are scaffolded; existing ones are left alone.
+No. Counterfact never overwrites an existing route file. Your custom route logic is always preserved.
+
+If you add a new HTTP method to an existing path in your spec (for example adding `POST` to a route that already has `GET`), Counterfact **appends** the new handler stub to the bottom of the existing file and inserts its `import type` statement after the existing imports. All pre-existing code in the file is left untouched.
 
 ---
 
