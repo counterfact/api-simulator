@@ -461,11 +461,11 @@ chaos("/orders").next().transformBody((body) => ({
 
 ### Fault simulation pattern
 
-Use a bounded probability + retry hint to simulate an intermittently failing upstream dependency:
 `chaos()` is Counterfact's fault-injection API and can be used from the REPL or in setup code.
+Use `always()` to keep the rule active and `probability(...)` to make only a fraction of matching requests fail.
 
 ```ts
-// 20% of /payments requests fail with 503 and include retry guidance.
+// Rule stays active, but only 20% of /payments requests fail with 503.
 chaos("/payments")
   .always()
   .probability(0.2)
