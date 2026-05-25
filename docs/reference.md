@@ -459,6 +459,19 @@ chaos("/orders").next().transformBody((body) => ({
 }));
 ```
 
+### Fault simulation pattern
+
+Use a bounded probability + retry hint to simulate an intermittently failing upstream dependency:
+
+```ts
+// 20% of /payments requests fail with 503 and include retry guidance.
+chaos("/payments")
+  .always()
+  .probability(0.2)
+  .status(503)
+  .header("Retry-After", "1");
+```
+
 ---
 
 ## OpenAPI Overlays
