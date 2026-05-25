@@ -143,13 +143,10 @@ describe("ChaosRule", () => {
       const result = rule.tryApply({
         body: "ok",
         contentType: "application/json",
-        headers: { "content-type": "application/json" },
         status: 200,
       });
       expect(result?.response.contentType).toBe("application/json");
-      expect(result?.response.headers?.["content-type"]).toBe(
-        "application/json",
-      );
+      expect(result?.response.headers).toEqual({});
     });
 
     it("replaces the body", () => {
