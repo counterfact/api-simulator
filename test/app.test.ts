@@ -204,6 +204,59 @@ describe("counterfact", () => {
     });
   });
 
+  it("applies REPL chaos rules across all runners in multi-api mode", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "billing/routes/hello.js",
+        `export function GET() { return { body: "hello from billing" }; }`,
+      );
+      await $.add(
+        "inventory/routes/hello.js",
+        `export function GET() { return { body: "hello from inventory" }; }`,
+      );
+
+      const specs = [
+        { source: "_", prefix: "/api/billing", group: "billing" },
+        { source: "_", prefix: "/api/inventory", group: "inventory" },
+      ];
+
+      const { koaApp, start, startRepl } = await (app as any).counterfact(
+        { ...mockConfig, basePath: $.path(".") },
+        specs,
+      );
+
+      const { stop } = await start({
+        startServer: true,
+        buildCache: false,
+        generate: { routes: false, types: false },
+        watch: { routes: false, types: false },
+      });
+
+      const replServer = startRepl();
+      const chaos = (
+        replServer.context as {
+          chaos: (pathPrefix?: string) => {
+            always: () => { status: (statusCode: number) => unknown };
+          };
+        }
+      ).chaos;
+      chaos().always().status(503);
+
+      const billingResponse = await request(koaApp.callback()).get(
+        "/api/billing/hello",
+      );
+      const inventoryResponse = await request(koaApp.callback()).get(
+        "/api/inventory/hello",
+      );
+
+      expect(billingResponse.status).toBe(503);
+      expect(inventoryResponse.status).toBe(503);
+
+      replServer.close();
+      await stop();
+    });
+  });
+
   it("routes requests to the correct runner based on prefix when specs are provided", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(
