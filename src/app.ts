@@ -394,6 +394,7 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
           registry: runner.registry,
           scenarioRegistry: runner.scenarioRegistry,
         })),
+        primaryRunner.chaosRegistry,
       ),
   };
 }

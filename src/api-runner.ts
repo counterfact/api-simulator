@@ -1,6 +1,7 @@
 import { rm } from "node:fs/promises";
 
 import type { Config } from "./server/config.js";
+import { ChaosRegistry } from "./server/chaos.js";
 import { ContextRegistry } from "./server/context-registry.js";
 import { Dispatcher } from "./server/dispatcher.js";
 import { loadOpenApiDocument } from "./server/load-openapi-document.js";
@@ -39,6 +40,9 @@ export class ApiRunner {
 
   /** Registry of loaded scenario modules (used by the REPL). */
   public readonly scenarioRegistry: ScenarioRegistry;
+
+  /** Stores active chaos rules; injected into the dispatcher. */
+  public readonly chaosRegistry: ChaosRegistry;
 
   /** Generates `types/_.context.ts` and the default `scenarios/index.ts`. */
   public readonly scenarioFileGenerator: ScenarioFileGenerator;
@@ -133,6 +137,7 @@ export class ApiRunner {
     this.registry = new Registry();
     this.contextRegistry = new ContextRegistry();
     this.scenarioRegistry = new ScenarioRegistry();
+    this.chaosRegistry = new ChaosRegistry();
 
     this.scenarioFileGenerator = new ScenarioFileGenerator(modulesPath);
 
@@ -151,6 +156,7 @@ export class ApiRunner {
       config,
       version,
       versions,
+      this.chaosRegistry,
     );
 
     this.transpiler = new Transpiler(
