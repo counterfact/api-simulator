@@ -114,6 +114,19 @@ describe("ChaosRule", () => {
       expect(result?.response.headers?.["Retry-After"]).toBe("60");
     });
 
+    it("does not allow overriding Content-Type with header()", () => {
+      const rule = new ChaosRule("")
+        .always()
+        .header("Content-Type", "text/xml");
+      const result = rule.tryApply({
+        body: "ok",
+        contentType: "application/json",
+        status: 200,
+      });
+      expect(result?.response.contentType).toBe("application/json");
+      expect(result?.response.headers?.["Content-Type"]).toBeUndefined();
+    });
+
     it("removes a header", () => {
       const rule = new ChaosRule("").always().removeHeader("x-original");
       const result = rule.tryApply({
@@ -123,6 +136,20 @@ describe("ChaosRule", () => {
       });
       expect(result?.response.headers?.["x-original"]).toBeUndefined();
       expect(result?.response.headers?.["keep"]).toBe("this");
+    });
+
+    it("does not allow removing Content-Type with removeHeader()", () => {
+      const rule = new ChaosRule("").always().removeHeader("content-type");
+      const result = rule.tryApply({
+        body: "ok",
+        contentType: "application/json",
+        headers: { "content-type": "application/json" },
+        status: 200,
+      });
+      expect(result?.response.contentType).toBe("application/json");
+      expect(result?.response.headers?.["content-type"]).toBe(
+        "application/json",
+      );
     });
 
     it("replaces the body", () => {
@@ -433,6 +460,17 @@ describe("Dispatcher with ChaosRegistry", () => {
     const dispatcher = makeDispatcher(cr);
     const response = await get(dispatcher, "/orders");
     expect(response.headers?.["x-original"]).toBeUndefined();
+  });
+
+  it("header()/removeHeader() do not modify response Content-Type", async () => {
+    const cr = new ChaosRegistry();
+    cr.createRule("/orders")
+      .always()
+      .header("content-type", "text/plain")
+      .removeHeader("content-type");
+    const dispatcher = makeDispatcher(cr);
+    const response = await get(dispatcher, "/orders");
+    expect(response.contentType).toBe("application/json");
   });
 
   it("body() replaces the response body", async () => {

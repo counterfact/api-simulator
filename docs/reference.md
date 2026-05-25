@@ -399,8 +399,8 @@ All configuration methods return `this` for fluent chaining and update the rule'
 | `.status(code)` | Override the HTTP status code. |
 | `.delay(ms)` | Delay the response by `ms` milliseconds. |
 | `.timeout()` | Delay the response indefinitely (simulates a client-side timeout). |
-| `.header(name, value)` | Set or replace a response header. |
-| `.removeHeader(name)` | Remove a response header if present. |
+| `.header(name, value)` | Set or replace a response header (except `Content-Type`, which is ignored). |
+| `.removeHeader(name)` | Remove a response header if present (except `Content-Type`, which is ignored). |
 | `.body(value)` | Replace the response body. |
 | `.transformBody(fn)` | Transform the response body: `fn` receives the current body and returns the new one. |
 

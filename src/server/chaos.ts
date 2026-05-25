@@ -5,6 +5,7 @@ import type { CounterfactResponseObject } from "./registry.js";
  * This allows `body()` to explicitly replace the response body with `undefined`.
  */
 const UNSET = Symbol("UNSET");
+const CONTENT_TYPE_HEADER = "content-type";
 
 /**
  * A monotonically increasing counter used to determine rule recency.
@@ -163,6 +164,10 @@ export class ChaosRule {
    * @param value - Header value.
    */
   public header(name: string, value: string): this {
+    if (name.toLowerCase() === CONTENT_TYPE_HEADER) {
+      return this;
+    }
+
     this._headers.set(name, value);
     this.touch();
     return this;
@@ -174,6 +179,10 @@ export class ChaosRule {
    * @param name - Header name to remove.
    */
   public removeHeader(name: string): this {
+    if (name.toLowerCase() === CONTENT_TYPE_HEADER) {
+      return this;
+    }
+
     this._removedHeaders.add(name);
     this.touch();
     return this;
