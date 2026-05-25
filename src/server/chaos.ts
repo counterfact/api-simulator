@@ -15,15 +15,6 @@ const CONTENT_TYPE_HEADER = "content-type";
 let _sequence = 0;
 
 /**
- * Delay used by `timeout()` to simulate a server-side connection timeout.
- * Set to the maximum 32-bit signed integer (~24.8 days), which exceeds any
- * practical HTTP client timeout. This value is chosen because Node.js
- * `setTimeout` clamps values larger than a 32-bit signed integer, so this
- * is the largest delay that reliably works across all Node.js versions.
- */
-export const CHAOS_TIMEOUT_DELAY_MS = 2_147_483_647;
-
-/**
  * Result returned by {@link ChaosRule.tryApply} when the rule fires.
  */
 export interface ChaosApplyResult {
@@ -60,7 +51,6 @@ export class ChaosRule {
   private _probability = 1;
   private _status?: number;
   private _delay?: number;
-  private _isTimeout = false;
   private _headers = new Map<string, string>();
   private _removedHeaders = new Set<string>();
   private _body: symbol | unknown = UNSET;
@@ -147,18 +137,6 @@ export class ChaosRule {
    */
   public delay(ms: number): this {
     this._delay = ms;
-    this.touch();
-    return this;
-  }
-
-  /**
-   * Simulates a request timeout by delaying the response indefinitely.
-   *
-   * The response is delayed by {@link CHAOS_TIMEOUT_DELAY_MS} milliseconds
-   * (~24.8 days), which exceeds any practical HTTP client timeout.
-   */
-  public timeout(): this {
-    this._isTimeout = true;
     this.touch();
     return this;
   }
@@ -313,9 +291,7 @@ export class ChaosRule {
       result.status = this._status;
     }
 
-    const delayMs = this._isTimeout ? CHAOS_TIMEOUT_DELAY_MS : this._delay;
-
-    return { response: result, delayMs };
+    return { response: result, delayMs: this._delay };
   }
 }
 

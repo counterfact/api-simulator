@@ -1,10 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 
-import {
-  ChaosRegistry,
-  ChaosRule,
-  CHAOS_TIMEOUT_DELAY_MS,
-} from "../../src/server/chaos.js";
+import { ChaosRegistry, ChaosRule } from "../../src/server/chaos.js";
 import { ContextRegistry } from "../../src/server/context-registry.js";
 import { Dispatcher } from "../../src/server/dispatcher.js";
 import { Registry } from "../../src/server/registry.js";
@@ -181,12 +177,6 @@ describe("ChaosRule", () => {
       const rule = new ChaosRule("").always().delay(1_000);
       const result = rule.tryApply({ body: "ok", status: 200 });
       expect(result?.delayMs).toBe(1_000);
-    });
-
-    it("sets delayMs to CHAOS_TIMEOUT_DELAY_MS from timeout()", () => {
-      const rule = new ChaosRule("").always().timeout();
-      const result = rule.tryApply({ body: "ok", status: 200 });
-      expect(result?.delayMs).toBe(CHAOS_TIMEOUT_DELAY_MS);
     });
 
     it("does not set delayMs when no delay is configured", () => {

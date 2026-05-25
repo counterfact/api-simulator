@@ -398,7 +398,6 @@ All configuration methods return `this` for fluent chaining and update the rule'
 | `.probability(value)` | Probability `0`–`1` that the rule fires for an eligible response. Default `1`. |
 | `.status(code)` | Override the HTTP status code. |
 | `.delay(ms)` | Delay the response by `ms` milliseconds. |
-| `.timeout()` | Delay the response indefinitely (simulates a client-side timeout). |
 | `.header(name, value)` | Set or replace a response header (except `Content-Type`, which is ignored). |
 | `.removeHeader(name)` | Remove a response header if present (except `Content-Type`, which is ignored). |
 | `.body(value)` | Replace the response body. |
@@ -436,7 +435,7 @@ When more than one active rule matches a request, exactly one is selected using 
 1. **Longest matching prefix** wins.
 2. Among rules with the same prefix length, the **most recently updated** active rule wins.
 
-"Most recently updated" means the rule whose configuration or lifecycle state (`start`, `stop`, `next`, `always`, `probability`, `status`, `delay`, `timeout`, `header`, `removeHeader`, `body`, `transformBody`) was changed most recently.
+"Most recently updated" means the rule whose configuration or lifecycle state (`start`, `stop`, `next`, `always`, `probability`, `status`, `delay`, `header`, `removeHeader`, `body`, `transformBody`) was changed most recently.
 
 ### Examples
 
