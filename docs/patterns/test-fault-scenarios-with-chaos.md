@@ -25,7 +25,6 @@ Inject an intermittent upstream failure pattern:
 // Match /payments* requests indefinitely,
 // but fail only about 20% with a retry hint.
 chaos("/payments")
-  .always()
   .probability(0.2)
   .status(503)
   .header("Retry-After", "1");
@@ -41,7 +40,7 @@ chaos("/payments").next(3).status(503);
 And remove the rule when your test scenario is complete:
 
 ```ts
-const fault = chaos("/payments").always().status(500);
+const fault = chaos("/payments").status(500);
 fault.stop();
 ```
 

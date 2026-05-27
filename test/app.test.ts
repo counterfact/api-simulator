@@ -27,7 +27,7 @@ const mockConfig = {
 };
 
 type ReplChaos = (pathPrefix?: string) => {
-  always: () => { status: (statusCode: number) => unknown };
+  status: (statusCode: number) => unknown;
 };
 
 describe("counterfact", () => {
@@ -238,7 +238,7 @@ describe("counterfact", () => {
 
       const replServer = startRepl();
       const chaos = (replServer.context as { chaos: ReplChaos }).chaos;
-      chaos().always().status(503);
+      chaos().status(503);
 
       const billingResponse = await request(koaApp.callback()).get(
         "/api/billing/hello",

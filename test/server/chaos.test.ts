@@ -82,7 +82,7 @@ describe("ChaosRule", () => {
     });
 
     it("returns null with probability(0)", () => {
-      const rule = new ChaosRule("").always().probability(0);
+      const rule = new ChaosRule("").probability(0);
       const response = { body: "ok", status: 200 };
       // With probability 0, every call returns null
       for (let i = 0; i < PROBABILITY_TEST_ITERATIONS; i++) {
@@ -91,7 +91,7 @@ describe("ChaosRule", () => {
     });
 
     it("always fires with probability(1)", () => {
-      const rule = new ChaosRule("").always().probability(1);
+      const rule = new ChaosRule("").probability(1);
       const response = { body: "ok", status: 200 };
       for (let i = 0; i < PROBABILITY_TEST_ITERATIONS; i++) {
         expect(rule.tryApply(response)).not.toBeNull();
@@ -99,7 +99,7 @@ describe("ChaosRule", () => {
     });
 
     it("throws when probability is outside [0, 1]", () => {
-      const rule = new ChaosRule("").always();
+      const rule = new ChaosRule("");
 
       expect(() => rule.probability(-0.1)).toThrow(
         "Chaos rule probability must be a number between 0 and 1",
@@ -113,21 +113,19 @@ describe("ChaosRule", () => {
     });
 
     it("overrides status code", () => {
-      const rule = new ChaosRule("").always().status(500);
+      const rule = new ChaosRule("").status(500);
       const result = rule.tryApply({ body: "ok", status: 200 });
       expect(result?.response.status).toBe(500);
     });
 
     it("adds a header", () => {
-      const rule = new ChaosRule("").always().header("Retry-After", "60");
+      const rule = new ChaosRule("").header("Retry-After", "60");
       const result = rule.tryApply({ body: "ok", status: 200, headers: {} });
       expect(result?.response.headers?.["Retry-After"]).toBe("60");
     });
 
     it("does not allow overriding Content-Type with header()", () => {
-      const rule = new ChaosRule("")
-        .always()
-        .header("Content-Type", "text/xml");
+      const rule = new ChaosRule("").header("Content-Type", "text/xml");
       const result = rule.tryApply({
         body: "ok",
         contentType: "application/json",
@@ -138,7 +136,7 @@ describe("ChaosRule", () => {
     });
 
     it("removes a header", () => {
-      const rule = new ChaosRule("").always().removeHeader("x-original");
+      const rule = new ChaosRule("").removeHeader("x-original");
       const result = rule.tryApply({
         body: "ok",
         status: 200,
@@ -149,7 +147,7 @@ describe("ChaosRule", () => {
     });
 
     it("does not allow removing Content-Type with removeHeader()", () => {
-      const rule = new ChaosRule("").always().removeHeader("content-type");
+      const rule = new ChaosRule("").removeHeader("content-type");
       const result = rule.tryApply({
         body: "ok",
         contentType: "application/json",
@@ -160,33 +158,31 @@ describe("ChaosRule", () => {
     });
 
     it("replaces the body", () => {
-      const rule = new ChaosRule("").always().body({ error: true });
+      const rule = new ChaosRule("").body({ error: true });
       const result = rule.tryApply({ body: "original", status: 200 });
       expect(result?.response.body).toEqual({ error: true });
     });
 
     it("transforms the body", () => {
-      const rule = new ChaosRule("")
-        .always()
-        .transformBody((b) => `${b}-modified`);
+      const rule = new ChaosRule("").transformBody((b) => `${b}-modified`);
       const result = rule.tryApply({ body: "original", status: 200 });
       expect(result?.response.body).toBe("original-modified");
     });
 
     it("sets delayMs from delay()", () => {
-      const rule = new ChaosRule("").always().delay(1_000);
+      const rule = new ChaosRule("").delay(1_000);
       const result = rule.tryApply({ body: "ok", status: 200 });
       expect(result?.delayMs).toBe(1_000);
     });
 
     it("does not set delayMs when no delay is configured", () => {
-      const rule = new ChaosRule("").always().status(500);
+      const rule = new ChaosRule("").status(500);
       const result = rule.tryApply({ body: "ok", status: 200 });
       expect(result?.delayMs).toBeUndefined();
     });
 
     it("preserves the original response fields not explicitly changed", () => {
-      const rule = new ChaosRule("").always().status(500);
+      const rule = new ChaosRule("").status(500);
       const result = rule.tryApply({
         body: "hello",
         contentType: "text/plain",
@@ -244,9 +240,9 @@ describe("ChaosRule", () => {
     });
   });
 
-  describe("always()", () => {
-    it("continues to apply indefinitely", () => {
-      const rule = new ChaosRule("").always().status(500);
+  describe("default rule scope", () => {
+    it("continues to apply indefinitely unless next() is configured", () => {
+      const rule = new ChaosRule("").status(500);
       const resp = { body: "ok", status: 200 };
       for (let i = 0; i < 50; i++) {
         expect(rule.tryApply(resp)?.response.status).toBe(500);
@@ -256,13 +252,13 @@ describe("ChaosRule", () => {
 
   describe("stop() / start()", () => {
     it("stop() disables the rule", () => {
-      const rule = new ChaosRule("").always().status(500);
+      const rule = new ChaosRule("").status(500);
       rule.stop();
       expect(rule.tryApply({ body: "ok", status: 200 })).toBeNull();
     });
 
     it("start() re-enables a stopped rule", () => {
-      const rule = new ChaosRule("").always().status(500);
+      const rule = new ChaosRule("").status(500);
       rule.stop();
       rule.start();
       expect(rule.tryApply({ body: "ok", status: 200 })?.response.status).toBe(
@@ -273,7 +269,7 @@ describe("ChaosRule", () => {
 
   describe("body() vs transformBody()", () => {
     it("body() clears a previously set transformBody()", () => {
-      const rule = new ChaosRule("").always();
+      const rule = new ChaosRule("");
       rule.transformBody((b) => `${b}-transformed`);
       rule.body("static");
       const result = rule.tryApply({ body: "original", status: 200 });
@@ -281,7 +277,7 @@ describe("ChaosRule", () => {
     });
 
     it("transformBody() clears a previously set body()", () => {
-      const rule = new ChaosRule("").always();
+      const rule = new ChaosRule("");
       rule.body("static");
       rule.transformBody((b) => `${b}-transformed`);
       const result = rule.tryApply({ body: "original", status: 200 });
@@ -303,27 +299,27 @@ describe("ChaosRegistry", () => {
 
     it("matches a global rule (empty prefix) against any path", () => {
       const registry = new ChaosRegistry();
-      const rule = registry.createRule("").always().status(500);
+      const rule = registry.createRule("").status(500);
       expect(registry.findBestMatch("/anything")).toBe(rule);
     });
 
     it("matches a prefix-scoped rule only when path starts with prefix", () => {
       const registry = new ChaosRegistry();
-      const rule = registry.createRule("/orders").always().status(500);
+      const rule = registry.createRule("/orders").status(500);
       expect(registry.findBestMatch("/orders/123")).toBe(rule);
       expect(registry.findBestMatch("/users")).toBeUndefined();
     });
 
     it("does not match /inventory/orders for prefix /orders", () => {
       const registry = new ChaosRegistry();
-      registry.createRule("/orders").always().status(500);
+      registry.createRule("/orders").status(500);
       expect(registry.findBestMatch("/inventory/orders")).toBeUndefined();
     });
 
     it("prefers the longest matching prefix", () => {
       const registry = new ChaosRegistry();
-      const global = registry.createRule("").always().status(500);
-      const orders = registry.createRule("/orders").always().status(429);
+      const global = registry.createRule("").status(500);
+      const orders = registry.createRule("/orders").status(429);
       const result = registry.findBestMatch("/orders/123");
       expect(result).toBe(orders);
       expect(result).not.toBe(global);
@@ -331,15 +327,15 @@ describe("ChaosRegistry", () => {
 
     it("prefers the most recently updated rule among equal-length prefixes", () => {
       const registry = new ChaosRegistry();
-      registry.createRule("/orders").always().status(500);
-      const second = registry.createRule("/orders").always().status(429);
+      registry.createRule("/orders").status(500);
+      const second = registry.createRule("/orders").status(429);
       // second was created (and therefore touched) after first
       expect(registry.findBestMatch("/orders/123")).toBe(second);
     });
 
     it("skips stopped rules", () => {
       const registry = new ChaosRegistry();
-      const rule = registry.createRule("/orders").always().status(500);
+      const rule = registry.createRule("/orders").status(500);
       rule.stop();
       expect(registry.findBestMatch("/orders/123")).toBeUndefined();
     });
@@ -353,8 +349,8 @@ describe("ChaosRegistry", () => {
 
     it("a stopped rule becomes the most recently updated after start()", () => {
       const registry = new ChaosRegistry();
-      const first = registry.createRule("/orders").always().status(500);
-      registry.createRule("/orders").always().status(429);
+      const first = registry.createRule("/orders").status(500);
+      registry.createRule("/orders").status(429);
       first.stop();
       first.start(); // first is now the most recently updated
       expect(registry.findBestMatch("/orders/123")).toBe(first);
@@ -369,7 +365,7 @@ describe("ChaosRegistry", () => {
 describe("Dispatcher with ChaosRegistry", () => {
   it("applies a global rule to all paths", async () => {
     const cr = new ChaosRegistry();
-    cr.createRule("").always().status(503);
+    cr.createRule("").status(503);
     const dispatcher = makeDispatcher(cr);
     const response = await get(dispatcher, "/orders");
     expect(response.status).toBe(503);
@@ -377,7 +373,7 @@ describe("Dispatcher with ChaosRegistry", () => {
 
   it("applies a prefix-scoped rule only to matching paths", async () => {
     const cr = new ChaosRegistry();
-    cr.createRule("/orders").always().status(429);
+    cr.createRule("/orders").status(429);
     const dispatcher = makeDispatcher(cr);
 
     const ordersResponse = await get(dispatcher, "/orders");
@@ -409,9 +405,9 @@ describe("Dispatcher with ChaosRegistry", () => {
     expect((await get(dispatcher, "/orders")).status).toBe(200);
   });
 
-  it("always() continues to apply", async () => {
+  it("default rules continue to apply", async () => {
     const cr = new ChaosRegistry();
-    cr.createRule("/orders").always().status(503);
+    cr.createRule("/orders").status(503);
     const dispatcher = makeDispatcher(cr);
 
     for (let i = 0; i < 5; i++) {
@@ -421,7 +417,7 @@ describe("Dispatcher with ChaosRegistry", () => {
 
   it("probability(0) never applies", async () => {
     const cr = new ChaosRegistry();
-    cr.createRule("/orders").always().probability(0).status(500);
+    cr.createRule("/orders").probability(0).status(500);
     const dispatcher = makeDispatcher(cr);
 
     for (let i = 0; i < 10; i++) {
@@ -431,7 +427,7 @@ describe("Dispatcher with ChaosRegistry", () => {
 
   it("probability(1) always applies", async () => {
     const cr = new ChaosRegistry();
-    cr.createRule("/orders").always().probability(1).status(500);
+    cr.createRule("/orders").probability(1).status(500);
     const dispatcher = makeDispatcher(cr);
 
     for (let i = 0; i < 5; i++) {
@@ -441,7 +437,7 @@ describe("Dispatcher with ChaosRegistry", () => {
 
   it("status() overrides the response status code", async () => {
     const cr = new ChaosRegistry();
-    cr.createRule("/orders").always().status(429);
+    cr.createRule("/orders").status(429);
     const dispatcher = makeDispatcher(cr);
     const response = await get(dispatcher, "/orders");
     expect(response.status).toBe(429);
@@ -449,7 +445,7 @@ describe("Dispatcher with ChaosRegistry", () => {
 
   it("header() adds or replaces a response header", async () => {
     const cr = new ChaosRegistry();
-    cr.createRule("/orders").always().header("Retry-After", "60");
+    cr.createRule("/orders").header("Retry-After", "60");
     const dispatcher = makeDispatcher(cr);
     const response = await get(dispatcher, "/orders");
     expect(response.headers?.["Retry-After"]).toBe("60");
@@ -457,7 +453,7 @@ describe("Dispatcher with ChaosRegistry", () => {
 
   it("removeHeader() removes a response header", async () => {
     const cr = new ChaosRegistry();
-    cr.createRule("/orders").always().removeHeader("x-original");
+    cr.createRule("/orders").removeHeader("x-original");
     const dispatcher = makeDispatcher(cr);
     const response = await get(dispatcher, "/orders");
     expect(response.headers?.["x-original"]).toBeUndefined();
@@ -466,7 +462,6 @@ describe("Dispatcher with ChaosRegistry", () => {
   it("header()/removeHeader() do not modify response Content-Type", async () => {
     const cr = new ChaosRegistry();
     cr.createRule("/orders")
-      .always()
       .header("content-type", "text/plain")
       .removeHeader("content-type");
     const dispatcher = makeDispatcher(cr);
@@ -476,7 +471,7 @@ describe("Dispatcher with ChaosRegistry", () => {
 
   it("body() replaces the response body", async () => {
     const cr = new ChaosRegistry();
-    cr.createRule("/orders").always().body("chaos body");
+    cr.createRule("/orders").body("chaos body");
     const dispatcher = makeDispatcher(cr);
     const response = await get(dispatcher, "/orders");
     expect(response.body).toBe("chaos body");
@@ -484,9 +479,7 @@ describe("Dispatcher with ChaosRegistry", () => {
 
   it("transformBody() transforms the existing body", async () => {
     const cr = new ChaosRegistry();
-    cr.createRule("/orders")
-      .always()
-      .transformBody((b) => `${b}-modified`);
+    cr.createRule("/orders").transformBody((b) => `${b}-modified`);
     const dispatcher = makeDispatcher(cr);
     const response = await get(dispatcher, "/orders");
     expect(response.body).toContain("-modified");
@@ -494,7 +487,7 @@ describe("Dispatcher with ChaosRegistry", () => {
 
   it("stop() disables a rule", async () => {
     const cr = new ChaosRegistry();
-    const rule = cr.createRule("/orders").always().status(500);
+    const rule = cr.createRule("/orders").status(500);
     rule.stop();
     const dispatcher = makeDispatcher(cr);
     const response = await get(dispatcher, "/orders");
@@ -503,7 +496,7 @@ describe("Dispatcher with ChaosRegistry", () => {
 
   it("start() re-enables a stopped rule", async () => {
     const cr = new ChaosRegistry();
-    const rule = cr.createRule("/orders").always().status(500);
+    const rule = cr.createRule("/orders").status(500);
     rule.stop();
     rule.start();
     const dispatcher = makeDispatcher(cr);
@@ -558,7 +551,7 @@ describe("Dispatcher with ChaosRegistry", () => {
       });
 
     const cr = new ChaosRegistry();
-    cr.createRule("/orders").always().delay(2_000);
+    cr.createRule("/orders").delay(2_000);
     const dispatcher = makeDispatcher(cr);
 
     const response = await get(dispatcher, "/orders");

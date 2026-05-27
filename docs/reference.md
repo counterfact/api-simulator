@@ -385,9 +385,8 @@ Then set the scope:
 |--------|-------------|
 | `.next()` | Apply to the **next** matching response (once). |
 | `.next(count)` | Apply to the next `count` matching responses. |
-| `.always()` | Apply indefinitely until `stop()` is called. |
 
-A newly created rule defaults to `next(1)`.
+A newly created rule applies indefinitely by default, unless you restrict it with `next(...)`.
 
 ### Configuration methods
 
@@ -435,7 +434,7 @@ When more than one active rule matches a request, exactly one is selected using 
 1. **Longest matching prefix** wins.
 2. Among rules with the same prefix length, the **most recently updated** active rule wins.
 
-"Most recently updated" means the rule whose configuration or lifecycle state (`start`, `stop`, `next`, `always`, `probability`, `status`, `delay`, `header`, `removeHeader`, `body`, `transformBody`) was changed most recently.
+"Most recently updated" means the rule whose configuration or lifecycle state (`start`, `stop`, `next`, `probability`, `status`, `delay`, `header`, `removeHeader`, `body`, `transformBody`) was changed most recently.
 
 ### Examples
 
@@ -447,7 +446,7 @@ chaos().next().status(500);
 chaos("/orders").next(3).status(500);
 
 // Always delay /orders requests by 1 second
-chaos("/orders").always().delay(1_000);
+chaos("/orders").delay(1_000);
 
 // Inject a 429 with a Retry-After header for the next /orders request
 chaos("/orders").next().header("Retry-After", "60").status(429);
@@ -462,12 +461,11 @@ chaos("/orders").next().transformBody((body) => ({
 ### Fault simulation pattern
 
 `chaos()` is Counterfact's fault-injection API and is available as a global in the Live REPL.
-Use `always()` to keep the rule active for every matching request, and `probability(...)` to decide whether each individual request actually fails.
+Rules are active for every matching request by default; use `probability(...)` to decide whether each individual request actually fails.
 
 ```ts
 // Evaluate this rule for every /payments request, but fail only ~20% with 503.
 chaos("/payments")
-  .always()
   .probability(0.2)
   .status(503)
   .header("Retry-After", "1");

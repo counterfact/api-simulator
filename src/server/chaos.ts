@@ -61,7 +61,7 @@ export class ChaosRule {
   /** @internal */
   public constructor(prefix: string) {
     this.prefix = prefix;
-    this._remaining = 1;
+    this._remaining = "always";
   }
 
   /** Monotonically increasing value representing when this rule was last updated. */
@@ -89,15 +89,6 @@ export class ChaosRule {
    */
   public next(count = 1): this {
     this._remaining = count;
-    this.touch();
-    return this;
-  }
-
-  /**
-   * Configures this rule to apply indefinitely until {@link stop} is called.
-   */
-  public always(): this {
-    this._remaining = "always";
     this.touch();
     return this;
   }
