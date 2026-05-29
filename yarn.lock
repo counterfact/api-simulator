@@ -5586,10 +5586,10 @@ json-parse-even-better-errors@^2.3.0:
   resolved "https://registry.yarnpkg.com/json-parse-even-better-errors/-/json-parse-even-better-errors-2.3.1.tgz#7c47805a94319928e05777405dc12e1f7a4ee02d"
   integrity sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w==
 
-json-schema-faker@0.6.1:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/json-schema-faker/-/json-schema-faker-0.6.1.tgz#652cb821bc58725adbf3013cb6c52963c255245d"
-  integrity sha512-IMF9QGFn/j7sys1LxgYpt/+0LUozFE8R/yUav4D7NqsHnh5L0mbJZOiU724nlJ3g+ZZo6NykVtTeJLoVcOP6Xw==
+json-schema-faker@0.6.2:
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/json-schema-faker/-/json-schema-faker-0.6.2.tgz#d202c376f243455fa509d6ccd89a942de55f5464"
+  integrity sha512-jhOV/bIUxTPM3DiKaa9YDI9UIhO6md1wBnopuIleXATBCwBxnpEfUG0KZqWJS0nTc7nGeWu6ve4vL7Sk7l2BKA==
 
 json-schema-traverse@^0.4.1:
   version "0.4.1"
