@@ -6582,10 +6582,10 @@ postcss@^8.5.15:
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
 
-posthog-node@5.35.1:
-  version "5.35.1"
-  resolved "https://registry.yarnpkg.com/posthog-node/-/posthog-node-5.35.1.tgz#1d3f54a6e4a4a091854d21c877b701935f4ae136"
-  integrity sha512-F9S3pEIYfGEVjLYIFHKaqfTIhn5IpS02Dkp7C/f1rqr4Z67Iqbt4jbKO8raWsT0veEI3rUp+DKuXLW1hN07FQA==
+posthog-node@5.35.2:
+  version "5.35.2"
+  resolved "https://registry.yarnpkg.com/posthog-node/-/posthog-node-5.35.2.tgz#317a2877c80d1c33348a4ca2590cabdb03f3afc0"
+  integrity sha512-YwzkogTUrsFeUnJJH17p3zoZBFaHIh6swYoLV4Ic5pmd8fIVTz8w7NsHR7eWmJlqYe/+Hqo1acGN1jclNUbz3A==
   dependencies:
     "@posthog/core" "1.29.9"
 
