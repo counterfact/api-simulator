@@ -6,7 +6,8 @@
   "main": "./dist/app.js",
   "exports": {
     ".": {
-      "import": "./dist/app.js"
+      "import": "./dist/app.js",
+      "types": "./dist/server/types.d.ts"
     }
   },
   "types": "./dist/server/types.d.ts",
