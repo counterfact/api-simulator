@@ -1,5 +1,29 @@
 # counterfact
 
+## 2.14.0
+
+### Minor Changes
+
+- ddfa05f: export the types from the package so that clients can import { couterfact } from "counterfact"
+
+### Patch Changes
+
+- 42d5660: Updated dependency `@swc/core` to `1.15.40`.
+- 3ec43b8: Updated dependency `astro` to `6.3.8`.
+- d9e1130: Updated dependency `posthog-node` to `5.35.3`.
+- b896d80: Updated dependency `@typescript-eslint/eslint-plugin` to `8.60.0`.
+  Updated dependency `@typescript-eslint/parser` to `8.60.0`.
+- 15e6503: Updated dependency `posthog-node` to `5.35.0`.
+- f740c2a: Updated dependency `koa` to `3.2.1`.
+- a46fcdf: Updated dependency `astro` to `6.3.7`.
+- d0b1616: Updated dependency `json-schema-faker` to `0.6.2`.
+- bb1b4d5: Updated dependency `posthog-node` to `5.35.1`.
+- 2c04e5d: Updated dependency `posthog-node` to `5.35.4`.
+- 4eb0314: Updated dependency `posthog-node` to `5.35.2`.
+- ffbde4b: Updated dependency `posthog-node` to `5.34.7`.
+- 1261a8f: Updated dependency `posthog-node` to `5.34.8`.
+- 5a5206e: Updated dependency `posthog-node` to `5.35.5`.
+
 ## 2.13.0
 
 ### Minor Changes
