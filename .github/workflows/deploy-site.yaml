@@ -24,7 +24,7 @@ jobs:
       PUBLIC_GOOGLE_ANALYTICS_ID: G-2QHMETF62T
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
