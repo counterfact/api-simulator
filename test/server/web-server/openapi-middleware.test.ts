@@ -1,6 +1,6 @@
 import Koa from "koa";
 import request from "supertest";
-import yaml from "js-yaml";
+import { load as yamlLoad } from "js-yaml";
 
 import { usingTemporaryFiles } from "using-temporary-files";
 
@@ -28,7 +28,7 @@ describe("openapiMiddleware", () => {
       );
 
       expect(response.status).toBe(200);
-      const doc = yaml.load(response.text) as { info: { title: string } };
+      const doc = yamlLoad(response.text) as { info: { title: string } };
 
       expect(doc.info.title).toBe("Test");
     });
@@ -54,7 +54,7 @@ describe("openapiMiddleware", () => {
         "/counterfact/openapi",
       );
 
-      const doc = yaml.load(response.text) as {
+      const doc = yamlLoad(response.text) as {
         servers: { name: string; description: string; url: string }[];
       };
 
@@ -117,7 +117,7 @@ describe("openapiMiddleware", () => {
 
       expect(response.status).toBe(200);
 
-      const doc = yaml.load(response.text) as {
+      const doc = yamlLoad(response.text) as {
         paths: {
           "/metrics": {
             get: {
@@ -199,7 +199,7 @@ describe("openapiMiddleware", () => {
 
       expect(response.status).toBe(200);
 
-      const doc = yaml.load(response.text) as {
+      const doc = yamlLoad(response.text) as {
         $self?: string;
         paths: {
           "/pets": {
@@ -271,7 +271,7 @@ describe("openapiMiddleware", () => {
       );
 
       expect(response.status).toBe(200);
-      const doc = yaml.load(response.text) as { info: { title: string } };
+      const doc = yamlLoad(response.text) as { info: { title: string } };
 
       expect(doc.info.title).toBe("Patched Title");
     });
@@ -327,7 +327,7 @@ describe("openapiMiddleware", () => {
       );
 
       expect(response.status).toBe(200);
-      const doc = yaml.load(response.text) as {
+      const doc = yamlLoad(response.text) as {
         paths: Record<string, unknown>;
       };
 
@@ -357,7 +357,7 @@ describe("openapiMiddleware", () => {
       );
 
       expect(response.status).toBe(200);
-      const doc = yaml.load(response.text) as { info: { title: string } };
+      const doc = yamlLoad(response.text) as { info: { title: string } };
 
       expect(doc.info.title).toBe("Unchanged");
     });
@@ -411,7 +411,7 @@ describe("openapiMiddleware", () => {
 
       const specResponse = await request(app.callback()).get("/api/spec");
       expect(specResponse.status).toBe(200);
-      const doc = yaml.load(specResponse.text) as { info: { title: string } };
+      const doc = yamlLoad(specResponse.text) as { info: { title: string } };
       expect(doc.info.title).toBe("Custom");
 
       const otherResponse = await request(app.callback()).get(
