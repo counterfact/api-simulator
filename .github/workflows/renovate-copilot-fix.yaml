@@ -1,0 +1,86 @@
+name: Renovate CI Fix (Copilot)
+
+on:
+  workflow_run:
+    workflows:
+      - CI Checks
+    types:
+      - completed
+
+jobs:
+  request-copilot-fix:
+    name: Ask Copilot to fix CI failure
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      startsWith(github.event.workflow_run.head_branch, 'renovate/')
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Find PR and post Copilot comment
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const branch = context.payload.workflow_run.head_branch;
+            const runUrl = context.payload.workflow_run.html_url;
+
+            // Find the open PR for this Renovate branch
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              head: `${context.repo.owner}:${branch}`,
+            });
+
+            if (!pulls.length) {
+              console.log(`No open PR found for branch ${branch}. Skipping.`);
+              return;
+            }
+
+            const pr = pulls[0];
+            const prNumber = pr.number;
+
+            // Check whether we already posted a Copilot-fix request to avoid duplicates
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const alreadyRequested = comments.some(
+              (c) =>
+                c.body.includes("@copilot") &&
+                c.body.includes("CI") &&
+                c.body.includes("renovate")
+            );
+
+            if (alreadyRequested) {
+              console.log(`Copilot-fix comment already exists on PR #${prNumber}. Skipping.`);
+              return;
+            }
+
+            // Post the request
+            const body = [
+              `@copilot CI is failing on this Renovate dependency-update PR.`,
+              ``,
+              `**Failed run:** ${runUrl}`,
+              ``,
+              `Please:`,
+              `1. Investigate the test/lint/type failures shown in the CI run above.`,
+              `2. Determine whether they are caused by a breaking change in one of the updated packages.`,
+              `3. If so, apply the minimal fix needed to make CI pass and push it to this branch.`,
+              `4. If the failure is unrelated to the dependency update, leave a comment explaining why.`,
+              ``,
+              `_(This comment was posted automatically by the \`renovate-copilot-fix\` workflow.)_`,
+            ].join("\n");
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body,
+            });
+
+            console.log(`Posted Copilot-fix request on PR #${prNumber}.`);
