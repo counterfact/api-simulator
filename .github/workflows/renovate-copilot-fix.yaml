@@ -7,6 +7,10 @@ on:
     types:
       - completed
 
+concurrency:
+  group: renovate-copilot-fix-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
 jobs:
   request-copilot-fix:
     name: Ask Copilot to fix CI failure
