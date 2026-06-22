@@ -47,15 +47,15 @@ jobs:
             const prNumber = pr.number;
 
             // Check whether we already posted a Copilot-fix request to avoid duplicates
-            const { data: comments } = await github.rest.issues.listComments({
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
+              per_page: 100,
             });
 
             const MARKER = "<!-- renovate-copilot-fix-marker -->";
-            const alreadyRequested = comments.some((c) => c.body.includes(MARKER));
-
+            const alreadyRequested = comments.some((c) => (c.body ?? "").includes(MARKER));
             if (alreadyRequested) {
               console.log(`Copilot-fix comment already exists on PR #${prNumber}. Skipping.`);
               return;
