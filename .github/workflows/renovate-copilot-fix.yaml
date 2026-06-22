@@ -49,12 +49,8 @@ jobs:
               issue_number: prNumber,
             });
 
-            const alreadyRequested = comments.some(
-              (c) =>
-                c.body.includes("@copilot") &&
-                c.body.includes("CI") &&
-                c.body.includes("renovate")
-            );
+            const MARKER = "<!-- renovate-copilot-fix-marker -->";
+            const alreadyRequested = comments.some((c) => c.body.includes(MARKER));
 
             if (alreadyRequested) {
               console.log(`Copilot-fix comment already exists on PR #${prNumber}. Skipping.`);
@@ -70,10 +66,11 @@ jobs:
               `Please:`,
               `1. Investigate the test/lint/type failures shown in the CI run above.`,
               `2. Determine whether they are caused by a breaking change in one of the updated packages.`,
-              `3. If so, apply the minimal fix needed to make CI pass and push it to this branch.`,
+              `3. If so, provide the minimal fix needed to make CI pass (code changes, updated snapshots, type adjustments, etc.).`,
               `4. If the failure is unrelated to the dependency update, leave a comment explaining why.`,
               ``,
               `_(This comment was posted automatically by the \`renovate-copilot-fix\` workflow.)_`,
+              `<!-- renovate-copilot-fix-marker -->`,
             ].join("\n");
 
             await github.rest.issues.createComment({
