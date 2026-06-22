@@ -21,7 +21,7 @@ jobs:
       - name: Debug
         run: echo "${{ matrix.os }}"
       - name: Check Out Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Detect docs-only pull request
