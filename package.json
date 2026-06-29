@@ -111,7 +111,7 @@
     "eslint-plugin-no-explicit-type-exports": "0.12.1",
     "eslint-plugin-prettier": "5.5.6",
     "eslint-plugin-promise": "7.3.0",
-    "eslint-plugin-regexp": "3.1.0",
+    "eslint-plugin-regexp": "3.1.1",
     "eslint-plugin-security": "4.0.1",
     "eslint-plugin-unused-imports": "4.4.1",
     "husky": "9.1.7",
