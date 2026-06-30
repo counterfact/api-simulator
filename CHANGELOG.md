@@ -1,5 +1,65 @@
 # counterfact
 
+## 2.14.1
+
+### Patch Changes
+
+- 15fa622: Updated dependency `posthog-node` to `5.38.6`.
+- 22fb622: Updated dependency `tsx` to `4.22.4`.
+- ee19c9b: Updated dependency `eslint-plugin-n` to `18.2.0`.
+- 1e502a1: Updated dependency `eslint-plugin-jest` to `29.15.3`.
+- 79fd69f: Updated dependency `@typescript-eslint/eslint-plugin` to `8.62.0`.
+  Updated dependency `@typescript-eslint/parser` to `8.62.0`.
+- 8a9b2cd: Updated dependency `js-yaml` to `5.1.0`.
+- 4c5d087: Updated dependency `astro` to `6.4.4`.
+- f5c7188: Updated dependency `eslint-plugin-security` to `4.0.1`.
+- 7fcb6fa: Updated dependency `eslint-plugin-n` to `18.1.0`.
+- c4f52d4: Updated dependency `astro` to `6.4.8`.
+- bea35fe: Updated dependency `posthog-node` to `5.35.11`.
+- f37dc66: Updated dependency `prettier` to `3.8.5`.
+- 899433a: Updated dependency `@typescript-eslint/eslint-plugin` to `8.61.1`.
+  Updated dependency `@typescript-eslint/parser` to `8.61.1`.
+- 7d885d8: Updated dependency `posthog-node` to `5.35.8`.
+- 6f9acf3: Updated dependency `commander` to `15.0.0`.
+- b29ebd0: Updated dependency `js-yaml` to `5.0.0`.
+- 46c6b2c: Updated dependency `eslint-plugin-regexp` to `3.1.1`.
+- 4a8b593: Updated dependency `eslint` to `10.6.0`.
+- 707618f: Updated dependency `posthog-node` to `5.38.2`.
+- 93172a1: Updated dependency `js-yaml` to `4.2.0`.
+- 23e33dc: Updated dependency `posthog-node` to `5.38.5`.
+- 2334479: Updated dependency `@typescript-eslint/eslint-plugin` to `8.60.1`.
+  Updated dependency `@typescript-eslint/parser` to `8.60.1`.
+- 1f7967f: Updated dependency `eslint-import-resolver-typescript` to `4.4.5`.
+- 16d6d23: Updated dependency `astro` to `7.0.2`.
+- 8f894cc: Updated dependency `posthog-node` to `5.38.1`.
+- 371eb30: Updated dependency `posthog-node` to `5.35.6`.
+- 6a56357: Updated dependency `eslint` to `10.5.0`.
+- 9e741ba: Updated dependency `js-yaml` to `5.2.0`.
+- 1530dc3: Updated dependency `@apidevtools/json-schema-ref-parser` to `15.4.0`.
+- c8c3df2: Updated dependency `posthog-node` to `5.38.3`.
+- c1b4150: Updated dependency `eslint-plugin-n` to `18.2.1`.
+- 8c316db: Updated dependency `recast` to `0.23.12`.
+- c92558e: Updated dependency `posthog-node` to `5.35.13`.
+- ffc4658: Updated dependency `js-yaml` to `4.2.0`.
+- b4e91ba: Updated dependency `astro` to `6.4.6`.
+- b3a00cc: Updated dependency `@swc/core` to `1.15.41`.
+- 81f0100: Updated dependency `astro` to `6.4.3`.
+- a4c4b68: Updated dependency `astro` to `6.4.7`.
+- afa97bb: Updated dependency `prettier` to `3.8.4`.
+- e1e0b3f: Updated dependency `@typescript-eslint/eslint-plugin` to `8.61.0`.
+  Updated dependency `@typescript-eslint/parser` to `8.61.0`.
+- 4a57f45: Updated dependency `posthog-node` to `5.35.12`.
+- 7c92758: Updated dependency `astro` to `6.4.5`.
+- be454bd: Updated dependency `posthog-node` to `5.35.9`.
+- 4c8019c: Updated dependency `eslint` to `10.4.1`.
+- f7d9502: Updated dependency `@swc/core` to `1.15.43`.
+- 2c1f1ea: Updated dependency `astro` to `7.0.3`.
+- 6b2f6e7: Updated dependency `@apidevtools/json-schema-ref-parser` to `15.3.6`.
+- 84ed3b2: Updated dependency `posthog-node` to `5.36.2`.
+- a33cd7e: Updated dependency `posthog-node` to `5.38.4`.
+- f00e6c1: Updated dependency `astro` to `6.4.2`.
+- c263004: Updated dependency `eslint-plugin-prettier` to `5.5.6`.
+
 ## 2.14.0
 
 ### Minor Changes
