@@ -6,6 +6,7 @@ import { usingTemporaryFiles } from "using-temporary-files";
 
 import * as app from "../src/app";
 import { ApiRunner } from "../src/api-runner";
+import { ChaosRegistry } from "../src/server/chaos";
 import { ContextRegistry } from "../src/server/context-registry";
 import { ScenarioRegistry } from "../src/server/scenario-registry";
 
@@ -23,6 +24,10 @@ const mockConfig = {
   startServer: false,
   watch: { routes: false, types: false },
   prefix: "",
+};
+
+type ReplChaos = (pathPrefix?: string) => {
+  status: (statusCode: number) => unknown;
 };
 
 describe("counterfact", () => {
@@ -72,13 +77,16 @@ describe("counterfact", () => {
       "v1",
       "",
       [],
+      expect.any(ChaosRegistry),
     );
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ openApiPath: "_", prefix: "/api/v2" }),
       "v2",
       "",
       [],
+      expect.any(ChaosRegistry),
     );
+    expect(spy.mock.calls[0]?.[4]).toBe(spy.mock.calls[1]?.[4]);
 
     spy.mockRestore();
   });
@@ -200,6 +208,53 @@ describe("counterfact", () => {
     });
   });
 
+  it("applies REPL chaos rules across all runners in multi-api mode", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "billing/routes/hello.js",
+        `export function GET() { return { body: "hello from billing" }; }`,
+      );
+      await $.add(
+        "inventory/routes/hello.js",
+        `export function GET() { return { body: "hello from inventory" }; }`,
+      );
+
+      const specs = [
+        { source: "_", prefix: "/api/billing", group: "billing" },
+        { source: "_", prefix: "/api/inventory", group: "inventory" },
+      ];
+
+      const { koaApp, start, startRepl } = await (app as any).counterfact(
+        { ...mockConfig, basePath: $.path(".") },
+        specs,
+      );
+
+      const { stop } = await start({
+        startServer: true,
+        buildCache: false,
+        generate: { routes: false, types: false },
+        watch: { routes: false, types: false },
+      });
+
+      const replServer = startRepl();
+      const chaos = (replServer.context as { chaos: ReplChaos }).chaos;
+      chaos().status(503);
+
+      const billingResponse = await request(koaApp.callback()).get(
+        "/api/billing/hello",
+      );
+      const inventoryResponse = await request(koaApp.callback()).get(
+        "/api/inventory/hello",
+      );
+
+      expect(billingResponse.status).toBe(503);
+      expect(inventoryResponse.status).toBe(503);
+
+      replServer.close();
+      await stop();
+    });
+  });
+
   it("routes requests to the correct runner based on prefix when specs are provided", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(
@@ -252,12 +307,14 @@ describe("counterfact", () => {
       "my-api",
       "v1",
       ["v1", "v2"],
+      expect.any(ChaosRegistry),
     );
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ prefix: "/my-api/v2" }),
       "my-api",
       "v2",
       ["v1", "v2"],
+      expect.any(ChaosRegistry),
     );
 
     spy.mockRestore();
@@ -277,6 +334,7 @@ describe("counterfact", () => {
       "my-api",
       "v1",
       ["v1"],
+      expect.any(ChaosRegistry),
     );
 
     spy.mockRestore();
@@ -294,6 +352,7 @@ describe("counterfact", () => {
       "my-api",
       "",
       [],
+      expect.any(ChaosRegistry),
     );
 
     spy.mockRestore();

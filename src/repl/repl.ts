@@ -1,6 +1,7 @@
 import repl from "node:repl";
 
 import type { Config } from "../server/config.js";
+import type { ChaosRegistry } from "../server/chaos.js";
 import type { ContextRegistry } from "../server/context-registry.js";
 import type { OpenApiDocument } from "../server/dispatcher.js";
 import type { Registry } from "../server/registry.js";
@@ -264,6 +265,7 @@ export function startRepl(
   openApiDocument?: OpenApiDocument,
   scenarioRegistry?: ScenarioRegistry,
   apiBindings?: ReplApiBinding[],
+  chaosRegistry?: ChaosRegistry,
 ) {
   const bindings =
     apiBindings === undefined || apiBindings.length === 0
@@ -485,6 +487,11 @@ export function startRepl(
   replServer.context.routes = isMultiApi
     ? Object.fromEntries(groupedBindings.map((binding) => [binding.key, {}]))
     : {};
+
+  if (chaosRegistry !== undefined) {
+    replServer.context.chaos = (pathPrefix = "") =>
+      chaosRegistry.createRule(pathPrefix);
+  }
 
   replServer.defineCommand("scenario", {
     async action(text: string) {
