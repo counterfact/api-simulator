@@ -1418,10 +1418,10 @@
   resolved "https://registry.yarnpkg.com/@pkgr/core/-/core-0.3.6.tgz#3569708bd4be4d8870ba32bf1c456dac81600d97"
   integrity sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA==
 
-"@posthog/core@^1.38.0":
-  version "1.38.1"
-  resolved "https://registry.yarnpkg.com/@posthog/core/-/core-1.38.1.tgz#3e379c69814d8d643dfa33308f64b0f3801e35a7"
-  integrity sha512-tsJTugsKzx47eRMjNfG272/GFf0FF0LeI+gyJ/anibpbYAzdNuX5kr6enpmJrhdgLESqzJGH8QF0+I9075Xr1Q==
+"@posthog/core@^1.38.1":
+  version "1.39.5"
+  resolved "https://registry.yarnpkg.com/@posthog/core/-/core-1.39.5.tgz#f5b2190394167397bc4efc81fdd6cebe06817148"
+  integrity sha512-M8Imv7ZmmrT6derMOFXhX3c5VKKO2oG6OX70ozLnNpKJV73sNIhYmRX/raa90saF7OA0YmWWJlpKje3irGAyQQ==
   dependencies:
     "@posthog/types" "^1.392.0"
 
@@ -6661,12 +6661,12 @@ postcss@^8.5.15:
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
 
-posthog-node@5.38.6:
-  version "5.38.6"
-  resolved "https://registry.yarnpkg.com/posthog-node/-/posthog-node-5.38.6.tgz#c0127620123bc86c0340b6dc36f3533a450958de"
-  integrity sha512-Sm2mCAa9/lTTYppnKyy0AhQrriq8fOd8B2vwd3EE/9uihyIx9qkJ1xGYbvADxQJlF7HqM1/TIFCKsI0JvF8gjQ==
+posthog-node@5.38.8:
+  version "5.38.8"
+  resolved "https://registry.yarnpkg.com/posthog-node/-/posthog-node-5.38.8.tgz#42b147baa224a6072d6b634202eadd683fa8fbed"
+  integrity sha512-AWsp9Tigf4iZepabPErAt/2sLTGwJ7w6631JP+3ifDqWzaBPyzcukD7cTPeoNDKGwJreQ69Ju4l53n9g2+X6nQ==
   dependencies:
-    "@posthog/core" "^1.38.0"
+    "@posthog/core" "^1.38.1"
 
 powershell-utils@^0.1.0:
   version "0.1.0"
