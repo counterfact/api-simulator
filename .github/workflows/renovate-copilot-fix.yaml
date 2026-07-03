@@ -20,7 +20,7 @@ jobs:
       startsWith(github.event.workflow_run.head_branch, 'renovate/')
 
     permissions:
-      pull-requests: read
+      pull-requests: write
       issues: write
     steps:
       - name: Find PR and post Copilot comment
