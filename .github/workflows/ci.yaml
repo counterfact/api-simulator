@@ -52,7 +52,7 @@ jobs:
       - name: Skip heavy checks for docs-only changes
         if: steps.docs-only.outputs.docs_only == 'true'
         run: echo "Markdown-only pull request detected. Skipping lint/type/tests while keeping required checks green."
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         if: steps.docs-only.outputs.docs_only != 'true'
         with:
           node-version: lts/*
