@@ -1,6 +1,7 @@
 import { rm } from "node:fs/promises";
 
 import type { Config } from "./server/config.js";
+import { ChaosRegistry } from "./server/chaos.js";
 import { ContextRegistry } from "./server/context-registry.js";
 import { Dispatcher } from "./server/dispatcher.js";
 import { loadOpenApiDocument } from "./server/load-openapi-document.js";
@@ -111,6 +112,7 @@ export class ApiRunner {
     group: string,
     version = "",
     versions: readonly string[] = [],
+    chaosRegistry: ChaosRegistry,
   ) {
     this.group = group;
     this.version = version;
@@ -151,6 +153,7 @@ export class ApiRunner {
       config,
       version,
       versions,
+      chaosRegistry,
     );
 
     this.transpiler = new Transpiler(
@@ -185,6 +188,7 @@ export class ApiRunner {
     group = "",
     version = "",
     versions: readonly string[] = [],
+    chaosRegistry = new ChaosRegistry(),
   ): Promise<ApiRunner> {
     const nativeTs = await runtimeCanExecuteErasableTs();
 
@@ -212,6 +216,7 @@ export class ApiRunner {
       group,
       version,
       versions,
+      chaosRegistry,
     );
   }
 
