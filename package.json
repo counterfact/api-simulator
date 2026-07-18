@@ -82,7 +82,7 @@
     "counterfact": "./bin/counterfact.js"
   },
   "devDependencies": {
-    "@changesets/cli": "2.31.0",
+    "@changesets/cli": "2.31.1",
     "@eslint/js": "10.0.1",
     "@jest/globals": "30.4.1",
     "@swc/core": "1.15.43",
