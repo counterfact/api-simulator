@@ -6,6 +6,9 @@ const path = require("path");
 
 function resolveCompatibleTypeScriptPath() {
   try {
+    // precinct still installs a TypeScript 6 copy that matches the current
+    // typescript-eslint peer range, so prefer that compiler for parser internals
+    // until the eslint stack natively supports TypeScript 7.
     return require.resolve("typescript", {
       paths: [path.join(__dirname, "node_modules", "precinct", "node_modules")],
     });

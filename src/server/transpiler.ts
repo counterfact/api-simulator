@@ -155,6 +155,8 @@ export class Transpiler extends EventTarget {
         this.destinationPath,
         "--rootDir",
         this.sourcePath,
+        // TypeScript 7's CLI supports --noCheck, which preserves the prior
+        // transpileModule behavior of skipping type-checking during cache builds.
         "--noCheck",
         sourcePath,
       ]);

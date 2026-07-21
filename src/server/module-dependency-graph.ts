@@ -16,7 +16,7 @@ function isNode(value: unknown): value is AstNode {
   return typeof value === "object" && value !== null;
 }
 
-function stringLiteralValue(value: unknown): string | undefined {
+function extractStringLiteral(value: unknown): string | undefined {
   return isNode(value) && typeof value.value === "string"
     ? value.value
     : undefined;
@@ -29,7 +29,7 @@ function dependencyIn(node: AstNode): string | undefined {
     node.type === "ExportNamedDeclaration" ||
     node.type === "ImportExpression"
   ) {
-    return stringLiteralValue(node.source);
+    return extractStringLiteral(node.source);
   }
 
   if (
@@ -39,7 +39,7 @@ function dependencyIn(node: AstNode): string | undefined {
     node.callee.name === "require" &&
     Array.isArray(node.arguments)
   ) {
-    return stringLiteralValue(node.arguments[0]);
+    return extractStringLiteral(node.arguments[0]);
   }
 }
 
