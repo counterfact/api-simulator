@@ -70,8 +70,7 @@ type UserDefinedResponse =
 
 interface Module {
   [method: string]:
-    | ((requestData: RequestDataWithBody) => UserDefinedResponse)
-    | undefined;
+    ((requestData: RequestDataWithBody) => UserDefinedResponse) | undefined;
   DELETE?: (requestData: RequestData) => UserDefinedResponse;
   GET?: (requestData: RequestData) => UserDefinedResponse;
   HEAD?: (requestData: RequestData) => UserDefinedResponse;

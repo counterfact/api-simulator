@@ -5,7 +5,7 @@
  * response builder after one has already been called.
  */
 export type OmitAll<T, K extends readonly string[]> = {
-  [P in keyof T as P extends `${string}${K[number]}${string}`
-    ? never
-    : P]: T[P];
+  [
+    P in keyof T as P extends `${string}${K[number]}${string}` ? never : P
+  ]: T[P];
 };

@@ -145,7 +145,7 @@
     "open": "11.0.0",
     "posthog-node": "5.45.2",
     "precinct": "13.0.1",
-    "prettier": "3.8.5",
+    "prettier": "3.9.0",
     "recast": "0.23.12",
     "tsx": "4.23.1",
     "typescript": "6.0.3"

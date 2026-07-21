@@ -102,10 +102,9 @@ export class Coder {
 
     const requirement = await this.requirement.reference();
 
-    return new (this.constructor as new (
-      req: Requirement,
-      version: string,
-    ) => Coder)(requirement, this.version);
+    return new (
+      this.constructor as new (req: Requirement, version: string) => Coder
+    )(requirement, this.version);
   }
 
   /**
