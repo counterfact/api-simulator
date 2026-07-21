@@ -2,4 +2,4 @@
 'counterfact': patch
 ---
 
-Updated dependency `astro` to `7.1.0`.
+Updated dependency `astro` to `7.1.1`.
