@@ -5,6 +5,8 @@ import nodePath, { basename } from "node:path";
 
 import { type FSWatcher, watch } from "chokidar";
 import createDebug from "debug";
+import { parse } from "recast";
+import typescriptParser from "recast/parsers/typescript.js";
 
 import { CHOKIDAR_OPTIONS } from "./constants.js";
 import { ContextRegistry } from "./context-registry.js";
@@ -30,6 +32,10 @@ import { unescapePathForWindows } from "../util/windows-escape.js";
 const { uncachedRequire } = await import("./uncached-require.cjs");
 
 const debug = createDebug("counterfact:server:module-loader");
+
+async function assertModuleSyntax(pathName: string) {
+  parse(await fs.readFile(pathName, "utf8"), { parser: typescriptParser });
+}
 
 /**
  * Watches the compiled routes directory and dynamically loads/reloads route
@@ -292,10 +298,16 @@ export class ModuleLoader extends EventTarget {
           : uncachedImport;
 
       let importError: unknown;
+      let endpoint: ContextModule | Module | undefined;
 
-      const endpoint = (await doImport(pathName).catch((error: unknown) => {
+      try {
+        if (doImport === uncachedImport) {
+          await assertModuleSyntax(pathName);
+        }
+        endpoint = (await doImport(pathName)) as ContextModule | Module;
+      } catch (error) {
         importError = error;
-      })) as ContextModule | Module;
+      }
 
       if (importError !== undefined) {
         const isSyntaxError =
@@ -308,9 +320,7 @@ export class ModuleLoader extends EventTarget {
         );
 
         if (this.isContextFile(pathName)) {
-          const warning = isSyntaxError
-            ? `Warning: There is a syntax error in the context file: ${displayPath}`
-            : `Warning: There was an error loading the context file: ${displayPath}`;
+          const warning = `Warning: There was an error loading the context file: ${displayPath}`;
 
           process.stdout.write(`\n${warning}\n`);
 

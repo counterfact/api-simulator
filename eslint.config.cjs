@@ -1,6 +1,33 @@
 "use strict";
 
+const fs = require("fs");
+const Module = require("module");
 const path = require("path");
+
+const compatibleTypeScriptPath = path.join(
+  __dirname,
+  "node_modules",
+  "precinct",
+  "node_modules",
+  "typescript",
+  "lib",
+  "typescript.js",
+);
+const originalResolveFilename = Module._resolveFilename;
+
+Module._resolveFilename = function resolveFilename(request, parent, ...rest) {
+  if (
+    request === "typescript" &&
+    fs.existsSync(compatibleTypeScriptPath) &&
+    ["/@typescript-eslint/", "/ts-api-utils/"].some((segment) =>
+      parent?.filename?.includes(segment.replaceAll("/", path.sep)),
+    )
+  ) {
+    return compatibleTypeScriptPath;
+  }
+
+  return originalResolveFilename.call(this, request, parent, ...rest);
+};
 
 const js = require("@eslint/js");
 const prettierPlugin = require("eslint-plugin-prettier");
