@@ -4,20 +4,23 @@ const fs = require("fs");
 const Module = require("module");
 const path = require("path");
 
-const compatibleTypeScriptPath = path.join(
-  __dirname,
-  "node_modules",
-  "precinct",
-  "node_modules",
-  "typescript",
-  "lib",
-  "typescript.js",
-);
+function resolveCompatibleTypeScriptPath() {
+  try {
+    return require.resolve("typescript", {
+      paths: [path.join(__dirname, "node_modules", "precinct", "node_modules")],
+    });
+  } catch {
+    return undefined;
+  }
+}
+
+const compatibleTypeScriptPath = resolveCompatibleTypeScriptPath();
 const originalResolveFilename = Module._resolveFilename;
 
 Module._resolveFilename = function resolveFilename(request, parent, ...rest) {
   if (
     request === "typescript" &&
+    compatibleTypeScriptPath !== undefined &&
     fs.existsSync(compatibleTypeScriptPath) &&
     ["/@typescript-eslint/", "/ts-api-utils/"].some((segment) =>
       parent?.filename?.includes(segment.replaceAll("/", path.sep)),

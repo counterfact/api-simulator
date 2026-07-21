@@ -162,7 +162,7 @@ export class Transpiler extends EventTarget {
       debug("error transpiling %s after %s: %o", sourcePath, eventName, error);
       this.dispatchEvent(new Event("error"));
 
-      throw new Error("could not transpile", { cause: error });
+      throw new Error(`could not transpile ${sourcePath}`, { cause: error });
     }
 
     const fullDestination = pathJoin(
@@ -188,7 +188,7 @@ export class Transpiler extends EventTarget {
       );
       this.dispatchEvent(new Event("error"));
 
-      throw new Error("could not transpile", { cause: error });
+      throw new Error(`could not transpile ${sourcePath}`, { cause: error });
     }
 
     this.dispatchEvent(new Event("write"));
