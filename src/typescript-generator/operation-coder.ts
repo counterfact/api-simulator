@@ -66,8 +66,7 @@ export class OperationCoder extends Coder {
 
     // Detect streaming responses (OpenAPI 3.2 itemSchema)
     const content = firstResponse.content as
-      | Record<string, { itemSchema?: unknown }>
-      | undefined;
+      Record<string, { itemSchema?: unknown }> | undefined;
     const hasStreamingContent =
       content !== undefined &&
       Object.keys(content).some(
