@@ -1,6 +1,39 @@
 "use strict";
 
+const fs = require("fs");
+const Module = require("module");
 const path = require("path");
+
+function resolveCompatibleTypeScriptPath() {
+  try {
+    // precinct still installs a TypeScript 6 copy that matches the current
+    // typescript-eslint peer range, so prefer that compiler for parser internals
+    // until the eslint stack natively supports TypeScript 7.
+    return require.resolve("typescript", {
+      paths: [path.join(__dirname, "node_modules", "precinct", "node_modules")],
+    });
+  } catch {
+    return undefined;
+  }
+}
+
+const compatibleTypeScriptPath = resolveCompatibleTypeScriptPath();
+const originalResolveFilename = Module._resolveFilename;
+
+Module._resolveFilename = function resolveFilename(request, parent, ...rest) {
+  if (
+    request === "typescript" &&
+    compatibleTypeScriptPath !== undefined &&
+    fs.existsSync(compatibleTypeScriptPath) &&
+    ["/@typescript-eslint/", "/ts-api-utils/"].some((segment) =>
+      parent?.filename?.includes(segment.replaceAll("/", path.sep)),
+    )
+  ) {
+    return compatibleTypeScriptPath;
+  }
+
+  return originalResolveFilename.call(this, request, parent, ...rest);
+};
 
 const js = require("@eslint/js");
 const prettierPlugin = require("eslint-plugin-prettier");
