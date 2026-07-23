@@ -143,7 +143,7 @@
     "koa2-swagger-ui": "5.12.0",
     "node-fetch": "3.3.2",
     "open": "11.0.0",
-    "posthog-node": "5.45.2",
+    "posthog-node": "5.46.0",
     "precinct": "13.0.1",
     "prettier": "3.8.5",
     "recast": "0.23.12",
