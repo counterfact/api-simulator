@@ -83,7 +83,7 @@ jobs:
         run: yarn test --runInBand --forceExit --verbose --no-watchman
       - name: Set up Python
         if: steps.docs-only.outputs.docs_only != 'true'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.x"
       - name: Install Python dependencies
