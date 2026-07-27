@@ -131,7 +131,7 @@
     "chokidar": "5.0.0",
     "commander": "15.0.0",
     "debug": "4.4.3",
-    "fs-extra": "11.3.6",
+    "fs-extra": "11.4.0",
     "http-terminator": "3.2.0",
     "js-yaml": "5.2.2",
     "json-schema-faker": "0.6.2",
