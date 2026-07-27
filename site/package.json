@@ -13,6 +13,6 @@
     "astro": "7.1.3"
   },
   "devDependencies": {
-    "linkinator": "8.0.1"
+    "linkinator": "8.0.2"
   }
 }
