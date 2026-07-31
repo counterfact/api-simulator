@@ -319,4 +319,13 @@ module.exports = [
   // The site/ directory has its own package.json, tsconfig, and ESLint config;
   // exclude it from the root ESLint run entirely.
   { ignores: ["site/**"] },
+  // The examples/ directories have their own package.json files with local
+  // dependencies not installed at the root; suppress import resolution errors.
+  {
+    files: ["examples/**/*.{js,mjs,cjs,ts}"],
+    rules: {
+      "import/no-unresolved": "off",
+      "n/no-missing-import": "off",
+    },
+  },
 ];

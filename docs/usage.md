@@ -6,7 +6,7 @@ Counterfact is three tools in one:
 - a **mock server** optimized for front-end development workflows
 - a **live REPL** for inspecting and manipulating server state at runtime
 
-This page is your map to the documentation.
+Choose the path that matches what you’re building, then dive deeper when you need a specific feature or workflow.
 
 ---
 
@@ -36,7 +36,7 @@ New to Counterfact? Begin with the [Getting Started guide](./getting-started.md)
 
 ## Patterns
 
-Patterns are reusable solutions to recurring problems when building API simulations.
+Patterns are practical ways to use Counterfact for common API development and testing jobs.
 
 See the [patterns index](./patterns/index.md) for the full list.
 
