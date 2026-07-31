@@ -12,6 +12,8 @@ function copyCmd() {
     });
 }
 
+document.getElementById("copy-btn")?.addEventListener("click", copyCmd);
+
 const io = new IntersectionObserver(
   (entries) => {
     entries.forEach((e) => {

@@ -52,8 +52,8 @@ import MainLayout from "../layouts/MainLayout.astro";
         </a>
         <ul class="nav-links">
           <li><a href="#how-it-works">How it works</a></li>
-          <li><a href="#repl">REPL</a></li>
-          <li><a href="#compare">Compare</a></li>
+          <li><a href="#workflow">Workflow</a></li>
+          <li><a href="#contract">Boundaries</a></li>
           <li>
             <a
               href="/docs/getting-started"
@@ -204,9 +204,9 @@ import MainLayout from "../layouts/MainLayout.astro";
             </div>
             <h3>Contract-driven generation</h3>
             <p>
-              TypeScript handlers and typed interfaces for every endpoint,
-              derived from your OpenAPI spec. Drift is impossible — your editor
-              tells you before the server does.
+              TypeScript handlers and typed interfaces for supported operations,
+              derived from your OpenAPI spec. Regenerate after a contract
+              change and TypeScript identifies incompatible handler code.
             </p>
           </div>
           <div class="feat">
@@ -271,7 +271,7 @@ import MainLayout from "../layouts/MainLayout.astro";
             <h3>Shared state across routes</h3>
             <p>
               Drop a <span class="pill">_.context.ts</span> in any directory to
-              share typed in-memory state. POST, GET, DELETE — all routes see
+              share typed in-memory state. Routes in that context subtree see
               the same data.
             </p>
           </div>
@@ -312,9 +312,9 @@ import MainLayout from "../layouts/MainLayout.astro";
             </div>
             <h3>Deterministic resets</h3>
             <p>
-              Restart and the system returns to a known state. Deterministic
-              when you need repeatability. Programmable when you need realism.
-              Optional persistence via TypeScript.
+              Keep seed logic in a typed startup scenario. Each fresh process
+              applies the same scenario; each test worker can use its own port
+              and in-memory state.
             </p>
           </div>
         </div>
@@ -336,9 +336,9 @@ import MainLayout from "../layouts/MainLayout.astro";
                 <div class="step-body">
                   <h3>Read your OpenAPI spec</h3>
                   <p>
-                    Point Counterfact at a local file or URL. It reads your
-                    entire document — endpoints, schemas, error conditions,
-                    everything.
+                    Point Counterfact at a local OpenAPI 3.x file or URL. It
+                    generates from the paths, operations, parameters, request
+                    bodies, responses, and schemas it supports.
                   </p>
                 </div>
               </li>
@@ -350,7 +350,7 @@ import MainLayout from "../layouts/MainLayout.astro";
                     A <span class="pill">routes/</span> directory with one
                     <span class="pill">.ts</span> per endpoint, plus full typed
                     interfaces in <span class="pill">types/</span>. Existing
-                    route files are never overwritten.
+                    handler code is preserved when generation adds operations.
                   </p>
                 </div>
               </li>
@@ -359,8 +359,8 @@ import MainLayout from "../layouts/MainLayout.astro";
                 <div class="step-body">
                   <h3>Server starts immediately</h3>
                   <p>
-                    Every endpoint is live, returning random schema-valid data
-                    by default. Swagger UI opens automatically so you can
+                    Generated handlers are live, returning schema-derived
+                    random data by default. Swagger UI is available so you can
                     explore immediately.
                   </p>
                 </div>
@@ -379,7 +379,7 @@ import MainLayout from "../layouts/MainLayout.astro";
               <li class="step">
                 <span class="step-n"></span>
                 <div class="step-body">
-                  <h3>Control everything from the REPL</h3>
+                  <h3>Control live state and routing</h3>
                   <p>
                     Inspect state, inject failures, fire requests, toggle proxy
                     routes — all from a live prompt, no file edits required.
@@ -434,6 +434,91 @@ import MainLayout from "../layouts/MainLayout.astro";
 &#125;</code></pre>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ WORKFLOW PROOF ═══ -->
+    <section class="workflow-sec" id="workflow">
+      <div class="container">
+        <div class="workflow-head">
+          <div>
+            <div class="sec-label am">A repeatable workflow</div>
+            <h2>Seed. Exercise.<br />Reproduce.</h2>
+          </div>
+          <p>
+            Here is one checkout edge case carried from a clean start through
+            a real HTTP request and into an automated test. The scenario code
+            stays with the project, so a teammate or coding agent can recreate
+            the same API world.
+          </p>
+        </div>
+        <div class="workflow-grid">
+          <article class="workflow-card">
+            <div class="workflow-card-head">
+              <span class="workflow-n">01 · deterministic start</span>
+              <h3>Seed a declined payment</h3>
+            </div>
+            <pre><code><span class="cm">// scenarios/index.ts</span>
+<span class="kw">export const</span> <span class="fn">startup</span>: <span class="ty">Scenario</span> = (<span class="nm">$</span>) =&gt; &#123;
+  <span class="nm">$</span>.context.orders.<span class="fn">reset</span>();
+  <span class="nm">$</span>.context.paymentMode =
+    <span class="st">"declined"</span>;
+&#125;;
+
+<span class="cm">// routes/orders.ts</span>
+<span class="kw">export const</span> <span class="fn">POST</span>: <span class="ty">HTTP_POST</span> = (<span class="nm">$</span>) =&gt;
+  <span class="nm">$</span>.context.paymentMode === <span class="st">"declined"</span>
+    ? <span class="nm">$</span>.response[<span class="nm">402</span>].<span class="fn">json</span>(&#123; code: <span class="st">"card_declined"</span> &#125;)
+    : <span class="nm">$</span>.response[<span class="nm">201</span>].<span class="fn">random</span>();</code></pre>
+            <p>
+              Counterfact runs <span class="pill">startup</span> for each new
+              server process. Restarting creates a fresh in-memory context and
+              applies the same seed you keep in version control.
+            </p>
+          </article>
+          <article class="workflow-card">
+            <div class="workflow-card-head">
+              <span class="workflow-n">02 · real client traffic</span>
+              <h3>Drive the browser flow</h3>
+            </div>
+            <pre><code><span class="p">$</span> curl -i -X POST \
+  localhost:3100/orders
+
+HTTP/1.1 <span class="nm">402</span>
+content-type: application/json
+
+&#123; <span class="st">"code"</span>: <span class="st">"card_declined"</span> &#125;</code></pre>
+            <p>
+              Requests to simulated routes and their preflight receive CORS
+              headers. Supported Basic/API-key values reach handlers; your
+              scenario code decides which credentials or permissions succeed.
+            </p>
+          </article>
+          <article class="workflow-card">
+            <div class="workflow-card-head">
+              <span class="workflow-n">03 · non-interactive CI</span>
+              <h3>Control it from the test</h3>
+            </div>
+            <pre><code><span class="kw">const</span> app = <span class="kw">await</span> <span class="fn">counterfact</span>(config);
+<span class="kw">const</span> &#123; stop &#125; = <span class="kw">await</span> app.<span class="fn">start</span>(config);
+
+app.contextRegistry.<span class="fn">find</span>(<span class="st">"/"</span>)
+  .paymentMode = <span class="st">"approved"</span>;
+
+<span class="kw">await</span> <span class="fn">expectCheckout</span>(<span class="nm">200</span>);
+<span class="kw">await</span> <span class="fn">stop</span>();</code></pre>
+            <p>
+              The programmatic API starts and stops with the suite—no REPL or
+              remote credentials. Give parallel workers distinct ports and
+              processes for isolated state.
+            </p>
+          </article>
+        </div>
+        <div class="workflow-note">
+          Counterfact makes this simulation repeatable; it does not prove the
+          production payment service behaves the same. Keep a targeted test
+          against the real backend before release.
         </div>
       </div>
     </section>
@@ -539,8 +624,8 @@ import MainLayout from "../layouts/MainLayout.astro";
               backend? One command.
             </p>
             <p style="font-size: 1.05rem">
-              Restart and everything returns to its initial state. Deterministic
-              when you need repeatability. Programmable when you need realism.
+              A fresh process starts with fresh in-memory context. Add a typed
+              startup scenario when the exact seed must be repeatable.
             </p>
           </div>
         </div>
@@ -559,7 +644,8 @@ import MainLayout from "../layouts/MainLayout.astro";
             <p>
               Your team has an OpenAPI spec. The backend is two sprints out. Run
               Counterfact and build against a live, typed, stateful API today.
-              No mocks to maintain. No drift.
+              The handlers and seed scenarios live in version control, and
+              regenerated types surface contract changes in your editor.
             </p>
           </div>
           <div class="aud-card">
@@ -567,8 +653,8 @@ import MainLayout from "../layouts/MainLayout.astro";
             <h3>Reproducible state, every time.</h3>
             <p>
               Set up exactly the state you need from the REPL. Run your test.
-              Restart for a clean slate. No database fixtures, no teardown
-              scripts, no flakiness.
+              Or start Counterfact from test code, set context directly, and
+              stop it with the suite—without a shared database fixture.
             </p>
           </div>
           <div class="aud-card am">
@@ -576,92 +662,50 @@ import MainLayout from "../layouts/MainLayout.astro";
             <h3>A stable API substrate.</h3>
             <p>
               Agentic workflows need deterministic, scriptable APIs. Counterfact
-              is restartable, stateless by default, and fully controllable —
-              built for automated pipelines.
+              runs locally with explicit scenario code and programmatic state
+              control, leaving a reproducible verification environment for
+              human review.
             </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ═══ COMPARE ═══ -->
-    <section class="compare-sec" id="compare">
+    <!-- ═══ CONTRACT BOUNDARIES ═══ -->
+    <section class="boundary-sec" id="contract">
       <div class="container">
-        <div class="sec-label">How it compares</div>
-        <h2 style="margin-bottom: 0.7rem">Beyond static mocks.</h2>
-        <p>
-          Most tools stop at response recording. Counterfact gives you a
-          programmable simulation.
+        <div class="sec-label">Contract credibility</div>
+        <h2>What Counterfact checks.<br />What it cannot know.</h2>
+        <p class="boundary-intro">
+          A contract-backed simulator catches structural mismatches early. You
+          still own the behavior that is not expressed in OpenAPI.
         </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Capability</th>
-              <th class="hl">Counterfact</th>
-              <th>Prism</th>
-              <th>WireMock</th>
-              <th>MSW</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="fn">OpenAPI-driven generation</td>
-              <td class="hl"><span class="chk">✓</span></td>
-              <td><span class="chk">✓</span></td>
-              <td><span class="crs">—</span></td>
-              <td><span class="crs">—</span></td>
-            </tr>
-            <tr>
-              <td class="fn">TypeScript type safety</td>
-              <td class="hl"><span class="chk">✓</span></td>
-              <td><span class="crs">—</span></td>
-              <td><span class="crs">—</span></td>
-              <td><span class="par">partial</span></td>
-            </tr>
-            <tr>
-              <td class="fn">Shared state across routes</td>
-              <td class="hl"><span class="chk">✓</span></td>
-              <td><span class="crs">—</span></td>
-              <td><span class="par">manual</span></td>
-              <td><span class="par">manual</span></td>
-            </tr>
-            <tr>
-              <td class="fn">Hot reload (no restart)</td>
-              <td class="hl"><span class="chk">✓</span></td>
-              <td><span class="crs">—</span></td>
-              <td><span class="crs">—</span></td>
-              <td><span class="chk">✓</span></td>
-            </tr>
-            <tr>
-              <td class="fn">Live REPL</td>
-              <td class="hl"><span class="chk">✓</span></td>
-              <td><span class="crs">—</span></td>
-              <td><span class="crs">—</span></td>
-              <td><span class="crs">—</span></td>
-            </tr>
-            <tr>
-              <td class="fn">Proxy to real backend</td>
-              <td class="hl"><span class="chk">✓</span></td>
-              <td><span class="chk">✓</span></td>
-              <td><span class="chk">✓</span></td>
-              <td><span class="chk">✓</span></td>
-            </tr>
-            <tr>
-              <td class="fn">Deterministic reset on restart</td>
-              <td class="hl"><span class="chk">✓</span></td>
-              <td><span class="chk">✓</span></td>
-              <td><span class="par">config</span></td>
-              <td><span class="crs">—</span></td>
-            </tr>
-            <tr>
-              <td class="fn">Programmable failure simulation</td>
-              <td class="hl"><span class="chk">✓</span></td>
-              <td><span class="crs">—</span></td>
-              <td><span class="par">config</span></td>
-              <td><span class="par">manual</span></td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="boundary-grid">
+          <div class="boundary-card checked">
+            <h3>Checked or surfaced by Counterfact</h3>
+            <ul class="boundary-list">
+              <li>Generated handler types constrain declared status codes and response shapes at TypeScript compile time.</li>
+              <li>Required query, header, and cookie parameters—and supported JSON/form request bodies—are checked by default; detected mismatches return HTTP 400.</li>
+              <li>Declared response-header mismatches are returned as advisory <span class="pill">response-type-error</span> headers.</li>
+              <li>Watching a local spec regenerates types and exposes incompatible handler code while the simulator stays local.</li>
+            </ul>
+          </div>
+          <div class="boundary-card limit">
+            <h3>Behavior your team still owns</h3>
+            <ul class="boundary-list">
+              <li>Business rules, authorization decisions, side effects, and realistic data relationships live in handler/context code.</li>
+              <li>Generated random responses are schema-shaped examples, not proof of production behavior or data quality.</li>
+              <li>Hot reload preserves live state; use a fresh process plus a startup scenario when a clean reset matters.</li>
+              <li>Keep targeted real-backend and end-to-end tests—Counterfact complements them; it does not replace them.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="trial-grid" aria-label="Trial readiness">
+          <div class="trial-item"><strong>Runtime</strong><span>Node.js 22 or newer; local npm package and CLI.</span></div>
+          <div class="trial-item"><strong>Contract</strong><span>OpenAPI 3.0–3.2 or Swagger 2.0; local file or URL.</span></div>
+          <div class="trial-item"><strong>Browser & auth</strong><span>CORS/preflight built in. Handlers implement auth outcomes.</span></div>
+          <div class="trial-item"><strong>Isolation</strong><span>In-memory state. Use one process and port per parallel worker.</span></div>
+        </div>
       </div>
     </section>
 
@@ -671,7 +715,8 @@ import MainLayout from "../layouts/MainLayout.astro";
         <div class="sec-label" style="text-align: center">Get started</div>
         <h2>Try it in one command.</h2>
         <p>
-          No install. No configuration. Point it at any OpenAPI spec and go.
+          No global install. Requires Node.js 22+ and a supported OpenAPI or
+          Swagger document.
         </p>
         <br />
         <div class="install-block">
@@ -679,7 +724,7 @@ import MainLayout from "../layouts/MainLayout.astro";
             >npx counterfact@latest
             https://petstore3.swagger.io/api/v3/openapi.json api</code
           >
-          <button class="copy-btn" id="copy-btn" onclick="copyCmd()">
+          <button class="copy-btn" id="copy-btn" type="button">
             copy
           </button>
         </div>

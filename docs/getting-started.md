@@ -22,10 +22,10 @@ Or you could run this:
 npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 ```
 
-Counterfact reads the spec, generates typed TypeScript handlers for every endpoint, and starts a live server — all in one command. Within seconds you have a working API that matches your contract exactly.
+Counterfact reads the spec, generates typed TypeScript handlers for its supported operations, and starts a live server — all in one command. Within seconds you have a contract-derived API whose behavior you can implement and verify locally.
 
 > **Requires Node ≥ 22.0.0**  
-> Supports Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2.  
+> Supports Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2.
 > Want to see a fully implemented version of the Petstore — with custom logic, state, and realistic handlers already wired in? Browse [counterfact/example-petstore](https://github.com/counterfact/example-petstore).
 
 ---
