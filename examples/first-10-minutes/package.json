@@ -1,0 +1,15 @@
+{
+  "name": "counterfact-first-10-minutes-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "counterfact openapi.yaml api --generate --no-update-check",
+    "test": "node --test test/counterfact.test.mjs",
+    "typecheck": "tsc --project tsconfig.counterfact.json",
+    "verify": "npm run generate && npm test && npm run typecheck"
+  },
+  "devDependencies": {
+    "counterfact": "2.14.0",
+    "typescript": "6.0.3"
+  }
+}

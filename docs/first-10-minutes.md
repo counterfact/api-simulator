@@ -177,15 +177,32 @@ after(async () => {
 });
 
 test("reproduces failure and successful recovery", async () => {
+  assert.equal((await fetch("http://localhost:4100/pet/1")).status, 404);
+
   await addPet();
-  assert.equal((await fetch("http://localhost:4100/pet/1")).status, 200);
+  const created = await fetch("http://localhost:4100/pet/1");
+  assert.equal(created.status, 200);
+  assert.deepEqual(await created.json(), {
+    id: 1,
+    name: "Fluffy",
+    photoUrls: [],
+    status: "available",
+  });
 
   context.simulateFailure = true;
   assert.equal((await fetch("http://localhost:4100/pet/1")).status, 400);
 
   context.reset();
+  assert.equal((await fetch("http://localhost:4100/pet/1")).status, 404);
   await addPet();
-  assert.equal((await fetch("http://localhost:4100/pet/1")).status, 200);
+  const recovered = await fetch("http://localhost:4100/pet/1");
+  assert.equal(recovered.status, 200);
+  assert.deepEqual(await recovered.json(), {
+    id: 1,
+    name: "Fluffy",
+    photoUrls: [],
+    status: "available",
+  });
 });
 ```
 
@@ -194,8 +211,8 @@ Use this minimal type-check configuration for the walkthrough, or include `api/*
 ```json
 {
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "noEmit": true,
     "skipLibCheck": true,
     "strict": true,
@@ -217,6 +234,8 @@ The test is JavaScript because Counterfact 2.14.0 does not publish a complete de
 Use a unique Counterfact instance and port per parallel test worker. There is no built-in atomic reset or automatic per-test isolation: your `reset()` method defines the baseline. A fresh process also creates fresh context, with its constructor and optional `startup` scenario establishing initial state.
 
 For larger suites, see [Automated Integration Tests](./patterns/automated-integration-tests.md) and [Scenario Scripts](./patterns/scenario-scripts.md).
+
+For a smaller, standalone `/pets` variant with every file checked in and a path-scoped GitHub Actions check, open the [verified first-10-minutes example](../examples/first-10-minutes/). It demonstrates the same state/failure/reset concepts with a minimal contract; its paths and generated types intentionally differ from this Petstore walkthrough.
 
 ## Give an agent a verifiable task
 

@@ -39,6 +39,8 @@ npx counterfact ./openapi.yaml api
 
 The [first-10-minutes guide](./docs/first-10-minutes.md) includes the shared setup, reset and isolation rules, CI lifecycle, and the boundary between contract checks and behavior realism.
 
+Prefer a complete artifact to copy? The [CI-checked first-10-minutes example](./examples/first-10-minutes/) contains a minimal OpenAPI contract, resettable context, typed handlers, real-HTTP test, lockfile, and type-check configuration.
+
 ## What Counterfact checks
 
 | Layer                                 | What it proves                                                                                                               | What it does not prove                                                        |
