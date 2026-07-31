@@ -4,6 +4,7 @@ import createDebugger from "debug";
 import fetch, { Headers } from "node-fetch";
 
 import type { ContextRegistry } from "./context-registry.js";
+import type { ChaosRegistry } from "./chaos.js";
 import type {
   HttpMethods,
   RequestMethod,
@@ -209,6 +210,12 @@ export class Dispatcher {
   >; // Add config property
 
   /**
+   * Registry of active chaos rules. When set, each response is checked
+   * against the registry and the best matching rule (if any) is applied.
+   */
+  public chaosRegistry?: ChaosRegistry;
+
+  /**
    * The version label for this dispatcher's spec (e.g. `"v1"`, `"v2"`).
    * Empty string when running without a version.
    */
@@ -232,6 +239,7 @@ export class Dispatcher {
     >,
     version = "",
     versions: readonly string[] = [],
+    chaosRegistry?: ChaosRegistry,
   ) {
     this.registry = registry;
     this.contextRegistry = contextRegistry;
@@ -240,6 +248,7 @@ export class Dispatcher {
     this.config = config;
     this.version = version;
     this.versions = versions;
+    this.chaosRegistry = chaosRegistry;
   }
 
   private parameterTypes(
@@ -693,6 +702,25 @@ export class Dispatcher {
             ]),
           ],
         };
+      }
+    }
+
+    // Apply chaos rules after normal response processing.
+    if (this.chaosRegistry !== undefined) {
+      const rule = this.chaosRegistry.findBestMatch(path);
+
+      if (rule !== undefined) {
+        const chaosResult = rule.tryApply(normalizedResponse);
+
+        if (chaosResult !== null) {
+          if (chaosResult.delayMs !== undefined && chaosResult.delayMs > 0) {
+            await new Promise<void>((resolve) => {
+              setTimeout(resolve, chaosResult.delayMs);
+            });
+          }
+
+          return chaosResult.response;
+        }
       }
     }
 
