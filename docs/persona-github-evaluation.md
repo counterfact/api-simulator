@@ -162,3 +162,38 @@ Mean dimension deltas versus the committed baseline (and versus the prior cycle,
 | Add a complete newcomer example        | Priya, Aria, Leo; also Maya | Workflow proof, determinism and automation, adoption readiness | `examples/first-10-minutes/`, linked from README and the guide | Visitors can inspect and run the exact contract, context, handlers, test, and type-check config rather than reconstruct snippets | Addresses the only repeated cross-persona evidence gap with one durable artifact |
 | Assert baseline and recovered identity | Priya, Aria                 | Workflow proof, determinism and automation                     | Example test and `docs/first-10-minutes.md`                    | The test proves empty state, record identity, controlled failure, explicit reset, reseed, and recovered body                     | Converts status-only recovery into evidence of state correctness                 |
 | Show verified command/output boundary  | Leo, Aria                   | Workflow proof, contract credibility                           | Example README                                                 | The visitor sees which command checks HTTP behavior and which separately checks generated TypeScript                             | Reinforces the contract-versus-behavior distinction without new feature claims   |
+
+## Cycle 2 result: CI-checked deterministic example
+
+- Tested URL: `https://github.com/counterfact/api-simulator`
+- Tested commit: `841c2b039fb1712e0cf998656f24bb1828d98d75`
+- Evaluation date: 2026-07-31
+- Changed landing materials: `examples/first-10-minutes/`; `.github/workflows/first-10-minutes.yml`; README and first-10-minutes guide links/assertions
+
+All evaluators scored before narrative and inspected only README-reachable material at the tested commit.
+
+| Persona                  | Value clarity | Role fit | Workflow proof | Determinism & automation | Contract credibility | Adoption readiness | Weighted total | Delta vs baseline | Delta vs cycle 1 |
+| ------------------------ | ------------: | -------: | -------------: | -----------------------: | -------------------: | -----------------: | -------------: | ----------------: | ---------------: |
+| Maya — frontend engineer |             5 |        5 |              5 |                        5 |                    4 |                  4 |             95 |                +8 |                0 |
+| Devon — backend engineer |             5 |        4 |              4 |                        5 |                    4 |                  4 |             87 |               +12 |               -2 |
+| Priya — QA/SDET          |             5 |        5 |              5 |                        5 |                    4 |                  4 |             95 |               +13 |               +4 |
+| Leo — staff engineer     |             5 |        4 |              4 |                        4 |                    3 |                  3 |             78 |                +4 |               -9 |
+| Aria — AI workflow owner |             5 |        5 |              5 |                        4 |                    4 |                  4 |             91 |                +4 |               +4 |
+| **Mean**                 |       **5.0** |  **4.6** |        **4.6** |                  **4.6** |              **3.8** |            **3.8** |       **89.2** |          **+8.2** |         **-0.6** |
+
+Mean dimension deltas versus baseline: value clarity +0.4, role fit 0.0, workflow proof +0.8, determinism and automation +0.6, contract credibility +0.2, and adoption readiness +0.4. Versus cycle 1: value clarity 0.0, role fit -0.4, workflow proof +0.2, determinism and automation +0.2, contract credibility -0.2, and adoption readiness 0.0.
+
+**Supported:** A checked-in exact-body test plus lockfile and CI check raised Priya and Aria's workflow proof from 4 to 5. Maya held at 95. Every protected workflow, determinism, and adoption score remained at least 4.
+
+**Apparent regression:** Devon dropped 2 weighted points and Leo dropped 9, lowering the mean by 0.6. Their narratives did not identify harm from the new example; they applied stricter scores to two unchanged gaps: no automated mixed local/upstream proof and no representative consumer compiling alongside generated simulator types. The regression is flagged rather than hidden.
+
+**Decision:** Continue once with a tightly bounded hypothesis because the protected guardrails held and both secondary-persona reviews independently requested the same concrete evidence. Stop after that cycle whether or not the numeric target moves; broader platform changes such as built-in reset or complete library declarations are outside this landing experiment.
+
+## Cycle 3 hypothesis
+
+**Hypothesis:** Extend the existing checked example—not the general feature inventory—to prove a representative client compiles against the generated contract and one Counterfact base URL serves both a local simulated path and a disposable upstream path.
+
+| Proposed change                   | Target personas | Expected dimensions                            | Material                                                | Expected observable result                                                                                                                 | Why this is higher leverage                                                        |
+| --------------------------------- | --------------- | ---------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| Add a representative typed client | Leo, Devon      | Role fit, workflow proof, contract credibility | `examples/first-10-minutes/client/`; example type-check | CI compiles a consumer and simulator handlers from the same generated contract; a documented enum edit creates a named client type failure | Directly proves the cross-team contract moment without changing runtime guarantees |
+| Add an automated hybrid route     | Devon, Leo      | Workflow proof, adoption readiness             | Example OpenAPI and HTTP test                           | One Counterfact base URL returns local `/pets` behavior and forwards `/health` to a disposable upstream without REPL-only state            | Turns the central staged-delivery claim into team-reproducible CI evidence         |
