@@ -1,12 +1,12 @@
 # Executable Spec
 
-You are designing an API and want immediate feedback on how each change to the spec affects the behavior of the running server and the clients that depend on it.
+Make an OpenAPI document something you can run. See the effect of each spec change in a live server before clients and backend code are committed to it.
 
-## Problem
+## Why teams use this
 
 API design happens in a document — the OpenAPI spec — while the feedback comes much later, when clients are built and integrated. By then, mistakes in the spec are expensive to fix.
 
-## Solution
+## How it works
 
 Run Counterfact with `--watch` while authoring the spec. Every time you save the spec, types regenerate and the server reflects the updated contract instantly. You can send real requests to observe how a spec change would behave, and TypeScript surfaces any handler that no longer matches the updated contract — while the server is still running.
 
@@ -53,14 +53,14 @@ Save the file. Counterfact regenerates the types immediately. The GET `/pet/{pet
 
 If the handler returns a fixed value, you will need to update it — but TypeScript guides you: the IDE highlights the mismatch and describes exactly what is missing or incorrect. You can iterate on the spec — adding fields, changing types, restructuring schemas — and see the downstream effects on handlers and responses before any client code is written.
 
-## Consequences
+## What you get
 
 - Feedback on spec changes is instantaneous: save the spec, observe the effect on the running server.
 - Type warnings appear in the IDE when handlers no longer match the updated contract; the server keeps running during the transition.
 - The pattern works best during early API design, when the spec is still fluid and the cost of mistakes is low.
 - Handlers must be updated manually to produce semantically correct responses after spec changes; type checking only catches structural mismatches.
 
-## Related Patterns
+## Keep exploring
 
 - [Reference Implementation](./reference-implementation.md) — once the design is stable, implement handlers to reflect intended behavior
 - [Explore a New API](./explore-new-api.md) — use a spec you didn't write to explore an existing API the same way

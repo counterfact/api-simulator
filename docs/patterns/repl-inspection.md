@@ -1,12 +1,12 @@
 # Live Server Inspection with the REPL
 
-You have a Counterfact mock running and you want to explore its state, seed test data, send real HTTP requests, or toggle behavior — all without editing files or restarting the server.
+Explore a running mock from the REPL: seed data, send real HTTP requests, inspect state, and toggle behavior without editing files or restarting.
 
-## Problem
+## Why teams use this
 
 Development workflows that require a restart to change behavior — seeding a database, flipping a feature flag, or exercising an edge case — break the feedback loop. Writing a dedicated script just to set up a specific scenario adds friction. Logging and printf-debugging only gives you output, not interactive control.
 
-## Solution
+## How it works
 
 Use Counterfact's built-in REPL. The REPL runs alongside the server in the same terminal, connected directly to the live `context` and a built-in `client`. You can call context methods to inspect or mutate state, send HTTP requests, read the responses, and toggle behavior flags — all without touching a file or restarting anything.
 
@@ -72,14 +72,14 @@ If the context exposes a failure flag (see [Simulate Failures and Edge Cases](./
 ⬣> .proxy off             # back to mock for everything
 ```
 
-## Consequences
+## What you get
 
 - Changes made through the REPL take effect on the next request with no restart; the server is never interrupted.
 - REPL state changes persist for the lifetime of the server process; restarting the server resets the context to its initial values.
 - The `context` variable in the REPL is the same instance the route handlers use — there is no synchronization lag.
 - The REPL is a JavaScript environment; any expression that is valid in a Node.js module is valid at the prompt, including `await`.
 
-## Related Patterns
+## Keep exploring
 
 - [Simulate Failures and Edge Cases](./simulate-failures.md) — expose context flags that the REPL can toggle
 - [Federated Context Files](./federated-context.md) — use `$.loadContext()` in the REPL to inspect a specific domain's context

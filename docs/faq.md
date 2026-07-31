@@ -1,6 +1,6 @@
 # FAQ
 
-Everything you want to know before you commit to using Counterfact.
+Answers to the questions that come up when you take Counterfact from a quick try to a team workflow.
 
 ---
 

@@ -1,12 +1,12 @@
 # Scenario Scripts
 
-You want to automate repetitive REPL interactions — seeding data, configuring state, building reusable request sequences — so you don't have to type the same commands every session.
+Save the REPL setups you use more than once: seed data, configure state, and build reusable request sequences that run on demand or at startup.
 
-## Problem
+## Why teams use this
 
 The REPL is powerful for ad-hoc exploration, but many setup tasks are predictable: seed a set of pets before a demo, reset state to a known baseline for a test, or configure a reusable route builder for a common request. Retyping these commands every time the server restarts is tedious and error-prone.
 
-## Solution
+## How it works
 
 Write _scenario scripts_ — TypeScript files in the `scenarios/` directory that export named functions. Each function receives a single `$` argument that exposes the full live context and route builder. Run any export on demand from the REPL with `.scenario`, or have one run automatically at startup.
 
@@ -121,7 +121,7 @@ export const addThreeDogs: Scenario = ($) => addPets($, 3, "dog");
 ⬣> .scenario pets/addThreeDogs
 ```
 
-## Consequences
+## What you get
 
 - Scenario functions are plain TypeScript — no special framework, fully type-checked, easy to test in isolation.
 - `.scenario` provides on-demand state changes without editing handler files or restarting the server.
@@ -129,7 +129,7 @@ export const addThreeDogs: Scenario = ($) => addPets($, 3, "dog");
 - Helper functions accepting extra arguments let the same logic be used for both realistic production volumes (at startup) and minimal data (in the REPL during debugging).
 - Scenarios live alongside your handler code, making them easy to discover and keep in sync with the API.
 
-## Related Patterns
+## Keep exploring
 
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — the full range of approaches for populating server responses
 - [Live Server Inspection with the REPL](./repl-inspection.md) — interactive exploration and state manipulation at runtime

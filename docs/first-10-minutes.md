@@ -1,6 +1,6 @@
 # Your first 10 minutes with Counterfact
 
-This guide turns the README promise into an observable workflow. By the end, you will know how to create shared state, reset it for a test, run the server without the REPL, and leave repeatable evidence for a teammate or coding agent.
+In ten minutes, you’ll have a live API you can shape, a stateful flow you can reset, and a repeatable test you can hand to a teammate or coding agent.
 
 ## Set up once
 
@@ -237,7 +237,7 @@ For larger suites, see [Automated Integration Tests](./patterns/automated-integr
 
 For a smaller, standalone `/pets` variant with every file checked in and a path-scoped GitHub Actions check, open the [verified first-10-minutes example](../examples/first-10-minutes/). It demonstrates the same state/failure/reset concepts with a minimal contract; its paths and generated types intentionally differ from this Petstore walkthrough.
 
-## Give an agent a verifiable task
+## Hand an agent a bounded implementation task
 
 **Prerequisite:** give the agent the pinned setup, resettable context, and exact verification commands from the two sections above.
 
@@ -258,20 +258,20 @@ simulator proves production business behavior. Leave the context, handlers, and 
 the change so a human reviewer can reproduce the same API world.
 ```
 
-The reviewable output is code plus a deterministic test, not a successful interactive session. Keep at least one targeted test against the real backend or an end-to-end environment so an agent cannot optimize only for simulated behavior.
+The useful handoff is code plus a deterministic test, not just a successful interactive session. Keep at least one targeted test against the real backend or an end-to-end environment so the agent’s work stays grounded in real behavior.
 
 See [AI-Assisted Implementation](./patterns/ai-assisted-implementation.md) for handler-generation guidance and [Hybrid Proxy](./patterns/hybrid-proxy.md) for gradually introducing real endpoints.
 
 ## Make it yours with confidence
 
-| Mechanism                    | Reliable claim                                                                                   | Boundary you still own                                                                           |
-| ---------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| Generated handlers and types | Request/response shapes come from supported OpenAPI operations                                   | Run a TypeScript check; a running server alone does not prove the handlers compile               |
-| `.random()`                  | Produces schema-derived sample data and prefers examples when present                            | It is not seeded, deterministic, or guaranteed to model business behavior                        |
-| Request validation           | Detects missing required query/header/cookie parameters and validates supported JSON/form bodies | It does not enforce authentication, authorization, path schemas, or business rules               |
-| Response checking            | Checks required response headers and their schema types at runtime                               | It does not validate response bodies; errors are advisory headers and the response still returns |
-| Context and scenarios        | Make your authored state and startup baseline reproducible                                       | Hot reload preserves current state; reset/isolation must be explicit                             |
-| Proxying                     | Lets one base URL forward selected paths upstream                                                | Forwarded behavior belongs to the upstream and bypasses local handlers and local contract checks |
+| Mechanism                    | What you can count on                                                                            | Where your code still matters                                                                      |
+| ---------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| Generated handlers and types | Request/response shapes come from supported OpenAPI operations                                   | Run a TypeScript check to catch handlers that no longer compile                                    |
+| `.random()`                  | Produces schema-derived sample data and prefers examples when present                            | Choose explicit fixtures when a test needs stable data or business behavior                        |
+| Request validation           | Detects missing required query/header/cookie parameters and validates supported JSON/form bodies | Add authentication, authorization, path rules, and business rules in your handlers                 |
+| Response checking            | Checks required response headers and their schema types at runtime                               | Shape business responses in your handlers; body errors are advisory and the response still returns |
+| Context and scenarios        | Make your authored state and startup baseline reproducible                                       | Hot reload preserves current state, so define reset/isolation where your tests need it             |
+| Proxying                     | Lets one base URL forward selected paths upstream                                                | Forwarded behavior belongs to the upstream and bypasses local handlers and checks                  |
 
 ## Adopt, isolate, and retire
 
