@@ -48,6 +48,7 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 
 - [Getting started](./docs/getting-started.md) – Detailed walkthrough with state, REPL, and proxy  
 - [Patterns](./docs/patterns/index.md) – How Counterfact transforms your workflow  
+- [User personas](./docs/personas.md) – Who Counterfact is built for and the problems it solves
 - [Example repo](https://github.com/counterfact/example-petstore) – Using Counterfact to implement the Swagger Petstore  
 - [How it compares](./docs/comparison.md) – json-server, WireMock, Prism, Microcks, MSW  
 - [Usage](./docs/usage.md) – Explore features and how to use them  
