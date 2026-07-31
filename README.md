@@ -20,7 +20,7 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 
 This generates editable files in `api/`, starts the server at `http://localhost:3100`, serves Swagger UI at `http://localhost:3100/counterfact/swagger/`, and opens the live REPL. Exit with `.exit`, <kbd>Ctrl</kbd>+<kbd>D</kbd>, or <kbd>Ctrl</kbd>+<kbd>C</kbd> twice.
 
-Requires Node.js 22 or newer. The remote Petstore example also requires network access. For a repeatable project or CI workflow, install Counterfact as a dev dependency and commit the lockfile:
+Requires Node.js 22 or newer. For a repeatable project or CI workflow, install Counterfact as a dev dependency and commit the lockfile:
 
 ```sh
 npm install --save-dev counterfact

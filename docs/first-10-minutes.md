@@ -22,7 +22,7 @@ For a disposable exploratory run, you can skip the installation and local spec:
 npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 ```
 
-Both paths need network access. `@latest` can change, so use the pinned local-install form for this walkthrough, committed projects, and automation.
+`@latest` can change, so use the pinned local-install form for this walkthrough, committed projects, and automation.
 
 ## Build a stateful flow
 
