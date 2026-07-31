@@ -29,13 +29,13 @@ npx counterfact ./openapi.yaml api
 
 ## Choose your first 10 minutes
 
-| Your goal                                  | First proof to build                                                       | Start here                                                                                    |
-| ------------------------------------------ | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Build a frontend before the backend exists | Create a record, read it on a later request, then force a failure          | [Build a stateful flow](./docs/first-10-minutes.md#build-a-stateful-flow)                     |
-| Reproduce a QA failure reliably            | Reset state, force a failure, retry successfully, and tear the server down | [Automate a deterministic test](./docs/first-10-minutes.md#automate-a-deterministic-test)     |
-| Give a coding agent a bounded API world    | Leave a resettable context and an HTTP test for a human reviewer           | [Give an agent a verifiable task](./docs/first-10-minutes.md#give-an-agent-a-verifiable-task) |
-| Replace simulated endpoints gradually      | Keep one client base URL while choosing which paths are local or upstream  | [Mix simulated and real paths](./docs/patterns/hybrid-proxy.md)                               |
-| Catch contract drift before integration    | Regenerate types and make handler mismatches fail your normal type check   | [Make the spec executable](./docs/patterns/executable-spec.md)                                |
+| Your goal                                  | First proof to build                                                       | Start here                                                                                                  |
+| ------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Build a frontend before the backend exists | Create a record, read it on a later request, then force a failure          | [Build a stateful flow](./docs/first-10-minutes.md#build-a-stateful-flow)                                   |
+| Reproduce a QA failure reliably            | Reset state, force a failure, retry successfully, and tear the server down | [Automate a deterministic test](./docs/first-10-minutes.md#automate-a-deterministic-test)                   |
+| Give a coding agent a bounded API world    | Leave a resettable context and an HTTP test for a human reviewer           | [Give an agent a verifiable task](./docs/first-10-minutes.md#give-an-agent-a-verifiable-task)               |
+| Replace simulated endpoints gradually      | Keep one client base URL while choosing which paths are local or upstream  | [Run the checked hybrid path](./examples/first-10-minutes/#hybrid-path-ownership)                           |
+| Catch contract drift before integration    | Regenerate types and make handler mismatches fail your normal type check   | [See a contract change reach a client](./examples/first-10-minutes/#see-a-contract-change-reach-the-client) |
 
 The [first-10-minutes guide](./docs/first-10-minutes.md) includes the shared setup, reset and isolation rules, CI lifecycle, and the boundary between contract checks and behavior realism.
 

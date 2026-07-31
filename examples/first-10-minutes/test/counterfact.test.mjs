@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
+import { createServer } from "node:http";
 import path from "node:path";
 import { after, before, beforeEach, test } from "node:test";
 import { counterfact } from "counterfact";
 
 const port = 4100;
 const baseUrl = `http://localhost:${port}`;
+const upstreamPort = 4101;
+const upstreamUrl = `http://127.0.0.1:${upstreamPort}`;
 const config = {
   alwaysFakeOptionals: false,
   basePath: path.resolve("api"),
@@ -13,8 +16,11 @@ const config = {
   openApiPath: path.resolve("openapi.yaml"),
   port,
   prefix: "",
-  proxyPaths: new Map(),
-  proxyUrl: "",
+  proxyPaths: new Map([
+    ["", true],
+    ["/pets", false],
+  ]),
+  proxyUrl: upstreamUrl,
   startRepl: false,
   startServer: true,
   validateRequests: true,
@@ -24,6 +30,7 @@ const config = {
 
 let context;
 let stop;
+let upstream;
 
 async function waitUntilReady() {
   for (let attempt = 0; attempt < 40; attempt += 1) {
@@ -52,6 +59,19 @@ async function readPet(id) {
 }
 
 before(async () => {
+  upstream = createServer((request, response) => {
+    if (request.url === "/health") {
+      response.writeHead(200, {
+        "content-type": "application/json",
+        "x-example-upstream": "true",
+      });
+      response.end(JSON.stringify({ source: "upstream" }));
+      return;
+    }
+    response.writeHead(404).end();
+  });
+  await new Promise((resolve) => upstream.listen(upstreamPort, resolve));
+
   const app = await counterfact(config);
   ({ stop } = await app.start(config));
   context = app.contextRegistry.find("/");
@@ -61,6 +81,16 @@ before(async () => {
 beforeEach(() => context.reset());
 after(async () => {
   if (stop) await stop();
+  if (upstream) await new Promise((resolve) => upstream.close(resolve));
+});
+
+test("serves local and upstream paths through one base URL", async () => {
+  assert.equal((await readPet(1)).status, 404, "/pets stays local");
+
+  const health = await fetch(`${baseUrl}/health`);
+  assert.equal(health.status, 200);
+  assert.equal(health.headers.get("x-example-upstream"), "true");
+  assert.deepEqual(await health.json(), { source: "upstream" });
 });
 
 test("proves empty, create/read, failure, reset, and recovery", async () => {

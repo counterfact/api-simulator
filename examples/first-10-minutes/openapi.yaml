@@ -3,6 +3,21 @@ info:
   title: Counterfact first ten minutes
   version: 1.0.0
 paths:
+  /health:
+    get:
+      operationId: getHealth
+      responses:
+        "200":
+          description: Upstream health response
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [source]
+                properties:
+                  source:
+                    type: string
+                    enum: [upstream]
   /pets:
     post:
       operationId: createPet
