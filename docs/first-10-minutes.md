@@ -262,7 +262,7 @@ The reviewable output is code plus a deterministic test, not a successful intera
 
 See [AI-Assisted Implementation](./patterns/ai-assisted-implementation.md) for handler-generation guidance and [Hybrid Proxy](./patterns/hybrid-proxy.md) for gradually introducing real endpoints.
 
-## Know what is guaranteed
+## Make it yours with confidence
 
 | Mechanism                    | Reliable claim                                                                                   | Boundary you still own                                                                           |
 | ---------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |

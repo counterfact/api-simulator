@@ -27,30 +27,30 @@ npm install --save-dev counterfact
 npx counterfact ./openapi.yaml api
 ```
 
-## Choose your first 10 minutes
+## Start with the workflow you need
 
-| Your goal                                  | First proof to build                                                       | Start here                                                                                                  |
-| ------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Build a frontend before the backend exists | Create a record, read it on a later request, then force a failure          | [Build a stateful flow](./docs/first-10-minutes.md#build-a-stateful-flow)                                   |
-| Reproduce a QA failure reliably            | Reset state, force a failure, retry successfully, and tear the server down | [Automate a deterministic test](./docs/first-10-minutes.md#automate-a-deterministic-test)                   |
-| Give a coding agent a bounded API world    | Leave a resettable context and an HTTP test for a human reviewer           | [Give an agent a verifiable task](./docs/first-10-minutes.md#give-an-agent-a-verifiable-task)               |
-| Replace simulated endpoints gradually      | Keep one client base URL while choosing which paths are local or upstream  | [Run the checked hybrid path](./examples/first-10-minutes/#hybrid-path-ownership)                           |
-| Catch contract drift before integration    | Regenerate types and make handler mismatches fail your normal type check   | [See a contract change reach a client](./examples/first-10-minutes/#see-a-contract-change-reach-the-client) |
+| When you need to…                      | You can…                                                         | Start here                                                                                                  |
+| -------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Build ahead of your backend            | Create a record, read it later, and shape the failure paths      | [Build a stateful flow](./docs/first-10-minutes.md#build-a-stateful-flow)                                   |
+| Make failures repeatable               | Reset, fail, recover, and tear down the same way every run       | [Automate a deterministic test](./docs/first-10-minutes.md#automate-a-deterministic-test)                   |
+| Give a coding agent a reliable sandbox | Leave a resettable context and an HTTP test for review           | [Give an agent a verifiable task](./docs/first-10-minutes.md#give-an-agent-a-verifiable-task)               |
+| Bring endpoints online gradually       | Keep one client base URL while paths move from local to upstream | [Run the checked hybrid path](./examples/first-10-minutes/#hybrid-path-ownership)                           |
+| Keep the contract in the loop          | Regenerate types and catch drift in your normal type check       | [See a contract change reach a client](./examples/first-10-minutes/#see-a-contract-change-reach-the-client) |
 
 The [first-10-minutes guide](./docs/first-10-minutes.md) includes the shared setup, reset and isolation rules, CI lifecycle, and the boundary between contract checks and behavior realism.
 
 Prefer a complete artifact to copy? The [CI-checked first-10-minutes example](./examples/first-10-minutes/) contains a minimal OpenAPI contract, resettable context, typed handlers, real-HTTP test, lockfile, and type-check configuration.
 
-## What Counterfact checks
+## Confidence you can build on
 
-| Layer                                 | What it proves                                                                                                               | What it does not prove                                                        |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Generated TypeScript types            | Supported status codes, media types, declared headers, and request/response shapes when your project runs a TypeScript check | That handler business rules match the real service                            |
-| Runtime request validation            | Required query, header, and cookie parameters plus supported JSON/form bodies; detected mismatches return `400`              | Authentication, authorization, path-parameter schemas, or business rules      |
-| Runtime response checks               | Required response headers and their schema types; problems appear as advisory `response-type-error` headers                  | Response-body validity or enforcement—the original response is still returned |
-| Your handlers, context, and scenarios | The state, rules, failures, reset behavior, and deterministic fixtures you implement                                         | Production correctness without targeted real-backend and end-to-end checks    |
+| Where Counterfact helps               | What you get                                                                                                           | What remains yours                                                        |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Generated TypeScript types            | Supported status codes, media types, declared headers, and request/response shapes when your project runs a type check | The business rules that make the API truly yours                          |
+| Request validation                    | Required query, header, and cookie parameters plus supported JSON/form bodies; detected mismatches return `400`        | Authentication, authorization, path-parameter schemas, and business rules |
+| Response checks                       | Required response headers and their schema types, with advisory `response-type-error` details when something is off    | Response-body enforcement and production correctness                      |
+| Your handlers, context, and scenarios | The state, rules, failures, reset behavior, and deterministic fixtures your workflow needs                             | Targeted real-backend and end-to-end coverage for the real service        |
 
-Counterfact complements real-backend testing; it does not replace it. See [contract checks and behavior boundaries](./docs/first-10-minutes.md#know-what-is-guaranteed) for the adoption checklist.
+Counterfact gives you a fast, contract-shaped world to build against. Keep targeted real-backend and end-to-end coverage for the parts only the real service can prove. See [how to make the workflow yours](./docs/first-10-minutes.md#make-it-yours-with-confidence) for the practical checklist.
 
 ## Project lifecycle
 
