@@ -6,7 +6,7 @@ The GitHub baseline stands on its own. Do not compare these scores numerically w
 
 ## Method
 
-For each persona, give an independent evaluator only that persona's context from `docs/personas.md` and the public repository landing URL. Evaluators must not visit counterfact.dev, inspect local repository files outside the README-discoverable visitor path, read prior feedback or scorecards, or coordinate with one another. Ask each evaluator to assign all six scores **before** writing narrative feedback, then capture the date, tested commit, and exact files/pages visited.
+For each persona, use the exact independent-evaluator prompt in [`docs/persona-github-evaluator-prompt.md`](./persona-github-evaluator-prompt.md), giving the evaluator only that persona's context from `docs/personas.md`, the public repository landing URL, and the tested commit. Evaluators must not visit counterfact.dev, inspect local repository files outside the README-discoverable visitor path, read prior feedback or scorecards, or coordinate with one another. Ask each evaluator to assign all six scores **before** writing narrative feedback, then capture the date, tested commit, and exact files/pages visited.
 
 Score every dimension from 1 to 5:
 

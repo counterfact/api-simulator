@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Landing Experiment"
+  short_description: "Run isolated, repeatable Counterfact GitHub landing evaluations"
+  default_prompt: "Run the Counterfact GitHub landing experiment with independent persona evaluators using the committed prompt template and scorecard."
