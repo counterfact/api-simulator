@@ -2,6 +2,9 @@
   "name": "counterfact-first-10-minutes-example",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "generate": "counterfact openapi.yaml api --generate --no-update-check",
     "test": "node --test test/counterfact.test.mjs",
