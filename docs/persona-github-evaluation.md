@@ -10,24 +10,24 @@ For each persona, give an independent evaluator only that persona's context from
 
 Score every dimension from 1 to 5:
 
-| Score | Meaning |
-| --- | --- |
-| 1 | Missing, misleading, or a clear adoption blocker. |
-| 2 | Mentioned, but the evaluator cannot confidently act on it. |
-| 3 | Adequate; they understand the claim but need documentation before adopting. |
-| 4 | Clear and credible; they would try it in a suitable project. |
-| 5 | Concrete, compelling, and sufficient to champion the next step. |
+| Score | Meaning                                                                     |
+| ----- | --------------------------------------------------------------------------- |
+| 1     | Missing, misleading, or a clear adoption blocker.                           |
+| 2     | Mentioned, but the evaluator cannot confidently act on it.                  |
+| 3     | Adequate; they understand the claim but need documentation before adopting. |
+| 4     | Clear and credible; they would try it in a suitable project.                |
+| 5     | Concrete, compelling, and sufficient to champion the next step.             |
 
 ## Dimensions and weights
 
-| Dimension | Weight | What the evaluator is judging |
-| --- | ---: | --- |
-| Value clarity | 15% | Can I explain what Counterfact does and why it differs from a static mock? |
-| Role fit | 20% | Does it directly solve my role's job to be done? |
-| Workflow proof | 20% | Does the GitHub landing path show a realistic end-to-end workflow I could follow? |
-| Determinism and automation | 20% | Are seeding, reset, reproducibility, CI, and non-interactive control clear enough for my workflow? |
-| Contract credibility | 15% | Are the contract guarantees, coverage, limitations, and realism boundaries credible and precise? |
-| Adoption readiness | 10% | Are integration/operational basics and alternatives clear enough to start a trial? |
+| Dimension                  | Weight | What the evaluator is judging                                                                      |
+| -------------------------- | -----: | -------------------------------------------------------------------------------------------------- |
+| Value clarity              |    15% | Can I explain what Counterfact does and why it differs from a static mock?                         |
+| Role fit                   |    20% | Does it directly solve my role's job to be done?                                                   |
+| Workflow proof             |    20% | Does the GitHub landing path show a realistic end-to-end workflow I could follow?                  |
+| Determinism and automation |    20% | Are seeding, reset, reproducibility, CI, and non-interactive control clear enough for my workflow? |
+| Contract credibility       |    15% | Are the contract guarantees, coverage, limitations, and realism boundaries credible and precise?   |
+| Adoption readiness         |    10% | Are integration/operational basics and alternatives clear enough to start a trial?                 |
 
 Calculate a persona's total as `SUM(score / 5 x weight)`, for a 0–100 result. Keep individual dimensions visible: a higher average must not hide a critical score of 1 or 2.
 
@@ -40,14 +40,14 @@ Calculate a persona's total as `SUM(score / 5 x weight)`, for a 0–100 result. 
 
 All five evaluators reported assigning the six numeric scores before writing qualitative feedback.
 
-| Persona | Value clarity | Role fit | Workflow proof | Determinism & automation | Contract credibility | Adoption readiness | Weighted total |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Maya — frontend engineer | 5 | 5 | 4 | 4 | 4 | 4 | 87 |
-| Devon — backend engineer | 4 | 4 | 4 | 4 | 3 | 3 | 75 |
-| Priya — QA/SDET | 5 | 5 | 4 | 4 | 3 | 3 | 82 |
-| Leo — staff engineer | 4 | 4 | 3 | 4 | 4 | 3 | 74 |
-| Aria — AI workflow owner | 5 | 5 | 4 | 4 | 4 | 4 | 87 |
-| **Mean** | **4.6** | **4.6** | **3.8** | **4.0** | **3.6** | **3.4** | **81** |
+| Persona                  | Value clarity | Role fit | Workflow proof | Determinism & automation | Contract credibility | Adoption readiness | Weighted total |
+| ------------------------ | ------------: | -------: | -------------: | -----------------------: | -------------------: | -----------------: | -------------: |
+| Maya — frontend engineer |             5 |        5 |              4 |                        4 |                    4 |                  4 |             87 |
+| Devon — backend engineer |             4 |        4 |              4 |                        4 |                    3 |                  3 |             75 |
+| Priya — QA/SDET          |             5 |        5 |              4 |                        4 |                    3 |                  3 |             82 |
+| Leo — staff engineer     |             4 |        4 |              3 |                        4 |                    4 |                  3 |             74 |
+| Aria — AI workflow owner |             5 |        5 |              4 |                        4 |                    4 |                  4 |             87 |
+| **Mean**                 |       **4.6** |  **4.6** |        **3.8** |                  **4.0** |              **3.6** |            **3.4** |         **81** |
 
 The strongest dimensions are value clarity and role fit (both 4.6). The lowest dimensions are adoption readiness (3.4), contract credibility (3.6), and workflow proof (3.8). Determinism and automation reaches 4.0 on average, but Priya still scores adoption readiness at 3, below the primary-persona success threshold.
 
@@ -115,3 +115,14 @@ Target:
 - Determinism and automation: **4 or higher** mean (baseline: 4.0)
 - Adoption readiness: **3.5 or higher** mean (baseline: 3.4)
 - No score below **3.5** in those three dimensions for Maya, Priya, or Aria
+
+## Cycle 1 hypothesis
+
+**Hypothesis:** Route visitors from the README into one role-specific first-10-minute guide, make deterministic reset and non-interactive lifecycle copyable, and state contract-versus-behavior boundaries before the feature catalog.
+
+| Proposed change                                 | Target personas                       | Expected dimensions                                            | Material                                                                    | Expected observable result                                                                                                      | Why this is higher leverage                                                     |
+| ----------------------------------------------- | ------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Add a role-to-proof decision table              | All; especially Maya, Priya, and Aria | Role fit, workflow proof, adoption readiness                   | `README.md`                                                                 | Each evaluator selects one path and names the artifact they will produce                                                        | Fixes the shared navigation bottleneck instead of adding more feature inventory |
+| Add a state/failure/reset/test/agent guide      | Maya, Priya, Aria                     | Workflow proof, determinism and automation, adoption readiness | `docs/first-10-minutes.md`                                                  | Primary personas can describe a scriptable create/read or failure/reset workflow with teardown                                  | Turns scattered capabilities into one reproducible proof loop                   |
+| Put contract boundaries near the first workflow | Devon, Priya, Leo, Aria               | Contract credibility, adoption readiness                       | `README.md`; `docs/first-10-minutes.md`                                     | Evaluators distinguish generated types, runtime request checks, advisory response-header checks, and authored business behavior | Resolves a recurring credibility objection across four personas                 |
+| Repair trust and lifecycle details              | All                                   | Contract credibility, adoption readiness                       | README header, quickstart, project lifecycle, directly linked workflow docs | Visitors can identify prerequisites, pinning, state lifetime, CI type checking, and retirement without guessing                 | Removes concrete adoption blockers with a small visible change                  |

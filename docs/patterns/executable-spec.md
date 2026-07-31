@@ -15,7 +15,7 @@ Run Counterfact with `--watch` while authoring the spec. Every time you save the
 Start with a spec for a pet clinic API and run Counterfact in watch mode:
 
 ```sh
-npx counterfact@latest openapi.yaml api --watch
+npx counterfact@latest openapi.yaml api --watch --serve
 ```
 
 Now add a new `Vaccination` component to the spec and attach vaccination records to the `Pet` schema:

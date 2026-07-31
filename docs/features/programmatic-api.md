@@ -3,11 +3,13 @@
 Counterfact can be used as a library — for example, from [Playwright](https://playwright.dev/) or [Cypress](https://www.cypress.io/) tests. This lets you manipulate context state directly in test code without relying on special magic values in mock logic.
 
 ```ts
+import path from "node:path";
 import { counterfact } from "counterfact";
 
 const config = {
-  basePath: "./api", // directory containing your routes/
-  openApiPath: "./api.yaml", // optional; pass "_" to run without a spec
+  basePath: path.resolve("api"), // directory containing your routes/
+  buildCache: false,
+  openApiPath: path.resolve("api.yaml"), // pass "_" to run without a spec
   port: 8100,
   alwaysFakeOptionals: false,
   generate: { routes: false, types: false },
@@ -16,6 +18,8 @@ const config = {
   prefix: "",
   startRepl: false, // do not auto-start the REPL
   startServer: true,
+  validateRequests: true,
+  validateResponses: true,
   watch: { routes: false, types: false },
 };
 
@@ -90,12 +94,12 @@ it("prompts for a password change when the password has expired", async () => {
 
 Pass a `specs` array as the second argument to `counterfact()` to host several API specs on the same server. Each entry is a `SpecConfig` object:
 
-| Field     | Type              | Description                                                                    |
-| --------- | ----------------- | ------------------------------------------------------------------------------ |
-| `source`  | `string`          | Path or URL to the OpenAPI document (`"_"` to run without a spec).             |
-| `group`   | `string`          | Subdirectory under `config.basePath` for this spec's generated route files.    |
-| `version` | `string` (opt.)   | Version label (e.g. `"v1"`). Combined with `group` to derive the URL prefix.   |
-| `prefix`  | `string` (opt.)   | Explicit URL prefix. Overrides the derived prefix when provided.               |
+| Field     | Type            | Description                                                                  |
+| --------- | --------------- | ---------------------------------------------------------------------------- |
+| `source`  | `string`        | Path or URL to the OpenAPI document (`"_"` to run without a spec).           |
+| `group`   | `string`        | Subdirectory under `config.basePath` for this spec's generated route files.  |
+| `version` | `string` (opt.) | Version label (e.g. `"v1"`). Combined with `group` to derive the URL prefix. |
+| `prefix`  | `string` (opt.) | Explicit URL prefix. Overrides the derived prefix when provided.             |
 
 ### Automatic prefix derivation
 
@@ -131,7 +135,6 @@ const { start } = await counterfact(config, [
 ]);
 // Routes are served at /legacy/... regardless of group/version.
 ```
-
 
 ## Return value of `counterfact()`
 

@@ -22,16 +22,25 @@ npx counterfact openapi.yaml api --generate
 Start and stop the server around your test suite:
 
 ```ts
+import path from "node:path";
 import { counterfact } from "counterfact";
 
 const port = 4001;
 let stop: () => Promise<void>;
 
 const config = {
-  openApiPath: "./openapi.yaml",
-  basePath: "./api",
+  alwaysFakeOptionals: false,
+  openApiPath: path.resolve("openapi.yaml"),
+  basePath: path.resolve("api"),
+  buildCache: false,
   port,
+  prefix: "",
+  proxyPaths: new Map(),
+  proxyUrl: "",
+  startRepl: false,
   startServer: true,
+  validateRequests: true,
+  validateResponses: true,
   generate: { routes: false, types: false },
   watch: { routes: false, types: false },
 };
@@ -77,13 +86,18 @@ export const GET: HTTP_GET = ($) => {
   if ($.context.simulatePetNotFound) {
     return $.response[404].text("Not found");
   }
-  return $.response[200].json({ id: $.path.petId, name: "Fluffy", status: "available" });
+  return $.response[200].json({
+    id: $.path.petId,
+    name: "Fluffy",
+    status: "available",
+  });
 };
 ```
 
 Reach into the live context via the `contextRegistry` returned by `counterfact()` to toggle behavior per test:
 
 ```ts
+import path from "node:path";
 import { counterfact } from "counterfact";
 
 const port = 4001;
@@ -91,10 +105,18 @@ let contextRegistry: Awaited<ReturnType<typeof counterfact>>["contextRegistry"];
 let stop: () => Promise<void>;
 
 const config = {
-  openApiPath: "./openapi.yaml",
-  basePath: "./api",
+  alwaysFakeOptionals: false,
+  openApiPath: path.resolve("openapi.yaml"),
+  basePath: path.resolve("api"),
+  buildCache: false,
   port,
+  prefix: "",
+  proxyPaths: new Map(),
+  proxyUrl: "",
+  startRepl: false,
   startServer: true,
+  validateRequests: true,
+  validateResponses: true,
   generate: { routes: false, types: false },
   watch: { routes: false, types: false },
 };

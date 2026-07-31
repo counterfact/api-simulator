@@ -8,7 +8,7 @@ You cannot route all traffic to the real backend — some paths don't exist yet,
 
 ## Solution
 
-Start Counterfact with `--proxy-url` pointing at the real backend. Every request is forwarded to the real backend by default. For the paths you want to control, add a route handler — Counterfact serves those from your code and forwards everything else. Toggle individual paths between mock and real at runtime using the REPL, without editing files or restarting the server.
+Start Counterfact with `--proxy-url` pointing at the real backend. Every request is forwarded to the real backend by default. For each path you want to control locally, add a route handler **and turn proxying off for that path**. Toggle paths between local and upstream behavior from the REPL without restarting the server.
 
 ## Example
 
@@ -25,7 +25,13 @@ export const POST: HTTP_POST = ($) => {
 };
 ```
 
-Requests to `/payments` are now served by your handler; all other requests are forwarded to `https://api.example.com`.
+Turn proxying off for that path so the local handler receives it:
+
+```
+⬣> .proxy off /payments
+```
+
+Requests to `/payments` are now served by your handler; all other requests remain forwarded to `https://api.example.com`.
 
 Toggle individual paths at runtime from the REPL without touching any files:
 
@@ -40,7 +46,7 @@ Toggle individual paths at runtime from the REPL without touching any files:
 - The real backend must be reachable from your machine; the proxy adds a network hop.
 - Handler hot reload works on mocked paths; toggling proxy mode does not require a restart.
 - Forwarded requests carry the original headers and body; you do not have control over the real backend's response.
-- Using real paths alongside mocked paths makes it easier to detect divergence between the real API and the mock as the spec evolves.
+- Forwarded traffic bypasses local route handlers and Counterfact's request/response checks. Use targeted tests against both local and upstream paths when drift matters.
 
 ## Related Patterns
 

@@ -25,8 +25,7 @@ export const soldPets: Scenario = ($) => {
   $.context.petService.addPet({ id: 2, status: "available" });
 
   // Store a pre-configured route builder in the REPL environment
-  $.routes.findSold = $
-    .route("/pet/findByStatus")
+  $.routes.findSold = $.route("/pet/findByStatus")
     .method("get")
     .query({ status: "sold" });
 };
@@ -41,11 +40,11 @@ Use the `.scenario` command. The argument is a slash-separated path where the la
 Applied soldPets
 ```
 
-| Command | File | Function |
-|---|---|---|
-| `.scenario soldPets` | `scenarios/index.ts` | `soldPets` |
-| `.scenario pets/resetAll` | `scenarios/pets.ts` | `resetAll` |
-| `.scenario pets/orders/pending` | `scenarios/pets/orders.ts` | `pending` |
+| Command                         | File                       | Function   |
+| ------------------------------- | -------------------------- | ---------- |
+| `.scenario soldPets`            | `scenarios/index.ts`       | `soldPets` |
+| `.scenario pets/resetAll`       | `scenarios/pets.ts`        | `resetAll` |
+| `.scenario pets/orders/pending` | `scenarios/pets/orders.ts` | `pending`  |
 
 After running, anything stored in `$.routes` is immediately available in the REPL:
 
@@ -63,7 +62,7 @@ import type { Scenario } from "../types/_.context.js";
 
 export const startup: Scenario = ($) => {
   $.context.addPet({ name: "Fluffy", status: "available", photoUrls: [] });
-  $.context.addPet({ name: "Rex",    status: "sold",      photoUrls: [] });
+  $.context.addPet({ name: "Rex", status: "sold", photoUrls: [] });
 };
 ```
 
@@ -80,7 +79,7 @@ import { addPets } from "./pets.js";
 import { addOrders } from "./orders.js";
 
 export const startup: Scenario = ($) => {
-  addPets($, 20, "dog");   // seed 20 dogs at startup
+  addPets($, 20, "dog"); // seed 20 dogs at startup
   addOrders($, 5);
 };
 ```
@@ -111,10 +110,15 @@ export function addOrders($: Scenario$, count: number) {
 }
 ```
 
-Helpers can also be called as standalone `.scenario` commands:
+Named scenario exports that need no extra arguments can also be called as standalone `.scenario` commands. The REPL command does not pass arbitrary arguments, so wrap parameterized helpers in a named scenario first:
+
+```ts
+// scenarios/pets.ts
+export const addThreeDogs: Scenario = ($) => addPets($, 3, "dog");
+```
 
 ```
-⬣> .scenario pets/addPets
+⬣> .scenario pets/addThreeDogs
 ```
 
 ## Consequences
