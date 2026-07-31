@@ -197,3 +197,85 @@ Mean dimension deltas versus baseline: value clarity +0.4, role fit 0.0, workflo
 | --------------------------------- | --------------- | ---------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
 | Add a representative typed client | Leo, Devon      | Role fit, workflow proof, contract credibility | `examples/first-10-minutes/client/`; example type-check | CI compiles a consumer and simulator handlers from the same generated contract; a documented enum edit creates a named client type failure | Directly proves the cross-team contract moment without changing runtime guarantees |
 | Add an automated hybrid route     | Devon, Leo      | Workflow proof, adoption readiness             | Example OpenAPI and HTTP test                           | One Counterfact base URL returns local `/pets` behavior and forwards `/health` to a disposable upstream without REPL-only state            | Turns the central staged-delivery claim into team-reproducible CI evidence         |
+
+## Cycle 3 result: client contract and hybrid-path proof
+
+- Tested URL: `https://github.com/counterfact/api-simulator`
+- Tested commit: `bf048ead890252f4f20e043639b234ea35d0d84b`
+- Evaluation date: 2026-07-31
+- Changed landing materials: README role links; representative example client; example OpenAPI, test, type-check, and explanation
+
+All evaluators scored before narrative and inspected only README-reachable material at the tested commit.
+
+| Persona                  | Value clarity | Role fit | Workflow proof | Determinism & automation | Contract credibility | Adoption readiness | Weighted total | Delta vs baseline | Delta vs cycle 2 |
+| ------------------------ | ------------: | -------: | -------------: | -----------------------: | -------------------: | -----------------: | -------------: | ----------------: | ---------------: |
+| Maya — frontend engineer |             5 |        5 |              4 |                        5 |                    4 |                  4 |             91 |                +4 |               -4 |
+| Devon — backend engineer |             5 |        5 |              5 |                        4 |                    4 |                  4 |             91 |               +16 |               +4 |
+| Priya — QA/SDET          |             5 |        5 |              4 |                        4 |                    5 |                  4 |             90 |                +8 |               -5 |
+| Leo — staff engineer     |             5 |        4 |              4 |                        5 |                    4 |                  4 |             87 |               +13 |               +9 |
+| Aria — AI workflow owner |             5 |        5 |              5 |                        5 |                    4 |                  4 |             95 |                +8 |               +4 |
+| **Mean**                 |       **5.0** |  **4.8** |        **4.4** |                  **4.6** |              **4.2** |            **4.0** |       **90.8** |          **+9.8** |         **+1.6** |
+
+Mean dimension deltas versus baseline: value clarity +0.4, role fit +0.2, workflow proof +0.6, determinism and automation +0.6, contract credibility +0.6, and adoption readiness +0.6. Versus cycle 2: value clarity 0.0, role fit +0.2, workflow proof -0.2, determinism and automation 0.0, contract credibility +0.4, and adoption readiness +0.2.
+
+**Supported:** The shared typed client and hybrid route test closed the repeated Devon/Leo evidence gap. Devon rose from 87 to 91 and Leo from 78 to 87. Aria rose from 91 to 95. The example now proves local and upstream paths behind one base URL and documents a contract edit that creates a named `client/pets.ts` compiler failure.
+
+**Protected-persona caution:** Maya's workflow proof moved from 5 to 4, while Priya's workflow proof and determinism moved from 5 to 4. Their narratives cite missing hot-reload/client execution and latency/automatic isolation, not a harmful new claim. These declines are flagged. The cycle still satisfies the guardrail because Maya, Priya, and Aria have no workflow, determinism, or adoption score below 4.
+
+**Success criteria:**
+
+- Weighted mean: **90.8** — pass (target 90)
+- Workflow proof mean: **4.4** — pass (target 4)
+- Determinism and automation mean: **4.6** — pass (target 4)
+- Adoption readiness mean: **4.0** — pass (target 3.5)
+- Protected-persona minimum across those dimensions: **4** — pass (target 3.5)
+
+## Experiment conclusion
+
+### Supported hypotheses
+
+- Role-specific first-10-minute routing and a copyable deterministic lifecycle materially improve comprehension and adoption evidence.
+- Precise contract-versus-behavior boundaries improve credibility without weakening value clarity.
+- A checked-in, lockfile-backed, CI-scoped example provides stronger proof than snippets alone.
+- Compiling a representative client from the same generated contract and testing local/upstream ownership through one base URL closes important backend and staff-engineer gaps.
+
+### Rejected or qualified hypotheses
+
+- The deterministic example alone did **not** clear the weighted target; cycle 2 scored 89.2 and exposed secondary-persona gaps.
+- A higher overall mean does not imply every protected dimension improved. Cycle 3 clears the targets but includes the protected-persona declines flagged above.
+- Interactive REPL control is not sufficient automation evidence for test or agent workflows; the successful path uses programmatic lifecycle, explicit reset, HTTP assertions, teardown, and CI.
+
+### Unresolved product and landing questions
+
+- Counterfact 2.14.0 lacks a complete TypeScript declaration for the library entry point.
+- Reset, parallel isolation, output directories, and port allocation remain user-authored.
+- Runtime response-body checking, authentication/authorization enforcement, and path-schema validation remain outside current guarantees.
+- The checked example does not prove hot-reload state preservation, latency behavior, overlay/watch behavior, or an automated negative contract-mutation test.
+- Cross-team compatibility policy and ownership governance remain organizational concerns rather than simulator guarantees.
+
+### Recommendation
+
+**Ship the GitHub landing changes and stop this experiment.** The final snapshot meets every GitHub success criterion and improves the weighted mean by 9.8 points over baseline. Further work should be prioritized as product/platform hypotheses rather than additional README expansion.
+
+## Commits and verification
+
+| Commit     | Purpose                                                          |
+| ---------- | ---------------------------------------------------------------- |
+| `8f371ab0` | Establish committed GitHub persona baseline                      |
+| `65b61929` | Add role-focused README and deterministic first-10-minutes guide |
+| `03767b5f` | Record cycle 1 retest                                            |
+| `841c2b03` | Add lockfile-backed, CI-checked onboarding example               |
+| `2876f2eb` | Record cycle 2 retest                                            |
+| `bf048ead` | Prove representative-client drift and hybrid path ownership      |
+
+Verification performed:
+
+- Prettier formatting checks on changed Markdown, YAML, JSON, TypeScript, and JavaScript
+- Recursive local-link checks across README, docs, and the example
+- `actionlint` on the example workflow
+- Clean Node.js 24 `npm ci` and `npm run verify` in temporary copies of the example
+- Real-HTTP assertions for empty/create/read/failure/reset/recovery and local/upstream routing
+- TypeScript checking for generated handlers and the representative client
+- Manual contract-drift verification: removing `available` from the status enum produces `TS2322` in `client/pets.ts`
+
+Repository-wide lint remains blocked by the pre-existing ESLint 10/CommonJS configuration error: `eslint.config.cjs` attempts to `require()` the ESM `eslint-plugin-n`. The post-commit hook reported this after each successful commit.
