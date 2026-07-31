@@ -126,3 +126,39 @@ Target:
 | Add a state/failure/reset/test/agent guide      | Maya, Priya, Aria                     | Workflow proof, determinism and automation, adoption readiness | `docs/first-10-minutes.md`                                                  | Primary personas can describe a scriptable create/read or failure/reset workflow with teardown                                  | Turns scattered capabilities into one reproducible proof loop                   |
 | Put contract boundaries near the first workflow | Devon, Priya, Leo, Aria               | Contract credibility, adoption readiness                       | `README.md`; `docs/first-10-minutes.md`                                     | Evaluators distinguish generated types, runtime request checks, advisory response-header checks, and authored business behavior | Resolves a recurring credibility objection across four personas                 |
 | Repair trust and lifecycle details              | All                                   | Contract credibility, adoption readiness                       | README header, quickstart, project lifecycle, directly linked workflow docs | Visitors can identify prerequisites, pinning, state lifetime, CI type checking, and retirement without guessing                 | Removes concrete adoption blockers with a small visible change                  |
+
+## Cycle 1 result: role-routed, deterministic onboarding
+
+- Tested URL: `https://github.com/counterfact/api-simulator`
+- Tested commit: `65b61929d592dd8329c4e7ab2b85cd4eaf727655`
+- Evaluation date: 2026-07-31
+- Changed landing materials: `README.md`; `docs/first-10-minutes.md`; directly linked getting-started, programmatic API, automation, executable-spec, hybrid-proxy, scenario, and reference guidance
+
+All five independent evaluators assigned numeric scores before narrative feedback. They began at the README and inspected only README-reachable GitHub materials at the tested commit.
+
+| Persona                  | Value clarity | Role fit | Workflow proof | Determinism & automation | Contract credibility | Adoption readiness | Weighted total | Delta vs baseline | Delta vs prior |
+| ------------------------ | ------------: | -------: | -------------: | -----------------------: | -------------------: | -----------------: | -------------: | ----------------: | -------------: |
+| Maya — frontend engineer |             5 |        5 |              5 |                        5 |                    4 |                  4 |             95 |                +8 |             +8 |
+| Devon — backend engineer |             5 |        5 |              5 |                        4 |                    4 |                  3 |             89 |               +14 |            +14 |
+| Priya — QA/SDET          |             5 |        5 |              4 |                        5 |                    4 |                  4 |             91 |                +9 |             +9 |
+| Leo — staff engineer     |             5 |        5 |              4 |                        4 |                    4 |                  4 |             87 |               +13 |            +13 |
+| Aria — AI workflow owner |             5 |        5 |              4 |                        4 |                    4 |                  4 |             87 |                 0 |              0 |
+| **Mean**                 |       **5.0** |  **5.0** |        **4.4** |                  **4.4** |              **4.0** |            **3.8** |       **89.8** |          **+8.8** |       **+8.8** |
+
+Mean dimension deltas versus the committed baseline (and versus the prior cycle, which is the baseline for cycle 1): value clarity +0.4, role fit +0.4, workflow proof +0.6, determinism and automation +0.4, contract credibility +0.4, and adoption readiness +0.4.
+
+**Evidence:** Maya found a complete stateful browser path plus deterministic automation; Devon found the one-base-URL staged proxy workflow concrete; Priya found the reset/failure/recovery lifecycle copyable; Leo found contract boundaries credible and early-feedback positioning clear; Aria found a bounded agent task with durable test artifacts and a retained real-backend safeguard.
+
+**Remaining blockers:** The mean misses the 90 target by 0.2. Priya's test does not explicitly assert an empty baseline or the recovered record body. Leo and Aria see a runnable recipe but not a checked-in executed proof. The programmatic library entry point lacks a complete TypeScript declaration in 2.14.0, so the verified harness is JavaScript and generated handlers require a separate type-check. Devon still sees user-owned process, port, reset, and isolation work.
+
+**Decision:** Continue to a second focused cycle. The protected dimensions did not regress, every protected score is at least 4, and a small executable-example hypothesis directly addresses the remaining repeated evidence gap.
+
+## Cycle 2 hypothesis
+
+**Hypothesis:** Turn the verified recipe into a checked-in example and make its assertions prove the complete empty → create/read → forced failure → reset/reseed → recovered-body sequence.
+
+| Proposed change                        | Target personas             | Expected dimensions                                            | Material                                                       | Expected observable result                                                                                                       | Why this is higher leverage                                                      |
+| -------------------------------------- | --------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Add a complete newcomer example        | Priya, Aria, Leo; also Maya | Workflow proof, determinism and automation, adoption readiness | `examples/first-10-minutes/`, linked from README and the guide | Visitors can inspect and run the exact contract, context, handlers, test, and type-check config rather than reconstruct snippets | Addresses the only repeated cross-persona evidence gap with one durable artifact |
+| Assert baseline and recovered identity | Priya, Aria                 | Workflow proof, determinism and automation                     | Example test and `docs/first-10-minutes.md`                    | The test proves empty state, record identity, controlled failure, explicit reset, reseed, and recovered body                     | Converts status-only recovery into evidence of state correctness                 |
+| Show verified command/output boundary  | Leo, Aria                   | Workflow proof, contract credibility                           | Example README                                                 | The visitor sees which command checks HTTP behavior and which separately checks generated TypeScript                             | Reinforces the contract-versus-behavior distinction without new feature claims   |
