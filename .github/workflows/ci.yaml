@@ -21,7 +21,7 @@ jobs:
       - name: Debug
         run: echo "${{ matrix.os }}"
       - name: Check Out Repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Detect docs-only pull request
@@ -52,7 +52,7 @@ jobs:
       - name: Skip heavy checks for docs-only changes
         if: steps.docs-only.outputs.docs_only == 'true'
         run: echo "Markdown-only pull request detected. Skipping lint/type/tests while keeping required checks green."
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         if: steps.docs-only.outputs.docs_only != 'true'
         with:
           node-version: lts/*
@@ -64,7 +64,7 @@ jobs:
         id: node-version
       - name: Cache node_modules
         if: steps.docs-only.outputs.docs_only != 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: ${{ runner.os }}-${{ steps.node-version.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
@@ -83,7 +83,7 @@ jobs:
         run: yarn test --runInBand --forceExit --verbose --no-watchman
       - name: Set up Python
         if: steps.docs-only.outputs.docs_only != 'true'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.x"
       - name: Install Python dependencies

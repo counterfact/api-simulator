@@ -7,10 +7,10 @@ jobs:
     name: Coveralls
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: yarn
@@ -22,7 +22,7 @@ jobs:
         run: yarn test --runInBand --forceExit --no-watchman
 
       - name: Coveralls
-        uses: coverallsapp/github-action@v2.3.6
+        uses: coverallsapp/github-action@v2.3.8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           fail-on-error: false

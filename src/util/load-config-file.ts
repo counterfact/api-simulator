@@ -46,6 +46,10 @@ export async function loadConfigFile(
     throw error;
   }
 
+  if (!content.trim()) {
+    return {};
+  }
+
   const parsed = loadYaml(content);
 
   if (parsed === null || parsed === undefined) {
