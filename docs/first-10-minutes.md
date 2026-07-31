@@ -28,7 +28,7 @@ Both paths need network access. `@latest` can change, so use the pinned local-in
 
 **Prerequisite:** complete [Set up once](#set-up-once). This section uses the pinned Petstore contract from that setup.
 
-Generated handlers initially return schema-derived samples. To prove why Counterfact is different from a static fixture, make two routes share state.
+Generated handlers give you an immediate schema-derived starting point. To turn that starting point into the stateful behavior your app or tests need, make two routes share context.
 
 Create a context with an explicit baseline and reset method:
 
