@@ -134,6 +134,97 @@ describe("OpenAPI paths with trailing slashes", () => {
       );
     });
   });
+
+  it("prunes renamed path types in type-only mode and remains idempotent", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const document = (path: string, operationId: string) => ({
+        openapi: "3.0.3",
+        info: { title: "Pruned path types", version: "1.0.0" },
+        paths: { [path]: operation(operationId) },
+      });
+
+      await $.add(
+        "openapi.json",
+        JSON.stringify(document("/customers/", "listCustomers")),
+      );
+      await new CodeGenerator($.path("openapi.json"), $.path(""), {
+        routes: true,
+        types: true,
+      }).generate();
+      await $.add("types/paths/customers/.types.ts", "// legacy generated");
+      await $.add("types/custom.ts", "// user-authored helper");
+
+      await $.remove("openapi.json");
+      await $.add(
+        "openapi.json",
+        JSON.stringify(document("/accounts", "listAccounts")),
+      );
+      const generateTypes = () =>
+        new CodeGenerator($.path("openapi.json"), $.path(""), {
+          prune: true,
+          routes: false,
+          types: true,
+        }).generate();
+
+      await generateTypes();
+      await expect($.read("types/paths/accounts.types.ts")).resolves.toContain(
+        "listAccounts",
+      );
+      await expect($.read("types/paths/customers.types.ts")).rejects.toThrow();
+      await expect($.read("types/paths/customers/.types.ts")).rejects.toThrow();
+      await expect($.read("routes/customers.ts")).resolves.toContain(
+        "export const GET",
+      );
+      await expect($.read("types/custom.ts")).resolves.toBe(
+        "// user-authored helper",
+      );
+
+      await expect(generateTypes()).resolves.toBeUndefined();
+      await expect($.read("types/paths/accounts.types.ts")).resolves.toContain(
+        "listAccounts",
+      );
+    });
+  });
+
+  it("preserves generated types accumulated from multiple specs", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const document = (path: string, operationId: string) => ({
+        openapi: "3.0.3",
+        info: { title: operationId, version: "1.0.0" },
+        paths: { [path]: operation(operationId) },
+      });
+      await $.add(
+        "customers.json",
+        JSON.stringify(document("/customers", "listCustomers")),
+      );
+      await $.add(
+        "orders.json",
+        JSON.stringify(document("/orders", "listOrders")),
+      );
+      await $.add("types/paths/obsolete.types.ts", "// obsolete");
+      const repository = new Repository();
+      const options = { prune: true, routes: false, types: true };
+
+      await new CodeGenerator(
+        $.path("customers.json"),
+        $.path(""),
+        options,
+      ).generate(repository);
+      await new CodeGenerator(
+        $.path("orders.json"),
+        $.path(""),
+        options,
+      ).generate(repository);
+
+      await expect($.read("types/paths/customers.types.ts")).resolves.toContain(
+        "listCustomers",
+      );
+      await expect($.read("types/paths/orders.types.ts")).resolves.toContain(
+        "listOrders",
+      );
+      await expect($.read("types/paths/obsolete.types.ts")).rejects.toThrow();
+    });
+  });
 });
 
 describe("$ref resolution for components/mediaTypes (OpenAPI 3.2)", () => {
