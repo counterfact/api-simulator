@@ -142,24 +142,27 @@ export async function pruneRoutes(
 
 /**
  * Returns whether a path below `types/` belongs to a namespace populated by
- * the OpenAPI generator. Context support, version metadata, and arbitrary
- * user-authored type modules are deliberately outside this ownership policy.
+ * the OpenAPI generator. Context support and arbitrary user-authored type
+ * modules are deliberately outside this ownership policy.
  */
 function isGeneratorOwnedTypePath(path: string): boolean {
   const [first, second] = toForwardSlashPath(path).split("/");
   const generatedCategory = (segment: string | undefined) =>
     segment === "paths" || segment === "components" || segment === "#";
 
-  return generatedCategory(first) || generatedCategory(second);
+  return (
+    path === "versions.ts" ||
+    generatedCategory(first) ||
+    generatedCategory(second)
+  );
 }
 
 /**
  * Prunes obsolete files from the OpenAPI generator-owned namespaces below
  * `types/`. Hidden files are included by the recursive directory walk.
  *
- * `types/_.context.ts`, `types/versions.ts`, and paths outside the known
- * generated namespaces are preserved because separate generators or users own
- * them.
+ * `types/_.context.ts` and paths outside the known generated namespaces are
+ * preserved because separate generators or users own them.
  *
  * @param destination - Base destination directory (contains `types/`).
  * @param expectedPaths - Repository-relative generated paths to retain.

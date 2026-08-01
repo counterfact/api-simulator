@@ -225,7 +225,10 @@ export class CodeGenerator extends EventTarget {
       debug("resolving the expected generated type files");
       await repository.finished();
       debug("pruning defunct generated type files");
-      await pruneTypes(destination, repository.scripts.keys());
+      await pruneTypes(destination, [
+        ...repository.scripts.keys(),
+        ...(this.version === "" ? [] : ["types/versions.ts"]),
+      ]);
       debug("done pruning generated type files");
     }
 

@@ -190,10 +190,9 @@ describe("pruneTypes", () => {
     });
   });
 
-  it("protects context, version metadata, and user-authored type files", async () => {
+  it("protects context and user-authored type files", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("types/_.context.ts", "// generated elsewhere");
-      await $.add("types/versions.ts", "// generated elsewhere");
       await $.add("types/custom.ts", "// user authored");
       await $.add("types/helpers/utility.ts", "// user authored");
 
@@ -201,12 +200,24 @@ describe("pruneTypes", () => {
       await expect($.read("types/_.context.ts")).resolves.toBe(
         "// generated elsewhere",
       );
-      await expect($.read("types/versions.ts")).resolves.toBe(
-        "// generated elsewhere",
-      );
       await expect($.read("types/custom.ts")).resolves.toBe("// user authored");
       await expect($.read("types/helpers/utility.ts")).resolves.toBe(
         "// user authored",
+      );
+    });
+  });
+
+  it("prunes obsolete version metadata unless it is expected", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("types/versions.ts", "// old versions");
+
+      expect(await pruneTypes($.path(""), [])).toBe(1);
+      await expect($.read("types/versions.ts")).rejects.toThrow();
+
+      await $.add("types/versions.ts", "// current versions");
+      expect(await pruneTypes($.path(""), ["types/versions.ts"])).toBe(0);
+      await expect($.read("types/versions.ts")).resolves.toBe(
+        "// current versions",
       );
     });
   });

@@ -152,6 +152,7 @@ describe("OpenAPI paths with trailing slashes", () => {
         types: true,
       }).generate();
       await $.add("types/paths/customers/.types.ts", "// legacy generated");
+      await $.add("types/versions.ts", "// obsolete version metadata");
       await $.add("types/custom.ts", "// user-authored helper");
 
       await $.remove("openapi.json");
@@ -172,6 +173,7 @@ describe("OpenAPI paths with trailing slashes", () => {
       );
       await expect($.read("types/paths/customers.types.ts")).rejects.toThrow();
       await expect($.read("types/paths/customers/.types.ts")).rejects.toThrow();
+      await expect($.read("types/versions.ts")).rejects.toThrow();
       await expect($.read("routes/customers.ts")).resolves.toContain(
         "export const GET",
       );
@@ -202,6 +204,7 @@ describe("OpenAPI paths with trailing slashes", () => {
         JSON.stringify(document("/orders", "listOrders")),
       );
       await $.add("types/paths/obsolete.types.ts", "// obsolete");
+      await $.add("types/versions.ts", "// current version metadata");
       const repository = new Repository();
       const options = { prune: true, routes: false, types: true };
 
@@ -209,11 +212,13 @@ describe("OpenAPI paths with trailing slashes", () => {
         $.path("customers.json"),
         $.path(""),
         options,
+        "v1",
       ).generate(repository);
       await new CodeGenerator(
         $.path("orders.json"),
         $.path(""),
         options,
+        "v2",
       ).generate(repository);
 
       await expect($.read("types/paths/customers.types.ts")).resolves.toContain(
@@ -221,6 +226,9 @@ describe("OpenAPI paths with trailing slashes", () => {
       );
       await expect($.read("types/paths/orders.types.ts")).resolves.toContain(
         "listOrders",
+      );
+      await expect($.read("types/versions.ts")).resolves.toBe(
+        "// current version metadata",
       );
       await expect($.read("types/paths/obsolete.types.ts")).rejects.toThrow();
     });
