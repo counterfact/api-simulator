@@ -1,0 +1,11 @@
+Implemented `fetchAllTickets` in [src/client.mjs](/Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/results/2026-07-31T16-32-01-201Z/control-01/workspace/src/client.mjs).
+
+It now:
+- Paginates through `nextCursor`
+- Preserves API order and removes duplicate IDs
+- Retries 429 and 5xx responses up to `maxRetries`
+- Uses numeric `Retry-After` values (seconds) when supplied
+- Applies exponential backoff otherwise
+- Avoids retrying other failures and reports HTTP/API error details
+
+Verified with mocked requests covering pagination, de-duplication, retry timing, URL cursor encoding, and 400 behavior. `npm test` also completes successfully (no repository test files are currently present).

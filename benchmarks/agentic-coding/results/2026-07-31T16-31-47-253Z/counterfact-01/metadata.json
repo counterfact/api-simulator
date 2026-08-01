@@ -1,0 +1,19 @@
+{
+  "label": "counterfact-01",
+  "condition": "counterfact",
+  "replication": 1,
+  "startedAt": "2026-07-31T16:31:47.371Z",
+  "elapsedMs": 2,
+  "agentExitCode": 1,
+  "agentSignal": null,
+  "graderExitCode": 0,
+  "score": 0,
+  "possible": 100,
+  "usage": {
+    "inputTokens": 0,
+    "cachedInputTokens": 0,
+    "outputTokens": 0
+  },
+  "taskSha256": "023480ad54f210d9114a1ef025298b3ffa8435739db5c05ae95fa7551c9c2252",
+  "contractSha256": "6f216f6cfd7562439900b62b89156e41184253134565cf5ba06b811325fe3ff5"
+}

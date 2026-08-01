@@ -1,0 +1,21 @@
+{
+  "benchmarkVersion": 1,
+  "createdAt": "2026-07-31T16:37:01.904Z",
+  "options": {
+    "condition": "counterfact",
+    "runs": 1,
+    "parallel": 1,
+    "model": "",
+    "codex": "codex",
+    "timeoutMs": 1200000
+  },
+  "runtime": {
+    "node": "v24.13.0",
+    "platform": "darwin"
+  },
+  "agentCliVersion": "codex-cli 0.146.0-alpha.3.1",
+  "gitRevision": "2876f2eb1f20ce99fe01f7f633c9c800f677cee0",
+  "worktreeDirty": true,
+  "taskSha256": "023480ad54f210d9114a1ef025298b3ffa8435739db5c05ae95fa7551c9c2252",
+  "contractSha256": "72f4f31753c20fe9a222996726e2f251b663b16f57b3bd6598720aa1b8ee6619"
+}

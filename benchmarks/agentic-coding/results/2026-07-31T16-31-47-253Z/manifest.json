@@ -1,0 +1,21 @@
+{
+  "benchmarkVersion": 1,
+  "createdAt": "2026-07-31T16:31:47.279Z",
+  "options": {
+    "condition": "both",
+    "runs": 1,
+    "parallel": 2,
+    "model": "",
+    "codex": "/usr/bin/false",
+    "timeoutMs": 10000
+  },
+  "runtime": {
+    "node": "v24.13.0",
+    "platform": "darwin"
+  },
+  "agentCliVersion": "",
+  "gitRevision": "841c2b039fb1712e0cf998656f24bb1828d98d75",
+  "worktreeDirty": true,
+  "taskSha256": "023480ad54f210d9114a1ef025298b3ffa8435739db5c05ae95fa7551c9c2252",
+  "contractSha256": "6f216f6cfd7562439900b62b89156e41184253134565cf5ba06b811325fe3ff5"
+}

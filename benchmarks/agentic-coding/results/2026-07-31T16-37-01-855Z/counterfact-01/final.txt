@@ -1,0 +1,11 @@
+Implemented `fetchAllTickets` in [src/client.mjs](/Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/results/2026-07-31T16-37-01-855Z/counterfact-01/workspace/src/client.mjs).
+
+It now paginates, de-duplicates IDs in first-seen order, retries 429/5xx responses, respects numeric `Retry-After`, and gives useful terminal errors.
+
+Added coverage in [test/client.test.mjs](/Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/results/2026-07-31T16-37-01-855Z/counterfact-01/workspace/test/client.test.mjs).
+
+Verified with:
+
+- `npm test` — 5 passing tests
+- `git diff --check`
+- Supplied sandbox scenarios via its control endpoints and HTTP requests

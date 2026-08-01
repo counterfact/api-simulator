@@ -1,0 +1,19 @@
+Reading additional input from stdin...
+2026-07-31T16:32:01.454075Z  WARN codex_core_skills::loader: ignoring interface.icon_small: icon path with '..' must resolve under plugin assets/
+2026-07-31T16:32:01.454089Z  WARN codex_core_skills::loader: ignoring interface.icon_large: icon path with '..' must resolve under plugin assets/
+2026-07-31T16:32:01.454571Z  WARN codex_core_plugins::manifest: ignoring interface.defaultPrompt: maximum of 3 prompts is supported path=file:///Users/pmcelhaney/.codex/plugins/cache/openai-primary-runtime/template-creator/26.730.11710/.codex-plugin/plugin.json
+2026-07-31T16:32:01.456024Z  WARN codex_core_plugins::manifest: ignoring interface.defaultPrompt: maximum of 3 prompts is supported path=file:///Users/pmcelhaney/.codex/plugins/cache/openai-primary-runtime/template-creator/26.730.11710/.codex-plugin/plugin.json
+2026-07-31T16:32:01.463265Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-07-31T16:32:01.464500Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-07-31T16:32:01.466053Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-07-31T16:32:01.467551Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-07-31T16:32:01.468856Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-07-31T16:32:01.470715Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-07-31T16:32:01.472207Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-07-31T16:32:01.473848Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-07-31T16:32:01.475540Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-07-31T16:32:01.476714Z  WARN codex_rollout::list: state db discrepancy during find_thread_path_by_id_str_in_subdir: falling_back
+2026-07-31T16:32:01.798968Z  WARN codex_core_skills::loader: ignoring interface.icon_small: icon path with '..' must resolve under plugin assets/
+2026-07-31T16:32:01.798984Z  WARN codex_core_skills::loader: ignoring interface.icon_large: icon path with '..' must resolve under plugin assets/
+2026-07-31T16:32:01.799233Z  WARN codex_core_plugins::manifest: ignoring interface.defaultPrompt: maximum of 3 prompts is supported path=file:///Users/pmcelhaney/.codex/plugins/cache/openai-primary-runtime/template-creator/26.730.11710/.codex-plugin/plugin.json
+2026-07-31T16:32:01.799946Z  WARN codex_core_plugins::manifest: ignoring interface.defaultPrompt: maximum of 3 prompts is supported path=file:///Users/pmcelhaney/.codex/plugins/cache/openai-primary-runtime/template-creator/26.730.11710/.codex-plugin/plugin.json

@@ -1,0 +1,94 @@
+{
+  "byCondition": {
+    "control": {
+      "runs": 1,
+      "meanScore": 0,
+      "completionRate": 0,
+      "meanElapsedMs": 18,
+      "meanOutputTokens": 0
+    },
+    "counterfact": {
+      "runs": 1,
+      "meanScore": 0,
+      "completionRate": 0,
+      "meanElapsedMs": 2,
+      "meanOutputTokens": 0
+    }
+  },
+  "scoreEffect": 0,
+  "pairedEffects": [
+    {
+      "replication": 1,
+      "controlScore": 0,
+      "counterfactScore": 0,
+      "difference": 0
+    }
+  ],
+  "pairedEffectStandardDeviation": null,
+  "results": [
+    {
+      "label": "control-01",
+      "condition": "control",
+      "replication": 1,
+      "startedAt": "2026-07-31T16:31:47.347Z",
+      "elapsedMs": 18,
+      "agentExitCode": 1,
+      "agentSignal": null,
+      "graderExitCode": 0,
+      "score": 0,
+      "possible": 100,
+      "usage": {
+        "inputTokens": 0,
+        "cachedInputTokens": 0,
+        "outputTokens": 0
+      },
+      "taskSha256": "023480ad54f210d9114a1ef025298b3ffa8435739db5c05ae95fa7551c9c2252",
+      "contractSha256": "6f216f6cfd7562439900b62b89156e41184253134565cf5ba06b811325fe3ff5",
+      "grade": {
+        "score": 0,
+        "possible": 100,
+        "details": [
+          {
+            "name": "candidate loads and executes",
+            "points": 100,
+            "earned": 0,
+            "passed": false,
+            "evidence": "Error: Not implemented\n    at fetchAllTickets (file:///Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/results/2026-07-31T16-31-47-253Z/control-01/workspace/src/client.mjs?run=1785515508513:15:9)\n    at invoke (/Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/grade.mjs:38:5)\n    at <anonymous> (/Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/grade.mjs:41:23)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)"
+          }
+        ]
+      }
+    },
+    {
+      "label": "counterfact-01",
+      "condition": "counterfact",
+      "replication": 1,
+      "startedAt": "2026-07-31T16:31:47.371Z",
+      "elapsedMs": 2,
+      "agentExitCode": 1,
+      "agentSignal": null,
+      "graderExitCode": 0,
+      "score": 0,
+      "possible": 100,
+      "usage": {
+        "inputTokens": 0,
+        "cachedInputTokens": 0,
+        "outputTokens": 0
+      },
+      "taskSha256": "023480ad54f210d9114a1ef025298b3ffa8435739db5c05ae95fa7551c9c2252",
+      "contractSha256": "6f216f6cfd7562439900b62b89156e41184253134565cf5ba06b811325fe3ff5",
+      "grade": {
+        "score": 0,
+        "possible": 100,
+        "details": [
+          {
+            "name": "candidate loads and executes",
+            "points": 100,
+            "earned": 0,
+            "passed": false,
+            "evidence": "Error: Not implemented\n    at fetchAllTickets (file:///Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/results/2026-07-31T16-31-47-253Z/counterfact-01/workspace/src/client.mjs?run=1785515508522:15:9)\n    at invoke (/Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/grade.mjs:38:5)\n    at <anonymous> (/Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/grade.mjs:41:23)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)"
+          }
+        ]
+      }
+    }
+  ]
+}

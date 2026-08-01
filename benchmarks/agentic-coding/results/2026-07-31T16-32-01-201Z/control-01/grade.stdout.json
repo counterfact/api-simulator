@@ -1,0 +1,55 @@
+{
+  "score": 100,
+  "possible": 100,
+  "details": [
+    {
+      "name": "fetches all pages",
+      "points": 25,
+      "earned": 25,
+      "passed": true,
+      "evidence": "ids=[\"T-1\",\"T-2\",\"T-3\",\"T-4\"]"
+    },
+    {
+      "name": "deduplicates by ticket id",
+      "points": 10,
+      "earned": 10,
+      "passed": true,
+      "evidence": "count=4"
+    },
+    {
+      "name": "recovers from 429",
+      "points": 20,
+      "earned": 20,
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "honors Retry-After",
+      "points": 10,
+      "earned": 10,
+      "passed": true,
+      "evidence": "sleep calls=[20]"
+    },
+    {
+      "name": "recovers from transient 503",
+      "points": 15,
+      "earned": 15,
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "bounds persistent retries",
+      "points": 10,
+      "earned": 10,
+      "passed": true,
+      "evidence": "requests=3"
+    },
+    {
+      "name": "does not retry ordinary 4xx",
+      "points": 10,
+      "earned": 10,
+      "passed": true,
+      "evidence": "requests=1"
+    }
+  ]
+}

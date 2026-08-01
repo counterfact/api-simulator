@@ -1,0 +1,127 @@
+{
+  "label": "counterfact-01",
+  "condition": "counterfact",
+  "replication": 1,
+  "startedAt": "2026-07-31T16:37:01.998Z",
+  "elapsedMs": 152995,
+  "agentExitCode": 0,
+  "agentSignal": null,
+  "graderExitCode": 0,
+  "score": 100,
+  "possible": 100,
+  "verification": {
+    "testFiles": [
+      "test/client.test.mjs"
+    ],
+    "testExitCode": 0,
+    "durableTests": true,
+    "output": "✔ collects cursor pages in order and keeps the first duplicate (14.019916ms)\n✔ retries rate limits and honors Retry-After (0.534583ms)\n✔ retries 5xx responses with exponential fallback backoff (0.304ms)\n✔ does not retry other 4xx responses (0.416625ms)\n✔ throws after the configured number of retry attempts (0.32775ms)\nℹ tests 5\nℹ suites 0\nℹ pass 5\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 68.675625\n"
+  },
+  "sandboxEvidence": {
+    "resets": [
+      "happy",
+      "rate-limit",
+      "transient-503",
+      "permanent-429",
+      "bad-request",
+      "happy",
+      "rate-limit",
+      "transient-503",
+      "permanent-429",
+      "bad-request",
+      "happy",
+      "transient-503",
+      "happy",
+      "transient-503"
+    ],
+    "requests": [
+      {
+        "scenario": "happy",
+        "cursor": "start",
+        "status": 200
+      },
+      {
+        "scenario": "rate-limit",
+        "cursor": "start",
+        "status": 429
+      },
+      {
+        "scenario": "rate-limit",
+        "cursor": "start",
+        "status": 200
+      },
+      {
+        "scenario": "transient-503",
+        "cursor": "start",
+        "status": 200
+      },
+      {
+        "scenario": "transient-503",
+        "cursor": "start",
+        "status": 200
+      },
+      {
+        "scenario": "permanent-429",
+        "cursor": "start",
+        "status": 429
+      },
+      {
+        "scenario": "permanent-429",
+        "cursor": "start",
+        "status": 429
+      },
+      {
+        "scenario": "permanent-429",
+        "cursor": "start",
+        "status": 429
+      },
+      {
+        "scenario": "bad-request",
+        "cursor": "invalid",
+        "status": 400
+      },
+      {
+        "scenario": "happy",
+        "cursor": "start",
+        "status": 200
+      },
+      {
+        "scenario": "transient-503",
+        "cursor": "start",
+        "status": 200
+      },
+      {
+        "scenario": "happy",
+        "cursor": "start",
+        "status": 200
+      },
+      {
+        "scenario": "happy",
+        "cursor": "page-2",
+        "status": 200
+      },
+      {
+        "scenario": "transient-503",
+        "cursor": "start",
+        "status": 200
+      },
+      {
+        "scenario": "transient-503",
+        "cursor": "page-2",
+        "status": 503
+      },
+      {
+        "scenario": "transient-503",
+        "cursor": "page-2",
+        "status": 503
+      }
+    ]
+  },
+  "usage": {
+    "inputTokens": 293878,
+    "cachedInputTokens": 264704,
+    "outputTokens": 7342
+  },
+  "taskSha256": "023480ad54f210d9114a1ef025298b3ffa8435739db5c05ae95fa7551c9c2252",
+  "contractSha256": "72f4f31753c20fe9a222996726e2f251b663b16f57b3bd6598720aa1b8ee6619"
+}

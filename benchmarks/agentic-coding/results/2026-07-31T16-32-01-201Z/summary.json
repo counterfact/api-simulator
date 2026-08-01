@@ -1,0 +1,178 @@
+{
+  "byCondition": {
+    "control": {
+      "runs": 1,
+      "meanScore": 100,
+      "completionRate": 1,
+      "meanElapsedMs": 79259,
+      "meanOutputTokens": 3838
+    },
+    "counterfact": {
+      "runs": 1,
+      "meanScore": 100,
+      "completionRate": 1,
+      "meanElapsedMs": 102823,
+      "meanOutputTokens": 4718
+    }
+  },
+  "scoreEffect": 0,
+  "pairedEffects": [
+    {
+      "replication": 1,
+      "controlScore": 100,
+      "counterfactScore": 100,
+      "difference": 0
+    }
+  ],
+  "pairedEffectStandardDeviation": null,
+  "results": [
+    {
+      "label": "control-01",
+      "condition": "control",
+      "replication": 1,
+      "startedAt": "2026-07-31T16:32:01.320Z",
+      "elapsedMs": 79259,
+      "agentExitCode": 0,
+      "agentSignal": null,
+      "graderExitCode": 0,
+      "score": 100,
+      "possible": 100,
+      "usage": {
+        "inputTokens": 137498,
+        "cachedInputTokens": 114688,
+        "outputTokens": 3838
+      },
+      "taskSha256": "023480ad54f210d9114a1ef025298b3ffa8435739db5c05ae95fa7551c9c2252",
+      "contractSha256": "6f216f6cfd7562439900b62b89156e41184253134565cf5ba06b811325fe3ff5",
+      "grade": {
+        "score": 100,
+        "possible": 100,
+        "details": [
+          {
+            "name": "fetches all pages",
+            "points": 25,
+            "earned": 25,
+            "passed": true,
+            "evidence": "ids=[\"T-1\",\"T-2\",\"T-3\",\"T-4\"]"
+          },
+          {
+            "name": "deduplicates by ticket id",
+            "points": 10,
+            "earned": 10,
+            "passed": true,
+            "evidence": "count=4"
+          },
+          {
+            "name": "recovers from 429",
+            "points": 20,
+            "earned": 20,
+            "passed": true,
+            "evidence": ""
+          },
+          {
+            "name": "honors Retry-After",
+            "points": 10,
+            "earned": 10,
+            "passed": true,
+            "evidence": "sleep calls=[20]"
+          },
+          {
+            "name": "recovers from transient 503",
+            "points": 15,
+            "earned": 15,
+            "passed": true,
+            "evidence": ""
+          },
+          {
+            "name": "bounds persistent retries",
+            "points": 10,
+            "earned": 10,
+            "passed": true,
+            "evidence": "requests=3"
+          },
+          {
+            "name": "does not retry ordinary 4xx",
+            "points": 10,
+            "earned": 10,
+            "passed": true,
+            "evidence": "requests=1"
+          }
+        ]
+      }
+    },
+    {
+      "label": "counterfact-01",
+      "condition": "counterfact",
+      "replication": 1,
+      "startedAt": "2026-07-31T16:32:01.343Z",
+      "elapsedMs": 102823,
+      "agentExitCode": 0,
+      "agentSignal": null,
+      "graderExitCode": 0,
+      "score": 100,
+      "possible": 100,
+      "usage": {
+        "inputTokens": 180958,
+        "cachedInputTokens": 158208,
+        "outputTokens": 4718
+      },
+      "taskSha256": "023480ad54f210d9114a1ef025298b3ffa8435739db5c05ae95fa7551c9c2252",
+      "contractSha256": "6f216f6cfd7562439900b62b89156e41184253134565cf5ba06b811325fe3ff5",
+      "grade": {
+        "score": 100,
+        "possible": 100,
+        "details": [
+          {
+            "name": "fetches all pages",
+            "points": 25,
+            "earned": 25,
+            "passed": true,
+            "evidence": "ids=[\"T-1\",\"T-2\",\"T-3\",\"T-4\"]"
+          },
+          {
+            "name": "deduplicates by ticket id",
+            "points": 10,
+            "earned": 10,
+            "passed": true,
+            "evidence": "count=4"
+          },
+          {
+            "name": "recovers from 429",
+            "points": 20,
+            "earned": 20,
+            "passed": true,
+            "evidence": ""
+          },
+          {
+            "name": "honors Retry-After",
+            "points": 10,
+            "earned": 10,
+            "passed": true,
+            "evidence": "sleep calls=[20]"
+          },
+          {
+            "name": "recovers from transient 503",
+            "points": 15,
+            "earned": 15,
+            "passed": true,
+            "evidence": ""
+          },
+          {
+            "name": "bounds persistent retries",
+            "points": 10,
+            "earned": 10,
+            "passed": true,
+            "evidence": "requests=3"
+          },
+          {
+            "name": "does not retry ordinary 4xx",
+            "points": 10,
+            "earned": 10,
+            "passed": true,
+            "evidence": "requests=1"
+          }
+        ]
+      }
+    }
+  ]
+}

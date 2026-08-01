@@ -1,0 +1,97 @@
+openapi: 3.0.3
+info:
+  title: Ticket collection benchmark API
+  version: 1.0.0
+paths:
+  /tickets:
+    get:
+      operationId: listTickets
+      parameters:
+        - in: query
+          name: cursor
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A page of tickets
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Ticket"
+                  nextCursor:
+                    type: string
+        "400":
+          description: Invalid cursor
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429":
+          description: Rate limited
+          headers:
+            Retry-After:
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "503":
+          description: Temporarily unavailable
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /control/reset:
+    post:
+      operationId: resetScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scenario]
+              properties:
+                scenario:
+                  type: string
+                  enum: [happy, rate-limit, transient-503, permanent-429, bad-request]
+      responses:
+        "204": { description: Reset complete }
+  /control/stats:
+    get:
+      operationId: getStats
+      responses:
+        "200":
+          description: Requests observed in the current scenario
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [scenario, requests]
+                properties:
+                  scenario: { type: string }
+                  requests:
+                    type: array
+                    items:
+                      type: object
+                      required: [cursor, status]
+                      properties:
+                        cursor: { type: string }
+                        status: { type: integer }
+components:
+  schemas:
+    Ticket:
+      type: object
+      required: [id, title]
+      properties:
+        id: { type: string }
+        title: { type: string }
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+

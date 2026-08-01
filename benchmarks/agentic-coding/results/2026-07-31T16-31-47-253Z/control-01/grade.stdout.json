@@ -1,0 +1,13 @@
+{
+  "score": 0,
+  "possible": 100,
+  "details": [
+    {
+      "name": "candidate loads and executes",
+      "points": 100,
+      "earned": 0,
+      "passed": false,
+      "evidence": "Error: Not implemented\n    at fetchAllTickets (file:///Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/results/2026-07-31T16-31-47-253Z/control-01/workspace/src/client.mjs?run=1785515508513:15:9)\n    at invoke (/Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/grade.mjs:38:5)\n    at <anonymous> (/Users/pmcelhaney/code/counterfact/benchmarks/agentic-coding/grade.mjs:41:23)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)"
+    }
+  ]
+}
