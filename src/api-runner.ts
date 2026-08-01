@@ -138,8 +138,7 @@ export class ApiRunner {
     this.overlays = config.overlays ?? [];
 
     this.registry = new Registry();
-    this.contextRegistry =
-      groupState?.contextRegistry ?? new ContextRegistry();
+    this.contextRegistry = groupState?.contextRegistry ?? new ContextRegistry();
     this.scenarioRegistry =
       groupState?.scenarioRegistry ?? new ScenarioRegistry();
 
