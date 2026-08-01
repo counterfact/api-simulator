@@ -14,9 +14,11 @@ import type {
   MaybePromise,
   MediaType,
   Middleware,
+  MiddlewareResponseBuilderFactory,
   OmitAll,
   OmitValueWhenNever,
   OpenApiResponse,
+  ResponseBuilder,
   ResponseBuilderFactory,
   WideOperationArgument,
 } from "../../src/counterfact-types/index.ts";
@@ -39,6 +41,9 @@ const authenticationMiddleware: Middleware<AuthenticationContext> = async (
 };
 
 expectAssignable<Middleware<AuthenticationContext>>(authenticationMiddleware);
+
+declare const middlewareResponse: MiddlewareResponseBuilderFactory;
+expectType<ResponseBuilder | undefined>(middlewareResponse["200 OK"]);
 
 // test exact match
 expectType<

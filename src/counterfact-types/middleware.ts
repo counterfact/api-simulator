@@ -27,7 +27,7 @@ export interface MiddlewareTools {
 /** A response-builder factory with every standard status code available. */
 export type MiddlewareResponseBuilderFactory = {
   [StatusCode in HttpStatusCode]: ResponseBuilder;
-} & { [key: number]: ResponseBuilder };
+} & { [key: number | `${number} ${string}`]: ResponseBuilder };
 
 /**
  * The request argument passed to a custom middleware function.
