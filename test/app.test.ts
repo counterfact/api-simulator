@@ -459,6 +459,171 @@ describe("counterfact", () => {
     });
   });
 
+  it("runs every group's startup once, sequentially in declaration order", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const realCreate = ApiRunner.create;
+      const capturedRunners: ApiRunner[] = [];
+      const createSpy = jest
+        .spyOn(ApiRunner, "create")
+        .mockImplementation(async (...args) => {
+          const runner = await realCreate.apply(ApiRunner, args);
+          capturedRunners.push(runner);
+          return runner;
+        });
+      const runnerStartSpy = jest
+        .spyOn(ApiRunner.prototype, "start")
+        .mockResolvedValue(undefined);
+      const order: string[] = [];
+
+      const result = await (app as any).counterfact(
+        { ...mockConfig, basePath: $.path("."), port: 0 },
+        [
+          { source: "_", group: "billing", version: "v1" },
+          { source: "_", group: "inventory", version: "v1" },
+          { source: "_", group: "billing", version: "v2" },
+        ],
+      );
+      const billingV1 = capturedRunners.find(
+        ({ group, version }) => group === "billing" && version === "v1",
+      )!;
+      const billingV2 = capturedRunners.find(
+        ({ group, version }) => group === "billing" && version === "v2",
+      )!;
+      const inventory = capturedRunners.find(
+        ({ group }) => group === "inventory",
+      )!;
+
+      billingV1.scenarioRegistry.add("index", {
+        startup: async ($: any) => {
+          order.push("billing:start");
+          await Promise.resolve();
+          $.context.seed = "billing-seed";
+          order.push("billing:end");
+        },
+      });
+      inventory.scenarioRegistry.add("index", {
+        startup: async ($: any) => {
+          order.push("inventory:start");
+          await Promise.resolve();
+          expect($.context.seed).toBeUndefined();
+          $.context.seed = "inventory-seed";
+          order.push("inventory:end");
+        },
+      });
+
+      const { stop } = await result.start({
+        startServer: true,
+        buildCache: false,
+        generate: { routes: false, types: false },
+        watch: { routes: false, types: false },
+      });
+
+      expect(order).toEqual([
+        "billing:start",
+        "billing:end",
+        "inventory:start",
+        "inventory:end",
+      ]);
+      expect(billingV2.contextRegistry.find("/")["seed"]).toBe("billing-seed");
+      expect(inventory.contextRegistry.find("/")["seed"]).toBe(
+        "inventory-seed",
+      );
+
+      await stop();
+      runnerStartSpy.mockRestore();
+      createSpy.mockRestore();
+    });
+  });
+
+  it("attributes a startup failure to its group and does not listen", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const realCreate = ApiRunner.create;
+      const capturedRunners: ApiRunner[] = [];
+      const createSpy = jest
+        .spyOn(ApiRunner, "create")
+        .mockImplementation(async (...args) => {
+          const runner = await realCreate.apply(ApiRunner, args);
+          capturedRunners.push(runner);
+          return runner;
+        });
+      const runnerStartSpy = jest
+        .spyOn(ApiRunner.prototype, "start")
+        .mockResolvedValue(undefined);
+      const stopWatchingSpy = jest
+        .spyOn(ApiRunner.prototype, "stopWatching")
+        .mockResolvedValue(undefined);
+
+      const result = await (app as any).counterfact(
+        { ...mockConfig, basePath: $.path("."), port: 0 },
+        [
+          { source: "_", group: "customers", version: "v1" },
+          { source: "_", group: "products", version: "v2" },
+        ],
+      );
+      capturedRunners
+        .find(({ group }) => group === "products")!
+        .scenarioRegistry.add("index", {
+          startup: () => {
+            throw new Error("could not seed products");
+          },
+        });
+      const listenSpy = jest.spyOn(result.koaApp, "listen");
+
+      await expect(
+        result.start({
+          startServer: true,
+          buildCache: false,
+          generate: { routes: false, types: false },
+          watch: { routes: false, types: false },
+        }),
+      ).rejects.toThrow(
+        'Startup scenario failed for group "products" (version "v2"): could not seed products',
+      );
+      expect(listenSpy).not.toHaveBeenCalled();
+      expect(stopWatchingSpy).toHaveBeenCalledTimes(2);
+
+      listenSpy.mockRestore();
+      stopWatchingSpy.mockRestore();
+      runnerStartSpy.mockRestore();
+      createSpy.mockRestore();
+    });
+  });
+
+  it("preserves startup behavior when specs are omitted", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const realCreate = ApiRunner.create;
+      let capturedRunner: ApiRunner | undefined;
+      const createSpy = jest
+        .spyOn(ApiRunner, "create")
+        .mockImplementation(async (...args) => {
+          capturedRunner = await realCreate.apply(ApiRunner, args);
+          return capturedRunner;
+        });
+      const runnerStartSpy = jest
+        .spyOn(ApiRunner.prototype, "start")
+        .mockResolvedValue(undefined);
+      const startup = jest.fn();
+      const result = await (app as any).counterfact({
+        ...mockConfig,
+        basePath: $.path("."),
+        port: 0,
+      });
+      capturedRunner!.scenarioRegistry.add("index", { startup });
+
+      const { stop } = await result.start({
+        startServer: true,
+        buildCache: false,
+        generate: { routes: false, types: false },
+        watch: { routes: false, types: false },
+      });
+
+      expect(startup).toHaveBeenCalledTimes(1);
+      await stop();
+      runnerStartSpy.mockRestore();
+      createSpy.mockRestore();
+    });
+  });
+
   it("calls startup from the index module if it exists", async () => {
     const scenarioRegistry = new ScenarioRegistry();
     const contextRegistry = new ContextRegistry();

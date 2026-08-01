@@ -108,6 +108,43 @@ export async function runStartupScenario(
 }
 
 /**
+ * Runs one startup scenario per API group, in specification declaration order.
+ * Versioned runners in one group share the same scenario and context registries,
+ * so only the group's first runner participates in startup.
+ */
+async function runGroupStartupScenarios(
+  runners: readonly ApiRunner[],
+  config: Pick<Config, "port">,
+): Promise<void> {
+  const startedGroups = new Set<string>();
+
+  for (const runner of runners) {
+    if (startedGroups.has(runner.group)) {
+      continue;
+    }
+    startedGroups.add(runner.group);
+
+    try {
+      await runStartupScenario(
+        runner.scenarioRegistry,
+        runner.contextRegistry,
+        config,
+        runner.openApiDocument,
+      );
+    } catch (error) {
+      const groupLabel = runner.group
+        ? `group "${runner.group}"${runner.version ? ` (version "${runner.version}")` : ""}`
+        : "the primary API";
+      const message = error instanceof Error ? error.message : String(error);
+
+      throw new Error(`Startup scenario failed for ${groupLabel}: ${message}`, {
+        cause: error,
+      });
+    }
+  }
+}
+
+/**
  * Derives the URL prefix for a spec entry.
  *
  * Applies the following precedence rules:
@@ -366,12 +403,16 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
     let httpTerminator: HttpTerminator | undefined;
 
     if (options.startServer) {
-      await runStartupScenario(
-        primaryRunner.scenarioRegistry,
-        primaryRunner.contextRegistry,
-        { port: config.port },
-        primaryRunner.openApiDocument,
-      );
+      try {
+        await runGroupStartupScenarios(runners, { port: config.port });
+      } catch (error) {
+        // Startup happens after the runner watchers are active. If a scenario
+        // fails, release those resources and leave the HTTP port untouched.
+        await Promise.allSettled(
+          runners.map((runner) => runner.stopWatching()),
+        );
+        throw error;
+      }
 
       const server = koaApp.listen({
         port: config.port,
