@@ -28,17 +28,16 @@ export {
  * is created per entry. When called without `specs`, a single entry is derived
  * from `config.openApiPath`, `config.prefix`, and `group = ""`.
  *
- * ### Prefix derivation
+ * ### URL prefixes
  *
- * When `prefix` is omitted (or `undefined`), the URL prefix is derived from
- * `group` and `version` according to this table:
+ * `group` and `version` organize generated code and runtime state; they do not
+ * change the paths declared by the OpenAPI document. The URL prefix follows
+ * this table:
  *
- * | `prefix`    | `group` | `version` | Derived prefix       |
- * |-------------|---------|-----------|----------------------|
- * | provided    | any     | any       | use the explicit prefix |
- * | absent      | set     | set       | `/<group>/<version>` |
- * | absent      | set     | absent    | `/<group>`           |
- * | absent      | absent  | absent    | `""` (root)          |
+ * | `prefix` | Effective prefix |
+ * |----------|------------------|
+ * | provided | explicit value   |
+ * | absent   | `""` (root)      |
  */
 export interface SpecConfig {
   /** Path or URL to the OpenAPI document for this spec. */
@@ -46,18 +45,14 @@ export interface SpecConfig {
   /**
    * URL prefix that this spec's runner intercepts.
    *
-   * When absent, the prefix is derived automatically from `group` and
-   * `version` (see the derivation table on the interface). Pass an explicit
-   * empty string (`""`) to force the root prefix regardless of `group`/`version`.
+   * When absent, the prefix defaults to the root (`""`). Group and version do
+   * not affect URL routing.
    */
   prefix?: string;
   /** Name of the subdirectory under `config.basePath` where code is generated. */
   group: string;
   /**
    * Optional version label for this spec (e.g. `"v1"`, `"v2"`).
-   *
-   * When combined with `group` and no explicit `prefix`, the server mounts
-   * this spec's routes under `/<group>/<version>`.
    *
    * When at least one spec in a group defines a non-empty version,
    * `types/versions.ts` is generated inside that group's subdirectory
@@ -145,46 +140,19 @@ async function runGroupStartupScenarios(
 }
 
 /**
- * Derives the URL prefix for a spec entry.
- *
- * Applies the following precedence rules:
- *  1. Explicit `prefix` (even `""`) → returned as-is.
- *  2. `group` + `version` both present → `/<group>/<version>`.
- *  3. `group` present (no `version`) → `/<group>`.
- *  4. Neither → `""` (root).
- */
-function derivePrefix(
-  spec: Pick<SpecConfig, "prefix" | "group" | "version">,
-): string {
-  if (spec.prefix !== undefined) {
-    return spec.prefix;
-  }
-
-  if (spec.group && spec.version) {
-    return `/${spec.group}/${spec.version}`;
-  }
-
-  if (spec.group) {
-    return `/${spec.group}`;
-  }
-
-  return "";
-}
-
-/**
  * Normalises the spec configuration to an array.
  *
- * When `specs` is provided, each entry's `prefix` is resolved via
- * {@link derivePrefix} so the rest of the code can assume `prefix` is always
- * a string. When `specs` is omitted, a single-entry array is constructed from
- * `config.openApiPath`, `config.prefix`, and `group = ""`.
+ * When `specs` is provided, each omitted `prefix` defaults to `""` so the rest
+ * of the code can assume it is always a string. When `specs` is omitted, a
+ * single-entry array is constructed from `config.openApiPath`, `config.prefix`,
+ * and `group = ""`.
  */
 function normalizeSpecs(
   config: Pick<Config, "openApiPath" | "prefix">,
   specs?: SpecConfig[],
 ): Array<SpecConfig & { prefix: string }> {
   if (specs !== undefined) {
-    return specs.map((spec) => ({ ...spec, prefix: derivePrefix(spec) }));
+    return specs.map((spec) => ({ ...spec, prefix: spec.prefix ?? "" }));
   }
 
   return [

@@ -344,9 +344,7 @@ describe("counterfact", () => {
   it("preserves an explicit empty prefix", async () => {
     const spy = jest.spyOn(ApiRunner, "create");
 
-    const specs = [
-      { source: "_", prefix: "", group: "my-api", version: "v1" },
-    ];
+    const specs = [{ source: "_", prefix: "", group: "my-api", version: "v1" }];
 
     await (app as any).counterfact(mockConfig, specs);
 
