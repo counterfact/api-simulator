@@ -1,3 +1,4 @@
+import type { COUNTERFACT_RESPONSE } from "./counterfact-response.js";
 import type { CookieOptions } from "./cookie-options.js";
 import type { MaybePromise } from "./maybe-promise.js";
 
@@ -20,7 +21,7 @@ export interface WideResponseBuilder {
   html: (body: unknown) => WideResponseBuilder;
   json: (body: unknown) => WideResponseBuilder;
   match: (contentType: string, body: unknown) => WideResponseBuilder;
-  random: () => MaybePromise<WideResponseBuilder>;
+  random: () => MaybePromise<COUNTERFACT_RESPONSE>;
   text: (body: unknown) => WideResponseBuilder;
   xml: (body: unknown) => WideResponseBuilder;
   stream: (body: AsyncIterable<unknown>) => WideResponseBuilder;

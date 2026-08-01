@@ -1,3 +1,4 @@
+import type { HttpStatusCode } from "./http-status-code.js";
 import type { WideResponseBuilder } from "./wide-response-builder.js";
 
 /**
@@ -13,5 +14,7 @@ export interface WideOperationArgument {
   path: { [key: string]: string };
   proxy: (url: string) => { proxyUrl: string };
   query: { [key: string]: string };
-  response: { [key: number]: WideResponseBuilder };
+  response: { [StatusCode in HttpStatusCode]: WideResponseBuilder } & {
+    [key: number]: WideResponseBuilder;
+  };
 }

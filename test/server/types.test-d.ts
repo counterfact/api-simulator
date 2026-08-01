@@ -17,6 +17,7 @@ import type {
   OmitValueWhenNever,
   OpenApiResponse,
   ResponseBuilderFactory,
+  WideOperationArgument,
 } from "../../src/counterfact-types/index.ts";
 
 // test exact match
@@ -114,6 +115,14 @@ expectAssignable<MaybePromise<string>>("hello");
 expectAssignable<MaybePromise<string>>(Promise.resolve("hello"));
 expectNotAssignable<MaybePromise<string>>(42);
 expectNotAssignable<MaybePromise<string>>(Promise.resolve(42));
+
+// Wide routes can return a random response for a versioned request.
+type WideRoute = ($: {
+  x: WideOperationArgument;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
+
+const wideRandomRoute: WideRoute = ($) => $.x.response[200].random();
+expectAssignable<WideRoute>(wideRandomRoute);
 
 // OmitValueWhenNever: keys whose value is `never` are removed from the type
 expectType<OmitValueWhenNever<{ a: string; b: never }>>({ a: "hello" });
