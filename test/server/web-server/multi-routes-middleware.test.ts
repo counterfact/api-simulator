@@ -45,8 +45,13 @@ describe("routes middleware for multiple API runners", () => {
       runner("", [["/products", { GET: () => ({ body: "products" }) }]]),
     ]);
 
-    await request(app.callback()).get("/customers").expect(200, "customers");
-    await request(app.callback()).get("/products").expect(200, "products");
+    const customers = await request(app.callback()).get("/customers");
+    const products = await request(app.callback()).get("/products");
+
+    expect(customers.status).toBe(200);
+    expect(customers.text).toBe("customers");
+    expect(products.status).toBe(200);
+    expect(products.text).toBe("products");
   });
 
   it("falls through three runners sharing an empty prefix", async () => {
@@ -56,7 +61,10 @@ describe("routes middleware for multiple API runners", () => {
       runner("", [["/third", { GET: () => ({ body: "third" }) }]]),
     ]);
 
-    await request(app.callback()).get("/third").expect(200, "third");
+    const response = await request(app.callback()).get("/third");
+
+    expect(response.status).toBe(200);
+    expect(response.text).toBe("third");
   });
 
   it("falls through runners sharing a non-empty prefix", async () => {
@@ -65,7 +73,10 @@ describe("routes middleware for multiple API runners", () => {
       runner("/api", [["/products", { GET: () => ({ body: "products" }) }]]),
     ]);
 
-    await request(app.callback()).get("/api/products").expect(200, "products");
+    const response = await request(app.callback()).get("/api/products");
+
+    expect(response.status).toBe(200);
+    expect(response.text).toBe("products");
   });
 
   it("selects a later runner that supports the requested method", async () => {
@@ -74,7 +85,10 @@ describe("routes middleware for multiple API runners", () => {
       runner("", [["/items", { POST: () => ({ body: "post item" }) }]]),
     ]);
 
-    await request(app.callback()).post("/items").expect(200, "post item");
+    const response = await request(app.callback()).post("/items");
+
+    expect(response.status).toBe(200);
+    expect(response.text).toBe("post item");
   });
 
   it("uses declaration order when runners support the same path and method", async () => {
@@ -83,7 +97,10 @@ describe("routes middleware for multiple API runners", () => {
       runner("", [["/items", { GET: () => ({ body: "second" }) }]]),
     ]);
 
-    await request(app.callback()).get("/items").expect(200, "first");
+    const response = await request(app.callback()).get("/items");
+
+    expect(response.status).toBe(200);
+    expect(response.text).toBe("first");
   });
 
   it("combines allowed methods when no runner supports the requested method", async () => {
@@ -105,6 +122,8 @@ describe("routes middleware for multiple API runners", () => {
       runner("", [["/products", { GET: () => ({ body: "products" }) }]]),
     ]);
 
-    await request(app.callback()).get("/missing").expect(404);
+    const response = await request(app.callback()).get("/missing");
+
+    expect(response.status).toBe(404);
   });
 });
