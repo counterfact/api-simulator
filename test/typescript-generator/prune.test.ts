@@ -2,7 +2,10 @@ import { describe, expect, it } from "@jest/globals";
 
 import { usingTemporaryFiles } from "using-temporary-files";
 
-import { pruneRoutes } from "../../src/typescript-generator/prune.js";
+import {
+  pruneRoutes,
+  pruneTypes,
+} from "../../src/typescript-generator/prune.js";
 
 describe("pruneRoutes", () => {
   it("removes a route file that is not in the OpenAPI spec", async () => {
@@ -92,6 +95,25 @@ describe("pruneRoutes", () => {
     });
   });
 
+  it("keeps the normalized route and removes a legacy trailing-slash dotfile", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "routes/customers.ts",
+        "export const GET = () => ({ status: 200 });",
+      );
+      await $.add(
+        "routes/customers/.ts",
+        "export const GET = () => ({ status: 200 });",
+      );
+
+      const count = await pruneRoutes($.path(""), ["/customers/"]);
+
+      expect(count).toBe(1);
+      await expect($.read("routes/customers.ts")).resolves.toBeDefined();
+      await expect($.read("routes/customers/.ts")).rejects.toThrow();
+    });
+  });
+
   it("returns 0 when all files match the spec", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(
@@ -115,6 +137,99 @@ describe("pruneRoutes", () => {
       const count = await pruneRoutes($.path(""), ["/pet/{id}"]);
 
       expect(count).toBe(0);
+    });
+  });
+});
+
+describe("pruneTypes", () => {
+  it("removes obsolete generated types, including hidden path dotfiles", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("types/paths/customers.types.ts", "// current");
+      await $.add("types/paths/customers/.types.ts", "// obsolete");
+      await $.add("types/components/schemas/OldPet.ts", "// obsolete");
+      await $.add("types/#/components/responses/OldError.ts", "// obsolete");
+
+      const count = await pruneTypes($.path(""), [
+        "types/paths/customers.types.ts",
+      ]);
+
+      expect(count).toBe(3);
+      await expect($.read("types/paths/customers.types.ts")).resolves.toBe(
+        "// current",
+      );
+      await expect($.read("types/paths/customers/.types.ts")).rejects.toThrow();
+      await expect(
+        $.read("types/components/schemas/OldPet.ts"),
+      ).rejects.toThrow();
+      await expect(
+        $.read("types/#/components/responses/OldError.ts"),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("preserves every expected generated type category", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const expected = [
+        "types/paths/pets.types.ts",
+        "types/components/schemas/Pet.ts",
+        "types/#/components/responses/NotFound.ts",
+        "types/v2/paths/pets.types.ts",
+        "types/v2/components/schemas/Pet.ts",
+      ];
+
+      for (const file of expected) {
+        await $.add(file, `// ${file}`);
+      }
+
+      expect(await pruneTypes($.path(""), expected)).toBe(0);
+      await Promise.all(
+        expected.map(async (file) =>
+          expect($.read(file)).resolves.toBe(`// ${file}`),
+        ),
+      );
+    });
+  });
+
+  it("protects context and user-authored type files", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("types/_.context.ts", "// generated elsewhere");
+      await $.add("types/custom.ts", "// user authored");
+      await $.add("types/helpers/utility.ts", "// user authored");
+
+      expect(await pruneTypes($.path(""), [])).toBe(0);
+      await expect($.read("types/_.context.ts")).resolves.toBe(
+        "// generated elsewhere",
+      );
+      await expect($.read("types/custom.ts")).resolves.toBe("// user authored");
+      await expect($.read("types/helpers/utility.ts")).resolves.toBe(
+        "// user authored",
+      );
+    });
+  });
+
+  it("prunes obsolete version metadata unless it is expected", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("types/versions.ts", "// old versions");
+
+      expect(await pruneTypes($.path(""), [])).toBe(1);
+      await expect($.read("types/versions.ts")).rejects.toThrow();
+
+      await $.add("types/versions.ts", "// current versions");
+      expect(await pruneTypes($.path(""), ["types/versions.ts"])).toBe(0);
+      await expect($.read("types/versions.ts")).resolves.toBe(
+        "// current versions",
+      );
+    });
+  });
+
+  it("is idempotent after stale files have been removed", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("types/paths/current.types.ts", "// current");
+      await $.add("types/paths/stale.types.ts", "// stale");
+      const expected = ["types/paths/current.types.ts"];
+
+      expect(await pruneTypes($.path(""), expected)).toBe(1);
+      expect(await pruneTypes($.path(""), expected)).toBe(0);
     });
   });
 });

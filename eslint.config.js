@@ -1,19 +1,16 @@
-"use strict";
+import path from "node:path";
 
-const path = require("path");
-
-const js = require("@eslint/js");
-const prettierPlugin = require("eslint-plugin-prettier");
-const typescriptParser = require("@typescript-eslint/parser");
-const typescriptPlugin = require("@typescript-eslint/eslint-plugin");
-const jestPlugin = require("eslint-plugin-jest");
-const nPluginImport = require("eslint-plugin-n");
-const nPlugin = nPluginImport.default ?? nPluginImport;
-const promisePlugin = require("eslint-plugin-promise");
-const importPlugin = require("eslint-plugin-import");
-const regexpPlugin = require("eslint-plugin-regexp");
-const securityPlugin = require("eslint-plugin-security");
-const espreeParser = require("espree");
+import js from "@eslint/js";
+import typescriptPlugin from "@typescript-eslint/eslint-plugin";
+import typescriptParser from "@typescript-eslint/parser";
+import importPlugin from "eslint-plugin-import";
+import jestPlugin from "eslint-plugin-jest";
+import nPlugin from "eslint-plugin-n";
+import prettierPlugin from "eslint-plugin-prettier";
+import promisePlugin from "eslint-plugin-promise";
+import { configs as regexpConfigs } from "eslint-plugin-regexp";
+import securityPlugin from "eslint-plugin-security";
+import * as espreeParser from "espree";
 
 const DASH_CHAR_CODE = 45;
 const DIGIT_START_CHAR_CODE = 48;
@@ -55,7 +52,7 @@ const typescriptRecommended = typescriptPlugin.configs["flat/recommended"].map(
   }),
 );
 
-module.exports = [
+export default [
   {
     ignores: [
       "node_modules/**",
@@ -80,7 +77,7 @@ module.exports = [
   ...nPlugin.configs["flat/mixed-esm-and-cjs"],
   promisePlugin.configs["flat/recommended"],
   importPlugin.flatConfigs.recommended,
-  regexpPlugin.configs["flat/recommended"],
+  regexpConfigs["flat/recommended"],
   securityPlugin.configs.recommended,
   {
     languageOptions: {
@@ -242,13 +239,10 @@ module.exports = [
     },
   },
   {
-    files: ["eslint.config.cjs"],
-    languageOptions: {
-      sourceType: "commonjs",
-    },
+    files: ["eslint.config.js"],
     rules: {
-      "import/no-commonjs": "off",
-      "n/no-extraneous-require": "off",
+      "import/no-unresolved": "off",
+      "n/no-extraneous-import": "off",
     },
   },
   {
