@@ -13,12 +13,34 @@ import type {
   IfHasKey,
   MaybePromise,
   MediaType,
+  Middleware,
   OmitAll,
   OmitValueWhenNever,
   OpenApiResponse,
   ResponseBuilderFactory,
   WideOperationArgument,
 } from "../../src/counterfact-types/index.ts";
+
+class AuthenticationContext {
+  public isAuthorized(apiKey: string | undefined): boolean {
+    return apiKey === "secret";
+  }
+}
+
+const authenticationMiddleware: Middleware<AuthenticationContext> = async (
+  $,
+  respondTo,
+) => {
+  if (!$.context.isAuthorized($.auth?.apiKey)) {
+    return $.response[401].json({ error: "Unauthorized" });
+  }
+
+  return respondTo($);
+};
+
+expectAssignable<Middleware<AuthenticationContext>>(
+  authenticationMiddleware,
+);
 
 // test exact match
 expectType<

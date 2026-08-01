@@ -9,6 +9,14 @@ export type { HttpStatusCode } from "./http-status-code.js";
 export type { IfHasKey } from "./if-has-key.js";
 export type { MaybePromise } from "./maybe-promise.js";
 export type { MediaType } from "./media-type.js";
+export type {
+  Middleware,
+  MiddlewareRequest,
+  MiddlewareResponse,
+  MiddlewareResponseObject,
+  MiddlewareTools,
+  RespondTo,
+} from "./middleware.js";
 export type { OmitAll } from "./omit-all.js";
 export type { OmitValueWhenNever } from "./omit-value-when-never.js";
 export type { OpenApiHeader } from "./open-api-header.js";
