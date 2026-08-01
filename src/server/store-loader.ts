@@ -68,10 +68,18 @@ export class StoreLoader {
   public async watch(): Promise<void> {
     if (this.watcher !== undefined) return;
 
-    this.watcher = watch(this.sourcePath, {
+    // Watch the parent directory rather than the specific file so that
+    // chokidar can reliably detect file creation on Windows. Watching a
+    // non-existent file path is unreliable on Windows with native fs.watch.
+    this.watcher = watch(path.dirname(this.sourcePath), {
       ...CHOKIDAR_OPTIONS,
       awaitWriteFinish: { pollInterval: 10, stabilityThreshold: 50 },
-    }).on("all", (eventName: string) => {
+      depth: 0,
+    }).on("all", (eventName: string, filePath: string) => {
+      if (path.resolve(filePath) !== this.sourcePath) {
+        return;
+      }
+
       if (
         eventName !== "add" &&
         eventName !== "change" &&
