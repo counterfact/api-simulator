@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import nodePath from "node:path";
-/* eslint-disable security/detect-non-literal-fs-filename -- pruning only traverses and removes files under destination/routes. */
+/* eslint-disable security/detect-non-literal-fs-filename -- pruning only traverses and removes files under generator-owned destination subdirectories. */
 
 import createDebug from "debug";
 
@@ -16,16 +16,14 @@ const debug = createDebug("counterfact:typescript-generator:prune");
  * @param currentPath - Current subdirectory being processed (relative to routesDir)
  * @returns Array of relative paths (using forward slashes)
  */
-async function collectRouteFiles(
-  routesDir: string,
+async function collectTypeScriptFiles(
+  rootDir: string,
   currentPath = "",
 ): Promise<string[]> {
   const files: string[] = [];
 
   try {
-    const fullDir = currentPath
-      ? nodePath.join(routesDir, currentPath)
-      : routesDir;
+    const fullDir = currentPath ? nodePath.join(rootDir, currentPath) : rootDir;
     const entries = await fs.readdir(fullDir, { withFileTypes: true });
 
     for (const entry of entries) {
@@ -34,8 +32,8 @@ async function collectRouteFiles(
         : entry.name;
 
       if (entry.isDirectory()) {
-        files.push(...(await collectRouteFiles(routesDir, relativePath)));
-      } else if (entry.name.endsWith(".ts") && entry.name !== "_.context.ts") {
+        files.push(...(await collectTypeScriptFiles(rootDir, relativePath)));
+      } else if (entry.name.endsWith(".ts")) {
         files.push(relativePath);
       }
     }
@@ -115,7 +113,9 @@ export async function pruneRoutes(
 
   debug("expected route files: %o", Array.from(expectedFiles));
 
-  const actualFiles = await collectRouteFiles(routesDir);
+  const actualFiles = (await collectTypeScriptFiles(routesDir)).filter(
+    (file) => nodePath.basename(file) !== "_.context.ts",
+  );
 
   debug("actual route files: %o", actualFiles);
 
@@ -136,6 +136,67 @@ export async function pruneRoutes(
   await removeEmptyDirectories(routesDir, routesDir);
 
   debug("pruned %d files", prunedCount);
+
+  return prunedCount;
+}
+
+/**
+ * Returns whether a path below `types/` belongs to a namespace populated by
+ * the OpenAPI generator. Context support, version metadata, and arbitrary
+ * user-authored type modules are deliberately outside this ownership policy.
+ */
+function isGeneratorOwnedTypePath(path: string): boolean {
+  const [first, second] = toForwardSlashPath(path).split("/");
+  const generatedCategory = (segment: string | undefined) =>
+    segment === "paths" || segment === "components" || segment === "#";
+
+  return generatedCategory(first) || generatedCategory(second);
+}
+
+/**
+ * Prunes obsolete files from the OpenAPI generator-owned namespaces below
+ * `types/`. Hidden files are included by the recursive directory walk.
+ *
+ * `types/_.context.ts`, `types/versions.ts`, and paths outside the known
+ * generated namespaces are preserved because separate generators or users own
+ * them.
+ *
+ * @param destination - Base destination directory (contains `types/`).
+ * @param expectedPaths - Repository-relative generated paths to retain.
+ * @returns Number of files removed.
+ */
+export async function pruneTypes(
+  destination: string,
+  expectedPaths: Iterable<string>,
+): Promise<number> {
+  const typesDir = nodePath.join(destination, "types");
+  const expectedFiles = new Set(
+    Array.from(expectedPaths, (path) =>
+      toForwardSlashPath(path).replace(/^types\//u, ""),
+    ),
+  );
+  const actualFiles = (await collectTypeScriptFiles(typesDir)).filter(
+    isGeneratorOwnedTypePath,
+  );
+  let prunedCount = 0;
+
+  debug("expected type files: %o", Array.from(expectedFiles));
+  debug("actual generated type files: %o", actualFiles);
+
+  for (const file of actualFiles) {
+    const normalizedFile = toForwardSlashPath(file);
+
+    if (!expectedFiles.has(normalizedFile)) {
+      const fullPath = nodePath.join(typesDir, file);
+
+      debug("pruning %s", fullPath);
+      await fs.rm(fullPath);
+      prunedCount++;
+    }
+  }
+
+  await removeEmptyDirectories(typesDir, typesDir);
+  debug("pruned %d type files", prunedCount);
 
   return prunedCount;
 }

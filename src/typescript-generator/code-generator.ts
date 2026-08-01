@@ -15,7 +15,7 @@ import {
   normalizeOpenApiPath,
 } from "./openapi-path.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
-import { pruneRoutes } from "./prune.js";
+import { pruneRoutes, pruneTypes } from "./prune.js";
 import type { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
 import { Specification } from "./specification.js";
@@ -220,6 +220,14 @@ export class CodeGenerator extends EventTarget {
         },
       );
     });
+
+    if (this.generateOptions.prune && this.generateOptions.types) {
+      debug("resolving the expected generated type files");
+      await repository.finished();
+      debug("pruning defunct generated type files");
+      await pruneTypes(destination, repository.scripts.keys());
+      debug("done pruning generated type files");
+    }
 
     debug("telling the repository to write the files to %s", destination);
 
