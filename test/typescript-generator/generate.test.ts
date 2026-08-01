@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { CodeGenerator } from "../../src/typescript-generator/code-generator.js";
