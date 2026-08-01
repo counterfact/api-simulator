@@ -479,7 +479,9 @@ export class ScenarioFileGenerator {
       void Promise.all([
         writeScenarioContextType(this.destination, this.rootDestination),
         writeMiddlewareTypes(this.destination),
-      ]);
+      ]).catch((error: unknown) => {
+        console.error("Failed to regenerate scenario files:", error);
+      });
     };
 
     this.watcher = watch(routesDir, CHOKIDAR_OPTIONS).on(

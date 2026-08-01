@@ -672,6 +672,44 @@ describe("_.context type generation", () => {
     });
   });
 
+  it("logs regeneration failures triggered by watcher events", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.addDirectory("customers/routes");
+      const generator = new ScenarioFileGenerator(
+        $.path("customers"),
+        $.path(""),
+      );
+
+      await generator.generate();
+      await generator.watch();
+
+      const errorSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      try {
+        await $.remove("customers/types/_.context.ts");
+        await $.remove("customers/types/_.middleware.ts");
+        await $.remove("customers/types");
+        await $.add("customers/types", "blocker");
+        await $.add("_.store.ts", "export class Store {}");
+
+        await waitForGeneratedContent(
+          async () => String(errorSpy.mock.calls.length),
+          (callCount) => callCount !== "0",
+        );
+
+        expect(errorSpy).toHaveBeenCalledWith(
+          "Failed to regenerate scenario files:",
+          expect.anything(),
+        );
+      } finally {
+        errorSpy.mockRestore();
+        await generator.stopWatching();
+      }
+    });
+  });
+
   it("generates narrowed overloads for root + subdirectory context files", async () => {
     await usingTemporaryFiles(async ($) => {
       const basePath = $.path("");
