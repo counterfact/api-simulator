@@ -293,7 +293,7 @@ See the copyable [Programmatic API configuration](./features/programmatic-api.md
 
 The optional `version` field on a spec entry declares the version label for that spec (e.g. `"v1"`, `"v2"`).
 
-When combined with `group` and no explicit `prefix`, the server mounts the spec's routes under `/<group>/<version>`. When omitted, routes are mounted under `/<group>`.
+`group` and `version` organize generated code, types, and runtime state; they do not change URL routing. A spec entry's omitted `prefix` defaults to `""`, so OpenAPI paths remain available exactly as declared. An explicit `prefix` is prepended to every declared path. Multiple specs may share the same prefix, including `""`, and matching runners are tried in declaration order.
 
 When at least one spec in a group declares a non-empty `version`, Counterfact generates `types/versions.ts` inside that group's subdirectory with the `Versions`, `VersionsGTE`, and `Versioned` types.
 
