@@ -370,7 +370,7 @@ describe("a dispatcher", () => {
     registry.add("/a", {
       GET({ auth }) {
         return {
-          body: auth?.apiKey,
+          body: auth?.apiKeyAuth,
         };
       },
     });
@@ -385,6 +385,7 @@ describe("a dispatcher", () => {
           },
         },
       },
+      security: [{ apiKeyAuth: [] }],
       paths: {
         "/a": {
           get: {
@@ -412,13 +413,13 @@ describe("a dispatcher", () => {
     expect(response.body).toBe("top-secret");
   });
 
-  it("defaults api key auth to an empty string when missing from the request", async () => {
+  it("leaves api key auth absent when missing from the request", async () => {
     const registry = new Registry();
 
     registry.add("/a", {
       GET({ auth }) {
         return {
-          body: auth?.apiKey,
+          body: auth?.apiKeyAuth,
         };
       },
     });
@@ -433,6 +434,7 @@ describe("a dispatcher", () => {
           },
         },
       },
+      security: [{ apiKeyAuth: [] }],
       paths: {
         "/a": {
           get: {
@@ -457,7 +459,7 @@ describe("a dispatcher", () => {
       req: { path: "/a" },
     });
 
-    expect(response.body).toBe("");
+    expect(response.body).toBeUndefined();
   });
 
   it("adds api key auth from configured cookie security schemes", async () => {
@@ -466,7 +468,7 @@ describe("a dispatcher", () => {
     registry.add("/a", {
       GET({ auth }) {
         return {
-          body: auth?.apiKey,
+          body: auth?.apiKeyAuth,
         };
       },
     });
@@ -481,6 +483,7 @@ describe("a dispatcher", () => {
           },
         },
       },
+      security: [{ apiKeyAuth: [] }],
       paths: {
         "/a": {
           get: {
@@ -506,6 +509,75 @@ describe("a dispatcher", () => {
     });
 
     expect(response.body).toBe("top-secret-cookie");
+  });
+
+  it("extracts multiple active api keys by security scheme name", async () => {
+    const registry = new Registry();
+
+    registry.add("/a", {
+      GET({ auth }) {
+        return { body: `${auth?.headerAuth}:${auth?.queryAuth}` };
+      },
+    });
+
+    const dispatcher = new Dispatcher(registry, new ContextRegistry(), {
+      components: {
+        securitySchemes: {
+          headerAuth: { in: "header", name: "X-API-Key", type: "apiKey" },
+          queryAuth: { in: "query", name: "token", type: "apiKey" },
+        },
+      },
+      security: [{ headerAuth: [], queryAuth: [] }],
+      paths: {
+        "/a": { get: { responses: { 200: { description: "ok" } } } },
+      },
+    });
+
+    const response = await dispatcher.request({
+      body: "",
+      headers: { "x-api-key": "header-secret" },
+      method: "GET",
+      path: "/a",
+      query: { token: "query-secret" },
+      req: { path: "/a" },
+    });
+
+    expect(response.body).toBe("header-secret:query-secret");
+  });
+
+  it("honors operation security opt-out from root security", async () => {
+    const registry = new Registry();
+
+    registry.add("/a", {
+      GET({ auth }) {
+        return { body: JSON.stringify(auth) };
+      },
+    });
+
+    const dispatcher = new Dispatcher(registry, new ContextRegistry(), {
+      components: {
+        securitySchemes: {
+          apiKeyAuth: { in: "header", name: "x-api-key", type: "apiKey" },
+        },
+      },
+      security: [{ apiKeyAuth: [] }],
+      paths: {
+        "/a": {
+          get: { security: [], responses: { 200: { description: "ok" } } },
+        },
+      },
+    });
+
+    const response = await dispatcher.request({
+      body: "",
+      headers: { "x-api-key": "should-not-be-exposed" },
+      method: "GET",
+      path: "/a",
+      query: {},
+      req: { path: "/a" },
+    });
+
+    expect(response.body).toBeUndefined();
   });
 
   it("passes the query params", async () => {

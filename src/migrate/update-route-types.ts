@@ -98,9 +98,9 @@ async function buildTypeNameMapping(
     const securityRequirement = specification.getRequirement(
       "#/components/securitySchemes",
     );
-    const securitySchemes = Object.values(
-      (securityRequirement?.data as Record<string, unknown>) ?? {},
-    ) as SecurityScheme[];
+    const securitySchemes = Object.entries(
+      (securityRequirement?.data as Record<string, SecurityScheme>) ?? {},
+    ).map(([key, scheme]) => ({ ...scheme, key }));
 
     paths.forEach((pathDefinition, openApiPath: string) => {
       const filePath = openApiPathToFilePath(openApiPath);

@@ -5,6 +5,64 @@ import { ScenarioFileGenerator } from "../../src/typescript-generator/scenario-f
 import { Repository } from "../../src/typescript-generator/repository.js";
 
 describe("end-to-end test", () => {
+  it("generates scheme-named auth for effective root api key security", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "API key", version: "1.0.0" },
+          security: [{ apiKeyAuth: [] }],
+          paths: {
+            "/customers": {
+              get: {
+                operationId: "listCustomers",
+                responses: { 200: { description: "OK" } },
+              },
+            },
+            "/public": {
+              get: {
+                operationId: "publicEndpoint",
+                security: [],
+                responses: { 200: { description: "OK" } },
+              },
+            },
+          },
+          components: {
+            securitySchemes: {
+              apiKeyAuth: {
+                type: "apiKey",
+                in: "header",
+                name: "x-api-key",
+              },
+            },
+          },
+        }),
+      );
+      const repository = new Repository();
+      repository.writeFiles = async () => {};
+      const generator = new CodeGenerator($.path("openapi.json"), $.path(""), {
+        routes: true,
+        types: true,
+      });
+
+      await generator.generate(repository);
+      await repository.finished();
+
+      const secured = await repository.scripts
+        .get("types/paths/customers.types.ts")!
+        .contents();
+      const publicEndpoint = await repository.scripts
+        .get("types/paths/public.types.ts")!
+        .contents();
+
+      expect(secured).toContain("auth: { apiKeyAuth?: string }");
+      expect(secured).toContain('"x-api-key"?: string');
+      expect(publicEndpoint).toContain("auth: never");
+      expect(publicEndpoint).toContain("headers: never");
+    });
+  });
+
   it("generates the same code for pet store that it did on the last test run", async () => {
     await usingTemporaryFiles(async ($) => {
       const basePath = $.path("");

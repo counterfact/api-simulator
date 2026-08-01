@@ -141,11 +141,13 @@ export const GET: HTTP_GET = ($) => {
 
 This behaviour follows the OpenAPI 3.x defaults (`style: form`, `explode: true`) and also applies when those values are set explicitly. To opt out, set `explode: false` on the parameter in your spec.
 
-## Basic auth: `$.auth`
+## Authentication: `$.auth`
 
 When a request includes HTTP Basic credentials, they're available at `$.auth.username` and `$.auth.password`.
 
-When your OpenAPI document defines an `apiKey` security scheme (`in: header`, `in: query`, or `in: cookie`), Counterfact always includes `$.auth.apiKey`. If the request omits the key, `$.auth.apiKey` defaults to an empty string.
+For an active OpenAPI `apiKey` security scheme (`in: header`, `in: query`, or `in: cookie`), the extracted value is available under the scheme's name. For example, a scheme named `apiKeyAuth` is exposed as `$.auth.apiKeyAuth`. The property is optional because Counterfact does not validate credentials or require their presence before invoking a route handler.
+
+Root-level security requirements apply to every operation unless the operation overrides them. An operation can opt out with `security: []`. When a requirement contains multiple API-key schemes, each value is exposed separately by scheme name.
 
 Support for other security schemes (OAuth 2, OpenID Connect, mutual TLS) is planned. [Open an issue](https://github.com/pmcelhaney/counterfact/issues) to help prioritize.
 

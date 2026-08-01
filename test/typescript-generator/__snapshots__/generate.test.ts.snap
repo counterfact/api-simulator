@@ -35,7 +35,7 @@ export type addPet = (
     query: never;
     querystring: never;
     path: never;
-    headers: addPet_Headers;
+    headers: never;
     cookie: never;
     body: Pet;
     context: Context;
@@ -62,7 +62,7 @@ export type addPet = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -77,7 +77,7 @@ export type updatePet = (
     query: never;
     querystring: never;
     path: never;
-    headers: updatePet_Headers;
+    headers: never;
     cookie: never;
     body: Pet;
     context: Context;
@@ -116,16 +116,12 @@ export type updatePet = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type addPet_Headers = { api_key: string };
-
-export type updatePet_Headers = { api_key: string };
 "
 `;
 
@@ -159,7 +155,7 @@ export type findPetsByStatus = (
     query: findPetsByStatus_Query;
     querystring: never;
     path: never;
-    headers: findPetsByStatus_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -186,7 +182,7 @@ export type findPetsByStatus = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -199,8 +195,6 @@ export type findPetsByStatus_Query = {
    */
   status?: "available" | "pending" | "sold";
 };
-
-export type findPetsByStatus_Headers = { api_key: string };
 "
 `;
 
@@ -234,7 +228,7 @@ export type findPetsByTags = (
     query: findPetsByTags_Query;
     querystring: never;
     path: never;
-    headers: findPetsByTags_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -261,7 +255,7 @@ export type findPetsByTags = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -274,8 +268,6 @@ export type findPetsByTags_Query = {
    */
   tags?: Array<string>;
 };
-
-export type findPetsByTags_Headers = { api_key: string };
 "
 `;
 
@@ -352,7 +344,7 @@ export type getPetById = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: { api_key?: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -364,7 +356,7 @@ export type updatePetWithForm = (
     query: updatePetWithForm_Query;
     querystring: never;
     path: updatePetWithForm_Path;
-    headers: updatePetWithForm_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -378,7 +370,7 @@ export type updatePetWithForm = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -404,7 +396,7 @@ export type deletePet = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -418,7 +410,7 @@ export type getPetById_Path = {
   petId: number;
 };
 
-export type getPetById_Headers = { api_key: string };
+export type getPetById_Headers = { api_key?: string };
 
 export type updatePetWithForm_Query = {
   /**
@@ -438,8 +430,6 @@ export type updatePetWithForm_Path = {
   petId: number;
 };
 
-export type updatePetWithForm_Headers = { api_key: string };
-
 export type deletePet_Path = {
   /**
    * Pet id to delete
@@ -447,7 +437,7 @@ export type deletePet_Path = {
   petId: number;
 };
 
-export type deletePet_Headers = { api_key: string };
+export type deletePet_Headers = { api_key?: string };
 "
 `;
 
@@ -478,7 +468,7 @@ export type uploadFile = (
     query: uploadFile_Query;
     querystring: never;
     path: uploadFile_Path;
-    headers: uploadFile_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -496,7 +486,7 @@ export type uploadFile = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -516,8 +506,6 @@ export type uploadFile_Path = {
    */
   petId: number;
 };
-
-export type uploadFile_Headers = { api_key: string };
 "
 `;
 
@@ -568,14 +556,14 @@ export type getInventory = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: { api_key?: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
 
-export type getInventory_Headers = { api_key: string };
+export type getInventory_Headers = { api_key?: string };
 "
 `;
 
@@ -609,7 +597,7 @@ export type placeOrder = (
     query: never;
     querystring: never;
     path: never;
-    headers: placeOrder_Headers;
+    headers: never;
     cookie: never;
     body: Order;
     context: Context;
@@ -633,14 +621,12 @@ export type placeOrder = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type placeOrder_Headers = { api_key: string };
 "
 `;
 
@@ -679,7 +665,7 @@ export type getOrderById = (
     query: never;
     querystring: never;
     path: getOrderById_Path;
-    headers: getOrderById_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -712,7 +698,7 @@ export type getOrderById = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -727,7 +713,7 @@ export type deleteOrder = (
     query: never;
     querystring: never;
     path: deleteOrder_Path;
-    headers: deleteOrder_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -747,7 +733,7 @@ export type deleteOrder = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -761,16 +747,12 @@ export type getOrderById_Path = {
   orderId: number;
 };
 
-export type getOrderById_Headers = { api_key: string };
-
 export type deleteOrder_Path = {
   /**
    * ID of the order that needs to be deleted
    */
   orderId: number;
 };
-
-export type deleteOrder_Headers = { api_key: string };
 "
 `;
 
@@ -805,7 +787,7 @@ export type createUser = (
     query: never;
     querystring: never;
     path: never;
-    headers: createUser_Headers;
+    headers: never;
     cookie: never;
     body: User;
     context: Context;
@@ -826,14 +808,12 @@ export type createUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type createUser_Headers = { api_key: string };
 "
 `;
 
@@ -868,7 +848,7 @@ export type createUsersWithListInput = (
     query: never;
     querystring: never;
     path: never;
-    headers: createUsersWithListInput_Headers;
+    headers: never;
     cookie: never;
     body: Array<User>;
     context: Context;
@@ -898,14 +878,12 @@ export type createUsersWithListInput = (
     >;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type createUsersWithListInput_Headers = { api_key: string };
 "
 `;
 
@@ -935,7 +913,7 @@ export type loginUser = (
     query: loginUser_Query;
     querystring: never;
     path: never;
-    headers: loginUser_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -965,7 +943,7 @@ export type loginUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -982,8 +960,6 @@ export type loginUser_Query = {
    */
   password?: string;
 };
-
-export type loginUser_Headers = { api_key: string };
 "
 `;
 
@@ -1014,7 +990,7 @@ export type logoutUser = (
     query: never;
     querystring: never;
     path: never;
-    headers: logoutUser_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -1028,14 +1004,12 @@ export type logoutUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type logoutUser_Headers = { api_key: string };
 "
 `;
 
@@ -1077,7 +1051,7 @@ export type getUserByName = (
     query: never;
     querystring: never;
     path: getUserByName_Path;
-    headers: getUserByName_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -1110,7 +1084,7 @@ export type getUserByName = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1125,7 +1099,7 @@ export type updateUser = (
     query: never;
     querystring: never;
     path: updateUser_Path;
-    headers: updateUser_Headers;
+    headers: never;
     cookie: never;
     body: User;
     context: Context;
@@ -1139,7 +1113,7 @@ export type updateUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1154,7 +1128,7 @@ export type deleteUser = (
     query: never;
     querystring: never;
     path: deleteUser_Path;
-    headers: deleteUser_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -1174,7 +1148,7 @@ export type deleteUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: never;
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1188,8 +1162,6 @@ export type getUserByName_Path = {
   username: string;
 };
 
-export type getUserByName_Headers = { api_key: string };
-
 export type updateUser_Path = {
   /**
    * name that need to be deleted
@@ -1197,16 +1169,12 @@ export type updateUser_Path = {
   username: string;
 };
 
-export type updateUser_Headers = { api_key: string };
-
 export type deleteUser_Path = {
   /**
    * The name that needs to be deleted
    */
   username: string;
 };
-
-export type deleteUser_Headers = { api_key: string };
 "
 `;
 
@@ -1385,7 +1353,7 @@ export type getRoot = (
     query: never;
     querystring: never;
     path: never;
-    headers: getRoot_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -1405,14 +1373,12 @@ export type getRoot = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
-    user: { username?: string; password?: string };
+    auth: never;
+    user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type getRoot_Headers = { "x-api-key": string };
 "
 `;
 
@@ -1446,7 +1412,7 @@ export type getCount = (
     query: never;
     querystring: never;
     path: never;
-    headers: getCount_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -1465,14 +1431,12 @@ export type getCount = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type getCount_Headers = { "x-api-key": string };
 "
 `;
 
@@ -1506,7 +1470,7 @@ export type helloKitty = (
     query: never;
     querystring: never;
     path: never;
-    headers: helloKitty_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -1526,14 +1490,12 @@ export type helloKitty = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type helloKitty_Headers = { "x-api-key": string };
 "
 `;
 
@@ -1592,7 +1554,7 @@ export type sayHello = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1618,7 +1580,6 @@ export type sayHello_Headers = {
    * idempotency key
    */
   "x-request-id"?: string;
-  "x-api-key": string;
 };
 "
 `;
@@ -1651,7 +1612,7 @@ export type getPathOne = (
     query: never;
     querystring: never;
     path: never;
-    headers: getPathOne_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -1670,14 +1631,12 @@ export type getPathOne = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type getPathOne_Headers = { "x-api-key": string };
 "
 `;
 
@@ -1707,7 +1666,7 @@ export type weirdColonPath = (
     query: never;
     querystring: never;
     path: never;
-    headers: weirdColonPath_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -1725,14 +1684,12 @@ export type weirdColonPath = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type weirdColonPath_Headers = { "x-api-key": string };
 "
 `;
 
@@ -1804,7 +1761,7 @@ export type listUsers = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1819,7 +1776,7 @@ export type createUser = (
     query: never;
     querystring: never;
     path: never;
-    headers: createUser_Headers;
+    headers: never;
     cookie: never;
     body: CreateUserRequest;
     context: Context;
@@ -1851,7 +1808,7 @@ export type createUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1865,12 +1822,7 @@ export type listUsers_Query = {
   role?: "admin" | "editor" | "viewer";
 };
 
-export type listUsers_Headers = {
-  "x-correlation-id"?: string;
-  "x-api-key": string;
-};
-
-export type createUser_Headers = { "x-api-key": string };
+export type listUsers_Headers = { "x-correlation-id"?: string };
 "
 `;
 
@@ -1924,7 +1876,7 @@ export type getUser = (
     query: never;
     querystring: never;
     path: getUser_Path;
-    headers: getUser_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -1944,7 +1896,7 @@ export type getUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1959,7 +1911,7 @@ export type replaceUser = (
     query: never;
     querystring: never;
     path: replaceUser_Path;
-    headers: replaceUser_Headers;
+    headers: never;
     cookie: never;
     body: CreateUserRequest;
     context: Context;
@@ -1979,7 +1931,7 @@ export type replaceUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -1994,7 +1946,7 @@ export type patchUser = (
     query: never;
     querystring: never;
     path: patchUser_Path;
-    headers: patchUser_Headers;
+    headers: never;
     cookie: never;
     body: PatchUserRequest;
     context: Context;
@@ -2014,7 +1966,7 @@ export type patchUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2029,7 +1981,7 @@ export type deleteUser = (
     query: never;
     querystring: never;
     path: deleteUser_Path;
-    headers: deleteUser_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2044,7 +1996,7 @@ export type deleteUser = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2058,16 +2010,12 @@ export type getUser_Path = {
   userId: string;
 };
 
-export type getUser_Headers = { "x-api-key": string };
-
 export type replaceUser_Path = {
   /**
    * Unique user identifier
    */
   userId: string;
 };
-
-export type replaceUser_Headers = { "x-api-key": string };
 
 export type patchUser_Path = {
   /**
@@ -2076,16 +2024,12 @@ export type patchUser_Path = {
   userId: string;
 };
 
-export type patchUser_Headers = { "x-api-key": string };
-
 export type deleteUser_Path = {
   /**
    * Unique user identifier
    */
   userId: string;
 };
-
-export type deleteUser_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2124,7 +2068,7 @@ export type createEvent = (
     query: never;
     querystring: never;
     path: never;
-    headers: createEvent_Headers;
+    headers: never;
     cookie: never;
     body: ClickEvent | PurchaseEvent | SignUpEvent | BaseEvent;
     context: Context;
@@ -2139,14 +2083,12 @@ export type createEvent = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type createEvent_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2178,7 +2120,7 @@ export type getProduct = (
     query: never;
     querystring: never;
     path: getProduct_Path;
-    headers: getProduct_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2197,7 +2139,7 @@ export type getProduct = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2205,8 +2147,6 @@ export type getProduct = (
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
 
 export type getProduct_Path = { productId: number };
-
-export type getProduct_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2240,7 +2180,7 @@ export type uploadFile = (
     query: never;
     querystring: never;
     path: never;
-    headers: uploadFile_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2274,14 +2214,12 @@ export type uploadFile = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type uploadFile_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2315,7 +2253,7 @@ export type listItemsLegacy = (
     query: never;
     querystring: never;
     path: never;
-    headers: listItemsLegacy_Headers;
+    headers: never;
     cookie: listItemsLegacy_Cookie;
     body: never;
     context: Context;
@@ -2333,14 +2271,12 @@ export type listItemsLegacy = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type listItemsLegacy_Headers = { "x-api-key": string };
 
 export type listItemsLegacy_Cookie = { session_id?: string };
 "
@@ -2401,7 +2337,7 @@ export type getReport = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2412,7 +2348,6 @@ export type getReport_Path = { reportId: string };
 
 export type getReport_Headers = {
   Accept?: "application/json" | "text/csv" | "application/pdf";
-  "x-api-key": string;
 };
 "
 `;
@@ -2446,7 +2381,7 @@ export type ping = (
     query: never;
     querystring: never;
     path: never;
-    headers: ping_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2460,14 +2395,12 @@ export type ping = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
-    user: { username?: string; password?: string };
+    auth: never;
+    user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type ping_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2500,7 +2433,7 @@ export type setMetadata = (
     query: never;
     querystring: never;
     path: never;
-    headers: setMetadata_Headers;
+    headers: never;
     cookie: never;
     body: { [key: string]: unknown };
     context: Context;
@@ -2518,14 +2451,12 @@ export type setMetadata = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type setMetadata_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2559,7 +2490,7 @@ export type getXmlBook = (
     query: never;
     querystring: never;
     path: never;
-    headers: getXmlBook_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2579,14 +2510,12 @@ export type getXmlBook = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type getXmlBook_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2620,7 +2549,7 @@ export type getXmlNote = (
     query: never;
     querystring: never;
     path: never;
-    headers: getXmlNote_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2640,14 +2569,12 @@ export type getXmlNote = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type getXmlNote_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2681,7 +2608,7 @@ export type getXmlSnippet = (
     query: never;
     querystring: never;
     path: never;
-    headers: getXmlSnippet_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2701,14 +2628,12 @@ export type getXmlSnippet = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type getXmlSnippet_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2742,7 +2667,7 @@ export type getXmlSecret = (
     query: never;
     querystring: never;
     path: never;
-    headers: getXmlSecret_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2762,14 +2687,12 @@ export type getXmlSecret = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type getXmlSecret_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2803,7 +2726,7 @@ export type getXmlPlaylist = (
     query: never;
     querystring: never;
     path: never;
-    headers: getXmlPlaylist_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2823,14 +2746,12 @@ export type getXmlPlaylist = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type getXmlPlaylist_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2870,7 +2791,7 @@ export type getRelationship = (
     query: never;
     querystring: never;
     path: getRelationship_Path;
-    headers: getRelationship_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2890,7 +2811,7 @@ export type getRelationship = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2898,8 +2819,6 @@ export type getRelationship = (
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
 
 export type getRelationship_Path = { targetId: string };
-
-export type getRelationship_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2920,7 +2839,7 @@ export type linkRelationship = (
     query: never;
     querystring: never;
     path: linkRelationship_Path;
-    headers: linkRelationship_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2940,7 +2859,7 @@ export type linkRelationship = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2952,7 +2871,7 @@ export type unlinkRelationship = (
     query: never;
     querystring: never;
     path: unlinkRelationship_Path;
-    headers: unlinkRelationship_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -2972,7 +2891,7 @@ export type unlinkRelationship = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -2981,11 +2900,7 @@ export type unlinkRelationship = (
 
 export type linkRelationship_Path = { targetId: string };
 
-export type linkRelationship_Headers = { "x-api-key": string };
-
 export type unlinkRelationship_Path = { targetId: string };
-
-export type unlinkRelationship_Headers = { "x-api-key": string };
 "
 `;
 
@@ -3019,7 +2934,7 @@ export type HTTP_GET = (
     query: HTTP_GET_Query;
     querystring: never;
     path: never;
-    headers: HTTP_GET_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -3037,7 +2952,7 @@ export type HTTP_GET = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -3048,8 +2963,6 @@ export type HTTP_GET_Query = {
   pageable: Pageable;
   "pageable-not-exploded"?: Pageable;
 };
-
-export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
@@ -3087,7 +3000,7 @@ export type streamEvents = (
     query: never;
     querystring: never;
     path: never;
-    headers: streamEvents_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -3105,14 +3018,12 @@ export type streamEvents = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type streamEvents_Headers = { "x-api-key": string };
 "
 `;
 
@@ -3146,7 +3057,7 @@ export type search = (
     query: never;
     querystring: search_Querystring;
     path: never;
-    headers: search_Headers;
+    headers: never;
     cookie: never;
     body: never;
     context: Context;
@@ -3167,14 +3078,12 @@ export type search = (
     }>;
     x: WideOperationArgument;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string; apiKey: string };
+    auth: { username?: string; password?: string };
     user: { username?: string; password?: string };
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-
-export type search_Headers = { "x-api-key": string };
 
 export type search_Querystring = {
   /**

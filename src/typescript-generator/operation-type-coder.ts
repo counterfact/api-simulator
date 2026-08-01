@@ -38,6 +38,7 @@ function sanitizeIdentifier(value: string): string {
 }
 
 export interface SecurityScheme {
+  key?: string;
   in?: "cookie" | "header" | "query";
   name?: string;
   scheme?: string;
@@ -233,7 +234,7 @@ export class OperationTypeCoder extends TypeCoder {
    */
   public userType(): string {
     if (
-      this.securitySchemes.some(
+      this.activeSecuritySchemes().some(
         ({ scheme, type }) => type === "http" && scheme === "basic",
       )
     ) {
@@ -251,21 +252,50 @@ export class OperationTypeCoder extends TypeCoder {
    */
   public authType(): string {
     const fields = new Set<string>();
+    const activeSecuritySchemes = this.activeSecuritySchemes();
 
     if (
-      this.securitySchemes.some(
+      activeSecuritySchemes.some(
         ({ scheme, type }) => type === "http" && scheme === "basic",
       )
     ) {
-      fields.add("username?: string");
-      fields.add("password?: string");
+      fields.add('"username"?: string');
+      fields.add('"password"?: string');
     }
 
-    if (this.securitySchemes.some(({ type }) => type === "apiKey")) {
-      fields.add("apiKey: string");
+    for (const { key, type } of activeSecuritySchemes) {
+      if (type === "apiKey" && key !== undefined) {
+        fields.add(`${JSON.stringify(key)}?: string`);
+      }
     }
 
     return fields.size === 0 ? "never" : `{${[...fields].join(", ")}}`;
+  }
+
+  /** Returns only schemes referenced by the operation's effective security. */
+  private activeSecuritySchemes(): SecurityScheme[] {
+    const security =
+      this.requirement.get("security") ??
+      this.requirement.specification?.rootRequirement?.get("security");
+
+    // Standalone unit-test requirements have no specification. Preserve the
+    // constructor's historical meaning there; real specifications with no
+    // security requirement do not activate merely-declared schemes.
+    if (security === undefined) {
+      return this.requirement.specification === undefined
+        ? this.securitySchemes
+        : [];
+    }
+
+    const names = new Set(
+      ((security.data as unknown as Record<string, unknown>[]) ?? []).flatMap(
+        (item) => Object.keys(item),
+      ),
+    );
+
+    return this.securitySchemes.filter(
+      ({ key }) => key === undefined || names.has(key),
+    );
   }
 
   /**
@@ -283,7 +313,7 @@ export class OperationTypeCoder extends TypeCoder {
   protected getEffectiveParameters(): Requirement | undefined {
     const operationParams = this.requirement.get("parameters");
     const pathItemParams = this.requirement.parent?.get("parameters");
-    const apiKeyParameters = this.securitySchemes
+    const apiKeyParameters = this.activeSecuritySchemes()
       .filter(
         ({ in: location, name, type }) =>
           type === "apiKey" &&
@@ -295,7 +325,7 @@ export class OperationTypeCoder extends TypeCoder {
       .map(({ in: location, name }) => ({
         in: location,
         name,
-        required: true,
+        required: false,
         schema: { type: "string" },
       }));
 

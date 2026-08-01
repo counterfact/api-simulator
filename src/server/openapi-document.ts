@@ -48,6 +48,8 @@ export class OpenApiDocument extends EventTarget {
 
   public produces?: string[];
 
+  public security?: Record<string, string[]>[];
+
   private watcher: FSWatcher | undefined;
 
   public constructor(source: string, overlays: readonly string[] = []) {
@@ -80,6 +82,7 @@ export class OpenApiDocument extends EventTarget {
           } & { additionalOperations?: Record<string, OpenApiOperation> };
         };
         produces?: string[];
+        security?: Record<string, string[]>[];
       };
 
       if (this.overlays.length > 0) {
@@ -93,6 +96,7 @@ export class OpenApiDocument extends EventTarget {
       this.components = data.components;
       this.paths = data.paths;
       this.produces = data.produces;
+      this.security = data.security;
     } catch (error) {
       debug("could not load OpenAPI document from %s: %o", this.source, error);
       const details = error instanceof Error ? error.message : String(error);

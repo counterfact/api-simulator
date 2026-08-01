@@ -359,7 +359,7 @@ exports[`an OperationTypeCoder generates an auth object for basic authentication
 "
 `;
 
-exports[`an OperationTypeCoder generates required api key auth and cookie for apiKey security 1`] = `
+exports[`an OperationTypeCoder generates optional scheme-named api key auth and cookie 1`] = `
 "type TestType = (
   $: OmitValueWhenNever<{
     query: never;
@@ -383,7 +383,7 @@ exports[`an OperationTypeCoder generates required api key auth and cookie for ap
     }>;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: { cookieAuth?: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;
@@ -392,7 +392,7 @@ exports[`an OperationTypeCoder generates required api key auth and cookie for ap
 "
 `;
 
-exports[`an OperationTypeCoder generates required api key auth and headers for apiKey security 1`] = `
+exports[`an OperationTypeCoder generates optional scheme-named api key auth and headers 1`] = `
 "type TestType = (
   $: OmitValueWhenNever<{
     query: never;
@@ -416,7 +416,7 @@ exports[`an OperationTypeCoder generates required api key auth and headers for a
     }>;
     x: SharedType;
     proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
+    auth: { apiKeyAuth?: string };
     user: never;
     delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
     version: never;

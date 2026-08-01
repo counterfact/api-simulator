@@ -528,7 +528,7 @@ describe("an OperationTypeCoder", () => {
     ).resolves.toMatchSnapshot();
   });
 
-  it("generates required api key auth and headers for apiKey security", async () => {
+  it("generates optional scheme-named api key auth and headers", async () => {
     const requirement = new Requirement(
       {
         responses: {
@@ -546,6 +546,7 @@ describe("an OperationTypeCoder", () => {
 
     const coder = new OperationTypeCoder(requirement, "", "get", [
       {
+        key: "apiKeyAuth",
         in: "header",
         name: "api_key",
         type: "apiKey",
@@ -557,7 +558,7 @@ describe("an OperationTypeCoder", () => {
     ).resolves.toMatchSnapshot();
   });
 
-  it("generates required api key auth and cookie for apiKey security", async () => {
+  it("generates optional scheme-named api key auth and cookie", async () => {
     const requirement = new Requirement(
       {
         responses: {
@@ -575,6 +576,7 @@ describe("an OperationTypeCoder", () => {
 
     const coder = new OperationTypeCoder(requirement, "", "get", [
       {
+        key: "cookieAuth",
         in: "cookie",
         name: "session_key",
         type: "apiKey",
@@ -586,7 +588,7 @@ describe("an OperationTypeCoder", () => {
     ).resolves.toMatchSnapshot();
   });
 
-  it("generates auth.apiKey as a required string for apiKey security", () => {
+  it("uses the security scheme name for api key auth", () => {
     const requirement = new Requirement(
       {
         responses: {
@@ -604,13 +606,53 @@ describe("an OperationTypeCoder", () => {
 
     const coder = new OperationTypeCoder(requirement, "", "get", [
       {
+        key: "apiKeyAuth",
         in: "header",
         name: "api_key",
         type: "apiKey",
       },
     ]);
 
-    expect(coder.write(dummyScript)).toContain("auth: {apiKey: string}");
+    expect(coder.write(dummyScript)).toContain('auth: {"apiKeyAuth"?: string}');
+  });
+
+  it("uses root security and honors an operation security opt-out", () => {
+    const specification = new Specification();
+    const root = new Requirement(
+      {
+        security: [{ apiKeyAuth: [] }],
+        paths: {
+          "/secured": { get: { responses: { 200: {} } } },
+          "/public": { get: { security: [], responses: { 200: {} } } },
+        },
+      },
+      "#",
+      specification,
+    );
+    specification.rootRequirement = root;
+    const schemes = [
+      {
+        key: "apiKeyAuth",
+        in: "header" as const,
+        name: "x-api-key",
+        type: "apiKey",
+      },
+    ];
+    const secured = new OperationTypeCoder(
+      root.select("paths/~1secured/get")!,
+      "",
+      "get",
+      schemes,
+    );
+    const publicOperation = new OperationTypeCoder(
+      root.select("paths/~1public/get")!,
+      "",
+      "get",
+      schemes,
+    );
+
+    expect(secured.authType()).toBe('{"apiKeyAuth"?: string}');
+    expect(publicOperation.authType()).toBe("never");
   });
 
   it("uses operationId for type names when available", () => {

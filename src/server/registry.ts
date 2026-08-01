@@ -36,7 +36,7 @@ const DEFAULT_HTTP_METHODS: HttpMethods[] = [
 
 interface RequestData {
   auth?: {
-    apiKey?: string;
+    [scheme: string]: string | undefined;
     password?: string;
     username?: string;
   };

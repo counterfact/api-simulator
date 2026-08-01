@@ -10,6 +10,7 @@ import type { OpenApiParameters } from "./open-api-parameters.js";
 export interface OpenApiOperation {
   parameters?: OpenApiParameters[];
   produces?: string[];
+  security?: Record<string, string[]>[];
   requestBody?: {
     content?: {
       [mediaType: string]: {

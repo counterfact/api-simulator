@@ -51,6 +51,7 @@ function mergeParameters(
 
 export interface OpenApiDocument {
   basePath?: string;
+  security?: Record<string, string[]>[];
   components?: {
     securitySchemes?: Record<
       string,
@@ -118,7 +119,7 @@ interface ParameterTypes {
 
 export type DispatcherRequest = {
   auth?: {
-    apiKey?: string;
+    [scheme: string]: string | undefined;
     password?: string;
     username?: string;
   };
@@ -299,54 +300,69 @@ export class Dispatcher {
     return undefined;
   }
 
-  private apiKeySecurityParameters(): OpenApiParameters[] {
+  private apiKeySecuritySchemes(operation?: OpenApiOperation) {
     const schemes = this.openApiDocument?.components?.securitySchemes;
+    const security =
+      operation?.security ?? this.openApiDocument?.security ?? [];
+    const activeNames = new Set(security.flatMap((item) => Object.keys(item)));
 
-    return Object.values(schemes ?? {})
-      .filter(
-        ({ in: location, name, type }) =>
-          type === "apiKey" &&
-          typeof name === "string" &&
-          (location === "header" ||
-            location === "query" ||
-            location === "cookie"),
-      )
-      .map(({ in: location, name }) => ({
+    return Object.entries(schemes ?? {}).filter(
+      ([key, { in: location, name, type }]) =>
+        activeNames.has(key) &&
+        type === "apiKey" &&
+        typeof name === "string" &&
+        (location === "header" ||
+          location === "query" ||
+          location === "cookie"),
+    );
+  }
+
+  private apiKeySecurityParameters(
+    operation?: OpenApiOperation,
+  ): OpenApiParameters[] {
+    return this.apiKeySecuritySchemes(operation).map(
+      ([, { in: location, name }]) => ({
         in: location as "cookie" | "header" | "query",
         name: name as string,
         required: false,
         schema: { type: "string" },
-      }));
+      }),
+    );
   }
 
   private authWithApiKey(
+    operation: OpenApiOperation | undefined,
     auth: DispatcherRequest["auth"],
     cookie: Record<string, string>,
     headers: Record<string, string>,
     query: Record<string, string | string[]>,
   ): DispatcherRequest["auth"] {
-    const apiKeyScheme = this.apiKeySecurityParameters().find((parameter) =>
-      ["cookie", "header", "query"].includes(parameter.in),
-    );
+    const apiKeySchemes = this.apiKeySecuritySchemes(operation);
 
-    if (!apiKeyScheme) {
+    if (apiKeySchemes.length === 0) {
       return auth;
     }
 
-    const apiKey =
-      apiKeyScheme.in === "query"
-        ? query[apiKeyScheme.name]
-        : apiKeyScheme.in === "cookie"
-          ? cookie[apiKeyScheme.name]
-          : Object.entries(headers).find(
-              ([key]) => key.toLowerCase() === apiKeyScheme.name.toLowerCase(),
-            )?.[1];
+    const result = Object.entries(auth ?? {});
 
-    const normalizedApiKey = Array.isArray(apiKey)
-      ? (apiKey[0] ?? "")
-      : (apiKey ?? "");
+    for (const [key, scheme] of apiKeySchemes) {
+      const apiKey =
+        scheme.in === "query"
+          ? query[scheme.name!]
+          : scheme.in === "cookie"
+            ? cookie[scheme.name!]
+            : Object.entries(headers).find(
+                ([header]) =>
+                  header.toLowerCase() === scheme.name!.toLowerCase(),
+              )?.[1];
+      const normalizedApiKey = Array.isArray(apiKey) ? apiKey[0] : apiKey;
 
-    return { ...auth, apiKey: normalizedApiKey };
+      if (normalizedApiKey !== undefined) {
+        result.push([key, normalizedApiKey]);
+      }
+    }
+
+    return result.length === 0 ? undefined : Object.fromEntries(result);
   }
 
   /**
@@ -399,7 +415,7 @@ export class Dispatcher {
         ? { ...operation, parameters: mergedParameters }
         : operation;
 
-    const apiKeyParameters = this.apiKeySecurityParameters();
+    const apiKeyParameters = this.apiKeySecurityParameters(mergedOperation);
     const operationWithSecurity =
       apiKeyParameters.length > 0
         ? {
@@ -588,7 +604,7 @@ export class Dispatcher {
       path,
       this.parameterTypes(operation?.parameters),
     )({
-      auth: this.authWithApiKey(auth, requestCookie, headers, query),
+      auth: this.authWithApiKey(operation, auth, requestCookie, headers, query),
       body,
       context: this.contextRegistry.find(matchedPath),
 

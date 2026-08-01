@@ -15,6 +15,7 @@ const OPENAPI = {
     },
   },
   info: { title: "Test", version: "1.0.0" },
+  security: [{ apiKeyAuth: [] }],
   paths: {
     "/example": {
       get: {
@@ -77,6 +78,7 @@ describe("OpenApiDocument", () => {
       expect(doc.components?.securitySchemes).toStrictEqual(
         OPENAPI.components.securitySchemes,
       );
+      expect(doc.security).toStrictEqual(OPENAPI.security);
     });
   });
 
