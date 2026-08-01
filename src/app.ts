@@ -472,6 +472,7 @@ export async function counterfact<TStore = unknown>(
         replServers.delete(replServer);
       });
       return replServer;
+    },
   };
   const result: typeof baseSimulator & { store?: TStore } = baseSimulator;
   simulatorRef.current = result;
