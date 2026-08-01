@@ -1,5 +1,19 @@
 # counterfact
 
+## 2.15.0
+
+### Minor Changes
+
+- 58a3ae8: Add an optional shared store at `<basePath>/_.store.ts`, with typed access from
+  route contexts, identity-preserving hot reload, and exposure through the REPL
+  and programmatic simulator API.
+
+### Patch Changes
+
+- a34ad16: Fix type checking for fluent response helpers in wide route handlers.
+- ff2127a: Updated dependency `@swc/core` to `1.15.47`.
+- 99ddf3a: Updated dependency `astro` to `7.1.6`.
+
 ## 2.14.2
 
 ### Patch Changes
