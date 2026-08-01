@@ -92,6 +92,25 @@ describe("pruneRoutes", () => {
     });
   });
 
+  it("keeps the normalized route and removes a legacy trailing-slash dotfile", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "routes/customers.ts",
+        "export const GET = () => ({ status: 200 });",
+      );
+      await $.add(
+        "routes/customers/.ts",
+        "export const GET = () => ({ status: 200 });",
+      );
+
+      const count = await pruneRoutes($.path(""), ["/customers/"]);
+
+      expect(count).toBe(1);
+      await expect($.read("routes/customers.ts")).resolves.toBeDefined();
+      await expect($.read("routes/customers/.ts")).rejects.toThrow();
+    });
+  });
+
   it("returns 0 when all files match the spec", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(

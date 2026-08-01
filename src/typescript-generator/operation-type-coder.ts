@@ -9,6 +9,7 @@ import { ResponsesTypeCoder } from "./responses-type-coder.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
 import { STREAMING_CONTENT_TYPES } from "./streaming-content-types.js";
 import { TypeCoder } from "./type-coder.js";
+import { normalizeOpenApiPath } from "./openapi-path.js";
 import { Requirement } from "./requirement.js";
 import type { RequirementData } from "./requirement.js";
 import type { Script } from "./script.js";
@@ -214,10 +215,9 @@ export class OperationTypeCoder extends TypeCoder {
   }
 
   public override modulePath(): string {
-    const pathString = this.requirement.url
-      .split("/")
-      .at(-2)!
-      .replaceAll("~1", "/");
+    const pathString = normalizeOpenApiPath(
+      this.requirement.url.split("/").at(-2)!.replaceAll("~1", "/"),
+    );
 
     return `${pathJoin(
       "types/paths",

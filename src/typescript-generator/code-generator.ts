@@ -10,6 +10,10 @@ import { CHOKIDAR_OPTIONS } from "../server/constants.js";
 import { ensureDirectoryExists } from "../util/ensure-directory-exists.js";
 import { waitForEvent } from "../util/wait-for-event.js";
 import { OperationCoder } from "./operation-coder.js";
+import {
+  assertNoNormalizedPathCollisions,
+  normalizeOpenApiPath,
+} from "./openapi-path.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
 import { pruneRoutes } from "./prune.js";
 import type { Requirement } from "./requirement.js";
@@ -147,12 +151,13 @@ export class CodeGenerator extends EventTarget {
 
     debug("got %i paths", paths?.map?.length ?? 0);
 
+    const openApiPaths = paths.map((_pathDefinition, key) => key);
+
+    assertNoNormalizedPathCollisions(openApiPaths);
+
     if (this.generateOptions.prune && this.generateOptions.routes) {
       debug("pruning defunct route files");
-      await pruneRoutes(
-        destination,
-        paths.map((_v, key) => key),
-      );
+      await pruneRoutes(destination, openApiPaths);
       debug("done pruning");
     }
 
@@ -198,7 +203,8 @@ export class CodeGenerator extends EventTarget {
     paths.forEach((pathDefinition, key: string) => {
       debug("processing path %s", key);
 
-      const path = key === "/" ? "/index" : key;
+      const normalizedPath = normalizeOpenApiPath(key);
+      const path = normalizedPath === "/" ? "/index" : normalizedPath;
       operationMethodsForPath(pathDefinition).forEach(
         ([operation, requestMethod]) => {
           repository

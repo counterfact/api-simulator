@@ -5,6 +5,7 @@ import nodePath from "node:path";
 import createDebug from "debug";
 
 import { toForwardSlashPath } from "../util/forward-slash-path.js";
+import { normalizeOpenApiPath } from "./openapi-path.js";
 
 const debug = createDebug("counterfact:typescript-generator:prune");
 
@@ -89,7 +90,8 @@ async function removeEmptyDirectories(
  * @param openApiPath - The OpenAPI path string
  */
 function openApiPathToRouteFile(openApiPath: string): string {
-  const filePath = openApiPath === "/" ? "index" : openApiPath.slice(1);
+  const normalizedPath = normalizeOpenApiPath(openApiPath);
+  const filePath = normalizedPath === "/" ? "index" : normalizedPath.slice(1);
 
   return `${filePath}.ts`;
 }
