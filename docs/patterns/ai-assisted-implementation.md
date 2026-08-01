@@ -1,12 +1,12 @@
 # AI-Assisted Implementation
 
-You have generated a Counterfact project from an OpenAPI spec and want to go beyond random responses quickly — without writing all the handler logic yourself.
+Turn a generated Counterfact project into useful behavior quickly, with an AI coding agent handling the repetitive first pass on your route logic.
 
-## Problem
+## Why teams use this
 
 Counterfact generates a working server immediately, but the handlers return random data. Writing realistic, stateful implementations for every route by hand is tedious, especially on large APIs.
 
-## Solution
+## How it works
 
 Delegate the implementation work to an AI coding agent. The combination of a simple, consistent handler API, TypeScript types derived from the spec, and one file per route gives AI agents the context they need to produce correct code with a small number of tokens and a low risk of hallucination. The agent can replace `.random()` calls one route at a time, guided by the type signatures already in place.
 
@@ -33,7 +33,7 @@ If the result does not match the spec's response schema, TypeScript flags it imm
 
 Repeat for each route, or ask the agent to implement all routes in a single pass. The clear file structure and isolated scopes minimize interference between routes.
 
-## Consequences
+## What you get
 
 - The combination of type safety, one file per route, and a minimal handler API reduces the surface for AI hallucination.
 - TypeScript provides immediate feedback when agent output does not conform to the spec; the developer does not need to run tests to catch structural errors.
@@ -41,7 +41,7 @@ Repeat for each route, or ask the agent to implement all routes in a single pass
 - The pattern works best when context types are already defined; ask the agent to implement the context before the route handlers.
 - Unit-test the context class to keep shared logic reliable; handlers are intentionally thin and meant to be edited freely, so they do not need unit tests.
 
-## Related Patterns
+## Keep exploring
 
 - [Explore a New API](./explore-new-api.md) — the starting point; AI implementation upgrades random responses to working ones
 - [Test the Context, Not the Handlers](./test-context-not-handlers.md) — keep the context logic that the agent generates reliable and regression-proof

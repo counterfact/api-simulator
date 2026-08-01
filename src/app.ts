@@ -28,17 +28,16 @@ export {
  * is created per entry. When called without `specs`, a single entry is derived
  * from `config.openApiPath`, `config.prefix`, and `group = ""`.
  *
- * ### Prefix derivation
+ * ### URL prefixes
  *
- * When `prefix` is omitted (or `undefined`), the URL prefix is derived from
- * `group` and `version` according to this table:
+ * `group` and `version` organize generated code and runtime state; they do not
+ * change the paths declared by the OpenAPI document. The URL prefix follows
+ * this table:
  *
- * | `prefix`    | `group` | `version` | Derived prefix       |
- * |-------------|---------|-----------|----------------------|
- * | provided    | any     | any       | use the explicit prefix |
- * | absent      | set     | set       | `/<group>/<version>` |
- * | absent      | set     | absent    | `/<group>`           |
- * | absent      | absent  | absent    | `""` (root)          |
+ * | `prefix` | Effective prefix |
+ * |----------|------------------|
+ * | provided | explicit value   |
+ * | absent   | `""` (root)      |
  */
 export interface SpecConfig {
   /** Path or URL to the OpenAPI document for this spec. */
@@ -46,18 +45,14 @@ export interface SpecConfig {
   /**
    * URL prefix that this spec's runner intercepts.
    *
-   * When absent, the prefix is derived automatically from `group` and
-   * `version` (see the derivation table on the interface). Pass an explicit
-   * empty string (`""`) to force the root prefix regardless of `group`/`version`.
+   * When absent, the prefix defaults to the root (`""`). Group and version do
+   * not affect URL routing.
    */
   prefix?: string;
   /** Name of the subdirectory under `config.basePath` where code is generated. */
   group: string;
   /**
    * Optional version label for this spec (e.g. `"v1"`, `"v2"`).
-   *
-   * When combined with `group` and no explicit `prefix`, the server mounts
-   * this spec's routes under `/<group>/<version>`.
    *
    * When at least one spec in a group defines a non-empty version,
    * `types/versions.ts` is generated inside that group's subdirectory
@@ -108,46 +103,56 @@ export async function runStartupScenario(
 }
 
 /**
- * Derives the URL prefix for a spec entry.
- *
- * Applies the following precedence rules:
- *  1. Explicit `prefix` (even `""`) → returned as-is.
- *  2. `group` + `version` both present → `/<group>/<version>`.
- *  3. `group` present (no `version`) → `/<group>`.
- *  4. Neither → `""` (root).
+ * Runs one startup scenario per API group, in specification declaration order.
+ * Versioned runners in one group share the same scenario and context registries,
+ * so only the group's first runner participates in startup.
  */
-function derivePrefix(
-  spec: Pick<SpecConfig, "prefix" | "group" | "version">,
-): string {
-  if (spec.prefix !== undefined) {
-    return spec.prefix;
-  }
+async function runGroupStartupScenarios(
+  runners: readonly ApiRunner[],
+  config: Pick<Config, "port">,
+): Promise<void> {
+  const startedGroups = new Set<string>();
 
-  if (spec.group && spec.version) {
-    return `/${spec.group}/${spec.version}`;
-  }
+  for (const runner of runners) {
+    if (startedGroups.has(runner.group)) {
+      continue;
+    }
+    startedGroups.add(runner.group);
 
-  if (spec.group) {
-    return `/${spec.group}`;
-  }
+    try {
+      await runStartupScenario(
+        runner.scenarioRegistry,
+        runner.contextRegistry,
+        config,
+        runner.openApiDocument,
+      );
+    } catch (error) {
+      const groupLabel = runner.group
+        ? `group "${runner.group}"${runner.version ? ` (version "${runner.version}")` : ""}`
+        : "the primary API";
+      const message = error instanceof Error ? error.message : String(error);
 
-  return "";
+      throw new Error(`Startup scenario failed for ${groupLabel}: ${message}`, {
+        cause: error,
+      });
+    }
+  }
 }
 
 /**
  * Normalises the spec configuration to an array.
  *
- * When `specs` is provided, each entry's `prefix` is resolved via
- * {@link derivePrefix} so the rest of the code can assume `prefix` is always
- * a string. When `specs` is omitted, a single-entry array is constructed from
- * `config.openApiPath`, `config.prefix`, and `group = ""`.
+ * When `specs` is provided, each omitted `prefix` defaults to `""` so the rest
+ * of the code can assume it is always a string. When `specs` is omitted, a
+ * single-entry array is constructed from `config.openApiPath`, `config.prefix`,
+ * and `group = ""`.
  */
 function normalizeSpecs(
   config: Pick<Config, "openApiPath" | "prefix">,
   specs?: SpecConfig[],
 ): Array<SpecConfig & { prefix: string }> {
   if (specs !== undefined) {
-    return specs.map((spec) => ({ ...spec, prefix: derivePrefix(spec) }));
+    return specs.map((spec) => ({ ...spec, prefix: spec.prefix ?? "" }));
   }
 
   return [
@@ -248,6 +253,25 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
     }
   }
 
+  // A group is one state boundary even when it contains several versioned
+  // specification runners. Preserve separate registries between groups while
+  // sharing context and scenarios between every runner in the same group.
+  const stateByGroup = new Map<
+    string,
+    {
+      contextRegistry: ContextRegistry;
+      scenarioRegistry: ScenarioRegistry;
+    }
+  >();
+  for (const spec of normalizedSpecs) {
+    if (!stateByGroup.has(spec.group)) {
+      stateByGroup.set(spec.group, {
+        contextRegistry: new ContextRegistry(),
+        scenarioRegistry: new ScenarioRegistry(),
+      });
+    }
+  }
+
   const runners = await Promise.all(
     normalizedSpecs.map((spec) =>
       ApiRunner.create(
@@ -262,6 +286,7 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
         spec.group,
         spec.version ?? "",
         versionsByGroup.get(spec.group) ?? [],
+        stateByGroup.get(spec.group),
       ),
     ),
   );
@@ -346,12 +371,16 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
     let httpTerminator: HttpTerminator | undefined;
 
     if (options.startServer) {
-      await runStartupScenario(
-        primaryRunner.scenarioRegistry,
-        primaryRunner.contextRegistry,
-        { port: config.port },
-        primaryRunner.openApiDocument,
-      );
+      try {
+        await runGroupStartupScenarios(runners, { port: config.port });
+      } catch (error) {
+        // Startup happens after the runner watchers are active. If a scenario
+        // fails, release those resources and leave the HTTP port untouched.
+        await Promise.allSettled(
+          runners.map((runner) => runner.stopWatching()),
+        );
+        throw error;
+      }
 
       const server = koaApp.listen({
         port: config.port,
