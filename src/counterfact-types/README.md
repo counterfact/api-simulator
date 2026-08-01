@@ -16,6 +16,7 @@ This directory contains the TypeScript type definitions that are part of Counter
 | `if-has-key.ts` | `IfHasKey<SomeObject, Keys, Yes, No>` — conditional type that resolves to `Yes` when `SomeObject` has a key matching any string in `Keys` |
 | `maybe-promise.ts` | `MaybePromise<T>` — a value that is either `T` or `Promise<T>` |
 | `media-type.ts` | `MediaType` — a string in the form `type/subtype` representing an IANA media type |
+| `middleware.ts` | `Middleware<Context>` and related request/response types for custom `_.middleware.ts` files |
 | `omit-all.ts` | `OmitAll<T, K>` — removes all keys from `T` whose names contain any string in `K` as a substring |
 | `omit-value-when-never.ts` | `OmitValueWhenNever<Base>` — strips keys from `Base` whose value type is `never` |
 | `open-api-content.ts` | `OpenApiContent` — a single content entry in an OpenAPI response (schema only) |

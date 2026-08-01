@@ -13,12 +13,46 @@ import type {
   IfHasKey,
   MaybePromise,
   MediaType,
+  Middleware,
+  MiddlewareRequest,
+  MiddlewareResponseBuilderFactory,
   OmitAll,
   OmitValueWhenNever,
   OpenApiResponse,
+  ResponseBuilder,
   ResponseBuilderFactory,
   WideOperationArgument,
 } from "../../src/counterfact-types/index.ts";
+
+class AuthenticationContext {
+  public isAuthorized(apiKey: string | undefined): boolean {
+    return apiKey === "secret";
+  }
+}
+
+const authenticationMiddleware: Middleware<AuthenticationContext> = async (
+  $,
+  respondTo,
+) => {
+  if (!$.context.isAuthorized($.auth?.apiKey)) {
+    return $.response[401].json({ error: "Unauthorized" });
+  }
+
+  return respondTo($);
+};
+
+expectAssignable<Middleware<AuthenticationContext>>(authenticationMiddleware);
+
+declare const middlewareRequest: MiddlewareRequest;
+expectType<Promise<void>>(middlewareRequest.delay(100));
+expectType<unknown>(middlewareRequest.query.parameter);
+expectAssignable<MiddlewareRequest["query"]>({
+  array: ["first", "second"],
+  object: { property: "value" },
+});
+
+declare const middlewareResponse: MiddlewareResponseBuilderFactory;
+expectType<ResponseBuilder | undefined>(middlewareResponse["200 OK"]);
 
 // test exact match
 expectType<
