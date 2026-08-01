@@ -8,6 +8,7 @@ import * as app from "../src/app";
 import { ApiRunner } from "../src/api-runner";
 import { ContextRegistry } from "../src/server/context-registry";
 import { ScenarioRegistry } from "../src/server/scenario-registry";
+import { StoreLoader } from "../src/server/store-loader";
 
 // Minimal valid mock Config
 const mockConfig = {
@@ -25,7 +26,269 @@ const mockConfig = {
   prefix: "",
 };
 
+async function waitUntil(predicate: () => boolean): Promise<void> {
+  for (let attempt = 0; attempt < 500; attempt += 1) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+
+  throw new Error("Condition was not met within five seconds");
+}
+
 describe("counterfact", () => {
+  it("shares store mutations across API groups through real HTTP requests", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "_.store.ts",
+        "export class Store { customers = new Set(); }",
+      );
+      await $.add(
+        "customers/routes/_.context.js",
+        "export class Context { constructor({ store }) { this.store = store; } add(id) { this.store.customers.add(id); } }",
+      );
+      await $.add(
+        "customers/routes/customers.js",
+        "export function POST($) { $.context.add($.body.id); return { body: { size: $.context.store.customers.size } }; }",
+      );
+      await $.add(
+        "orders/routes/_.context.js",
+        "export class Context { constructor({ store }) { this.store = store; } customerIds() { return [...this.store.customers]; } }",
+      );
+      await $.add(
+        "orders/routes/orders.js",
+        "export function GET($) { return { body: { customerIds: $.context.customerIds() } }; }",
+      );
+
+      const simulator = await app.counterfact(
+        { ...mockConfig, basePath: $.path("."), port: 0 },
+        [
+          { source: "_", prefix: "/customers-api", group: "customers" },
+          { source: "_", prefix: "/orders-api", group: "orders" },
+        ],
+      );
+      const { stop } = await simulator.start({
+        ...mockConfig,
+        startServer: true,
+      });
+
+      try {
+        const mutation = await request(simulator.koaApp.callback())
+          .post("/customers-api/customers")
+          .send({ id: "customer-1" });
+        const observation = await request(simulator.koaApp.callback()).get(
+          "/orders-api/orders",
+        );
+
+        expect(mutation.body).toEqual({ size: 1 });
+        expect(observation.body).toEqual({ customerIds: ["customer-1"] });
+      } finally {
+        await stop();
+      }
+    });
+  });
+
+  it("keeps stores independent between simulator instances", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "_.store.ts",
+        "export class Store { count = 0; increment() { this.count += 1; } }",
+      );
+
+      const first = await app.counterfact<{ count: number; increment(): void }>(
+        { ...mockConfig, basePath: $.path("."), port: 0 },
+      );
+      const second = await app.counterfact<{
+        count: number;
+        increment(): void;
+      }>({ ...mockConfig, basePath: $.path("."), port: 0 });
+
+      first.store?.increment();
+
+      expect(first.store).not.toBe(second.store);
+      expect(first.store?.count).toBe(1);
+      expect(second.store?.count).toBe(0);
+    });
+  });
+
+  it("omits an absent store and rejects an invalid initial store at the app boundary", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const withoutStore = await app.counterfact({
+        ...mockConfig,
+        basePath: $.path("."),
+      });
+      expect(Object.hasOwn(withoutStore, "store")).toBe(false);
+
+      await $.add("_.store.ts", "export const Store = 42;");
+      await expect(
+        app.counterfact({ ...mockConfig, basePath: $.path(".") }),
+      ).rejects.toThrow($.path("_.store.ts"));
+    });
+  });
+
+  it("keeps the store off operation, middleware, and scenario arguments", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("_.store.ts", 'export class Store { marker = "shared"; }');
+      await $.add(
+        "routes/_.context.js",
+        "export class Context { constructor({ store }) { this.store = store; this.scenarioHasStore = undefined; } }",
+      );
+      await $.add(
+        "routes/boundary.js",
+        'export function GET($) { return { body: { contextStore: $.context.store.marker, operationHasStore: Object.hasOwn($, "store"), scenarioHasStore: $.context.scenarioHasStore } }; }',
+      );
+      await $.add(
+        "scenarios/index.js",
+        'export function startup($) { $.context.scenarioHasStore = Object.hasOwn($, "store"); }',
+      );
+
+      const simulator = await app.counterfact({
+        ...mockConfig,
+        basePath: $.path("."),
+        port: 0,
+      });
+      let middlewareHasStore: boolean | undefined;
+      simulator.registry.addMiddleware("/", async ($, respondTo) => {
+        middlewareHasStore = Object.hasOwn($, "store");
+        return respondTo($);
+      });
+      const { stop } = await simulator.start({
+        ...mockConfig,
+        startServer: true,
+      });
+
+      try {
+        const response = await request(simulator.koaApp.callback()).get(
+          "/boundary",
+        );
+        expect(response.body).toEqual({
+          contextStore: "shared",
+          operationHasStore: false,
+          scenarioHasStore: false,
+        });
+        expect(middlewareHasStore).toBe(false);
+      } finally {
+        await stop();
+      }
+    });
+  });
+
+  it("loads one shared store before startup and keeps it across stop/start", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "_.store.ts",
+        "export class Store { count = 0; increment() { this.count += 1 } }",
+      );
+      await $.add("routes/index.js", "export function GET() { return {} }");
+
+      const simulator = await app.counterfact<{
+        count: number;
+        increment(): void;
+      }>({ ...mockConfig, basePath: $.path("."), port: 0 });
+      const store = simulator.store;
+
+      expect(store).toBeDefined();
+      store?.increment();
+      const firstRun = await simulator.start({
+        ...mockConfig,
+        startServer: true,
+      });
+      await firstRun.stop();
+      const secondRun = await simulator.start({
+        ...mockConfig,
+        startServer: true,
+      });
+
+      expect(simulator.store).toBe(store);
+      expect(simulator.store?.count).toBe(1);
+      await secondRun.stop();
+    });
+  });
+
+  it("updates an already-open REPL when a store is activated", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("routes/index.js", "export function GET() { return {} }");
+      const simulator = await app.counterfact<{ active: boolean }>({
+        ...mockConfig,
+        basePath: $.path("."),
+        port: 0,
+      });
+      const replServer = simulator.startRepl();
+      const { stop } = await simulator.start({
+        ...mockConfig,
+        startServer: true,
+      });
+      try {
+        expect(replServer.context["store"]).toBeUndefined();
+        await $.add("_.store.ts", "export class Store { active = true }");
+
+        await waitUntil(() => replServer.context["store"] !== undefined);
+
+        expect(simulator.store).toMatchObject({ active: true });
+        expect(replServer.context["store"]).toBe(simulator.store);
+      } finally {
+        replServer.close();
+        await stop();
+      }
+    });
+  });
+
+  it("activates a store without losing context state and retains it after breakage or deletion", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "routes/_.context.js",
+        "export class Context { constructor($) { this.store = $.store; this.count = 0; } increment() { this.count += 1; } }",
+      );
+      await $.add(
+        "routes/state.js",
+        "export function POST($) { $.context.increment(); return { body: { count: $.context.count } }; } export function GET($) { return { body: { count: $.context.count, storeMarker: $.context.store?.marker } }; }",
+      );
+      const stderr = jest.spyOn(process.stderr, "write").mockReturnValue(true);
+      const simulator = await app.counterfact<{ marker: string }>({
+        ...mockConfig,
+        basePath: $.path("."),
+        port: 0,
+      });
+      const { stop } = await simulator.start({
+        ...mockConfig,
+        startServer: true,
+      });
+
+      try {
+        await request(simulator.koaApp.callback()).post("/state");
+        await $.add("_.store.ts", 'export class Store { marker = "live"; }');
+        await waitUntil(() => simulator.store !== undefined);
+
+        const liveStore = simulator.store;
+        const afterActivation = await request(simulator.koaApp.callback()).get(
+          "/state",
+        );
+        expect(liveStore).toMatchObject({ marker: "live" });
+        expect(afterActivation.body).toEqual({
+          count: 1,
+          storeMarker: "live",
+        });
+
+        jest.resetModules();
+        await $.add("_.store.ts", 'throw new Error("broken while live")');
+        await waitUntil(() => stderr.mock.calls.length >= 1);
+        expect(simulator.store).toBe(liveStore);
+        expect(stderr).toHaveBeenLastCalledWith(
+          expect.stringContaining("broken while live"),
+        );
+
+        await $.remove("_.store.ts");
+        await waitUntil(() => stderr.mock.calls.length >= 2);
+        expect(simulator.store).toBe(liveStore);
+        expect(stderr).toHaveBeenLastCalledWith(
+          expect.stringContaining("deleted"),
+        );
+      } finally {
+        await stop();
+        stderr.mockRestore();
+      }
+    });
+  });
+
   it("returns a startRepl function", async () => {
     const result = await (app as any).counterfact(mockConfig);
     expect(typeof result.startRepl).toBe("function");
@@ -575,6 +838,10 @@ describe("counterfact", () => {
       const stopWatchingSpy = jest
         .spyOn(ApiRunner.prototype, "stopWatching")
         .mockResolvedValue(undefined);
+      const storeStopWatchingSpy = jest.spyOn(
+        StoreLoader.prototype,
+        "stopWatching",
+      );
 
       const result = await (app as any).counterfact(
         { ...mockConfig, basePath: $.path("."), port: 0 },
@@ -604,8 +871,10 @@ describe("counterfact", () => {
       );
       expect(listenSpy).not.toHaveBeenCalled();
       expect(stopWatchingSpy).toHaveBeenCalledTimes(2);
+      expect(storeStopWatchingSpy).toHaveBeenCalledTimes(1);
 
       listenSpy.mockRestore();
+      storeStopWatchingSpy.mockRestore();
       stopWatchingSpy.mockRestore();
       runnerStartSpy.mockRestore();
       createSpy.mockRestore();

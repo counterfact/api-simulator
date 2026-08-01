@@ -264,6 +264,7 @@ export function startRepl(
   openApiDocument?: OpenApiDocument,
   scenarioRegistry?: ScenarioRegistry,
   apiBindings?: ReplApiBinding[],
+  store?: object,
 ) {
   const bindings =
     apiBindings === undefined || apiBindings.length === 0
@@ -485,6 +486,10 @@ export function startRepl(
   replServer.context.routes = isMultiApi
     ? Object.fromEntries(groupedBindings.map((binding) => [binding.key, {}]))
     : {};
+
+  if (store !== undefined) {
+    replServer.context.store = store;
+  }
 
   replServer.defineCommand("scenario", {
     async action(text: string) {

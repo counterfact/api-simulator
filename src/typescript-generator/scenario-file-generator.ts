@@ -107,7 +107,10 @@ function buildLoadContextOverload(routePath: string, alias: string): string {
   return `  loadContext(path: \`${templatePath}\`): ${alias};`;
 }
 
-function buildScenarioContextContent(contextFiles: ContextFileInfo[]): string {
+function buildScenarioContextContent(
+  contextFiles: ContextFileInfo[],
+  storeImportPath?: string,
+): string {
   const rootContext = contextFiles.find((f) => f.routePath === "/");
   const contextType = rootContext
     ? rootContext.alias
@@ -118,6 +121,9 @@ function buildScenarioContextContent(contextFiles: ContextFileInfo[]): string {
       ? `import type { Context } from "${importPath}";`
       : `import type { Context as ${alias} } from "${importPath}";`,
   );
+  if (storeImportPath !== undefined) {
+    importLines.push(`import type { Store } from "${storeImportPath}";`);
+  }
 
   const overloadLines = contextFiles.map(({ alias, routePath }) =>
     buildLoadContextOverload(routePath, alias),
@@ -148,6 +154,12 @@ function buildScenarioContextContent(contextFiles: ContextFileInfo[]): string {
     "",
     "/** Interface for Context objects defined in _.context.ts files */",
     "export interface Context$ {",
+    ...(storeImportPath === undefined
+      ? []
+      : [
+          "  /** Application-level store shared by every API group */",
+          "  readonly store: Store;",
+        ]),
     "  /** Load a context object for a specific path */",
     '  readonly loadContext: LoadContextDefinitions["loadContext"];',
     "  /** Load a JSON file relative to this file's path */",
@@ -168,13 +180,22 @@ function buildScenarioContextContent(contextFiles: ContextFileInfo[]): string {
  * every route path that has a context file.
  *
  * @param destination - Root output directory.
+ * @param rootDestination - Application root containing the optional store.
  */
-async function writeScenarioContextType(destination: string): Promise<void> {
+async function writeScenarioContextType(
+  destination: string,
+  rootDestination: string,
+): Promise<void> {
   const typesDir = nodePath.join(destination, "types");
   const filePath = nodePath.join(typesDir, "_.context.ts");
+  const storePath = nodePath.join(rootDestination, "_.store.ts");
 
   const contextFiles = await collectContextFiles(destination);
-  const content = buildScenarioContextContent(contextFiles);
+  const relativeStorePath = pathRelative(typesDir, storePath);
+  const storeImportPath = existsSync(storePath)
+    ? `${relativeStorePath.startsWith(".") ? "" : "./"}${relativeStorePath.replace(/\.ts$/u, ".js")}`
+    : undefined;
+  const content = buildScenarioContextContent(contextFiles, storeImportPath);
 
   await fs.mkdir(typesDir, { recursive: true });
   await fs.writeFile(filePath, content, "utf8");
@@ -255,48 +276,71 @@ async function writeDefaultScenariosIndex(destination: string): Promise<void> {
  * - `scenarios/index.ts` — the default scenarios entry-point (created only if
  *   it does not already exist).
  *
- * When {@link watch} is called, a file-system watcher monitors the `routes/`
- * directory for changes to `_.context.ts` files and automatically regenerates
- * `types/_.context.ts`.
+ * When {@link watch} is called, file-system watchers monitor the `routes/`
+ * directory for changes to `_.context.ts` files and the application root's
+ * optional `_.store.ts`, automatically regenerating `types/_.context.ts`.
  */
 export class ScenarioFileGenerator {
   private readonly destination: string;
 
+  private readonly rootDestination: string;
+
   private watcher: FSWatcher | undefined;
 
-  public constructor(destination: string) {
+  private storeWatcher: FSWatcher | undefined;
+
+  public constructor(destination: string, rootDestination = destination) {
     this.destination = destination;
+    this.rootDestination = rootDestination;
   }
 
   /** Generates both scenario-related files once and resolves when complete. */
   public async generate(): Promise<void> {
-    await writeScenarioContextType(this.destination);
+    await writeScenarioContextType(this.destination, this.rootDestination);
     await writeDefaultScenariosIndex(this.destination);
   }
 
   /**
-   * Starts watching the `routes/` directory for `_.context.ts` changes and
-   * regenerates `types/_.context.ts` on every change.
+   * Starts watching route context files and the exact application-root store
+   * path, regenerating `types/_.context.ts` on every relevant change.
    *
    * Resolves once the watcher is ready.
    */
   public async watch(): Promise<void> {
     const routesDir = nodePath.join(this.destination, "routes");
+    const storePath = nodePath.join(this.rootDestination, "_.store.ts");
+    const regenerate = (): void => {
+      void writeScenarioContextType(this.destination, this.rootDestination);
+    };
 
     this.watcher = watch(routesDir, CHOKIDAR_OPTIONS).on(
       "all",
       (_event, filePath: string) => {
         if (filePath.endsWith("_.context.ts")) {
-          void writeScenarioContextType(this.destination);
+          regenerate();
         }
       },
     );
 
-    await waitForEvent(this.watcher, "ready");
+    // Polling lets chokidar observe creation of the exact conventional store
+    // path even when the file is absent when the watcher starts.
+    this.storeWatcher = watch(storePath, {
+      ...CHOKIDAR_OPTIONS,
+      usePolling: true,
+    }).on("all", (_event, filePath: string) => {
+      if (nodePath.resolve(filePath) === nodePath.resolve(storePath)) {
+        regenerate();
+      }
+    });
+
+    await Promise.all([
+      waitForEvent(this.watcher, "ready"),
+      waitForEvent(this.storeWatcher, "ready"),
+    ]);
   }
 
   /** Closes the file-system watcher. */
   public async stopWatching(): Promise<void> {
-    await this.watcher?.close();
+    await Promise.all([this.watcher?.close(), this.storeWatcher?.close()]);
   }
 }

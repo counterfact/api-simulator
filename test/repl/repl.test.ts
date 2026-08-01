@@ -69,6 +69,7 @@ class ReplHarness {
     config: Config,
     scenarioRegistry?: ScenarioRegistry,
     apiBindings?: ReplApiBinding[],
+    store?: object,
   ) {
     this.server = startRepl(
       contextRegistry,
@@ -78,6 +79,7 @@ class ReplHarness {
       undefined,
       scenarioRegistry,
       apiBindings,
+      store,
     );
   }
 
@@ -100,6 +102,7 @@ class ReplHarness {
 function createHarness(
   scenarioRegistry?: ScenarioRegistry,
   apiBindings?: ReplApiBinding[],
+  store?: object,
 ) {
   const contextRegistry = new ContextRegistry();
   const registry = new Registry();
@@ -113,6 +116,7 @@ function createHarness(
     config,
     scenarioRegistry,
     apiBindings,
+    store,
   );
 
   openServers.push(harness.server);
@@ -316,6 +320,13 @@ describe("REPL", () => {
         "/pets/{petId}",
       ).path({ petId: 1 }),
     ).toBeDefined();
+  });
+
+  it("exposes the shared store as an unqualified binding", () => {
+    const store = { customers: new Map([["1", { name: "Ada" }]]) };
+    const { harness } = createHarness(undefined, undefined, store);
+
+    expect(harness.server.context["store"]).toBe(store);
   });
 
   it("exposes grouped context/route/routes for multi-runner mode", () => {

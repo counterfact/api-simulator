@@ -4,6 +4,21 @@ import { CodeGenerator } from "../../src/typescript-generator/code-generator.js"
 import { ScenarioFileGenerator } from "../../src/typescript-generator/scenario-file-generator.js";
 import { Repository } from "../../src/typescript-generator/repository.js";
 
+async function waitForGeneratedContent(
+  read: () => Promise<string>,
+  predicate: (content: string) => boolean,
+): Promise<string> {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const content = await read();
+    if (predicate(content)) {
+      return content;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+
+  throw new Error("Generated content did not update within five seconds");
+}
+
 describe("end-to-end test", () => {
   it("generates the same code for pet store that it did on the last test run", async () => {
     await usingTemporaryFiles(async ($) => {
@@ -583,6 +598,77 @@ describe("_.context type generation", () => {
       expect(content).toContain(
         "loadContext(path: string): Record<string, unknown>;",
       );
+    });
+  });
+
+  it("adds the root store only to the context constructor type", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("_.store.ts", "export class Store {}");
+
+      await new ScenarioFileGenerator($.path("")).generate();
+
+      const content = await $.read("types/_.context.ts");
+      expect(content).toContain('import type { Store } from "../_.store.js";');
+      expect(content).toContain("export interface Context$ {");
+      expect(content).toContain("  readonly store: Store;");
+
+      const scenarioType = content.slice(
+        content.indexOf("export interface Scenario$"),
+        content.indexOf("export type Scenario"),
+      );
+      expect(scenarioType).not.toContain("readonly store:");
+    });
+  });
+
+  it("imports the root store type from a nested API group", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("_.store.ts", "export class Store {}");
+
+      await new ScenarioFileGenerator(
+        $.path("groups/customers"),
+        $.path(""),
+      ).generate();
+
+      const content = await $.read("groups/customers/types/_.context.ts");
+      expect(content).toContain(
+        'import type { Store } from "../../../_.store.js";',
+      );
+      expect(content).toContain("  readonly store: Store;");
+    });
+  });
+
+  it("watches an initially absent root store and regenerates on add and delete", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.addDirectory("customers/routes");
+      const generator = new ScenarioFileGenerator(
+        $.path("customers"),
+        $.path(""),
+      );
+
+      await generator.generate();
+      await generator.watch();
+
+      try {
+        expect(await $.read("customers/types/_.context.ts")).not.toContain(
+          "readonly store: Store;",
+        );
+
+        await $.add("_.store.ts", "export class Store {}");
+        const contentAfterAdd = await waitForGeneratedContent(
+          () => $.read("customers/types/_.context.ts"),
+          (content) => content.includes("readonly store: Store;"),
+        );
+        expect(contentAfterAdd).toContain("readonly store: Store;");
+
+        await $.remove("_.store.ts");
+        const contentAfterDelete = await waitForGeneratedContent(
+          () => $.read("customers/types/_.context.ts"),
+          (content) => !content.includes("readonly store: Store;"),
+        );
+        expect(contentAfterDelete).not.toContain("readonly store: Store;");
+      } finally {
+        await generator.stopWatching();
+      }
     });
   });
 

@@ -10,6 +10,7 @@ import type { Config } from "./server/config.js";
 import { ContextRegistry } from "./server/context-registry.js";
 import { createKoaApp } from "./server/web-server/create-koa-app.js";
 import { ScenarioRegistry } from "./server/scenario-registry.js";
+import { StoreLoader } from "./server/store-loader.js";
 import { Repository } from "./typescript-generator/repository.js";
 import { ensureDirectoryExists } from "./util/ensure-directory-exists.js";
 import { generateVersionsTsContent } from "./typescript-generator/versions-ts-generator.js";
@@ -232,12 +233,43 @@ function validateSpecGroups(
  *   - `startRepl()` — launches the interactive Node.js REPL connected to the
  *     live server state.
  */
-export async function counterfact(config: Config, specs?: SpecConfig[]) {
+export async function counterfact<TStore = unknown>(
+  config: Config,
+  specs?: SpecConfig[],
+) {
   const normalizedSpecs = normalizeSpecs(
     { openApiPath: config.openApiPath, prefix: config.prefix },
     specs,
   );
   validateSpecGroups(normalizedSpecs);
+
+  let runners: ApiRunner[] = [];
+  let hasStore = false;
+  const simulatorRef: { current?: { store?: TStore } } = {};
+  const replServers = new Set<ReturnType<typeof startReplServer>>();
+  const storeLoader = new StoreLoader(config.basePath, {
+    async onStoreChange(store) {
+      const isActivation = !hasStore;
+      hasStore = true;
+      if (simulatorRef.current !== undefined) {
+        simulatorRef.current.store = store as TStore;
+      }
+      for (const replServer of replServers) {
+        replServer.context.store = store;
+      }
+
+      if (isActivation) {
+        const seenGroups = new Set<string>();
+        for (const runner of runners) {
+          if (seenGroups.has(runner.group)) continue;
+          seenGroups.add(runner.group);
+          await runner.reloadContexts();
+        }
+      }
+    },
+  });
+  const initialStore = await storeLoader.load();
+  hasStore = initialStore !== undefined;
 
   // Compute the ordered versions per group (oldest first, as declared in specs).
   // This list is passed to each runner so that $.minVersion() can compare
@@ -261,6 +293,7 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
     {
       contextRegistry: ContextRegistry;
       scenarioRegistry: ScenarioRegistry;
+      getStore: () => object | undefined;
     }
   >();
   for (const spec of normalizedSpecs) {
@@ -268,11 +301,12 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
       stateByGroup.set(spec.group, {
         contextRegistry: new ContextRegistry(),
         scenarioRegistry: new ScenarioRegistry(),
+        getStore: () => storeLoader.store,
       });
     }
   }
 
-  const runners = await Promise.all(
+  runners = await Promise.all(
     normalizedSpecs.map((spec) =>
       ApiRunner.create(
         {
@@ -368,6 +402,10 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
     await Promise.all(runners.map((runner) => runner.watch()));
     await Promise.all(runners.map((runner) => runner.start(options)));
 
+    if (options.startServer) {
+      await storeLoader.watch();
+    }
+
     let httpTerminator: HttpTerminator | undefined;
 
     if (options.startServer) {
@@ -376,9 +414,10 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
       } catch (error) {
         // Startup happens after the runner watchers are active. If a scenario
         // fails, release those resources and leave the HTTP port untouched.
-        await Promise.allSettled(
-          runners.map((runner) => runner.stopWatching()),
-        );
+        await Promise.allSettled([
+          ...runners.map((runner) => runner.stopWatching()),
+          storeLoader.stopWatching(),
+        ]);
         throw error;
       }
 
@@ -393,19 +432,22 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
 
     return {
       async stop() {
-        await Promise.all(runners.map((runner) => runner.stopWatching()));
+        await Promise.all([
+          ...runners.map((runner) => runner.stopWatching()),
+          storeLoader.stopWatching(),
+        ]);
         await httpTerminator?.terminate();
       },
     };
   }
 
-  return {
+  const baseSimulator = {
     contextRegistry: primaryRunner.contextRegistry,
     koaApp,
     registry: primaryRunner.registry,
     start,
-    startRepl: () =>
-      startReplServer(
+    startRepl: () => {
+      const replServer = startReplServer(
         primaryRunner.contextRegistry,
         primaryRunner.registry,
         {
@@ -423,6 +465,18 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
           registry: runner.registry,
           scenarioRegistry: runner.scenarioRegistry,
         })),
-      ),
+        storeLoader.store,
+      );
+      replServers.add(replServer);
+      return replServer;
+    },
   };
+  const result: typeof baseSimulator & { store?: TStore } = baseSimulator;
+  simulatorRef.current = result;
+
+  if (initialStore !== undefined) {
+    result.store = initialStore as TStore;
+  }
+
+  return result;
 }

@@ -86,6 +86,7 @@ The `loadContext(path)` call returns the live context instance rooted at that pa
 
 ## Keep exploring
 
+- [Share State Across API Groups](./shared-store.md) — use an application-level store when collaborating routes belong to different API groups
 - [Test the Context, Not the Handlers](./test-context-not-handlers.md) — unit-test each context class independently
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — the pattern that introduces the single-context approach this one extends
 - [Live Server Inspection with the REPL](./repl-inspection.md) — inspect each domain's context live from the REPL
