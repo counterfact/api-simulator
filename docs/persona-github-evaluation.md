@@ -230,6 +230,189 @@ Mean dimension deltas versus baseline: value clarity +0.4, role fit +0.2, workfl
 - Adoption readiness mean: **4.0** — pass (target 3.5)
 - Protected-persona minimum across those dimensions: **4** — pass (target 3.5)
 
+## Cycle 4 validation retest: conversational landing copy
+
+- Tested URL: `https://github.com/counterfact/api-simulator/tree/5cf22b51`
+- Tested commit: `5cf22b51ea2be23b8f907c114a16be9aba5388fe`
+- Evaluation date: 2026-07-31
+- Changed landing materials since cycle 3: README positioning and workflow labels; first-10-minutes framing; FAQ, usage, and pattern-guide language
+
+This was a post-conclusion validation retest rather than another feature hypothesis. The changes made the existing proof more conversational and inviting without adding product guarantees. All five independent evaluators assigned numeric scores before narrative feedback and inspected only README-reachable GitHub material at the pinned public commit.
+
+| Persona                  | Value clarity | Role fit | Workflow proof | Determinism & automation | Contract credibility | Adoption readiness | Weighted total | Delta vs baseline | Delta vs cycle 3 |
+| ------------------------ | ------------: | -------: | -------------: | -----------------------: | -------------------: | -----------------: | -------------: | ----------------: | ---------------: |
+| Maya — frontend engineer |             5 |        5 |              5 |                        4 |                    5 |                  5 |             96 |                +9 |               +5 |
+| Devon — backend engineer |             5 |        5 |              5 |                        5 |                    5 |                  4 |             98 |               +23 |               +7 |
+| Priya — QA/SDET          |             5 |        5 |              5 |                        5 |                    5 |                  4 |             98 |               +16 |               +8 |
+| Leo — staff engineer     |             5 |        5 |              5 |                        5 |                    4 |                  4 |             95 |               +21 |               +8 |
+| Aria — AI workflow owner |             5 |        5 |              5 |                        4 |                    5 |                  5 |             96 |                +9 |               +1 |
+| **Mean**                 |       **5.0** |  **5.0** |        **5.0** |                  **4.6** |              **4.8** |            **4.4** |       **96.6** |         **+15.6** |         **+5.8** |
+
+Mean dimension deltas versus baseline: value clarity +0.4, role fit +0.4, workflow proof +1.2, determinism and automation +0.6, contract credibility +1.2, and adoption readiness +1.0. Versus cycle 3: value clarity 0.0, role fit +0.2, workflow proof +0.6, determinism and automation 0.0, contract credibility +0.6, and adoption readiness +0.4.
+
+**Supported:** The friendlier workflow framing retained the precise boundaries and made the existing end-to-end evidence easier to follow. All personas scored workflow proof at 5. Devon and Leo found the hybrid and shared-client contract proof directly applicable; Maya, Priya, and Aria found the state/failure/reset/recovery path complete and actionable.
+
+**Remaining blockers:** Counterfact still relies on user-authored reset and per-worker isolation. Version 2.14.0 still lacks a complete TypeScript declaration for the programmatic library entry point, so the automation harness is JavaScript and generated code needs a separate type check. Runtime response-body checking remains advisory, while authentication, authorization, path schemas, proxied-path checking, and production behavior require other coverage.
+
+**Success criteria:**
+
+- Weighted mean: **96.6** — pass (target 90)
+- Workflow proof mean: **5.0** — pass (target 4)
+- Determinism and automation mean: **4.6** — pass (target 4)
+- Adoption readiness mean: **4.4** — pass (target 3.5)
+- Protected-persona minimum across those dimensions: **4** — pass (target 3.5)
+
+### Cycle 4 independent evaluator records
+
+#### Maya — frontend engineer
+
+**Files/pages visited:**
+
+- `https://github.com/counterfact/api-simulator/tree/5cf22b51`
+- `https://raw.githubusercontent.com/counterfact/api-simulator/5cf22b51/README.md`
+- `https://raw.githubusercontent.com/counterfact/api-simulator/5cf22b51/docs/first-10-minutes.md`
+- `https://raw.githubusercontent.com/counterfact/api-simulator/5cf22b51/examples/first-10-minutes/README.md`
+- `https://raw.githubusercontent.com/counterfact/api-simulator/5cf22b51/docs/getting-started.md`
+- `https://raw.githubusercontent.com/counterfact/api-simulator/5cf22b51/docs/comparison.md`
+
+**Strengths:**
+
+- The landing page immediately distinguishes Counterfact from a static fixture: it generates typed handlers from OpenAPI, supports shared state, preserves state during hot reload, and provides a live REPL.
+- The first-10-minutes guide demonstrates Maya’s exact moment of value with runnable POST-then-GET handlers, browser `fetch`, local CORS, forced failures, reset, and recovery.
+- The verified example gives unusually strong adoption proof: one command runs generation, real-HTTP tests, teardown, and type-checking, backed by a path-scoped GitHub Actions workflow and lockfile.
+- The contract boundary is candid and precise about advisory response-body checks, unsupported authentication/authorization and path rules, user-authored business behavior, and the continued need for real-backend tests.
+
+**Blockers or uncertainties:**
+
+- Deterministic state is a pattern Maya must author: Counterfact has no built-in atomic reset or automatic per-test isolation, and parallel workers require separate processes, output directories, and ports.
+- The programmatic test harness is JavaScript because version 2.14.0 lacks a complete TypeScript declaration for the library entry point, which slightly weakens the otherwise TypeScript-first experience.
+- The first stateful flow still requires writing a context class and replacing two handlers; the materials make that work approachable, but a frontend engineer may compare it against the immediate convenience of one hard-coded fixture.
+
+**Evidence for the scores:**
+
+- The README’s one-command setup, explicit Node requirement, generated-file explanation, state-preserving hot reload, REPL, proxying, project lifecycle, and CI guidance are concrete enough to begin a trial without leaving GitHub.
+- The linked walkthrough and checked-in example prove create → read → forced failure → reset → recovery over real HTTP, while clearly separating compile-time contract feedback from production behavior guarantees.
+
+#### Devon — backend engineer
+
+**Files/pages visited:**
+
+- `https://github.com/counterfact/api-simulator/tree/5cf22b51`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/README.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/first-10-minutes.md`
+- `https://github.com/counterfact/api-simulator/tree/5cf22b51/examples/first-10-minutes`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/examples/first-10-minutes/README.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/patterns/hybrid-proxy.md`
+
+**Strengths:**
+
+- The landing page states the incremental-backend value proposition directly: one client base URL can combine upstream paths with editable local handlers.
+- The hybrid guide closely matches my target workflow: proxy everything to a dev backend, turn `/payments` local, then move it upstream later without restarting or changing the client.
+- Generated handler types, shared generated client types, explicit type-check commands, resettable context, real-HTTP tests, bounded readiness, awaited teardown, pinned dependencies, and a CI-checked example make the workflow unusually concrete.
+- The adoption/retirement guidance answers the “another service to operate” concern: it is a local dev dependency with version-controlled artifacts, per-test lifecycle control, and an explicit removal path.
+
+**Blockers or uncertainties:**
+
+- Forwarded traffic bypasses Counterfact handlers and request/response checks, so contract drift on proxied endpoints still requires targeted real-backend coverage.
+- Response-body runtime errors are advisory rather than enforced; authentication, authorization, side effects, performance, and business correctness remain outside the guarantee.
+- Counterfact 2.14.0 lacks a complete TypeScript declaration for its library entry point, requiring a JavaScript lifecycle harness plus a separate TypeScript check.
+- Trial setup is clear, but production-like proxy concerns such as upstream credentials, TLS, and broader deployment patterns are not demonstrated on this landing path.
+
+**Evidence for the scores:**
+
+- The verified example proves local `/pets` plus proxied `/health` behind one Counterfact URL, while `npm run verify` regenerates types, runs a deterministic HTTP lifecycle test, and type-checks both handlers and a representative client.
+- The README and first-10-minutes guide precisely separate guarantees from realism: supported contract shapes are compile-time checked, reset and isolation are user-defined, forwarded paths bypass checks, and real-backend/end-to-end tests remain necessary.
+
+#### Priya — QA/SDET
+
+**Files/pages visited:**
+
+- `https://github.com/counterfact/api-simulator/tree/5cf22b51`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/README.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/first-10-minutes.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/examples/first-10-minutes/README.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/patterns/automated-integration-tests.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/patterns/scenario-scripts.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/.github/workflows/first-10-minutes.yml`
+
+**Strengths:**
+
+- The landing page immediately distinguishes Counterfact from a static mock: generated typed handlers become editable, stateful behavior with shared context, injected failures, latency, hot reload, scenarios, proxying, and contract checks.
+- The deterministic-test walkthrough closely matches my QA job: it starts from an empty state, creates and reads a record, forces a failure through live context, resets, retries successfully, and performs all assertions over real HTTP.
+- Reproducibility guidance is unusually concrete: pin the package and contract, commit the lockfile, disable REPL/watch/generation in automation, use bounded readiness checks, await teardown, reset before each test, and isolate parallel workers by process, output directory, and port.
+- Contract boundaries are precise. The README says exactly which request fields are validated, that response-body errors are advisory, that authentication and authorization remain user-authored, and that real-backend/E2E coverage is still required.
+
+**Blockers or uncertainties:**
+
+- Counterfact has no built-in atomic reset or automatic per-test isolation; each team must author and maintain `reset()` and provision separate instances and ports for parallel workers.
+- The programmatic entry point lacks a complete TypeScript declaration in version 2.14.0, so the showcased harness is JavaScript and handler contract checking requires a separate TypeScript command.
+- The proof is excellent for a trial, but adopting it into a large parallel suite would still require validating port allocation, process management, and the team’s reset discipline.
+
+**Evidence for the scores:**
+
+- The pinned first-10-minutes guide provides a complete, runnable lifecycle from generation through stateful handlers, failure injection, reset, recovery, type-checking, CI commands, and teardown; the checked-in example adds a path-scoped GitHub Actions workflow using Node 22, `npm ci`, and `npm run verify`.
+- The README’s confidence table and example’s contract-boundary section explicitly separate simulator guarantees from production correctness, making Counterfact credible as a controlled complement to—not a replacement for—real-service testing.
+
+#### Leo — staff engineer
+
+**Files/pages visited:**
+
+- `https://github.com/counterfact/api-simulator/tree/5cf22b51`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/README.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/first-10-minutes.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/examples/first-10-minutes/README.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/getting-started.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/reference.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/comparison.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/patterns/executable-spec.md`
+
+**Strengths:**
+
+- The landing page directly frames Counterfact as an editable, stateful API generated from OpenAPI, with typed handlers, hot reload, validation, shared context, overlays, and selective proxying—not merely a static response mock.
+- The verified example demonstrates my exact moment of value: regenerate after an enum change, run the type check, and TypeScript identifies the incompatible client fixture while checking handlers against the same generated contract.
+- The deterministic workflow is unusually concrete: pinned dependency and lockfile, explicit `reset()`, non-interactive startup, bounded readiness polling, real HTTP assertions, awaited teardown, CI commands, and separate instances and ports for parallel workers.
+
+**Blockers or uncertainties:**
+
+- “Supported operations” is not fully enumerated on the primary landing path, so I would still verify compatibility against our real specifications before committing.
+- Runtime response-body mismatches are advisory, path-parameter schemas and authentication/authorization are not enforced, and forwarded paths bypass local checks. These are clearly disclosed but materially limit what “contract validation” means.
+- Counterfact does not run TypeScript checking itself, and version 2.14.0 lacks a complete declaration for its programmatic library entry point; adoption requires wiring an explicit project type-check and currently using a JavaScript test harness.
+
+**Evidence for the scores:**
+
+- The README’s “Confidence you can build on” table separates generated and runtime guarantees from business behavior, security, and production correctness, which makes the contract claims credible rather than absolute.
+- The first-10-minutes guide and CI-checked example provide a copyable generate → start → exercise state/failure/reset over HTTP → type-check client and handlers → teardown workflow, including watch mode and ordered OpenAPI overlays for contract variants.
+
+#### Aria — AI workflow owner
+
+**Files/pages visited:**
+
+- `https://github.com/counterfact/api-simulator/tree/5cf22b51`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/README.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/first-10-minutes.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/examples/first-10-minutes/README.md`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/.github/workflows/first-10-minutes.yml`
+- `https://github.com/counterfact/api-simulator/blob/5cf22b51/docs/patterns/ai-assisted-implementation.md`
+
+**Strengths:**
+
+- The landing page directly frames Counterfact as an editable, stateful, OpenAPI-backed local API and distinguishes authored scenarios from schema-derived sample responses.
+- The agent-specific walkthrough is unusually actionable: pinned dependency and contract, typed handlers, resettable context, non-interactive lifecycle, bounded readiness, real-HTTP assertions, teardown, and exact verification commands.
+- The checked-in example demonstrates create/read/failure/reset/recovery, shared generated types for a client and handlers, hybrid proxy ownership, and a path-scoped GitHub Actions workflow.
+- Contract boundaries are explicit: request-validation coverage, advisory response-body checking, unenforced authentication and authorization, proxy bypass behavior, and the continued need for targeted real-backend tests.
+
+**Blockers or uncertainties:**
+
+- Determinism depends on user-authored `reset()` logic; there is no built-in atomic reset or automatic per-test isolation.
+- Parallel workers require separate processes, output directories, and ports.
+- The JavaScript automation harness is a workaround because version 2.14.0 lacks a complete TypeScript declaration for the library entry point.
+- Type correctness verifies contract shape, not business realism; reviewers still need targeted production-backed coverage.
+
+**Evidence for the scores:**
+
+- The first-10-minutes guide supplies a complete agent handoff prompt and a reproducible test proving create → read → forced failure → reset → recovery, while leaving the scenario code for review.
+- The README’s confidence table and example documentation precisely separate what Counterfact validates from what remains the team’s responsibility, making both the value and realism boundary credible.
+
 ## Experiment conclusion
 
 ### Supported hypotheses
@@ -238,6 +421,7 @@ Mean dimension deltas versus baseline: value clarity +0.4, role fit +0.2, workfl
 - Precise contract-versus-behavior boundaries improve credibility without weakening value clarity.
 - A checked-in, lockfile-backed, CI-scoped example provides stronger proof than snippets alone.
 - Compiling a representative client from the same generated contract and testing local/upstream ownership through one base URL closes important backend and staff-engineer gaps.
+- Conversational workflow framing can improve newcomer comprehension without weakening precise contract boundaries.
 
 ### Rejected or qualified hypotheses
 
@@ -255,7 +439,7 @@ Mean dimension deltas versus baseline: value clarity +0.4, role fit +0.2, workfl
 
 ### Recommendation
 
-**Ship the GitHub landing changes and stop this experiment.** The final snapshot meets every GitHub success criterion and improves the weighted mean by 9.8 points over baseline. Further work should be prioritized as product/platform hypotheses rather than additional README expansion.
+**Keep the recent GitHub landing changes and stop this experiment.** The validation snapshot meets every success criterion, scores 96.6, and improves the weighted mean by 15.6 points over baseline and 5.8 points over cycle 3. Further work should be prioritized as product/platform hypotheses rather than additional README expansion.
 
 ## Commits and verification
 
@@ -267,6 +451,10 @@ Mean dimension deltas versus baseline: value clarity +0.4, role fit +0.2, workfl
 | `841c2b03` | Add lockfile-backed, CI-checked onboarding example               |
 | `2876f2eb` | Record cycle 2 retest                                            |
 | `bf048ead` | Prove representative-client drift and hybrid path ownership      |
+| `f98dc39c` | Frame generated samples as an editable starting point            |
+| `b35c1d91` | Simplify the quickstart copy                                     |
+| `4fd72cb9` | Make landing copy more inviting                                  |
+| `5cf22b51` | Make visitor playbooks more conversational                       |
 
 Verification performed:
 

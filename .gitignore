@@ -5,6 +5,7 @@ site/node_modules
 site/dist
 site/.astro
 coverage
+benchmarks/agentic-coding/results/
 .stryker-tmp
 reports
 out
