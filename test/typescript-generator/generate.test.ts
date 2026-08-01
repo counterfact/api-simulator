@@ -1,4 +1,5 @@
 import { jest } from "@jest/globals";
+import { remove } from "fs-extra";
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { CodeGenerator } from "../../src/typescript-generator/code-generator.js";
@@ -691,7 +692,7 @@ describe("_.context type generation", () => {
       try {
         await $.remove("customers/types/_.context.ts");
         await $.remove("customers/types/_.middleware.ts");
-        await $.remove("customers/types");
+        await remove($.path("customers/types"));
         await $.add("customers/types", "blocker");
         await $.add("_.store.ts", "export class Store {}");
 
