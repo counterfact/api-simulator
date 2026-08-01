@@ -14,6 +14,7 @@ import type {
   MaybePromise,
   MediaType,
   Middleware,
+  MiddlewareRequest,
   MiddlewareResponseBuilderFactory,
   OmitAll,
   OmitValueWhenNever,
@@ -41,6 +42,9 @@ const authenticationMiddleware: Middleware<AuthenticationContext> = async (
 };
 
 expectAssignable<Middleware<AuthenticationContext>>(authenticationMiddleware);
+
+declare const middlewareRequest: MiddlewareRequest;
+expectType<Promise<void>>(middlewareRequest.delay(100));
 
 declare const middlewareResponse: MiddlewareResponseBuilderFactory;
 expectType<ResponseBuilder | undefined>(middlewareResponse["200 OK"]);

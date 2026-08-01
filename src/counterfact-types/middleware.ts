@@ -40,7 +40,7 @@ export interface MiddlewareRequest<Context = unknown> {
   body?: unknown;
   context: Context;
   cookie: { [name: string]: string | undefined };
-  delay: (milliseconds: number, maxMilliseconds: number) => Promise<void>;
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
   headers: { [key: string]: boolean | number | string };
   matchedPath?: string;
   path?: { [key: string]: boolean | number | string };
