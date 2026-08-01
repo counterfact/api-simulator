@@ -50,7 +50,7 @@ export interface MiddlewareRequest<Context = unknown> {
     headers: { [key: string]: string };
     status: number;
   }>;
-  query: { [key: string]: boolean | number | string };
+  query: { [key: string]: unknown };
   response: MiddlewareResponseBuilderFactory;
   tools: MiddlewareTools;
 }
