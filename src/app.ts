@@ -248,6 +248,25 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
     }
   }
 
+  // A group is one state boundary even when it contains several versioned
+  // specification runners. Preserve separate registries between groups while
+  // sharing context and scenarios between every runner in the same group.
+  const stateByGroup = new Map<
+    string,
+    {
+      contextRegistry: ContextRegistry;
+      scenarioRegistry: ScenarioRegistry;
+    }
+  >();
+  for (const spec of normalizedSpecs) {
+    if (!stateByGroup.has(spec.group)) {
+      stateByGroup.set(spec.group, {
+        contextRegistry: new ContextRegistry(),
+        scenarioRegistry: new ScenarioRegistry(),
+      });
+    }
+  }
+
   const runners = await Promise.all(
     normalizedSpecs.map((spec) =>
       ApiRunner.create(
@@ -262,6 +281,7 @@ export async function counterfact(config: Config, specs?: SpecConfig[]) {
         spec.group,
         spec.version ?? "",
         versionsByGroup.get(spec.group) ?? [],
+        stateByGroup.get(spec.group),
       ),
     ),
   );

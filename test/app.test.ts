@@ -72,12 +72,20 @@ describe("counterfact", () => {
       "v1",
       "",
       [],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ openApiPath: "_", prefix: "/api/v2" }),
       "v2",
       "",
       [],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
 
     spy.mockRestore();
@@ -128,6 +136,45 @@ describe("counterfact", () => {
         startRepl: expect.any(Function),
       }),
     );
+  });
+
+  it("shares context and scenarios across versions in a group but isolates different groups", async () => {
+    const realCreate = ApiRunner.create;
+    const capturedRunners: ApiRunner[] = [];
+    const createSpy = jest
+      .spyOn(ApiRunner, "create")
+      .mockImplementation(async (...args) => {
+        const runner = await realCreate.apply(ApiRunner, args);
+        capturedRunners.push(runner);
+        return runner;
+      });
+
+    await (app as any).counterfact(mockConfig, [
+      { source: "_", group: "billing", version: "v1" },
+      { source: "_", group: "inventory", version: "v1" },
+      { source: "_", group: "billing", version: "v2" },
+    ]);
+
+    const billingV1 = capturedRunners.find(
+      ({ group, version }) => group === "billing" && version === "v1",
+    )!;
+    const billingV2 = capturedRunners.find(
+      ({ group, version }) => group === "billing" && version === "v2",
+    )!;
+    const inventory = capturedRunners.find(
+      ({ group }) => group === "inventory",
+    )!;
+
+    expect(billingV1.contextRegistry).toBe(billingV2.contextRegistry);
+    expect(billingV1.scenarioRegistry).toBe(billingV2.scenarioRegistry);
+    expect(billingV1.contextRegistry).not.toBe(inventory.contextRegistry);
+    expect(billingV1.scenarioRegistry).not.toBe(inventory.scenarioRegistry);
+
+    billingV1.contextRegistry.find("/")["seed"] = "shared";
+    expect(billingV2.contextRegistry.find("/")["seed"]).toBe("shared");
+    expect(inventory.contextRegistry.find("/")["seed"]).toBeUndefined();
+
+    createSpy.mockRestore();
   });
 
   it("throws when two specs share the same group and same non-empty version", async () => {
@@ -252,12 +299,20 @@ describe("counterfact", () => {
       "my-api",
       "v1",
       ["v1", "v2"],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ prefix: "/my-api/v2" }),
       "my-api",
       "v2",
       ["v1", "v2"],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
 
     spy.mockRestore();
@@ -277,6 +332,10 @@ describe("counterfact", () => {
       "my-api",
       "v1",
       ["v1"],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
 
     spy.mockRestore();
@@ -294,6 +353,10 @@ describe("counterfact", () => {
       "my-api",
       "",
       [],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
 
     spy.mockRestore();
