@@ -11,13 +11,6 @@ import type { Dispatcher } from "../dispatcher.js";
 import { isProxyEnabledForPath } from "../is-proxy-enabled-for-path.js";
 import type { RequestMethod } from "../registry.js";
 
-declare module "koa" {
-  interface Request {
-    body?: unknown;
-    rawBody?: string;
-  }
-}
-
 const debug = createDebug("counterfact:server:create-koa-app");
 
 const HTTP_STATUS_CODE_OK = 200;
