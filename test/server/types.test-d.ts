@@ -38,9 +38,7 @@ const authenticationMiddleware: Middleware<AuthenticationContext> = async (
   return respondTo($);
 };
 
-expectAssignable<Middleware<AuthenticationContext>>(
-  authenticationMiddleware,
-);
+expectAssignable<Middleware<AuthenticationContext>>(authenticationMiddleware);
 
 // test exact match
 expectType<

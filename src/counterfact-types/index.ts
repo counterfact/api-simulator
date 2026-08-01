@@ -13,6 +13,7 @@ export type {
   Middleware,
   MiddlewareRequest,
   MiddlewareResponse,
+  MiddlewareResponseBuilderFactory,
   MiddlewareResponseObject,
   MiddlewareTools,
   RespondTo,

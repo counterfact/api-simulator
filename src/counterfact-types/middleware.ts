@@ -1,4 +1,5 @@
 import type { COUNTERFACT_RESPONSE } from "./counterfact-response.js";
+import type { HttpStatusCode } from "./http-status-code.js";
 import type { MaybePromise } from "./maybe-promise.js";
 import type { MediaType } from "./media-type.js";
 import type { ResponseBuilder } from "./response-builder.js";
@@ -23,6 +24,11 @@ export interface MiddlewareTools {
   randomFromSchema: (schema: object) => Promise<unknown>;
 }
 
+/** A response-builder factory with every standard status code available. */
+export type MiddlewareResponseBuilderFactory = {
+  [StatusCode in HttpStatusCode]: ResponseBuilder;
+} & { [key: number]: ResponseBuilder };
+
 /**
  * The request argument passed to a custom middleware function.
  *
@@ -45,7 +51,7 @@ export interface MiddlewareRequest<Context = unknown> {
     status: number;
   }>;
   query: { [key: string]: boolean | number | string };
-  response: ResponseBuilder;
+  response: MiddlewareResponseBuilderFactory;
   tools: MiddlewareTools;
 }
 
