@@ -443,7 +443,8 @@ async function writeDefaultScenariosIndex(destination: string): Promise<void> {
  *
  * When {@link watch} is called, file-system watchers monitor the `routes/`
  * directory for changes to `_.context.ts` files and the application root's
- * optional `_.store.ts`, automatically regenerating `types/_.context.ts`.
+ * optional `_.store.ts`, automatically regenerating `types/_.context.ts` and
+ * the mirrored `_.middleware.ts` files under `types/`.
  */
 export class ScenarioFileGenerator {
   private readonly destination: string;
@@ -468,7 +469,8 @@ export class ScenarioFileGenerator {
 
   /**
    * Starts watching route context files and the exact application-root store
-   * path, regenerating `types/_.context.ts` on every relevant change.
+   * path, regenerating `types/_.context.ts` and the mirrored `_.middleware.ts`
+   * files under `types/` on every relevant change.
    *
    * Resolves once the watcher is ready.
    */
