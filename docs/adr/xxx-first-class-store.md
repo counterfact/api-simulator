@@ -109,4 +109,4 @@ Require simulators to share a database, file, or service outside Counterfact.
   implementation details; its API should describe the simulated product domain.
 - Preserve the current path-scoped context API without qualification. Add
   cross-group access only through the store surface unless a later, separate
-  ADR establishes another use case.
+  ADR establishes another use case. (Patrick McElhaney)
