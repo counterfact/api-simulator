@@ -153,7 +153,10 @@ function eventTargetForCallback(callback: jest.Mock): Promise<void> {
 }
 
 async function waitForMock(mock: jest.Mock, calls: number): Promise<void> {
-  while (mock.mock.calls.length < calls) {
+  for (let attempt = 0; attempt < 500; attempt += 1) {
+    if (mock.mock.calls.length >= calls) return;
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
+
+  throw new Error(`Mock was not called ${calls} times within five seconds`);
 }
