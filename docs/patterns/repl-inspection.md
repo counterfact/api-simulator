@@ -81,6 +81,7 @@ If the context exposes a failure flag (see [Simulate Failures and Edge Cases](./
 
 ## Keep exploring
 
+- [Share State Across API Groups](./shared-store.md) — inspect the unqualified live `store` shared by every API group
 - [Simulate Failures and Edge Cases](./simulate-failures.md) — expose context flags that the REPL can toggle
 - [Federated Context Files](./federated-context.md) — use `$.loadContext()` in the REPL to inspect a specific domain's context
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — use the REPL to seed and inspect stateful handler data

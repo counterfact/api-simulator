@@ -273,6 +273,63 @@ describe("a module loader", () => {
     });
   });
 
+  it("injects the shared store only when constructing contexts", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "_.context.js",
+        "export class Context { constructor($) { this.receivedStore = $.store; this.count = 0 } }",
+      );
+      await $.add("package.json", '{ "type": "module" }');
+
+      const store = { shared: true };
+      const contextRegistry = new ContextRegistry();
+      const loader = new ModuleLoader(
+        $.path("."),
+        new Registry(),
+        contextRegistry,
+        undefined,
+        undefined,
+        () => store,
+      );
+
+      await loader.load();
+
+      expect(contextRegistry.find("/").receivedStore).toBe(store);
+    });
+  });
+
+  it("reloads contexts with a newly activated store while preserving state", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "_.context.js",
+        "export class Context { constructor($) { this.store = $.store; this.count = 0 } }",
+      );
+      await $.add("package.json", '{ "type": "module" }');
+
+      const storeRef: { current?: object } = {};
+      const contextRegistry = new ContextRegistry();
+      const loader = new ModuleLoader(
+        $.path("."),
+        new Registry(),
+        contextRegistry,
+        undefined,
+        undefined,
+        () => storeRef.current,
+      );
+
+      await loader.load();
+      const context = contextRegistry.find("/");
+      context.count = 7;
+      storeRef.current = { activated: true };
+
+      await loader.reloadContexts();
+
+      expect(contextRegistry.find("/")).toBe(context);
+      expect(context.count).toBe(7);
+      expect(context.store).toBe(storeRef.current);
+    });
+  });
+
   it("provides readJson for reading JSON files relative to the context file", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("data.json", '{"name": "test", "value": 42}');

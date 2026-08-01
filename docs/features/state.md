@@ -74,10 +74,51 @@ export class Context {
 }
 ```
 
+## Sharing state across API groups
+
+Context registries are isolated between API groups. When several groups model
+one product and need shared domain data, add a user-authored `_.store.ts` at the
+root of `basePath`:
+
+```ts
+// _.store.ts
+export class Store {
+  readonly customers = new Map<string, Customer>();
+  readonly orders = new Map<string, Order>();
+}
+```
+
+Counterfact constructs one store per simulator and passes it to every context
+constructor as `$.store`. Import the generated `Context$` type for concrete,
+typed access:
+
+```ts
+// customers/routes/_.context.ts
+import type { Context$ } from "../types/_.context.js";
+
+export class Context {
+  readonly store: Context$["store"];
+
+  constructor($: Context$) {
+    this.store = $.store;
+  }
+}
+```
+
+The store is not added to route-handler, middleware, or scenario arguments.
+Handlers continue to use `$.context`; each context decides which store behavior
+to expose to its routes.
+
+The live store survives route, context, and store-module hot reloads as well as
+a stop/start cycle on the same simulator. Constructing a new simulator creates a
+fresh store. See [Share State Across API Groups](../patterns/shared-store.md) for
+a complete multi-group example and reload guidance.
+
 ## See also
 
 - [Hot reload](./hot-reload.md) — state is preserved across hot reloads
 - [REPL](./repl.md) — inspect and mutate state interactively at runtime
 - [Patterns: Federated Context Files](../patterns/federated-context.md) — managing state across multiple context files
+- [Patterns: Share State Across API Groups](../patterns/shared-store.md) — sharing domain state between independently generated groups
 - [Patterns: Test the Context, Not the Handlers](../patterns/test-context-not-handlers.md) — unit-testing context logic
 - [Usage](../usage.md)

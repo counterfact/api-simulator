@@ -95,6 +95,7 @@ The context class has no dependency on Counterfact internals — no server, no `
 
 ## Keep exploring
 
+- [Share State Across API Groups](./shared-store.md) — apply the same testing boundary to context methods that wrap shared-store behavior
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — the context pattern the tests above are written for
 - [AI-Assisted Implementation](./ai-assisted-implementation.md) — unit-test the context the agent generates to keep it reliable
 - [Reference Implementation](./reference-implementation.md) — a reference implementation accumulates significant context logic that benefits from test coverage
