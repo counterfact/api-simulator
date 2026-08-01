@@ -284,7 +284,7 @@ describe("counterfact", () => {
       await stop();
     });
   });
-  it("derives prefix from group+version when no explicit prefix is provided", async () => {
+  it("defaults an omitted prefix to root when group and version are present", async () => {
     const spy = jest.spyOn(ApiRunner, "create");
 
     const specs = [
@@ -295,7 +295,7 @@ describe("counterfact", () => {
     await (app as any).counterfact(mockConfig, specs);
 
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({ prefix: "/my-api/v1" }),
+      expect.objectContaining({ prefix: "" }),
       "my-api",
       "v1",
       ["v1", "v2"],
@@ -305,7 +305,7 @@ describe("counterfact", () => {
       }),
     );
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({ prefix: "/my-api/v2" }),
+      expect.objectContaining({ prefix: "" }),
       "my-api",
       "v2",
       ["v1", "v2"],
@@ -341,7 +341,30 @@ describe("counterfact", () => {
     spy.mockRestore();
   });
 
-  it("derives prefix from group alone when version is absent", async () => {
+  it("preserves an explicit empty prefix", async () => {
+    const spy = jest.spyOn(ApiRunner, "create");
+
+    const specs = [
+      { source: "_", prefix: "", group: "my-api", version: "v1" },
+    ];
+
+    await (app as any).counterfact(mockConfig, specs);
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({ prefix: "" }),
+      "my-api",
+      "v1",
+      ["v1"],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
+    );
+
+    spy.mockRestore();
+  });
+
+  it("defaults an omitted prefix to root when version is absent", async () => {
     const spy = jest.spyOn(ApiRunner, "create");
 
     const specs = [{ source: "_", group: "my-api" }];
@@ -349,7 +372,7 @@ describe("counterfact", () => {
     await (app as any).counterfact(mockConfig, specs);
 
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({ prefix: "/my-api" }),
+      expect.objectContaining({ prefix: "" }),
       "my-api",
       "",
       [],
@@ -419,22 +442,20 @@ describe("counterfact", () => {
     );
   });
 
-  it("routes two versioned specs to their derived prefixes", async () => {
+  it("serves canonical paths from grouped specs sharing an omitted prefix", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(
-        "v1/routes/greet.js",
-        `export function GET() { return { body: "hello from v1" }; }`,
+        "customers/routes/customers.js",
+        `export function GET() { return { body: "customers" }; }`,
       );
       await $.add(
-        "v2/routes/greet.js",
-        `export function GET() { return { body: "hello from v2" }; }`,
+        "products/routes/products.js",
+        `export function GET() { return { body: "products" }; }`,
       );
 
-      // Two specs with distinct groups and versions: each is auto-mounted at /<group>/<version>.
-      // Using v1/v1 and v2/v2 keeps the route files in separate directories.
       const specs = [
-        { source: "_", group: "v1", version: "v1" },
-        { source: "_", group: "v2", version: "v2" },
+        { source: "_", group: "customers" },
+        { source: "_", group: "products" },
       ];
 
       const { koaApp, start } = await (app as any).counterfact(
@@ -449,11 +470,15 @@ describe("counterfact", () => {
         watch: { routes: false, types: false },
       });
 
-      const v1Response = await request(koaApp.callback()).get("/v1/v1/greet");
-      const v2Response = await request(koaApp.callback()).get("/v2/v2/greet");
+      const customers = await request(koaApp.callback()).get("/customers");
+      const products = await request(koaApp.callback()).get("/products");
+      const duplicatedPath = await request(koaApp.callback()).get(
+        "/customers/customers",
+      );
 
-      expect(v1Response.text).toContain("hello from v1");
-      expect(v2Response.text).toContain("hello from v2");
+      expect(customers.text).toContain("customers");
+      expect(products.text).toContain("products");
+      expect(duplicatedPath.status).toBe(404);
 
       await stop();
     });
