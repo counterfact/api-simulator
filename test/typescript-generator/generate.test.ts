@@ -61,6 +61,81 @@ describe("end-to-end test", () => {
   });
 });
 
+describe("OpenAPI paths with trailing slashes", () => {
+  const operation = (operationId: string) => ({
+    get: {
+      operationId,
+      responses: { "204": { description: "Success" } },
+    },
+  });
+
+  it("generates visible route and type files for normalized paths", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "Trailing slash paths", version: "1.0.0" },
+          paths: {
+            "/": operation("getRoot"),
+            "/customers/": operation("listCustomers"),
+            "/customers/{id}/": operation("getCustomer"),
+            "/subscriptions/{id}/cancel/": operation("cancelSubscription"),
+          },
+        }),
+      );
+
+      const repository = new Repository();
+      repository.writeFiles = async () => {};
+
+      await new CodeGenerator($.path("openapi.json"), $.path(""), {
+        routes: true,
+        types: true,
+      }).generate(repository);
+      await repository.finished();
+
+      expect([...repository.scripts.keys()].sort()).toStrictEqual([
+        "routes/customers.ts",
+        "routes/customers/{id}.ts",
+        "routes/index.ts",
+        "routes/subscriptions/{id}/cancel.ts",
+        "types/paths/customers.types.ts",
+        "types/paths/customers/{id}.types.ts",
+        "types/paths/index.types.ts",
+        "types/paths/subscriptions/{id}/cancel.types.ts",
+      ]);
+    });
+  });
+
+  it("rejects paths that collide after trailing-slash normalization", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "Conflicting paths", version: "1.0.0" },
+          paths: {
+            "/customers": operation("listCustomers"),
+            "/customers/": operation("listCustomersWithSlash"),
+          },
+        }),
+      );
+
+      const repository = new Repository();
+      repository.writeFiles = async () => {};
+
+      await expect(
+        new CodeGenerator($.path("openapi.json"), $.path(""), {
+          routes: true,
+          types: true,
+        }).generate(repository),
+      ).rejects.toThrow(
+        'OpenAPI paths "/customers" and "/customers/" normalize to the same path "/customers"',
+      );
+    });
+  });
+});
+
 describe("$ref resolution for components/mediaTypes (OpenAPI 3.2)", () => {
   it("loads and bundles a spec with $ref pointing to components/mediaTypes without errors", async () => {
     await usingTemporaryFiles(async ($) => {
