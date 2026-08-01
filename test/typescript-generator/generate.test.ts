@@ -61,6 +61,180 @@ describe("end-to-end test", () => {
   });
 });
 
+describe("OpenAPI paths with trailing slashes", () => {
+  const operation = (operationId: string) => ({
+    get: {
+      operationId,
+      responses: { "204": { description: "Success" } },
+    },
+  });
+
+  it("generates visible route and type files for normalized paths", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "Trailing slash paths", version: "1.0.0" },
+          paths: {
+            "/": operation("getRoot"),
+            "/customers/": operation("listCustomers"),
+            "/customers/{id}/": operation("getCustomer"),
+            "/subscriptions/{id}/cancel/": operation("cancelSubscription"),
+          },
+        }),
+      );
+
+      const repository = new Repository();
+      repository.writeFiles = async () => {};
+
+      await new CodeGenerator($.path("openapi.json"), $.path(""), {
+        routes: true,
+        types: true,
+      }).generate(repository);
+      await repository.finished();
+
+      expect([...repository.scripts.keys()].sort()).toStrictEqual([
+        "routes/customers.ts",
+        "routes/customers/{id}.ts",
+        "routes/index.ts",
+        "routes/subscriptions/{id}/cancel.ts",
+        "types/paths/customers.types.ts",
+        "types/paths/customers/{id}.types.ts",
+        "types/paths/index.types.ts",
+        "types/paths/subscriptions/{id}/cancel.types.ts",
+      ]);
+    });
+  });
+
+  it("rejects paths that collide after trailing-slash normalization", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "Conflicting paths", version: "1.0.0" },
+          paths: {
+            "/customers": operation("listCustomers"),
+            "/customers/": operation("listCustomersWithSlash"),
+          },
+        }),
+      );
+
+      const repository = new Repository();
+      repository.writeFiles = async () => {};
+
+      await expect(
+        new CodeGenerator($.path("openapi.json"), $.path(""), {
+          routes: true,
+          types: true,
+        }).generate(repository),
+      ).rejects.toThrow(
+        'OpenAPI paths "/customers" and "/customers/" normalize to the same path "/customers"',
+      );
+    });
+  });
+
+  it("prunes renamed path types in type-only mode and remains idempotent", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const document = (path: string, operationId: string) => ({
+        openapi: "3.0.3",
+        info: { title: "Pruned path types", version: "1.0.0" },
+        paths: { [path]: operation(operationId) },
+      });
+
+      await $.add(
+        "openapi.json",
+        JSON.stringify(document("/customers/", "listCustomers")),
+      );
+      await new CodeGenerator($.path("openapi.json"), $.path(""), {
+        routes: true,
+        types: true,
+      }).generate();
+      await $.add("types/paths/customers/.types.ts", "// legacy generated");
+      await $.add("types/versions.ts", "// obsolete version metadata");
+      await $.add("types/custom.ts", "// user-authored helper");
+
+      await $.remove("openapi.json");
+      await $.add(
+        "openapi.json",
+        JSON.stringify(document("/accounts", "listAccounts")),
+      );
+      const generateTypes = () =>
+        new CodeGenerator($.path("openapi.json"), $.path(""), {
+          prune: true,
+          routes: false,
+          types: true,
+        }).generate();
+
+      await generateTypes();
+      await expect($.read("types/paths/accounts.types.ts")).resolves.toContain(
+        "listAccounts",
+      );
+      await expect($.read("types/paths/customers.types.ts")).rejects.toThrow();
+      await expect($.read("types/paths/customers/.types.ts")).rejects.toThrow();
+      await expect($.read("types/versions.ts")).rejects.toThrow();
+      await expect($.read("routes/customers.ts")).resolves.toContain(
+        "export const GET",
+      );
+      await expect($.read("types/custom.ts")).resolves.toBe(
+        "// user-authored helper",
+      );
+
+      await expect(generateTypes()).resolves.toBeUndefined();
+      await expect($.read("types/paths/accounts.types.ts")).resolves.toContain(
+        "listAccounts",
+      );
+    });
+  });
+
+  it("preserves generated types accumulated from multiple specs", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const document = (path: string, operationId: string) => ({
+        openapi: "3.0.3",
+        info: { title: operationId, version: "1.0.0" },
+        paths: { [path]: operation(operationId) },
+      });
+      await $.add(
+        "customers.json",
+        JSON.stringify(document("/customers", "listCustomers")),
+      );
+      await $.add(
+        "orders.json",
+        JSON.stringify(document("/orders", "listOrders")),
+      );
+      await $.add("types/paths/obsolete.types.ts", "// obsolete");
+      await $.add("types/versions.ts", "// current version metadata");
+      const repository = new Repository();
+      const options = { prune: true, routes: false, types: true };
+
+      await new CodeGenerator(
+        $.path("customers.json"),
+        $.path(""),
+        options,
+        "v1",
+      ).generate(repository);
+      await new CodeGenerator(
+        $.path("orders.json"),
+        $.path(""),
+        options,
+        "v2",
+      ).generate(repository);
+
+      await expect($.read("types/paths/customers.types.ts")).resolves.toContain(
+        "listCustomers",
+      );
+      await expect($.read("types/paths/orders.types.ts")).resolves.toContain(
+        "listOrders",
+      );
+      await expect($.read("types/versions.ts")).resolves.toBe(
+        "// current version metadata",
+      );
+      await expect($.read("types/paths/obsolete.types.ts")).rejects.toThrow();
+    });
+  });
+});
+
 describe("$ref resolution for components/mediaTypes (OpenAPI 3.2)", () => {
   it("loads and bundles a spec with $ref pointing to components/mediaTypes without errors", async () => {
     await usingTemporaryFiles(async ($) => {

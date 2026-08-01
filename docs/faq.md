@@ -1,6 +1,6 @@
 # FAQ
 
-Everything you want to know before you commit to using Counterfact.
+Answers to the questions that come up when you take Counterfact from a quick try to a team workflow.
 
 ---
 
@@ -187,7 +187,7 @@ OpenAPI descriptions are preserved as JSDoc comments on the generated types, so 
 
 ## Does it validate incoming requests?
 
-Yes, by default. Requests that don't match the schema defined in the spec return a `400` automatically. Disable this with `--no-validate-request` if you need looser behavior.
+Yes, for required query, header, and cookie parameters and supported JSON/form request bodies. Detected mismatches return a `400` automatically. Disable this with `--no-validate-request` if you need looser behavior.
 
 ---
 
@@ -199,7 +199,7 @@ Yes, by default. Response headers are validated against the schema defined in th
 
 ## What OpenAPI versions are supported?
 
-OpenAPI 3.x. Swagger 2 (OAS2) is not currently supported.
+Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2.
 
 ---
 

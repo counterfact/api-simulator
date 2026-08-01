@@ -1,0 +1,31 @@
+name: First 10 minutes example
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/first-10-minutes.yml"
+      - "examples/first-10-minutes/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/first-10-minutes.yml"
+      - "examples/first-10-minutes/**"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/first-10-minutes
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: examples/first-10-minutes/package-lock.json
+      - run: npm ci
+      - run: npm run verify

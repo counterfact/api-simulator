@@ -1,6 +1,11 @@
 function copyCmd() {
+  const installCmd = document.getElementById("install-cmd")?.textContent?.trim();
+  if (!installCmd) {
+    return;
+  }
+
   navigator.clipboard
-    .writeText(document.getElementById("install-cmd").textContent)
+    .writeText(installCmd)
     .then(() => {
       const btn = document.getElementById("copy-btn");
       btn.textContent = "copied!";
@@ -9,8 +14,11 @@ function copyCmd() {
         btn.textContent = "copy";
         btn.style.color = "";
       }, 2000);
-    });
+    })
+    .catch(() => {});
 }
+
+document.getElementById("copy-btn")?.addEventListener("click", copyCmd);
 
 const io = new IntersectionObserver(
   (entries) => {

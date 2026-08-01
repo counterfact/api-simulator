@@ -5,17 +5,11 @@ import createDebug from "debug";
 import type Koa from "koa";
 import koaProxy from "koa-proxies";
 
+import type { ApiRunner } from "../../api-runner.js";
 import type { Config } from "../config.js";
 import type { Dispatcher } from "../dispatcher.js";
 import { isProxyEnabledForPath } from "../is-proxy-enabled-for-path.js";
 import type { RequestMethod } from "../registry.js";
-
-declare module "koa" {
-  interface Request {
-    body?: unknown;
-    rawBody?: string;
-  }
-}
 
 const debug = createDebug("counterfact:server:create-koa-app");
 
@@ -152,6 +146,7 @@ export function routesMiddleware(
   dispatcher: Dispatcher,
   config: Pick<Config, "proxyUrl" | "proxyPaths">,
   proxy = koaProxy,
+  allowedMethodsOverride?: string,
 ): Koa.Middleware {
   return async function middleware(ctx, next) {
     const { proxyUrl } = config;
@@ -175,7 +170,11 @@ export function routesMiddleware(
       return proxy("/", { changeOrigin: true, target: proxyUrl })(ctx, next);
     }
 
-    addCors(ctx, dispatcher.registry.allowedMethods(path), headers);
+    addCors(
+      ctx,
+      allowedMethodsOverride ?? dispatcher.registry.allowedMethods(path),
+      headers,
+    );
 
     if (method === "OPTIONS") {
       ctx.status = HTTP_STATUS_CODE_OK;
@@ -238,8 +237,97 @@ export function routesMiddleware(
       }
     }
 
+    if (response.status === 405 && allowedMethodsOverride !== undefined) {
+      ctx.set("Allow", allowedMethodsOverride);
+    }
+
     ctx.status = response.status ?? HTTP_STATUS_CODE_OK;
 
     return undefined;
+  };
+}
+
+type RouteRunner = Pick<ApiRunner, "dispatcher" | "prefix">;
+
+/**
+ * Selects the first runner that can handle a request, allowing runners with
+ * overlapping prefixes to share one public URL space.
+ */
+export function routesMiddlewareForRunners(
+  runners: RouteRunner[],
+  config: Pick<Config, "proxyUrl" | "proxyPaths">,
+  proxy = koaProxy,
+): Koa.Middleware {
+  return async function multiRunnerRoutesMiddleware(ctx, next) {
+    const candidates = runners
+      .filter(({ prefix }) => ctx.request.path.startsWith(prefix))
+      .map((runner) => ({
+        path: ctx.request.path.slice(runner.prefix.length),
+        runner,
+      }));
+
+    if (candidates.length === 0) {
+      return await next();
+    }
+
+    const method = ctx.request.method as RequestMethod;
+
+    for (const candidate of candidates) {
+      if (
+        (config.proxyUrl && isProxyEnabledForPath(candidate.path, config)) ||
+        candidate.runner.dispatcher.registry.exists(method, candidate.path)
+      ) {
+        return routesMiddleware(
+          candidate.runner.prefix,
+          candidate.runner.dispatcher,
+          config,
+          proxy,
+        )(ctx, next);
+      }
+    }
+
+    const allowedMethods = new Set<string>();
+    let pathOwner: (typeof candidates)[number] | undefined;
+
+    for (const candidate of candidates) {
+      const methods = candidate.runner.dispatcher.registry.allowedMethods(
+        candidate.path,
+      );
+
+      if (methods === "") continue;
+
+      pathOwner ??= candidate;
+      for (const allowedMethod of methods.split(", ")) {
+        allowedMethods.add(allowedMethod);
+      }
+    }
+
+    if (method === "OPTIONS") {
+      const selected = pathOwner ?? candidates[0];
+
+      if (selected === undefined) {
+        return await next();
+      }
+
+      return routesMiddleware(
+        selected.runner.prefix,
+        selected.runner.dispatcher,
+        config,
+        proxy,
+        [...allowedMethods].join(", "),
+      )(ctx, next);
+    }
+
+    if (pathOwner === undefined) {
+      return await next();
+    }
+
+    return routesMiddleware(
+      pathOwner.runner.prefix,
+      pathOwner.runner.dispatcher,
+      config,
+      proxy,
+      [...allowedMethods].join(", "),
+    )(ctx, next);
   };
 }

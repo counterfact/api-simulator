@@ -72,12 +72,20 @@ describe("counterfact", () => {
       "v1",
       "",
       [],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ openApiPath: "_", prefix: "/api/v2" }),
       "v2",
       "",
       [],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
 
     spy.mockRestore();
@@ -128,6 +136,45 @@ describe("counterfact", () => {
         startRepl: expect.any(Function),
       }),
     );
+  });
+
+  it("shares context and scenarios across versions in a group but isolates different groups", async () => {
+    const realCreate = ApiRunner.create;
+    const capturedRunners: ApiRunner[] = [];
+    const createSpy = jest
+      .spyOn(ApiRunner, "create")
+      .mockImplementation(async (...args) => {
+        const runner = await realCreate.apply(ApiRunner, args);
+        capturedRunners.push(runner);
+        return runner;
+      });
+
+    await (app as any).counterfact(mockConfig, [
+      { source: "_", group: "billing", version: "v1" },
+      { source: "_", group: "inventory", version: "v1" },
+      { source: "_", group: "billing", version: "v2" },
+    ]);
+
+    const billingV1 = capturedRunners.find(
+      ({ group, version }) => group === "billing" && version === "v1",
+    )!;
+    const billingV2 = capturedRunners.find(
+      ({ group, version }) => group === "billing" && version === "v2",
+    )!;
+    const inventory = capturedRunners.find(
+      ({ group }) => group === "inventory",
+    )!;
+
+    expect(billingV1.contextRegistry).toBe(billingV2.contextRegistry);
+    expect(billingV1.scenarioRegistry).toBe(billingV2.scenarioRegistry);
+    expect(billingV1.contextRegistry).not.toBe(inventory.contextRegistry);
+    expect(billingV1.scenarioRegistry).not.toBe(inventory.scenarioRegistry);
+
+    billingV1.contextRegistry.find("/")["seed"] = "shared";
+    expect(billingV2.contextRegistry.find("/")["seed"]).toBe("shared");
+    expect(inventory.contextRegistry.find("/")["seed"]).toBeUndefined();
+
+    createSpy.mockRestore();
   });
 
   it("throws when two specs share the same group and same non-empty version", async () => {
@@ -237,7 +284,7 @@ describe("counterfact", () => {
       await stop();
     });
   });
-  it("derives prefix from group+version when no explicit prefix is provided", async () => {
+  it("defaults an omitted prefix to root when group and version are present", async () => {
     const spy = jest.spyOn(ApiRunner, "create");
 
     const specs = [
@@ -248,16 +295,24 @@ describe("counterfact", () => {
     await (app as any).counterfact(mockConfig, specs);
 
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({ prefix: "/my-api/v1" }),
+      expect.objectContaining({ prefix: "" }),
       "my-api",
       "v1",
       ["v1", "v2"],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({ prefix: "/my-api/v2" }),
+      expect.objectContaining({ prefix: "" }),
       "my-api",
       "v2",
       ["v1", "v2"],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
 
     spy.mockRestore();
@@ -277,12 +332,37 @@ describe("counterfact", () => {
       "my-api",
       "v1",
       ["v1"],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
 
     spy.mockRestore();
   });
 
-  it("derives prefix from group alone when version is absent", async () => {
+  it("preserves an explicit empty prefix", async () => {
+    const spy = jest.spyOn(ApiRunner, "create");
+
+    const specs = [{ source: "_", prefix: "", group: "my-api", version: "v1" }];
+
+    await (app as any).counterfact(mockConfig, specs);
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({ prefix: "" }),
+      "my-api",
+      "v1",
+      ["v1"],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
+    );
+
+    spy.mockRestore();
+  });
+
+  it("defaults an omitted prefix to root when version is absent", async () => {
     const spy = jest.spyOn(ApiRunner, "create");
 
     const specs = [{ source: "_", group: "my-api" }];
@@ -290,10 +370,14 @@ describe("counterfact", () => {
     await (app as any).counterfact(mockConfig, specs);
 
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({ prefix: "/my-api" }),
+      expect.objectContaining({ prefix: "" }),
       "my-api",
       "",
       [],
+      expect.objectContaining({
+        contextRegistry: expect.any(ContextRegistry),
+        scenarioRegistry: expect.any(ScenarioRegistry),
+      }),
     );
 
     spy.mockRestore();
@@ -356,22 +440,20 @@ describe("counterfact", () => {
     );
   });
 
-  it("routes two versioned specs to their derived prefixes", async () => {
+  it("serves canonical paths from grouped specs sharing an omitted prefix", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(
-        "v1/routes/greet.js",
-        `export function GET() { return { body: "hello from v1" }; }`,
+        "customers/routes/customers.js",
+        `export function GET() { return { body: "customers" }; }`,
       );
       await $.add(
-        "v2/routes/greet.js",
-        `export function GET() { return { body: "hello from v2" }; }`,
+        "products/routes/products.js",
+        `export function GET() { return { body: "products" }; }`,
       );
 
-      // Two specs with distinct groups and versions: each is auto-mounted at /<group>/<version>.
-      // Using v1/v1 and v2/v2 keeps the route files in separate directories.
       const specs = [
-        { source: "_", group: "v1", version: "v1" },
-        { source: "_", group: "v2", version: "v2" },
+        { source: "_", group: "customers" },
+        { source: "_", group: "products" },
       ];
 
       const { koaApp, start } = await (app as any).counterfact(
@@ -386,13 +468,182 @@ describe("counterfact", () => {
         watch: { routes: false, types: false },
       });
 
-      const v1Response = await request(koaApp.callback()).get("/v1/v1/greet");
-      const v2Response = await request(koaApp.callback()).get("/v2/v2/greet");
+      const customers = await request(koaApp.callback()).get("/customers");
+      const products = await request(koaApp.callback()).get("/products");
+      const duplicatedPath = await request(koaApp.callback()).get(
+        "/customers/customers",
+      );
 
-      expect(v1Response.text).toContain("hello from v1");
-      expect(v2Response.text).toContain("hello from v2");
+      expect(customers.text).toContain("customers");
+      expect(products.text).toContain("products");
+      expect(duplicatedPath.status).toBe(404);
 
       await stop();
+    });
+  });
+
+  it("runs every group's startup once, sequentially in declaration order", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const realCreate = ApiRunner.create;
+      const capturedRunners: ApiRunner[] = [];
+      const createSpy = jest
+        .spyOn(ApiRunner, "create")
+        .mockImplementation(async (...args) => {
+          const runner = await realCreate.apply(ApiRunner, args);
+          capturedRunners.push(runner);
+          return runner;
+        });
+      const runnerStartSpy = jest
+        .spyOn(ApiRunner.prototype, "start")
+        .mockResolvedValue(undefined);
+      const order: string[] = [];
+
+      const result = await (app as any).counterfact(
+        { ...mockConfig, basePath: $.path("."), port: 0 },
+        [
+          { source: "_", group: "billing", version: "v1" },
+          { source: "_", group: "inventory", version: "v1" },
+          { source: "_", group: "billing", version: "v2" },
+        ],
+      );
+      const billingV1 = capturedRunners.find(
+        ({ group, version }) => group === "billing" && version === "v1",
+      )!;
+      const billingV2 = capturedRunners.find(
+        ({ group, version }) => group === "billing" && version === "v2",
+      )!;
+      const inventory = capturedRunners.find(
+        ({ group }) => group === "inventory",
+      )!;
+
+      billingV1.scenarioRegistry.add("index", {
+        startup: async ($: any) => {
+          order.push("billing:start");
+          await Promise.resolve();
+          $.context.seed = "billing-seed";
+          order.push("billing:end");
+        },
+      });
+      inventory.scenarioRegistry.add("index", {
+        startup: async ($: any) => {
+          order.push("inventory:start");
+          await Promise.resolve();
+          expect($.context.seed).toBeUndefined();
+          $.context.seed = "inventory-seed";
+          order.push("inventory:end");
+        },
+      });
+
+      const { stop } = await result.start({
+        startServer: true,
+        buildCache: false,
+        generate: { routes: false, types: false },
+        watch: { routes: false, types: false },
+      });
+
+      expect(order).toEqual([
+        "billing:start",
+        "billing:end",
+        "inventory:start",
+        "inventory:end",
+      ]);
+      expect(billingV2.contextRegistry.find("/")["seed"]).toBe("billing-seed");
+      expect(inventory.contextRegistry.find("/")["seed"]).toBe(
+        "inventory-seed",
+      );
+
+      await stop();
+      runnerStartSpy.mockRestore();
+      createSpy.mockRestore();
+    });
+  });
+
+  it("attributes a startup failure to its group and does not listen", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const realCreate = ApiRunner.create;
+      const capturedRunners: ApiRunner[] = [];
+      const createSpy = jest
+        .spyOn(ApiRunner, "create")
+        .mockImplementation(async (...args) => {
+          const runner = await realCreate.apply(ApiRunner, args);
+          capturedRunners.push(runner);
+          return runner;
+        });
+      const runnerStartSpy = jest
+        .spyOn(ApiRunner.prototype, "start")
+        .mockResolvedValue(undefined);
+      const stopWatchingSpy = jest
+        .spyOn(ApiRunner.prototype, "stopWatching")
+        .mockResolvedValue(undefined);
+
+      const result = await (app as any).counterfact(
+        { ...mockConfig, basePath: $.path("."), port: 0 },
+        [
+          { source: "_", group: "customers", version: "v1" },
+          { source: "_", group: "products", version: "v2" },
+        ],
+      );
+      capturedRunners
+        .find(({ group }) => group === "products")!
+        .scenarioRegistry.add("index", {
+          startup: () => {
+            throw new Error("could not seed products");
+          },
+        });
+      const listenSpy = jest.spyOn(result.koaApp, "listen");
+
+      await expect(
+        result.start({
+          startServer: true,
+          buildCache: false,
+          generate: { routes: false, types: false },
+          watch: { routes: false, types: false },
+        }),
+      ).rejects.toThrow(
+        'Startup scenario failed for group "products" (version "v2"): could not seed products',
+      );
+      expect(listenSpy).not.toHaveBeenCalled();
+      expect(stopWatchingSpy).toHaveBeenCalledTimes(2);
+
+      listenSpy.mockRestore();
+      stopWatchingSpy.mockRestore();
+      runnerStartSpy.mockRestore();
+      createSpy.mockRestore();
+    });
+  });
+
+  it("preserves startup behavior when specs are omitted", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const realCreate = ApiRunner.create;
+      let capturedRunner: ApiRunner | undefined;
+      const createSpy = jest
+        .spyOn(ApiRunner, "create")
+        .mockImplementation(async (...args) => {
+          capturedRunner = await realCreate.apply(ApiRunner, args);
+          return capturedRunner;
+        });
+      const runnerStartSpy = jest
+        .spyOn(ApiRunner.prototype, "start")
+        .mockResolvedValue(undefined);
+      const startup = jest.fn();
+      const result = await (app as any).counterfact({
+        ...mockConfig,
+        basePath: $.path("."),
+        port: 0,
+      });
+      capturedRunner!.scenarioRegistry.add("index", { startup });
+
+      const { stop } = await result.start({
+        startServer: true,
+        buildCache: false,
+        generate: { routes: false, types: false },
+        watch: { routes: false, types: false },
+      });
+
+      expect(startup).toHaveBeenCalledTimes(1);
+      await stop();
+      runnerStartSpy.mockRestore();
+      createSpy.mockRestore();
     });
   });
 

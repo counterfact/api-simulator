@@ -1,6 +1,6 @@
 # Usage Patterns
 
-A pattern is a reusable solution to a recurring problem when building API simulations with Counterfact. Each pattern below describes a context, the problem it addresses, the solution, and its consequences.
+These playbooks show how people use Counterfact in real development and test work. Start with the path that matches your situation, then follow the links as your API grows.
 
 Most projects start with [Explore a New API](./explore-new-api.md) or [Executable Spec](./executable-spec.md) to get a running server from an OpenAPI spec with no code. From there, [Mock APIs with Dummy Data](./mock-with-dummy-data.md) and [AI-Assisted Implementation](./ai-assisted-implementation.md) are the natural next steps for adding realistic responses — the former by hand, the latter with an AI agent doing the heavy lifting.
 
@@ -8,7 +8,7 @@ As the mock grows, [Scenario Scripts](./scenario-scripts.md) let you automate re
 
 When your project involves multiple versions or multiple specs, [Multiple API Versions](./multiple-versions.md) shows how to serve them from a shared set of route files using `$.minVersion()` to branch on version without duplicating handlers. For teams that want the mock to remain a reliable, long-lived artifact, [Reference Implementation](./reference-implementation.md) and [Automated Integration Tests](./automated-integration-tests.md) make it a first-class part of the codebase that can run in CI. Finally, [Agentic Sandbox](./agentic-sandbox.md) and [Hybrid Proxy](./hybrid-proxy.md) address the two common integration strategies — isolating an AI agent from the real service, or blending mock and live traffic — and [Custom Middleware](./custom-middleware.md) covers cross-cutting concerns like authentication and logging without touching individual handlers.
 
-## All patterns
+## Find your path
 
 | Pattern | When to use it |
 |---|---|

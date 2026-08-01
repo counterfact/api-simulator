@@ -1,12 +1,12 @@
 # Federated Context Files
 
-You are building a Counterfact mock for an API with multiple distinct domains — users, orders, payments, inventory — and you need stateful behavior in each domain without the state management becoming a single unmanageable class.
+Keep state for users, orders, payments, and other domains close to the routes that use it, without turning the whole mock into one unmanageable class.
 
-## Problem
+## Why teams use this
 
 Placing one `_.context.ts` at the root of the routes tree is convenient at first, but it accumulates all state for all domains in one object. Unrelated concerns become entangled: the `UserContext` knows about payment flags, the payment logic reaches into user fields, and the class grows until it is hard to understand or test in isolation.
 
-## Solution
+## How it works
 
 Place a `_.context.ts` file at each domain boundary. Each subtree owns its context and is responsible only for its own state and logic. When a route in one subtree needs data from another, use `$.loadContext(path)` to reach across the boundary — without merging the two contexts into one.
 
@@ -30,8 +30,12 @@ export class Context {
     return user;
   }
 
-  getById(id: number): User | undefined { return this.users.get(id); }
-  list(): User[] { return [...this.users.values()]; }
+  getById(id: number): User | undefined {
+    return this.users.get(id);
+  }
+  list(): User[] {
+    return [...this.users.values()];
+  }
 }
 ```
 
@@ -42,9 +46,15 @@ import type { Payment } from "../../types/components/payment.types.js";
 export class Context {
   private payments = new Map<string, Payment>();
 
-  record(payment: Payment): void { this.payments.set(payment.id, payment); }
-  getById(id: string): Payment | undefined { return this.payments.get(id); }
-  list(): Payment[] { return [...this.payments.values()]; }
+  record(payment: Payment): void {
+    this.payments.set(payment.id, payment);
+  }
+  getById(id: string): Payment | undefined {
+    return this.payments.get(id);
+  }
+  list(): Payment[] {
+    return [...this.payments.values()];
+  }
 }
 ```
 
@@ -67,14 +77,14 @@ export const GET: HTTP_GET = ($) => {
 
 The `loadContext(path)` call returns the live context instance rooted at that path. The two contexts remain independent classes; neither imports from the other's module.
 
-## Consequences
+## What you get
 
 - Each context class has a single responsibility and a clear boundary; it is easier to understand and unit-test in isolation.
 - `loadContext()` makes cross-domain dependencies explicit at the call site — the reader can immediately see which domain the route depends on.
 - The type cast (`as UsersContext`) is required because `loadContext()` returns `unknown`; consider co-locating a typed helper if cross-domain calls are frequent.
 - Contexts are still shared within a subtree: all routes under `/payments` share the same payments context instance.
 
-## Related Patterns
+## Keep exploring
 
 - [Test the Context, Not the Handlers](./test-context-not-handlers.md) — unit-test each context class independently
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — the pattern that introduces the single-context approach this one extends

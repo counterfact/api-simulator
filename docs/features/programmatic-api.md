@@ -3,11 +3,13 @@
 Counterfact can be used as a library — for example, from [Playwright](https://playwright.dev/) or [Cypress](https://www.cypress.io/) tests. This lets you manipulate context state directly in test code without relying on special magic values in mock logic.
 
 ```ts
+import path from "node:path";
 import { counterfact } from "counterfact";
 
 const config = {
-  basePath: "./api", // directory containing your routes/
-  openApiPath: "./api.yaml", // optional; pass "_" to run without a spec
+  basePath: path.resolve("api"), // directory containing your routes/
+  buildCache: false,
+  openApiPath: path.resolve("api.yaml"), // pass "_" to run without a spec
   port: 8100,
   alwaysFakeOptionals: false,
   generate: { routes: false, types: false },
@@ -16,6 +18,8 @@ const config = {
   prefix: "",
   startRepl: false, // do not auto-start the REPL
   startServer: true,
+  validateRequests: true,
+  validateResponses: true,
   watch: { routes: false, types: false },
 };
 
@@ -90,22 +94,39 @@ it("prompts for a password change when the password has expired", async () => {
 
 Pass a `specs` array as the second argument to `counterfact()` to host several API specs on the same server. Each entry is a `SpecConfig` object:
 
-| Field     | Type              | Description                                                                    |
-| --------- | ----------------- | ------------------------------------------------------------------------------ |
-| `source`  | `string`          | Path or URL to the OpenAPI document (`"_"` to run without a spec).             |
-| `group`   | `string`          | Subdirectory under `config.basePath` for this spec's generated route files.    |
-| `version` | `string` (opt.)   | Version label (e.g. `"v1"`). Combined with `group` to derive the URL prefix.   |
-| `prefix`  | `string` (opt.)   | Explicit URL prefix. Overrides the derived prefix when provided.               |
+| Field     | Type            | Description                                                                                   |
+| --------- | --------------- | --------------------------------------------------------------------------------------------- |
+| `source`  | `string`        | Path or URL to the OpenAPI document (`"_"` to run without a spec).                            |
+| `group`   | `string`        | Generated-code subdirectory and runtime state key. It does not change URLs.                   |
+| `version` | `string` (opt.) | Version label (e.g. `"v1"`) used for generated version types and grouped handler state.       |
+| `prefix`  | `string` (opt.) | URL prefix prepended to every path in the spec. When omitted, it defaults to `""` (the root). |
 
-### Automatic prefix derivation
+### Groups and URL prefixes
 
-When `prefix` is omitted, the server derives the URL prefix from `group` and `version`:
+`group` controls where code is generated under `config.basePath` and which
+runners share state. It never changes a path declared by the OpenAPI document.
+Only `prefix` affects the effective URL:
 
-| `group` | `version` | Derived prefix       |
-| ------- | --------- | -------------------- |
-| set     | set       | `/<group>/<version>` |
-| set     | absent    | `/<group>`           |
-| absent  | absent    | `""` (root)          |
+| Declared OpenAPI path | `prefix`        | Effective URL       |
+| --------------------- | --------------- | ------------------- |
+| `/customers`          | omitted or `""` | `/customers`        |
+| `/customers`          | `/api`          | `/api/customers`    |
+| `/customers`          | `/api/v1`       | `/api/v1/customers` |
+
+Several specs may use the same prefix, including the root. Counterfact tries
+matching runners in declaration order, so grouped specs with distinct paths
+can preserve their canonical URLs:
+
+```ts
+const { start } = await counterfact(config, [
+  { source: "./customers.yaml", group: "customers" },
+  { source: "./products.yaml", group: "products" },
+]);
+
+await start(config);
+// /customers from customers.yaml is served at /customers.
+// /products from products.yaml is served at /products.
+```
 
 ### Example — serving two versions of the same API
 
@@ -113,25 +134,34 @@ When `prefix` is omitted, the server derives the URL prefix from `group` and `ve
 import { counterfact } from "counterfact";
 
 const { start } = await counterfact(config, [
-  { source: "./api-v1.yaml", group: "my-api", version: "v1" },
-  { source: "./api-v2.yaml", group: "my-api", version: "v2" },
+  {
+    source: "./api-v1.yaml",
+    group: "my-api",
+    version: "v1",
+    prefix: "/api/v1",
+  },
+  {
+    source: "./api-v2.yaml",
+    group: "my-api",
+    version: "v2",
+    prefix: "/api/v2",
+  },
 ]);
 
 await start(config);
 // Routes are now available at:
-//   http://localhost:8100/my-api/v1/...
-//   http://localhost:8100/my-api/v2/...
+//   http://localhost:8100/api/v1/...
+//   http://localhost:8100/api/v2/...
 ```
 
-Pass an explicit `prefix` to override derivation:
+Use any explicit prefix that matches the API's public URL structure:
 
 ```ts
 const { start } = await counterfact(config, [
   { source: "./api.yaml", group: "my-api", version: "v1", prefix: "/legacy" },
 ]);
-// Routes are served at /legacy/... regardless of group/version.
+// Routes are served at /legacy/...; group/version still control code and state.
 ```
-
 
 ## Return value of `counterfact()`
 

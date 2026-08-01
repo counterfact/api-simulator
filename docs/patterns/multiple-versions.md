@@ -1,12 +1,12 @@
 # Multiple API Versions
 
-You maintain more than one version of an API — for example `/v1/pets` and `/v2/pets` — and want a single route handler that adapts its behavior to the version currently serving the request rather than maintaining a separate, duplicated handler file for every version.
+Serve multiple API versions from one project, sharing the handlers and branching only where the contract actually differs.
 
-## Problem
+## Why teams use this
 
 Versioned APIs introduce change gradually: a new field in the response, a renamed parameter, a removed endpoint. Duplicating every handler for every version creates a maintenance burden and lets the versions drift. You need a way to share as much handler logic as possible across versions while still making version-specific adjustments in the places that actually changed.
 
-## Solution
+## How it works
 
 List each versioned spec under the `spec` key in `counterfact.yaml`. Give them the same `group` and different `version` labels. Counterfact generates a shared route file per path and injects two helpers into the handler's `$` argument at runtime:
 
@@ -56,7 +56,11 @@ export const GET: HTTP_GET = ($) => {
 
   // v2 adds the status field
   if (!$.minVersion("v3")) {
-    return $.response[200].json({ id: pet.id, name: pet.name, status: pet.status });
+    return $.response[200].json({
+      id: pet.id,
+      name: pet.name,
+      status: pet.status,
+    });
   }
 
   // v3 adds the full pet object including photoUrls
@@ -79,7 +83,7 @@ export const GET: HTTP_GET = ($) => {
 };
 ```
 
-## Consequences
+## What you get
 
 - A single route file covers all versions; shared logic is not duplicated across version directories.
 - `$.minVersion()` expresses "this feature exists in version X and later" clearly at the point in the code where it matters.
@@ -87,7 +91,7 @@ export const GET: HTTP_GET = ($) => {
 - Handlers that differ fundamentally between versions can still be split across version-specific files if that is clearer; the pattern does not require all logic to live in one file.
 - `$.version` and `$.minVersion()` are only present when `version` is set in the spec config. For a single, unversioned spec they are absent.
 
-## Related Patterns
+## Keep exploring
 
 - [Executable Spec](./executable-spec.md) — run all version handlers as automated contract tests to confirm the spec and implementation stay in sync
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — the baseline approach for populating responses this pattern extends

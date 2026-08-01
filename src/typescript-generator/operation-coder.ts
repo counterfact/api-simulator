@@ -1,5 +1,6 @@
 import { pathJoin } from "../util/forward-slash-path.js";
 import { Coder } from "./coder.js";
+import { normalizeOpenApiPath } from "./openapi-path.js";
 import {
   OperationTypeCoder,
   VersionedArgTypeCoder,
@@ -129,10 +130,9 @@ export class OperationCoder extends Coder {
   }
 
   public override modulePath(): string {
-    const pathString = this.requirement.url
-      .split("/")
-      .at(-2)!
-      .replaceAll("~1", "/");
+    const pathString = normalizeOpenApiPath(
+      this.requirement.url.split("/").at(-2)!.replaceAll("~1", "/"),
+    );
 
     return `${pathJoin("routes", pathString)}.types.ts`;
   }
