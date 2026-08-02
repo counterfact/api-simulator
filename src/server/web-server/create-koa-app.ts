@@ -8,7 +8,10 @@ import { koaSwagger } from "koa2-swagger-ui";
 import type { ApiRunner } from "../../api-runner.js";
 import type { Config } from "../config.js";
 import { adminApiMiddleware } from "./admin-api-middleware.js";
-import { routesMiddleware } from "./routes-middleware.js";
+import {
+  routesMiddleware,
+  routesMiddlewareForRunners,
+} from "./routes-middleware.js";
 import { openapiMiddleware } from "./openapi-middleware.js";
 
 const debug = createDebug("counterfact:server:create-koa-app");
@@ -98,9 +101,17 @@ export function createKoaApp({
     }
   });
 
-  for (const runner of runners) {
+  const [onlyRunner] = runners;
+  if (runners.length === 1 && onlyRunner !== undefined) {
     app.use(
-      routesMiddleware(runner.prefix, runner.dispatcher, {
+      routesMiddleware(onlyRunner.prefix, onlyRunner.dispatcher, {
+        proxyPaths: config.proxyPaths,
+        proxyUrl: config.proxyUrl,
+      }),
+    );
+  } else {
+    app.use(
+      routesMiddlewareForRunners(runners, {
         proxyPaths: config.proxyPaths,
         proxyUrl: config.proxyUrl,
       }),

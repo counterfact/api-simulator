@@ -15,6 +15,13 @@ import { ScenarioFileGenerator } from "./typescript-generator/scenario-file-gene
 import { pathJoin } from "./util/forward-slash-path.js";
 import { runtimeCanExecuteErasableTs } from "./util/runtime-can-execute-erasable-ts.js";
 
+/** Runtime state shared by every specification runner in one API group. */
+export interface ApiRunnerGroupState {
+  contextRegistry: ContextRegistry;
+  scenarioRegistry: ScenarioRegistry;
+  getStore?: () => object | undefined;
+}
+
 /**
  * Encapsulates the creation and lifecycle management of all Counterfact
  * sub-systems for a single API specification.
@@ -111,6 +118,7 @@ export class ApiRunner {
     group: string,
     version = "",
     versions: readonly string[] = [],
+    groupState?: ApiRunnerGroupState,
   ) {
     this.group = group;
     this.version = version;
@@ -131,10 +139,14 @@ export class ApiRunner {
     this.overlays = config.overlays ?? [];
 
     this.registry = new Registry();
-    this.contextRegistry = new ContextRegistry();
-    this.scenarioRegistry = new ScenarioRegistry();
+    this.contextRegistry = groupState?.contextRegistry ?? new ContextRegistry();
+    this.scenarioRegistry =
+      groupState?.scenarioRegistry ?? new ScenarioRegistry();
 
-    this.scenarioFileGenerator = new ScenarioFileGenerator(modulesPath);
+    this.scenarioFileGenerator = new ScenarioFileGenerator(
+      modulesPath,
+      config.basePath,
+    );
 
     this.codeGenerator = new CodeGenerator(
       this.openApiPath,
@@ -165,6 +177,7 @@ export class ApiRunner {
       this.contextRegistry,
       pathJoin(modulesPath, "scenarios"),
       this.scenarioRegistry,
+      groupState?.getStore,
     );
   }
 
@@ -179,12 +192,14 @@ export class ApiRunner {
    * @param group - Optional group name placing generated code in a subdirectory (default `""`).
    * @param version - Optional version label for this spec (e.g. `"v1"`, `"v2"`).
    * @param versions - Optional ordered list of all version labels in this group (oldest first).
+   * @param groupState - Optional context/scenario registries shared by the group's runners.
    */
   public static async create(
     config: Config,
     group = "",
     version = "",
     versions: readonly string[] = [],
+    groupState?: ApiRunnerGroupState,
   ): Promise<ApiRunner> {
     const nativeTs = await runtimeCanExecuteErasableTs();
 
@@ -212,6 +227,7 @@ export class ApiRunner {
       group,
       version,
       versions,
+      groupState,
     );
   }
 
@@ -246,6 +262,11 @@ export class ApiRunner {
    */
   public async load(): Promise<void> {
     await this.moduleLoader.load();
+  }
+
+  /** Reloads all context constructors for this runner's API group. */
+  public async reloadContexts(): Promise<void> {
+    await this.moduleLoader.reloadContexts();
   }
 
   /**

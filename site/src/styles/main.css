@@ -506,6 +506,9 @@ nav {
   gap: 5rem;
   align-items: start;
 }
+.howto-layout > * {
+  min-width: 0;
+}
 
 .steps {
   list-style: none;
@@ -681,6 +684,148 @@ nav {
 .aud-card p {
   font-size: 0.88rem;
   max-width: 100%;
+}
+
+/* ── WORKFLOW PROOF ── */
+.workflow-sec {
+  padding: 5rem 0;
+  border-top: 1px solid var(--rule);
+  background: var(--surface);
+}
+.workflow-head {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 4rem;
+  align-items: end;
+  margin-bottom: 2.5rem;
+}
+.workflow-head p {
+  font-size: 1.05rem;
+}
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.workflow-card {
+  background: var(--paper);
+  border: 1px solid var(--rule-lt);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.workflow-card-head {
+  padding: 1.2rem 1.3rem 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+.workflow-n {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.workflow-card p {
+  padding: 1rem 1.3rem 1.25rem;
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+.workflow-card pre {
+  min-height: 178px;
+  padding: 1.15rem 1.3rem;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-size: 0.7rem;
+  line-height: 1.65;
+  overflow-x: auto;
+}
+.workflow-note {
+  margin-top: 1.2rem;
+  padding: 1rem 1.2rem;
+  border-left: 2px solid var(--blue);
+  background: var(--blue-glow);
+  font-size: 0.88rem;
+  color: var(--ink-dim);
+}
+
+/* ── CONTRACT BOUNDARIES ── */
+.boundary-sec {
+  padding: 5rem 0;
+  border-top: 1px solid var(--rule);
+}
+.boundary-intro {
+  margin: 0.8rem 0 2.5rem;
+  font-size: 1.05rem;
+}
+.boundary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+.boundary-card {
+  border: 1px solid var(--rule-lt);
+  border-radius: 6px;
+  padding: 1.8rem;
+  background: var(--surface);
+}
+.boundary-card.limit {
+  border-top: 2px solid var(--amber);
+}
+.boundary-card.checked {
+  border-top: 2px solid var(--blue);
+}
+.boundary-card h3 {
+  margin-bottom: 1rem;
+}
+.boundary-list {
+  list-style: none;
+}
+.boundary-list li {
+  position: relative;
+  padding: 0.75rem 0 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+}
+.boundary-list li:last-child {
+  border-bottom: 0;
+}
+.boundary-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--blue-lt);
+  font-family: var(--font-mono);
+}
+.boundary-card.limit .boundary-list li::before {
+  content: "→";
+  color: var(--amber);
+}
+.trial-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: 1.5rem;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.trial-item {
+  padding: 1.2rem;
+  background: var(--paper);
+}
+.trial-item strong {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--ink);
+  font-size: 0.86rem;
+}
+.trial-item span {
+  color: var(--ink-dim);
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 /* ── COMPARE ── */
@@ -861,7 +1006,9 @@ footer {
   .hero-grid,
   .howto-layout,
   .repl-layout,
-  .features-header {
+  .features-header,
+  .workflow-head,
+  .boundary-grid {
     grid-template-columns: 1fr;
     gap: 2.5rem;
   }
@@ -878,13 +1025,45 @@ footer {
   .audience-grid {
     grid-template-columns: 1fr;
   }
+  .workflow-grid {
+    grid-template-columns: 1fr;
+  }
+  .trial-grid {
+    grid-template-columns: 1fr 1fr;
+  }
   .nav-links li:not(:last-child) {
     display: none;
   }
 }
 @media (max-width: 600px) {
+  .nav-inner {
+    padding: 0 1rem;
+  }
+  .nav-logo svg {
+    width: 130px;
+    height: auto;
+  }
+  .nav-cta {
+    padding: 0.4rem 0.65rem;
+  }
   .features-grid {
     grid-template-columns: 1fr;
+  }
+  .trial-grid {
+    grid-template-columns: 1fr;
+  }
+  .install-block {
+    width: 100%;
+    max-width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .install-block code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .copy-btn {
+    align-self: flex-end;
   }
   h1 {
     font-size: 2.6rem;

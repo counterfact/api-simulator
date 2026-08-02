@@ -1,3 +1,4 @@
+import type { COUNTERFACT_RESPONSE } from "./counterfact-response.js";
 import type { CookieOptions } from "./cookie-options.js";
 import type { MaybePromise } from "./maybe-promise.js";
 
@@ -7,7 +8,7 @@ import type { MaybePromise } from "./maybe-promise.js";
  * `GenericResponseBuilder`, this interface accepts `unknown` for all body
  * arguments and does not enforce content-type constraints.
  */
-export interface WideResponseBuilder {
+export type WideResponseBuilder = COUNTERFACT_RESPONSE & {
   binary: (body: Uint8Array | string) => WideResponseBuilder;
   empty: () => WideResponseBuilder;
   example: (name: string) => WideResponseBuilder;
@@ -16,12 +17,12 @@ export interface WideResponseBuilder {
     value: string,
     options?: CookieOptions,
   ) => WideResponseBuilder;
-  header: (body: unknown) => WideResponseBuilder;
+  header: (name: string, value: string) => WideResponseBuilder;
   html: (body: unknown) => WideResponseBuilder;
   json: (body: unknown) => WideResponseBuilder;
   match: (contentType: string, body: unknown) => WideResponseBuilder;
   random: () => MaybePromise<WideResponseBuilder>;
   text: (body: unknown) => WideResponseBuilder;
   xml: (body: unknown) => WideResponseBuilder;
-  stream: (body: AsyncIterable<unknown>) => WideResponseBuilder;
-}
+  stream: (body: AsyncIterable<unknown>) => COUNTERFACT_RESPONSE;
+};
