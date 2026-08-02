@@ -1,5 +1,15 @@
 # counterfact
 
+## 2.16.0
+
+### Minor Changes
+
+- 9f5d283: Generate context-aware `Middleware` types for every directory in the routes tree.
+
+### Patch Changes
+
+- a34ad16: Fix type checking for fluent response helpers in wide route handlers.
+
 ## 2.15.0
 
 ### Minor Changes
