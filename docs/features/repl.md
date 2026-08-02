@@ -36,20 +36,34 @@ const petsContext = loadContext("/pets");
 When running multiple APIs in one process, REPL state is grouped by API key:
 
 ```js
-context.billing
-context.inventory
-routes.billing
-routes.inventory
+context.billing;
+context.inventory;
+routes.billing;
+routes.inventory;
 ```
 
 In this mode, `loadContext` and `route` are also grouped by API key:
 
 ```js
-loadContext.billing("/pets")
-route.inventory("/stock/{sku}")
+loadContext.billing("/pets");
+route.inventory("/stock/{sku}");
 ```
 
 When configuring multiple APIs, each API must define a non-empty, unique group name.
+
+If `<basePath>/_.store.ts` exists, `store` is an unqualified REPL binding in
+both single- and multi-API sessions. It is the same live application-level
+object received by every group's context constructors:
+
+```js
+store.customers.size;
+store.orders.clear();
+```
+
+Adding a valid `_.store.ts` while the server is watching makes the binding
+available to an already-open REPL. Scenario functions do not receive the store
+in their `$` argument; use a context method when a scenario needs to seed shared
+state.
 
 The built-in `client` object lets you make HTTP requests from the prompt without leaving the terminal:
 
@@ -67,11 +81,11 @@ The built-in `route()` function creates a fluent request builder that validates 
 
 ```js
 // Build and inspect before sending
-const req = route("/pet/{petId}").method("get").path({ petId: 42 })
-req.ready()    // true / false
-req.missing()  // lists missing required parameters
-req.help()     // prints OpenAPI docs for the operation
-await req.send()
+const req = route("/pet/{petId}").method("get").path({ petId: 42 });
+req.ready(); // true / false
+req.missing(); // lists missing required parameters
+req.help(); // prints OpenAPI docs for the operation
+await req.send();
 ```
 
 See the [Route Builder guide](./route-builder.md) for full documentation.
@@ -94,11 +108,11 @@ Tab completion supports both modes: in single-API sessions, `.scenario <Tab>` su
 
 **Path resolution:** the argument to `.scenario` is a slash-separated path. The last segment is the function name; everything before it is the file path, resolved relative to `<basePath>/scenarios/` (with `index.ts` as the default file).
 
-| Command | File | Function |
-|---|---|---|
-| `.scenario soldPets` | `scenarios/index.ts` | `soldPets` |
-| `.scenario pets/resetAll` | `scenarios/pets.ts` | `resetAll` |
-| `.scenario pets/orders/pending` | `scenarios/pets/orders.ts` | `pending` |
+| Command                         | File                       | Function   |
+| ------------------------------- | -------------------------- | ---------- |
+| `.scenario soldPets`            | `scenarios/index.ts`       | `soldPets` |
+| `.scenario pets/resetAll`       | `scenarios/pets.ts`        | `resetAll` |
+| `.scenario pets/orders/pending` | `scenarios/pets/orders.ts` | `pending`  |
 
 A scenario function receives a single argument with `{ context, loadContext, routes, route }`:
 
@@ -113,11 +127,10 @@ export const soldPets: Scenario = ($) => {
   $.context.petService.addPet({ id: 2, status: "available" });
 
   // Store a pre-configured route builder for later use in the REPL
-  $.routes.findSold = $
-    .route("/pet/findByStatus")
+  $.routes.findSold = $.route("/pet/findByStatus")
     .method("get")
     .query({ status: "sold" });
-}
+};
 ```
 
 After the command runs you can immediately use anything stored in `$.routes`:
@@ -162,7 +175,11 @@ import type { Scenario$ } from "../types/_.context.js";
 
 export function addPets($: Scenario$, count: number, species: string) {
   for (let i = 0; i < count; i++) {
-    $.context.addPet({ name: `${species} ${i + 1}`, status: "available", photoUrls: [] });
+    $.context.addPet({
+      name: `${species} ${i + 1}`,
+      status: "available",
+      photoUrls: [],
+    });
   }
 }
 ```
@@ -175,4 +192,5 @@ If `startup` is not exported from `scenarios/index.ts`, it is silently skipped â
 - [State](./state.md) â€” the context objects you interact with from the REPL
 - [Patterns: Scenario Scripts](../patterns/scenario-scripts.md)
 - [Patterns: Live Server Inspection with the REPL](../patterns/repl-inspection.md)
+- [Patterns: Share State Across API Groups](../patterns/shared-store.md)
 - [Usage](../usage.md)

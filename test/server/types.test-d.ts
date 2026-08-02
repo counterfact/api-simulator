@@ -13,11 +13,46 @@ import type {
   IfHasKey,
   MaybePromise,
   MediaType,
+  Middleware,
+  MiddlewareRequest,
+  MiddlewareResponseBuilderFactory,
   OmitAll,
   OmitValueWhenNever,
   OpenApiResponse,
+  ResponseBuilder,
   ResponseBuilderFactory,
+  WideOperationArgument,
 } from "../../src/counterfact-types/index.ts";
+
+class AuthenticationContext {
+  public isAuthorized(apiKey: string | undefined): boolean {
+    return apiKey === "secret";
+  }
+}
+
+const authenticationMiddleware: Middleware<AuthenticationContext> = async (
+  $,
+  respondTo,
+) => {
+  if (!$.context.isAuthorized($.auth?.apiKey)) {
+    return $.response[401].json({ error: "Unauthorized" });
+  }
+
+  return respondTo($);
+};
+
+expectAssignable<Middleware<AuthenticationContext>>(authenticationMiddleware);
+
+declare const middlewareRequest: MiddlewareRequest;
+expectType<Promise<void>>(middlewareRequest.delay(100));
+expectType<unknown>(middlewareRequest.query.parameter);
+expectAssignable<MiddlewareRequest["query"]>({
+  array: ["first", "second"],
+  object: { property: "value" },
+});
+
+declare const middlewareResponse: MiddlewareResponseBuilderFactory;
+expectType<ResponseBuilder | undefined>(middlewareResponse["200 OK"]);
 
 // test exact match
 expectType<
@@ -114,6 +149,40 @@ expectAssignable<MaybePromise<string>>("hello");
 expectAssignable<MaybePromise<string>>(Promise.resolve("hello"));
 expectNotAssignable<MaybePromise<string>>(42);
 expectNotAssignable<MaybePromise<string>>(Promise.resolve(42));
+
+// Generated routes retain schema validation, while versioned wide routes accept
+// any response body.
+type SchemaCheckedJsonResponse = {
+  content: { "application/json": { schema: { id: number } } };
+  headers: {};
+  requiredHeaders: never;
+  examples: {};
+};
+
+declare const generatedResponse: ResponseBuilderFactory<{
+  200: SchemaCheckedJsonResponse;
+}>;
+
+expectError(generatedResponse[200].json("invalid json per schema"));
+expectAssignable<COUNTERFACT_RESPONSE>(generatedResponse[200].json({ id: 1 }));
+
+type WideRoute = ($: {
+  x: WideOperationArgument;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
+
+const wideRandomRoute: WideRoute = ($) => $.x.response[200].random();
+const wideJsonRoute: WideRoute = ($) => $.x.response[200].json({ ok: true });
+const wideInvalidJsonRoute: WideRoute = ($) =>
+  $.x.response[200].json("invalid json per schema");
+const wideChainedRoute: WideRoute = ($) =>
+  $.x.response[200].header("x-request-id", "request-123").json({ ok: true });
+declare const stream: AsyncIterable<unknown>;
+const wideStreamRoute: WideRoute = ($) => $.x.response[200].stream(stream);
+expectAssignable<WideRoute>(wideRandomRoute);
+expectAssignable<WideRoute>(wideJsonRoute);
+expectAssignable<WideRoute>(wideInvalidJsonRoute);
+expectAssignable<WideRoute>(wideChainedRoute);
+expectAssignable<WideRoute>(wideStreamRoute);
 
 // OmitValueWhenNever: keys whose value is `never` are removed from the type
 expectType<OmitValueWhenNever<{ a: string; b: never }>>({ a: "hello" });

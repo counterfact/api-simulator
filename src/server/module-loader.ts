@@ -65,6 +65,8 @@ export class ModuleLoader extends EventTarget {
 
   private readonly scenarioRegistry: ScenarioRegistry | undefined;
 
+  private readonly getStore: (() => object | undefined) | undefined;
+
   private readonly dependencyGraph = new ModuleDependencyGraph();
 
   private readonly fileDiscovery: FileDiscovery;
@@ -80,6 +82,7 @@ export class ModuleLoader extends EventTarget {
     contextRegistry = new ContextRegistry(),
     scenariosPath?: string,
     scenarioRegistry?: ScenarioRegistry,
+    getStore?: () => object | undefined,
   ) {
     super();
     this.basePath = toForwardSlashPath(basePath);
@@ -90,6 +93,7 @@ export class ModuleLoader extends EventTarget {
         ? undefined
         : toForwardSlashPath(scenariosPath);
     this.scenarioRegistry = scenarioRegistry;
+    this.getStore = getStore;
     this.fileDiscovery = new FileDiscovery(this.basePath);
   }
 
@@ -211,6 +215,16 @@ export class ModuleLoader extends EventTarget {
     const files = await this.fileDiscovery.findFiles(directory);
     await Promise.all(files.map((file) => this.loadEndpoint(file)));
     await this.loadScenarios();
+  }
+
+  /** Reloads every context module without disturbing preserved live state. */
+  public async reloadContexts(): Promise<void> {
+    const files = await this.fileDiscovery.findFiles();
+    await Promise.all(
+      files
+        .filter((file) => this.isContextFile(file))
+        .map((file) => this.loadEndpoint(file)),
+    );
   }
 
   private shouldLoadScenarioFile(pathName: string): boolean {
@@ -360,6 +374,7 @@ export class ModuleLoader extends EventTarget {
 
       if (this.isContextFile(pathName) && isContextModule(endpoint)) {
         const loadContext = (path: string) => this.contextRegistry.find(path);
+        const store = this.getStore?.();
 
         const contextDir = nodePath.dirname(unescapePathForWindows(pathName));
         const readJson = async (relativePath: string): Promise<unknown> => {
@@ -389,6 +404,7 @@ export class ModuleLoader extends EventTarget {
           new endpoint.Context({
             loadContext,
             readJson,
+            ...(store === undefined ? {} : { store }),
           }),
         );
         return;

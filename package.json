@@ -1,6 +1,6 @@
 {
   "name": "counterfact",
-  "version": "2.14.1",
+  "version": "2.16.0",
   "description": "Generate a TypeScript-based mock server from an OpenAPI spec in seconds — with stateful routes, hot reload, and REPL support.",
   "type": "module",
   "main": "./dist/app.js",
@@ -85,7 +85,7 @@
     "@changesets/cli": "2.31.1",
     "@eslint/js": "10.0.1",
     "@jest/globals": "30.4.1",
-    "@swc/core": "1.15.46",
+    "@swc/core": "1.15.47",
     "@swc/jest": "0.2.39",
     "@testing-library/dom": "10.4.1",
     "@types/debug": "4.1.13",

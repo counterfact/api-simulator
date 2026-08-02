@@ -148,6 +148,7 @@ it("returns 404 when the flag is set", async () => {
 
 ## Keep exploring
 
+- [Share State Across API Groups](./shared-store.md) — exercise product-wide workflows backed by one shared store
 - [Simulate Failures and Edge Cases](./simulate-failures.md) — the context-flag technique for toggling error conditions
 - [Test the Context, Not the Handlers](./test-context-not-handlers.md) — unit-test context logic independently of the HTTP layer
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — shape the responses the integration tests assert against

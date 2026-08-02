@@ -32,6 +32,31 @@ const rootContext = contextRegistry.find("/");
 
 Once you have `rootContext` you can read and write any state that your route handlers expose.
 
+## Accessing an application-level store
+
+If `<basePath>/_.store.ts` exists, `counterfact()` constructs one shared store
+for the simulator and exposes it through the optional `store` property. Supply
+the user-authored store type as the generic argument when you want typed access:
+
+```ts
+import { counterfact } from "counterfact";
+import type { Store } from "./api/_.store.js";
+
+const simulator = await counterfact<Store>(config, specs);
+
+if (simulator.store === undefined) {
+  throw new Error("Expected api/_.store.ts to be loaded");
+}
+
+simulator.store.seed();
+const { stop } = await simulator.start(config);
+```
+
+The property remains optional because the published API cannot infer whether a
+caller-local file exists. The object is the same live store used by every API
+group's context constructors and by the REPL. It is available before `start()`
+when discovered during simulator construction.
+
 ## Example: parameterised auth scenario with Playwright
 
 Given this route handler:
@@ -170,12 +195,14 @@ const { start } = await counterfact(config, [
 | `contextRegistry` | `ContextRegistry`              | Registry of all context objects keyed by path. Call `.find(path)` to get the context for a given route prefix.               |
 | `registry`        | `Registry`                     | Registry of all loaded route modules.                                                                                        |
 | `koaApp`          | `Koa`                          | The underlying Koa application.                                                                                              |
+| `store`           | `TStore \| undefined`          | Optional application-level store loaded from `<basePath>/_.store.ts`. Supply `TStore` to `counterfact<TStore>()`.            |
 | `start(config)`   | `async (config) => { stop() }` | Starts the server (and optionally the file watcher and code generator). Returns a `stop()` function to gracefully shut down. |
 | `startRepl()`     | `() => REPLServer`             | Starts the interactive REPL. Returns the REPL server instance.                                                               |
 
 ## See also
 
 - [State](./state.md) — the context objects you manipulate from test code
+- [Patterns: Share State Across API Groups](../patterns/shared-store.md) — typed shared state for multi-API simulations
 - [Patterns: Automated Integration Tests](../patterns/automated-integration-tests.md) — using the programmatic API in a CI-friendly test suite
 - [Reference](../reference.md) — CLI flags, architecture
 - [Usage](../usage.md)
