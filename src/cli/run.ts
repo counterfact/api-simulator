@@ -48,8 +48,7 @@ type SpecOption = string | SpecOptionEntry | SpecOptionEntry[] | undefined;
  *   (single spec derived from config).
  *
  * Note: `prefix` is intentionally left `undefined` when not supplied so that
- * `normalizeSpecs` (in `app.ts`) can derive it automatically from
- * `group`/`version`.
+ * `normalizeSpecs` (in `app.ts`) can apply the root-prefix default.
  */
 export function normalizeSpecOption(
   specOption: SpecOption,

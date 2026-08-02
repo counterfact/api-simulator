@@ -6,7 +6,7 @@ Counterfact is three tools in one:
 - a **mock server** optimized for front-end development workflows
 - a **live REPL** for inspecting and manipulating server state at runtime
 
-This page is your map to the documentation.
+Choose the path that matches what you’re building, then dive deeper when you need a specific feature or workflow.
 
 ---
 
@@ -18,25 +18,25 @@ New to Counterfact? Begin with the [Getting Started guide](./getting-started.md)
 
 ## Features
 
-| Feature | Description |
-|---|---|
-| [Generated code](./features/generated-code.md) | How Counterfact generates TypeScript from your OpenAPI spec |
-| [Routes](./features/routes.md) | Writing route handlers, building responses, reading request data |
-| [State (context objects)](./features/state.md) | Sharing in-memory state across routes |
-| [Hot reload](./features/hot-reload.md) | Live file updates without restarting the server |
-| [REPL](./features/repl.md) | Interactive terminal for runtime inspection and control |
-| [Proxy](./features/proxy.md) | Mix real backend calls with mocked endpoints |
-| [Middleware](./features/middleware.md) | Cross-cutting request/response logic |
-| [TypeScript native mode](./features/typescript-native-mode.md) | Run route files directly without a compilation step |
-| [Programmatic API](./features/programmatic-api.md) | Embed Counterfact in test suites with Playwright, Cypress, etc. |
-| [Without OpenAPI](./features/without-openapi.md) | Use Counterfact without an OpenAPI document |
-| [Multiple versions](./features/multiple-versions.md) | Serve multiple API versions simultaneously from a single process |
+| Feature                                                        | Description                                                      |
+| -------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [Generated code](./features/generated-code.md)                 | How Counterfact generates TypeScript from your OpenAPI spec      |
+| [Routes](./features/routes.md)                                 | Writing route handlers, building responses, reading request data |
+| [State (contexts and shared store)](./features/state.md)       | Sharing in-memory state across routes and API groups             |
+| [Hot reload](./features/hot-reload.md)                         | Live file updates without restarting the server                  |
+| [REPL](./features/repl.md)                                     | Interactive terminal for runtime inspection and control          |
+| [Proxy](./features/proxy.md)                                   | Mix real backend calls with mocked endpoints                     |
+| [Middleware](./features/middleware.md)                         | Cross-cutting request/response logic                             |
+| [TypeScript native mode](./features/typescript-native-mode.md) | Run route files directly without a compilation step              |
+| [Programmatic API](./features/programmatic-api.md)             | Embed Counterfact in test suites with Playwright, Cypress, etc.  |
+| [Without OpenAPI](./features/without-openapi.md)               | Use Counterfact without an OpenAPI document                      |
+| [Multiple versions](./features/multiple-versions.md)           | Serve multiple API versions simultaneously from a single process |
 
 ---
 
 ## Patterns
 
-Patterns are reusable solutions to recurring problems when building API simulations.
+Patterns are practical ways to use Counterfact for common API development and testing jobs.
 
 See the [patterns index](./patterns/index.md) for the full list.
 

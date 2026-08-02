@@ -1,12 +1,12 @@
 # Mock APIs with Dummy Data
 
-You need your mock server to return realistic data so a UI renders plausibly, a demo looks credible, or a test can assert on specific field values.
+Give your UI, demo, or test suite data that looks real enough to be useful—and choose exactly when it should stay fixed.
 
-## Problem
+## Why teams use this
 
 Out-of-the-box random responses conform to the schema but carry meaningless data — random strings, arbitrary numbers. Hardcoding responses in every handler is brittle and hard to maintain. You need a repeatable way to serve controlled, realistic data.
 
-## Solution
+## How it works
 
 Choose the approach that fits how much control you need:
 
@@ -65,16 +65,23 @@ export class Context {
     return pet;
   }
 
-  get(id: number): Pet | undefined { return this.pets.get(id); }
-  list(): Pet[] { return [...this.pets.values()]; }
-  remove(id: number): void { this.pets.delete(id); }
+  get(id: number): Pet | undefined {
+    return this.pets.get(id);
+  }
+  list(): Pet[] {
+    return [...this.pets.values()];
+  }
+  remove(id: number): void {
+    this.pets.delete(id);
+  }
 }
 ```
 
 ```ts
 // api/routes/pet.ts
 export const GET: HTTP_GET = ($) => $.response[200].json($.context.list());
-export const POST: HTTP_POST = ($) => $.response[200].json($.context.add($.body));
+export const POST: HTTP_POST = ($) =>
+  $.response[200].json($.context.add($.body));
 
 // api/routes/pet/{petId}.ts
 export const GET: HTTP_GET = ($) => {
@@ -87,14 +94,14 @@ export const DELETE: HTTP_DELETE = ($) => {
 };
 ```
 
-## Consequences
+## What you get
 
 - The stateful CRUD approach behaves like a real API for the duration of a session; state resets to zero on server restart.
 - Named examples keep realistic values in the spec where they belong, reducing duplication.
 - Fixed handler data is easy to write but must be updated manually when the spec changes.
 - TypeScript warns when a handler's return value does not match the spec-derived response schema; the server still executes the handler as written, so the developer's intent is respected even during a temporary mismatch.
 
-## Related Patterns
+## Keep exploring
 
 - [Explore a New API](./explore-new-api.md) — start with `.random()` before adding realistic data
 - [Reference Implementation](./reference-implementation.md) — extend stateful CRUD into a full, spec-conformant implementation

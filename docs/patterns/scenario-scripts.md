@@ -1,12 +1,12 @@
 # Scenario Scripts
 
-You want to automate repetitive REPL interactions — seeding data, configuring state, building reusable request sequences — so you don't have to type the same commands every session.
+Save the REPL setups you use more than once: seed data, configure state, and build reusable request sequences that run on demand or at startup.
 
-## Problem
+## Why teams use this
 
 The REPL is powerful for ad-hoc exploration, but many setup tasks are predictable: seed a set of pets before a demo, reset state to a known baseline for a test, or configure a reusable route builder for a common request. Retyping these commands every time the server restarts is tedious and error-prone.
 
-## Solution
+## How it works
 
 Write _scenario scripts_ — TypeScript files in the `scenarios/` directory that export named functions. Each function receives a single `$` argument that exposes the full live context and route builder. Run any export on demand from the REPL with `.scenario`, or have one run automatically at startup.
 
@@ -25,8 +25,7 @@ export const soldPets: Scenario = ($) => {
   $.context.petService.addPet({ id: 2, status: "available" });
 
   // Store a pre-configured route builder in the REPL environment
-  $.routes.findSold = $
-    .route("/pet/findByStatus")
+  $.routes.findSold = $.route("/pet/findByStatus")
     .method("get")
     .query({ status: "sold" });
 };
@@ -41,11 +40,11 @@ Use the `.scenario` command. The argument is a slash-separated path where the la
 Applied soldPets
 ```
 
-| Command | File | Function |
-|---|---|---|
-| `.scenario soldPets` | `scenarios/index.ts` | `soldPets` |
-| `.scenario pets/resetAll` | `scenarios/pets.ts` | `resetAll` |
-| `.scenario pets/orders/pending` | `scenarios/pets/orders.ts` | `pending` |
+| Command                         | File                       | Function   |
+| ------------------------------- | -------------------------- | ---------- |
+| `.scenario soldPets`            | `scenarios/index.ts`       | `soldPets` |
+| `.scenario pets/resetAll`       | `scenarios/pets.ts`        | `resetAll` |
+| `.scenario pets/orders/pending` | `scenarios/pets/orders.ts` | `pending`  |
 
 After running, anything stored in `$.routes` is immediately available in the REPL:
 
@@ -63,7 +62,7 @@ import type { Scenario } from "../types/_.context.js";
 
 export const startup: Scenario = ($) => {
   $.context.addPet({ name: "Fluffy", status: "available", photoUrls: [] });
-  $.context.addPet({ name: "Rex",    status: "sold",      photoUrls: [] });
+  $.context.addPet({ name: "Rex", status: "sold", photoUrls: [] });
 };
 ```
 
@@ -80,7 +79,7 @@ import { addPets } from "./pets.js";
 import { addOrders } from "./orders.js";
 
 export const startup: Scenario = ($) => {
-  addPets($, 20, "dog");   // seed 20 dogs at startup
+  addPets($, 20, "dog"); // seed 20 dogs at startup
   addOrders($, 5);
 };
 ```
@@ -111,13 +110,18 @@ export function addOrders($: Scenario$, count: number) {
 }
 ```
 
-Helpers can also be called as standalone `.scenario` commands:
+Named scenario exports that need no extra arguments can also be called as standalone `.scenario` commands. The REPL command does not pass arbitrary arguments, so wrap parameterized helpers in a named scenario first:
+
+```ts
+// scenarios/pets.ts
+export const addThreeDogs: Scenario = ($) => addPets($, 3, "dog");
+```
 
 ```
-⬣> .scenario pets/addPets
+⬣> .scenario pets/addThreeDogs
 ```
 
-## Consequences
+## What you get
 
 - Scenario functions are plain TypeScript — no special framework, fully type-checked, easy to test in isolation.
 - `.scenario` provides on-demand state changes without editing handler files or restarting the server.
@@ -125,7 +129,7 @@ Helpers can also be called as standalone `.scenario` commands:
 - Helper functions accepting extra arguments let the same logic be used for both realistic production volumes (at startup) and minimal data (in the REPL during debugging).
 - Scenarios live alongside your handler code, making them easy to discover and keep in sync with the API.
 
-## Related Patterns
+## Keep exploring
 
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — the full range of approaches for populating server responses
 - [Live Server Inspection with the REPL](./repl-inspection.md) — interactive exploration and state manipulation at runtime

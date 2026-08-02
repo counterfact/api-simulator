@@ -1,6 +1,6 @@
 # Multiple API Versions
 
-Counterfact can serve several versions of the same API simultaneously from a single running process. Each version gets its own URL prefix, its own generated types, and its own route handler invocation — but all versions share the same route files.
+Counterfact can serve several versions of the same API simultaneously from a single running process. Each version can have its own URL prefix, generated types, and route handler invocation — while all versions share the same route files.
 
 ---
 
@@ -25,19 +25,23 @@ spec:
   - source: ./openapi-v1.yaml
     group: catalog
     version: v1
+    prefix: /api/v1
   - source: ./openapi-v2.yaml
     group: catalog
     version: v2
+    prefix: /api/v2
   - source: ./openapi-v3.yaml
     group: catalog
     version: v3
+    prefix: /api/v3
 ```
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `source` | yes | Path or URL to the OpenAPI document |
-| `group` | yes | Subdirectory name under `basePath`; must be non-empty and unique across groups (not across versions of the same group) |
-| `version` | yes | Version label (e.g. `"v1"`, `"v2"`). The routes are mounted under `/<group>/<version>`. |
+| Field     | Required | Description                                                                                                                               |
+| --------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `source`  | yes      | Path or URL to the OpenAPI document                                                                                                       |
+| `group`   | yes      | Subdirectory name under `basePath`; must be non-empty and unique across groups (not across versions of the same group)                    |
+| `version` | yes      | Version label (e.g. `"v1"`, `"v2"`) used by generated types and `$.minVersion()`.                                                         |
+| `prefix`  | no       | URL prefix prepended to paths in the spec. Omitted prefixes default to `""`; use distinct values when versions declare overlapping paths. |
 
 > **Note:** Version order matters. The first entry with a given `group` is treated as the **oldest** version. `$.minVersion()` compares against this declared order.
 
@@ -48,20 +52,25 @@ spec:
 With the configuration above, Counterfact mounts the three specs at:
 
 ```
-http://localhost:3100/catalog/v1/...
-http://localhost:3100/catalog/v2/...
-http://localhost:3100/catalog/v3/...
+http://localhost:3100/api/v1/...
+http://localhost:3100/api/v2/...
+http://localhost:3100/api/v3/...
 ```
 
-The prefix is derived automatically from `group` + `version`. You can override it with an explicit `prefix` field if your API uses a different URL structure:
+All three effective prefixes come from the explicit `prefix` fields. `group`
+controls the generated directory and shared state, while `version` controls
+versioned types. Neither field changes the URL. If `prefix` is omitted, paths
+remain at the root exactly as declared in the OpenAPI document.
 
 ```yaml
 spec:
   - source: ./openapi-v1.yaml
     group: catalog
     version: v1
-    prefix: /api/v1          # overrides the default /catalog/v1
+    prefix: /legacy/v1
 ```
+
+If that spec declares `/items`, its effective URL is `/legacy/v1/items`.
 
 ---
 
@@ -106,9 +115,9 @@ Key points:
 
 A handler file lives under `routes/` and is shared by all versions. Counterfact injects two version-aware helpers into the `$` argument at runtime:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `$.version` | `Versions` | The version string for the request currently being handled (e.g. `"v1"`, `"v2"`) |
+| Property            | Type           | Description                                                                        |
+| ------------------- | -------------- | ---------------------------------------------------------------------------------- |
+| `$.version`         | `Versions`     | The version string for the request currently being handled (e.g. `"v1"`, `"v2"`)   |
 | `$.minVersion(min)` | type predicate | Returns `true` when the current version is at or after `min` in the declared order |
 
 Both properties are only present when `version` is set in the config. For a single unversioned spec they are absent.
@@ -152,17 +161,17 @@ When running multiple APIs in one process, the REPL groups state by API group:
 
 ```js
 // Access context for the catalog group
-context.catalog
+context.catalog;
 
 // Access routes for the catalog group
-routes.catalog
+routes.catalog;
 ```
 
 `loadContext` and `route` are similarly grouped:
 
 ```js
-loadContext.catalog("/items")
-route.catalog("/items/{itemId}")
+loadContext.catalog("/items");
+route.catalog("/items/{itemId}");
 ```
 
 ---
@@ -175,7 +184,10 @@ route.catalog("/items/{itemId}")
 export const GET: HTTP_GET = ($) => {
   if ($.minVersion("v2")) {
     // $ is typed as the v2 (and later) $ arg — v2-only fields are available here
-    return $.response[200].json({ id: $.path.itemId, category: $.body.category });
+    return $.response[200].json({
+      id: $.path.itemId,
+      category: $.body.category,
+    });
   }
 
   // $ is typed as the v1 $ arg here — only v1 fields are available
@@ -189,10 +201,10 @@ This narrowing is powered by the `Versioned<T, V>` type in `types/versions.ts`. 
 
 `Versioned<T, V>` is the type of the `$` argument in a versioned handler. It has two generic parameters:
 
-| Parameter | Description |
-|-----------|-------------|
-| `T` | A map from version string to the `$`-arg type for that version (e.g. `{ v1: $v1, v2: $v2 }`) |
-| `V` | The union of currently active version keys (defaults to all keys of `T`) |
+| Parameter | Description                                                                                  |
+| --------- | -------------------------------------------------------------------------------------------- |
+| `T`       | A map from version string to the `$`-arg type for that version (e.g. `{ v1: $v1, v2: $v2 }`) |
+| `V`       | The union of currently active version keys (defaults to all keys of `T`)                     |
 
 It exposes:
 

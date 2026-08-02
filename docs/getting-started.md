@@ -22,10 +22,10 @@ Or you could run this:
 npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 ```
 
-Counterfact reads the spec, generates typed TypeScript handlers for every endpoint, and starts a live server — all in one command. Within seconds you have a working API that matches your contract exactly.
+Counterfact reads the spec, generates typed TypeScript handlers for its supported operations, and starts a live server — all in one command. Within seconds you have a contract-derived API whose behavior you can implement and verify locally.
 
 > **Requires Node ≥ 22.0.0**  
-> Supports Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2.  
+> Supports Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2.
 > Want to see a fully implemented version of the Petstore — with custom logic, state, and realistic handlers already wired in? Browse [counterfact/example-petstore](https://github.com/counterfact/example-petstore).
 
 ---
@@ -48,9 +48,9 @@ api/
         └── ...
 ```
 
-**2. A server started.** Every endpoint is live immediately. By default, each one returns random, schema-valid data — no editing required.
+**2. A server started.** Supported operations are live immediately. Generated handlers return schema-derived sample data (or an empty/streaming response when appropriate) — no editing required. These defaults are for exploration, not deterministic tests or realistic business behavior.
 
-**3. Swagger UI opened.** Point your browser at `http://localhost:3100/counterfact/swagger/` to explore and test the API.
+**3. Swagger UI became available.** Point your browser at `http://localhost:3100/counterfact/swagger/` to explore and test the API. Pass `--open` if you want Counterfact to open it automatically.
 
 ---
 
@@ -96,7 +96,7 @@ Create a `_.context.ts` file to share in-memory state across routes in the same 
 
 ```ts
 // api/routes/_.context.ts
-import type { Pet } from "../types/components/pet.types.js";
+import type { Pet } from "../types/components/schemas/Pet.js";
 
 export class Context {
   private pets = new Map<number, Pet>();
@@ -201,7 +201,7 @@ If you're not watching, you can regenerate on demand:
 npx counterfact@latest openapi.yaml api --generate-types
 ```
 
-Either way, Counterfact only scaffolds route files that don't exist yet. Your existing route code is never overwritten. TypeScript surfaces any handlers that no longer match the updated contract — you fix them, and you're done.
+Counterfact preserves existing handler bodies. Regeneration overwrites generated types and may append a type import and handler stub when the spec adds a new operation to an existing path. Run your project's TypeScript check to surface handlers that no longer match the updated contract; Counterfact does not run the compiler for you.
 
 ---
 

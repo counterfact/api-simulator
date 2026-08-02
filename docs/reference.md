@@ -49,6 +49,7 @@ OpenAPI spec (YAML or JSON, local or URL)
 
 ```
 <output-directory>/
+├── _.store.ts                 # application-level state shared across API groups (optional)
 ├── routes/
 │   ├── _.context.ts           # shared in-memory state (optional)
 │   ├── _.middleware.ts        # custom Koa middleware (optional)
@@ -111,15 +112,15 @@ export const GET: HTTP_GET = ($) => {
 
 ## The `$` parameter
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `$.path` | typed object | Path parameters from the URL |
-| `$.query` | typed object | Query string parameters |
-| `$.querystring` | typed object | Entire query string as a single typed object (OpenAPI 3.2 `in: querystring` parameters) |
-| `$.headers` | typed object | Request headers |
-| `$.body` | typed object | Parsed request body |
-| `$.context` | `Context` instance | Shared state for this route subtree |
-| `$.response[N]` | response builder | Fluent builder for HTTP status code N (e.g. `$.response[200]`, `$.response[404]`) |
+| Property        | Type               | Description                                                                             |
+| --------------- | ------------------ | --------------------------------------------------------------------------------------- |
+| `$.path`        | typed object       | Path parameters from the URL                                                            |
+| `$.query`       | typed object       | Query string parameters                                                                 |
+| `$.querystring` | typed object       | Entire query string as a single typed object (OpenAPI 3.2 `in: querystring` parameters) |
+| `$.headers`     | typed object       | Request headers                                                                         |
+| `$.body`        | typed object       | Parsed request body                                                                     |
+| `$.context`     | `Context` instance | Shared state for this route subtree                                                     |
+| `$.response[N]` | response builder   | Fluent builder for HTTP status code N (e.g. `$.response[200]`, `$.response[404]`)       |
 
 ---
 
@@ -127,18 +128,18 @@ export const GET: HTTP_GET = ($) => {
 
 `$.response[N]` (where N is the HTTP status code) returns a fluent builder. Chain one or more of these methods:
 
-| Method | Description |
-| --- | --- |
-| `.random()` | Random data generated from the OpenAPI schema (uses `examples` where available) |
-| `.example(name)` | A specific named example from the OpenAPI spec |
-| `.empty()` | Explicitly returns a response with no body (use for 204 No Content and similar) |
-| `.json(content)` | JSON body (also converts to XML automatically when the client requests it) |
-| `.text(content)` | Plain-text body |
-| `.html(content)` | HTML body |
-| `.xml(content)` | XML body |
-| `.match(contentType, content)` | Body with an explicit content type; chain multiple for content negotiation |
-| `.header(name, value)` | Adds a response header |
-| `.cookie(name, value, options?)` | Adds a `Set-Cookie` header |
+| Method                           | Description                                                                     |
+| -------------------------------- | ------------------------------------------------------------------------------- |
+| `.random()`                      | Random data generated from the OpenAPI schema (uses `examples` where available) |
+| `.example(name)`                 | A specific named example from the OpenAPI spec                                  |
+| `.empty()`                       | Explicitly returns a response with no body (use for 204 No Content and similar) |
+| `.json(content)`                 | JSON body (also converts to XML automatically when the client requests it)      |
+| `.text(content)`                 | Plain-text body                                                                 |
+| `.html(content)`                 | HTML body                                                                       |
+| `.xml(content)`                  | XML body                                                                        |
+| `.match(contentType, content)`   | Body with an explicit content type; chain multiple for content negotiation      |
+| `.header(name, value)`           | Adds a response header                                                          |
+| `.cookie(name, value, options?)` | Adds a `Set-Cookie` header                                                      |
 
 ```ts
 return $.response[200]
@@ -182,6 +183,53 @@ export class Context {
 }
 ```
 
+### Application-level shared store
+
+For a simulator with multiple API groups, place one user-authored
+`<basePath>/_.store.ts` alongside the group directories. The module must export
+a zero-argument `Store` class. Counterfact constructs one instance for the
+simulator and passes it to every route context constructor:
+
+```ts
+// <basePath>/_.store.ts
+export class Store {
+  readonly customers = new Map<string, Customer>();
+  readonly orders = new Map<string, Order>();
+}
+```
+
+```ts
+// <basePath>/orders/routes/_.context.ts
+import type { Context$ } from "../types/_.context.js";
+
+export class Context {
+  private readonly store: Context$["store"];
+
+  constructor($: Context$) {
+    this.store = $.store;
+  }
+
+  createOrder(order: Order) {
+    if (!this.store.customers.has(order.customerId)) {
+      throw new Error(`Unknown customer: ${order.customerId}`);
+    }
+    this.store.orders.set(order.id, order);
+    return order;
+  }
+}
+```
+
+Only the generated context-constructor type receives `store`; operation,
+middleware, and scenario `$` arguments do not. `counterfact<TStore>()` exposes
+the same object as optional `simulator.store`, and the REPL exposes it as
+`store`.
+
+The store is discovered only at `<basePath>/_.store.ts`. Its identity and
+existing fields survive successful hot reloads and stop/start cycles of the
+same simulator. A new simulator creates a fresh instance. See the
+[Share State Across API Groups](./patterns/shared-store.md) pattern for a full
+workflow.
+
 ### Cross-context communication with `loadContext()`
 
 Route handlers can reach into a _different_ subtree's context using the `loadContext(path)` function injected into every handler. This lets sibling or parent routes share data without merging everything into one big context.
@@ -190,7 +238,9 @@ Route handlers can reach into a _different_ subtree's context using the `loadCon
 // routes/payments/{id}.ts
 export const GET: HTTP_GET = ($) => {
   // Load the context that owns /users, even though this route lives under /payments
-  const usersContext = $.loadContext("/users") as import("../users/_.context.js").Context;
+  const usersContext = $.loadContext(
+    "/users",
+  ) as import("../users/_.context.js").Context;
   const user = usersContext.getById($.query.userId);
   if (!user) return $.response[404].text("User not found");
   return $.response[200].json({ paymentId: $.path.id, user });
@@ -206,6 +256,11 @@ Counterfact watches the routes directory with [chokidar](https://github.com/paul
 1. The module is re-imported.
 2. The handler is swapped in the registry.
 3. The `Context` instance **is preserved** — in-memory data survives the reload.
+
+The application-level store follows the same identity-preserving principle.
+Store reloads update prototype methods and add new enumerable fields without
+overwriting existing state. A broken or deleted store source leaves the last
+good live object in place.
 
 No restart required.
 
@@ -279,13 +334,9 @@ OpenAPI descriptions are preserved as JSDoc comments on generated types, so they
 
 ## Programmatic API
 
-Import `counterfact` and call it directly instead of using the CLI:
+Import `counterfact` and call it with an explicit configuration instead of using the CLI. The returned `start()` method gives tests an awaited `stop()` handle and access to the live context registry.
 
-```ts
-import { counterfact } from "counterfact";
-
-await counterfact("openapi.yaml", "api", { port: 4000, serve: true });
-```
+See the copyable [Programmatic API configuration](./features/programmatic-api.md) and [Automated Integration Tests](./patterns/automated-integration-tests.md).
 
 ---
 
@@ -295,7 +346,7 @@ await counterfact("openapi.yaml", "api", { port: 4000, serve: true });
 
 The optional `version` field on a spec entry declares the version label for that spec (e.g. `"v1"`, `"v2"`).
 
-When combined with `group` and no explicit `prefix`, the server mounts the spec's routes under `/<group>/<version>`. When omitted, routes are mounted under `/<group>`.
+`group` and `version` organize generated code, types, and runtime state; they do not change URL routing. A spec entry's omitted `prefix` defaults to `""`, so OpenAPI paths remain available exactly as declared. An explicit `prefix` is prepended to every declared path. Multiple specs may share the same prefix, including `""`, and matching runners are tried in declaration order.
 
 When at least one spec in a group declares a non-empty `version`, Counterfact generates `types/versions.ts` inside that group's subdirectory with the `Versions`, `VersionsGTE`, and `Versioned` types.
 
@@ -317,11 +368,11 @@ export type Versioned<
 };
 ```
 
-| Member | Description |
-|--------|-------------|
-| `T` | Map from version string to the `$`-arg type for that version |
-| `V` | Union of currently active version keys (defaults to all keys of `T`) |
-| `version` | The version string for the current request (e.g. `"v2"`) |
+| Member            | Description                                                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `T`               | Map from version string to the `$`-arg type for that version                                                         |
+| `V`               | Union of currently active version keys (defaults to all keys of `T`)                                                 |
+| `version`         | The version string for the current request (e.g. `"v2"`)                                                             |
 | `minVersion(min)` | Type predicate; returns `true` when the current version is ≥ `min` in the declared order and narrows `$` accordingly |
 
 ### `Versions`
@@ -338,11 +389,11 @@ This file is auto-generated once per API group whenever at least one spec in tha
 
 It exports:
 
-| Export | Description |
-|--------|-------------|
-| `Versions` | Union of all version strings for the group |
-| `VersionsGTE` | Map from each version to the set of versions ≥ it |
-| `Versioned<T, V>` | The `$`-arg type for versioned handlers |
+| Export            | Description                                       |
+| ----------------- | ------------------------------------------------- |
+| `Versions`        | Union of all version strings for the group        |
+| `VersionsGTE`     | Map from each version to the set of versions ≥ it |
+| `Versioned<T, V>` | The `$`-arg type for versioned handlers           |
 
 > Do not edit this file — it is regenerated automatically.
 
@@ -358,18 +409,18 @@ See the [Multiple versions feature page](./features/multiple-versions.md) for a 
 
 An overlay file is a YAML or JSON document with three top-level fields:
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `overlay` | ✓ | Overlay version string (must be `"1.0.0"`) |
-| `info` | | Metadata (`title`, `version`) |
-| `actions` | ✓ | Ordered list of actions to apply |
+| Field     | Required | Description                                |
+| --------- | -------- | ------------------------------------------ |
+| `overlay` | ✓        | Overlay version string (must be `"1.0.0"`) |
+| `info`    |          | Metadata (`title`, `version`)              |
+| `actions` | ✓        | Ordered list of actions to apply           |
 
 Each action has:
 
-| Field | Description |
-|-------|-------------|
-| `target` | JSONPath expression selecting the nodes to act on |
-| `update` | Object deep-merged into each matched node |
+| Field    | Description                                        |
+| -------- | -------------------------------------------------- |
+| `target` | JSONPath expression selecting the nodes to act on  |
+| `update` | Object deep-merged into each matched node          |
 | `remove` | `true` to delete each matched node from its parent |
 
 Example overlay (`my-overlay.yaml`):
@@ -432,31 +483,31 @@ spec:
 npx counterfact@latest [spec] [output] [options]
 ```
 
-| Flag | Default | Description |
-| --- | --- | --- |
-| `-p, --port <number>` | `3100` | HTTP server port |
-| `-o, --open` | `false` | Open browser on start |
-| `-g, --generate` | `false` | Generate all code (routes and types) |
-| `-w, --watch` | `false` | Generate and watch all code for changes |
-| `-s, --serve` | `false` | Start the server |
-| `-r, --repl` | `false` | Start the REPL |
-| `-b, --build-cache` | `false` | Build the cache of compiled routes and types |
-| `--spec <path>` | _(positional arg)_ | Path or URL to the OpenAPI document |
-| `--overlay <path>` | _(none)_ | Path or URL to an OpenAPI overlay file (repeatable; applied in order) |
-| `--proxy-url <url>` | _(none)_ | Default upstream for the proxy |
-| `--prefix <path>` | _(none)_ | Global path prefix (e.g. `/api/v1`) |
-| `--no-validate-request` | — | Disable OpenAPI request validation |
-| `--no-validate-response` | — | Disable OpenAPI response validation |
-| `--generate-types` | `false` | Generate types only |
-| `--generate-routes` | `false` | Generate routes only |
-| `--watch-types` | `false` | Watch and regenerate types only |
-| `--watch-routes` | `false` | Watch and regenerate routes only |
-| `--always-fake-optionals` | `false` | Include optional fields in random responses |
-| `--prune` | `false` | Remove route files that no longer exist in the spec |
-| `--admin-api` | `false` | Enable the Admin API at `/_counterfact/api/*` |
-| `--admin-api-token <token>` | _(none)_ | Bearer token required for Admin API endpoints |
-| `--no-update-check` | — | Disable the npm update check on startup |
-| `--config <path>` | `counterfact.yaml` | Path to a config file |
+| Flag                        | Default            | Description                                                           |
+| --------------------------- | ------------------ | --------------------------------------------------------------------- |
+| `-p, --port <number>`       | `3100`             | HTTP server port                                                      |
+| `-o, --open`                | `false`            | Open browser on start                                                 |
+| `-g, --generate`            | `false`            | Generate all code (routes and types)                                  |
+| `-w, --watch`               | `false`            | Generate and watch all code for changes                               |
+| `-s, --serve`               | `false`            | Start the server                                                      |
+| `-r, --repl`                | `false`            | Start the REPL                                                        |
+| `-b, --build-cache`         | `false`            | Build the cache of compiled routes and types                          |
+| `--spec <path>`             | _(positional arg)_ | Path or URL to the OpenAPI document                                   |
+| `--overlay <path>`          | _(none)_           | Path or URL to an OpenAPI overlay file (repeatable; applied in order) |
+| `--proxy-url <url>`         | _(none)_           | Default upstream for the proxy                                        |
+| `--prefix <path>`           | _(none)_           | Global path prefix (e.g. `/api/v1`)                                   |
+| `--no-validate-request`     | —                  | Disable OpenAPI request validation                                    |
+| `--no-validate-response`    | —                  | Disable OpenAPI response validation                                   |
+| `--generate-types`          | `false`            | Generate types only                                                   |
+| `--generate-routes`         | `false`            | Generate routes only                                                  |
+| `--watch-types`             | `false`            | Watch and regenerate types only                                       |
+| `--watch-routes`            | `false`            | Watch and regenerate routes only                                      |
+| `--always-fake-optionals`   | `false`            | Include optional fields in random responses                           |
+| `--prune`                   | `false`            | Remove route files that no longer exist in the spec                   |
+| `--admin-api`               | `false`            | Enable the Admin API at `/_counterfact/api/*`                         |
+| `--admin-api-token <token>` | _(none)_           | Bearer token required for Admin API endpoints                         |
+| `--no-update-check`         | —                  | Disable the npm update check on startup                               |
+| `--config <path>`           | `counterfact.yaml` | Path to a config file                                                 |
 
 Run `npx counterfact@latest --help` for the full list.
 
