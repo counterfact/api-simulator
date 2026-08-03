@@ -4,11 +4,11 @@
 
 ![MIT License](https://img.shields.io/badge/license-MIT-blue) [![Coverage Status](https://coveralls.io/repos/github/counterfact/api-simulator/badge.svg)](https://coveralls.io/github/counterfact/api-simulator) ![Swagger 2.0](https://img.shields.io/badge/Swagger-2.0-85EA2D) ![OpenAPI 3.0–3.2](https://img.shields.io/badge/OpenAPI-3.x-6BA539) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/counterfact/api-simulator)
 
-## Build an explorable prototype before your backend exists.
+## Prototype your UI before investing in backend development.
 
 </div>
 
-Counterfact turns an OpenAPI document into an editable, stateful local API for your frontend. Give someone a prototype they can genuinely try: create data, return to it later, retry an action, or see a deliberate empty, error, or alternate state before the real service exists. Route and context files hot-reload while their in-memory state stays available.
+Counterfact turns an OpenAPI document into an editable, stateful local API for your frontend. Build the UI early, use it to work out the workflow and behavior people need, then invest in a real backend with those decisions in hand. Give someone a prototype they can genuinely try: create data, return to it later, retry an action, or see a deliberate empty, error, or alternate state. Route and context files hot-reload while their in-memory state stays available.
 
 Start with schema-derived sample responses, then turn them into deterministic, stateful scenarios by editing generated TypeScript handlers and adding shared context. Counterfact keeps the contract in the loop while you shape behavior: model the workflow a person needs to explore, not the real backend's internal complexity. The workflow you author remains a repeatable local or CI fixture when you are ready to automate it.
 
@@ -31,14 +31,14 @@ npx counterfact ./openapi.yaml api
 
 ## Start with the workflow you need
 
-| When you need to…                             | You can…                                                                            | Start here                                                                                                  |
-| --------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Let someone explore a prototype before launch | Create data, revisit it later, and deliberately show errors or alternate outcomes   | [Build a stateful flow](./docs/first-10-minutes.md#build-a-stateful-flow)                                   |
-| Build or debug a UI independently             | Use a controlled API world while the real backend is absent, unavailable, or broken | [Build a stateful flow](./docs/first-10-minutes.md#build-a-stateful-flow)                                   |
-| Make failures repeatable                      | Reset, fail, recover, and tear down the same way every run                          | [Automate a deterministic test](./docs/first-10-minutes.md#automate-a-deterministic-test)                   |
-| Give a coding agent a reliable sandbox        | Leave a resettable context and an HTTP test for review                              | [Give an agent a verifiable task](./docs/first-10-minutes.md#give-an-agent-a-verifiable-task)               |
-| Bring endpoints online gradually              | Keep one client base URL while paths move from local to upstream                    | [Run the checked hybrid path](./examples/first-10-minutes/#hybrid-path-ownership)                           |
-| Keep the contract in the loop                 | Regenerate types and catch drift in your normal type check                          | [See a contract change reach a client](./examples/first-10-minutes/#see-a-contract-change-reach-the-client) |
+| When you need to…                        | You can…                                                                            | Start here                                                                                                  |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Prototype a UI before backend investment | Create data, revisit it later, and deliberately show errors or alternate outcomes   | [Build a stateful flow](./docs/first-10-minutes.md#build-a-stateful-flow)                                   |
+| Build or debug a UI independently        | Use a controlled API world while the real backend is absent, unavailable, or broken | [Build a stateful flow](./docs/first-10-minutes.md#build-a-stateful-flow)                                   |
+| Make failures repeatable                 | Reset, fail, recover, and tear down the same way every run                          | [Automate a deterministic test](./docs/first-10-minutes.md#automate-a-deterministic-test)                   |
+| Give a coding agent a reliable sandbox   | Leave a resettable context and an HTTP test for review                              | [Give an agent a verifiable task](./docs/first-10-minutes.md#give-an-agent-a-verifiable-task)               |
+| Bring endpoints online gradually         | Keep one client base URL while paths move from local to upstream                    | [Run the checked hybrid path](./examples/first-10-minutes/#hybrid-path-ownership)                           |
+| Keep the contract in the loop            | Regenerate types and catch drift in your normal type check                          | [See a contract change reach a client](./examples/first-10-minutes/#see-a-contract-change-reach-the-client) |
 
 The [first-10-minutes guide](./docs/first-10-minutes.md) includes the shared setup, reset and isolation rules, CI lifecycle, and the boundary between contract checks and behavior realism.
 
