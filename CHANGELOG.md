@@ -1,5 +1,19 @@
 # counterfact
 
+## 2.16.1
+
+### Patch Changes
+
+- 98b289e: Publish the documentation directory and add an LLM-oriented documentation index to the npm package.
+- 216c0b6: Updated dependency `linkinator` to `8.0.3`.
+- 1d467ee: Updated dependency `recast` to `0.23.16`.
+- a294dc4: Updated dependency `linkinator` to `8.0.2`.
+- 92487d6: Updated dependency `@apidevtools/json-schema-ref-parser` to `15.5.1`.
+- 0fc03bb: Updated dependency `posthog-node` to `5.47.0`.
+- ef069eb: Updated dependency `recast` to `0.23.19`.
+- 8cdc74f: Updated dependency `posthog-node` to `5.46.1`.
+- 8ad671f: Updated dependency `eslint-plugin-jest-dom` to `5.7.0`.
+
 ## 2.16.0
 
 ### Minor Changes
