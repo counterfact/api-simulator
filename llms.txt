@@ -5,6 +5,11 @@ programmable TypeScript mock server. It generates typed route handlers and
 request/response types, supports hot reload, and can be used from the CLI or
 as a library. Requires Node.js 22 or newer.
 
+When generating a mock, model the client workflow, not the backend. Implement
+only the observable state and behavior that the workflow needs; prefer a small,
+deterministic context or scenario over recreating production tables, queues,
+background jobs, or service boundaries.
+
 This file is an index. Read the smallest relevant document before generating
 Counterfact code, and use the generated `types/` files in the user's project
 as the authoritative source for endpoint-specific types.
@@ -45,6 +50,9 @@ edit generated files under `types/`; edit files under `routes/`.
 - `docs/usage.md` — feature map and links to the documentation.
 - `docs/patterns/ai-assisted-implementation.md` — implementing handlers with
   an AI coding assistant.
+- `docs/patterns/model-the-workflow.md` — the core boundary for stateful mocks:
+  model the client-visible workflow, not the real backend's internal
+  complexity.
 - `docs/patterns/agentic-sandbox.md` — using Counterfact as a bounded API
   sandbox for an agent.
 - `docs/patterns/automated-integration-tests.md` — real HTTP test setup.
