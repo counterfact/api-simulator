@@ -62,6 +62,6 @@ If the handler returns a fixed value, you will need to update it — but TypeScr
 
 ## Keep exploring
 
-- [Reference Implementation](./reference-implementation.md) — once the design is stable, implement handlers to reflect intended behavior
+- [Reference Implementation](./reference-implementation.md) — once the design is stable, implement the supported behavior consumers rely on
 - [Explore a New API](./explore-new-api.md) — use a spec you didn't write to explore an existing API the same way
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — serve realistic data while the spec is still evolving

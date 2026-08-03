@@ -52,4 +52,4 @@ Toggle individual paths at runtime from the REPL without touching any files:
 
 - [Explore a New API](./explore-new-api.md) — start fully mocked; add a proxy URL as the real backend comes online
 - [Simulate Failures and Edge Cases](./simulate-failures.md) — use mocked paths to inject errors that the real backend won't produce on demand
-- [Reference Implementation](./reference-implementation.md) — replace proxied paths one at a time with fully implemented mock handlers
+- [Reference Implementation](./reference-implementation.md) — replace proxied paths one at a time with handlers for supported behavior
