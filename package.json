@@ -61,7 +61,9 @@
   },
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "docs",
+    "llms.txt"
   ],
   "sideEffects": false,
   "scripts": {
