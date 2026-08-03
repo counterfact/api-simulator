@@ -10,7 +10,7 @@
 
 Counterfact generates TypeScript handlers and request/response types for supported OpenAPI operations, then starts a local server. Begin with schema-derived sample responses; add shared state, failures, latency, middleware, or selective proxying as your workflow needs them. Route and context files hot-reload while their in-memory state stays available.
 
-Counterfact checks contract shape while giving you a path to shape the behavior. Start with schema-derived responses, then turn them into deterministic, stateful scenarios by editing the generated typed handlers and adding shared context. You can explore in seconds and keep the behavior you author as a repeatable local or CI fixture.
+Counterfact checks contract shape while giving you a path to shape the behavior. Start with schema-derived responses, then turn them into deterministic, stateful scenarios by editing the generated typed handlers and adding shared context. Model the workflow your client needs, not the real backend's internal complexity. You can explore in seconds and keep the behavior you author as a repeatable local or CI fixture.
 
 ## Run a live API in 60 seconds
 

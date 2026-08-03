@@ -693,7 +693,7 @@ app.contextRegistry.<span class="fn">find</span>(<span class="st">"/"</span>)
           <div class="boundary-card limit">
             <h3>Behavior your team still owns</h3>
             <ul class="boundary-list">
-              <li>Business rules, authorization decisions, side effects, and realistic data relationships live in handler/context code.</li>
+              <li>Implement only the client-visible rules, decisions, and state transitions your simulated workflows need in handler/context code.</li>
               <li>Generated random responses are schema-shaped examples, not proof of production behavior or data quality.</li>
               <li>Hot reload preserves live state; use a fresh process plus a startup scenario when a clean reset matters.</li>
               <li>Keep targeted real-backend and end-to-end tests—Counterfact complements them; it does not replace them.</li>

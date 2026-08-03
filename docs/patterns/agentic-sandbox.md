@@ -76,12 +76,15 @@ The agent's next request hits the 429. Its retry logic runs for real.
 
 - Every request is local, instantaneous, and free — iteration speed is limited only by the agent's logic.
 - Response content is fully controlled, so agent behavior is reproducible across runs.
-- The mock does not replicate the real API's stateful semantics unless you implement them explicitly.
+- The mock intentionally implements only the stateful semantics the agent's
+  workflow needs; validate other behavior against the real API.
 - The mock is only as accurate as the OpenAPI spec it was generated from.
 
 ## Keep exploring
 
 - [Simulate Failures and Edge Cases](./simulate-failures.md) — the general technique for toggling error conditions at runtime
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — serve realistic responses for the happy path
-- [AI-Assisted Implementation](./ai-assisted-implementation.md) — use an AI agent to implement stateful handler logic so the mock more faithfully replicates the real API's semantics
+- [Model the Workflow, Not the Backend](./model-the-workflow.md) — give the agent
+  the state it needs without recreating the third-party service
+- [AI-Assisted Implementation](./ai-assisted-implementation.md) — use an AI agent to implement targeted stateful handler logic
 - [Hybrid Proxy](./hybrid-proxy.md) — selectively forward some agent calls to the real API while mocking others

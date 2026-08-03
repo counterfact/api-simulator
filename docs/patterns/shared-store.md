@@ -6,15 +6,15 @@ routes to another group's context tree.
 ## Why teams use this
 
 Counterfact normally gives each API group its own context registry. That is the
-right default for unrelated APIs, but a multi-service simulator often needs to
-enforce product-wide rules: an order must reference an existing customer, an
-invoice must reference an order, or several services must agree on account
-status.
+right default for unrelated APIs, but a multi-service workflow may need a few
+shared facts: an order references a known customer, an invoice references an
+order, or several services observe the same simulated account status.
 
 Reaching into another group's context would make domain logic depend on that
 group's route layout. A shared store gives the simulator one application-level
 home for cross-group data and invariants while each group keeps its own local
-contexts.
+contexts. Keep that model smaller than the real product domain: include only
+facts and transitions that a supported client workflow observes.
 
 ## How it works
 
@@ -170,6 +170,8 @@ ECMAScript `#private` fields are not compatible with prototype replacement.
 
 ## Keep exploring
 
+- [Model the Workflow, Not the Backend](./model-the-workflow.md) — decide
+  whether cross-group state is necessary before introducing a store
 - [Federated Context Files](./federated-context.md) — keep state local when the
   collaborating routes are in one API group
 - [Test the Context, Not the Handlers](./test-context-not-handlers.md) — unit-test

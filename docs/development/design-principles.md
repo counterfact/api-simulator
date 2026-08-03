@@ -18,6 +18,15 @@ Running `npx counterfact openapi.yaml` should get a developer to a working mock 
 
 Startup time matters. Hot-reload latency matters. Response time matters. Every interaction in a developer's inner loop compounds; slow tools erode productivity. Prefer solutions that keep the feedback loop fast.
 
+## Simulate Deliberately, Not Faithfully
+
+Counterfact should make client workflows predictable, not reproduce a real
+backend. Deterministic handlers are the default. Contexts, stores, scenarios,
+and the REPL make selected cross-request behavior possible, but the authored
+state model should remain smaller and simpler than production. Prefer explicit,
+client-visible states over databases, background work, and internal service
+architecture.
+
 ## Make Restarting the Server Unnecessary
 
 Changes to route files, type files, and context files should take effect immediately without restarting the server. Hot-reloading and file watching are first-class concerns. Avoid designs that require a restart to pick up changes.

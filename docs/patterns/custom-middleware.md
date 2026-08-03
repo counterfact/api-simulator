@@ -105,4 +105,4 @@ export default middleware;
 
 - [Simulate Failures and Edge Cases](./simulate-failures.md) — middleware can reject or modify requests without touching handlers
 - [Federated Context Files](./federated-context.md) — the same directory-scoping model applies to both context files and middleware files
-- [Reference Implementation](./reference-implementation.md) — add middleware to replicate the authentication and header behavior of the real API
+- [Reference Implementation](./reference-implementation.md) — add middleware for the authentication and header outcomes consumers rely on

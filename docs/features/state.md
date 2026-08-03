@@ -37,7 +37,15 @@ export class Context {
 ```
 
 > [!IMPORTANT]
-> Keep context in memory. Counterfact is a development tool — starting fresh each time is a feature, not a bug. In-memory state also makes the server very fast.
+> Keep the state model deliberately small. Start with deterministic handlers and
+> add context only when a later request must observe an earlier action. Model
+> client-visible workflow states rather than the real backend's persistence,
+> jobs, or internal architecture. See [Model the Workflow, Not the
+> Backend](../patterns/model-the-workflow.md).
+>
+> Keep context in memory. Counterfact is a development tool — starting fresh
+> each time is a feature, not a bug. In-memory state also makes the server very
+> fast.
 >
 > If a `_.context.ts` file has a syntax/import error, Counterfact prints a warning and skips loading that context file so the app keeps running.
 
@@ -119,6 +127,7 @@ a complete multi-group example and reload guidance.
 - [Hot reload](./hot-reload.md) — state is preserved across hot reloads
 - [REPL](./repl.md) — inspect and mutate state interactively at runtime
 - [Patterns: Federated Context Files](../patterns/federated-context.md) — managing state across multiple context files
+- [Patterns: Model the Workflow, Not the Backend](../patterns/model-the-workflow.md) — deciding how much state to simulate
 - [Patterns: Share State Across API Groups](../patterns/shared-store.md) — sharing domain state between independently generated groups
 - [Patterns: Test the Context, Not the Handlers](../patterns/test-context-not-handlers.md) — unit-testing context logic
 - [Usage](../usage.md)
