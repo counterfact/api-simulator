@@ -49,6 +49,8 @@ edit generated files under `types/`; edit files under `routes/`.
   sandbox for an agent.
 - `docs/patterns/automated-integration-tests.md` — real HTTP test setup.
 - `docs/patterns/hybrid-proxy.md` — combining mocked and upstream routes.
+- `docs/patterns/shared-store.md` — sharing application-level state across API
+  groups and route trees.
 - `docs/patterns/simulate-failures.md` — deterministic error behavior.
 - `docs/patterns/simulate-latency.md` — deterministic latency behavior.
 - `docs/patterns/scenario-scripts.md` — pre-seeding and orchestrating state.
