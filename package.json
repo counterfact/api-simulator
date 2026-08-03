@@ -155,7 +155,7 @@
     "posthog-node": "5.47.0",
     "precinct": "13.0.1",
     "prettier": "3.8.5",
-    "recast": "0.23.16",
+    "recast": "0.23.19",
     "tsx": "4.23.1",
     "typescript": "6.0.3"
   },
