@@ -1,6 +1,6 @@
 {
   "name": "counterfact",
-  "version": "2.14.1",
+  "version": "2.16.1",
   "description": "Generate a TypeScript-based mock server from an OpenAPI spec in seconds — with stateful routes, hot reload, and REPL support.",
   "type": "module",
   "main": "./dist/app.js",
@@ -61,7 +61,16 @@
   },
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "docs/comparison.md",
+    "docs/faq.md",
+    "docs/features",
+    "docs/first-10-minutes.md",
+    "docs/getting-started.md",
+    "docs/patterns",
+    "docs/reference.md",
+    "docs/usage.md",
+    "llms.txt"
   ],
   "sideEffects": false,
   "scripts": {
@@ -85,7 +94,7 @@
     "@changesets/cli": "2.31.1",
     "@eslint/js": "10.0.1",
     "@jest/globals": "30.4.1",
-    "@swc/core": "1.15.46",
+    "@swc/core": "1.15.47",
     "@swc/jest": "0.2.39",
     "@testing-library/dom": "10.4.1",
     "@types/debug": "4.1.13",
@@ -106,7 +115,7 @@
     "eslint-plugin-file-progress": "4.0.0",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-jest": "29.16.0",
-    "eslint-plugin-jest-dom": "5.6.0",
+    "eslint-plugin-jest-dom": "5.9.0",
     "eslint-plugin-n": "18.2.2",
     "eslint-plugin-no-explicit-type-exports": "0.12.1",
     "eslint-plugin-prettier": "5.5.6",
@@ -124,7 +133,7 @@
     "using-temporary-files": "2.2.1"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "15.5.0",
+    "@apidevtools/json-schema-ref-parser": "15.5.1",
     "@hapi/accept": "6.0.3",
     "@types/json-schema": "7.0.15",
     "ajv": "8.20.0",
@@ -133,7 +142,7 @@
     "debug": "4.4.3",
     "fs-extra": "11.4.0",
     "http-terminator": "3.2.0",
-    "js-yaml": "5.2.2",
+    "js-yaml": "5.2.3",
     "json-schema-faker": "0.6.2",
     "jsonpath-plus": "10.4.0",
     "jsonwebtoken": "9.0.3",
@@ -143,10 +152,10 @@
     "koa2-swagger-ui": "5.12.0",
     "node-fetch": "3.3.2",
     "open": "11.0.0",
-    "posthog-node": "5.46.0",
+    "posthog-node": "5.47.3",
     "precinct": "13.0.1",
     "prettier": "3.9.0",
-    "recast": "0.23.12",
+    "recast": "0.23.19",
     "tsx": "4.23.1",
     "typescript": "6.0.3"
   },

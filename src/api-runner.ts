@@ -19,6 +19,7 @@ import { runtimeCanExecuteErasableTs } from "./util/runtime-can-execute-erasable
 export interface ApiRunnerGroupState {
   contextRegistry: ContextRegistry;
   scenarioRegistry: ScenarioRegistry;
+  getStore?: () => object | undefined;
 }
 
 /**
@@ -142,7 +143,10 @@ export class ApiRunner {
     this.scenarioRegistry =
       groupState?.scenarioRegistry ?? new ScenarioRegistry();
 
-    this.scenarioFileGenerator = new ScenarioFileGenerator(modulesPath);
+    this.scenarioFileGenerator = new ScenarioFileGenerator(
+      modulesPath,
+      config.basePath,
+    );
 
     this.codeGenerator = new CodeGenerator(
       this.openApiPath,
@@ -173,6 +177,7 @@ export class ApiRunner {
       this.contextRegistry,
       pathJoin(modulesPath, "scenarios"),
       this.scenarioRegistry,
+      groupState?.getStore,
     );
   }
 
@@ -257,6 +262,11 @@ export class ApiRunner {
    */
   public async load(): Promise<void> {
     await this.moduleLoader.load();
+  }
+
+  /** Reloads all context constructors for this runner's API group. */
+  public async reloadContexts(): Promise<void> {
+    await this.moduleLoader.reloadContexts();
   }
 
   /**

@@ -49,6 +49,7 @@ OpenAPI spec (YAML or JSON, local or URL)
 
 ```
 <output-directory>/
+├── _.store.ts                 # application-level state shared across API groups (optional)
 ├── routes/
 │   ├── _.context.ts           # shared in-memory state (optional)
 │   ├── _.middleware.ts        # custom Koa middleware (optional)
@@ -182,6 +183,53 @@ export class Context {
 }
 ```
 
+### Application-level shared store
+
+For a simulator with multiple API groups, place one user-authored
+`<basePath>/_.store.ts` alongside the group directories. The module must export
+a zero-argument `Store` class. Counterfact constructs one instance for the
+simulator and passes it to every route context constructor:
+
+```ts
+// <basePath>/_.store.ts
+export class Store {
+  readonly customers = new Map<string, Customer>();
+  readonly orders = new Map<string, Order>();
+}
+```
+
+```ts
+// <basePath>/orders/routes/_.context.ts
+import type { Context$ } from "../types/_.context.js";
+
+export class Context {
+  private readonly store: Context$["store"];
+
+  constructor($: Context$) {
+    this.store = $.store;
+  }
+
+  createOrder(order: Order) {
+    if (!this.store.customers.has(order.customerId)) {
+      throw new Error(`Unknown customer: ${order.customerId}`);
+    }
+    this.store.orders.set(order.id, order);
+    return order;
+  }
+}
+```
+
+Only the generated context-constructor type receives `store`; operation,
+middleware, and scenario `$` arguments do not. `counterfact<TStore>()` exposes
+the same object as optional `simulator.store`, and the REPL exposes it as
+`store`.
+
+The store is discovered only at `<basePath>/_.store.ts`. Its identity and
+existing fields survive successful hot reloads and stop/start cycles of the
+same simulator. A new simulator creates a fresh instance. See the
+[Share State Across API Groups](./patterns/shared-store.md) pattern for a full
+workflow.
+
 ### Cross-context communication with `loadContext()`
 
 Route handlers can reach into a _different_ subtree's context using the `loadContext(path)` function injected into every handler. This lets sibling or parent routes share data without merging everything into one big context.
@@ -208,6 +256,11 @@ Counterfact watches the routes directory with [chokidar](https://github.com/paul
 1. The module is re-imported.
 2. The handler is swapped in the registry.
 3. The `Context` instance **is preserved** — in-memory data survives the reload.
+
+The application-level store follows the same identity-preserving principle.
+Store reloads update prototype methods and add new enumerable fields without
+overwriting existing state. A broken or deleted store source leaves the last
+good live object in place.
 
 No restart required.
 

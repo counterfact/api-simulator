@@ -1,8 +1,25 @@
+import { jest } from "@jest/globals";
+import { remove } from "fs-extra";
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { CodeGenerator } from "../../src/typescript-generator/code-generator.js";
 import { ScenarioFileGenerator } from "../../src/typescript-generator/scenario-file-generator.js";
 import { Repository } from "../../src/typescript-generator/repository.js";
+
+async function waitForGeneratedContent(
+  read: () => Promise<string>,
+  predicate: (content: string) => boolean,
+): Promise<string> {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const content = await read();
+    if (predicate(content)) {
+      return content;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+
+  throw new Error("Generated content did not update within five seconds");
+}
 
 describe("end-to-end test", () => {
   it("generates the same code for pet store that it did on the last test run", async () => {
@@ -586,6 +603,115 @@ describe("_.context type generation", () => {
     });
   });
 
+  it("adds the root store only to the context constructor type", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("_.store.ts", "export class Store {}");
+
+      await new ScenarioFileGenerator($.path("")).generate();
+
+      const content = await $.read("types/_.context.ts");
+      expect(content).toContain('import type { Store } from "../_.store.js";');
+      expect(content).toContain("export interface Context$ {");
+      expect(content).toContain("  readonly store: Store;");
+
+      const scenarioType = content.slice(
+        content.indexOf("export interface Scenario$"),
+        content.indexOf("export type Scenario"),
+      );
+      expect(scenarioType).not.toContain("readonly store:");
+    });
+  });
+
+  it("imports the root store type from a nested API group", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("_.store.ts", "export class Store {}");
+
+      await new ScenarioFileGenerator(
+        $.path("groups/customers"),
+        $.path(""),
+      ).generate();
+
+      const content = await $.read("groups/customers/types/_.context.ts");
+      expect(content).toContain(
+        'import type { Store } from "../../../_.store.js";',
+      );
+      expect(content).toContain("  readonly store: Store;");
+    });
+  });
+
+  it("watches an initially absent root store and regenerates on add and delete", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.addDirectory("customers/routes");
+      const generator = new ScenarioFileGenerator(
+        $.path("customers"),
+        $.path(""),
+      );
+
+      await generator.generate();
+      await generator.watch();
+
+      try {
+        expect(await $.read("customers/types/_.context.ts")).not.toContain(
+          "readonly store: Store;",
+        );
+
+        await $.add("_.store.ts", "export class Store {}");
+        const contentAfterAdd = await waitForGeneratedContent(
+          () => $.read("customers/types/_.context.ts"),
+          (content) => content.includes("readonly store: Store;"),
+        );
+        expect(contentAfterAdd).toContain("readonly store: Store;");
+
+        await $.remove("_.store.ts");
+        const contentAfterDelete = await waitForGeneratedContent(
+          () => $.read("customers/types/_.context.ts"),
+          (content) => !content.includes("readonly store: Store;"),
+        );
+        expect(contentAfterDelete).not.toContain("readonly store: Store;");
+      } finally {
+        await generator.stopWatching();
+      }
+    });
+  });
+
+  it("logs regeneration failures triggered by watcher events", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.addDirectory("customers/routes");
+      const generator = new ScenarioFileGenerator(
+        $.path("customers"),
+        $.path(""),
+      );
+
+      await generator.generate();
+      await generator.watch();
+
+      const errorSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      try {
+        await $.remove("customers/types/_.context.ts");
+        await $.remove("customers/types/_.middleware.ts");
+        await remove($.path("customers/types"));
+        await $.add("customers/types", "blocker");
+        await $.add("_.store.ts", "export class Store {}");
+
+        await waitForGeneratedContent(
+          async () => String(errorSpy.mock.calls.length),
+          (callCount) => callCount !== "0",
+        );
+
+        expect(errorSpy).toHaveBeenCalledWith(
+          "Failed to regenerate scenario files:",
+          expect.anything(),
+        );
+      } finally {
+        errorSpy.mockRestore();
+        await generator.stopWatching();
+      }
+    });
+  });
+
   it("generates narrowed overloads for root + subdirectory context files", async () => {
     await usingTemporaryFiles(async ($) => {
       const basePath = $.path("");
@@ -654,6 +780,68 @@ describe("_.context type generation", () => {
       expect(content).toContain(
         "loadContext(path: `/pets/${string}`): PetsPetIdContext;",
       );
+    });
+  });
+});
+
+describe("_.middleware type generation", () => {
+  it("generates a middleware type for every route directory", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("routes/_.context.ts", "export class Context {}");
+      await $.add("routes/pets/list.ts", "export const GET = () => {};");
+      await $.add(
+        "routes/pets/admin/_.context.ts",
+        "export class Context { isAuthorized() { return true; } }",
+      );
+      await $.add("routes/pets/admin/list.ts", "export const GET = () => {};");
+
+      await new ScenarioFileGenerator($.path("")).generate();
+
+      await expect($.read("types/_.middleware.ts")).resolves.toContain(
+        'import type { Context } from "../routes/_.context.js";',
+      );
+      await expect($.read("types/pets/_.middleware.ts")).resolves.toContain(
+        'import type { Context } from "../../routes/_.context.js";',
+      );
+      await expect(
+        $.read("types/pets/admin/_.middleware.ts"),
+      ).resolves.toContain(
+        'import type { Context } from "../../../routes/pets/admin/_.context.js";',
+      );
+      await expect(
+        $.read("types/pets/admin/_.middleware.ts"),
+      ).resolves.toContain(
+        "export type Middleware = MiddlewareFunction<Context>;",
+      );
+    });
+  });
+
+  it("falls back to an unknown context when no context file exists", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("routes/pets.ts", "export const GET = () => {};");
+
+      await new ScenarioFileGenerator($.path("")).generate();
+
+      const content = await $.read("types/_.middleware.ts");
+      expect(content).toContain(
+        'import type { Middleware as MiddlewareFunction } from "../counterfact-types/index.js";',
+      );
+      expect(content).toContain("export type Middleware = MiddlewareFunction;");
+      expect(content).not.toContain("import type { Context }");
+    });
+  });
+
+  it("removes generated middleware types for deleted route directories", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("routes/pets.ts", "export const GET = () => {};");
+      await $.add(
+        "types/admin/_.middleware.ts",
+        "// This file is generated by Counterfact. Do not edit manually.\nexport type Middleware = never;\n",
+      );
+
+      await new ScenarioFileGenerator($.path("")).generate();
+
+      await expect($.read("types/admin/_.middleware.ts")).rejects.toThrow();
     });
   });
 });

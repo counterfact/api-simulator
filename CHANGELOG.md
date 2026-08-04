@@ -1,5 +1,54 @@
 # counterfact
 
+## 2.16.1
+
+### Patch Changes
+
+- 98b289e: Publish the documentation directory and add an LLM-oriented documentation index to the npm package.
+- 216c0b6: Updated dependency `linkinator` to `8.0.3`.
+- 1d467ee: Updated dependency `recast` to `0.23.16`.
+- a294dc4: Updated dependency `linkinator` to `8.0.2`.
+- 92487d6: Updated dependency `@apidevtools/json-schema-ref-parser` to `15.5.1`.
+- 0fc03bb: Updated dependency `posthog-node` to `5.47.0`.
+- ef069eb: Updated dependency `recast` to `0.23.19`.
+- 8cdc74f: Updated dependency `posthog-node` to `5.46.1`.
+- 8ad671f: Updated dependency `eslint-plugin-jest-dom` to `5.7.0`.
+
+## 2.16.0
+
+### Minor Changes
+
+- 9f5d283: Generate context-aware `Middleware` types for every directory in the routes tree.
+
+### Patch Changes
+
+- a34ad16: Fix type checking for fluent response helpers in wide route handlers.
+
+## 2.15.0
+
+### Minor Changes
+
+- 58a3ae8: Add an optional shared store at `<basePath>/_.store.ts`, with typed access from
+  route contexts, identity-preserving hot reload, and exposure through the REPL
+  and programmatic simulator API.
+
+### Patch Changes
+
+- a34ad16: Fix type checking for fluent response helpers in wide route handlers.
+- ff2127a: Updated dependency `@swc/core` to `1.15.47`.
+- 99ddf3a: Updated dependency `astro` to `7.1.6`.
+
+## 2.14.2
+
+### Patch Changes
+
+- 826314b: Fixed a TypeScript build failure caused by conflicting Koa `rawBody` declarations.
+- 857e3a7: Normalize trailing slashes in OpenAPI paths when generating route and type files, and reject paths that collide after normalization.
+- d2c50e0: Keep grouped OpenAPI specs at their declared paths when `prefix` is omitted, while preserving explicit and shared prefixes.
+- 3771a1e: Prune obsolete generated path, component, response, and version type files, including legacy hidden files and type-only generation.
+- 634de59: Route requests across multiple API specifications that share the same URL prefix, including combined `Allow` headers for method mismatches.
+- 80a3a2a: Run startup scenarios once for every API group in declaration order, with context shared across versions and isolated between groups.
+
 ## 2.14.1
 
 ### Patch Changes

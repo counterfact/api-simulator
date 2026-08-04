@@ -97,7 +97,9 @@ In theory the `types/` directory can be reproduced from the spec, so you might `
 
 ## Can it behave like a real backend?
 
-Yes — that's the point. A generated route is just a function. You can write real logic in it:
+It can reproduce the client-visible behavior your workflow needs. A generated
+route is just a function, so it can return a deterministic response or use a
+small shared context:
 
 ```ts
 export const POST: HTTP_POST = ($) => {
@@ -107,7 +109,11 @@ export const POST: HTTP_POST = ($) => {
 };
 ```
 
-POST data and GET it back. Enforce validation. Simulate business rules. The server behaves like a real API because under the hood it is one, just running locally with TypeScript files you control.
+POST data and GET it back. Select a validation outcome. Simulate the state
+transitions relevant to a client. Do not treat that flexibility as a reason to
+copy the production data model or every backend rule—the value of the simulator
+is that its API-shaped world stays predictable and easy to reset. See [Model the
+Workflow, Not the Backend](./patterns/model-the-workflow.md).
 
 ---
 
@@ -127,8 +133,12 @@ export class Context {
     return record;
   }
 
-  get(id: number) { return this.orders.get(id); }
-  list() { return [...this.orders.values()]; }
+  get(id: number) {
+    return this.orders.get(id);
+  }
+  list() {
+    return [...this.orders.values()];
+  }
 }
 ```
 
