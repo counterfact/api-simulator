@@ -256,14 +256,16 @@ export function createResponseBuilder(
       },
 
       async random(this: ResponseBuilder) {
+        const seed = Math.floor(Math.random() * 1_000_000);
         const generateOptions = config?.alwaysFakeOptionals
           ? {
               ...DEFAULT_GENERATE_OPTIONS,
               alwaysFakeOptionals: true,
               fixedProbabilities: true,
               optionalsProbability: 1.0,
+              seed,
             }
-          : DEFAULT_GENERATE_OPTIONS;
+          : { ...DEFAULT_GENERATE_OPTIONS, seed };
 
         if (operation.produces) {
           return this.randomLegacy();
@@ -289,6 +291,8 @@ export function createResponseBuilder(
             )) as string;
           }
         }
+
+        console.log(generateOptions);
 
         return {
           ...this,
@@ -327,6 +331,7 @@ export function createResponseBuilder(
       },
 
       async randomLegacy(this: ResponseBuilder) {
+        const seed = Math.random() * 1_000_000;
         const response =
           operation.responses[this.status ?? "default"] ??
           operation.responses.default;
@@ -339,7 +344,7 @@ export function createResponseBuilder(
           ? oneOf(response.examples)
           : await generate(
               (response.schema ?? { type: "object" }) as JsonSchema,
-              DEFAULT_GENERATE_OPTIONS,
+              { ...DEFAULT_GENERATE_OPTIONS, seed },
             );
 
         return {
