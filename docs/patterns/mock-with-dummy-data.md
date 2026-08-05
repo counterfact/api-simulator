@@ -104,5 +104,7 @@ export const DELETE: HTTP_DELETE = ($) => {
 ## Keep exploring
 
 - [Explore a New API](./explore-new-api.md) — start with `.random()` before adding realistic data
-- [Reference Implementation](./reference-implementation.md) — extend stateful CRUD into a full, spec-conformant implementation
+- [Model the Workflow, Not the Backend](./model-the-workflow.md) — add only the
+  stateful behavior a client workflow needs
+- [Reference Implementation](./reference-implementation.md) — turn selected behavior into an executable reference
 - [Simulate Failures and Edge Cases](./simulate-failures.md) — add error paths alongside the happy-path handlers

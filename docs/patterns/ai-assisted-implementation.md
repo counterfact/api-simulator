@@ -4,7 +4,7 @@ Turn a generated Counterfact project into useful behavior quickly, with an AI co
 
 ## Why teams use this
 
-Counterfact generates a working server immediately, but the handlers return random data. Writing realistic, stateful implementations for every route by hand is tedious, especially on large APIs.
+Counterfact generates a working server immediately, but the handlers return random data. Replacing the routes a workflow uses with deterministic or deliberately stateful behavior can be tedious, especially on large APIs.
 
 ## How it works
 
@@ -31,7 +31,10 @@ export const GET: HTTP_GET = ($) => {
 
 If the result does not match the spec's response schema, TypeScript flags it immediately in the IDE. The agent can correct its output without requiring you to understand the full type system.
 
-Repeat for each route, or ask the agent to implement all routes in a single pass. The clear file structure and isolated scopes minimize interference between routes.
+Repeat for each route the supported workflow needs. Give the agent the
+workflow and state boundary explicitly; otherwise it may invent backend
+behavior that the OpenAPI document does not specify. The clear file structure
+and isolated scopes minimize interference between routes.
 
 ## What you get
 
@@ -39,11 +42,15 @@ Repeat for each route, or ask the agent to implement all routes in a single pass
 - TypeScript provides immediate feedback when agent output does not conform to the spec; the developer does not need to run tests to catch structural errors.
 - AI-generated implementations should be reviewed: type correctness does not guarantee behavioral correctness.
 - The pattern works best when context types are already defined; ask the agent to implement the context before the route handlers.
+- Keep that context deliberately small; generated code should model observable
+  workflow states, not infer a production domain model.
 - Unit-test the context class to keep shared logic reliable; handlers are intentionally thin and meant to be edited freely, so they do not need unit tests.
 
 ## Keep exploring
 
 - [Explore a New API](./explore-new-api.md) — the starting point; AI implementation upgrades random responses to working ones
+- [Model the Workflow, Not the Backend](./model-the-workflow.md) — give the agent
+  an explicit boundary for state and behavior
 - [Test the Context, Not the Handlers](./test-context-not-handlers.md) — keep the context logic that the agent generates reliable and regression-proof
 - [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — the manual alternative when you need precise control over response content
-- [Reference Implementation](./reference-implementation.md) — use the AI-generated handlers as the basis for a spec-conformant reference
+- [Reference Implementation](./reference-implementation.md) — use reviewed AI-generated handlers as a reference for supported behavior

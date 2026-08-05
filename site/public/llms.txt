@@ -2,7 +2,7 @@
 
 > Counterfact is an API simulator that turns an OpenAPI/Swagger spec into a live, stateful, programmable mock server. It generates type-safe TypeScript route handlers, supports hot reload with state preservation, includes an interactive REPL, and starts in one command—no infrastructure required.
 
-Counterfact is designed for frontend developers waiting on a backend, test engineers who need clean reproducible state, and AI agents that need a stable API to work against during development. Unlike static mock servers, Counterfact lets you write real handler logic, share state across routes, and control behavior at runtime without restarting.
+Counterfact is designed for frontend developers waiting on a backend, test engineers who need clean reproducible state, and AI agents that need a stable API to work against during development. Unlike static mock servers, Counterfact lets you write deterministic handler logic, share deliberately simplified state across routes, and control behavior at runtime without restarting. Model the client workflow, not the real backend's internal complexity.
 
 Supports Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2. Requires Node ≥ 22.
 
@@ -20,6 +20,7 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 
 ## Patterns
 
+- [Model the Workflow, Not the Backend](https://counterfact.dev/docs/patterns/model-the-workflow): Add only the shared state and transitions a supported client workflow can observe.
 - [Explore a New API](https://counterfact.dev/docs/patterns/explore-new-api): Use Counterfact to experiment with a third-party API before integrating it.
 - [Simulate Failures](https://counterfact.dev/docs/patterns/simulate-failures): Inject errors, timeouts, and edge cases to test resilience.
 - [Simulate Latency](https://counterfact.dev/docs/patterns/simulate-latency): Add artificial delays to handlers to test loading and timeout behavior.
@@ -29,8 +30,8 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 - [AI-Assisted Implementation](https://counterfact.dev/docs/patterns/ai-assisted-implementation): How AI coding assistants can implement route handlers guided by generated types.
 - [Scenario Scripts](https://counterfact.dev/docs/patterns/scenario-scripts): Pre-seed state and orchestrate multi-step API interactions programmatically.
 - [REPL Inspection](https://counterfact.dev/docs/patterns/repl-inspection): Inspect and manipulate live server state without touching files.
-- [Reference Implementation](https://counterfact.dev/docs/patterns/reference-implementation): Use Counterfact as a living reference implementation of your OpenAPI contract.
-- [Executable Spec](https://counterfact.dev/docs/patterns/executable-spec): Treat your Counterfact handlers as an executable, always-accurate specification.
+- [Reference Implementation](https://counterfact.dev/docs/patterns/reference-implementation): Use Counterfact as a living reference for selected, client-visible behavior.
+- [Executable Spec](https://counterfact.dev/docs/patterns/executable-spec): Run your OpenAPI contract and see how spec changes affect generated types and handlers.
 
 ## Source Code
 
