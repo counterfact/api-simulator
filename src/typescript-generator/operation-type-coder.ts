@@ -88,7 +88,8 @@ export class OperationTypeCoder extends TypeCoder {
    */
   public getOperationBaseName(): string {
     const operationId = this.requirement.get("operationId")?.data as
-      string | undefined;
+      | string
+      | undefined;
 
     return operationId
       ? sanitizeIdentifier(operationId)

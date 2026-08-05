@@ -73,13 +73,12 @@ export class StoreLoader {
     // non-existent file path is unreliable on Windows with native fs.watch.
     this.watcher = watch(path.dirname(this.sourcePath), {
       ...CHOKIDAR_OPTIONS,
+      // This is a single shallow directory, so polling is inexpensive and
+      // avoids platform-specific native watcher limits and missed adds.
+      usePolling: true,
       awaitWriteFinish: { pollInterval: 10, stabilityThreshold: 50 },
       depth: 0,
     }).on("all", (eventName: string, filePath: string) => {
-      if (path.resolve(filePath) !== this.sourcePath) {
-        return;
-      }
-
       if (
         eventName !== "add" &&
         eventName !== "change" &&
@@ -89,7 +88,14 @@ export class StoreLoader {
       }
 
       this.enqueue(async () => {
-        await this.handleWatchEvent(eventName);
+        if (path.resolve(filePath) === this.sourcePath) {
+          await this.handleWatchEvent(eventName);
+        } else {
+          // A write can be reported through a temporary path before it is
+          // renamed to the conventional source. Reconcile the exact path so
+          // those platform-specific event paths cannot hide a transition.
+          await this.reconcileAfterReady();
+        }
       });
     });
 
@@ -145,6 +151,9 @@ export class StoreLoader {
     if (!present) {
       await this.updateSourcePresence(false);
       this.initialized = true;
+      if (this.store !== undefined) {
+        throw new Error("the store source was deleted");
+      }
       return;
     }
 
