@@ -1,5 +1,19 @@
 # counterfact
 
+## 2.16.2
+
+### Patch Changes
+
+- 13eaf4d: supply a random seed to JSONSchemaFaker so it returns actually random values
+- 4c35cb2: Updated dependency `eslint-plugin-jest-dom` to `5.10.1`.
+- baf899a: Updated dependency `eslint-plugin-jest-dom` to `5.9.0`.
+- 4139180: Updated dependency `posthog-node` to `5.47.3`.
+- 2702601: Updated dependency `tsx` to `4.23.4`.
+- 0911530: Updated dependency `json-schema-faker` to `0.6.3`.
+- 29e1192: Updated dependency `js-yaml` to `5.2.3`.
+- 49d6cba: Updated dependency `prettier` to `3.9.0`.
+- e15497e: Updated dependency `prettier` to `3.9.6`.
+
 ## 2.16.1
 
 ### Patch Changes
