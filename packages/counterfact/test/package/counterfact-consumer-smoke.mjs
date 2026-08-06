@@ -16,6 +16,7 @@ import { spawn } from "node:child_process";
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(testDirectory, "../..");
+const generatorPackageRoot = path.resolve(packageRoot, "../generator");
 const openApiPackageRoot = path.resolve(packageRoot, "../openapi");
 const typesPackageRoot = path.resolve(packageRoot, "../types");
 const fixturesDirectory = path.join(testDirectory, "fixtures");
@@ -162,6 +163,15 @@ try {
   await compareOrUpdate(expectedPackFilesPath, publicPackFiles);
 
   const tarballPath = path.join(tarballDirectory, pack.filename);
+  const generatorPack = await packPackage(
+    generatorPackageRoot,
+    tarballDirectory,
+    cacheDirectory,
+  );
+  const generatorTarballPath = path.join(
+    tarballDirectory,
+    generatorPack.filename,
+  );
   const openApiPack = await packPackage(
     openApiPackageRoot,
     tarballDirectory,
@@ -193,6 +203,7 @@ try {
       "--package-lock=false",
       "--cache",
       cacheDirectory,
+      generatorTarballPath,
       openApiTarballPath,
       typesTarballPath,
       tarballPath,

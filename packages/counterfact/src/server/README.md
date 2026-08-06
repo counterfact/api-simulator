@@ -35,12 +35,12 @@ Each middleware constructor takes a **path prefix as its first argument** so tha
 
 `createKoaApp` accepts an array of `ApiRunner` instances (`runners: ApiRunner[]`). For each runner it mounts the OpenAPI document endpoint, Swagger UI, Admin API (when enabled), and route-dispatching middleware — all using `runner.subdirectory` to disambiguate paths when multiple specs are in use.
 
-| File                      | Path prefix                                    | Description                                                                                  |
-| ------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `create-koa-app.ts`       | —                                              | Factory that builds and configures the Koa application with all middleware attached          |
-| `openapi-middleware.ts`   | `/counterfact/openapi${runner.subdirectory}`   | Serves the OpenAPI specification document (single path) with the current server URL injected |
-| `koa-middleware.ts`       | `runner.prefix`                                | Primary Koa middleware: delegates each request to the Dispatcher and formats the response    |
-| `admin-api-middleware.ts` | `/_counterfact/api${runner.subdirectory}`      | REST API for managing server state (proxy settings, etc.); restricted to loopback clients    |
+| File                      | Path prefix                                  | Description                                                                                  |
+| ------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `create-koa-app.ts`       | —                                            | Factory that builds and configures the Koa application with all middleware attached          |
+| `openapi-middleware.ts`   | `/counterfact/openapi${runner.subdirectory}` | Serves the OpenAPI specification document (single path) with the current server URL injected |
+| `koa-middleware.ts`       | `runner.prefix`                              | Primary Koa middleware: delegates each request to the Dispatcher and formats the response    |
+| `admin-api-middleware.ts` | `/_counterfact/api${runner.subdirectory}`    | REST API for managing server state (proxy settings, etc.); restricted to loopback clients    |
 
 ## How It Works
 

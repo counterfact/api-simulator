@@ -6,10 +6,10 @@ These scripts are invoked automatically by the CLI when an older project layout 
 
 ## Files
 
-| File | Description |
-|---|---|
-| `paths-to-routes.js` | Copies files from the old `paths/` directory to the new `routes/` directory, rewriting internal import paths as needed |
-| `update-route-types.js` | Regenerates TypeScript type definition files for route handlers to match the current type format |
+| File                    | Description                                                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `paths-to-routes.js`    | Copies files from the old `paths/` directory to the new `routes/` directory, rewriting internal import paths as needed |
+| `update-route-types.js` | Regenerates TypeScript type definition files for route handlers to match the current type format                       |
 
 ## When to Use
 

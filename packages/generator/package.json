@@ -1,0 +1,34 @@
+{
+  "name": "@counterfact/generator",
+  "version": "0.1.0",
+  "description": "Generate Counterfact route scaffolds and OpenAPI-derived TypeScript contracts.",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "License.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rimraf dist && tsc --build && copyfiles -f \"../types/src/*.ts\" dist/templates/counterfact-types && rimraf dist/templates/counterfact-types/streaming-content-types.ts",
+    "prepack": "yarn build",
+    "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/generator/test",
+    "test:packed-consumer": "node test/package/generator-consumer-smoke.mjs"
+  },
+  "dependencies": {
+    "@counterfact/openapi": "0.1.0",
+    "@counterfact/types": "0.1.0",
+    "chokidar": "5.0.0",
+    "debug": "4.4.3",
+    "prettier": "3.9.6"
+  }
+}

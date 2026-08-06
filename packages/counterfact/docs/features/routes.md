@@ -65,14 +65,14 @@ return $.response[200]
 
 Supported options:
 
-| Option | Description |
-|--------|-------------|
-| `path` | Cookie path (e.g. `"/"`) |
-| `domain` | Cookie domain |
-| `maxAge` | Max age in seconds (`Max-Age`) |
-| `expires` | Expiry `Date` object (`Expires`) |
-| `httpOnly` | Sets the `HttpOnly` flag when `true` |
-| `secure` | Sets the `Secure` flag when `true` |
+| Option     | Description                                   |
+| ---------- | --------------------------------------------- |
+| `path`     | Cookie path (e.g. `"/"`)                      |
+| `domain`   | Cookie domain                                 |
+| `maxAge`   | Max age in seconds (`Max-Age`)                |
+| `expires`  | Expiry `Date` object (`Expires`)              |
+| `httpOnly` | Sets the `HttpOnly` flag when `true`          |
+| `secure`   | Sets the `Secure` flag when `true`            |
 | `sameSite` | `"lax"`, `"strict"`, or `"none"` (`SameSite`) |
 
 ### Using named examples
@@ -181,9 +181,9 @@ export const GET: HTTP_GET = ($) => {
 
 ## Streaming responses (SSE, JSONL, JSON-seq)
 
-Counterfact supports OpenAPI 3.2 sequential media types.  When your spec uses `itemSchema` on a `text/event-stream`, `application/jsonl`, or `application/json-seq` content type, the generated handler type expresses the body as `AsyncIterable<T>`.
+Counterfact supports OpenAPI 3.2 sequential media types. When your spec uses `itemSchema` on a `text/event-stream`, `application/jsonl`, or `application/json-seq` content type, the generated handler type expresses the body as `AsyncIterable<T>`.
 
-Use `$.response[<status>].stream(iterable)` to return a stream from any route handler.  The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).
+Use `$.response[<status>].stream(iterable)` to return a stream from any route handler. The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).
 
 ```ts
 export const GET: HTTP_GET = ($) => {
@@ -199,11 +199,11 @@ async function* events() {
 
 Each item yielded by the iterable is serialised automatically:
 
-| Content type           | Wire format per item         |
-| ---------------------- | ---------------------------- |
-| `text/event-stream`    | `data: <json>\n\n`           |
-| `application/json-seq` | `\x1e<json>\n`               |
-| JSONL / ndjson         | `<json>\n`                   |
+| Content type           | Wire format per item |
+| ---------------------- | -------------------- |
+| `text/event-stream`    | `data: <json>\n\n`   |
+| `application/json-seq` | `\x1e<json>\n`       |
+| JSONL / ndjson         | `<json>\n`           |
 
 For `text/event-stream` responses, Counterfact also sets `Cache-Control: no-cache` and `X-Accel-Buffering: no` automatically.
 

@@ -3,13 +3,9 @@ import path from "node:path";
 /* eslint-disable security/detect-non-literal-fs-filename -- migration reads/writes discovered route files under the configured basePath/routes tree. */
 
 import createDebug from "debug";
+import { buildOperationTypeNameMapping } from "@counterfact/generator";
 
 import { toForwardSlashPath } from "../util/forward-slash-path.js";
-import {
-  OperationTypeCoder,
-  type SecurityScheme,
-} from "../typescript-generator/operation-type-coder.js";
-import { Specification } from "../typescript-generator/specification.js";
 
 const debug = createDebug("counterfact:migrate:update-route-types");
 
@@ -23,8 +19,6 @@ const HTTP_METHODS = [
   "OPTIONS",
   "QUERY",
 ] as const;
-
-type HttpMethod = (typeof HTTP_METHODS)[number];
 
 // Pre-compile regex patterns derived from HTTP_METHODS
 const HTTP_METHOD_ALTERNATION = HTTP_METHODS.join("|");
@@ -63,89 +57,6 @@ const EXPORT_REPLACE_PATTERNS = new Map(
     ),
   ]),
 );
-
-/**
- * Converts an OpenAPI path to a file system path
- * e.g., "/hello/{name}" -> "hello/{name}"
- */
-function openApiPathToFilePath(openApiPath: string): string {
-  if (openApiPath === "/") {
-    return "index";
-  }
-  return openApiPath.startsWith("/") ? openApiPath.slice(1) : openApiPath;
-}
-
-/**
- * Builds a mapping of route file paths to their operation type names per method
- * @param specification - The OpenAPI specification
- * @returns Map of filePath -> Map of method -> typeName
- */
-async function buildTypeNameMapping(
-  specification: Specification,
-): Promise<Map<string, Map<string, string>>> {
-  debug("building type name mapping from specification");
-
-  const mapping = new Map<string, Map<string, string>>();
-
-  try {
-    const paths = specification.getRequirement("#/paths");
-
-    if (!paths) {
-      debug("no paths found in specification");
-      return mapping;
-    }
-
-    const securityRequirement = specification.getRequirement(
-      "#/components/securitySchemes",
-    );
-    const securitySchemes = Object.values(
-      (securityRequirement?.data as Record<string, unknown>) ?? {},
-    ) as SecurityScheme[];
-
-    paths.forEach((pathDefinition, openApiPath: string) => {
-      const filePath = openApiPathToFilePath(openApiPath);
-      const methodMap = new Map<string, string>();
-
-      pathDefinition.forEach((operation, requestMethod: string) => {
-        // Skip if not a standard HTTP method
-        if (!HTTP_METHODS.includes(requestMethod.toUpperCase() as HttpMethod)) {
-          return;
-        }
-
-        // Create the type coder to get the correct type name
-        const typeCoder = new OperationTypeCoder(
-          operation,
-          "",
-          requestMethod,
-          securitySchemes,
-        );
-
-        // Get the type name (first from the names generator)
-        const typeName = typeCoder.names().next().value as string;
-
-        methodMap.set(requestMethod.toUpperCase(), typeName);
-
-        debug(
-          "mapped %s %s -> %s",
-          requestMethod.toUpperCase(),
-          openApiPath,
-          typeName,
-        );
-      });
-
-      if (methodMap.size > 0) {
-        mapping.set(filePath, methodMap);
-      }
-    });
-
-    debug("built mapping for %d routes", mapping.size);
-  } catch (error) {
-    debug("error building type name mapping: %o", error);
-    throw error;
-  }
-
-  return mapping;
-}
 
 /**
  * Checks if a route file needs migration by looking for old-style HTTP_ imports
@@ -366,12 +277,8 @@ export async function updateRouteTypes(
   }
 
   try {
-    // Load the OpenAPI specification
-    debug("loading OpenAPI specification from: %s", openApiPath);
-    const specification = await Specification.fromFile(openApiPath);
-
     // Build the mapping of paths to type names
-    const mapping = await buildTypeNameMapping(specification);
+    const mapping = await buildOperationTypeNameMapping(openApiPath);
 
     if (mapping.size === 0) {
       debug("no routes found in specification");

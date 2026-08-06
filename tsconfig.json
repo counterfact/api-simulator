@@ -3,6 +3,7 @@
   "extends": "./tsconfig.base.json",
   "files": [],
   "references": [
+    { "path": "./packages/generator" },
     { "path": "./packages/openapi" },
     { "path": "./packages/types" },
     { "path": "./packages/counterfact" }

@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import nodePath from "node:path";
 
 import { createHttpTerminator, type HttpTerminator } from "http-terminator";
+import { generateVersionsTsContent, Repository } from "@counterfact/generator";
 
 import { ApiRunner } from "./api-runner.js";
 import { startRepl as startReplServer } from "./repl/repl.js";
@@ -11,9 +12,7 @@ import { ContextRegistry } from "./server/context-registry.js";
 import { createKoaApp } from "./server/web-server/create-koa-app.js";
 import { ScenarioRegistry } from "./server/scenario-registry.js";
 import { StoreLoader } from "./server/store-loader.js";
-import { Repository } from "./typescript-generator/repository.js";
 import { ensureDirectoryExists } from "./util/ensure-directory-exists.js";
-import { generateVersionsTsContent } from "./typescript-generator/versions-ts-generator.js";
 
 export { loadOpenApiDocument } from "./server/load-openapi-document.js";
 export {

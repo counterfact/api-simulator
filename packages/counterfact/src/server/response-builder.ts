@@ -7,8 +7,8 @@ import type {
   OpenApiOperation,
   ResponseBuilder,
 } from "@counterfact/types";
+import { STREAMING_CONTENT_TYPES } from "@counterfact/types/streaming-content-types";
 import type { Config } from "./config.js";
-import { STREAMING_CONTENT_TYPES } from "../typescript-generator/streaming-content-types.js";
 
 const DEFAULT_GENERATE_OPTIONS = {
   useExamplesValue: true,

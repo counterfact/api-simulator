@@ -5,7 +5,7 @@ The `route()` function in the Counterfact REPL creates a fluent, immutable reque
 ## Creating a builder
 
 ```js
-const pet = route("/pet/{petId}")
+const pet = route("/pet/{petId}");
 ```
 
 At this point no request has been sent. `pet` is a `RouteBuilder` instance that you can inspect and configure before firing the request.
@@ -15,8 +15,8 @@ At this point no request has been sent. `pet` is a `RouteBuilder` instance that 
 ## Setting the HTTP method
 
 ```js
-route("/pet/{petId}").method("get")
-route("/pet").method("post")
+route("/pet/{petId}").method("get");
+route("/pet").method("post");
 ```
 
 Method names are case-insensitive.
@@ -28,19 +28,19 @@ Builders are **immutable** — every method returns a new `RouteBuilder` rather 
 ### Path parameters
 
 ```js
-route("/pet/{petId}").method("get").path({ petId: 42 })
+route("/pet/{petId}").method("get").path({ petId: 42 });
 ```
 
 ### Query parameters
 
 ```js
-route("/pet/findByStatus").method("get").query({ status: "available" })
+route("/pet/findByStatus").method("get").query({ status: "available" });
 ```
 
 ### Request headers
 
 ```js
-route("/pet").method("post").headers({ "x-api-key": "secret" })
+route("/pet").method("post").headers({ "x-api-key": "secret" });
 ```
 
 ### Request body
@@ -48,13 +48,13 @@ route("/pet").method("post").headers({ "x-api-key": "secret" })
 Pass a string or a plain object. Objects are serialised to JSON automatically.
 
 ```js
-route("/pet").method("post").body({ name: "Rex", photoUrls: [] })
+route("/pet").method("post").body({ name: "Rex", photoUrls: [] });
 ```
 
 ## Sending the request
 
 ```js
-await route("/pet/{petId}").method("get").path({ petId: 42 }).send()
+await route("/pet/{petId}").method("get").path({ petId: 42 }).send();
 ```
 
 Output is printed in the same format as `client.get()` — colorized request/response blocks with JSON highlighting:
@@ -93,8 +93,8 @@ Ready: false
 Returns `true` when the method is set and all required parameters have values.
 
 ```js
-route("/pet/{petId}").method("get").path({ petId: 1 }).ready() // true
-route("/pet/{petId}").method("get").ready()                    // false — petId missing
+route("/pet/{petId}").method("get").path({ petId: 1 }).ready(); // true
+route("/pet/{petId}").method("get").ready(); // false — petId missing
 ```
 
 ### `.missing()`
@@ -102,7 +102,7 @@ route("/pet/{petId}").method("get").ready()                    // false — petI
 Returns an object describing which required parameters are still unset, or `undefined` when the builder is ready to send.
 
 ```js
-route("/pet/{petId}").method("get").missing()
+route("/pet/{petId}").method("get").missing();
 // { path: [{ name: "petId", type: "integer" }] }
 ```
 
@@ -111,7 +111,7 @@ route("/pet/{petId}").method("get").missing()
 Prints the OpenAPI summary, description, parameter list, and documented responses for the selected operation.
 
 ```js
-route("/pet/{petId}").method("get").help()
+route("/pet/{petId}").method("get").help();
 ```
 
 ```
@@ -139,21 +139,21 @@ Responses:
 Because builders are immutable you can save a partially configured one and branch from it:
 
 ```js
-const base = route("/pet/{petId}").path({ petId: 5 })
+const base = route("/pet/{petId}").path({ petId: 5 });
 
-await base.method("get").send()
-await base.method("delete").send()
+await base.method("get").send();
+await base.method("delete").send();
 ```
 
 ## Comparison with `client`
 
-| Feature | `client` | `route()` |
-|---|---|---|
-| Simple one-liner | ✅ | ✅ |
-| Path tab-complete | ✅ | ✅ |
-| Reusable/composable | ❌ | ✅ |
-| Required-param validation | ❌ | ✅ |
-| Inline OpenAPI docs | ❌ | ✅ |
+| Feature                   | `client` | `route()` |
+| ------------------------- | -------- | --------- |
+| Simple one-liner          | ✅       | ✅        |
+| Path tab-complete         | ✅       | ✅        |
+| Reusable/composable       | ❌       | ✅        |
+| Required-param validation | ❌       | ✅        |
+| Inline OpenAPI docs       | ❌       | ✅        |
 
 Use `client` for quick one-off requests. Use `route()` when you want to inspect, compose, or reuse a request configuration.
 

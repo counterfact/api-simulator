@@ -17,7 +17,10 @@ When two or more versioned specs share the same operation path (e.g. `GET /pets`
 // types/paths/pets.types.ts  (generated — do not edit)
 
 import type { Versioned } from "../../counterfact-types/index.js";
-import type { MaybePromise, COUNTERFACT_RESPONSE } from "../../counterfact-types/index.js";
+import type {
+  MaybePromise,
+  COUNTERFACT_RESPONSE,
+} from "../../counterfact-types/index.js";
 import type { HTTP_GET_$_v1 } from "../v1/paths/pets.types.js";
 import type { HTTP_GET_$_v2 } from "../v2/paths/pets.types.js";
 

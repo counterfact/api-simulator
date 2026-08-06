@@ -20,6 +20,8 @@ tests, releases, examples, and the documentation website.
 
 Focused workspace packages:
 
+- [`@counterfact/generator`](./packages/generator/README.md) — route scaffolds,
+  generated TypeScript contracts, scenarios, and compatible shared templates.
 - [`@counterfact/openapi`](./packages/openapi/README.md) — standalone OpenAPI
   loading, bundling, dereferencing, and overlays.
 - [`@counterfact/types`](./packages/types/README.md) — shared TypeScript contracts used
