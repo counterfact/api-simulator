@@ -65,7 +65,7 @@ jobs:
         run: yarn eslint -f github-annotations .
       - name: TypeScript
         if: steps.docs-only.outputs.docs_only != 'true'
-        run: yarn tsc --noEmit
+        run: yarn typecheck
       - name: Packed Consumer Test
         if: steps.docs-only.outputs.docs_only != 'true'
         timeout-minutes: 5

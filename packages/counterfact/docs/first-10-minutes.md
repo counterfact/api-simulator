@@ -235,7 +235,7 @@ Use a unique Counterfact instance and port per parallel test worker. There is no
 
 For larger suites, see [Automated Integration Tests](./patterns/automated-integration-tests.md) and [Scenario Scripts](./patterns/scenario-scripts.md).
 
-For a smaller, standalone `/pets` variant with every file checked in and a path-scoped GitHub Actions check, open the [verified first-10-minutes example](../examples/first-10-minutes/). It demonstrates the same state/failure/reset concepts with a minimal contract; its paths and generated types intentionally differ from this Petstore walkthrough.
+For a smaller, standalone `/pets` variant with every file checked in and a path-scoped GitHub Actions check, open the [verified first-10-minutes example](https://github.com/counterfact/api-simulator/tree/main/examples/first-10-minutes). It demonstrates the same state/failure/reset concepts with a minimal contract; its paths and generated types intentionally differ from this Petstore walkthrough.
 
 ## Hand an agent a bounded implementation task
 

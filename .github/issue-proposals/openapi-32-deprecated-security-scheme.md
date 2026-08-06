@@ -12,7 +12,7 @@ OpenAPI 3.2 allows security schemes to be marked `deprecated: true`. When a gene
 
 ## Current state
 
-`OperationTypeCoder` in `src/typescript-generator/operation-type-coder.ts` generates handler types for operations but does not inspect the `deprecated` flag on security schemes referenced by an operation.
+`OperationTypeCoder` in `packages/counterfact/src/typescript-generator/operation-type-coder.ts` generates handler types for operations but does not inspect the `deprecated` flag on security schemes referenced by an operation.
 
 ## Proposed changes
 

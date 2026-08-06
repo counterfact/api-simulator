@@ -83,7 +83,9 @@ def test_spec_flag_generates_route_files():
     """The --spec flag allows passing the OpenAPI spec path as a named option."""
     temp_dir = tempfile.mkdtemp(prefix="counterfact-spec-test-")
     try:
-        counterfact_bin = os.path.join(REPO_ROOT, "bin", "counterfact.js")
+        counterfact_bin = os.path.join(
+            REPO_ROOT, "packages", "counterfact", "bin", "counterfact.js"
+        )
         result = subprocess.run(
             [
                 "node",
@@ -151,7 +153,9 @@ def test_multiple_api_config_serves_prefixed_routes():
     """A config with multiple specs serves each API under its configured prefix."""
     temp_dir = tempfile.mkdtemp(prefix="counterfact-multi-api-serve-")
     try:
-        counterfact_bin = os.path.join(REPO_ROOT, "bin", "counterfact.js")
+        counterfact_bin = os.path.join(
+            REPO_ROOT, "packages", "counterfact", "bin", "counterfact.js"
+        )
         second_spec = os.path.join(temp_dir, "openapi-two.yaml")
         with open(second_spec, "w") as f:
             f.write(
@@ -234,7 +238,9 @@ def test_overlay_removes_path_from_generated_routes():
     """The --overlay flag with a remove action omits the removed path from generated files."""
     temp_dir = tempfile.mkdtemp(prefix="counterfact-overlay-gen-")
     try:
-        counterfact_bin = os.path.join(REPO_ROOT, "bin", "counterfact.js")
+        counterfact_bin = os.path.join(
+            REPO_ROOT, "packages", "counterfact", "bin", "counterfact.js"
+        )
 
         spec_path = os.path.join(temp_dir, "spec.yaml")
         with open(spec_path, "w") as f:
@@ -312,7 +318,9 @@ def test_overlay_update_changes_served_response():
     temp_dir = tempfile.mkdtemp(prefix="counterfact-overlay-serve-")
     overlay_port = 3120
     try:
-        counterfact_bin = os.path.join(REPO_ROOT, "bin", "counterfact.js")
+        counterfact_bin = os.path.join(
+            REPO_ROOT, "packages", "counterfact", "bin", "counterfact.js"
+        )
 
         spec_path = os.path.join(temp_dir, "spec.yaml")
         with open(spec_path, "w") as f:
@@ -399,7 +407,9 @@ def test_multiple_api_config_generates_grouped_route_files():
     """A config with multiple specs writes each API's files under its group."""
     temp_dir = tempfile.mkdtemp(prefix="counterfact-multi-api-generate-")
     try:
-        counterfact_bin = os.path.join(REPO_ROOT, "bin", "counterfact.js")
+        counterfact_bin = os.path.join(
+            REPO_ROOT, "packages", "counterfact", "bin", "counterfact.js"
+        )
         second_spec = os.path.join(temp_dir, "openapi-two.yaml")
         with open(second_spec, "w") as f:
             f.write(

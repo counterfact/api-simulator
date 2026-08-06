@@ -2,11 +2,11 @@ export default {
   collectCoverage: true,
 
   collectCoverageFrom: [
-    "src/**/*.{js,jsx,ts,tsx}",
+    "packages/counterfact/src/**/*.{js,jsx,ts,tsx}",
     "!**/node_modules/**",
     "!**/*.d.ts",
-    "!src/counterfact-types/**",
-    "!src/server/config.ts",
+    "!packages/counterfact/src/counterfact-types/**",
+    "!packages/counterfact/src/server/config.ts",
   ],
 
   coverageProvider: "v8",
@@ -25,6 +25,8 @@ export default {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
+
+  roots: ["<rootDir>/packages/counterfact/test"],
 
   testEnvironment: "node",
 

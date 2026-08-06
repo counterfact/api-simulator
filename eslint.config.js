@@ -55,16 +55,18 @@ const typescriptRecommended = typescriptPlugin.configs["flat/recommended"].map(
 export default [
   {
     ignores: [
-      "node_modules/**",
-      "coverage/**",
-      "reports/**",
-      "out/**",
-      "dist/**",
+      "**/node_modules/**",
+      "**/coverage/**",
+      "**/reports/**",
+      "**/out/**",
+      "**/dist/**",
       "_includes",
       ".yarn/**",
       "jest.config.js",
       ".eslintrc.cjs",
     ],
+  },
+  {
     linterOptions: {
       reportUnusedDisableDirectives: true,
     },
@@ -185,7 +187,7 @@ export default [
   },
   {
     files: typescriptFiles,
-    ignores: ["dist/**", "out/**"],
+    ignores: ["**/dist/**", "**/out/**"],
     rules: {
       "@typescript-eslint/lines-around-comment": "off",
       "@typescript-eslint/naming-convention": "off",
@@ -252,7 +254,7 @@ export default [
     },
   },
   {
-    files: ["templates/**/*.ts"],
+    files: ["packages/counterfact/templates/**/*.ts"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -261,7 +263,7 @@ export default [
     rules: {},
   },
   {
-    files: ["bin/**/*.js"],
+    files: ["packages/counterfact/bin/**/*.js"],
     languageOptions: {
       ecmaVersion: 2025,
       sourceType: "module",
@@ -280,7 +282,10 @@ export default [
     },
   },
   {
-    files: ["src/**/*.{ts,tsx,js,cjs,mjs}", "test/**/*.{ts,tsx,js,cjs,mjs}"],
+    files: [
+      "packages/counterfact/src/**/*.{ts,tsx,js,cjs,mjs}",
+      "packages/counterfact/test/**/*.{ts,tsx,js,cjs,mjs}",
+    ],
     plugins: {
       "filename-rules": {
         rules: {

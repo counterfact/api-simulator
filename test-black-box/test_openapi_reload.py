@@ -98,7 +98,9 @@ def test_openapi_document_reload_updates_response_examples():
     spec_path = os.path.join(temp_work_dir, "openapi.yaml")
     out_dir = os.path.join(temp_work_dir, "out")
     log_path = os.path.join(temp_work_dir, "server.log")
-    counterfact_bin = os.path.join(REPO_ROOT, "bin", "counterfact.js")
+    counterfact_bin = os.path.join(
+        REPO_ROOT, "packages", "counterfact", "bin", "counterfact.js"
+    )
 
     # Write the initial spec.
     with open(spec_path, "w") as f:

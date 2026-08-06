@@ -12,12 +12,12 @@ OpenAPI 3.2 formally adds `QUERY` as a first-class HTTP method alongside `GET`, 
 
 ## Current state
 
-`HttpMethods` in `src/server/registry.ts` and `HTTP_METHODS` in `src/migrate/update-route-types.ts` do not include `QUERY`. The Koa layer, dispatcher, and migration helper would all need updating.
+`HttpMethods` in `packages/counterfact/src/server/registry.ts` and `HTTP_METHODS` in `packages/counterfact/src/migrate/update-route-types.ts` do not include `QUERY`. The Koa layer, dispatcher, and migration helper would all need updating.
 
 ## Proposed changes
 
-- Add `"query"` to `HttpMethods` in `src/server/registry.ts`
-- Add `"QUERY"` to `ALL_HTTP_METHODS` (or equivalent) in `src/migrate/update-route-types.ts`
+- Add `"query"` to `HttpMethods` in `packages/counterfact/src/server/registry.ts`
+- Add `"QUERY"` to `ALL_HTTP_METHODS` (or equivalent) in `packages/counterfact/src/migrate/update-route-types.ts`
 - Ensure the Koa middleware forwards `QUERY` requests to the matching handler
 - Ensure the dispatcher routes `QUERY` requests correctly
 - The code generator already iterates over all keys in a path definition, so generation should work automatically once the server recognises the method
