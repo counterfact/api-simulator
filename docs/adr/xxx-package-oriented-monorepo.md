@@ -306,6 +306,28 @@ include their own Changeset when user-visible packaging changes.
   dependency closure, generates routes and types without Counterfact, and
   confirms the package-local template resource is present. The facade pack
   test independently confirms full-product compatibility.
+- **Phase 5 completed 2026-08-06.** The private `@counterfact/runtime`
+  workspace now owns dispatch, registries, loading, transpilation, validation,
+  proxying, hot reload, Koa integration, MSW support, and the native-TypeScript
+  capability probe. It exposes composition roots at `.`, `./koa`, and `./msw`
+  and has no dependency on generator, client, REPL, or CLI code.
+- Product `Config` remains in the facade. Runtime accepts structural
+  dispatcher, proxy, runner, and Admin API adapter contracts; the facade
+  supplies the same Admin API snapshot and live proxy mutations without making
+  runtime own CLI or generation policy.
+- Runtime file-change events use an injected, guarded reporter. The facade
+  adapts it to the existing telemetry function, while direct runtime and MSW
+  consumers get a no-op default; reporter errors cannot interrupt loading or
+  reload behavior.
+- The runtime build owns and copies `uncached-require.cjs` beside its emitted
+  loaders. Its manifest also carries the declaration dependencies needed by
+  strict installed TypeScript consumers and keeps TypeScript pinned to the
+  compiler-API-compatible 6.0.3 release.
+- The facade's installed-consumer test packs the runtime dependency closure,
+  exercises runtime JavaScript and all three export roots, checks the CJS
+  asset, and compiles strict consumer declarations. The complete suite retains
+  an existing five-second store-watcher timing flake that passed on rerun; the
+  isolated runtime suite passed all 345 tests plus one todo.
 
 ### Phase 0: Freeze compatibility evidence
 
@@ -404,13 +426,16 @@ exports, and runtime has no dependency on generator, client, REPL, or CLI.
 ### Phase 6: Extract the client and REPL
 
 1. Move `RawHttpClient` and `RouteBuilder` into `@counterfact/client`.
-2. Replace the request builder's dispatcher type import with a minimal
-   OpenAPI/route-catalog contract.
+2. Give client a small route-catalog interface and an OpenAPI adapter so it does
+   not depend on runtime or leak the runtime document class.
 3. Add a direct-consumer example that builds and sends a reusable request
    without starting a REPL.
 4. Move Node REPL integration into `@counterfact/repl`.
-5. Inject telemetry/event reporting and runtime bindings into the REPL.
-6. Verify completion, grouped APIs, scenarios, startup routes, and formatted
+5. Depend on narrow context lookup, route listing, and scenario catalog
+   contracts from runtime rather than its private implementation paths.
+6. Inject command event reporting into the REPL and correct the existing
+   method-completion path that invokes its callback twice.
+7. Verify completion, grouped APIs, scenarios, startup routes, and formatted
    request output through public exports.
 
 **Exit criterion:** client and REPL can be installed and used independently,
