@@ -170,7 +170,10 @@ export class Registry {
   }
 
   /** Returns all registered routes as a flat array of `{ path, methods }` objects. */
-  public get routes() {
+  public get routes(): Array<{
+    methods: { [key: string]: string };
+    path: string;
+  }> {
     return this.moduleTree.routes;
   }
 

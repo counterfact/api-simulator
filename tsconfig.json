@@ -9,6 +9,7 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "allowJs": true,
+    "declaration": true,
     "rootDir": "src",
     "outDir": "dist",
     "skipLibCheck": true,
