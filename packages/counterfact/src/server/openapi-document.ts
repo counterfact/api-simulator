@@ -1,9 +1,7 @@
 import { type FSWatcher, watch } from "chokidar";
 import createDebug from "debug";
-import { dereference } from "@apidevtools/json-schema-ref-parser";
-
+import { loadOpenApiDocument as loadOpenApiData } from "@counterfact/openapi";
 import type { OpenApiOperation } from "@counterfact/types";
-import { applyOverlays } from "../util/apply-overlay.js";
 import { waitForEvent } from "../util/wait-for-event.js";
 import { sendTelemetry } from "../cli/telemetry.js";
 import { CHOKIDAR_OPTIONS } from "./constants.js";
@@ -62,7 +60,7 @@ export class OpenApiDocument extends EventTarget {
    */
   public async load(): Promise<void> {
     try {
-      const data = (await dereference(this.source)) as {
+      const data = (await loadOpenApiData(this.source, this.overlays)) as {
         basePath?: string;
         components?: {
           securitySchemes?: Record<
@@ -82,24 +80,13 @@ export class OpenApiDocument extends EventTarget {
         produces?: string[];
       };
 
-      if (this.overlays.length > 0) {
-        await applyOverlays(
-          data as unknown as Record<string, unknown>,
-          this.overlays,
-        );
-      }
-
       this.basePath = data.basePath;
       this.components = data.components;
       this.paths = data.paths;
       this.produces = data.produces;
     } catch (error) {
       debug("could not load OpenAPI document from %s: %o", this.source, error);
-      const details = error instanceof Error ? error.message : String(error);
-      throw new Error(
-        `Could not load the OpenAPI spec from "${this.source}".\n${details}`,
-        { cause: error },
-      );
+      throw error;
     }
   }
 

@@ -14,6 +14,7 @@
     "lib": ["es2022"],
     "types": ["node"],
     "paths": {
+      "@counterfact/openapi": ["./packages/openapi/src/index.ts"],
       "@counterfact/types": ["./packages/types/src/index.ts"]
     }
   }

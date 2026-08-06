@@ -3,6 +3,8 @@
   "include": [
     "packages/counterfact/src/**/*",
     "packages/counterfact/test/**/*",
+    "packages/openapi/src/**/*",
+    "packages/openapi/test/**/*",
     "packages/types/src/**/*",
     "packages/types/test/**/*"
   ],

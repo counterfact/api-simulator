@@ -1,8 +1,6 @@
-import { bundle } from "@apidevtools/json-schema-ref-parser";
+import { bundleOpenApiDocument } from "@counterfact/openapi";
 import { dump } from "js-yaml";
 import type Koa from "koa";
-
-import { applyOverlays } from "../../util/apply-overlay.js";
 
 export interface OpenApiDocumentConfig {
   path: string;
@@ -35,17 +33,13 @@ export function openapiMiddleware(
       return await next();
     }
 
-    const openApiDocument = (await bundle(document.path)) as {
+    const openApiDocument = (await bundleOpenApiDocument(
+      document.path,
+      document.overlays ?? [],
+    )) as {
       host?: string;
       servers?: { name?: string; description: string; url: string }[];
     };
-
-    if (document.overlays && document.overlays.length > 0) {
-      await applyOverlays(
-        openApiDocument as unknown as Record<string, unknown>,
-        document.overlays,
-      );
-    }
 
     openApiDocument.servers ??= [];
 

@@ -85,8 +85,8 @@
     "counterfact": "./bin/counterfact.js"
   },
   "dependencies": {
+    "@counterfact/openapi": "0.1.0",
     "@counterfact/types": "0.1.0",
-    "@apidevtools/json-schema-ref-parser": "15.5.1",
     "@hapi/accept": "6.0.3",
     "@types/json-schema": "7.0.15",
     "ajv": "8.20.0",
@@ -97,7 +97,6 @@
     "http-terminator": "3.2.0",
     "js-yaml": "5.2.3",
     "json-schema-faker": "0.6.3",
-    "jsonpath-plus": "10.4.0",
     "jsonwebtoken": "9.0.3",
     "koa": "3.2.1",
     "koa-bodyparser": "4.4.1",

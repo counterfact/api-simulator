@@ -3,13 +3,13 @@ import { JSONPath } from "jsonpath-plus";
 
 import { readFile } from "./read-file.js";
 
-interface OverlayAction {
+export interface OverlayAction {
   target: string;
   update?: Record<string, unknown>;
   remove?: boolean;
 }
 
-interface Overlay {
+export interface Overlay {
   overlay: string;
   info?: { title?: string; version?: string };
   actions: OverlayAction[];
