@@ -1,7 +1,4 @@
-import type {
-  CookieOptions,
-  OpenApiResponse,
-} from "../src/counterfact-types/index.ts";
+import type { CookieOptions, OpenApiResponse } from "@counterfact/types";
 
 type OmitValueWhenNever<Base> = Pick<
   Base,

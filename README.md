@@ -17,3 +17,8 @@ its complete overview, and its canonical user documentation live in
 
 The root package is private and exists only to coordinate workspace builds,
 tests, releases, examples, and the documentation website.
+
+Focused workspace packages:
+
+- [`@counterfact/types`](./packages/types/README.md) — shared TypeScript contracts used
+  by Counterfact internals and generated handlers.

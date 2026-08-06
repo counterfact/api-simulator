@@ -1,9 +1,6 @@
 import Ajv from "ajv";
 
-import type {
-  OpenApiOperation,
-  OpenApiParameters,
-} from "../counterfact-types/index.js";
+import type { OpenApiOperation, OpenApiParameters } from "@counterfact/types";
 
 const ajv = new Ajv({
   allErrors: true,

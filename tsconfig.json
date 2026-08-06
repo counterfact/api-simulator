@@ -2,5 +2,8 @@
   "$schema": "http://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.base.json",
   "files": [],
-  "references": [{ "path": "./packages/counterfact" }]
+  "references": [
+    { "path": "./packages/types" },
+    { "path": "./packages/counterfact" }
+  ]
 }

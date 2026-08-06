@@ -34,7 +34,7 @@ Without documentation, users will not know the feature exists or how to adopt it
 
 3. **`packages/counterfact/docs/reference.md`** – Document the `version` field on `SpecConfig`, the `Versioned` type, and the `types/versions.ts` output file.
 
-4. **`packages/counterfact/src/counterfact-types/` JSDoc** – Ensure `Versioned`, `Versions`, and `VersionsGTE` have accurate JSDoc comments that appear in IDE tooltips.
+4. **`packages/types/src/` JSDoc** – Ensure `Versioned`, `Versions`, and `VersionsGTE` have accurate JSDoc comments that appear in IDE tooltips.
 
 ## Acceptance criteria
 

@@ -24,19 +24,20 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 ## Repository structure
 
 ```text
-packages/counterfact/         # Published package workspace
-  src/
-    app.ts                    # Main entry point; generation + server + REPL orchestration
-    server/                   # Koa server, dispatcher, registry, hot-reload internals
-    typescript-generator/     # OpenAPI parsing and TypeScript generation
-    counterfact-types/        # Public API types exposed to route-handler authors
-    repl/                     # Interactive terminal for runtime state control
-    migrate/                  # Helpers for migrating generated route files
-    util/                     # Shared utilities
-  bin/counterfact.js          # CLI entry point
-  test/                       # Jest unit tests
-  templates/                  # Generator scaffold templates
-  docs/                       # Canonical user documentation
+packages/
+  counterfact/                # Published package workspace
+    src/
+      app.ts                  # Main entry point; generation + server + REPL orchestration
+      server/                 # Koa server, dispatcher, registry, hot-reload internals
+      typescript-generator/   # OpenAPI parsing and TypeScript generation
+      repl/                   # Interactive terminal for runtime state control
+      migrate/                # Helpers for migrating generated route files
+      util/                   # Shared utilities
+    bin/counterfact.js        # CLI entry point
+    test/                     # Jest unit tests
+    templates/                # Generator scaffold templates
+    docs/                     # Canonical user documentation
+  types/src/                  # Shared types copied into generated projects
 test-black-box/               # Python black-box integration tests
 examples/                     # Checked consumer examples
 site/                         # Documentation website

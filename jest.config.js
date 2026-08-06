@@ -5,7 +5,7 @@ export default {
     "packages/counterfact/src/**/*.{js,jsx,ts,tsx}",
     "!**/node_modules/**",
     "!**/*.d.ts",
-    "!packages/counterfact/src/counterfact-types/**",
+    "!packages/types/src/**",
     "!packages/counterfact/src/server/config.ts",
   ],
 

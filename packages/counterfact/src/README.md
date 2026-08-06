@@ -4,21 +4,25 @@ This directory contains all of the runtime source code for Counterfact. The entr
 
 ## Subdirectories
 
-| Directory | Description |
-|---|---|
-| [`server/`](./server/README.md) | Koa HTTP server, request dispatcher, module loader, transpiler, and supporting middleware |
-| [`repl/`](./repl/README.md) | Interactive REPL for inspecting and controlling a running server |
+| Directory                                                   | Description                                                                               |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [`server/`](./server/README.md)                             | Koa HTTP server, request dispatcher, module loader, transpiler, and supporting middleware |
+| [`repl/`](./repl/README.md)                                 | Interactive REPL for inspecting and controlling a running server                          |
 | [`typescript-generator/`](./typescript-generator/README.md) | Code generator that reads an OpenAPI spec and produces typed TypeScript route scaffolding |
-| [`migrate/`](./migrate/README.md) | One-time migration utilities for upgrading the generated file structure |
-| [`util/`](./util/README.md) | Small, general-purpose helper functions shared across the codebase |
-| [`client/`](./client/README.md) | Handlebars templates for the built-in dashboard and API documentation pages |
-| [`counterfact-types/`](./counterfact-types/README.md) | Shared TypeScript type definitions exported from the `counterfact` package |
+| [`migrate/`](./migrate/README.md)                           | One-time migration utilities for upgrading the generated file structure                   |
+| [`util/`](./util/README.md)                                 | Small, general-purpose helper functions shared across the codebase                        |
+| [`client/`](./client/README.md)                             | Handlebars templates for the built-in dashboard and API documentation pages               |
 
 ## Files
 
-| File | Description |
-|---|---|
+| File     | Description                                                                                                                                            |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `app.ts` | Top-level orchestrator; wires together the code generator, transpiler, module loader, Koa app, and REPL into a single `counterfact()` factory function |
+
+Shared route and middleware contracts live in the sibling
+[`@counterfact/types`](../../types/README.md) workspace. Counterfact copies
+those source contracts into generated projects to preserve their existing
+self-contained import paths.
 
 ## Architecture Overview
 

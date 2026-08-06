@@ -1,6 +1,6 @@
 import Ajv from "ajv";
 
-import type { OpenApiOperation } from "../counterfact-types/index.js";
+import type { OpenApiOperation } from "@counterfact/types";
 import type { CounterfactResponseObject } from "./registry.js";
 
 const ajv = new Ajv({

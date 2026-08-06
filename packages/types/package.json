@@ -1,0 +1,22 @@
+{
+  "name": "@counterfact/types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript contracts for Counterfact generators, runtimes, middleware, and generated handlers.",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rimraf dist && tsc --build"
+  }
+}
