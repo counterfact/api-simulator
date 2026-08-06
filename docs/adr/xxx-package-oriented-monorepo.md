@@ -284,6 +284,28 @@ include their own Changeset when user-visible packaging changes.
   the facade tarball. Each remaining phase must continue packing the complete
   local Counterfact dependency closure so workspace linking cannot hide a
   missing registry dependency.
+- **Phase 4 completed 2026-08-06.** The private `@counterfact/generator`
+  workspace now owns route/type generation, scenarios, pruning, formatting,
+  and generator-specific watching. Its source, fixtures, 267 tests, and 127
+  snapshots moved together, while the facade composes the package through its
+  declared export.
+- Generator output remains self-contained. The generator tarball carries a
+  verbatim snapshot of the source templates from `@counterfact/types`, and its
+  repository copies those templates into generated projects. The facade no
+  longer provides that implementation resource, and generated hashes and
+  imports remain unchanged.
+- A high-level operation-type mapping export serves the facade migration
+  without exposing specification and coder internals. Small path and watcher
+  helpers are package-private duplicates owned by generator and runtime rather
+  than a new generic shared package.
+- The streaming-media value needed by generator and runtime now has a declared
+  `@counterfact/types/streaming-content-types` export. It is intentionally
+  excluded from generated source templates so the established generated
+  `counterfact-types/index.ts` contract stays unchanged.
+- An installed-generator smoke test packs only generator and its scoped
+  dependency closure, generates routes and types without Counterfact, and
+  confirms the package-local template resource is present. The facade pack
+  test independently confirms full-product compatibility.
 
 ### Phase 0: Freeze compatibility evidence
 
@@ -366,11 +388,14 @@ files by installing only the generator and its declared dependencies.
 
 1. Move server, dispatcher, registry, loader, transpiler, proxy, and Koa modules
    into `@counterfact/runtime`.
-2. Move shared streaming-media knowledge out of the generator-to-runtime edge.
-3. Replace direct telemetry calls with injected event reporting owned by the
+2. Keep the mixed product `Config` contract in the facade and give runtime
+   narrow dispatcher, proxy, runner, and admin-adapter inputs.
+3. Copy the CommonJS cache-busting helper beside runtime's emitted module and
+   store loaders as part of the runtime package build.
+4. Replace direct telemetry calls with injected event reporting owned by the
    facade.
-4. Define narrow runtime interfaces needed by the facade, client, and REPL.
-5. Preserve hot reload, store identity, multiple API groups, native TypeScript
+5. Define narrow runtime interfaces needed by the facade, client, and REPL.
+6. Preserve hot reload, store identity, multiple API groups, native TypeScript
    mode, validation, and proxy behavior through integration tests.
 
 **Exit criterion:** the facade starts the same simulator through runtime package
