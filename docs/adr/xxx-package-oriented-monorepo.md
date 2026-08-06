@@ -328,6 +328,26 @@ include their own Changeset when user-visible packaging changes.
   asset, and compiles strict consumer declarations. The complete suite retains
   an existing five-second store-watcher timing flake that passed on rerun; the
   isolated runtime suite passed all 345 tests plus one todo.
+- **Phase 6 completed 2026-08-06.** The private `@counterfact/client`
+  workspace now owns the raw HTTP client, immutable request builder, and a
+  narrow live route-catalog adapter. It has no Counterfact-package dependency,
+  and its direct-consumer example and tarball test build, branch, inspect, and
+  send a request to an ephemeral HTTP server without starting the simulator or
+  REPL.
+- The private `@counterfact/repl` workspace now composes public client exports
+  with the runtime's context-lookup, route-listing, and scenario-catalog
+  contracts. It receives command events through a guarded callback, so the
+  facade retains telemetry policy and reporter failures cannot interrupt a
+  command.
+- Route and method completion now returns immediately after invoking its
+  callback. This corrects the existing method-completion path that could invoke
+  a completer callback twice; focused and installed-consumer tests assert the
+  single-callback contract.
+- The facade creates live route catalogs from each runner's OpenAPI document,
+  passes them into grouped REPL bindings, and uses the client package for
+  startup-scenario routes. The complete suite passed 911 tests plus one todo
+  and 127 snapshots; client, REPL, facade tarball, and all 13 black-box tests
+  passed independently.
 
 ### Phase 0: Freeze compatibility evidence
 
@@ -441,23 +461,33 @@ exports, and runtime has no dependency on generator, client, REPL, or CLI.
 **Exit criterion:** client and REPL can be installed and used independently,
 and `counterfact` composes them without a compatibility change.
 
-### Phase 7: Harden the facade and publish focused packages
+### Phase 7: Harden the facade and prepare focused packages for publication
 
 1. Reduce `packages/counterfact` to CLI policy, migrations, top-level
-   orchestration, compatibility exports, and packaging.
-2. Add dependency-boundary checks and reject package cycles in CI.
-3. Run `npm pack` for every publishable package and isolated install tests that
-   install each package together with the tarballs in its Counterfact-package
-   dependency closure.
-4. Verify Changesets opens and publishes a multi-package release correctly with
-   npm provenance.
-5. Publish scoped packages individually after their consumer documentation and
-   examples are reviewed.
-6. Announce focused packages as additive APIs; keep the facade the recommended
-   installation for users who want the full simulator.
+   orchestration, compatibility exports, and packaging, removing dependencies
+   and utilities that no longer serve that boundary.
+2. Add a dependency-boundary check that rejects undeclared Counterfact-package
+   imports, private/deep imports, disallowed dependency direction, mismatched
+   project references, and package cycles; run it in CI.
+3. Build once, run `npm pack` for every publishable package, and install each
+   package with only the tarballs in its recursive Counterfact dependency
+   closure. Exercise every declared export and the package's documented
+   consumer example from that isolated install.
+4. Finish public metadata, license and consumer documentation, ensure build
+   metadata is not packed, and make every focused package independently safe
+   for `prepack` and provenance-enabled publication.
+5. Harden Changesets, Renovate changeset generation, and the release workflow
+   for independent workspace releases. Preserve the facade changelog and add a
+   facade patch changeset describing the additive focused-package APIs.
+6. Rehearse versioning and the multi-package release path without writing to
+   the public registry. Initial registry authentication, trusted-publisher
+   setup, actual npm publication, and release announcements are explicit
+   release operations after review and are not performed by this migration
+   branch.
 
 **Exit criterion:** every public package has a tested, documented consumer use
-case, while existing users can continue installing only `counterfact`.
+case and the repository is ready for a reviewed multi-package release, while
+existing users can continue installing only `counterfact`.
 
 ## Acceptance Criteria
 
