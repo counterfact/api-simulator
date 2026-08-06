@@ -235,6 +235,25 @@ include their own Changeset when user-visible packaging changes.
   type-checks both supported operating systems, and runs the packed-consumer
   test on both. The build uses the cross-platform `rimraf` command so the pack
   lifecycle is portable.
+- **Phase 1 completed 2026-08-06.** The repository root is now a private Yarn
+  workspace, and the existing source, binary, tests, manifest, and npm-owned
+  documentation live together in `packages/counterfact`. No subsystem was
+  extracted, and `counterfact` remains the only public package.
+- Root commands delegate to the workspace while repository-wide Jest, TSD,
+  black-box, lint, and release orchestration remain at the root. Changesets
+  discovers the moved `counterfact` manifest and the existing patch release.
+- TSD remains a root invocation pointed at package-owned declarations and
+  tests. Invoking TSD from the composite child project conflicts with the
+  temporary program it constructs, so future package extractions should
+  colocate type tests with their owner without assuming the runner must also
+  execute from that workspace.
+- User documentation in `packages/counterfact/docs` is now canonical for both
+  the npm package and the Astro site. The root README is a repository map, and
+  the installed-tarball fixture confirms that the moved package retains its
+  documentation, binary, exports, generated output, and downstream types.
+- Moving build output below `packages/` exposed that the flat ESLint ignore was
+  not global. The ignore-only configuration now excludes nested `dist`, `out`,
+  coverage, reports, and dependency trees without relaxing source linting.
 
 ### Phase 0: Freeze compatibility evidence
 
@@ -273,8 +292,9 @@ the same when installed, but it is now one workspace in a functioning monorepo.
 1. Move `counterfact-types` into `@counterfact/types`.
 2. Replace internal relative imports with the workspace package export.
 3. Keep the generated `counterfact-types` copy and its import paths unchanged.
-4. Move TSD tests to the package and retain an integration test proving the
-   generator's copied types remain compatible.
+4. Colocate TSD tests with the package, invoke them through the root runner
+   while composite-project constraints require it, and retain an integration
+   test proving the generator's copied types remain compatible.
 5. Remove any runtime dependency from the types package.
 
 **Exit criterion:** generator and runtime consume one leaf types package while
