@@ -16,6 +16,7 @@ import { spawn } from "node:child_process";
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(testDirectory, "../..");
+const typesPackageRoot = path.resolve(packageRoot, "../types");
 const fixturesDirectory = path.join(testDirectory, "fixtures");
 const updateFixtures = process.argv.includes("--update-fixtures");
 const expectedPackFilesPath = path.join(fixturesDirectory, "pack-files.json");
@@ -65,6 +66,32 @@ async function run(command, args, options = {}) {
 
 async function json(pathname) {
   return JSON.parse(await readFile(pathname, "utf8"));
+}
+
+async function packPackage(packageDirectory, tarballDirectory, cacheDirectory) {
+  const packResult = await run(
+    executable("npm"),
+    [
+      "pack",
+      "--json",
+      "--pack-destination",
+      tarballDirectory,
+      "--cache",
+      cacheDirectory,
+    ],
+    { cwd: packageDirectory },
+  );
+  const packJsonStart = Math.max(
+    packResult.stdout.lastIndexOf("\n["),
+    packResult.stdout.startsWith("[") ? 0 : -1,
+  );
+  assert(packJsonStart >= 0, "npm pack did not return JSON metadata");
+  const [pack] = JSON.parse(
+    packResult.stdout.slice(packJsonStart === 0 ? 0 : packJsonStart + 1),
+  );
+  assert(pack, "npm pack did not describe a tarball");
+
+  return pack;
 }
 
 function normalizeText(content) {
@@ -123,23 +150,7 @@ try {
     mkdir(tarballDirectory),
   ]);
 
-  const packResult = await run(executable("npm"), [
-    "pack",
-    "--json",
-    "--pack-destination",
-    tarballDirectory,
-    "--cache",
-    cacheDirectory,
-  ]);
-  const packJsonStart = Math.max(
-    packResult.stdout.lastIndexOf("\n["),
-    packResult.stdout.startsWith("[") ? 0 : -1,
-  );
-  assert(packJsonStart >= 0, "npm pack did not return JSON metadata");
-  const [pack] = JSON.parse(
-    packResult.stdout.slice(packJsonStart === 0 ? 0 : packJsonStart + 1),
-  );
-  assert(pack, "npm pack did not describe a tarball");
+  const pack = await packPackage(packageRoot, tarballDirectory, cacheDirectory);
   const packFiles = pack.files
     .map(({ path: packedPath }) => packedPath.split(path.sep).join("/"))
     .sort();
@@ -150,6 +161,12 @@ try {
   await compareOrUpdate(expectedPackFilesPath, publicPackFiles);
 
   const tarballPath = path.join(tarballDirectory, pack.filename);
+  const typesPack = await packPackage(
+    typesPackageRoot,
+    tarballDirectory,
+    cacheDirectory,
+  );
+  const typesTarballPath = path.join(tarballDirectory, typesPack.filename);
   await copyFile(
     path.join(fixturesDirectory, "openapi.yaml"),
     path.join(consumerDirectory, "openapi.yaml"),
@@ -169,6 +186,7 @@ try {
       "--package-lock=false",
       "--cache",
       cacheDirectory,
+      typesTarballPath,
       tarballPath,
     ],
     { cwd: consumerDirectory },
@@ -320,11 +338,14 @@ await running.stop();
 
   await writeFile(
     path.join(consumerDirectory, "consumer.ts"),
-    `import { counterfact, type MockRequest, type SpecConfig } from "counterfact";
+    `import type { Middleware } from "@counterfact/types";
+import { counterfact, type MockRequest, type SpecConfig } from "counterfact";
 
 const spec: SpecConfig = { group: "smoke", source: "./openapi.yaml" };
+declare const middleware: Middleware;
 declare const request: MockRequest;
 void counterfact;
+void middleware;
 void request;
 void spec;
 `,

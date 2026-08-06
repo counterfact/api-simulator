@@ -6,7 +6,7 @@ import type {
   CookieOptions,
   OpenApiOperation,
   ResponseBuilder,
-} from "../counterfact-types/index.js";
+} from "@counterfact/types";
 import type { Config } from "./config.js";
 import { STREAMING_CONTENT_TYPES } from "../typescript-generator/streaming-content-types.js";
 

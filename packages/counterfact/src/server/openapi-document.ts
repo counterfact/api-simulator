@@ -2,7 +2,7 @@ import { type FSWatcher, watch } from "chokidar";
 import createDebug from "debug";
 import { dereference } from "@apidevtools/json-schema-ref-parser";
 
-import type { OpenApiOperation } from "../counterfact-types/index.js";
+import type { OpenApiOperation } from "@counterfact/types";
 import { applyOverlays } from "../util/apply-overlay.js";
 import { waitForEvent } from "../util/wait-for-event.js";
 import { sendTelemetry } from "../cli/telemetry.js";

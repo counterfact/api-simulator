@@ -22,7 +22,7 @@ import type {
   ResponseBuilder,
   ResponseBuilderFactory,
   WideOperationArgument,
-} from "../../src/counterfact-types/index.ts";
+} from "@counterfact/types";
 
 class AuthenticationContext {
   public isAuthorized(apiKey: string | undefined): boolean {

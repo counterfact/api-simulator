@@ -52,7 +52,7 @@ The version ordering used to build `VersionsGTE` should follow the order in whic
 1. Add a new code-generation step (or extend the repository's post-processing phase) that reads all unique non-empty `version` strings from the spec configs in declaration order.
 2. Emit `types/versions.ts` with the `Versions` union, the `VersionsGTE` map, and the fixed `Versioned` utility type.
 3. When no spec carries a `version` field, skip emitting `types/versions.ts` entirely to avoid changing single-spec output.
-4. Export `Versioned` from `packages/counterfact/src/counterfact-types/index.ts` so route-handler authors can import it directly alongside other shared types.
+4. Export `Versioned` from `packages/types/src/index.ts` so route-handler authors can import it directly alongside other shared types.
 
 ## Acceptance criteria
 
@@ -60,6 +60,6 @@ The version ordering used to build `VersionsGTE` should follow the order in whic
 - [ ] `Versions` is a union of all distinct version strings in config-declaration order
 - [ ] `VersionsGTE[V]` includes `V` and all later-declared versions (i.e. versions >= V)
 - [ ] The `Versioned` utility type compiles without errors and correctly narrows `$` in a test route handler
-- [ ] `Versioned` is exported from `packages/counterfact/src/counterfact-types/index.ts`
+- [ ] `Versioned` is exported from `packages/types/src/index.ts`
 - [ ] No `types/versions.ts` is emitted for single-spec (no version) configurations
 - [ ] Unit tests cover `Versions` and `VersionsGTE` generation for 1-, 2-, and 3-version configs

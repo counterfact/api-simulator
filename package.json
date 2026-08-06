@@ -9,7 +9,7 @@
     "test": "yarn workspace counterfact test",
     "test:black-box": "yarn workspace counterfact build && python3 -m pytest test-black-box/ -v",
     "test:packed-consumer": "yarn workspace counterfact test:packed-consumer",
-    "test:tsd": "tsd --typings ./packages/counterfact/dist/server/counterfact-types/index.ts --files ./packages/counterfact/test/**/*.test-d.ts",
+    "test:tsd": "tsd --typings ./packages/types/dist/index.d.ts --files ./packages/types/test/**/*.test-d.ts",
     "build": "yarn workspace counterfact build",
     "typecheck": "tsc --build --noEmit --pretty false",
     "release": "changeset publish",

@@ -2,7 +2,9 @@
   "extends": "./tsconfig.base.json",
   "include": [
     "packages/counterfact/src/**/*",
-    "packages/counterfact/test/**/*"
+    "packages/counterfact/test/**/*",
+    "packages/types/src/**/*",
+    "packages/types/test/**/*"
   ],
   "compilerOptions": {
     "outDir": "./dist-tsd",

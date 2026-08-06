@@ -17,10 +17,7 @@ import {
 } from "./request-validator.js";
 import { validateResponse } from "./response-validator.js";
 import { Tools } from "./tools.js";
-import type {
-  OpenApiOperation,
-  OpenApiParameters,
-} from "../counterfact-types/index.js";
+import type { OpenApiOperation, OpenApiParameters } from "@counterfact/types";
 import type { Config } from "./config.js";
 
 const debug = createDebugger("counterfact:server:dispatcher");
