@@ -3,9 +3,11 @@
   "extends": "./tsconfig.base.json",
   "files": [],
   "references": [
+    { "path": "./packages/client" },
     { "path": "./packages/generator" },
     { "path": "./packages/openapi" },
     { "path": "./packages/runtime" },
+    { "path": "./packages/repl" },
     { "path": "./packages/types" },
     { "path": "./packages/counterfact" }
   ]

@@ -16,8 +16,10 @@ import { spawn } from "node:child_process";
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(testDirectory, "../..");
+const clientPackageRoot = path.resolve(packageRoot, "../client");
 const generatorPackageRoot = path.resolve(packageRoot, "../generator");
 const openApiPackageRoot = path.resolve(packageRoot, "../openapi");
+const replPackageRoot = path.resolve(packageRoot, "../repl");
 const runtimePackageRoot = path.resolve(packageRoot, "../runtime");
 const typesPackageRoot = path.resolve(packageRoot, "../types");
 const fixturesDirectory = path.join(testDirectory, "fixtures");
@@ -164,6 +166,12 @@ try {
   await compareOrUpdate(expectedPackFilesPath, publicPackFiles);
 
   const tarballPath = path.join(tarballDirectory, pack.filename);
+  const clientPack = await packPackage(
+    clientPackageRoot,
+    tarballDirectory,
+    cacheDirectory,
+  );
+  const clientTarballPath = path.join(tarballDirectory, clientPack.filename);
   const generatorPack = await packPackage(
     generatorPackageRoot,
     tarballDirectory,
@@ -179,6 +187,12 @@ try {
     cacheDirectory,
   );
   const openApiTarballPath = path.join(tarballDirectory, openApiPack.filename);
+  const replPack = await packPackage(
+    replPackageRoot,
+    tarballDirectory,
+    cacheDirectory,
+  );
+  const replTarballPath = path.join(tarballDirectory, replPack.filename);
   const runtimePack = await packPackage(
     runtimePackageRoot,
     tarballDirectory,
@@ -210,8 +224,10 @@ try {
       "--package-lock=false",
       "--cache",
       cacheDirectory,
+      clientTarballPath,
       generatorTarballPath,
       openApiTarballPath,
+      replTarballPath,
       runtimeTarballPath,
       typesTarballPath,
       tarballPath,

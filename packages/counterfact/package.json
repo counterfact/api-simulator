@@ -76,7 +76,7 @@
   "scripts": {
     "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js --testPathIgnorePatterns=black-box --testPathIgnorePatterns=examples",
     "test:packed-consumer": "node test/package/counterfact-consumer-smoke.mjs",
-    "build": "yarn workspace @counterfact/generator build && yarn workspace @counterfact/runtime build && rimraf dist && tsc --build",
+    "build": "yarn workspace @counterfact/generator build && yarn workspace @counterfact/runtime build && yarn workspace @counterfact/client build && yarn workspace @counterfact/repl build && rimraf dist && tsc --build",
     "prepack": "yarn build",
     "go:petstore": "yarn build && yarn counterfact https://petstore3.swagger.io/api/v3/openapi.json out",
     "go:petstore2": "yarn build && yarn counterfact https://petstore.swagger.io/v2/swagger.json out",
@@ -85,9 +85,11 @@
     "counterfact": "./bin/counterfact.js"
   },
   "dependencies": {
+    "@counterfact/client": "0.1.0",
     "@counterfact/generator": "0.1.0",
     "@counterfact/openapi": "0.1.0",
     "@counterfact/runtime": "0.1.0",
+    "@counterfact/repl": "0.1.0",
     "@counterfact/types": "0.1.0",
     "@types/json-schema": "7.0.15",
     "commander": "15.0.0",

@@ -1,6 +1,6 @@
 import net from "node:net";
 
-import { RawHttpClient } from "../../src/repl/raw-http-client.js";
+import { RawHttpClient } from "../src/index.js";
 
 /**
  * Starts a minimal TCP server that accepts one connection,

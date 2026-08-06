@@ -7,9 +7,13 @@
   ],
   "scripts": {
     "test": "yarn workspace counterfact test",
+    "test:client": "yarn workspace @counterfact/client test",
+    "test:client-packed": "yarn workspace @counterfact/client test:packed-consumer",
     "test:generator": "yarn workspace @counterfact/generator test",
     "test:generator-packed": "yarn workspace @counterfact/generator test:packed-consumer",
     "test:runtime": "yarn workspace @counterfact/runtime test",
+    "test:repl": "yarn workspace @counterfact/repl test",
+    "test:repl-packed": "yarn workspace @counterfact/repl test:packed-consumer",
     "test:black-box": "yarn workspace counterfact build && python3 -m pytest test-black-box/ -v",
     "test:packed-consumer": "yarn workspace counterfact test:packed-consumer",
     "test:tsd": "tsd --typings ./packages/types/dist/index.d.ts --files ./packages/types/test/**/*.test-d.ts",

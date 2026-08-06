@@ -1,0 +1,31 @@
+{
+  "name": "@counterfact/client",
+  "version": "0.1.0",
+  "description": "Build and send reusable OpenAPI-aware HTTP requests without starting Counterfact.",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "examples",
+    "README.md",
+    "License.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc --build",
+    "prepack": "yarn build",
+    "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/client/test",
+    "test:packed-consumer": "node test/package/client-consumer-smoke.mjs"
+  }
+}

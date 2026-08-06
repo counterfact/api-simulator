@@ -1,27 +1,9 @@
-import type { OpenApiDocument } from "@counterfact/runtime";
-
 import { RawHttpClient } from "./raw-http-client.js";
+import type { RouteCatalog, RouteOperation } from "./route-catalog.js";
 
-type Params = Record<string, boolean | number | string>;
+export type RouteParams = Record<string, boolean | number | string>;
 
-interface OpenApiParameterExtended {
-  description?: string;
-  enum?: string[];
-  in: "body" | "cookie" | "formData" | "header" | "path" | "query";
-  name: string;
-  required?: boolean;
-  schema?: { enum?: string[]; type?: string };
-  type?: string;
-}
-
-interface OpenApiOperationExtended {
-  description?: string;
-  parameters?: OpenApiParameterExtended[];
-  responses?: Record<string, { description?: string }>;
-  summary?: string;
-}
-
-interface MissingParam {
+export interface MissingParam {
   description?: string;
   name: string;
   type?: string;
@@ -31,6 +13,17 @@ export interface MissingParams {
   header?: MissingParam[];
   path?: MissingParam[];
   query?: MissingParam[];
+}
+
+export interface RouteBuilderOptions {
+  body?: unknown;
+  headerParams?: RouteParams;
+  host?: string;
+  method?: string;
+  pathParams?: RouteParams;
+  port: number;
+  queryParams?: RouteParams;
+  routeCatalog?: RouteCatalog;
 }
 
 /**
@@ -51,35 +44,23 @@ export class RouteBuilder {
 
   private readonly _body: unknown;
 
-  private readonly _headerParams: Params;
+  private readonly _headerParams: RouteParams;
 
   private readonly _host: string;
 
   private readonly _method: string | undefined;
 
-  private readonly _openApiDocument: OpenApiDocument | undefined;
+  private readonly _routeCatalog: RouteCatalog | undefined;
 
-  private readonly _pathParams: Params;
+  private readonly _pathParams: RouteParams;
 
   private readonly _port: number;
 
-  private readonly _queryParams: Params;
+  private readonly _queryParams: RouteParams;
 
-  private readonly _operation: OpenApiOperationExtended | undefined;
+  private readonly _operation: RouteOperation | undefined;
 
-  public constructor(
-    routePath: string,
-    options: {
-      body?: unknown;
-      headerParams?: Params;
-      host?: string;
-      method?: string;
-      openApiDocument?: OpenApiDocument;
-      pathParams?: Params;
-      port: number;
-      queryParams?: Params;
-    },
-  ) {
+  public constructor(routePath: string, options: RouteBuilderOptions) {
     this.routePath = routePath;
     this._method = options.method;
     this._pathParams = options.pathParams ?? {};
@@ -88,44 +69,32 @@ export class RouteBuilder {
     this._body = options.body;
     this._port = options.port;
     this._host = options.host ?? "localhost";
-    this._openApiDocument = options.openApiDocument;
+    this._routeCatalog = options.routeCatalog;
     this._operation = this._resolveOperation();
   }
 
-  private _resolveOperation(): OpenApiOperationExtended | undefined {
-    if (!this._openApiDocument || !this._method) return undefined;
+  private _resolveOperation(): RouteOperation | undefined {
+    if (!this._routeCatalog || !this._method) return undefined;
 
-    const method = this._method.toLowerCase();
-    const normalizedPath = this.routePath.toLowerCase();
-
-    for (const key of Object.keys(this._openApiDocument.paths)) {
-      if (key.toLowerCase() === normalizedPath) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (this._openApiDocument.paths[key] as any)[
-          method
-        ] as OpenApiOperationExtended;
-      }
-    }
-
-    return undefined;
+    return this._routeCatalog.getOperation(this.routePath, this._method);
   }
 
   private clone(overrides: {
     body?: unknown;
-    headerParams?: Params;
+    headerParams?: RouteParams;
     method?: string;
-    pathParams?: Params;
-    queryParams?: Params;
+    pathParams?: RouteParams;
+    queryParams?: RouteParams;
   }): RouteBuilder {
     return new RouteBuilder(this.routePath, {
       body: "body" in overrides ? overrides.body : this._body,
       headerParams: overrides.headerParams ?? this._headerParams,
       host: this._host,
       method: overrides.method ?? this._method,
-      openApiDocument: this._openApiDocument,
       pathParams: overrides.pathParams ?? this._pathParams,
       port: this._port,
       queryParams: overrides.queryParams ?? this._queryParams,
+      routeCatalog: this._routeCatalog,
     });
   }
 
@@ -143,7 +112,7 @@ export class RouteBuilder {
    *
    * @param params - Key/value map of path variable names to values.
    */
-  public path(params: Params): RouteBuilder {
+  public path(params: RouteParams): RouteBuilder {
     return this.clone({ pathParams: { ...this._pathParams, ...params } });
   }
 
@@ -152,7 +121,7 @@ export class RouteBuilder {
    *
    * @param params - Key/value map of query parameter names to values.
    */
-  public query(params: Params): RouteBuilder {
+  public query(params: RouteParams): RouteBuilder {
     return this.clone({ queryParams: { ...this._queryParams, ...params } });
   }
 
@@ -161,7 +130,7 @@ export class RouteBuilder {
    *
    * @param params - Key/value map of header names to values.
    */
-  public headers(params: Params): RouteBuilder {
+  public headers(params: RouteParams): RouteBuilder {
     return this.clone({ headerParams: { ...this._headerParams, ...params } });
   }
 
@@ -174,7 +143,7 @@ export class RouteBuilder {
     return this.clone({ body });
   }
 
-  private getOperation(): OpenApiOperationExtended | undefined {
+  private getOperation(): RouteOperation | undefined {
     return this._operation;
   }
 
@@ -450,18 +419,18 @@ export class RouteBuilder {
 /**
  * Creates a factory function that constructs a {@link RouteBuilder} for a
  * given route path, pre-configured with the server's host, port, and OpenAPI
- * document.
+ * route catalog.
  *
  * @param port - The port the Counterfact server is listening on.
  * @param host - The server hostname (default `"localhost"`).
- * @param openApiDocument - Optional OpenAPI document for parameter introspection.
+ * @param routeCatalog - Optional route catalog for parameter introspection.
  * @returns A function `(routePath: string) => RouteBuilder`.
  */
 export function createRouteFunction(
   port: number,
   host?: string,
-  openApiDocument?: OpenApiDocument,
+  routeCatalog?: RouteCatalog,
 ) {
   return (routePath: string) =>
-    new RouteBuilder(routePath, { host, openApiDocument, port });
+    new RouteBuilder(routePath, { host, port, routeCatalog });
 }
