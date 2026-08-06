@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -213,6 +213,28 @@ direction with lint restrictions or an equivalent dependency-boundary check.
 Each phase is a separate pull request unless a phase proves too small to review
 independently. Extraction pull requests move one responsibility at a time and
 include their own Changeset when user-visible packaging changes.
+
+### Progress and findings
+
+- **Phase 0 completed 2026-08-06.** The compatibility baseline now exercises a
+  real pack lifecycle and installs the resulting tarball in a temporary
+  consumer. It verifies the root-only export, installed command shim, CLI help,
+  programmatic startup, generated output, Windows-safe paths, and downstream
+  TypeScript compilation on Linux and Windows CI.
+- The baseline audit found that the published manifest referenced
+  `dist/server/types.d.ts`, but the build emitted no package-root declarations.
+  Declaration emission is now enabled and the public type entry points resolve
+  to `dist/app.d.ts`. This repair is part of the baseline rather than a behavior
+  change introduced by the monorepo move.
+- Compatibility fixtures record the stable manifest fields and package-owned
+  documentation exactly. Compiled and binary implementation paths are excluded
+  from the exact file-list fixture; working root imports, types, and the
+  installed command prove those contracts without preventing later internal
+  moves.
+- CI now relies on a frozen clean install instead of restoring `node_modules`,
+  type-checks both supported operating systems, and runs the packed-consumer
+  test on both. The build uses the cross-platform `rimraf` command so the pack
+  lifecycle is portable.
 
 ### Phase 0: Freeze compatibility evidence
 
