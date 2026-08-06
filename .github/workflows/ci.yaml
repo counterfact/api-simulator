@@ -57,17 +57,6 @@ jobs:
         with:
           node-version: lts/*
           cache: yarn
-        id: setup-node
-      - name: Get Node Version
-        if: steps.docs-only.outputs.docs_only != 'true'
-        run: echo "version=$(node -v)" >> $GITHUB_OUTPUT
-        id: node-version
-      - name: Cache node_modules
-        if: steps.docs-only.outputs.docs_only != 'true'
-        uses: actions/cache@v6
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ steps.node-version.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
       - name: Install Packages
         if: steps.docs-only.outputs.docs_only != 'true'
         run: yarn install --frozen-lockfile --network-timeout 100000
@@ -75,8 +64,12 @@ jobs:
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         run: yarn eslint -f github-annotations .
       - name: TypeScript
-        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        if: steps.docs-only.outputs.docs_only != 'true'
         run: yarn tsc --noEmit
+      - name: Packed Consumer Test
+        if: steps.docs-only.outputs.docs_only != 'true'
+        timeout-minutes: 5
+        run: yarn test:packed-consumer
       - name: Unit Tests
         if: steps.docs-only.outputs.docs_only != 'true'
         timeout-minutes: 2

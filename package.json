@@ -7,14 +7,14 @@
   "exports": {
     ".": {
       "import": "./dist/app.js",
-      "types": "./dist/server/types.d.ts"
+      "types": "./dist/app.d.ts"
     }
   },
-  "types": "./dist/server/types.d.ts",
+  "types": "./dist/app.d.ts",
   "typesVersions": {
     "*": {
       "*": [
-        "dist/server/types.d.ts"
+        "dist/app.d.ts"
       ]
     }
   },
@@ -76,8 +76,9 @@
   "scripts": {
     "test": "yarn node --experimental-vm-modules ./node_modules/jest-cli/bin/jest --testPathIgnorePatterns=black-box --testPathIgnorePatterns=examples",
     "test:black-box": "rimraf dist && yarn build && python3 -m pytest test-black-box/ -v",
+    "test:packed-consumer": "node test/package/counterfact-consumer-smoke.mjs",
     "test:tsd": "tsd --typings ./dist/server/counterfact-types/index.ts --files ./test/**/*.test-d.ts",
-    "build": "rm -rf dist && tsc && copyfiles -f \"src/counterfact-types/*.ts\" dist/server/counterfact-types && copyfiles -f \"src/server/*.cjs\" dist/server",
+    "build": "rimraf dist && tsc && copyfiles -f \"src/counterfact-types/*.ts\" dist/server/counterfact-types && copyfiles -f \"src/server/*.cjs\" dist/server",
     "prepack": "yarn build",
     "release": "npx changeset publish",
     "prepare": "husky install",
