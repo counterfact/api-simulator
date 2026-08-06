@@ -57,7 +57,9 @@ export interface MiddlewareRequest<Context = unknown> {
 
 /** A response value that middleware may return or receive from `respondTo`. */
 export type MiddlewareResponse =
-  COUNTERFACT_RESPONSE | MiddlewareResponseObject | ResponseBuilder;
+  | COUNTERFACT_RESPONSE
+  | MiddlewareResponseObject
+  | ResponseBuilder;
 
 /** Passes a request to the next matching middleware or route handler. */
 export type RespondTo<Context = unknown> = (
