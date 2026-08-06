@@ -1,0 +1,29 @@
+{
+  "name": "@counterfact/openapi",
+  "version": "0.1.0",
+  "description": "Load, bundle, dereference, and overlay OpenAPI documents without starting Counterfact.",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rimraf dist && tsc --build"
+  },
+  "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "15.5.1",
+    "@types/json-schema": "7.0.15",
+    "js-yaml": "5.2.3",
+    "jsonpath-plus": "10.4.0",
+    "node-fetch": "3.3.2"
+  }
+}

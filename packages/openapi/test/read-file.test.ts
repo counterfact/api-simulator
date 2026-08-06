@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 
 import { usingTemporaryFiles } from "using-temporary-files";
 
-import { readFile } from "../../src/util/read-file.js";
+import { readFile } from "@counterfact/openapi";
 
 describe("readFile", () => {
   it("reads a local file by path", async () => {

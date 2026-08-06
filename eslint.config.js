@@ -285,6 +285,8 @@ export default [
     files: [
       "packages/counterfact/src/**/*.{ts,tsx,js,cjs,mjs}",
       "packages/counterfact/test/**/*.{ts,tsx,js,cjs,mjs}",
+      "packages/openapi/src/**/*.{ts,tsx,js,cjs,mjs}",
+      "packages/openapi/test/**/*.{ts,tsx,js,cjs,mjs}",
       "packages/types/src/**/*.{ts,tsx,js,cjs,mjs}",
       "packages/types/test/**/*.{ts,tsx,js,cjs,mjs}",
     ],

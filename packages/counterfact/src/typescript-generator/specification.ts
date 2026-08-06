@@ -1,7 +1,6 @@
-import { bundle } from "@apidevtools/json-schema-ref-parser";
+import { bundleOpenApiDocument } from "@counterfact/openapi";
 import createDebug from "debug";
 
-import { applyOverlays } from "../util/apply-overlay.js";
 import { Requirement, type RequirementData } from "./requirement.js";
 
 const debug = createDebug("counterfact:typescript-generator:specification");
@@ -67,25 +66,11 @@ export class Specification {
     urlOrPath: string,
     overlays: readonly string[] = [],
   ): Promise<void> {
-    try {
-      const document = (await bundle(urlOrPath, {
-        resolve: { http: { safeUrlResolver: false } },
-      })) as RequirementData;
+    const document = (await bundleOpenApiDocument(
+      urlOrPath,
+      overlays,
+    )) as RequirementData;
 
-      if (overlays.length > 0) {
-        await applyOverlays(
-          document as unknown as Record<string, unknown>,
-          overlays,
-        );
-      }
-
-      this.rootRequirement = new Requirement(document, urlOrPath, this);
-    } catch (error) {
-      const details = error instanceof Error ? error.message : String(error);
-      throw new Error(
-        `Could not load the OpenAPI spec from "${urlOrPath}".\n${details}`,
-        { cause: error },
-      );
-    }
+    this.rootRequirement = new Requirement(document, urlOrPath, this);
   }
 }

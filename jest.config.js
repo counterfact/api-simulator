@@ -26,7 +26,10 @@ export default {
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
 
-  roots: ["<rootDir>/packages/counterfact/test"],
+  roots: [
+    "<rootDir>/packages/counterfact/test",
+    "<rootDir>/packages/openapi/test",
+  ],
 
   testEnvironment: "node",
 

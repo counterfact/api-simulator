@@ -16,6 +16,7 @@ import { spawn } from "node:child_process";
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(testDirectory, "../..");
+const openApiPackageRoot = path.resolve(packageRoot, "../openapi");
 const typesPackageRoot = path.resolve(packageRoot, "../types");
 const fixturesDirectory = path.join(testDirectory, "fixtures");
 const updateFixtures = process.argv.includes("--update-fixtures");
@@ -161,6 +162,12 @@ try {
   await compareOrUpdate(expectedPackFilesPath, publicPackFiles);
 
   const tarballPath = path.join(tarballDirectory, pack.filename);
+  const openApiPack = await packPackage(
+    openApiPackageRoot,
+    tarballDirectory,
+    cacheDirectory,
+  );
+  const openApiTarballPath = path.join(tarballDirectory, openApiPack.filename);
   const typesPack = await packPackage(
     typesPackageRoot,
     tarballDirectory,
@@ -186,6 +193,7 @@ try {
       "--package-lock=false",
       "--cache",
       cacheDirectory,
+      openApiTarballPath,
       typesTarballPath,
       tarballPath,
     ],
@@ -338,13 +346,15 @@ await running.stop();
 
   await writeFile(
     path.join(consumerDirectory, "consumer.ts"),
-    `import type { Middleware } from "@counterfact/types";
+    `import { loadOpenApiDocument } from "@counterfact/openapi";
+import type { Middleware } from "@counterfact/types";
 import { counterfact, type MockRequest, type SpecConfig } from "counterfact";
 
 const spec: SpecConfig = { group: "smoke", source: "./openapi.yaml" };
 declare const middleware: Middleware;
 declare const request: MockRequest;
 void counterfact;
+void loadOpenApiDocument;
 void middleware;
 void request;
 void spec;
