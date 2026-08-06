@@ -2,9 +2,11 @@ export default {
   collectCoverage: true,
 
   collectCoverageFrom: [
+    "packages/client/src/**/*.{js,jsx,ts,tsx}",
     "packages/counterfact/src/**/*.{js,jsx,ts,tsx}",
     "packages/generator/src/**/*.{js,jsx,ts,tsx}",
     "packages/runtime/src/**/*.{js,jsx,ts,tsx}",
+    "packages/repl/src/**/*.{js,jsx,ts,tsx}",
     "!**/node_modules/**",
     "!**/*.d.ts",
     "!packages/types/src/**",
@@ -29,10 +31,12 @@ export default {
   },
 
   roots: [
+    "<rootDir>/packages/client/test",
     "<rootDir>/packages/counterfact/test",
     "<rootDir>/packages/generator/test",
     "<rootDir>/packages/openapi/test",
     "<rootDir>/packages/runtime/test",
+    "<rootDir>/packages/repl/test",
   ],
 
   testEnvironment: "node",

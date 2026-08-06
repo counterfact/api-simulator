@@ -2,6 +2,11 @@ import fs from "node:fs/promises";
 import nodePath from "node:path";
 
 import { createHttpTerminator, type HttpTerminator } from "http-terminator";
+import {
+  createOpenApiRouteCatalog,
+  createRouteFunction,
+  type OpenApiRouteDocument,
+} from "@counterfact/client";
 import { generateVersionsTsContent, Repository } from "@counterfact/generator";
 import {
   ContextRegistry,
@@ -9,11 +14,11 @@ import {
   StoreLoader,
 } from "@counterfact/runtime";
 import { createKoaApp } from "@counterfact/runtime/koa";
+import { startRepl as startReplServer } from "@counterfact/repl";
 
 import { ApiRunner } from "./api-runner.js";
+import { sendTelemetry } from "./cli/telemetry.js";
 import type { Config } from "./config.js";
-import { startRepl as startReplServer } from "./repl/repl.js";
-import { createRouteFunction } from "./repl/route-builder.js";
 import { ensureDirectoryExists } from "./util/ensure-directory-exists.js";
 
 export { loadOpenApiDocument } from "@counterfact/runtime";
@@ -83,7 +88,7 @@ export async function runStartupScenario(
   scenarioRegistry: ScenarioRegistry,
   contextRegistry: ContextRegistry,
   config: Pick<Config, "port">,
-  openApiDocument?: Parameters<typeof createRouteFunction>[2],
+  openApiDocument?: OpenApiRouteDocument,
 ): Promise<void> {
   const indexModule = scenarioRegistry.getModule("index");
 
@@ -95,7 +100,11 @@ export async function runStartupScenario(
     context: contextRegistry.find("/") as Record<string, unknown>,
     loadContext: (path: string) =>
       contextRegistry.find(path) as Record<string, unknown>,
-    route: createRouteFunction(config.port, "localhost", openApiDocument),
+    route: createRouteFunction(
+      config.port,
+      "localhost",
+      openApiDocument ? createOpenApiRouteCatalog(openApiDocument) : undefined,
+    ),
     routes: {},
   };
 
@@ -474,6 +483,14 @@ export async function counterfact<TStore = unknown>(
     registry: primaryRunner.registry,
     start,
     startRepl: () => {
+      const routeCatalogs = new Map(
+        runners.map((runner) => [
+          runner,
+          runner.openApiDocument
+            ? createOpenApiRouteCatalog(runner.openApiDocument)
+            : undefined,
+        ]),
+      );
       const replServer = startReplServer(
         primaryRunner.contextRegistry,
         primaryRunner.registry,
@@ -483,16 +500,19 @@ export async function counterfact<TStore = unknown>(
           proxyUrl: config.proxyUrl,
         },
         undefined, // use the default print function (stdout)
-        primaryRunner.openApiDocument,
+        routeCatalogs.get(primaryRunner),
         primaryRunner.scenarioRegistry,
         runners.map((runner) => ({
           contextRegistry: runner.contextRegistry,
           group: runner.group,
-          openApiDocument: runner.openApiDocument,
           registry: runner.registry,
+          routeCatalog: routeCatalogs.get(runner),
           scenarioRegistry: runner.scenarioRegistry,
         })),
         storeLoader.store,
+        ({ command }) => {
+          sendTelemetry("repl_command_used", { command });
+        },
       );
       replServers.add(replServer);
       return replServer;

@@ -1,16 +1,15 @@
 import repl from "node:repl";
 
+import {
+  RawHttpClient,
+  createRouteFunction,
+  type RouteCatalog,
+} from "@counterfact/client";
 import type {
-  ContextRegistry,
-  OpenApiDocument,
-  Registry,
-  ScenarioRegistry,
+  ContextLookup,
+  RouteListing,
+  ScenarioCatalog,
 } from "@counterfact/runtime";
-import type { Config } from "../config.js";
-import { sendTelemetry } from "../cli/telemetry.js";
-
-import { RawHttpClient } from "./raw-http-client.js";
-import { createRouteFunction } from "./route-builder.js";
 
 function printToStdout(line: string) {
   process.stdout.write(`${line}\n`);
@@ -22,12 +21,27 @@ export type CompleterCallback = (
 ) => void;
 
 export interface ReplApiBinding {
-  contextRegistry: ContextRegistry;
+  contextRegistry: ContextLookup;
   group: string;
-  openApiDocument?: OpenApiDocument;
-  registry: Registry;
-  scenarioRegistry?: ScenarioRegistry;
+  registry: RouteListing;
+  routeCatalog?: RouteCatalog;
+  scenarioRegistry?: ScenarioCatalog;
 }
+
+export interface ReplConfig {
+  port: number;
+  proxyPaths: Map<string, boolean>;
+  proxyUrl: string;
+}
+
+export type ReplCommand = "counterfact" | "proxy" | "scenario";
+
+export interface ReplEvent {
+  command: ReplCommand;
+  type: "command-used";
+}
+
+export type ReplEventReporter = (event: ReplEvent) => void;
 
 const ROUTE_BUILDER_METHODS = [
   "body(",
@@ -43,12 +57,12 @@ const ROUTE_BUILDER_METHODS = [
 
 function getScenarioCompletions(
   line: string,
-  scenarioRegistry: ScenarioRegistry | undefined,
-  groupedScenarioRegistries?: Record<string, ScenarioRegistry | undefined>,
+  scenarioRegistry: ScenarioCatalog | undefined,
+  groupedScenarioRegistries?: Record<string, ScenarioCatalog | undefined>,
 ): [string[], string] | undefined {
   function getPathCompletions(
     partial: string,
-    registry: ScenarioRegistry | undefined,
+    registry: ScenarioCatalog | undefined,
   ): [string[], string] {
     if (registry === undefined) {
       return [[], partial];
@@ -154,12 +168,10 @@ function getRouteBuilderMethodCompletions(
 }
 
 function getRoutesForCompletion(
-  registry: Registry,
-  openApiDocument?: OpenApiDocument,
+  registry: RouteListing,
+  routeCatalog?: RouteCatalog,
 ) {
-  const openApiPaths = openApiDocument
-    ? Object.keys(openApiDocument.paths)
-    : [];
+  const openApiPaths = routeCatalog?.listPaths() ?? [];
 
   if (openApiPaths.length > 0) {
     return openApiPaths;
@@ -170,7 +182,7 @@ function getRoutesForCompletion(
 
 function getRouteCompletions(
   line: string,
-  routes: string[],
+  routes: readonly string[],
 ): [string[], string] | undefined {
   const routeMatch = line.match(
     /(?:client\.(?:get|post|put|patch|delete)|route)\("(?<partial>[^"]*)$/u,
@@ -191,18 +203,18 @@ function getRouteCompletions(
  *
  * @param registry - The route registry used to complete path arguments for `route()` and `client.*()` calls.
  * @param fallback - Optional fallback completer (e.g. the Node.js built-in completer) invoked when no custom completion matches.
- * @param openApiDocument - Optional OpenAPI document used as the source of route completions when available.
+ * @param routeCatalog - Optional catalog used as the source of route completions when available.
  * @param scenarioRegistry - When provided, enables tab completion for `.scenario` commands by enumerating
  *   exported function names and file-key prefixes from the loaded scenario modules.
  */
 export function createCompleter(
-  registry: Registry,
+  registry: RouteListing,
   fallback?: (line: string, callback: CompleterCallback) => void,
-  openApiDocument?: OpenApiDocument,
-  scenarioRegistry?: ScenarioRegistry,
-  groupedScenarioRegistries?: Record<string, ScenarioRegistry | undefined>,
+  routeCatalog?: RouteCatalog,
+  scenarioRegistry?: ScenarioCatalog,
+  groupedScenarioRegistries?: Record<string, ScenarioCatalog | undefined>,
 ) {
-  const routes = getRoutesForCompletion(registry, openApiDocument);
+  const routes = getRoutesForCompletion(registry, routeCatalog);
 
   return (line: string, callback: CompleterCallback): void => {
     const scenarioCompletions = getScenarioCompletions(
@@ -254,19 +266,21 @@ export function createCompleter(
  * @param registry - The route registry (used for tab completion).
  * @param config - Server configuration.
  * @param print - Output function; defaults to writing to `stdout`.
- * @param openApiDocument - Optional OpenAPI document for tab completion.
+ * @param routeCatalog - Optional route catalog for tab completion and request help.
  * @param scenarioRegistry - Optional scenario registry for `.scenario` support.
+ * @param reportEvent - Optional observer for REPL command usage.
  * @returns The configured Node.js REPL server instance.
  */
 export function startRepl(
-  contextRegistry: ContextRegistry,
-  registry: Registry,
-  config: Pick<Config, "port" | "proxyUrl" | "proxyPaths">,
+  contextRegistry: ContextLookup,
+  registry: RouteListing,
+  config: ReplConfig,
   print = printToStdout,
-  openApiDocument?: OpenApiDocument,
-  scenarioRegistry?: ScenarioRegistry,
+  routeCatalog?: RouteCatalog,
+  scenarioRegistry?: ScenarioCatalog,
   apiBindings?: ReplApiBinding[],
   store?: object,
+  reportEvent?: ReplEventReporter,
 ) {
   const bindings =
     apiBindings === undefined || apiBindings.length === 0
@@ -274,8 +288,8 @@ export function startRepl(
           {
             contextRegistry,
             group: "",
-            openApiDocument,
             registry,
+            routeCatalog,
             scenarioRegistry,
           },
         ]
@@ -322,7 +336,7 @@ export function startRepl(
   const groupedRoute = Object.fromEntries(
     groupedBindings.map((binding) => [
       binding.key,
-      createRouteFunction(config.port, "localhost", binding.openApiDocument),
+      createRouteFunction(config.port, "localhost", binding.routeCatalog),
     ]),
   ) as Record<string, (path: string) => unknown>;
 
@@ -400,7 +414,7 @@ export function startRepl(
   (replServer as any).completer = createCompleter(
     rootBinding.registry,
     builtinCompleter,
-    rootBinding.openApiDocument,
+    rootBinding.routeCatalog,
     rootBinding.scenarioRegistry,
     isMultiApi
       ? Object.fromEntries(
@@ -412,9 +426,17 @@ export function startRepl(
       : undefined,
   );
 
+  function reportCommand(command: ReplCommand): void {
+    try {
+      reportEvent?.({ command, type: "command-used" });
+    } catch {
+      // Observability must never change interactive command behavior.
+    }
+  }
+
   replServer.defineCommand("counterfact", {
     action() {
-      sendTelemetry("repl_command_used", { command: "counterfact" });
+      reportCommand("counterfact");
       print(
         "This is a read-eval-print loop (REPL), the same as the one you get when you run node with no arguments.",
       );
@@ -444,7 +466,7 @@ export function startRepl(
 
   replServer.defineCommand("proxy", {
     action(text: string) {
-      sendTelemetry("repl_command_used", { command: "proxy" });
+      reportCommand("proxy");
       if (text === "help" || text === "") {
         print(".proxy [on|off] - turn the proxy on/off at the root level");
         print(".proxy [on|off] <path-prefix> - turn the proxy on for a path");
@@ -495,7 +517,7 @@ export function startRepl(
 
   replServer.defineCommand("scenario", {
     async action(text: string) {
-      sendTelemetry("repl_command_used", { command: "scenario" });
+      reportCommand("scenario");
       const trimmedText = text.trim();
       const parsedArgs = trimmedText.split(/\s+/u).filter(Boolean);
       const usage = isMultiApi

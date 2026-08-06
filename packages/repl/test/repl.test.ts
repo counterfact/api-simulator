@@ -2,36 +2,24 @@ import type { REPLServer } from "node:repl";
 
 import { afterEach, jest } from "@jest/globals";
 
-import { createCompleter, startRepl } from "../../src/repl/repl.js";
-import type { CompleterCallback, ReplApiBinding } from "../../src/repl/repl.js";
+import { createOpenApiRouteCatalog } from "@counterfact/client";
 import {
   ContextRegistry,
   Registry,
   ScenarioRegistry,
 } from "@counterfact/runtime";
-import type { Config } from "../../src/config.js";
+import { createCompleter, startRepl } from "../src/index.js";
+import type {
+  CompleterCallback,
+  ReplApiBinding,
+  ReplConfig,
+  ReplEventReporter,
+} from "../src/index.js";
 
-const CONFIG: Config = {
-  basePath: "",
-
-  generate: {
-    routes: true,
-    types: true,
-  },
-
-  openApiPath: "",
+const CONFIG: ReplConfig = {
   port: 9999,
   proxyPaths: new Map([]),
   proxyUrl: "https://example.com/test",
-  prefix: "",
-  startAdminApi: false,
-  startRepl: false,
-  startServer: true,
-
-  watch: {
-    routes: true,
-    types: true,
-  },
 };
 
 type GroupedLoadContext = Record<
@@ -68,10 +56,11 @@ class ReplHarness {
   public constructor(
     contextRegistry: ContextRegistry,
     registry: Registry,
-    config: Config,
+    config: ReplConfig,
     scenarioRegistry?: ScenarioRegistry,
     apiBindings?: ReplApiBinding[],
     store?: object,
+    reportEvent?: ReplEventReporter,
   ) {
     this.server = startRepl(
       contextRegistry,
@@ -82,6 +71,7 @@ class ReplHarness {
       scenarioRegistry,
       apiBindings,
       store,
+      reportEvent,
     );
   }
 
@@ -105,6 +95,7 @@ function createHarness(
   scenarioRegistry?: ScenarioRegistry,
   apiBindings?: ReplApiBinding[],
   store?: object,
+  reportEvent?: ReplEventReporter,
 ) {
   const contextRegistry = new ContextRegistry();
   const registry = new Registry();
@@ -119,6 +110,7 @@ function createHarness(
     scenarioRegistry,
     apiBindings,
     store,
+    reportEvent,
   );
 
   openServers.push(harness.server);
@@ -299,6 +291,35 @@ describe("REPL", () => {
       "For more information, see https://github.com/counterfact/api-simulator/blob/main/docs/usage.md",
       "",
     ]);
+    expect(harness.isReset()).toBe(true);
+  });
+
+  it("reports command usage without command arguments", async () => {
+    const reportEvent = jest.fn<ReplEventReporter>();
+    const { harness } = createHarness(
+      undefined,
+      undefined,
+      undefined,
+      reportEvent,
+    );
+
+    harness.call("counterfact", "private help input");
+    harness.call("proxy", "on /private-path");
+    await harness.callAsync("scenario", "private/scenario");
+
+    expect(reportEvent.mock.calls).toEqual([
+      [{ command: "counterfact", type: "command-used" }],
+      [{ command: "proxy", type: "command-used" }],
+      [{ command: "scenario", type: "command-used" }],
+    ]);
+  });
+
+  it("ignores event reporter failures", () => {
+    const { harness } = createHarness(undefined, undefined, undefined, () => {
+      throw new Error("reporter failed");
+    });
+
+    expect(() => harness.call("counterfact", "")).not.toThrow();
     expect(harness.isReset()).toBe(true);
   });
 
@@ -812,13 +833,17 @@ describe("REPL", () => {
 
       registry.add("/hello/name", { GET() {} });
 
-      const completer = createCompleter(registry, undefined, {
-        paths: {
-          "/example/hello/{name}": {
-            get: {},
+      const completer = createCompleter(
+        registry,
+        undefined,
+        createOpenApiRouteCatalog({
+          paths: {
+            "/example/hello/{name}": {
+              get: {},
+            },
           },
-        },
-      });
+        }),
+      );
       const [completions, prefix] = await callCompleter(
         completer,
         'client.get("/example/h',
@@ -849,6 +874,16 @@ describe("REPL", () => {
         "ready(",
         "send(",
       ]);
+    });
+
+    it("calls the completion callback once for RouteBuilder methods", () => {
+      const registry = new Registry();
+      const completer = createCompleter(registry);
+      const callback = jest.fn<CompleterCallback>();
+
+      completer('route("/pets").', callback);
+
+      expect(callback).toHaveBeenCalledTimes(1);
     });
 
     it('filters RouteBuilder methods based on typed prefix after route("/path").', async () => {

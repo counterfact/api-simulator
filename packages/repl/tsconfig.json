@@ -8,12 +8,5 @@
     "tsBuildInfoFile": "dist/.tsbuildinfo"
   },
   "include": ["src"],
-  "references": [
-    { "path": "../client" },
-    { "path": "../generator" },
-    { "path": "../openapi" },
-    { "path": "../runtime" },
-    { "path": "../repl" },
-    { "path": "../types" }
-  ]
+  "references": [{ "path": "../client" }, { "path": "../runtime" }]
 }

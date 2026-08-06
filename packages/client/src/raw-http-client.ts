@@ -1,4 +1,4 @@
-import net from "net";
+import net from "node:net";
 
 const colors = {
   reset: "\x1b[0m",
@@ -133,7 +133,7 @@ export class RawHttpClient {
     path: string,
     bodyAsStringOrObject: string | object,
     headers: Record<string, string>,
-  ) {
+  ): Promise<string> {
     const requestNumber = ++this.requestNumber;
 
     const body = stringifyBody(bodyAsStringOrObject);
@@ -150,7 +150,7 @@ export class RawHttpClient {
       effectiveHeaders["Content-Type"] = "application/json";
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       const socket = net.createConnection(
         { host: this.host, port: this.port },
         () => {

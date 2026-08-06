@@ -1,13 +1,48 @@
 import { describe, expect, it } from "@jest/globals";
 
-import type { OpenApiDocument } from "@counterfact/runtime";
 import {
   RouteBuilder,
+  createOpenApiRouteCatalog,
   createRouteFunction,
-} from "../../src/repl/route-builder.js";
+  type OpenApiRouteDocument,
+} from "../src/index.js";
 
-const OPEN_API_DOCUMENT: OpenApiDocument = {
+const OPEN_API_DOCUMENT: OpenApiRouteDocument = {
   paths: {
+    "/complete/{id}": {
+      get: {
+        description: "Every supported kind of parameter",
+        parameters: [
+          {
+            description: "The identifier",
+            enum: ["one", "two"],
+            in: "path",
+            name: "id",
+            required: true,
+            type: "string",
+          },
+          {
+            description: "The result filter",
+            in: "query",
+            name: "filter",
+            required: true,
+            schema: { enum: ["active", "all"], type: "string" },
+          },
+          {
+            description: "An access token",
+            in: "header",
+            name: "x-token",
+            required: true,
+            type: "string",
+          },
+        ],
+        responses: {
+          "200": { description: "Complete" },
+          "204": {},
+        },
+        summary: "Complete operation",
+      },
+    },
     "/pet/{petId}": {
       get: {
         parameters: [
@@ -42,6 +77,7 @@ const OPEN_API_DOCUMENT: OpenApiDocument = {
     },
   },
 };
+const ROUTE_CATALOG = createOpenApiRouteCatalog(OPEN_API_DOCUMENT);
 
 describe("RouteBuilder", () => {
   describe("fluent builder API", () => {
@@ -88,7 +124,7 @@ describe("RouteBuilder", () => {
 
     it("preserves existing values when chaining", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       })
         .method("get")
@@ -99,7 +135,7 @@ describe("RouteBuilder", () => {
 
     it("supports branching (immutable)", () => {
       const base = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -114,7 +150,7 @@ describe("RouteBuilder", () => {
   describe("ready()", () => {
     it("returns false when no method is set", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       });
 
@@ -123,7 +159,7 @@ describe("RouteBuilder", () => {
 
     it("returns false when required path params are missing", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -132,7 +168,7 @@ describe("RouteBuilder", () => {
 
     it("returns true when all required params are provided", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       })
         .method("get")
@@ -143,7 +179,7 @@ describe("RouteBuilder", () => {
 
     it("returns true when optional params are omitted", () => {
       const builder = new RouteBuilder("/pet/findByStatus", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -162,7 +198,7 @@ describe("RouteBuilder", () => {
   describe("missing()", () => {
     it("returns undefined when all required params are provided", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       })
         .method("get")
@@ -173,7 +209,7 @@ describe("RouteBuilder", () => {
 
     it("returns missing path params", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -194,18 +230,57 @@ describe("RouteBuilder", () => {
 
     it("does not include optional params in missing list", () => {
       const builder = new RouteBuilder("/pet/findByStatus", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
       expect(builder.missing()).toBeUndefined();
+    });
+
+    it("reports required path, query, and header parameters", () => {
+      const builder = new RouteBuilder("/complete/{id}", {
+        port: 9999,
+        routeCatalog: ROUTE_CATALOG,
+      }).method("get");
+
+      expect(builder.missing()).toEqual({
+        header: [
+          {
+            description: "An access token",
+            name: "x-token",
+            type: "string",
+          },
+        ],
+        path: [
+          {
+            description: "The identifier",
+            name: "id",
+            type: "string",
+          },
+        ],
+        query: [
+          {
+            description: "The result filter",
+            name: "filter",
+            type: "string",
+          },
+        ],
+      });
+
+      expect(
+        builder
+          .path({ id: "one" })
+          .query({ filter: "active" })
+          .headers({ "x-token": "secret" })
+          .ready(),
+      ).toBe(true);
     });
   });
 
   describe("help()", () => {
     it("includes the method and path", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -216,7 +291,7 @@ describe("RouteBuilder", () => {
 
     it("includes path parameter info", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -227,7 +302,7 @@ describe("RouteBuilder", () => {
 
     it("includes query parameter info with allowed values", () => {
       const builder = new RouteBuilder("/pet/findByStatus", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -239,7 +314,7 @@ describe("RouteBuilder", () => {
 
     it("includes response status codes", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -251,11 +326,29 @@ describe("RouteBuilder", () => {
 
     it("shows [no method set] when no method is configured", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       });
 
       expect(builder.help()).toContain("[no method set]");
+    });
+
+    it("documents summaries, descriptions, headers, and parameter enums", () => {
+      const help = new RouteBuilder("/complete/{id}", {
+        port: 9999,
+        routeCatalog: ROUTE_CATALOG,
+      })
+        .method("get")
+        .help();
+
+      expect(help).toContain("Complete operation");
+      expect(help).toContain("Every supported kind of parameter");
+      expect(help).toContain("The identifier");
+      expect(help).toContain("one | two");
+      expect(help).toContain("active | all");
+      expect(help).toContain("Headers:");
+      expect(help).toContain("An access token");
+      expect(help).toContain("204");
     });
   });
 
@@ -268,7 +361,7 @@ describe("RouteBuilder", () => {
 
     it("throws with a helpful message when required params are missing", async () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -277,18 +370,37 @@ describe("RouteBuilder", () => {
 
     it("throws listing missing path params", async () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
       await expect(builder.send()).rejects.toThrow("petId");
+    });
+
+    it("lists missing query and header parameters", async () => {
+      const builder = new RouteBuilder("/complete/{id}", {
+        port: 9999,
+        routeCatalog: ROUTE_CATALOG,
+      })
+        .method("get")
+        .path({ id: "one" });
+
+      await expect(builder.send()).rejects.toThrow(/filter[\s\S]*x-token/u);
+    });
+
+    it("rejects unsupported HTTP methods", async () => {
+      const builder = new RouteBuilder("/pets", { port: 9999 }).method("brew");
+
+      await expect(builder.send()).rejects.toThrow(
+        "Unsupported HTTP method: BREW",
+      );
     });
   });
 
   describe("inspect output (custom inspect symbol)", () => {
     it("shows method and path", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -299,7 +411,7 @@ describe("RouteBuilder", () => {
 
     it("shows [missing] for unset required path params", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -310,7 +422,7 @@ describe("RouteBuilder", () => {
 
     it("shows the value for provided path params", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       })
         .method("get")
@@ -323,7 +435,7 @@ describe("RouteBuilder", () => {
 
     it("shows [optional] for unset optional query params", () => {
       const builder = new RouteBuilder("/pet/findByStatus", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -334,7 +446,7 @@ describe("RouteBuilder", () => {
 
     it("shows Ready: false when required params are missing", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       }).method("get");
 
@@ -345,7 +457,7 @@ describe("RouteBuilder", () => {
 
     it("shows Ready: true when all required params are provided", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
-        openApiDocument: OPEN_API_DOCUMENT,
+        routeCatalog: ROUTE_CATALOG,
         port: 9999,
       })
         .method("get")
@@ -367,7 +479,7 @@ describe("RouteBuilder", () => {
     });
 
     it("passes the OpenAPI document to the builder", () => {
-      const routeFn = createRouteFunction(9999, "localhost", OPEN_API_DOCUMENT);
+      const routeFn = createRouteFunction(9999, "localhost", ROUTE_CATALOG);
 
       const builder = routeFn("/pet/{petId}").method("get");
 
