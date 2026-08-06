@@ -271,6 +271,19 @@ include their own Changeset when user-visible packaging changes.
   `baseUrl`, which TypeScript 6 deprecates. Project references still determine
   build order while package-name imports remain the only cross-package syntax
   used by source files.
+- **Phase 3 completed 2026-08-06.** The private `@counterfact/openapi`
+  workspace now owns local and remote document reads, reference bundling and
+  dereferencing, and ordered Overlay application behind one declared export.
+  Generator, runtime, web middleware, and configuration loading consume that
+  package instead of maintaining separate OpenAPI-loading paths.
+- Watchers, telemetry, and reload events deliberately remain in the
+  Counterfact lifecycle wrapper. Focused package tests cover local external
+  references, an ephemeral remote document, ordered overlays, and malformed
+  input without starting the simulator.
+- The packed-consumer test now installs the OpenAPI and types tarballs beside
+  the facade tarball. Each remaining phase must continue packing the complete
+  local Counterfact dependency closure so workspace linking cannot hide a
+  missing registry dependency.
 
 ### Phase 0: Freeze compatibility evidence
 
@@ -335,11 +348,14 @@ Counterfact.
 1. Move TypeScript generator and scenario-file generator modules into
    `@counterfact/generator`.
 2. Move or inject watcher options so the package no longer imports `server/`.
-3. Define public generation inputs and results without exposing repository
+3. Make the generator artifact carry the compatible `@counterfact/types`
+   source templates needed for self-contained generated projects; it must not
+   find those templates through the facade's build output.
+4. Define public generation inputs and results without exposing repository
    internals unnecessarily.
-4. Run existing snapshots and black-box generation tests through the package
+5. Run existing snapshots and black-box generation tests through the package
    export.
-5. Verify generated paths, formatting, pruning, multi-spec, and multi-version
+6. Verify generated paths, formatting, pruning, multi-spec, and multi-version
    output are byte-for-byte compatible except for intentional import changes
    covered by a separate decision.
 
