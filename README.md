@@ -24,5 +24,7 @@ Focused workspace packages:
   generated TypeScript contracts, scenarios, and compatible shared templates.
 - [`@counterfact/openapi`](./packages/openapi/README.md) — standalone OpenAPI
   loading, bundling, dereferencing, and overlays.
-- [`@counterfact/types`](./packages/types/README.md) — shared TypeScript contracts used
-  by Counterfact internals and generated handlers.
+- [`@counterfact/runtime`](./packages/runtime/README.md) — route dispatch,
+  registries, validation, hot reload, proxying, and Koa/MSW adapters.
+- [`@counterfact/types`](./packages/types/README.md) — shared TypeScript
+  contracts used by Counterfact internals and generated handlers.

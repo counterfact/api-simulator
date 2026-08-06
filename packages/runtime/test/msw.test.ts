@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { fileURLToPath } from "node:url";
+
 import * as msw from "../src/msw";
 import { Registry } from "../src/server/registry";
+
+const openApiPath = fileURLToPath(
+  new URL("./fixtures/openapi.yaml", import.meta.url),
+);
 
 // Minimal valid mock Config
 const mockConfig = {
@@ -57,7 +63,7 @@ describe("handleMswRequest", () => {
     await (msw as any).createMswHandlers(
       {
         ...mockConfig,
-        openApiPath: "test/fixtures/openapi/example.yaml",
+        openApiPath,
       },
       MockModuleLoader,
     );
@@ -84,7 +90,7 @@ describe("createMswHandlers", () => {
     const handlers = await (msw as any).createMswHandlers(
       {
         ...mockConfig,
-        openApiPath: "test/fixtures/openapi/example.yaml",
+        openApiPath,
       },
       MockModuleLoader,
     );

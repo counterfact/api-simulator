@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import type { OpenApiDocument } from "../../src/server/dispatcher.js";
+import type { OpenApiDocument } from "@counterfact/runtime";
 import {
   RouteBuilder,
   createRouteFunction,

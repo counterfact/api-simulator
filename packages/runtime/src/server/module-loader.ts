@@ -19,7 +19,7 @@ import { ModuleDependencyGraph } from "./module-dependency-graph.js";
 import type { Module, Registry } from "./registry.js";
 import { ScenarioRegistry } from "./scenario-registry.js";
 import { uncachedImport } from "./uncached-import.js";
-import { sendTelemetry } from "../cli/telemetry.js";
+import type { RuntimeEventReporter } from "../runtime-config.js";
 import {
   toForwardSlashPath,
   pathDirname,
@@ -65,6 +65,8 @@ export class ModuleLoader extends EventTarget {
 
   private readonly fileDiscovery: FileDiscovery;
 
+  private readonly reportEvent: RuntimeEventReporter;
+
   private readonly uncachedImport: (moduleName: string) => Promise<unknown> =
     async function (moduleName: string) {
       throw new Error(`uncachedImport not set up; importing ${moduleName}`);
@@ -77,6 +79,7 @@ export class ModuleLoader extends EventTarget {
     scenariosPath?: string,
     scenarioRegistry?: ScenarioRegistry,
     getStore?: () => object | undefined,
+    reportEvent: RuntimeEventReporter = () => {},
   ) {
     super();
     this.basePath = toForwardSlashPath(basePath);
@@ -88,6 +91,13 @@ export class ModuleLoader extends EventTarget {
         : toForwardSlashPath(scenariosPath);
     this.scenarioRegistry = scenarioRegistry;
     this.getStore = getStore;
+    this.reportEvent = (event, properties) => {
+      try {
+        reportEvent(event, properties);
+      } catch {
+        // Observability must never interrupt module loading or hot reload.
+      }
+    };
     this.fileDiscovery = new FileDiscovery(this.basePath);
   }
 
@@ -127,7 +137,7 @@ export class ModuleLoader extends EventTarget {
         }
 
         const parts = nodePath.parse(pathName.replace(this.basePath, ""));
-        sendTelemetry("file_change_detected", {
+        this.reportEvent("file_change_detected", {
           changeType: eventName,
           fileType: this.isContextFile(pathName) ? "context" : "route",
         });

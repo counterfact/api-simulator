@@ -5,8 +5,13 @@ import Koa from "koa";
 import bodyParser from "koa-bodyparser";
 import { koaSwagger } from "koa2-swagger-ui";
 
-import type { ApiRunner } from "../../api-runner.js";
-import type { Config } from "../config.js";
+import type {
+  AdminApiAdapter,
+  KoaRuntimeConfig,
+} from "../../runtime-config.js";
+import type { ContextRegistry } from "../context-registry.js";
+import type { Dispatcher } from "../dispatcher.js";
+import type { Registry } from "../registry.js";
 import { adminApiMiddleware } from "./admin-api-middleware.js";
 import {
   routesMiddleware,
@@ -15,6 +20,17 @@ import {
 import { openapiMiddleware } from "./openapi-middleware.js";
 
 const debug = createDebug("counterfact:server:create-koa-app");
+
+/** Runtime-owned view of a facade runner used by the Koa layer. */
+export interface RuntimeRunner {
+  contextRegistry: ContextRegistry;
+  dispatcher: Dispatcher;
+  openApiPath: string;
+  overlays: readonly string[];
+  prefix: string;
+  registry: Registry;
+  subdirectory: string;
+}
 
 /**
  * Builds and configures the Koa application with all built-in middleware.
@@ -35,9 +51,11 @@ const debug = createDebug("counterfact:server:create-koa-app");
 export function createKoaApp({
   runners,
   config,
+  adminApi,
 }: {
-  runners: ApiRunner[];
-  config: Config;
+  runners: RuntimeRunner[];
+  config: KoaRuntimeConfig;
+  adminApi?: AdminApiAdapter;
 }) {
   const app = new Koa();
 
@@ -61,12 +79,17 @@ export function createKoaApp({
     );
 
     if (config.startAdminApi) {
+      if (adminApi === undefined) {
+        throw new Error(
+          "An adminApi adapter is required when startAdminApi is enabled",
+        );
+      }
       app.use(
         adminApiMiddleware(
           `/_counterfact/api${runner.subdirectory}`,
           runner.registry,
           runner.contextRegistry,
-          config,
+          adminApi,
         ),
       );
     }

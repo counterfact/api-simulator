@@ -9,6 +9,7 @@
     "test": "yarn workspace counterfact test",
     "test:generator": "yarn workspace @counterfact/generator test",
     "test:generator-packed": "yarn workspace @counterfact/generator test:packed-consumer",
+    "test:runtime": "yarn workspace @counterfact/runtime test",
     "test:black-box": "yarn workspace counterfact build && python3 -m pytest test-black-box/ -v",
     "test:packed-consumer": "yarn workspace counterfact test:packed-consumer",
     "test:tsd": "tsd --typings ./packages/types/dist/index.d.ts --files ./packages/types/test/**/*.test-d.ts",

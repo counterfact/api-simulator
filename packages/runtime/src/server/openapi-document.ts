@@ -2,8 +2,8 @@ import { type FSWatcher, watch } from "chokidar";
 import createDebug from "debug";
 import { loadOpenApiDocument as loadOpenApiData } from "@counterfact/openapi";
 import type { OpenApiOperation } from "@counterfact/types";
+import type { RuntimeEventReporter } from "../runtime-config.js";
 import { waitForEvent } from "../util/wait-for-event.js";
-import { sendTelemetry } from "../cli/telemetry.js";
 import { CHOKIDAR_OPTIONS } from "./constants.js";
 import type { HttpMethods } from "./registry.js";
 
@@ -48,10 +48,23 @@ export class OpenApiDocument extends EventTarget {
 
   private watcher: FSWatcher | undefined;
 
-  public constructor(source: string, overlays: readonly string[] = []) {
+  private readonly reportEvent: RuntimeEventReporter;
+
+  public constructor(
+    source: string,
+    overlays: readonly string[] = [],
+    reportEvent: RuntimeEventReporter = () => {},
+  ) {
     super();
     this.source = source;
     this.overlays = overlays;
+    this.reportEvent = (event, properties) => {
+      try {
+        reportEvent(event, properties);
+      } catch {
+        // Observability must never interrupt OpenAPI loading or hot reload.
+      }
+    };
   }
 
   /**
@@ -102,7 +115,7 @@ export class OpenApiDocument extends EventTarget {
     }
 
     this.watcher = watch(this.source, CHOKIDAR_OPTIONS).on("change", () => {
-      sendTelemetry("file_change_detected", {
+      this.reportEvent("file_change_detected", {
         changeType: "change",
         fileType: "openapi",
       });

@@ -5,17 +5,20 @@ import {
   Repository,
   ScenarioFileGenerator,
 } from "@counterfact/generator";
-import type { Config } from "./server/config.js";
-import { ContextRegistry } from "./server/context-registry.js";
-import { Dispatcher } from "./server/dispatcher.js";
-import { loadOpenApiDocument } from "./server/load-openapi-document.js";
-import { ModuleLoader } from "./server/module-loader.js";
-import type { OpenApiDocument } from "./server/openapi-document.js";
-import { Registry } from "./server/registry.js";
-import { ScenarioRegistry } from "./server/scenario-registry.js";
-import { Transpiler } from "./server/transpiler.js";
+import {
+  ContextRegistry,
+  Dispatcher,
+  loadOpenApiDocument,
+  ModuleLoader,
+  type OpenApiDocument,
+  Registry,
+  runtimeCanExecuteErasableTs,
+  ScenarioRegistry,
+  Transpiler,
+} from "@counterfact/runtime";
+import { sendTelemetry } from "./cli/telemetry.js";
+import type { Config } from "./config.js";
 import { pathJoin } from "./util/forward-slash-path.js";
-import { runtimeCanExecuteErasableTs } from "./util/runtime-can-execute-erasable-ts.js";
 
 /** Runtime state shared by every specification runner in one API group. */
 export interface ApiRunnerGroupState {
@@ -180,6 +183,7 @@ export class ApiRunner {
       pathJoin(modulesPath, "scenarios"),
       this.scenarioRegistry,
       groupState?.getStore,
+      sendTelemetry,
     );
   }
 
@@ -220,7 +224,11 @@ export class ApiRunner {
     const openApiDocument =
       config.openApiPath === "_"
         ? undefined
-        : await loadOpenApiDocument(config.openApiPath, config.overlays ?? []);
+        : await loadOpenApiDocument(
+            config.openApiPath,
+            config.overlays ?? [],
+            sendTelemetry,
+          );
 
     return new ApiRunner(
       config,

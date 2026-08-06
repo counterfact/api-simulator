@@ -1,4 +1,4 @@
-import { runtimeCanExecuteErasableTs } from "../../src/util/runtime-can-execute-erasable-ts.js";
+import { runtimeCanExecuteErasableTs } from "../src/runtime-can-execute-erasable-ts.js";
 
 describe("runtimeCanExecuteErasableTs", () => {
   it("returns true when the current runtime can natively execute TypeScript with erasable type annotations", async () => {

@@ -1,4 +1,4 @@
-import type { Config } from "../server/config.js";
+import type { Config } from "../config.js";
 
 /**
  * Centers a tag line within the fixed-width ASCII banner header.

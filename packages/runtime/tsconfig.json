@@ -8,10 +8,5 @@
     "tsBuildInfoFile": "dist/.tsbuildinfo"
   },
   "include": ["src"],
-  "references": [
-    { "path": "../generator" },
-    { "path": "../openapi" },
-    { "path": "../runtime" },
-    { "path": "../types" }
-  ]
+  "references": [{ "path": "../openapi" }, { "path": "../types" }]
 }

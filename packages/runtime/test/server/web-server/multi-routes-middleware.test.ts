@@ -1,13 +1,15 @@
 import Koa from "koa";
 import request from "supertest";
 
-import type { ApiRunner } from "../../../src/api-runner.js";
-import type { Config } from "../../../src/server/config.js";
+import type { ProxyConfig as Config } from "../../../src/runtime-config.js";
 import { ContextRegistry } from "../../../src/server/context-registry.js";
 import { Dispatcher } from "../../../src/server/dispatcher.js";
 import type { Module } from "../../../src/server/registry.js";
 import { Registry } from "../../../src/server/registry.js";
-import { routesMiddlewareForRunners } from "../../../src/server/web-server/routes-middleware.js";
+import {
+  type RouteRunner,
+  routesMiddlewareForRunners,
+} from "../../../src/server/web-server/routes-middleware.js";
 
 const CONFIG: Pick<Config, "proxyUrl" | "proxyPaths"> = {
   proxyPaths: new Map(),
@@ -17,7 +19,7 @@ const CONFIG: Pick<Config, "proxyUrl" | "proxyPaths"> = {
 function runner(
   prefix: string,
   routes: Array<[path: string, module: Module]>,
-): Pick<ApiRunner, "dispatcher" | "prefix"> {
+): RouteRunner {
   const registry = new Registry();
 
   for (const [path, module] of routes) {
@@ -30,7 +32,7 @@ function runner(
   };
 }
 
-function appFor(runners: Array<Pick<ApiRunner, "dispatcher" | "prefix">>) {
+function appFor(runners: RouteRunner[]) {
   const app = new Koa();
 
   app.use(routesMiddlewareForRunners(runners, CONFIG));

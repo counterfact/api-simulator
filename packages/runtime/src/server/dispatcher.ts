@@ -18,7 +18,7 @@ import {
 import { validateResponse } from "./response-validator.js";
 import { Tools } from "./tools.js";
 import type { OpenApiOperation, OpenApiParameters } from "@counterfact/types";
-import type { Config } from "./config.js";
+import type { DispatcherConfig } from "../runtime-config.js";
 
 const debug = createDebugger("counterfact:server:dispatcher");
 
@@ -200,10 +200,7 @@ export class Dispatcher {
 
   public fetch: typeof fetch;
 
-  public config?: Pick<
-    Config,
-    "validateRequests" | "validateResponses" | "alwaysFakeOptionals"
-  >; // Add config property
+  public config?: DispatcherConfig;
 
   /**
    * The version label for this dispatcher's spec (e.g. `"v1"`, `"v2"`).
@@ -223,10 +220,7 @@ export class Dispatcher {
     registry: Registry,
     contextRegistry: ContextRegistry,
     openApiDocument?: OpenApiDocument,
-    config?: Pick<
-      Config,
-      "validateRequests" | "validateResponses" | "alwaysFakeOptionals"
-    >,
+    config?: DispatcherConfig,
     version = "",
     versions: readonly string[] = [],
   ) {

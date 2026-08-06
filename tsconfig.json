@@ -5,6 +5,7 @@
   "references": [
     { "path": "./packages/generator" },
     { "path": "./packages/openapi" },
+    { "path": "./packages/runtime" },
     { "path": "./packages/types" },
     { "path": "./packages/counterfact" }
   ]
