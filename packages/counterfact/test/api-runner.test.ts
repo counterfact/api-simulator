@@ -2,12 +2,14 @@ import { usingTemporaryFiles } from "using-temporary-files";
 
 import { ApiRunner } from "../src/api-runner.js";
 import { CodeGenerator, ScenarioFileGenerator } from "@counterfact/generator";
-import { ContextRegistry } from "../src/server/context-registry.js";
-import { Dispatcher } from "../src/server/dispatcher.js";
-import { ModuleLoader } from "../src/server/module-loader.js";
-import { Registry } from "../src/server/registry.js";
-import { ScenarioRegistry } from "../src/server/scenario-registry.js";
-import { Transpiler } from "../src/server/transpiler.js";
+import {
+  ContextRegistry,
+  Dispatcher,
+  ModuleLoader,
+  Registry,
+  ScenarioRegistry,
+  Transpiler,
+} from "@counterfact/runtime";
 
 const baseConfig = {
   openApiPath: "_",

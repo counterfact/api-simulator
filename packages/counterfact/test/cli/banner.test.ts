@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import type { Config } from "../../src/server/config.js";
+import type { Config } from "../../src/config.js";
 import {
   createIntroduction,
   createWatchMessage,

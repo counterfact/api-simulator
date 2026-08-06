@@ -1,4 +1,4 @@
-import type { OpenApiDocument } from "../server/dispatcher.js";
+import type { OpenApiDocument } from "@counterfact/runtime";
 
 import { RawHttpClient } from "./raw-http-client.js";
 

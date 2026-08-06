@@ -6,9 +6,11 @@ import { usingTemporaryFiles } from "using-temporary-files";
 
 import * as app from "../src/app";
 import { ApiRunner } from "../src/api-runner";
-import { ContextRegistry } from "../src/server/context-registry";
-import { ScenarioRegistry } from "../src/server/scenario-registry";
-import { StoreLoader } from "../src/server/store-loader";
+import {
+  ContextRegistry,
+  ScenarioRegistry,
+  StoreLoader,
+} from "@counterfact/runtime";
 
 // Minimal valid mock Config
 const mockConfig = {

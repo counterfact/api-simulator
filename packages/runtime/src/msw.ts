@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 /* eslint-disable security/detect-non-literal-fs-filename -- openApiPath comes from startup config and is only used to read the selected OpenAPI document. */
 
-import type { Config } from "./server/config.js";
+import type { DispatcherConfig } from "./runtime-config.js";
 import { ContextRegistry } from "./server/context-registry.js";
 import { Dispatcher, type DispatcherRequest } from "./server/dispatcher.js";
 import { loadOpenApiDocument } from "./server/load-openapi-document.js";
@@ -26,6 +26,11 @@ const allowedMethods = [
 ] as const;
 
 export type MockRequest = DispatcherRequest & { rawPath: string };
+
+export interface MswConfig extends DispatcherConfig {
+  basePath: string;
+  openApiPath: string;
+}
 
 const mswHandlers: MswHandlerMap = {};
 
@@ -62,14 +67,7 @@ export async function handleMswRequest(request: MockRequest) {
  *   MSW handler.
  */
 export async function createMswHandlers(
-  config: Pick<
-    Config,
-    | "openApiPath"
-    | "basePath"
-    | "validateRequests"
-    | "validateResponses"
-    | "alwaysFakeOptionals"
-  >,
+  config: MswConfig,
   ModuleLoaderClass = ModuleLoader,
 ) {
   // TODO: For some reason the Vitest Custom Commands needed by Vitest Browser mode fail on fs.readFile when they are called from the nested loadOpenApiDocument function.

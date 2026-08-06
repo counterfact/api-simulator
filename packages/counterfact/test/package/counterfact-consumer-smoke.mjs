@@ -18,6 +18,7 @@ const testDirectory = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(testDirectory, "../..");
 const generatorPackageRoot = path.resolve(packageRoot, "../generator");
 const openApiPackageRoot = path.resolve(packageRoot, "../openapi");
+const runtimePackageRoot = path.resolve(packageRoot, "../runtime");
 const typesPackageRoot = path.resolve(packageRoot, "../types");
 const fixturesDirectory = path.join(testDirectory, "fixtures");
 const updateFixtures = process.argv.includes("--update-fixtures");
@@ -178,6 +179,12 @@ try {
     cacheDirectory,
   );
   const openApiTarballPath = path.join(tarballDirectory, openApiPack.filename);
+  const runtimePack = await packPackage(
+    runtimePackageRoot,
+    tarballDirectory,
+    cacheDirectory,
+  );
+  const runtimeTarballPath = path.join(tarballDirectory, runtimePack.filename);
   const typesPack = await packPackage(
     typesPackageRoot,
     tarballDirectory,
@@ -205,6 +212,7 @@ try {
       cacheDirectory,
       generatorTarballPath,
       openApiTarballPath,
+      runtimeTarballPath,
       typesTarballPath,
       tarballPath,
     ],
@@ -292,6 +300,55 @@ await running.stop();
     env: { CI: "true", COUNTERFACT_TELEMETRY_DISABLED: "true" },
   });
 
+  const installedRuntimeRoot = path.join(
+    consumerDirectory,
+    "node_modules",
+    "@counterfact",
+    "runtime",
+  );
+  const installedRuntimeManifest = await json(
+    path.join(installedRuntimeRoot, "package.json"),
+  );
+  assert.equal(installedRuntimeManifest.dependencies.counterfact, undefined);
+  assert.equal(
+    installedRuntimeManifest.dependencies["@counterfact/generator"],
+    undefined,
+  );
+  await readFile(
+    path.join(installedRuntimeRoot, "dist", "server", "uncached-require.cjs"),
+  );
+  const runtimeConsumerPath = path.join(
+    consumerDirectory,
+    "runtime-consumer.mjs",
+  );
+  await writeFile(
+    runtimeConsumerPath,
+    `import assert from "node:assert/strict";
+import { ContextRegistry, Dispatcher, Registry } from "@counterfact/runtime";
+import { createKoaApp } from "@counterfact/runtime/koa";
+import { createMswHandlers } from "@counterfact/runtime/msw";
+
+const registry = new Registry();
+registry.add("/ping", { GET: () => ({ body: "pong" }) });
+const dispatcher = new Dispatcher(registry, new ContextRegistry());
+const response = await dispatcher.request({
+  body: undefined,
+  headers: {},
+  method: "GET",
+  path: "/ping",
+  query: {},
+  req: {},
+});
+assert.equal(response.body, "pong");
+assert.equal(typeof createKoaApp, "function");
+assert.equal(typeof createMswHandlers, "function");
+`,
+  );
+  await run(process.execPath, [runtimeConsumerPath], {
+    cwd: consumerDirectory,
+    env: { CI: "true", COUNTERFACT_TELEMETRY_DISABLED: "true" },
+  });
+
   const installedBinary = path.join(
     consumerDirectory,
     "node_modules",
@@ -372,6 +429,23 @@ void spec;
 `,
   );
   await writeFile(
+    path.join(consumerDirectory, "runtime-consumer.ts"),
+    `import { ContextRegistry, Dispatcher, Registry } from "@counterfact/runtime";
+import { createKoaApp, type RuntimeRunner } from "@counterfact/runtime/koa";
+import { createMswHandlers, type MockRequest } from "@counterfact/runtime/msw";
+
+declare const request: MockRequest;
+declare const runner: RuntimeRunner;
+void new ContextRegistry();
+void Dispatcher;
+void Registry;
+void createKoaApp;
+void createMswHandlers;
+void request;
+void runner;
+`,
+  );
+  await writeFile(
     path.join(consumerDirectory, "tsconfig.json"),
     `${JSON.stringify(
       {
@@ -396,6 +470,34 @@ void spec;
       path.join(consumerDirectory, "node_modules", "typescript", "bin", "tsc"),
       "--project",
       path.join(consumerDirectory, "tsconfig.json"),
+    ],
+    { cwd: consumerDirectory },
+  );
+  await writeFile(
+    path.join(consumerDirectory, "runtime-tsconfig.json"),
+    `${JSON.stringify(
+      {
+        compilerOptions: {
+          module: "ESNext",
+          moduleResolution: "Bundler",
+          noEmit: true,
+          skipLibCheck: false,
+          strict: true,
+          target: "ES2022",
+          types: [],
+        },
+        include: ["runtime-consumer.ts"],
+      },
+      undefined,
+      2,
+    )}\n`,
+  );
+  await run(
+    process.execPath,
+    [
+      path.join(consumerDirectory, "node_modules", "typescript", "bin", "tsc"),
+      "--project",
+      path.join(consumerDirectory, "runtime-tsconfig.json"),
     ],
     { cwd: consumerDirectory },
   );

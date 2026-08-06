@@ -1,35 +1,64 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { adminApiMiddleware } from "../../../src/server/web-server/admin-api-middleware.js";
-import type { Config } from "../../../src/server/config.js";
+import type { AdminApiAdapter } from "../../../src/runtime-config.js";
 import { ContextRegistry } from "../../../src/server/context-registry.js";
 import { Registry } from "../../../src/server/registry.js";
 
-const createConfig = (): Config => ({
-  adminApiToken: "",
-  alwaysFakeOptionals: false,
-  basePath: "/test/path",
-  buildCache: false,
+interface Config extends AdminApiAdapter {
+  alwaysFakeOptionals: boolean;
+  buildCache: boolean;
+  generate: { routes: boolean; types: boolean };
+  openApiPath: string;
+  startAdminApi: boolean;
+  startRepl: boolean;
+  startServer: boolean;
+  watch: { routes: boolean; types: boolean };
+}
 
-  generate: {
-    routes: true,
-    types: true,
-  },
+const createConfig = (): Config => {
+  const config = {
+    adminApiToken: "",
+    alwaysFakeOptionals: false,
+    basePath: "/test/path",
+    buildCache: false,
+    generate: {
+      routes: true,
+      types: true,
+    },
+    openApiPath: "/test/openapi.yaml",
+    port: 3100,
+    proxyPaths: new Map<string, boolean>(),
+    proxyUrl: "",
+    prefix: "",
+    startAdminApi: true,
+    startRepl: true,
+    startServer: true,
+    watch: {
+      routes: true,
+      types: true,
+    },
+  } as Config;
 
-  openApiPath: "/test/openapi.yaml",
-  port: 3100,
-  proxyPaths: new Map(),
-  proxyUrl: "",
-  prefix: "",
-  startAdminApi: true,
-  startRepl: true,
-  startServer: true,
+  config.getConfigSnapshot = () => ({
+    alwaysFakeOptionals: config.alwaysFakeOptionals,
+    basePath: config.basePath,
+    buildCache: config.buildCache,
+    generate: config.generate,
+    openApiPath: config.openApiPath,
+    port: config.port,
+    prefix: config.prefix,
+    startAdminApi: config.startAdminApi,
+    startRepl: config.startRepl,
+    startServer: config.startServer,
+    watch: config.watch,
+  });
+  config.setProxyUrl = (proxyUrl) => {
+    config.proxyUrl = proxyUrl;
+  };
 
-  watch: {
-    routes: true,
-    types: true,
-  },
-});
+  return config;
+};
 
 interface MockContext {
   body?: unknown;

@@ -4,10 +4,11 @@ export default {
   collectCoverageFrom: [
     "packages/counterfact/src/**/*.{js,jsx,ts,tsx}",
     "packages/generator/src/**/*.{js,jsx,ts,tsx}",
+    "packages/runtime/src/**/*.{js,jsx,ts,tsx}",
     "!**/node_modules/**",
     "!**/*.d.ts",
     "!packages/types/src/**",
-    "!packages/counterfact/src/server/config.ts",
+    "!packages/counterfact/src/config.ts",
   ],
 
   coverageProvider: "v8",
@@ -31,6 +32,7 @@ export default {
     "<rootDir>/packages/counterfact/test",
     "<rootDir>/packages/generator/test",
     "<rootDir>/packages/openapi/test",
+    "<rootDir>/packages/runtime/test",
   ],
 
   testEnvironment: "node",

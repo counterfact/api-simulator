@@ -1,6 +1,6 @@
-import { Config } from "../../src/server/config.ts";
+import type { OpenApiOperation } from "@counterfact/types";
+import type { DispatcherConfig as Config } from "../../src/runtime-config.js";
 import { createResponseBuilder } from "../../src/server/response-builder.js";
-import type { OpenApiOperation } from "../../src/server/types.ts";
 import retry from "jest-retries";
 
 describe("a response builder", () => {

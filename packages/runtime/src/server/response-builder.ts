@@ -8,7 +8,7 @@ import type {
   ResponseBuilder,
 } from "@counterfact/types";
 import { STREAMING_CONTENT_TYPES } from "@counterfact/types/streaming-content-types";
-import type { Config } from "./config.js";
+import type { DispatcherConfig } from "../runtime-config.js";
 
 const DEFAULT_GENERATE_OPTIONS = {
   useExamplesValue: true,
@@ -111,7 +111,7 @@ function unknownStatusCodeResponse(statusCode: number | undefined) {
  */
 export function createResponseBuilder(
   operation: OpenApiOperation,
-  config?: Pick<Config, "alwaysFakeOptionals">,
+  config?: Pick<DispatcherConfig, "alwaysFakeOptionals">,
 ): ResponseBuilder {
   return new Proxy({} as ResponseBuilder, {
     get: (target, statusCode: string) => ({

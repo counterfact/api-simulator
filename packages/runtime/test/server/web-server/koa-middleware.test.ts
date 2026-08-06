@@ -2,7 +2,7 @@ import { jest } from "@jest/globals";
 import type { ParameterizedContext } from "koa";
 import type { IBaseKoaProxiesOptions } from "koa-proxies";
 
-import type { Config } from "../../../src/server/config.js";
+import type { ProxyConfig as Config } from "../../../src/runtime-config.js";
 import { ContextRegistry } from "../../../src/server/context-registry.js";
 import { Dispatcher } from "../../../src/server/dispatcher.js";
 import { routesMiddleware } from "../../../src/server/web-server/routes-middleware.js";

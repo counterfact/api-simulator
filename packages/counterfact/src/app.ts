@@ -3,23 +3,25 @@ import nodePath from "node:path";
 
 import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import { generateVersionsTsContent, Repository } from "@counterfact/generator";
+import {
+  ContextRegistry,
+  ScenarioRegistry,
+  StoreLoader,
+} from "@counterfact/runtime";
+import { createKoaApp } from "@counterfact/runtime/koa";
 
 import { ApiRunner } from "./api-runner.js";
+import type { Config } from "./config.js";
 import { startRepl as startReplServer } from "./repl/repl.js";
 import { createRouteFunction } from "./repl/route-builder.js";
-import type { Config } from "./server/config.js";
-import { ContextRegistry } from "./server/context-registry.js";
-import { createKoaApp } from "./server/web-server/create-koa-app.js";
-import { ScenarioRegistry } from "./server/scenario-registry.js";
-import { StoreLoader } from "./server/store-loader.js";
 import { ensureDirectoryExists } from "./util/ensure-directory-exists.js";
 
-export { loadOpenApiDocument } from "./server/load-openapi-document.js";
+export { loadOpenApiDocument } from "@counterfact/runtime";
 export {
   createMswHandlers,
   handleMswRequest,
   type MockRequest,
-} from "./msw.js";
+} from "@counterfact/runtime/msw";
 
 /**
  * Describes one API specification entry.
@@ -327,6 +329,32 @@ export async function counterfact<TStore = unknown>(
   const koaApp = createKoaApp({
     runners,
     config,
+    adminApi: {
+      adminApiToken: config.adminApiToken,
+      basePath: config.basePath,
+      get proxyUrl() {
+        return config.proxyUrl;
+      },
+      getConfigSnapshot: () => ({
+        alwaysFakeOptionals: config.alwaysFakeOptionals,
+        basePath: config.basePath,
+        buildCache: config.buildCache,
+        generate: config.generate,
+        openApiPath: config.openApiPath,
+        port: config.port,
+        prefix: config.prefix,
+        startAdminApi: config.startAdminApi ?? false,
+        startRepl: config.startRepl,
+        startServer: config.startServer,
+        watch: config.watch,
+      }),
+      port: config.port,
+      prefix: config.prefix,
+      proxyPaths: config.proxyPaths,
+      setProxyUrl(proxyUrl) {
+        config.proxyUrl = proxyUrl;
+      },
+    },
   });
 
   // The REPL is configured using the first runner.

@@ -4,10 +4,12 @@ import { afterEach, jest } from "@jest/globals";
 
 import { createCompleter, startRepl } from "../../src/repl/repl.js";
 import type { CompleterCallback, ReplApiBinding } from "../../src/repl/repl.js";
-import type { Config } from "../../src/server/config.js";
-import { ContextRegistry } from "../../src/server/context-registry.js";
-import { Registry } from "../../src/server/registry.js";
-import { ScenarioRegistry } from "../../src/server/scenario-registry.js";
+import {
+  ContextRegistry,
+  Registry,
+  ScenarioRegistry,
+} from "@counterfact/runtime";
+import type { Config } from "../../src/config.js";
 
 const CONFIG: Config = {
   basePath: "",

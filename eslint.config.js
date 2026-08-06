@@ -289,6 +289,8 @@ export default [
       "packages/generator/test/**/*.{ts,tsx,js,cjs,mjs}",
       "packages/openapi/src/**/*.{ts,tsx,js,cjs,mjs}",
       "packages/openapi/test/**/*.{ts,tsx,js,cjs,mjs}",
+      "packages/runtime/src/**/*.{ts,tsx,js,cjs,mjs}",
+      "packages/runtime/test/**/*.{ts,tsx,js,cjs,mjs}",
       "packages/types/src/**/*.{ts,tsx,js,cjs,mjs}",
       "packages/types/test/**/*.{ts,tsx,js,cjs,mjs}",
     ],

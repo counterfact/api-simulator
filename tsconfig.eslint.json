@@ -7,6 +7,8 @@
     "packages/counterfact/test",
     "packages/openapi/src",
     "packages/openapi/test",
+    "packages/runtime/src",
+    "packages/runtime/test",
     "packages/types/src",
     "packages/types/test",
     "jest.config.js",

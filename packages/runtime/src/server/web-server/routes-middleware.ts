@@ -5,8 +5,7 @@ import createDebug from "debug";
 import type Koa from "koa";
 import koaProxy from "koa-proxies";
 
-import type { ApiRunner } from "../../api-runner.js";
-import type { Config } from "../config.js";
+import type { ProxyConfig } from "../../runtime-config.js";
 import type { Dispatcher } from "../dispatcher.js";
 import { isProxyEnabledForPath } from "../is-proxy-enabled-for-path.js";
 import type { RequestMethod } from "../registry.js";
@@ -144,7 +143,7 @@ function getAuthObject(
 export function routesMiddleware(
   prefix: string,
   dispatcher: Dispatcher,
-  config: Pick<Config, "proxyUrl" | "proxyPaths">,
+  config: ProxyConfig,
   proxy = koaProxy,
   allowedMethodsOverride?: string,
 ): Koa.Middleware {
@@ -247,7 +246,10 @@ export function routesMiddleware(
   };
 }
 
-type RouteRunner = Pick<ApiRunner, "dispatcher" | "prefix">;
+export interface RouteRunner {
+  dispatcher: Dispatcher;
+  prefix: string;
+}
 
 /**
  * Selects the first runner that can handle a request, allowing runners with
@@ -255,7 +257,7 @@ type RouteRunner = Pick<ApiRunner, "dispatcher" | "prefix">;
  */
 export function routesMiddlewareForRunners(
   runners: RouteRunner[],
-  config: Pick<Config, "proxyUrl" | "proxyPaths">,
+  config: ProxyConfig,
   proxy = koaProxy,
 ): Koa.Middleware {
   return async function multiRunnerRoutesMiddleware(ctx, next) {

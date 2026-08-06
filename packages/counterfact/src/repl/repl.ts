@@ -1,10 +1,12 @@
 import repl from "node:repl";
 
-import type { Config } from "../server/config.js";
-import type { ContextRegistry } from "../server/context-registry.js";
-import type { OpenApiDocument } from "../server/dispatcher.js";
-import type { Registry } from "../server/registry.js";
-import type { ScenarioRegistry } from "../server/scenario-registry.js";
+import type {
+  ContextRegistry,
+  OpenApiDocument,
+  Registry,
+  ScenarioRegistry,
+} from "@counterfact/runtime";
+import type { Config } from "../config.js";
 import { sendTelemetry } from "../cli/telemetry.js";
 
 import { RawHttpClient } from "./raw-http-client.js";

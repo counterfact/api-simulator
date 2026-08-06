@@ -6,12 +6,11 @@ This directory contains all of the runtime source code for Counterfact. The entr
 
 | Directory                                                | Description                                                                                  |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| [`server/`](./server/README.md)                          | Koa HTTP server, request dispatcher, module loader, transpiler, and supporting middleware    |
 | [`repl/`](./repl/README.md)                              | Interactive REPL for inspecting and controlling a running server                             |
 | [`@counterfact/generator`](../../../generator/README.md) | Workspace package that reads an OpenAPI spec and produces typed TypeScript route scaffolding |
+| [`@counterfact/runtime`](../../../runtime/README.md)     | Workspace package that dispatches routes and owns the HTTP, Koa, and MSW runtime             |
 | [`migrate/`](./migrate/README.md)                        | One-time migration utilities for upgrading the generated file structure                      |
 | [`util/`](./util/README.md)                              | Small, general-purpose helper functions shared across the codebase                           |
-| [`client/`](./client/README.md)                          | Handlebars templates for the built-in dashboard and API documentation pages                  |
 
 ## Files
 
@@ -23,6 +22,11 @@ Shared route and middleware contracts live in the sibling
 [`@counterfact/types`](../../types/README.md) workspace. Counterfact copies
 those source contracts into generated projects to preserve their existing
 self-contained import paths.
+
+The server, dispatcher, registries, module loading, validation, and Koa/MSW
+adapters live in the sibling
+[`@counterfact/runtime`](../../runtime/README.md) workspace. This facade wires
+that runtime to generation, the CLI, telemetry policy, and the REPL.
 
 ## Architecture Overview
 

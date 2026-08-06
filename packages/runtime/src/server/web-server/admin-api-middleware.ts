@@ -1,7 +1,7 @@
 import type Koa from "koa";
 import createDebug from "debug";
 
-import type { Config } from "../config.js";
+import type { AdminApiAdapter } from "../../runtime-config.js";
 import type { Context, ContextRegistry } from "../context-registry.js";
 import type { Registry } from "../registry.js";
 
@@ -57,7 +57,7 @@ export function adminApiMiddleware(
   pathPrefix: string,
   registry: Registry,
   contextRegistry: ContextRegistry,
-  config: Config,
+  config: AdminApiAdapter,
 ): Koa.Middleware {
   return async (ctx: Koa.ExtendableContext, next: Koa.Next) => {
     const { pathname } = ctx.URL;
@@ -205,20 +205,9 @@ export function adminApiMiddleware(
         ctx.body = {
           success: true,
           data: {
-            alwaysFakeOptionals: config.alwaysFakeOptionals,
+            ...config.getConfigSnapshot(),
             adminApiTokenConfigured: Boolean(configuredToken),
-            basePath: config.basePath,
-            buildCache: config.buildCache,
-            generate: config.generate,
-            openApiPath: config.openApiPath,
-            port: config.port,
             proxyUrl: config.proxyUrl,
-            prefix: config.prefix,
-            startAdminApi: config.startAdminApi ?? false,
-            startRepl: config.startRepl,
-            startServer: config.startServer,
-            watch: config.watch,
-            // Don't expose proxyPaths Map directly, convert to array
             proxyPaths: Array.from(config.proxyPaths.entries()),
           },
         } as AdminApiResponse;
@@ -272,7 +261,7 @@ export function adminApiMiddleware(
             return;
           }
           const proxyUrl = body.proxyUrl.trim();
-          config.proxyUrl = proxyUrl;
+          config.setProxyUrl(proxyUrl);
           debug("Updated proxy URL to: %s", config.proxyUrl);
         }
 
