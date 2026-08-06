@@ -254,6 +254,23 @@ include their own Changeset when user-visible packaging changes.
 - Moving build output below `packages/` exposed that the flat ESLint ignore was
   not global. The ignore-only configuration now excludes nested `dist`, `out`,
   coverage, reports, and dependency trees without relaxing source linting.
+- **Phase 2 completed 2026-08-06.** Shared contracts now live in the private,
+  dependency-free `@counterfact/types` workspace. Counterfact imports them
+  through the package name, and their TSD suite exercises the declared public
+  export from the package-owned test directory.
+- Generated projects remain self-contained. The facade build copies the same
+  TypeScript source files from `packages/types/src` into its existing
+  `dist/server/counterfact-types` compatibility directory, and the generator
+  still emits local `counterfact-types/` imports. The byte-level generated
+  fixture stayed unchanged.
+- The packed-consumer test now packs and installs the private type-package
+  tarball alongside the facade tarball. This preserves isolated-install proof
+  before the focused package exists in a registry and establishes the pattern
+  for testing each new workspace dependency during the migration.
+- TypeScript source-path mappings are rooted in `tsconfig.base.json` without
+  `baseUrl`, which TypeScript 6 deprecates. Project references still determine
+  build order while package-name imports remain the only cross-package syntax
+  used by source files.
 
 ### Phase 0: Freeze compatibility evidence
 
@@ -363,7 +380,9 @@ and `counterfact` composes them without a compatibility change.
 1. Reduce `packages/counterfact` to CLI policy, migrations, top-level
    orchestration, compatibility exports, and packaging.
 2. Add dependency-boundary checks and reject package cycles in CI.
-3. Run `npm pack` and isolated install tests for every publishable package.
+3. Run `npm pack` for every publishable package and isolated install tests that
+   install each package together with the tarballs in its Counterfact-package
+   dependency closure.
 4. Verify Changesets opens and publishes a multi-package release correctly with
    npm provenance.
 5. Publish scoped packages individually after their consumer documentation and
