@@ -4,14 +4,14 @@ This directory contains all of the runtime source code for Counterfact. The entr
 
 ## Subdirectories
 
-| Directory                                                   | Description                                                                               |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| [`server/`](./server/README.md)                             | Koa HTTP server, request dispatcher, module loader, transpiler, and supporting middleware |
-| [`repl/`](./repl/README.md)                                 | Interactive REPL for inspecting and controlling a running server                          |
-| [`typescript-generator/`](./typescript-generator/README.md) | Code generator that reads an OpenAPI spec and produces typed TypeScript route scaffolding |
-| [`migrate/`](./migrate/README.md)                           | One-time migration utilities for upgrading the generated file structure                   |
-| [`util/`](./util/README.md)                                 | Small, general-purpose helper functions shared across the codebase                        |
-| [`client/`](./client/README.md)                             | Handlebars templates for the built-in dashboard and API documentation pages               |
+| Directory                                                | Description                                                                                  |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| [`server/`](./server/README.md)                          | Koa HTTP server, request dispatcher, module loader, transpiler, and supporting middleware    |
+| [`repl/`](./repl/README.md)                              | Interactive REPL for inspecting and controlling a running server                             |
+| [`@counterfact/generator`](../../../generator/README.md) | Workspace package that reads an OpenAPI spec and produces typed TypeScript route scaffolding |
+| [`migrate/`](./migrate/README.md)                        | One-time migration utilities for upgrading the generated file structure                      |
+| [`util/`](./util/README.md)                              | Small, general-purpose helper functions shared across the codebase                           |
+| [`client/`](./client/README.md)                          | Handlebars templates for the built-in dashboard and API documentation pages                  |
 
 ## Files
 

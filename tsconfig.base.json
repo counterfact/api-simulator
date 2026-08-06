@@ -14,8 +14,12 @@
     "lib": ["es2022"],
     "types": ["node"],
     "paths": {
+      "@counterfact/generator": ["./packages/generator/src/index.ts"],
       "@counterfact/openapi": ["./packages/openapi/src/index.ts"],
-      "@counterfact/types": ["./packages/types/src/index.ts"]
+      "@counterfact/types": ["./packages/types/src/index.ts"],
+      "@counterfact/types/streaming-content-types": [
+        "./packages/types/src/streaming-content-types.ts"
+      ]
     }
   }
 }

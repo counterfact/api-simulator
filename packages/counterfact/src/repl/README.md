@@ -4,11 +4,11 @@ This directory contains the interactive Read-Eval-Print Loop (REPL) that lets de
 
 ## Files
 
-| File | Description |
-|---|---|
-| `repl.ts` | Starts a Node.js REPL session pre-loaded with the context registry and custom dot-commands (`.proxy`, `.help`, etc.) |
-| `RawHttpClient.ts` | Thin HTTP client available inside the REPL as `client`; formats JSON responses with syntax highlighting |
-| `route-builder.ts` | Fluent, immutable request builder exposed as `route()` in the REPL; supports OpenAPI introspection and autocomplete |
+| File               | Description                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `repl.ts`          | Starts a Node.js REPL session pre-loaded with the context registry and custom dot-commands (`.proxy`, `.help`, etc.) |
+| `RawHttpClient.ts` | Thin HTTP client available inside the REPL as `client`; formats JSON responses with syntax highlighting              |
+| `route-builder.ts` | Fluent, immutable request builder exposed as `route()` in the REPL; supports OpenAPI introspection and autocomplete  |
 
 ## How It Works
 
@@ -50,4 +50,3 @@ The REPL exposes the live `ContextRegistry` so any JavaScript expression that re
 ⬣> pet.missing()           // lists missing required parameters
 ⬣> await pet.send()        // executes the request
 ```
-

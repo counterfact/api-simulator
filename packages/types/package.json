@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./streaming-content-types": {
+      "types": "./dist/streaming-content-types.d.ts",
+      "import": "./dist/streaming-content-types.js"
     }
   },
   "files": [

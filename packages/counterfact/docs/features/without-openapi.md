@@ -23,7 +23,7 @@ In the file where the code is generated, you should find a directory -- initiall
 ```js
 // hello/world.js
 export function GET() {
-    return "World says hello!";
+  return "World says hello!";
 }
 ```
 
@@ -32,7 +32,7 @@ If part of the path is variable, name the file or directory where the variable p
 ```js
 //{greeting}/{subject}.js
 export function GET($) {
-    return `${$.path.subject} says ${$.path.greeting}!`;
+  return `${$.path.subject} says ${$.path.greeting}!`;
 }
 ```
 

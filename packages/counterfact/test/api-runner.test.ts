@@ -1,8 +1,7 @@
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { ApiRunner } from "../src/api-runner.js";
-import { CodeGenerator } from "../src/typescript-generator/code-generator.js";
-import { ScenarioFileGenerator } from "../src/typescript-generator/scenario-file-generator.js";
+import { CodeGenerator, ScenarioFileGenerator } from "@counterfact/generator";
 import { ContextRegistry } from "../src/server/context-registry.js";
 import { Dispatcher } from "../src/server/dispatcher.js";
 import { ModuleLoader } from "../src/server/module-loader.js";

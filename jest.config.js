@@ -3,6 +3,7 @@ export default {
 
   collectCoverageFrom: [
     "packages/counterfact/src/**/*.{js,jsx,ts,tsx}",
+    "packages/generator/src/**/*.{js,jsx,ts,tsx}",
     "!**/node_modules/**",
     "!**/*.d.ts",
     "!packages/types/src/**",
@@ -28,6 +29,7 @@ export default {
 
   roots: [
     "<rootDir>/packages/counterfact/test",
+    "<rootDir>/packages/generator/test",
     "<rootDir>/packages/openapi/test",
   ],
 

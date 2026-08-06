@@ -4,20 +4,20 @@ There are several tools in the API mocking space. Here's an honest look at how C
 
 ## Quick comparison
 
-| | Counterfact | [json-server](#counterfact-vs-json-server) | [WireMock](#counterfact-vs-wiremock) | [Prism](#counterfact-vs-prism) | [Microcks](#counterfact-vs-microcks) |
-|---|---|---|---|---|---|
-| **OpenAPI-native** | ✅ | ❌ | Partial | ✅ | ✅ |
-| **Type-safe handlers** | ✅ TypeScript | ❌ | ❌ | ❌ | ❌ |
-| **Real logic in handlers** | ✅ | Limited | Via templating | ❌ | Via scripts |
-| **Hot reload** | ✅ state-preserving | ❌ | ❌ | ❌ | ❌ |
-| **In-memory state** | ✅ shared Context | ✅ flat JSON | ❌ | ❌ | ❌ |
-| **Interactive REPL** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Hybrid proxy** | ✅ per-path | ❌ | ✅ | ✅ | ✅ |
-| **Request validation** | ✅ | ❌ | ✅ | ✅ | ✅ |
-| **Automated test use** | ✅ real HTTP server | ✅ | ✅ | ✅ | ✅ |
-| **Language** | TypeScript | JavaScript | Java/JVM | Node.js | Java/JVM |
-| **Self-hosted** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Zero config** | ✅ one command | ✅ | ❌ | ❌ | ❌ |
+|                            | Counterfact         | [json-server](#counterfact-vs-json-server) | [WireMock](#counterfact-vs-wiremock) | [Prism](#counterfact-vs-prism) | [Microcks](#counterfact-vs-microcks) |
+| -------------------------- | ------------------- | ------------------------------------------ | ------------------------------------ | ------------------------------ | ------------------------------------ |
+| **OpenAPI-native**         | ✅                  | ❌                                         | Partial                              | ✅                             | ✅                                   |
+| **Type-safe handlers**     | ✅ TypeScript       | ❌                                         | ❌                                   | ❌                             | ❌                                   |
+| **Real logic in handlers** | ✅                  | Limited                                    | Via templating                       | ❌                             | Via scripts                          |
+| **Hot reload**             | ✅ state-preserving | ❌                                         | ❌                                   | ❌                             | ❌                                   |
+| **In-memory state**        | ✅ shared Context   | ✅ flat JSON                               | ❌                                   | ❌                             | ❌                                   |
+| **Interactive REPL**       | ✅                  | ❌                                         | ❌                                   | ❌                             | ❌                                   |
+| **Hybrid proxy**           | ✅ per-path         | ❌                                         | ✅                                   | ✅                             | ✅                                   |
+| **Request validation**     | ✅                  | ❌                                         | ✅                                   | ✅                             | ✅                                   |
+| **Automated test use**     | ✅ real HTTP server | ✅                                         | ✅                                   | ✅                             | ✅                                   |
+| **Language**               | TypeScript          | JavaScript                                 | Java/JVM                             | Node.js                        | Java/JVM                             |
+| **Self-hosted**            | ✅                  | ✅                                         | ✅                                   | ✅                             | ✅                                   |
+| **Zero config**            | ✅ one command      | ✅                                         | ❌                                   | ❌                             | ❌                                   |
 
 ## What makes Counterfact unique
 

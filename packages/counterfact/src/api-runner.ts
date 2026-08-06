@@ -1,5 +1,10 @@
 import { rm } from "node:fs/promises";
 
+import {
+  CodeGenerator,
+  Repository,
+  ScenarioFileGenerator,
+} from "@counterfact/generator";
 import type { Config } from "./server/config.js";
 import { ContextRegistry } from "./server/context-registry.js";
 import { Dispatcher } from "./server/dispatcher.js";
@@ -9,9 +14,6 @@ import type { OpenApiDocument } from "./server/openapi-document.js";
 import { Registry } from "./server/registry.js";
 import { ScenarioRegistry } from "./server/scenario-registry.js";
 import { Transpiler } from "./server/transpiler.js";
-import { CodeGenerator } from "./typescript-generator/code-generator.js";
-import { Repository } from "./typescript-generator/repository.js";
-import { ScenarioFileGenerator } from "./typescript-generator/scenario-file-generator.js";
 import { pathJoin } from "./util/forward-slash-path.js";
 import { runtimeCanExecuteErasableTs } from "./util/runtime-can-execute-erasable-ts.js";
 
