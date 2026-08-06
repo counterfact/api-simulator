@@ -14,8 +14,7 @@ export function buildJsDoc(data: unknown): string {
   const summary = record["summary"] as string | undefined;
   const example = record["example"];
   const examples = record["examples"] as
-    | Record<string, { value?: unknown }>
-    | undefined;
+    Record<string, { value?: unknown }> | undefined;
   const defaultValue = record["default"];
   const format = record["format"] as string | undefined;
   const deprecated = record["deprecated"] as boolean | undefined;

@@ -1,20 +1,6 @@
 {
   "$schema": "http://json.schemastore.org/tsconfig",
-  "compilerOptions": {
-    "moduleResolution": "bundler",
-    "module": "es2022",
-    "target": "es2022",
-    "strictNullChecks": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "allowJs": true,
-    "declaration": true,
-    "rootDir": "src",
-    "outDir": "dist",
-    "skipLibCheck": true,
-    "lib": ["es2022"],
-    "types": ["node"]
-  },
-  "include": ["src"]
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "references": [{ "path": "./packages/counterfact" }]
 }

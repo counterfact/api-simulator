@@ -4,12 +4,12 @@ description: >
   Safely change Counterfact runtime/server internals while preserving module
   boundaries, hot reload behavior, and backward compatibility guarantees.
 applyTo:
-  - "src/app.ts"
-  - "src/api-runner.ts"
-  - "src/server/**/*.ts"
-  - "src/util/**/*.ts"
-  - "test/server/**/*.test.ts"
-  - "test/app.test.ts"
+  - "packages/counterfact/src/app.ts"
+  - "packages/counterfact/src/api-runner.ts"
+  - "packages/counterfact/src/server/**/*.ts"
+  - "packages/counterfact/src/util/**/*.ts"
+  - "packages/counterfact/test/server/**/*.test.ts"
+  - "packages/counterfact/test/app.test.ts"
 ---
 
 # Counterfact Runtime Architecture Skill
@@ -20,12 +20,12 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 ## Files to inspect first
 
-- `src/app.ts`
-- `src/api-runner.ts`
-- `src/server/dispatcher.ts`
-- `src/server/module-loader.ts`
-- `src/server/web-server/create-koa-app.ts`
-- `docs/reference.md` (architecture + runtime behavior)
+- `packages/counterfact/src/app.ts`
+- `packages/counterfact/src/api-runner.ts`
+- `packages/counterfact/src/server/dispatcher.ts`
+- `packages/counterfact/src/server/module-loader.ts`
+- `packages/counterfact/src/server/web-server/create-koa-app.ts`
+- `packages/counterfact/docs/reference.md` (architecture + runtime behavior)
 
 ## Existing conventions to follow
 
@@ -36,7 +36,7 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 ## Common mistakes to avoid
 
-- Coupling generator concerns into `src/server/*` code paths.
+- Coupling generator concerns into `packages/counterfact/src/server/*` code paths.
 - Breaking prefix/group/version routing derivation in `app.ts`.
 - Introducing restart-only behavior for changes currently handled by watch/reload paths.
 - Changing response defaults/content negotiation semantics unintentionally in `dispatcher` or Koa middleware.
@@ -44,5 +44,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 ## How to validate the change
 
 - Run: `yarn lint`, `yarn build`, `yarn test`.
-- Run focused runtime tests first (for touched areas), e.g. `test/server/dispatcher.test.ts`, `test/server/module-loader.test.ts`, `test/app.test.ts`.
+- Run focused runtime tests first (for touched areas), e.g. `packages/counterfact/test/server/dispatcher.test.ts`, `packages/counterfact/test/server/module-loader.test.ts`, `packages/counterfact/test/app.test.ts`.
 - Manually sanity-check startup + runtime flow with `yarn go:example` when behavior changes.

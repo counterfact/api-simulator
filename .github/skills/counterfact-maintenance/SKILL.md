@@ -4,8 +4,9 @@ description: >
   Keep contributor changes aligned with repository test patterns, diagnostics,
   release/versioning workflow, documentation requirements, and compatibility.
 applyTo:
-  - "src/**/*.ts"
-  - "test/**/*.ts"
+  - "packages/counterfact/src/**/*.ts"
+  - "packages/counterfact/test/**/*.ts"
+  - "packages/counterfact/docs/**/*.md"
   - "docs/**/*.md"
   - ".changeset/*.md"
 ---
@@ -20,17 +21,17 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 
 - `package.json` (canonical scripts)
 - `.github/copilot-instructions.md`
-- `docs/reference.md`
-- `docs/faq.md`
+- `packages/counterfact/docs/reference.md`
+- `packages/counterfact/docs/faq.md`
 - `.changeset/*.md` (format examples)
-- `test/**/*` for existing patterns/fixtures
+- `packages/counterfact/test/**/*` for existing patterns/fixtures
 
 ## Existing conventions to follow
 
 - Use `usingTemporaryFiles()` for filesystem-heavy tests.
-- Keep tests focused by subsystem (`test/cli`, `test/server`, `test/typescript-generator`, `test/util`).
+- Keep tests focused by subsystem (`packages/counterfact/test/cli`, `packages/counterfact/test/server`, `packages/counterfact/test/typescript-generator`, `packages/counterfact/test/util`).
 - Preserve documented behavior promises (e.g., regen preserves route edits; types are regenerated).
-- For user-facing behavior changes: add a changeset and update docs under `docs/`.
+- For user-facing behavior changes: add a changeset and update docs under `packages/counterfact/docs/`.
 
 ## Common mistakes to avoid
 

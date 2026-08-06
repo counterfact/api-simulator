@@ -24,20 +24,22 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 ## Repository structure
 
 ```text
-src/
-  app.ts                      # Main entry point; generation + server + REPL orchestration
-  server/                     # Koa server, dispatcher, registry, hot-reload internals
-  typescript-generator/       # OpenAPI parsing and TypeScript generation
-  counterfact-types/          # Public API types exposed to route-handler authors
-  repl/                       # Interactive terminal for runtime state control
-  migrate/                    # Helpers for migrating generated route files
-  client/                     # Built-in dashboard/docs page templates
-  util/                       # Shared utilities
-bin/
-  counterfact.js              # CLI entry point
-test/                         # Jest unit tests
+packages/counterfact/         # Published package workspace
+  src/
+    app.ts                    # Main entry point; generation + server + REPL orchestration
+    server/                   # Koa server, dispatcher, registry, hot-reload internals
+    typescript-generator/     # OpenAPI parsing and TypeScript generation
+    counterfact-types/        # Public API types exposed to route-handler authors
+    repl/                     # Interactive terminal for runtime state control
+    migrate/                  # Helpers for migrating generated route files
+    util/                     # Shared utilities
+  bin/counterfact.js          # CLI entry point
+  test/                       # Jest unit tests
+  templates/                  # Generator scaffold templates
+  docs/                       # Canonical user documentation
 test-black-box/               # Python black-box integration tests
-templates/                    # Generator scaffold templates
+examples/                     # Checked consumer examples
+site/                         # Documentation website
 ```
 
 ## Essential commands
@@ -46,8 +48,10 @@ templates/                    # Generator scaffold templates
 | ----------------------------- | -------------------------------- |
 | Install dependencies          | `yarn install --frozen-lockfile` |
 | Build                         | `yarn build`                     |
+| Type-check                    | `yarn typecheck`                 |
 | Unit tests                    | `yarn test`                      |
 | Black-box (integration) tests | `yarn test:black-box`            |
+| Installed package smoke test  | `yarn test:packed-consumer`      |
 | TypeScript type tests         | `yarn build && yarn test:tsd`    |
 | Lint (check)                  | `yarn lint`                      |
 | Lint (auto-fix)               | `yarn lint:fix`                  |
