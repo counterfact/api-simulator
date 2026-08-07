@@ -47,3 +47,6 @@ import type { Middleware, ResponseBuilder } from "@counterfact/types";
 Generated Counterfact projects should keep using their local
 `counterfact-types/` imports unless they deliberately choose a different
 dependency model.
+
+See [`examples/middleware.ts`](./examples/middleware.ts) for a complete
+public-import example that is type-checked by the package-closure harness.

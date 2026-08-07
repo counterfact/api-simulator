@@ -60,6 +60,12 @@ jobs:
       - name: Install Packages
         if: steps.docs-only.outputs.docs_only != 'true'
         run: yarn install --frozen-lockfile --network-timeout 100000
+      - name: Package Boundary Tests
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        run: yarn test:boundaries
+      - name: Package Boundaries
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        run: yarn check:boundaries
       - name: ESlint
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         run: yarn eslint -f github-annotations .
@@ -70,6 +76,10 @@ jobs:
         if: steps.docs-only.outputs.docs_only != 'true'
         timeout-minutes: 5
         run: yarn test:packed-consumer
+      - name: Exact Package Closure Tests
+        if: steps.docs-only.outputs.docs_only != 'true'
+        timeout-minutes: 15
+        run: yarn test:package-closures
       - name: Unit Tests
         if: steps.docs-only.outputs.docs_only != 'true'
         timeout-minutes: 2

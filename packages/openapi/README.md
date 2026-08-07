@@ -23,3 +23,6 @@ void bundled;
 `bundleOpenApiDocument` when a consumer needs external references folded into
 one document while retaining internal references. Overlay paths are applied in
 the order provided.
+
+See [`examples/load-local-spec.mjs`](./examples/load-local-spec.mjs) for a
+complete public-import example.

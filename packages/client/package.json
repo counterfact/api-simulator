@@ -2,7 +2,6 @@
   "name": "@counterfact/client",
   "version": "0.1.0",
   "description": "Build and send reusable OpenAPI-aware HTTP requests without starting Counterfact.",
-  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,11 +18,36 @@
     "License.md"
   ],
   "sideEffects": false,
+  "author": "Patrick McElhaney <pmcelhaney@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/counterfact/api-simulator.git",
+    "directory": "packages/client"
+  },
+  "bugs": "https://github.com/counterfact/api-simulator/issues",
+  "homepage": "https://counterfact.dev",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/pmcelhaney"
+  },
+  "keywords": [
+    "counterfact",
+    "openapi",
+    "api-client",
+    "http-client",
+    "typescript",
+    "testing"
+  ],
   "engines": {
     "node": ">=22"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
-    "build": "rimraf dist && tsc --build",
+    "build": "rimraf dist && tsc --build --force",
     "prepack": "yarn build",
     "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/client/test",
     "test:packed-consumer": "node test/package/client-consumer-smoke.mjs"

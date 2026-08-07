@@ -20,10 +20,14 @@ tests, releases, examples, and the documentation website.
 
 Focused workspace packages:
 
+- [`@counterfact/client`](./packages/client/README.md) — reusable,
+  OpenAPI-aware HTTP requests without the simulator or REPL.
 - [`@counterfact/generator`](./packages/generator/README.md) — route scaffolds,
   generated TypeScript contracts, scenarios, and compatible shared templates.
 - [`@counterfact/openapi`](./packages/openapi/README.md) — standalone OpenAPI
   loading, bundling, dereferencing, and overlays.
+- [`@counterfact/repl`](./packages/repl/README.md) — an embeddable Node.js REPL
+  over focused client and runtime contracts.
 - [`@counterfact/runtime`](./packages/runtime/README.md) — route dispatch,
   registries, validation, hot reload, proxying, and Koa/MSW adapters.
 - [`@counterfact/types`](./packages/types/README.md) — shared TypeScript

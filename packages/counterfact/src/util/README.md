@@ -4,8 +4,8 @@ This directory contains small, general-purpose helper modules that are used by m
 
 ## Files
 
-| File                         | Description                                                                                                                   |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `ensure-directory-exists.ts` | Creates a directory (and any missing parents) synchronously before writing a file                                             |
-| `wait-for-event.ts`          | Returns a `Promise` that resolves when a named event fires on an `EventEmitter` or `EventTarget`                              |
-| `windows-escape.ts`          | Escapes colons in Windows file paths (e.g. `C:\...`) using a Unicode ratio symbol to avoid conflicts in URLs and import paths |
+| File                         | Description                                                      |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `ensure-directory-exists.ts` | Creates missing parent directories before writing a file         |
+| `forward-slash-path.ts`      | Normalizes path joins and resolutions for generated import paths |
+| `load-config-file.ts`        | Reads and validates Counterfact JSON or YAML configuration files |
