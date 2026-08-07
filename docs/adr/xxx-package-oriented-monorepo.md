@@ -2,7 +2,12 @@
 
 ## Status
 
-Accepted
+Implemented (publication pending)
+
+The repository migration and release preparation were completed on 2026-08-06.
+Initial npm package creation, trusted-publisher configuration, and publication
+remain explicit maintainer-approved release operations rather than work for the
+migration branch.
 
 ## Context
 
@@ -203,7 +208,7 @@ direction with lint restrictions or an equivalent dependency-boundary check.
   whenever a dependency update changes its packaged behavior.
 - Scoped packages remain `private: true` until their public exports,
   documentation, license metadata, provenance, and tarball smoke tests are
-  complete.
+  complete. Phase 7 removes `private` only after those checks pass.
 - Publishing a focused package does not require immediately documenting every
   internal class as public. Each package exposes the smallest useful consumer
   surface and hides the rest with its `exports` map.
@@ -348,6 +353,40 @@ include their own Changeset when user-visible packaging changes.
   startup-scenario routes. The complete suite passed 911 tests plus one todo
   and 127 snapshots; client, REPL, facade tarball, and all 13 black-box tests
   passed independently.
+- **Phase 7 completed 2026-08-06.** The facade now contains only product-level
+  composition, CLI policy, migrations, compatibility exports, and packaging.
+  Its changelog moved beside the published manifest, dead utility and template
+  copies were removed, and dependencies no longer used by that boundary were
+  retired.
+- All six focused packages now have public `0.1.0` manifests, explicit exports,
+  license and repository metadata, provenance-enabled publish configuration,
+  focused READMEs, and runnable consumer examples. This makes the artifacts
+  publication-ready without publishing them from the migration branch.
+- A repository boundary checker validates all seven workspaces. Its nine tests
+  cover facade back-edges, private and deep imports, undeclared dependencies,
+  the dependency allowlist, project-reference mismatches, escaping relative
+  imports, and cycles. CI runs both the checker and its tests.
+- The exact-closure harness builds once, packs every workspace once with
+  lifecycle scripts disabled, and installs each package with only the tarballs
+  in its recursive Counterfact dependency closure. It imports every declared
+  export, rejects deep imports and build metadata, type-checks declarations,
+  and verifies each documented example from the installed tarball.
+- Moving incremental build metadata outside published directories exposed a
+  clean-build edge case: a prior no-emit typecheck could leave `dist` empty
+  while TypeScript considered the project current. Package builds now force
+  emission, and the closure harness clears the shared external build cache
+  before its single build.
+- The Node 24 and npm 11 release preflight performs a frozen, script-free
+  install, boundary validation, exact-closure verification, and Changesets
+  status without publishing. Ordinary `main` pushes prepare the version pull
+  request; publication requires a separate manual dispatch, no pending
+  changesets, a successful preflight, and approval of the downstream
+  `npm-publish` environment. Renovate compares the full pull-request diff when
+  deciding which public workspaces need changesets.
+- Final local verification passed 64 unit suites with 911 tests plus one todo
+  and 127 snapshots, all seven installed package closures, the facade packed
+  consumer, all 13 black-box tests, TSD, package-boundary checks, formatting,
+  workflow validation, and lint with warnings only.
 
 ### Phase 0: Freeze compatibility evidence
 
@@ -463,6 +502,9 @@ and `counterfact` composes them without a compatibility change.
 
 ### Phase 7: Harden the facade and prepare focused packages for publication
 
+Completed 2026-08-06. The steps below record the implemented release boundary;
+they do not authorize publication.
+
 1. Reduce `packages/counterfact` to CLI policy, migrations, top-level
    orchestration, compatibility exports, and packaging, removing dependencies
    and utilities that no longer serve that boundary.
@@ -488,6 +530,11 @@ and `counterfact` composes them without a compatibility change.
 **Exit criterion:** every public package has a tested, documented consumer use
 case and the repository is ready for a reviewed multi-package release, while
 existing users can continue installing only `counterfact`.
+
+**Result:** satisfied in the repository. Registry authentication, first package
+creation, trusted-publisher setup, and the actual release remain separately
+approved external operations documented in
+`docs/development/release-bootstrap.md`.
 
 ## Acceptance Criteria
 
