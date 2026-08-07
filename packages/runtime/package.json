@@ -2,7 +2,6 @@
   "name": "@counterfact/runtime",
   "version": "0.1.0",
   "description": "Run Counterfact routes with hot reload, validation, proxying, Koa, or MSW.",
-  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -22,12 +21,43 @@
   },
   "files": [
     "dist",
+    "examples",
     "README.md",
     "License.md"
   ],
   "sideEffects": false,
+  "author": "Patrick McElhaney <pmcelhaney@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/counterfact/api-simulator.git",
+    "directory": "packages/runtime"
+  },
+  "bugs": "https://github.com/counterfact/api-simulator/issues",
+  "homepage": "https://counterfact.dev",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/pmcelhaney"
+  },
+  "keywords": [
+    "counterfact",
+    "openapi",
+    "mock-server",
+    "api-mocking",
+    "koa",
+    "msw",
+    "typescript",
+    "testing"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
-    "build": "rimraf dist && tsc --build && copyfiles -f \"src/server/*.cjs\" dist/server",
+    "build": "rimraf dist && tsc --build --force && copyfiles -f \"src/server/*.cjs\" dist/server",
     "prepack": "yarn build",
     "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/runtime/test"
   },

@@ -14,9 +14,7 @@ describe("escapePathForWindows", () => {
 
   it("replaces the drive-letter colon and any additional colons in a Windows path", () => {
     const result = escapePathForWindows("C:\\Users\\foo");
-    // Drive-letter part (C:) is preserved; additional colons in the rest are replaced
     expect(result.startsWith("C:")).toBe(true);
-    // No regular colon should appear after the first two characters
     expect(result.slice(2)).not.toContain(":");
   });
 
@@ -35,7 +33,6 @@ describe("unescapePathForWindows", () => {
   it("converts the ratio symbol back to colons", () => {
     const escaped = escapePathForWindows("C:\\some\\path");
     const unescaped = unescapePathForWindows(escaped);
-    // The drive-letter colon is preserved; the round-trip should restore colons
     expect(unescaped).toContain("C:");
   });
 

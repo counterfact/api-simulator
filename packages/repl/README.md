@@ -4,8 +4,6 @@ Counterfact's interactive Node.js REPL integration. It accepts narrow runtime
 registries and a client route catalog, so applications can embed the terminal
 experience without importing Counterfact's CLI or telemetry policy.
 
-The package is private while its direct-consumer API is stabilized.
-
 ## Starting a REPL
 
 ```js
@@ -54,3 +52,6 @@ The REPL starts with these live values:
 For multiple APIs, `context`, `loadContext`, `route`, and `routes` are grouped
 by API name. The `.proxy` command changes live proxy configuration and
 `.scenario` applies named scenario functions.
+
+See [`examples/complete-routes.mjs`](./examples/complete-routes.mjs) for a
+complete public-import example.

@@ -4,8 +4,6 @@ Counterfact's raw HTTP client and immutable, OpenAPI-aware request builder.
 Use it to construct, inspect, reuse, and send requests without starting the
 Counterfact REPL or simulator.
 
-The package is private while its direct-consumer API is stabilized.
-
 ## Reusable requests
 
 ```js

@@ -72,6 +72,6 @@ Counterfact gives you a fast, contract-shaped world to build against. Keep targe
 
 <div align="center" markdown="1">
 
-[Changelog](https://github.com/counterfact/api-simulator/blob/main/CHANGELOG.md) · [Contributing](https://github.com/counterfact/api-simulator/blob/main/CONTRIBUTING.md) · [Security](https://github.com/counterfact/api-simulator/blob/main/SECURITY.md)
+[Changelog](https://github.com/counterfact/api-simulator/blob/main/packages/counterfact/CHANGELOG.md) · [Contributing](https://github.com/counterfact/api-simulator/blob/main/CONTRIBUTING.md) · [Security](https://github.com/counterfact/api-simulator/blob/main/SECURITY.md)
 
 </div>
