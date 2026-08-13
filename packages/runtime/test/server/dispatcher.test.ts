@@ -1874,6 +1874,21 @@ describe("given a request that contains the differently cased path", () => {
       expect(response.body).toContain("x-required-header");
     });
 
+    it("accepts a required header with different casing", async () => {
+      const dispatcher = makeDispatcher(true);
+
+      const response = await dispatcher.request({
+        body: { name: "sprocket" },
+        headers: { "X-Required-Header": "yes" },
+        method: "POST",
+        path: "/widgets",
+        query: { "required-query": "yes" },
+        req: { path: "/widgets" },
+      });
+
+      expect(response.status).toBe(200);
+    });
+
     it("returns 400 when the request body is missing a required field", async () => {
       const dispatcher = makeDispatcher(true);
 

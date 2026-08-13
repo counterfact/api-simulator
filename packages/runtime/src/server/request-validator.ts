@@ -49,6 +49,15 @@ function findMissingRequired(
   location: string,
   values: Record<string, string | string[] | unknown>,
 ): string[] {
+  const headerNamesWithValues =
+    location === "header"
+      ? new Set(
+          Object.entries(values)
+            .filter(([, value]) => value !== undefined)
+            .map(([name]) => name.toLowerCase()),
+        )
+      : undefined;
+
   return parameters
     .filter((p) => p.in === location && p.required === true)
     .filter((p) => {
@@ -64,6 +73,11 @@ function findMissingRequired(
         // The parameter is "missing" only when none of its properties are present.
         return !Object.keys(properties).some((key) => key in values);
       }
+
+      if (headerNamesWithValues !== undefined) {
+        return !headerNamesWithValues.has(p.name.toLowerCase());
+      }
+
       return !(p.name in values) || values[p.name] === undefined;
     })
     .map((p) => `${location} parameter '${p.name}' is required`);
