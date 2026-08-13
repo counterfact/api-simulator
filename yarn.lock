@@ -6977,10 +6977,10 @@ readdirp@^5.0.0:
   resolved "https://registry.yarnpkg.com/readdirp/-/readdirp-5.0.0.tgz#fbf1f71a727891d685bb1786f9ba74084f6e2f91"
   integrity sha512-9u/XQ1pvrQtYyMpZe7DXKv2p5CNvyVwzUB6uhLAnQwHMSgKMBR62lc7AHljaeteeHXn11XTAaLLUVZYVZyuRBQ==
 
-recast@0.23.19:
-  version "0.23.19"
-  resolved "https://registry.yarnpkg.com/recast/-/recast-0.23.19.tgz#e645dba8c3dc2fb3a1a88f89401168c4afa66843"
-  integrity sha512-T98lym7kH+pnZmRaD8yDRdaNqyUbwnbEBx0MuchrzMFOEMray4AO3ZJoTUZ5r78Ao78X/OhzW0DL8GB85w/I2w==
+recast@0.24.0:
+  version "0.24.0"
+  resolved "https://registry.yarnpkg.com/recast/-/recast-0.24.0.tgz#78e2eb15b13222d00deb4ede0bfacbd1b48ee710"
+  integrity sha512-dN08tw9Kl2i8oDBy16NhxBh6qOqsEqmGYpX1xaxPmgz6/6ukopSuysLfvLbieuDMY57jEz6eTmNz6lqH54kuqQ==
   dependencies:
     ast-types "^0.16.1"
     esprima "~4.0.0"
