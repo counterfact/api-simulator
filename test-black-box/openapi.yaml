@@ -69,3 +69,50 @@ paths:
               schema:
                 type: string
                 format: binary
+
+  /guard:
+    get:
+      summary: Requires a trace header
+      operationId: guardedRequest
+      parameters:
+        - name: X-Trace-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Header accepted
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                accepted:
+                  value: trace accepted
+
+  /widgets:
+    post:
+      summary: Accepts a valid widget body
+      operationId: createWidget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: Widget accepted
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                accepted:
+                  value: accepted

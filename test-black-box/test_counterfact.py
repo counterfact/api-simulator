@@ -79,6 +79,62 @@ def test_handles_path_with_colon(server):
     assert response.text == "colon handled"
 
 
+def test_disallowed_method_returns_allow_header(server):
+    """A known path rejects unsupported methods and advertises allowed ones."""
+    response = requests.post(f"{BASE_URL}/ping", timeout=REQUEST_TIMEOUT)
+    assert response.status_code == 405
+    assert response.headers.get("allow") == "GET"
+    assert response.text == "The POST method is not allowed for /ping\n"
+
+
+def test_unacceptable_response_media_type_returns_not_acceptable(server):
+    """A route returns HTTP 406 when it cannot satisfy the Accept header."""
+    response = requests.get(
+        f"{BASE_URL}/items",
+        headers={"Accept": "text/plain"},
+        timeout=REQUEST_TIMEOUT,
+    )
+    assert response.status_code == 406
+    assert response.text == (
+        "Not Acceptable: could not produce a response matching any of the "
+        "following content types: text/plain"
+    )
+
+
+def test_required_header_validation_is_case_insensitive(server):
+    """Required headers accept HTTP's case-insensitive field names."""
+    missing_header = requests.get(f"{BASE_URL}/guard", timeout=REQUEST_TIMEOUT)
+    assert missing_header.status_code == 400
+    assert "header parameter 'X-Trace-ID' is required" in missing_header.text
+
+    lowercase_header = requests.get(
+        f"{BASE_URL}/guard",
+        headers={"x-trace-id": "trace-1"},
+        timeout=REQUEST_TIMEOUT,
+    )
+    assert lowercase_header.status_code == 200
+    assert lowercase_header.text == "trace accepted"
+
+
+def test_request_body_validation_rejects_invalid_json(server):
+    """Invalid JSON bodies are rejected before valid requests reach the route."""
+    invalid_body = requests.post(
+        f"{BASE_URL}/widgets",
+        json={},
+        timeout=REQUEST_TIMEOUT,
+    )
+    assert invalid_body.status_code == 400
+    assert "body must have required property 'name'" in invalid_body.text
+
+    valid_body = requests.post(
+        f"{BASE_URL}/widgets",
+        json={"name": "example widget"},
+        timeout=REQUEST_TIMEOUT,
+    )
+    assert valid_body.status_code == 200
+    assert valid_body.text == "accepted"
+
+
 def test_spec_flag_generates_route_files():
     """The --spec flag allows passing the OpenAPI spec path as a named option."""
     temp_dir = tempfile.mkdtemp(prefix="counterfact-spec-test-")
