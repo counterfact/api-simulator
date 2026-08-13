@@ -9,14 +9,14 @@ const repositoryRoot = path.resolve(
 );
 
 function executable(name) {
-  return process.platform === "win32" ? `${name}.cmd` : name;
+  return name === "node" ? process.execPath : name;
 }
 
 async function run(command, args, { capture = false } = {}) {
   const result = await new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: repositoryRoot,
-      shell: false,
+      shell: process.platform === "win32" && command !== process.execPath,
       stdio: capture ? ["ignore", "pipe", "inherit"] : "inherit",
     });
     let stdout = "";

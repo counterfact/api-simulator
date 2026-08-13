@@ -38,7 +38,7 @@ const examples = new Map([
 ]);
 
 function executable(name) {
-  return process.platform === "win32" ? `${name}.cmd` : name;
+  return name === "node" ? process.execPath : name;
 }
 
 async function run(command, args, cwd, env = process.env) {
@@ -46,7 +46,7 @@ async function run(command, args, cwd, env = process.env) {
     const child = spawn(command, args, {
       cwd,
       env,
-      shell: false,
+      shell: process.platform === "win32" && command !== process.execPath,
       stdio: ["ignore", "pipe", "pipe"],
     });
     let stderr = "";

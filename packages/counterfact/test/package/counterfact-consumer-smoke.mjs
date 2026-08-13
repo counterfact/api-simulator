@@ -31,7 +31,7 @@ const expectedGeneratedFilesPath = path.join(
 );
 
 function executable(name) {
-  return process.platform === "win32" ? `${name}.cmd` : name;
+  return name === "node" ? process.execPath : name;
 }
 
 async function run(command, args, options = {}) {
@@ -39,7 +39,9 @@ async function run(command, args, options = {}) {
     const child = spawn(command, args, {
       cwd: options.cwd ?? packageRoot,
       env: { ...process.env, ...options.env },
-      shell: options.shell ?? false,
+      shell:
+        options.shell ??
+        (process.platform === "win32" && command !== process.execPath),
       stdio: ["ignore", "pipe", "pipe"],
     });
     let stderr = "";

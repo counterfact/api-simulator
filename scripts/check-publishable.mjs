@@ -11,7 +11,7 @@ const repositoryRoot = path.resolve(
 const packagesRoot = path.join(repositoryRoot, "packages");
 
 function executable(name) {
-  return process.platform === "win32" ? `${name}.cmd` : name;
+  return name === "node" ? process.execPath : name;
 }
 
 async function readJson(file) {
@@ -92,7 +92,7 @@ async function runNpm(args, directory) {
   const result = await new Promise((resolve, reject) => {
     const child = spawn(executable("npm"), args, {
       cwd: directory,
-      shell: false,
+      shell: process.platform === "win32",
       stdio: ["ignore", "pipe", "pipe"],
     });
     let stdout = "";
