@@ -69,6 +69,7 @@ await run(executable("yarn"), [
 ]);
 await run(process.execPath, ["scripts/check-package-boundaries.mjs"]);
 await run(process.execPath, ["scripts/test-package-closures.mjs"]);
+await run(process.execPath, ["scripts/check-publishable.mjs"]);
 await run(process.execPath, ["node_modules/@changesets/cli/bin.js", "status"]);
 
 process.stdout.write("Release preflight passed without publishing.\n");

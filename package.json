@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "check:boundaries": "node scripts/check-package-boundaries.mjs",
+    "check:publishable": "node scripts/check-publishable.mjs",
     "test": "yarn workspace counterfact test",
     "test:boundaries": "node --test scripts/check-package-boundaries.test.mjs",
     "test:client": "yarn workspace @counterfact/client test",

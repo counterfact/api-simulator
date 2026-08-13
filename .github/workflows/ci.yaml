@@ -60,6 +60,9 @@ jobs:
       - name: Install Packages
         if: steps.docs-only.outputs.docs_only != 'true'
         run: yarn install --frozen-lockfile --network-timeout 100000
+      - name: Build Workspaces
+        if: steps.docs-only.outputs.docs_only != 'true'
+        run: yarn build
       - name: Package Boundary Tests
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         run: yarn test:boundaries
