@@ -47,7 +47,9 @@ def server():
     """
     temp_work_dir = tempfile.mkdtemp(prefix="counterfact-work-")
     openapi_spec = os.path.join(TEST_BLACK_BOX_DIR, "openapi.yaml")
-    counterfact_bin = os.path.join(REPO_ROOT, "bin", "counterfact.js")
+    counterfact_bin = os.path.join(
+        REPO_ROOT, "packages", "counterfact", "bin", "counterfact.js"
+    )
     log_path = os.path.join(temp_work_dir, "server.log")
 
     log_file = open(log_path, "w")  # noqa: SIM115

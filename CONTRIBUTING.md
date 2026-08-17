@@ -13,17 +13,22 @@
 
 ## Development
 
-This is a pretty straightforward NodeJS project.
+This is a Yarn 1 workspace monorepo. The published application is in
+`packages/counterfact`; repository-wide tooling, examples, black-box tests, and
+the documentation website remain at the root.
 
 ```sh
 git clone git@github.com:pmcelhaney/counterfact.git
 cd counterfact
-npm install
-npm lint
-npm test
+yarn install
+yarn lint
+yarn test
 ```
 
-The [code generator](./src/typescript-generator/README.md) is under `src/typescript-generator`. The server is directly under `src`. I'm planning to move it to `src/server`.
+The [code generator](./packages/counterfact/src/typescript-generator/README.md)
+and server runtime are currently part of the `counterfact` workspace. Root
+scripts coordinate builds and checks, so contributors do not need to change
+directories for the standard workflow.
 
 Testing and linting changes is important, but at this point I'm more concerned about changing the word "I" in this page to "we", so don't hesitate to create a PR, even it's not "finished".
 

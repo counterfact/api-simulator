@@ -1,0 +1,62 @@
+{
+  "name": "@counterfact/generator",
+  "version": "0.1.0",
+  "description": "Generate Counterfact route scaffolds and OpenAPI-derived TypeScript contracts.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "examples",
+    "README.md",
+    "License.md"
+  ],
+  "sideEffects": false,
+  "author": "Patrick McElhaney <pmcelhaney@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/counterfact/api-simulator.git",
+    "directory": "packages/generator"
+  },
+  "bugs": "https://github.com/counterfact/api-simulator/issues",
+  "homepage": "https://counterfact.dev",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/pmcelhaney"
+  },
+  "keywords": [
+    "counterfact",
+    "openapi",
+    "code-generator",
+    "api-mocking",
+    "typescript",
+    "testing"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc --build --force && copyfiles -f \"../types/src/*.ts\" dist/templates/counterfact-types && rimraf dist/templates/counterfact-types/streaming-content-types.ts",
+    "prepack": "yarn build",
+    "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/generator/test",
+    "test:packed-consumer": "node test/package/generator-consumer-smoke.mjs"
+  },
+  "dependencies": {
+    "@counterfact/openapi": "0.1.0",
+    "@counterfact/types": "0.1.0",
+    "chokidar": "5.0.0",
+    "debug": "4.4.3",
+    "prettier": "3.9.6"
+  }
+}
