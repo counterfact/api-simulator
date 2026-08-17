@@ -133,7 +133,7 @@
     "using-temporary-files": "2.2.1"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "15.5.1",
+    "@apidevtools/json-schema-ref-parser": "16.0.0",
     "@hapi/accept": "6.0.3",
     "@types/json-schema": "7.0.15",
     "ajv": "8.20.0",
