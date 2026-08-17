@@ -10,10 +10,10 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@apidevtools/json-schema-ref-parser@15.5.1":
-  version "15.5.1"
-  resolved "https://registry.yarnpkg.com/@apidevtools/json-schema-ref-parser/-/json-schema-ref-parser-15.5.1.tgz#bcd27f8285b2124a1832975c354b800686293aba"
-  integrity sha512-69KDKWQvk5jfDQfSTzAUHkI731X7CaJLwQxlS87AXyFHoJzsd/Pufrqsz7PqXMgrtAA99D9Y6NujkEkzli6kVA==
+"@apidevtools/json-schema-ref-parser@15.5.2":
+  version "15.5.2"
+  resolved "https://registry.yarnpkg.com/@apidevtools/json-schema-ref-parser/-/json-schema-ref-parser-15.5.2.tgz#ecdf9aca202fa583dc18da07f7f47f7ea28bd677"
+  integrity sha512-B+C9Ok0DF/rjANIUHgwcV5/d4C72MB7f2IbKFL8jDGcGq2qn3yr893s8vAn2kbhmyaelAin0JK8EKF9P1+y7aQ==
   dependencies:
     js-yaml "^5.2.2"
     undici "^6.28.0"
