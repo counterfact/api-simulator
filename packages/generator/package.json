@@ -1,6 +1,6 @@
 {
   "name": "@counterfact/generator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate Counterfact route scaffolds and OpenAPI-derived TypeScript contracts.",
   "type": "module",
   "main": "./dist/index.js",
@@ -53,7 +53,7 @@
     "test:packed-consumer": "node test/package/generator-consumer-smoke.mjs"
   },
   "dependencies": {
-    "@counterfact/openapi": "0.1.0",
+    "@counterfact/openapi": "0.1.1",
     "@counterfact/types": "0.1.0",
     "chokidar": "5.0.0",
     "debug": "4.4.3",
