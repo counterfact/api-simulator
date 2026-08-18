@@ -105,6 +105,67 @@ describe("StoreLoader", () => {
     });
   });
 
+  it("reloads an atomic replacement without reporting the temporary gap as deletion", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "_.store.ts",
+        'export class Store { value = "initial"; method() { return "old" } }',
+      );
+      const onStoreChange = jest.fn();
+      const stderr = jest.spyOn(process.stderr, "write").mockReturnValue(true);
+      const loader = new StoreLoader($.path("."), { onStoreChange });
+      const store = (await loader.load()) as {
+        method(): string;
+        value: string;
+      };
+      await loader.watch();
+
+      try {
+        const changed = eventTargetForCallback(onStoreChange);
+        jest.resetModules();
+        await $.add(
+          "_.store.ts.next",
+          'export class Store { value = "replacement"; added = true; method() { return "new" } }',
+        );
+        const replacement = await $.read("_.store.ts.next");
+        await $.remove("_.store.ts");
+        await $.add("_.store.ts", replacement);
+        await $.remove("_.store.ts.next");
+        await changed;
+
+        expect(loader.store).toBe(store);
+        expect(store).toMatchObject({ added: true, value: "initial" });
+        expect(store.method()).toBe("new");
+        expect(stderr).not.toHaveBeenCalledWith(
+          expect.stringContaining("deleted"),
+        );
+      } finally {
+        await loader.stopWatching();
+        stderr.mockRestore();
+      }
+    });
+  });
+
+  it("ignores changes to unrelated sibling files", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("_.store.ts", "export class Store { value = 1 }");
+      const onStoreChange = jest.fn();
+      const loader = new StoreLoader($.path("."), { onStoreChange });
+
+      await loader.load();
+      await loader.watch();
+
+      try {
+        await $.add("README.md", "unrelated");
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        expect(onStoreChange).not.toHaveBeenCalled();
+      } finally {
+        await loader.stopWatching();
+      }
+    });
+  });
+
   it("retains the last good store and reports broken reloads and deletion", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(

@@ -1,4 +1,5 @@
-import { access } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { type FSWatcher, watch } from "chokidar";
@@ -9,6 +10,8 @@ import { determineModuleKind } from "./determine-module-kind.js";
 import { uncachedImport } from "./uncached-import.js";
 
 const { uncachedRequire } = await import("./uncached-require.cjs");
+
+const RECONCILE_DELAY_MS = 60;
 
 type Store = object;
 
@@ -36,9 +39,13 @@ export class StoreLoader {
 
   private sourcePresent = false;
 
+  private sourceRevision: string | undefined;
+
   private watcher: FSWatcher | undefined;
 
   private eventQueue: Promise<void> = Promise.resolve();
+
+  private reconcileTimer: ReturnType<typeof setTimeout> | undefined;
 
   public constructor(basePath: string, callbacks: StoreLoaderCallbacks = {}) {
     this.sourcePath = path.resolve(basePath, "_.store.ts");
@@ -51,7 +58,10 @@ export class StoreLoader {
   public async load(): Promise<Store | undefined> {
     if (this.initialized) return this.store;
 
-    if (!(await this.fileExists())) {
+    const revision = await this.readSourceRevision();
+    this.sourceRevision = revision;
+
+    if (revision === undefined) {
       this.sourcePresent = false;
       this.initialized = true;
       return undefined;
@@ -75,11 +85,7 @@ export class StoreLoader {
       ...CHOKIDAR_OPTIONS,
       awaitWriteFinish: { pollInterval: 10, stabilityThreshold: 50 },
       depth: 0,
-    }).on("all", (eventName: string, filePath: string) => {
-      if (path.resolve(filePath) !== this.sourcePath) {
-        return;
-      }
-
+    }).on("all", (eventName: string) => {
       if (
         eventName !== "add" &&
         eventName !== "change" &&
@@ -88,9 +94,11 @@ export class StoreLoader {
         return;
       }
 
-      this.enqueue(async () => {
-        await this.handleWatchEvent(eventName);
-      });
+      // Editors commonly replace a file by writing a sibling temporary file
+      // and renaming it over the original. Coalesce every shallow directory
+      // transition, then compare the exact source contents so unrelated files
+      // cannot trigger a store reload.
+      this.scheduleReconcile();
     });
 
     await waitForEvent(this.watcher, "ready");
@@ -98,7 +106,7 @@ export class StoreLoader {
     // Reconcile after the initial scan because ignoreInitial deliberately
     // suppresses add events. This also closes the load-to-watch race.
     this.enqueue(async () => {
-      await this.reconcileAfterReady();
+      await this.reconcileSource();
     });
     await this.eventQueue;
   }
@@ -108,7 +116,31 @@ export class StoreLoader {
     const watcher = this.watcher;
     this.watcher = undefined;
     await watcher?.close();
+    this.flushScheduledReconcile();
     await this.eventQueue;
+  }
+
+  private scheduleReconcile(): void {
+    if (this.reconcileTimer !== undefined) {
+      clearTimeout(this.reconcileTimer);
+    }
+
+    this.reconcileTimer = setTimeout(() => {
+      this.reconcileTimer = undefined;
+      this.enqueue(async () => {
+        await this.reconcileSource();
+      });
+    }, RECONCILE_DELAY_MS);
+  }
+
+  private flushScheduledReconcile(): void {
+    if (this.reconcileTimer === undefined) return;
+
+    clearTimeout(this.reconcileTimer);
+    this.reconcileTimer = undefined;
+    this.enqueue(async () => {
+      await this.reconcileSource();
+    });
   }
 
   private enqueue(operation: () => Promise<void>): void {
@@ -119,32 +151,19 @@ export class StoreLoader {
       });
   }
 
-  private async handleWatchEvent(
-    eventName: "add" | "change" | "unlink",
-  ): Promise<void> {
-    if (eventName === "unlink") {
+  private async reconcileSource(): Promise<void> {
+    const revision = await this.readSourceRevision();
+
+    if (this.initialized && revision === this.sourceRevision) return;
+
+    this.sourceRevision = revision;
+
+    if (revision === undefined) {
       await this.updateSourcePresence(false);
       this.initialized = true;
       if (this.store !== undefined) {
         throw new Error("the store source was deleted");
       }
-      return;
-    }
-
-    await this.updateSourcePresence(true);
-    const candidate = await this.importCandidate();
-    await this.applyCandidate(candidate);
-    this.initialized = true;
-  }
-
-  private async reconcileAfterReady(): Promise<void> {
-    const present = await this.fileExists();
-
-    if (this.initialized && present === this.sourcePresent) return;
-
-    if (!present) {
-      await this.updateSourcePresence(false);
-      this.initialized = true;
       return;
     }
 
@@ -236,12 +255,16 @@ export class StoreLoader {
     );
   }
 
-  private async fileExists(): Promise<boolean> {
+  private async readSourceRevision(): Promise<string | undefined> {
     try {
-      await access(this.sourcePath);
-      return true;
-    } catch {
-      return false;
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- sourcePath is the constructor-resolved conventional store path.
+      const source = await readFile(this.sourcePath);
+      return createHash("sha256").update(source).digest("hex");
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        return undefined;
+      }
+      throw error;
     }
   }
 }
