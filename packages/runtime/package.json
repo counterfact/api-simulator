@@ -53,8 +53,7 @@
     "node": ">=22"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "rimraf dist && tsc --build --force && copyfiles -f \"src/server/*.cjs\" dist/server",
