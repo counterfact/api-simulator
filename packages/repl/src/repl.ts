@@ -6,6 +6,7 @@ import {
   type RouteCatalog,
 } from "@counterfact/client";
 import type {
+  ChaosRegistry,
   ContextLookup,
   RouteListing,
   ScenarioCatalog,
@@ -258,6 +259,7 @@ export function createCompleter(
  * - `context` / `loadContext(path)` globals wired to the {@link ContextRegistry}.
  * - `client` — a {@link RawHttpClient} pre-configured for `localhost`.
  * - `route(path)` — creates a {@link RouteBuilder} for the given path.
+ * - `chaos(pathPrefix?)` — creates an HTTP-response fault rule when configured.
  * - `.counterfact` — help command.
  * - `.proxy` — proxy configuration command.
  * - `.scenario` — runs a named scenario function from the scenarios directory.
@@ -269,6 +271,7 @@ export function createCompleter(
  * @param routeCatalog - Optional route catalog for tab completion and request help.
  * @param scenarioRegistry - Optional scenario registry for `.scenario` support.
  * @param reportEvent - Optional observer for REPL command usage.
+ * @param chaosRegistry - Optional server-owned registry exposed as the `chaos()` global.
  * @returns The configured Node.js REPL server instance.
  */
 export function startRepl(
@@ -281,6 +284,7 @@ export function startRepl(
   apiBindings?: ReplApiBinding[],
   store?: object,
   reportEvent?: ReplEventReporter,
+  chaosRegistry?: ChaosRegistry,
 ) {
   const bindings =
     apiBindings === undefined || apiBindings.length === 0
@@ -451,6 +455,11 @@ export function startRepl(
       print(
         "- route('/some/path'): create a request builder for the given path",
       );
+      if (chaosRegistry !== undefined) {
+        print(
+          "- chaos('/some/path'): create an HTTP-response fault rule for a path prefix",
+        );
+      }
       print("");
       print(
         "For more information, see https://github.com/counterfact/api-simulator/blob/main/docs/usage.md",
@@ -513,6 +522,11 @@ export function startRepl(
 
   if (store !== undefined) {
     replServer.context.store = store;
+  }
+
+  if (chaosRegistry !== undefined) {
+    replServer.context.chaos = (pathPrefix = "") =>
+      chaosRegistry.createRule(pathPrefix);
   }
 
   replServer.defineCommand("scenario", {

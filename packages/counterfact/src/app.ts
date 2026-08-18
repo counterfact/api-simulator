@@ -9,6 +9,7 @@ import {
 } from "@counterfact/client";
 import { generateVersionsTsContent, Repository } from "@counterfact/generator";
 import {
+  ChaosRegistry,
   ContextRegistry,
   ScenarioRegistry,
   StoreLoader,
@@ -280,6 +281,7 @@ export async function counterfact<TStore = unknown>(
   });
   const initialStore = await storeLoader.load();
   hasStore = initialStore !== undefined;
+  const chaosRegistry = new ChaosRegistry();
 
   // Compute the ordered versions per group (oldest first, as declared in specs).
   // This list is passed to each runner so that $.minVersion() can compare
@@ -331,6 +333,7 @@ export async function counterfact<TStore = unknown>(
         spec.version ?? "",
         versionsByGroup.get(spec.group) ?? [],
         stateByGroup.get(spec.group),
+        chaosRegistry,
       ),
     ),
   );
@@ -513,6 +516,7 @@ export async function counterfact<TStore = unknown>(
         ({ command }) => {
           sendTelemetry("repl_command_used", { command });
         },
+        chaosRegistry,
       );
       replServers.add(replServer);
       return replServer;

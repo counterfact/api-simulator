@@ -6,6 +6,7 @@ import {
   ScenarioFileGenerator,
 } from "@counterfact/generator";
 import {
+  ChaosRegistry,
   ContextRegistry,
   Dispatcher,
   loadOpenApiDocument,
@@ -124,6 +125,7 @@ export class ApiRunner {
     version = "",
     versions: readonly string[] = [],
     groupState?: ApiRunnerGroupState,
+    chaosRegistry = new ChaosRegistry(),
   ) {
     this.group = group;
     this.version = version;
@@ -168,6 +170,7 @@ export class ApiRunner {
       config,
       version,
       versions,
+      chaosRegistry,
     );
 
     this.transpiler = new Transpiler(
@@ -206,6 +209,7 @@ export class ApiRunner {
     version = "",
     versions: readonly string[] = [],
     groupState?: ApiRunnerGroupState,
+    chaosRegistry = new ChaosRegistry(),
   ): Promise<ApiRunner> {
     const nativeTs = await runtimeCanExecuteErasableTs();
 
@@ -238,6 +242,7 @@ export class ApiRunner {
       version,
       versions,
       groupState,
+      chaosRegistry,
     );
   }
 
