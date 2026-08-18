@@ -1,5 +1,26 @@
 # counterfact
 
+## 2.16.2
+
+### Patch Changes
+
+- 78075e3: Emit and publish TypeScript declarations for Counterfact's programmatic API.
+- 13eaf4d: supply a random seed to JSONSchemaFaker so it returns actually random values
+- def0394: Publish additive focused package APIs for OpenAPI loading, generation, runtime
+  embedding, reusable clients, REPL integration, and shared TypeScript contracts
+  while preserving the existing `counterfact` facade.
+- 4139180: Updated dependency `posthog-node` to `5.47.3`.
+- eb356b4: Updated dependency `open` to `11.0.1`.
+- 0911530: Updated dependency `json-schema-faker` to `0.6.3`.
+- 29e1192: Updated dependency `js-yaml` to `5.2.3`.
+- e15497e: Updated dependency `prettier` to `3.9.6`.
+- Updated dependencies [5d1ea2e]
+- Updated dependencies [f5e437d]
+  - @counterfact/runtime@0.1.1
+  - @counterfact/openapi@0.1.1
+  - @counterfact/repl@0.1.1
+  - @counterfact/generator@0.1.1
+
 ## 2.16.1
 
 ### Patch Changes
