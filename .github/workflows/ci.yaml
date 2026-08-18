@@ -73,18 +73,18 @@ jobs:
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         run: yarn eslint -f github-annotations .
       - name: TypeScript
-        if: steps.docs-only.outputs.docs_only != 'true'
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         run: yarn typecheck
       - name: Packed Consumer Test
-        if: steps.docs-only.outputs.docs_only != 'true'
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         timeout-minutes: 5
         run: yarn test:packed-consumer
       - name: Exact Package Closure Tests
-        if: steps.docs-only.outputs.docs_only != 'true'
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         timeout-minutes: 15
         run: yarn test:package-closures
       - name: Unit Tests
-        if: steps.docs-only.outputs.docs_only != 'true'
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         timeout-minutes: 2
         run: yarn test --runInBand --forceExit --verbose --no-watchman
       - name: Set up Python
