@@ -2,9 +2,12 @@
 
 <h1><img src="./counterfact.svg" alt="Counterfact" border="0"></h1>
 
-## Turn an OpenAPI document into an editable, stateful local API.
+## Prototype your UI before investing in backend development
 
 </div>
+
+Counterfact turns an OpenAPI document into an editable, stateful local API so
+your frontend can explore real workflows before the backend exists.
 
 Counterfact is organized as a monorepo. The published `counterfact` package,
 its complete overview, and its canonical user documentation live in
