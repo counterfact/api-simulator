@@ -12,9 +12,8 @@ import re
 
 import pytest
 from pytest_bdd import given, scenario, then, when
-import requests
 
-from support.journey import PROMPT, REQUEST_TIMEOUT, STARTUP_TIMEOUT
+from support.journey import PROMPT, STARTUP_TIMEOUT
 
 
 OPENAPI_DOCUMENT = {
@@ -360,10 +359,10 @@ def repl_observes_missing_pet(journey):
 
 @then("request validation rejects an invalid pet")
 def invalid_pet_is_rejected(journey):
-    journey.response = requests.post(
-        f"{journey.base_url}/pets",
+    journey.response = journey.request(
+        "post",
+        "/pets",
         json={},
-        timeout=REQUEST_TIMEOUT,
     )
     assert journey.response.status_code == 400, (
         f"Expected invalid body to return 400, got "
@@ -389,9 +388,7 @@ def create_fluffy(journey):
 
 @then("Fluffy is available as pet 1")
 def fluffy_is_pet_one(journey):
-    journey.response = requests.get(
-        f"{journey.base_url}/pets/1", timeout=REQUEST_TIMEOUT
-    )
+    journey.response = journey.request("get", "/pets/1")
     assert journey.response.status_code == 200, journey.transcript()
     assert journey.response.json() == {
         "name": "Fluffy",
@@ -408,9 +405,7 @@ def apply_add_pending_pet(journey):
 
 @then("the additive scenario preserves Fluffy and adds Rex")
 def additive_scenario_preserves_existing_state(journey):
-    journey.response = requests.get(
-        f"{journey.base_url}/pets", timeout=REQUEST_TIMEOUT
-    )
+    journey.response = journey.request("get", "/pets")
     assert journey.response.status_code == 200, journey.transcript()
     assert journey.response.json() == [
         {"name": "Fluffy", "status": "available", "id": 1},
@@ -533,9 +528,7 @@ def repl_autocompletes_history(journey):
 
 @then("the original pet state still exists")
 def original_pet_state_still_exists(journey):
-    journey.response = requests.get(
-        f"{journey.base_url}/pets/1", timeout=REQUEST_TIMEOUT
-    )
+    journey.response = journey.request("get", "/pets/1")
     assert journey.response.status_code == 200, journey.transcript()
     assert journey.response.json()["name"] == "Fluffy", journey.transcript()
 
@@ -548,9 +541,7 @@ def apply_reset(journey):
 
 @then("the empty baseline is restored")
 def empty_baseline_is_restored(journey):
-    journey.response = requests.get(
-        f"{journey.base_url}/pets/1", timeout=REQUEST_TIMEOUT
-    )
+    journey.response = journey.request("get", "/pets/1")
     assert journey.response.status_code == 404, journey.transcript()
 
 
@@ -567,9 +558,7 @@ def create_bella(journey):
 
 @then("Bella is available as pet 1")
 def bella_is_pet_one(journey):
-    journey.response = requests.get(
-        f"{journey.base_url}/pets/1", timeout=REQUEST_TIMEOUT
-    )
+    journey.response = journey.request("get", "/pets/1")
     assert journey.response.status_code == 200, journey.transcript()
     assert journey.response.json() == {
         "name": "Bella",

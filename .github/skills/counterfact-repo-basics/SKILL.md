@@ -38,7 +38,7 @@ packages/
     templates/                # Generator scaffold templates
     docs/                     # Canonical user documentation
   types/src/                  # Shared types copied into generated projects
-test-black-box/               # Python product tests through user-facing interfaces
+test-black-box/               # Gherkin journeys with Python harness and step glue
 examples/                     # Checked consumer examples
 site/                         # Documentation website
 ```

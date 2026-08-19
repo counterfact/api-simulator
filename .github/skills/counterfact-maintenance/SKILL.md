@@ -42,6 +42,13 @@ A test is black-box because it controls product inputs and observes product outp
 The product execution may cross several packages without the harness knowing or selecting which packages are involved.
 These tests may be more sensitive to subtle regressions than they are helpful at pinpointing their source.
 
+Gherkin feature files are the authoritative inventory of black-box behavior.
+Each scenario should describe a coherent developer journey and preserve every distinct user-visible claim, while equal or stronger journey coverage should replace duplicate assertions.
+Python under `test-black-box/` is limited to pytest-bdd scenario bindings, step glue, and lifecycle support; do not add standalone pytest test functions as a second behavioral inventory.
+Create contracts and configurations inside the scenario's temporary project instead of relying on mutable state or shared checked-in fixtures.
+Reuse one generated project and server within a scenario, but never share mutable state between scenarios.
+Use dynamic ports, deterministic named examples, bounded polling with complete process diagnostics, and teardown that terminates every child process.
+
 Allowed observation and control surfaces are:
 
 - The shipped `counterfact` CLI's arguments, stdin, stdout, stderr, and exit status.
@@ -84,12 +91,15 @@ Before adding or approving a black-box test:
 
 For interactive CLI behavior, use a real pseudo-terminal and send the literal keystrokes a user would type.
 If the required terminal facility is unavailable on an operating system, skip explicitly and ensure another CI operating system executes the test; do not replace the test with a direct function call.
+Keep that operating-system skip scoped to the real-terminal scenario so non-interactive journeys continue to run cross-platform.
 
 ## Common mistakes to avoid
 
 - Introducing direct fs imports in tests instead of `usingTemporaryFiles` helper.
 - Treating a Python-launched Node consumer as a product black-box test because it runs in a child process.
 - Testing a REPL completer callback directly instead of operating the CLI through a terminal.
+- Adding a direct pytest black-box test instead of extending or adding a Gherkin journey.
+- Sharing a generated project, fixed port, server process, or mutable contract across scenarios.
 - Omitting focused tests because a broad black-box test already covers the behavior.
 - Treating package-consumer coverage as proof that packed artifacts are complete.
 - Shipping behavior changes without docs + changeset updates.
