@@ -7,11 +7,23 @@ import time
 import pytest
 import requests
 
+from support.journey import JourneyWorld
+
 TEST_BLACK_BOX_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(TEST_BLACK_BOX_DIR)
 SERVER_PORT = 3100
 BASE_URL = f"http://localhost:{SERVER_PORT}"
 SERVER_STARTUP_TIMEOUT = 60
+
+
+@pytest.fixture
+def journey():
+    """Provide an isolated world and reliably tear down every scenario resource."""
+    world = JourneyWorld.create()
+    try:
+        yield world
+    finally:
+        world.cleanup()
 
 
 def wait_for_server(timeout=SERVER_STARTUP_TIMEOUT):

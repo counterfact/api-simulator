@@ -6,29 +6,15 @@ output, and HTTP responses. It deliberately avoids package and implementation
 imports so a passing result means the complete public workflow held together.
 """
 
-from dataclasses import dataclass
 import json
 import os
-from pathlib import Path
 import re
-import signal
-import socket
-import subprocess
-import tempfile
-import time
 
 import pytest
 from pytest_bdd import given, scenario, then, when
 import requests
 
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-COUNTERFACT_BIN = REPO_ROOT / "packages" / "counterfact" / "bin" / "counterfact.js"
-REQUEST_TIMEOUT = 10
-STARTUP_TIMEOUT = 30
-RELOAD_TIMEOUT = 30
-PROMPT = "⬣> ".encode()
-ANSI_ESCAPE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+from support.journey import PROMPT, REQUEST_TIMEOUT, STARTUP_TIMEOUT
 
 
 OPENAPI_DOCUMENT = {
@@ -227,114 +213,6 @@ export const restoreService = ($) => {
 """
 
 
-def _free_port():
-    """Return a currently unused loopback port for one short-lived server."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(("127.0.0.1", 0))
-        return sock.getsockname()[1]
-
-
-def _write_json(path, value):
-    Path(path).write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
-
-
-def _strip_terminal_control(text):
-    return ANSI_ESCAPE.sub("", text).replace("\r", "")
-
-
-class ReplTerminal:
-    """Drive the user-facing REPL and retain its full transcript for failures."""
-
-    def __init__(self, process_id, terminal):
-        self.process_id = process_id
-        self.terminal = terminal
-        self.output = bytearray()
-
-    def transcript(self):
-        return _strip_terminal_control(self.output.decode(errors="replace"))
-
-    def wait_for(self, expected, timeout, start=0):
-        if isinstance(expected, str):
-            expected = expected.encode()
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            found = self.output.find(expected, start)
-            if found >= 0:
-                return found
-            import select
-
-            readable, _, _ = select.select([self.terminal], [], [], 0.25)
-            if not readable:
-                continue
-            try:
-                self.output.extend(os.read(self.terminal, 4096))
-            except OSError:
-                break
-        raise AssertionError(
-            f"REPL did not emit {expected!r} within {timeout} seconds.\n"
-            f"Terminal transcript:\n{self.transcript()}"
-        )
-
-    def command(self, command, timeout=10):
-        start = len(self.output)
-        os.write(self.terminal, command.encode() + b"\r")
-        prompt_position = self.wait_for(PROMPT, timeout, start=start)
-        end = prompt_position + len(PROMPT)
-        quiet_deadline = time.monotonic() + 0.25
-        hard_deadline = time.monotonic() + 1
-        while time.monotonic() < min(quiet_deadline, hard_deadline):
-            import select
-
-            readable, _, _ = select.select([self.terminal], [], [], 0.05)
-            if not readable:
-                continue
-            try:
-                self.output.extend(os.read(self.terminal, 4096))
-            except OSError:
-                break
-            quiet_deadline = time.monotonic() + 0.25
-            later_prompt = self.output.rfind(PROMPT, start)
-            if later_prompt >= 0:
-                end = later_prompt + len(PROMPT)
-        return _strip_terminal_control(
-            self.output[start:end].decode(errors="replace")
-        )
-
-    def autocomplete(self, partial, expected, timeout=10):
-        start = len(self.output)
-        os.write(self.terminal, partial.encode() + b"\t")
-        self.wait_for(expected, timeout, start=start)
-        os.write(self.terminal, b"\x03")
-        self.wait_for(PROMPT, timeout, start=len(self.output))
-
-    def close(self):
-        try:
-            os.write(self.terminal, b"\x04")
-        except OSError:
-            pass
-
-        deadline = time.monotonic() + 5
-        while time.monotonic() < deadline:
-            try:
-                waited, _ = os.waitpid(self.process_id, os.WNOHANG)
-            except ChildProcessError:
-                waited = self.process_id
-            if waited == self.process_id:
-                break
-            time.sleep(0.1)
-        else:
-            try:
-                os.kill(self.process_id, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            try:
-                os.waitpid(self.process_id, 0)
-            except ChildProcessError:
-                pass
-
-        os.close(self.terminal)
-
-
 def _assert_repl_scalar(output, expected, transcript):
     pattern = rf"(?:^|\n){re.escape(str(expected))}(?:\n|$)"
     assert re.search(pattern, output), (
@@ -350,77 +228,9 @@ def _assert_repl_http_status(output, expected, transcript):
     )
 
 
-def _wait_for_http(url, terminal, predicate, timeout=RELOAD_TIMEOUT):
-    deadline = time.monotonic() + timeout
-    last_response = None
-    last_error = None
-    while time.monotonic() < deadline:
-        try:
-            last_response = requests.get(url, timeout=2)
-            if predicate(last_response):
-                return last_response
-        except requests.RequestException as error:
-            last_error = error
-        time.sleep(0.25)
-    details = (
-        f"last response was {last_response.status_code}: {last_response.text}"
-        if last_response is not None
-        else f"last request error was {last_error!r}"
-    )
-    raise AssertionError(
-        f"Timed out waiting for {url}; {details}.\n"
-        f"Terminal transcript:\n{terminal.transcript()}"
-    )
-
-
 pytestmark = pytest.mark.skipif(
     os.name == "nt", reason="Windows does not provide pty"
 )
-
-
-@dataclass
-class Journey:
-    temporary_project: tempfile.TemporaryDirectory
-    project: Path
-    spec_path: Path
-    output: Path
-    environment: dict
-    port: int | None = None
-    base_url: str | None = None
-    terminal: ReplTerminal | None = None
-    pet_by_id_path: Path | None = None
-    repl_output: str = ""
-    response: requests.Response | None = None
-    generated: subprocess.CompletedProcess | None = None
-
-    def transcript(self):
-        return self.terminal.transcript() if self.terminal is not None else ""
-
-
-@pytest.fixture
-def journey():
-    temporary_project = tempfile.TemporaryDirectory(
-        prefix="counterfact-developer-journey-bdd-"
-    )
-    project = Path(temporary_project.name)
-    world = Journey(
-        temporary_project=temporary_project,
-        project=project,
-        spec_path=project / "openapi.json",
-        output=project / "api",
-        environment={
-            **os.environ,
-            "CHOKIDAR_USEPOLLING": "1",
-            "COUNTERFACT_TELEMETRY_DISABLED": "true",
-            "TERM": "xterm-256color",
-        },
-    )
-    try:
-        yield world
-    finally:
-        if world.terminal is not None:
-            world.terminal.close()
-        temporary_project.cleanup()
 
 
 @scenario(
@@ -433,26 +243,17 @@ def test_stateful_developer_journey_through_cli_http_and_repl():
 
 @given("an OpenAPI contract for a stateful Pet API")
 def write_openapi_contract(journey):
-    _write_json(journey.spec_path, OPENAPI_DOCUMENT)
+    journey.spec_path = journey.write_json("openapi.json", OPENAPI_DOCUMENT)
+    journey.output = journey.project / "api"
 
 
 @when("I generate the Counterfact project")
 def generate_counterfact_project(journey):
-    journey.generated = subprocess.run(
-        [
-            "node",
-            str(COUNTERFACT_BIN),
-            str(journey.spec_path),
-            str(journey.output),
-            "--generate",
-            "--no-update-check",
-        ],
-        cwd=journey.project,
-        env=journey.environment,
-        timeout=30,
-        check=False,
-        capture_output=True,
-        text=True,
+    journey.generated = journey.run_cli(
+        journey.spec_path,
+        journey.output,
+        "--generate",
+        "--no-update-check",
     )
 
 
@@ -503,13 +304,8 @@ def author_pet_simulation(journey):
 
 @when("I start Counterfact with watching, serving, and the REPL")
 def start_counterfact(journey):
-    import pty
-
-    journey.port = _free_port()
-    journey.base_url = f"http://127.0.0.1:{journey.port}"
-    command = [
-        "node",
-        str(COUNTERFACT_BIN),
+    journey.allocate_port()
+    journey.start_cli(
         str(journey.spec_path),
         str(journey.output),
         "--port",
@@ -519,12 +315,8 @@ def start_counterfact(journey):
         "--repl",
         "--build-cache",
         "--no-update-check",
-    ]
-    process_id, terminal_fd = pty.fork()
-    if process_id == 0:
-        os.chdir(journey.project)
-        os.execvpe(command[0], command, journey.environment)
-    journey.terminal = ReplTerminal(process_id, terminal_fd)
+        terminal=True,
+    )
 
 
 @then("the REPL and Swagger UI are ready")
@@ -532,12 +324,16 @@ def repl_and_swagger_are_ready(journey):
     journey.terminal.wait_for(PROMPT, STARTUP_TIMEOUT)
     displayed_url = f"http://localhost:{journey.port}"
     assert displayed_url in journey.transcript(), journey.transcript()
-    journey.response = _wait_for_http(
-        f"{journey.base_url}/counterfact/swagger",
-        journey.terminal,
+    journey.response = journey.wait_for_http(
+        "/counterfact/swagger",
         lambda response: response.status_code == 200,
     )
     assert journey.response.status_code == 200, journey.transcript()
+
+
+@then("the open REPL autocompletes the initial pet routes")
+def repl_autocompletes_initial_routes(journey):
+    journey.terminal.autocomplete('client.get("/pets/', "/pets/{petId}")
 
 
 @then("the route builder distinguishes a missing and supplied pet ID")
@@ -669,9 +465,8 @@ def hot_reload_pet_route(journey):
 
 @then("the new route revision is served without losing state")
 def reloaded_route_preserves_state(journey):
-    journey.response = _wait_for_http(
-        f"{journey.base_url}/pets/1",
-        journey.terminal,
+    journey.response = journey.wait_for_http(
+        "/pets/1",
         lambda response: (
             response.status_code == 200
             and response.headers.get("X-Tripwire-Revision") == "2"
@@ -712,14 +507,13 @@ def add_history_operation(journey):
             },
         }
     }
-    _write_json(journey.spec_path, updated_spec)
+    journey.write_json("openapi.json", updated_spec)
 
 
 @then("the history route is generated and served")
 def history_route_is_generated_and_served(journey):
-    journey.response = _wait_for_http(
-        f"{journey.base_url}/pets/1/history",
-        journey.terminal,
+    journey.response = journey.wait_for_http(
+        "/pets/1/history",
         lambda response: (
             response.status_code == 200 and response.text == "history ready"
         ),

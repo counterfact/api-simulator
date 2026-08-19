@@ -9,6 +9,7 @@ Feature: Kick the tires on a stateful Counterfact API
     Given I author deterministic pet handlers and named scenarios
     When I start Counterfact with watching, serving, and the REPL
     Then the REPL and Swagger UI are ready
+    And the open REPL autocompletes the initial pet routes
     And the route builder distinguishes a missing and supplied pet ID
     And a REPL request for the missing pet returns 404
     And request validation rejects an invalid pet

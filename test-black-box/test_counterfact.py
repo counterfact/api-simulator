@@ -11,7 +11,6 @@ import subprocess
 import tempfile
 import time
 
-import pytest
 import requests
 
 BASE_URL = "http://localhost:3100"
@@ -161,102 +160,6 @@ def test_spec_flag_generates_route_files():
         ping_file = os.path.join(temp_dir, "routes", "ping.ts")
         assert os.path.exists(ping_file), f"Expected generated file at {ping_file}"
     finally:
-        shutil.rmtree(temp_dir, ignore_errors=True)
-
-
-@pytest.mark.skipif(os.name == "nt", reason="Windows does not provide pty")
-def test_repl_autocompletes_routes_from_the_cli():
-    """The CLI REPL autocompletes initial and live-reloaded API paths."""
-    import pty
-    import select
-    import signal
-
-    temp_dir = tempfile.mkdtemp(prefix="counterfact-repl-autocomplete-")
-    openapi_spec = os.path.join(temp_dir, "openapi.yaml")
-    shutil.copyfile(OPENAPI_SPEC, openapi_spec)
-    counterfact_bin = os.path.join(
-        REPO_ROOT, "packages", "counterfact", "bin", "counterfact.js"
-    )
-    command = [
-        "node",
-        counterfact_bin,
-        openapi_spec,
-        os.path.join(temp_dir, "out"),
-        "--port",
-        "0",
-        "--generate",
-        "--serve",
-        "--repl",
-        "--no-update-check",
-    ]
-    environment = {
-        **os.environ,
-        "CHOKIDAR_USEPOLLING": "1",
-        "COUNTERFACT_TELEMETRY_DISABLED": "true",
-        "TERM": "xterm-256color",
-    }
-    process_id, terminal = pty.fork()
-
-    if process_id == 0:
-        os.execvpe(command[0], command, environment)
-
-    output = bytearray()
-
-    def read_until(expected, timeout):
-        deadline = time.monotonic() + timeout
-        while expected not in output and time.monotonic() < deadline:
-            readable, _, _ = select.select([terminal], [], [], 0.25)
-            if not readable:
-                continue
-            try:
-                output.extend(os.read(terminal, 4096))
-            except OSError:
-                break
-        return expected in output
-
-    try:
-        prompt = "⬣> ".encode()
-        assert read_until(prompt, 30), output.decode(errors="replace")
-
-        os.write(terminal, b'client.get("/\t')
-        time.sleep(0.2)
-        os.write(terminal, b"\t")
-
-        assert read_until(b"/ping", 5), output.decode(errors="replace")
-        assert b'client.get("/' in output
-        assert b"/items" in output
-
-        with open(openapi_spec, "a") as spec:
-            spec.write(
-                "\n  /late-route:\n"
-                "    get:\n"
-                "      responses:\n"
-                '        "200":\n'
-                "          description: Added after the REPL opened\n"
-            )
-
-        reload_deadline = time.monotonic() + 10
-        while b"/late-route" not in output and time.monotonic() < reload_deadline:
-            os.write(terminal, b"\x03")
-            time.sleep(0.1)
-            os.write(terminal, b'client.get("/l\t')
-            read_until(b"/late-route", 0.75)
-
-        assert b"/late-route" in output, output.decode(errors="replace")
-    finally:
-        try:
-            os.write(terminal, b"\x04")
-        except OSError:
-            pass
-        try:
-            os.kill(process_id, signal.SIGTERM)
-        except ProcessLookupError:
-            pass
-        try:
-            os.waitpid(process_id, 0)
-        except ChildProcessError:
-            pass
-        os.close(terminal)
         shutil.rmtree(temp_dir, ignore_errors=True)
 
 
