@@ -17,7 +17,7 @@
     "test:runtime": "yarn workspace @counterfact/runtime test",
     "test:repl": "yarn workspace @counterfact/repl test",
     "test:repl-packed": "yarn workspace @counterfact/repl test:packed-consumer",
-    "test:black-box": "yarn workspace counterfact build && python3 -m pytest test-black-box/ -v",
+    "test:black-box": "yarn workspace counterfact build && python3 -m pytest test-black-box/ -vv --gherkin-terminal-reporter",
     "test:packed-consumer": "yarn workspace counterfact test:packed-consumer",
     "test:package-closures": "node scripts/test-package-closures.mjs",
     "test:tsd": "tsd --typings ./packages/types/dist/index.d.ts --files ./packages/types/test/**/*.test-d.ts",
