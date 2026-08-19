@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { ApiRunner } from "../src/api-runner.js";
@@ -10,6 +12,10 @@ import {
   ScenarioRegistry,
   Transpiler,
 } from "@counterfact/runtime";
+
+const exampleOpenApiPath = fileURLToPath(
+  new URL("./fixtures/openapi/example.yaml", import.meta.url),
+);
 
 const baseConfig = {
   openApiPath: "_",
@@ -148,9 +154,9 @@ describe("ApiRunner", () => {
         const runner = await ApiRunner.create({
           ...baseConfig,
           basePath: $.path("."),
-          openApiPath: "test/fixtures/openapi/example.yaml",
+          openApiPath: exampleOpenApiPath,
         });
-        expect(runner.openApiPath).toBe("test/fixtures/openapi/example.yaml");
+        expect(runner.openApiPath).toBe(exampleOpenApiPath);
       });
     });
 
@@ -210,7 +216,7 @@ describe("ApiRunner", () => {
         const runner = await ApiRunner.create({
           ...baseConfig,
           basePath: $.path("."),
-          openApiPath: "test/fixtures/openapi/example.yaml",
+          openApiPath: exampleOpenApiPath,
         });
         expect(runner.openApiDocument).toBeDefined();
       });

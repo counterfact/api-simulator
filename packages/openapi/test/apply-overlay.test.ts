@@ -6,7 +6,7 @@ import {
   applyOverlayActions,
   applyOverlays,
   loadOverlay,
-} from "@counterfact/openapi";
+} from "../src/index.js";
 
 describe("applyOverlayActions", () => {
   it("merges an update into a matched node", () => {
