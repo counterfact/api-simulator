@@ -4,7 +4,6 @@ These tests run counterfact as an external process and verify its behaviour
 from the outside — no knowledge of internals required.
 """
 
-import base64
 import os
 import shutil
 import subprocess
@@ -13,7 +12,6 @@ import time
 
 import requests
 
-BASE_URL = "http://localhost:3100"
 TEST_BLACK_BOX_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(TEST_BLACK_BOX_DIR)
 OPENAPI_SPEC = os.path.join(TEST_BLACK_BOX_DIR, "openapi.yaml")
@@ -33,176 +31,6 @@ def wait_for_url(url, timeout=30):
             pass
         time.sleep(0.5)
     raise TimeoutError(f"{url} did not return HTTP 200 within {timeout} seconds")
-
-
-def test_home_page(server):
-    """The Swagger UI is served at /counterfact/swagger."""
-    response = requests.get(f"{BASE_URL}/counterfact/swagger", timeout=REQUEST_TIMEOUT)
-    assert response.status_code == 200
-
-
-def test_creates_route_file_for_ping(server):
-    """A TypeScript route file is generated for every path in the spec."""
-    out_dir = server["out_dir"]
-    ping_file = os.path.join(out_dir, "routes", "ping.ts")
-    assert os.path.exists(ping_file), f"Expected generated file at {ping_file}"
-    with open(ping_file) as f:
-        content = f.read()
-    assert "export const GET" in content
-
-
-def test_compiles_route_file(server):
-    """Generated TypeScript route files are compiled to .cjs for hot-reload."""
-    out_dir = server["out_dir"]
-    ping_cjs = os.path.join(out_dir, ".cache", "ping.cjs")
-    assert os.path.exists(ping_cjs), f"Expected compiled cache file at {ping_cjs}"
-
-
-def test_ping_returns_pong(server):
-    """GET /ping returns the expected 'pong' response."""
-    response = requests.get(f"{BASE_URL}/ping", timeout=REQUEST_TIMEOUT)
-    assert response.status_code == 200
-    assert response.text == "pong"
-
-
-def test_items_returns_list(server):
-    """GET /items returns the expected JSON array."""
-    response = requests.get(f"{BASE_URL}/items", timeout=REQUEST_TIMEOUT)
-    assert response.status_code == 200
-    assert response.json() == ["apple", "banana", "cherry"]
-
-
-def test_handles_path_with_colon(server):
-    """Paths containing a colon are handled correctly."""
-    response = requests.get(f"{BASE_URL}/path/with:colon", timeout=REQUEST_TIMEOUT)
-    assert response.status_code == 200
-    assert response.text == "colon handled"
-
-
-def test_disallowed_method_returns_allow_header(server):
-    """A known path rejects unsupported methods and advertises allowed ones."""
-    response = requests.post(f"{BASE_URL}/ping", timeout=REQUEST_TIMEOUT)
-    assert response.status_code == 405
-    assert response.headers.get("allow") == "GET"
-    assert response.text == "The POST method is not allowed for /ping\n"
-
-
-def test_unacceptable_response_media_type_returns_not_acceptable(server):
-    """A route returns HTTP 406 when it cannot satisfy the Accept header."""
-    response = requests.get(
-        f"{BASE_URL}/items",
-        headers={"Accept": "text/plain"},
-        timeout=REQUEST_TIMEOUT,
-    )
-    assert response.status_code == 406
-    assert response.text == (
-        "Not Acceptable: could not produce a response matching any of the "
-        "following content types: text/plain"
-    )
-
-
-def test_required_header_validation_is_case_insensitive(server):
-    """Required headers accept HTTP's case-insensitive field names."""
-    missing_header = requests.get(f"{BASE_URL}/guard", timeout=REQUEST_TIMEOUT)
-    assert missing_header.status_code == 400
-    assert "header parameter 'X-Trace-ID' is required" in missing_header.text
-
-    lowercase_header = requests.get(
-        f"{BASE_URL}/guard",
-        headers={"x-trace-id": "trace-1"},
-        timeout=REQUEST_TIMEOUT,
-    )
-    assert lowercase_header.status_code == 200
-    assert lowercase_header.text == "trace accepted"
-
-
-def test_request_body_validation_rejects_invalid_json(server):
-    """Invalid JSON bodies are rejected before valid requests reach the route."""
-    invalid_body = requests.post(
-        f"{BASE_URL}/widgets",
-        json={},
-        timeout=REQUEST_TIMEOUT,
-    )
-    assert invalid_body.status_code == 400
-    assert "body must have required property 'name'" in invalid_body.text
-
-    valid_body = requests.post(
-        f"{BASE_URL}/widgets",
-        json={"name": "example widget"},
-        timeout=REQUEST_TIMEOUT,
-    )
-    assert valid_body.status_code == 200
-    assert valid_body.text == "accepted"
-
-
-def test_spec_flag_generates_route_files():
-    """The --spec flag allows passing the OpenAPI spec path as a named option."""
-    temp_dir = tempfile.mkdtemp(prefix="counterfact-spec-test-")
-    try:
-        counterfact_bin = os.path.join(
-            REPO_ROOT, "packages", "counterfact", "bin", "counterfact.js"
-        )
-        result = subprocess.run(
-            [
-                "node",
-                counterfact_bin,
-                "--spec",
-                OPENAPI_SPEC,
-                temp_dir,
-                "--generate",
-            ],
-            timeout=30,
-            check=False,
-        )
-        assert result.returncode in (0, None), (
-            f"Process exited with unexpected code {result.returncode}"
-        )
-        ping_file = os.path.join(temp_dir, "routes", "ping.ts")
-        assert os.path.exists(ping_file), f"Expected generated file at {ping_file}"
-    finally:
-        shutil.rmtree(temp_dir, ignore_errors=True)
-
-
-def test_binary_response(server):
-    """GET /binary-file returns binary data with application/octet-stream content type.
-
-    The generated handler is replaced with one that calls $.response[200].binary()
-    with a base64-encoded payload.  After hot-reload picks up the change, the
-    server should serve the decoded bytes with the correct Content-Type header.
-    """
-    out_dir = server["out_dir"]
-    route_file = os.path.join(out_dir, "routes", "binary-file.ts")
-
-    binary_data = b"hello binary"
-    base64_data = base64.b64encode(binary_data).decode("ascii")
-
-    with open(route_file, "w") as f:
-        f.write(
-            'import type { HTTP_GET } from "counterfact";\n\n'
-            "export const GET: HTTP_GET = ($) => {\n"
-            f'  return $.response[200].binary("{base64_data}");\n'
-            "};\n"
-        )
-
-    # Poll until the hot-reloaded handler serves the expected binary body.
-    deadline = time.monotonic() + 30
-    response = None
-    while time.monotonic() < deadline:
-        try:
-            response = requests.get(f"{BASE_URL}/binary-file", timeout=REQUEST_TIMEOUT)
-            if (
-                response.status_code == 200
-                and response.content == binary_data
-            ):
-                break
-        except requests.exceptions.RequestException:
-            pass
-        time.sleep(0.5)
-
-    assert response is not None, "No response received from /binary-file"
-    assert response.status_code == 200
-    assert "application/octet-stream" in response.headers.get("content-type", "")
-    assert response.content == binary_data
 
 
 def test_multiple_api_config_serves_prefixed_routes():

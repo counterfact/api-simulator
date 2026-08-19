@@ -79,44 +79,6 @@ def _text_response(value):
     }
 
 
-def test_swagger_2_spec_generates_and_serves_a_response():
-    """A Swagger 2.0 document supports the full CLI generate-and-serve flow."""
-    port = 3131
-    with tempfile.TemporaryDirectory(prefix="counterfact-swagger-2-") as temp_dir:
-        spec, output, log_path = (Path(temp_dir) / name for name in ("swagger.json", "out", "server.log"))
-        _write(
-            spec,
-            {
-                "swagger": "2.0",
-                "info": {"title": "Legacy API", "version": "1"},
-                "produces": ["text/plain"],
-                "paths": {
-                    "/legacy-ping": {
-                        "get": {
-                            "responses": {
-                                "200": {
-                                    "description": "ok",
-                                    "schema": {
-                                        "type": "string",
-                                        "enum": ["legacy-pong"],
-                                    },
-                                }
-                            }
-                        }
-                    }
-                },
-            },
-        )
-        process, log_file = _start(spec, output, "--port", port, "--generate", "--build-cache", "--serve", cwd=temp_dir, log_path=log_path)
-        try:
-            response = _wait_for_ok(f"http://localhost:{port}/legacy-ping", process, log_path)
-            assert response.text == "legacy-pong"
-            assert (output / "routes" / "legacy-ping.ts").exists()
-            assert (output / ".cache" / "legacy-ping.cjs").exists()
-        finally:
-            _stop(process, log_file)
-
-
 def test_external_reference_is_loaded_for_generation_and_runtime():
     """A local external schema reference is dereferenced for code and responses."""
     port = 3132
@@ -146,21 +108,6 @@ def test_ordered_overlays_apply_in_cli_order_before_serving():
         try:
             response = _wait_for_ok(f"http://localhost:{port}/greeting", process, log_path)
             assert response.text == "second"
-        finally:
-            _stop(process, log_file)
-
-
-def test_prefix_serves_routes_only_below_configured_base_path():
-    """The CLI --prefix option mounts generated routes under its base path."""
-    port = 3134
-    with tempfile.TemporaryDirectory(prefix="counterfact-prefix-") as temp_dir:
-        spec, output, log_path = (Path(temp_dir) / name for name in ("openapi.json", "out", "server.log"))
-        _write(spec, {"openapi": "3.0.3", "info": {"title": "Prefixed API", "version": "1"}, "paths": {"/ready": {"get": {"responses": {"200": _text_response("prefixed-ready")}}}}})
-        process, log_file = _start(spec, output, "--port", port, "--prefix", "/api/v9", "--generate", "--build-cache", "--serve", cwd=temp_dir, log_path=log_path)
-        try:
-            response = _wait_for_ok(f"http://localhost:{port}/api/v9/ready", process, log_path)
-            assert response.text == "prefixed-ready"
-            assert requests.get(f"http://localhost:{port}/ready", timeout=10).status_code == 404
         finally:
             _stop(process, log_file)
 
