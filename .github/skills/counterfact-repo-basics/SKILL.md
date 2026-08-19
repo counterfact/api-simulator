@@ -38,7 +38,7 @@ packages/
     templates/                # Generator scaffold templates
     docs/                     # Canonical user documentation
   types/src/                  # Shared types copied into generated projects
-test-black-box/               # Python system tests through external product interfaces
+test-black-box/               # Python product tests through user-facing interfaces
 examples/                     # Checked consumer examples
 site/                         # Documentation website
 ```
@@ -51,7 +51,7 @@ site/                         # Documentation website
 | Build                         | `yarn build`                     |
 | Type-check                    | `yarn typecheck`                 |
 | Unit tests                    | `yarn test`                      |
-| CLI/system black-box tests    | `yarn test:black-box`            |
+| Product black-box tests       | `yarn test:black-box`            |
 | Installed package smoke test  | `yarn test:packed-consumer`      |
 | TypeScript type tests         | `yarn build && yarn test:tsd`    |
 | Lint (check)                  | `yarn lint`                      |
