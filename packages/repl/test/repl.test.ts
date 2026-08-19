@@ -730,6 +730,22 @@ describe("REPL", () => {
       expect(completions).toEqual(["/pets", "/pets/{petId}"]);
     });
 
+    it("reads routes when completion is requested", async () => {
+      const registry = new Registry();
+      const completer = createCompleter(registry);
+
+      registry.add("/pets", { GET() {} });
+      registry.add("/users", { GET() {} });
+
+      const [completions, prefix] = await callCompleter(
+        completer,
+        'client.get("/',
+      );
+
+      expect(prefix).toBe("/");
+      expect(completions).toEqual(["/pets", "/users"]);
+    });
+
     it("returns all routes when no partial is provided", async () => {
       const registry = new Registry();
 

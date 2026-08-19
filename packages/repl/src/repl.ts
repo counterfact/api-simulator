@@ -214,8 +214,6 @@ export function createCompleter(
   scenarioRegistry?: ScenarioCatalog,
   groupedScenarioRegistries?: Record<string, ScenarioCatalog | undefined>,
 ) {
-  const routes = getRoutesForCompletion(registry, routeCatalog);
-
   return (line: string, callback: CompleterCallback): void => {
     const scenarioCompletions = getScenarioCompletions(
       line,
@@ -235,7 +233,10 @@ export function createCompleter(
       return;
     }
 
-    const routeCompletions = getRouteCompletions(line, routes);
+    const routeCompletions = getRouteCompletions(
+      line,
+      getRoutesForCompletion(registry, routeCatalog),
+    );
 
     if (routeCompletions === undefined) {
       if (fallback) {
