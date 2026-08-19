@@ -18,6 +18,7 @@ import type {
   MiddlewareResponseBuilderFactory,
   OmitAll,
   OmitValueWhenNever,
+  OpenApiOperation,
   OpenApiResponse,
   ResponseBuilder,
   ResponseBuilderFactory,
@@ -53,6 +54,18 @@ expectAssignable<MiddlewareRequest["query"]>({
 
 declare const middlewareResponse: MiddlewareResponseBuilderFactory;
 expectType<ResponseBuilder | undefined>(middlewareResponse["200 OK"]);
+
+expectAssignable<OpenApiOperation>({
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: { type: "object" },
+        },
+      },
+    },
+  },
+});
 
 // test exact match
 expectType<

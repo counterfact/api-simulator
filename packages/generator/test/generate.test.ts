@@ -87,6 +87,54 @@ describe("end-to-end test", () => {
       expect(await $.read(".cache/README.md")).toMatchSnapshot();
     });
   });
+
+  it("applies overlays before generating route and type artifacts", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.yaml",
+        [
+          "openapi: 3.0.3",
+          "info: { title: Generator integration, version: 1.0.0 }",
+          "paths:",
+          "  /old:",
+          "    get:",
+          "      operationId: getOld",
+          "      responses: { '200': { description: old } }",
+        ].join("\n"),
+      );
+      await $.add(
+        "overlay.yaml",
+        [
+          "overlay: 1.0.0",
+          "actions:",
+          "  - target: $.paths",
+          "    update:",
+          "      /new:",
+          "        get:",
+          "          operationId: getNew",
+          "          responses: { '200': { description: new } }",
+          "  - target: $.paths['/old']",
+          "    remove: true",
+        ].join("\n"),
+      );
+
+      await new CodeGenerator(
+        $.path("openapi.yaml"),
+        $.path("out"),
+        { routes: true, types: true },
+        "",
+        [$.path("overlay.yaml")],
+      ).generate();
+
+      await expect($.read("out/routes/new.ts")).resolves.toContain(
+        "export const GET",
+      );
+      await expect($.read("out/types/paths/new.types.ts")).resolves.toContain(
+        "export type getNew",
+      );
+      await expect($.read("out/routes/old.ts")).rejects.toThrow();
+    });
+  });
 });
 
 describe("OpenAPI paths with trailing slashes", () => {
