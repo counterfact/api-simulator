@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const docsRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  "../docs",
+  "../packages/counterfact/docs",
 );
 
 /**
@@ -50,10 +50,7 @@ function rehypeStripMdLinks() {
     }
 
     visit(tree, "element", (node) => {
-      if (
-        node.tagName !== "a" ||
-        typeof node.properties?.href !== "string"
-      )
+      if (node.tagName !== "a" || typeof node.properties?.href !== "string")
         return;
 
       const href = node.properties.href;

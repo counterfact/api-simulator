@@ -16,7 +16,7 @@ Counterfact uses `@apidevtools/json-schema-ref-parser` for bundling, which alrea
 
 ## Proposed changes
 
-- Confirm that the spec loader in `src/typescript-generator/specification.ts` and `src/server/openapi-middleware.ts` does not strip or misinterpret `$self` when bundling
+- Confirm that the spec loader in `packages/counterfact/src/typescript-generator/specification.ts` and `packages/counterfact/src/server/openapi-middleware.ts` does not strip or misinterpret `$self` when bundling
 - Add a regression test with a spec that declares `$self` and uses relative `$ref` values to verify that references resolve to the correct schemas
 
 ## Acceptance criteria

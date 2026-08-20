@@ -4,10 +4,10 @@ description: >
   Modify TypeScript generator internals, OpenAPI parsing/schema handling, and
   generated file writing behavior without regressing regeneration guarantees.
 applyTo:
-  - "src/typescript-generator/**/*.ts"
-  - "src/server/openapi-document.ts"
-  - "src/server/load-openapi-document.ts"
-  - "test/typescript-generator/**/*.test.ts"
+  - "packages/counterfact/src/typescript-generator/**/*.ts"
+  - "packages/counterfact/src/server/openapi-document.ts"
+  - "packages/counterfact/src/server/load-openapi-document.ts"
+  - "packages/counterfact/test/typescript-generator/**/*.test.ts"
 ---
 
 # Counterfact Generator Internals Skill
@@ -18,12 +18,12 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 
 ## Files to inspect first
 
-- `src/typescript-generator/README.md`
-- `src/typescript-generator/code-generator.ts`
-- `src/typescript-generator/specification.ts`
-- `src/typescript-generator/requirement.ts`
-- `src/typescript-generator/repository.ts`
-- `src/typescript-generator/schema-type-coder.ts`
+- `packages/counterfact/src/typescript-generator/README.md`
+- `packages/counterfact/src/typescript-generator/code-generator.ts`
+- `packages/counterfact/src/typescript-generator/specification.ts`
+- `packages/counterfact/src/typescript-generator/requirement.ts`
+- `packages/counterfact/src/typescript-generator/repository.ts`
+- `packages/counterfact/src/typescript-generator/schema-type-coder.ts`
 
 ## Existing conventions to follow
 
@@ -42,5 +42,5 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 ## How to validate the change
 
 - Run: `yarn lint`, `yarn build`, `yarn test`.
-- Run focused generator tests first (affected coder + integration/snapshot tests in `test/typescript-generator/`).
-- If behavior changes for generated artifacts, verify snapshots and relevant docs (`docs/reference.md`, `docs/faq.md`).
+- Run focused generator tests first (affected coder + integration/snapshot tests in `packages/counterfact/test/typescript-generator/`).
+- If behavior changes for generated artifacts, verify snapshots and relevant docs (`packages/counterfact/docs/reference.md`, `packages/counterfact/docs/faq.md`).

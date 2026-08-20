@@ -25,6 +25,7 @@ Add a way to trigger outbound HTTP calls from a Counterfact mock — for example
 3. Counterfact sends an HTTP POST to the registered callback URL with the event payload
 
 A `Webhook Simulation` pattern document would describe:
+
 - When to use it: you are building a webhook consumer and need to test it locally without a real event source
 - How to register a callback URL in the mock's context on subscription
 - How to trigger an outbound call from the REPL or a handler
@@ -33,6 +34,6 @@ A `Webhook Simulation` pattern document would describe:
 ## Acceptance criteria
 
 - [ ] An outbound-call mechanism (e.g., `$.webhook()` or `$.emit()`) is implemented and documented
-- [ ] `docs/patterns/webhook-simulation.md` is added following the established pattern format
-- [ ] The new pattern is linked in `docs/patterns/index.md`
+- [ ] `packages/counterfact/docs/patterns/webhook-simulation.md` is added following the established pattern format
+- [ ] The new pattern is linked in `packages/counterfact/docs/patterns/index.md`
 - [ ] The reference doc is updated to describe the new API

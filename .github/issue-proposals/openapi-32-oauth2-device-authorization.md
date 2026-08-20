@@ -12,7 +12,7 @@ OpenAPI 3.2 adds a `deviceAuthorization` entry to the OAuth2 Security Scheme Flo
 
 ## Current state
 
-`OperationTypeCoder` in `src/typescript-generator/operation-type-coder.ts` checks for `type === "http" && scheme === "basic"` to determine the `user` type on the `$` argument. Other flows, including `deviceAuthorization`, are not specially handled.
+`OperationTypeCoder` in `packages/counterfact/src/typescript-generator/operation-type-coder.ts` checks for `type === "http" && scheme === "basic"` to determine the `user` type on the `$` argument. Other flows, including `deviceAuthorization`, are not specially handled.
 
 ## Proposed changes
 

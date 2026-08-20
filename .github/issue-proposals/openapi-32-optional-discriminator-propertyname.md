@@ -16,7 +16,7 @@ In OpenAPI 3.2, the `discriminator.propertyName` field is now optional. When abs
 
 ## Proposed changes
 
-- Add a defensive null-check in `src/typescript-generator/schema-type-coder.ts` wherever `discriminator.propertyName` is accessed, so that its absence does not cause a runtime error during code generation
+- Add a defensive null-check in `packages/counterfact/src/typescript-generator/schema-type-coder.ts` wherever `discriminator.propertyName` is accessed, so that its absence does not cause a runtime error during code generation
 
 ## Acceptance criteria
 

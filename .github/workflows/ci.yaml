@@ -57,28 +57,34 @@ jobs:
         with:
           node-version: lts/*
           cache: yarn
-        id: setup-node
-      - name: Get Node Version
-        if: steps.docs-only.outputs.docs_only != 'true'
-        run: echo "version=$(node -v)" >> $GITHUB_OUTPUT
-        id: node-version
-      - name: Cache node_modules
-        if: steps.docs-only.outputs.docs_only != 'true'
-        uses: actions/cache@v6
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ steps.node-version.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
       - name: Install Packages
         if: steps.docs-only.outputs.docs_only != 'true'
         run: yarn install --frozen-lockfile --network-timeout 100000
+      - name: Build Workspaces
+        if: steps.docs-only.outputs.docs_only != 'true'
+        run: yarn build
+      - name: Package Boundary Tests
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        run: yarn test:boundaries
+      - name: Package Boundaries
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        run: yarn check:boundaries
       - name: ESlint
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         run: yarn eslint -f github-annotations .
       - name: TypeScript
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
-        run: yarn tsc --noEmit
+        run: yarn typecheck
+      - name: Packed Consumer Test
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        timeout-minutes: 5
+        run: yarn test:packed-consumer
+      - name: Exact Package Closure Tests
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        timeout-minutes: 15
+        run: yarn test:package-closures
       - name: Unit Tests
-        if: steps.docs-only.outputs.docs_only != 'true'
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         timeout-minutes: 2
         run: yarn test --runInBand --forceExit --verbose --no-watchman
       - name: Set up Python

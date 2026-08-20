@@ -12,11 +12,11 @@ OpenAPI 3.2 adds a `name` field to the Server Object alongside the existing `des
 
 ## Current state
 
-`src/server/openapi-middleware.ts` injects a `Counterfact` server entry into the spec with only `description` and `url` fields. The `name` field is not set.
+`packages/counterfact/src/server/openapi-middleware.ts` injects a `Counterfact` server entry into the spec with only `description` and `url` fields. The `name` field is not set.
 
 ## Proposed changes
 
-- Set `name: "Counterfact"` in the injected server entry in `src/server/openapi-middleware.ts`
+- Set `name: "Counterfact"` in the injected server entry in `packages/counterfact/src/server/openapi-middleware.ts`
 
 ## Acceptance criteria
 

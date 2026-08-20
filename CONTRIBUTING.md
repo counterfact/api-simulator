@@ -13,17 +13,42 @@
 
 ## Development
 
-This is a pretty straightforward NodeJS project.
+This is a Yarn 1 workspace monorepo. The published application is in
+`packages/counterfact`; repository-wide tooling, examples, black-box tests, and
+the documentation website remain at the root.
 
 ```sh
 git clone git@github.com:pmcelhaney/counterfact.git
 cd counterfact
-npm install
-npm lint
-npm test
+yarn install
+yarn lint
+yarn test
 ```
 
-The [code generator](./src/typescript-generator/README.md) is under `src/typescript-generator`. The server is directly under `src`. I'm planning to move it to `src/server`.
+The [code generator](./packages/counterfact/src/typescript-generator/README.md)
+and server runtime are currently part of the `counterfact` workspace. Root
+scripts coordinate builds and checks, so contributors do not need to change
+directories for the standard workflow.
+
+### Mutation testing
+
+Mutation testing runs against one workspace package at a time so reports stay actionable and CI can process packages in parallel.
+Build the workspaces before mutation testing because integration tests consume compiled dependencies from other packages.
+
+```sh
+yarn build
+yarn test:mutation:dry --package openapi
+yarn test:mutation --package openapi
+yarn test:mutation:incremental --package openapi
+```
+
+The supported package names are `client`, `counterfact`, `generator`, `openapi`, `repl`, and `runtime`.
+Omit `--package` to run all mutable production packages together.
+Use `--force` with the incremental command to refresh every mutant instead of reusing unchanged results.
+Detailed HTML and JSON reports are written to `reports/mutation/<package>/` and are not committed.
+
+The mutation-testing workflow currently runs on Monday mornings and by manual dispatch rather than as a required pull-request check.
+After two stable full baselines, maintainers can record per-package thresholds and enable the planned no-regression pull-request gate.
 
 Testing and linting changes is important, but at this point I'm more concerned about changing the word "I" in this page to "we", so don't hesitate to create a PR, even it's not "finished".
 
