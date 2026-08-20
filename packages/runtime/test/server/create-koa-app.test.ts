@@ -1,6 +1,54 @@
 import Koa from "koa";
 import request from "supertest";
 
+import { createKoaApp } from "../../src/koa.js";
+import { ContextRegistry } from "../../src/server/context-registry.js";
+import { Dispatcher } from "../../src/server/dispatcher.js";
+import { Registry } from "../../src/server/registry.js";
+
+describe("createKoaApp", () => {
+  it("serves a runtime runner below its configured prefix", async () => {
+    const contextRegistry = new ContextRegistry();
+    const registry = new Registry();
+    registry.add("/health", {
+      GET() {
+        return {
+          body: JSON.stringify({ method: "GET", path: "/health" }),
+          contentType: "application/json",
+          status: 200,
+        };
+      },
+    });
+
+    const app = createKoaApp({
+      runners: [
+        {
+          contextRegistry,
+          dispatcher: new Dispatcher(registry, contextRegistry),
+          openApiPath: "unused.yaml",
+          overlays: [],
+          prefix: "/v1",
+          registry,
+          subdirectory: "",
+        },
+      ],
+      config: {
+        basePath: ".",
+        port: 0,
+        proxyPaths: new Map(),
+        proxyUrl: "",
+        startAdminApi: false,
+      },
+    });
+
+    const response = await request(app.callback()).get("/v1/health");
+
+    expect(response.status).toBe(200);
+    expect(response.headers["access-control-allow-origin"]).toBe("*");
+    expect(response.body).toEqual({ method: "GET", path: "/health" });
+  });
+});
+
 describe("JSON prettification middleware", () => {
   function buildApp(responseBody: unknown) {
     const app = new Koa();

@@ -5,6 +5,7 @@ export default {
     "packages/client/src/**/*.{js,jsx,ts,tsx}",
     "packages/counterfact/src/**/*.{js,jsx,ts,tsx}",
     "packages/generator/src/**/*.{js,jsx,ts,tsx}",
+    "packages/openapi/src/**/*.{js,jsx,ts,tsx}",
     "packages/runtime/src/**/*.{js,jsx,ts,tsx}",
     "packages/repl/src/**/*.{js,jsx,ts,tsx}",
     "!**/node_modules/**",
