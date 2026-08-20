@@ -18,19 +18,11 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
-          node-version: lts/*
-          cache: yarn
-        id: setup-node
-      - name: Get Node Version
-        run: echo "::set-output name=version::$(node -v)"
-        id: node-version
-      - name: Cache node_modules
-        uses: actions/cache@v6
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-${{ steps.node-version.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+          node-version: 24.x
+      - name: Enable Corepack
+        run: corepack enable
       - name: Install Packages
-        run: yarn install --frozen-lockfile --network-timeout 100000
+        run: yarn install --immutable
       - name: Build
         run: yarn build
       - name: Show files

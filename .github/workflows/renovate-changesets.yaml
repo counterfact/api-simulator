@@ -19,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          fetch-depth: 2
+          fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
 
@@ -33,6 +33,7 @@ jobs:
         with:
           script: |
             const { promises: fs } = require("fs");
+            const baseSha = context.payload.pull_request.base.sha;
 
             const branch = (await exec.getExecOutput("git branch --show-current")).stdout.trim();
             if (!branch.startsWith("renovate/")) {
@@ -40,7 +41,11 @@ jobs:
               return;
             }
 
-            const diffOutput = await exec.getExecOutput("git diff --name-only HEAD~1");
+            const diffOutput = await exec.getExecOutput("git", [
+              "diff",
+              "--name-only",
+              `${baseSha}...HEAD`,
+            ]);
             const diffFiles = diffOutput.stdout.trim().split("\n").filter(Boolean);
 
             if (diffFiles.some((f) => f.startsWith(".changeset"))) {
@@ -48,42 +53,61 @@ jobs:
               return;
             }
 
-            const packageJsonFiles = diffFiles.filter((f) => f.endsWith("package.json"));
-            if (!packageJsonFiles.length) {
-              console.log("No package.json changes, skipping");
-              return;
-            }
+            const packageJsonFiles = diffFiles.filter((file) =>
+              /^packages\/[^/]+\/package\.json$/.test(file),
+            );
+            const productionFields = [
+              "dependencies",
+              "optionalDependencies",
+              "peerDependencies",
+            ];
+            const releases = new Map();
 
-            const bumps = new Map();
             for (const file of packageJsonFiles) {
-              const { stdout: changes } = await exec.getExecOutput("git", ["diff", "HEAD~1", "--", file]);
-              for (const change of changes.split("\n")) {
-                if (!change.startsWith("+") || change.startsWith("+++")) {
-                  continue;
-                }
-                const match = change.match(/"((?:@[^/]+\/)?[a-zA-Z0-9][a-zA-Z0-9._-]*)": ?"([^"]+)"/);
-                if (match) {
-                  const [, name, version] = match;
-                  if (/^[\^~>]?\d/.test(version)) {
-                    bumps.set(name, version);
-                  }
+              const current = JSON.parse(await fs.readFile(file, "utf8"));
+              if (current.private) continue;
+
+              const previousResult = await exec.getExecOutput("git", [
+                "show",
+                `${baseSha}:${file}`,
+              ], { ignoreReturnCode: true });
+              if (previousResult.exitCode !== 0) continue;
+              const previous = JSON.parse(previousResult.stdout);
+              const messages = [];
+
+              for (const field of productionFields) {
+                const before = previous[field] ?? {};
+                const after = current[field] ?? {};
+                for (const dependency of new Set([
+                  ...Object.keys(before),
+                  ...Object.keys(after),
+                ])) {
+                  if (before[dependency] === after[dependency]) continue;
+                  messages.push(
+                    after[dependency] === undefined
+                      ? `Removed dependency \`${dependency}\` from \`${current.name}\`.`
+                      : `Updated dependency \`${dependency}\` in \`${current.name}\` to \`${after[dependency]}\`.`,
+                  );
                 }
               }
+
+              if (messages.length) releases.set(current.name, messages);
             }
 
-            let message;
-            if (bumps.size) {
-              message = [...bumps.entries()]
-                .map(([pkg, version]) => `Updated dependency \`${pkg}\` to \`${version}\`.`)
-                .join("\n");
-            } else {
-              message = context.payload.pull_request.title;
+            if (!releases.size) {
+              console.log("No public production dependency changes, skipping");
+              return;
             }
 
             const { stdout: shortHash } = await exec.getExecOutput("git rev-parse --short HEAD");
             const fileName = `.changeset/renovate-${shortHash.trim()}.md`;
 
-            const body = `---\n'counterfact': patch\n---\n\n${message.trim()}\n`;
+            const frontmatter = [...releases.keys()]
+              .sort()
+              .map((name) => `'${name}': patch`)
+              .join("\n");
+            const message = [...releases.values()].flat().join("\n");
+            const body = `---\n${frontmatter}\n---\n\n${message}\n`;
             await fs.writeFile(fileName, body);
 
             await exec.exec("git", ["add", fileName]);

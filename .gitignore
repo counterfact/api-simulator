@@ -1,4 +1,5 @@
 node_modules
+.yarn/
 yarn-error.log
 dist
 site/node_modules
@@ -15,11 +16,11 @@ __pycache__
 *.pyc
 
 # In testing we may generate these files. We don't want to check them in.
-templates/typescript/counterfact/components
-templates/typescript/counterfact/internal
-templates/typescript/counterfact/openapi
-templates/typescript/counterfact/types/paths
-templates/typescript/counterfact/paths
-templates/typescript/package-lock.json
-templates/typescript/yarn.lock
+packages/counterfact/templates/typescript/counterfact/components
+packages/counterfact/templates/typescript/counterfact/internal
+packages/counterfact/templates/typescript/counterfact/openapi
+packages/counterfact/templates/typescript/counterfact/types/paths
+packages/counterfact/templates/typescript/counterfact/paths
+packages/counterfact/templates/typescript/package-lock.json
+packages/counterfact/templates/typescript/yarn.lock
 sample-inputs

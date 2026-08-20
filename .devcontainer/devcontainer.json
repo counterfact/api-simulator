@@ -3,7 +3,7 @@
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
-      "VARIANT": "16-bullseye"
+      "VARIANT": "22-bookworm"
     }
   },
   "customizations": {
@@ -42,6 +42,6 @@
       ]
     }
   },
-  "postCreateCommand": "yarn install",
+  "postCreateCommand": "corepack enable && yarn install",
   "remoteUser": "node"
 }

@@ -2,7 +2,7 @@
 
 [![First 10 minutes example](https://github.com/counterfact/api-simulator/actions/workflows/first-10-minutes.yml/badge.svg)](https://github.com/counterfact/api-simulator/actions/workflows/first-10-minutes.yml)
 
-This smaller, standalone variant of the repository's [Petstore first-10-minutes guide](../../docs/first-10-minutes.md) uses its own minimal contract so every file fits in one directory. It proves the same state/failure/reset concepts without implying that its paths or generated types are identical to the longer walkthrough:
+This smaller, standalone variant of the repository's [Petstore first-10-minutes guide](../../packages/counterfact/docs/first-10-minutes.md) uses its own minimal contract so every file fits in one directory. It proves the same state/failure/reset concepts without implying that its paths or generated types are identical to the longer walkthrough:
 
 1. empty state returns `404`;
 2. create then read returns the expected record body;
@@ -45,13 +45,13 @@ npm run typecheck
 
 TypeScript names `client/pets.ts` as incompatible with the regenerated contract. Restore the spec change and the same command passes. This is earlier compile-time contract feedback; it does not claim that either implementation has correct production business behavior.
 
-For spec watch and regeneration details, continue with [Executable Spec](../../docs/patterns/executable-spec.md).
+For spec watch and regeneration details, continue with [Executable Spec](../../packages/counterfact/docs/patterns/executable-spec.md).
 
 ## Hybrid path ownership
 
 The HTTP test starts a disposable upstream on port 4101. Counterfact listens on port 4100 with root proxying enabled and `/pets` explicitly local. The assertions prove that `http://localhost:4100/pets/1` uses the simulated handler while `http://localhost:4100/health` returns the upstream body. Forwarded traffic bypasses Counterfact's local handlers and contract checks, so real-backend coverage remains required.
 
-For interactive path switching and operational tradeoffs, continue with [Hybrid Proxy](../../docs/patterns/hybrid-proxy.md).
+For interactive path switching and operational tradeoffs, continue with [Hybrid Proxy](../../packages/counterfact/docs/patterns/hybrid-proxy.md).
 
 For parallel test workers, copy the pattern with a separate Counterfact process, output directory, and port per worker. Counterfact has no built-in atomic reset or automatic per-test isolation; `Context.reset()` defines this example's baseline.
 

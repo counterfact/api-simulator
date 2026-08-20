@@ -44,4 +44,4 @@ export const POST: HTTP_POST = ($) => {
 ## References
 
 - https://counterfact.dev/docs/features/state.html
-- `src/server/dispatcher.ts` for runtime handler behavior
+- `packages/counterfact/src/server/dispatcher.ts` for runtime handler behavior

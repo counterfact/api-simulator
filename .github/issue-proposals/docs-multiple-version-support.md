@@ -23,24 +23,24 @@ Without documentation, users will not know the feature exists or how to adopt it
 
 ## Proposed change
 
-1. **`docs/features/multiple-versions.md`** – New dedicated feature page covering:
+1. **`packages/counterfact/docs/features/multiple-versions.md`** – New dedicated feature page covering:
    - YAML config syntax with `group` and `version` fields (with a realistic example that is not specific to any particular API)
    - How the server derives URL prefixes from `group` + `version`
    - Generated code layout diagram (shared `types/paths/`, per-version `types/<version>/`, `types/versions.ts`)
    - How to write a route handler using `Versioned<…>` and `minVersion()`
    - How to use `.scenario <group> <version> <path>` in the REPL
 
-2. **`docs/usage.md`** or **`docs/getting-started.md`** – Add a brief "Multiple versions" section that links to the feature page.
+2. **`packages/counterfact/docs/usage.md`** or **`packages/counterfact/docs/getting-started.md`** – Add a brief "Multiple versions" section that links to the feature page.
 
-3. **`docs/reference.md`** – Document the `version` field on `SpecConfig`, the `Versioned` type, and the `types/versions.ts` output file.
+3. **`packages/counterfact/docs/reference.md`** – Document the `version` field on `SpecConfig`, the `Versioned` type, and the `types/versions.ts` output file.
 
-4. **`src/counterfact-types/` JSDoc** – Ensure `Versioned`, `Versions`, and `VersionsGTE` have accurate JSDoc comments that appear in IDE tooltips.
+4. **`packages/types/src/` JSDoc** – Ensure `Versioned`, `Versions`, and `VersionsGTE` have accurate JSDoc comments that appear in IDE tooltips.
 
 ## Acceptance criteria
 
-- [ ] `docs/features/multiple-versions.md` exists and covers config syntax, URL layout, code layout, handler authoring, and REPL usage
+- [ ] `packages/counterfact/docs/features/multiple-versions.md` exists and covers config syntax, URL layout, code layout, handler authoring, and REPL usage
 - [ ] The example in the documentation uses a generic API, not a specific real-world API, to avoid implying the feature is limited to a particular use case
-- [ ] `docs/usage.md` or `docs/getting-started.md` links to the new feature page
-- [ ] `docs/reference.md` documents the `version` field and the `Versioned` type
+- [ ] `packages/counterfact/docs/usage.md` or `packages/counterfact/docs/getting-started.md` links to the new feature page
+- [ ] `packages/counterfact/docs/reference.md` documents the `version` field and the `Versioned` type
 - [ ] `Versioned`, `Versions`, and `VersionsGTE` have JSDoc comments
 - [ ] A code example shows a route handler using `minVersion()` to branch on API version

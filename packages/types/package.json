@@ -1,0 +1,56 @@
+{
+  "name": "@counterfact/types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript contracts for Counterfact generators, runtimes, middleware, and generated handlers.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./streaming-content-types": {
+      "types": "./dist/streaming-content-types.d.ts",
+      "import": "./dist/streaming-content-types.js"
+    }
+  },
+  "files": [
+    "dist",
+    "examples",
+    "README.md",
+    "License.md"
+  ],
+  "sideEffects": false,
+  "author": "Patrick McElhaney <pmcelhaney@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/counterfact/api-simulator.git",
+    "directory": "packages/types"
+  },
+  "bugs": "https://github.com/counterfact/api-simulator/issues",
+  "homepage": "https://counterfact.dev",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/pmcelhaney"
+  },
+  "keywords": [
+    "counterfact",
+    "openapi",
+    "api-mocking",
+    "typescript",
+    "types",
+    "testing"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc --build --force",
+    "prepack": "yarn build"
+  }
+}

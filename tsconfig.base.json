@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "module": "es2022",
+    "target": "es2022",
+    "strictNullChecks": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "allowJs": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "lib": ["es2022"],
+    "types": ["node"],
+    "paths": {
+      "@counterfact/client": ["./packages/client/src/index.ts"],
+      "@counterfact/generator": ["./packages/generator/src/index.ts"],
+      "@counterfact/openapi": ["./packages/openapi/src/index.ts"],
+      "@counterfact/runtime": ["./packages/runtime/src/index.ts"],
+      "@counterfact/runtime/koa": ["./packages/runtime/src/koa.ts"],
+      "@counterfact/runtime/msw": ["./packages/runtime/src/msw.ts"],
+      "@counterfact/repl": ["./packages/repl/src/index.ts"],
+      "@counterfact/types": ["./packages/types/src/index.ts"],
+      "@counterfact/types/streaming-content-types": [
+        "./packages/types/src/streaming-content-types.ts"
+      ]
+    }
+  }
+}

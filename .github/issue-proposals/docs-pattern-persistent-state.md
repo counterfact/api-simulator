@@ -23,12 +23,14 @@ Counterfact currently has no built-in persistence mechanism. Workarounds involve
 ## Proposed feature
 
 Add a `--persist-state <path>` CLI flag (or a `persist` option in `counterfact.yaml`) that:
+
 1. At shutdown, serializes the context's state to a JSON file at the specified path.
 2. At startup, loads the JSON file and hydrates the context before the server begins accepting requests.
 
 Context classes would opt in by implementing `toJSON()` and `fromJSON(data)` methods (or a similar convention). This keeps the persistence mechanism decoupled from the context class interface.
 
 A `Persistent State` pattern document would describe:
+
 - When to use it: shared demo environments, long-running QA mocks, or fixture-based seeding
 - How to enable persistence with `--persist-state`
 - How to implement `toJSON` / `fromJSON` in a context class
@@ -38,6 +40,6 @@ A `Persistent State` pattern document would describe:
 
 - [ ] `--persist-state <path>` CLI flag (or equivalent) is implemented
 - [ ] Context classes can opt in to persistence by implementing a documented interface
-- [ ] `docs/patterns/persistent-state.md` is added following the established pattern format
-- [ ] The new pattern is linked in `docs/patterns/index.md`
+- [ ] `packages/counterfact/docs/patterns/persistent-state.md` is added following the established pattern format
+- [ ] The new pattern is linked in `packages/counterfact/docs/patterns/index.md`
 - [ ] The reference doc is updated to describe the new CLI flag and context interface
