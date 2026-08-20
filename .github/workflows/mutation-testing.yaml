@@ -34,9 +34,10 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: yarn
+      - name: Enable Corepack
+        run: corepack enable
       - name: Install Packages
-        run: yarn install --frozen-lockfile --network-timeout 100000
+        run: yarn install --immutable
       - name: Build Workspaces
         run: yarn build
       - name: Restore Mutation Baseline

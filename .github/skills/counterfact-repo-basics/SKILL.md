@@ -47,7 +47,7 @@ site/                         # Documentation website
 
 | Task                          | Command                          |
 | ----------------------------- | -------------------------------- |
-| Install dependencies          | `yarn install --frozen-lockfile` |
+| Install dependencies          | `yarn install --immutable`       |
 | Build                         | `yarn build`                     |
 | Type-check                    | `yarn typecheck`                 |
 | Unit tests                    | `yarn test`                      |

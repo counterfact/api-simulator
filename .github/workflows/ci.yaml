@@ -55,11 +55,13 @@ jobs:
       - uses: actions/setup-node@v7
         if: steps.docs-only.outputs.docs_only != 'true'
         with:
-          node-version: lts/*
-          cache: yarn
+          node-version: 24.x
+      - name: Enable Corepack
+        if: steps.docs-only.outputs.docs_only != 'true'
+        run: corepack enable
       - name: Install Packages
         if: steps.docs-only.outputs.docs_only != 'true'
-        run: yarn install --frozen-lockfile --network-timeout 100000
+        run: yarn install --immutable
       - name: Build Workspaces
         if: steps.docs-only.outputs.docs_only != 'true'
         run: yarn build

@@ -56,9 +56,7 @@
   "engines": {
     "node": ">=22"
   },
-  "bin": {
-    "counterfact": "bin/counterfact.js"
-  },
+  "bin": "bin/counterfact.js",
   "files": [
     "bin",
     "CHANGELOG.md",
@@ -91,8 +89,8 @@
     "@counterfact/client": "0.1.0",
     "@counterfact/generator": "0.1.1",
     "@counterfact/openapi": "0.1.1",
-    "@counterfact/runtime": "0.1.1",
     "@counterfact/repl": "0.1.1",
+    "@counterfact/runtime": "0.1.1",
     "commander": "15.0.0",
     "debug": "4.4.3",
     "http-terminator": "3.2.0",
