@@ -18,10 +18,11 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
-          node-version: lts/*
-          cache: yarn
+          node-version: 24.x
+      - name: Enable Corepack
+        run: corepack enable
       - name: Install Packages
-        run: yarn install --frozen-lockfile --network-timeout 100000
+        run: yarn install --immutable
       - name: Build
         run: yarn build
       - name: Show files

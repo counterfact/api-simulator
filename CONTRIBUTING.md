@@ -13,13 +13,14 @@
 
 ## Development
 
-This is a Yarn 1 workspace monorepo. The published application is in
+This is a Yarn 4 workspace monorepo. The published application is in
 `packages/counterfact`; repository-wide tooling, examples, black-box tests, and
 the documentation website remain at the root.
 
 ```sh
 git clone git@github.com:pmcelhaney/counterfact.git
 cd counterfact
+corepack enable
 yarn install
 yarn lint
 yarn test
