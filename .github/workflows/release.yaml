@@ -4,13 +4,58 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish versions already merged to main
+        required: true
+        type: boolean
+        default: false
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
-    name: Release
+  prepare:
+    name: Prepare Release
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    outputs:
+      has_changesets: ${{ steps.changesets.outputs.hasChangesets }}
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+      - name: Install trusted-publishing toolchain
+        run: npm install --global npm@11.18.0 yarn@1.22.22
+      - name: Release preflight
+        run: yarn release:preflight
+
+      - name: Create or update the version pull request
+        id: changesets
+        uses: changesets/action@v1.9.0
+        with:
+          version: yarn changeset version
+        env:
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+
+  publish:
+    name: Publish to npm
+    needs: prepare
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.publish &&
+      needs.prepare.outputs.has_changesets != 'true'
+    runs-on: ubuntu-latest
+    environment: npm-publish
 
     permissions:
       contents: write
@@ -24,25 +69,18 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: lts/*
-          cache: yarn
-
-      - name: Get Node Version
-        run: echo "::set-output name=version::$(node -v)"
-        id: node-version
-      - name: Cache node_modules
-        uses: actions/cache@v6
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-${{ steps.node-version.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
-      - name: Install Dependencies
-        run: yarn
-
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
-        uses: changesets/action@v1
+          node-version: 24.x
+      - name: Install trusted-publishing toolchain
+        run: npm install --global npm@11.18.0 yarn@1.22.22
+      - name: Install frozen dependencies
+        run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 100000
+      - name: Build verified release artifacts
+        run: yarn build
+      - name: Publish merged versions
+        uses: changesets/action@v1.9.0
         with:
           publish: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          NPM_CONFIG_IGNORE_SCRIPTS: "true"
           NPM_CONFIG_PROVENANCE: "true"

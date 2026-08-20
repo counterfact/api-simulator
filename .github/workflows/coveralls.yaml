@@ -15,10 +15,13 @@ jobs:
           node-version: lts/*
           cache: yarn
 
-      - name: install, run tests
+      - name: Install Packages
         run: yarn install --frozen-lockfile --network-timeout 100000
 
-      - name: install, run tests
+      - name: Build Workspaces
+        run: yarn build
+
+      - name: Run Tests
         run: yarn test --runInBand --forceExit --no-watchman
 
       - name: Coveralls

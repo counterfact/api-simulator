@@ -1,0 +1,15 @@
+{
+  "engines": {
+    "node": ">=22"
+  },
+  "name": "counterfact",
+  "runtimeExports": [
+    "counterfact",
+    "createMswHandlers",
+    "handleMswRequest",
+    "loadOpenApiDocument",
+    "runStartupScenario"
+  ],
+  "sideEffects": false,
+  "type": "module"
+}

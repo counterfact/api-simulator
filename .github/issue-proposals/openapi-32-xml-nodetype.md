@@ -12,7 +12,7 @@ OpenAPI 3.2 adds a `nodeType` field to the XML Object. This field maps a schema 
 
 ## Current state
 
-`src/server/json-to-xml.ts` handles XML serialisation based on the XML Object, but it is unclear how fully the existing `attribute` and `wrapped` flags are supported. The new `nodeType` field is not recognised.
+`packages/counterfact/src/server/json-to-xml.ts` handles XML serialisation based on the XML Object, but it is unclear how fully the existing `attribute` and `wrapped` flags are supported. The new `nodeType` field is not recognised.
 
 ## Proposed changes
 

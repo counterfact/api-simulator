@@ -29,14 +29,14 @@ Today, an explicit `prefix` is required on every `SpecConfig` entry. The new beh
 
 ## Proposed change
 
-Update `normalizeSpecs` (or the `counterfact()` wiring in `src/app.ts`) to apply the following prefix derivation rule for each `SpecConfig` entry:
+Update `normalizeSpecs` (or the `counterfact()` wiring in `packages/counterfact/src/app.ts`) to apply the following prefix derivation rule for each `SpecConfig` entry:
 
-| `prefix` provided? | `group` set? | `version` set? | Derived prefix        |
-|---------------------|--------------|----------------|-----------------------|
-| Yes                 | any          | any            | use the explicit prefix |
-| No                  | Yes          | Yes            | `/<group>/<version>`  |
-| No                  | Yes          | No             | `/<group>`            |
-| No                  | No           | No             | `""` (root, single-spec legacy) |
+| `prefix` provided? | `group` set? | `version` set? | Derived prefix                  |
+| ------------------ | ------------ | -------------- | ------------------------------- |
+| Yes                | any          | any            | use the explicit prefix         |
+| No                 | Yes          | Yes            | `/<group>/<version>`            |
+| No                 | Yes          | No             | `/<group>`                      |
+| No                 | No           | No             | `""` (root, single-spec legacy) |
 
 This keeps backwards compatibility: specs without `version` continue to behave exactly as today.
 
