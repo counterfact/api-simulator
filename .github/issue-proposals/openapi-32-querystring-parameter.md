@@ -12,12 +12,12 @@ OpenAPI 3.2 adds `querystring` as a new value for the `in` field of a Parameter 
 
 ## Current state
 
-`src/typescript-generator/parameters-type-coder.ts` generates typed objects for `query`, `path`, `header`, and `cookie` parameters. A `querystring` parameter would currently be silently ignored, and the dispatcher's parameter-extraction logic does not handle it.
+`packages/counterfact/src/typescript-generator/parameters-type-coder.ts` generates typed objects for `query`, `path`, `header`, and `cookie` parameters. A `querystring` parameter would currently be silently ignored, and the dispatcher's parameter-extraction logic does not handle it.
 
 ## Proposed changes
 
-- Handle `in: querystring` in `ParametersTypeCoder` (`src/typescript-generator/parameters-type-coder.ts`) to generate a typed `querystring` property on the `$` argument
-- Update the dispatcher's parameter-extraction logic (`src/server/dispatcher.ts`) to parse the raw query string against the schema and populate `$.querystring`
+- Handle `in: querystring` in `ParametersTypeCoder` (`packages/counterfact/src/typescript-generator/parameters-type-coder.ts`) to generate a typed `querystring` property on the `$` argument
+- Update the dispatcher's parameter-extraction logic (`packages/counterfact/src/server/dispatcher.ts`) to parse the raw query string against the schema and populate `$.querystring`
 - Ensure the generated TypeScript type for `$.querystring` reflects the schema defined in the parameter object
 
 ## Acceptance criteria

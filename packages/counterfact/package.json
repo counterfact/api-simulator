@@ -1,0 +1,103 @@
+{
+  "name": "counterfact",
+  "version": "2.16.2",
+  "description": "Generate a TypeScript-based mock server from an OpenAPI spec in seconds — with stateful routes, hot reload, and REPL support.",
+  "type": "module",
+  "main": "./dist/app.js",
+  "exports": {
+    ".": {
+      "import": "./dist/app.js",
+      "types": "./dist/app.d.ts"
+    }
+  },
+  "types": "./dist/app.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/app.d.ts"
+      ]
+    }
+  },
+  "author": "Patrick McElhaney <pmcelhaney@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/counterfact/api-simulator.git"
+  },
+  "bugs": "https://github.com/counterfact/api-simulator/issues",
+  "homepage": "https://counterfact.dev",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/pmcelhaney"
+  },
+  "keywords": [
+    "mock",
+    "mock-server",
+    "openapi",
+    "swagger",
+    "typescript",
+    "api",
+    "api-mocking",
+    "api-first",
+    "openapi-mock",
+    "mock-api",
+    "dev-tools",
+    "frontend",
+    "backend",
+    "prototyping",
+    "testing",
+    "stateful",
+    "repl",
+    "hot-reload",
+    "cli",
+    "openapi-tools",
+    "swagger-tools"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "counterfact": "bin/counterfact.js"
+  },
+  "files": [
+    "bin",
+    "CHANGELOG.md",
+    "dist",
+    "docs/comparison.md",
+    "docs/faq.md",
+    "docs/features",
+    "docs/first-10-minutes.md",
+    "docs/getting-started.md",
+    "docs/patterns",
+    "docs/reference.md",
+    "docs/usage.md",
+    "License.md",
+    "README.md",
+    "llms.txt"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js --testPathIgnorePatterns=black-box --testPathIgnorePatterns=examples",
+    "test:packed-consumer": "node test/package/counterfact-consumer-smoke.mjs",
+    "build": "yarn workspace @counterfact/generator build && yarn workspace @counterfact/runtime build && yarn workspace @counterfact/client build && yarn workspace @counterfact/repl build && rimraf dist && tsc --build --force",
+    "prepack": "yarn build",
+    "go:petstore": "yarn build && yarn counterfact https://petstore3.swagger.io/api/v3/openapi.json out",
+    "go:petstore2": "yarn build && yarn counterfact https://petstore.swagger.io/v2/swagger.json out",
+    "go:example": "yarn build && node ./bin/counterfact.js ./test/fixtures/openapi/example.yaml out",
+    "go:multiple-apis": "yarn build && node ./bin/counterfact.js --config ./test/fixtures/config/multiple-apis.yaml",
+    "counterfact": "./bin/counterfact.js"
+  },
+  "dependencies": {
+    "@counterfact/client": "0.1.0",
+    "@counterfact/generator": "0.1.1",
+    "@counterfact/openapi": "0.1.1",
+    "@counterfact/runtime": "0.1.1",
+    "@counterfact/repl": "0.1.1",
+    "commander": "15.0.0",
+    "debug": "4.4.3",
+    "http-terminator": "3.2.0",
+    "js-yaml": "5.3.0",
+    "open": "11.0.1",
+    "posthog-node": "5.47.3"
+  }
+}

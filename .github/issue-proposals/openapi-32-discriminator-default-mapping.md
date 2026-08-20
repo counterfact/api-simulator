@@ -12,7 +12,7 @@ OpenAPI 3.2 adds a `defaultMapping` field to the Discriminator Object. This fiel
 
 ## Current state
 
-`SchemaTypeCoder.writeGroup()` in `src/typescript-generator/schema-type-coder.ts` generates union types based on `allOf`/`anyOf`/`oneOf` but does not inspect the `discriminator.defaultMapping` field. As a result, the default variant of a discriminated union may be missing from the generated TypeScript type.
+`SchemaTypeCoder.writeGroup()` in `packages/counterfact/src/typescript-generator/schema-type-coder.ts` generates union types based on `allOf`/`anyOf`/`oneOf` but does not inspect the `discriminator.defaultMapping` field. As a result, the default variant of a discriminated union may be missing from the generated TypeScript type.
 
 ## Proposed changes
 

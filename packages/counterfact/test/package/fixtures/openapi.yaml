@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Packed consumer compatibility API
+  version: 1.0.0
+paths:
+  /ping:
+    get:
+      operationId: ping
+      responses:
+        "200":
+          description: pong
+          content:
+            application/json:
+              schema:
+                type: string
+              example: pong
+  "/path/with:colon":
+    get:
+      operationId: pathWithColon
+      responses:
+        "200":
+          description: colon path
+          content:
+            application/json:
+              schema:
+                type: string
+              example: colon

@@ -12,13 +12,13 @@ OpenAPI 3.2 introduces an `additionalOperations` key on the Path Item Object for
 
 ## Current state
 
-The generator in `src/typescript-generator/generate.ts` iterates over all top-level keys in each path item, so keys like `get`, `post`, etc. are processed automatically. However, `additionalOperations` is a *nested* object and would not be unwrapped by the current loop; those operations would be silently ignored.
+The generator in `packages/counterfact/src/typescript-generator/generate.ts` iterates over all top-level keys in each path item, so keys like `get`, `post`, etc. are processed automatically. However, `additionalOperations` is a _nested_ object and would not be unwrapped by the current loop; those operations would be silently ignored.
 
 ## Proposed changes
 
-- Detect the `additionalOperations` key during code generation in `src/typescript-generator/generate.ts` and flatten its entries into the same processing loop as standard methods
+- Detect the `additionalOperations` key during code generation in `packages/counterfact/src/typescript-generator/generate.ts` and flatten its entries into the same processing loop as standard methods
 - Update the Koa middleware and/or dispatcher to forward requests with custom method names to the matching handler
-- Update `src/server/registry.ts` to accept and store handlers for arbitrary method names
+- Update `packages/counterfact/src/server/registry.ts` to accept and store handlers for arbitrary method names
 
 ## Acceptance criteria
 
