@@ -251,7 +251,13 @@ try {
   for (const field of ["engines", "name", "sideEffects", "type"]) {
     assert.deepEqual(installedManifest[field], expectedManifest[field], field);
   }
-  assert.deepEqual(Object.keys(installedManifest.bin ?? {}), ["counterfact"]);
+  const installedBins =
+    typeof installedManifest.bin === "string"
+      ? { [installedManifest.name]: installedManifest.bin }
+      : (installedManifest.bin ?? {});
+  assert.deepEqual(installedBins, {
+    counterfact: "bin/counterfact.js",
+  });
   assert.deepEqual(Object.keys(installedManifest.exports ?? {}), ["."]);
 
   for (const requiredPath of [

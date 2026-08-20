@@ -62,10 +62,9 @@ assert(
 
 await run(executable("yarn"), [
   "install",
-  "--frozen-lockfile",
-  "--ignore-scripts",
-  "--network-timeout",
-  "100000",
+  "--immutable",
+  "--mode",
+  "skip-build",
 ]);
 await run(process.execPath, ["scripts/check-package-boundaries.mjs"]);
 await run(process.execPath, ["scripts/test-package-closures.mjs"]);
