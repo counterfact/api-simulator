@@ -12,7 +12,7 @@ OpenAPI 3.2 introduces a `mediaTypes` key under `components` to allow reuse of M
 
 ## Current state
 
-`src/typescript-generator/generate.ts` reads `#/paths` and `#/components/securitySchemes`. Other component types are resolved via `$ref` by the bundler. It is likely that `$ref` values pointing to `#/components/mediaTypes/...` are already handled automatically, but this has not been explicitly tested.
+`packages/counterfact/src/typescript-generator/generate.ts` reads `#/paths` and `#/components/securitySchemes`. Other component types are resolved via `$ref` by the bundler. It is likely that `$ref` values pointing to `#/components/mediaTypes/...` are already handled automatically, but this has not been explicitly tested.
 
 ## Proposed changes
 

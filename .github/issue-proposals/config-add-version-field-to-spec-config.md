@@ -29,9 +29,9 @@ Without this field, specifying two specs in the same group is treated as a dupli
 
 ## Proposed change
 
-1. Add an optional `version: string` field (default `""`) to the `SpecConfig` interface in `src/app.ts`.
-2. Update `normalizeSpecs` / `normalizeSpecOption` (in `src/cli/run.ts`) to pass `version` through from the YAML config or CLI when provided.
-3. Relax the duplicate-group validation in `validateSpecGroups` (in `src/app.ts`): two specs may share the same `group` as long as they each carry a distinct non-empty `version`. Mixed configurations (same-group entries with and without `version`) should produce a clear validation error.
+1. Add an optional `version: string` field (default `""`) to the `SpecConfig` interface in `packages/counterfact/src/app.ts`.
+2. Update `normalizeSpecs` / `normalizeSpecOption` (in `packages/counterfact/src/cli/run.ts`) to pass `version` through from the YAML config or CLI when provided.
+3. Relax the duplicate-group validation in `validateSpecGroups` (in `packages/counterfact/src/app.ts`): two specs may share the same `group` as long as they each carry a distinct non-empty `version`. Mixed configurations (same-group entries with and without `version`) should produce a clear validation error.
 4. Update the `counterfact.yaml` JSON Schema (if one exists) to allow `version` on each spec entry.
 5. Update the TypeScript types for the CLI's `SpecOption` / `SpecEntry` objects to include the optional `version` field.
 

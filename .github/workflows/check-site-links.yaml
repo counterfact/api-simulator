@@ -3,13 +3,13 @@ name: Check site for broken links
 on:
   pull_request:
     paths:
-      - "docs/**"
+      - "packages/counterfact/docs/**"
       - "site/**"
   push:
     branches:
       - main
     paths:
-      - "docs/**"
+      - "packages/counterfact/docs/**"
       - "site/**"
   workflow_dispatch:
 

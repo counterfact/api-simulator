@@ -1,0 +1,59 @@
+{
+  "name": "@counterfact/openapi",
+  "version": "0.1.1",
+  "description": "Load, bundle, dereference, and overlay OpenAPI documents without starting Counterfact.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "examples",
+    "README.md",
+    "License.md"
+  ],
+  "sideEffects": false,
+  "author": "Patrick McElhaney <pmcelhaney@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/counterfact/api-simulator.git",
+    "directory": "packages/openapi"
+  },
+  "bugs": "https://github.com/counterfact/api-simulator/issues",
+  "homepage": "https://counterfact.dev",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/pmcelhaney"
+  },
+  "keywords": [
+    "counterfact",
+    "openapi",
+    "swagger",
+    "json-schema",
+    "typescript",
+    "api"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc --build --force",
+    "prepack": "yarn build"
+  },
+  "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "16.0.0",
+    "@types/json-schema": "7.0.15",
+    "js-yaml": "5.2.3",
+    "jsonpath-plus": "10.4.0",
+    "node-fetch": "3.3.2"
+  }
+}

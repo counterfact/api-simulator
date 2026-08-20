@@ -20,15 +20,6 @@ jobs:
         with:
           node-version: lts/*
           cache: yarn
-        id: setup-node
-      - name: Get Node Version
-        run: echo "::set-output name=version::$(node -v)"
-        id: node-version
-      - name: Cache node_modules
-        uses: actions/cache@v6
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-${{ steps.node-version.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
       - name: Install Packages
         run: yarn install --frozen-lockfile --network-timeout 100000
       - name: Build

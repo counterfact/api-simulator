@@ -2,11 +2,16 @@ export default {
   collectCoverage: true,
 
   collectCoverageFrom: [
-    "src/**/*.{js,jsx,ts,tsx}",
+    "packages/client/src/**/*.{js,jsx,ts,tsx}",
+    "packages/counterfact/src/**/*.{js,jsx,ts,tsx}",
+    "packages/generator/src/**/*.{js,jsx,ts,tsx}",
+    "packages/openapi/src/**/*.{js,jsx,ts,tsx}",
+    "packages/runtime/src/**/*.{js,jsx,ts,tsx}",
+    "packages/repl/src/**/*.{js,jsx,ts,tsx}",
     "!**/node_modules/**",
     "!**/*.d.ts",
-    "!src/counterfact-types/**",
-    "!src/server/config.ts",
+    "!packages/types/src/**",
+    "!packages/counterfact/src/config.ts",
   ],
 
   coverageProvider: "v8",
@@ -25,6 +30,15 @@ export default {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
+
+  roots: [
+    "<rootDir>/packages/client/test",
+    "<rootDir>/packages/counterfact/test",
+    "<rootDir>/packages/generator/test",
+    "<rootDir>/packages/openapi/test",
+    "<rootDir>/packages/runtime/test",
+    "<rootDir>/packages/repl/test",
+  ],
 
   testEnvironment: "node",
 
