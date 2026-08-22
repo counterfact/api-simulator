@@ -372,6 +372,18 @@ export async function counterfact<TStore = unknown>(
   async function start(
     options: Pick<Config, "generate" | "startServer" | "watch" | "buildCache">,
   ) {
+    async function completeStage(operations: Array<Promise<unknown>>) {
+      const results = await Promise.allSettled(operations);
+      const failure = results.find(
+        (result): result is PromiseRejectedResult =>
+          result.status === "rejected",
+      );
+
+      if (failure !== undefined) {
+        throw failure.reason;
+      }
+    }
+
     // Serialize generate() calls within each group to avoid concurrent writes
     // to the same output directory.  Runners that share a group share the same
     // basePath subdirectory (and therefore the same counterfact-types
@@ -435,27 +447,39 @@ export async function counterfact<TStore = unknown>(
         }),
       );
     }
-    await Promise.all(runners.map((runner) => runner.watch()));
-    await Promise.all(runners.map((runner) => runner.start(options)));
-
-    if (options.startServer) {
-      await storeLoader.watch();
-    }
-
     let httpTerminator: HttpTerminator | undefined;
 
-    if (options.startServer) {
-      try {
-        await runGroupStartupScenarios(runners, { port: config.port });
-      } catch (error) {
-        // Startup happens after the runner watchers are active. If a scenario
-        // fails, release those resources and leave the HTTP port untouched.
-        await Promise.allSettled([
-          ...runners.map((runner) => runner.stopWatching()),
-          storeLoader.stopWatching(),
-        ]);
-        throw error;
+    async function stopResources(): Promise<void> {
+      const results = await Promise.allSettled([
+        ...runners.map((runner) => runner.stopWatching()),
+        storeLoader.stopWatching(),
+        httpTerminator?.terminate(),
+      ]);
+      const errors = results.flatMap((result) =>
+        result.status === "rejected" ? [result.reason] : [],
+      );
+
+      if (errors.length > 0) {
+        throw new AggregateError(
+          errors,
+          "Failed to stop all Counterfact resources",
+        );
       }
+    }
+
+    try {
+      await completeStage(runners.map((runner) => runner.watch()));
+      await completeStage(runners.map((runner) => runner.start(options)));
+
+      if (options.startServer) {
+        await storeLoader.watch();
+      }
+
+      if (!options.startServer) {
+        return { stop: stopResources };
+      }
+
+      await runGroupStartupScenarios(runners, { port: config.port });
 
       const server = koaApp.listen({
         port: config.port,
@@ -464,16 +488,13 @@ export async function counterfact<TStore = unknown>(
       httpTerminator = createHttpTerminator({
         server,
       });
+    } catch (error) {
+      await stopResources().catch(() => undefined);
+      throw error;
     }
 
     return {
-      async stop() {
-        await Promise.all([
-          ...runners.map((runner) => runner.stopWatching()),
-          storeLoader.stopWatching(),
-        ]);
-        await httpTerminator?.terminate();
-      },
+      stop: stopResources,
     };
   }
 

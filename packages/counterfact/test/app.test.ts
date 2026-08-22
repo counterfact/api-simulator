@@ -883,6 +883,146 @@ describe("counterfact", () => {
     });
   });
 
+  it("rolls back resources when runner watching fails", async () => {
+    const watch = jest
+      .spyOn(ApiRunner.prototype, "watch")
+      .mockRejectedValue(new Error("watch failed"));
+    const stopWatching = jest
+      .spyOn(ApiRunner.prototype, "stopWatching")
+      .mockResolvedValue(undefined);
+    const storeStopWatching = jest
+      .spyOn(StoreLoader.prototype, "stopWatching")
+      .mockResolvedValue(undefined);
+
+    try {
+      const result = await (app as any).counterfact(mockConfig);
+
+      await expect(
+        result.start({
+          startServer: false,
+          buildCache: false,
+          generate: { routes: false, types: false },
+          watch: { routes: false, types: false },
+        }),
+      ).rejects.toThrow("watch failed");
+      expect(stopWatching).toHaveBeenCalledTimes(1);
+      expect(storeStopWatching).toHaveBeenCalledTimes(1);
+    } finally {
+      storeStopWatching.mockRestore();
+      stopWatching.mockRestore();
+      watch.mockRestore();
+    }
+  });
+
+  it("rolls back resources when runner startup fails", async () => {
+    const watch = jest
+      .spyOn(ApiRunner.prototype, "watch")
+      .mockResolvedValue(undefined);
+    const startRunner = jest
+      .spyOn(ApiRunner.prototype, "start")
+      .mockRejectedValue(new Error("runner start failed"));
+    const stopWatching = jest
+      .spyOn(ApiRunner.prototype, "stopWatching")
+      .mockResolvedValue(undefined);
+
+    try {
+      const result = await (app as any).counterfact(mockConfig);
+
+      await expect(
+        result.start({
+          startServer: false,
+          buildCache: false,
+          generate: { routes: false, types: false },
+          watch: { routes: false, types: false },
+        }),
+      ).rejects.toThrow("runner start failed");
+      expect(stopWatching).toHaveBeenCalledTimes(1);
+    } finally {
+      stopWatching.mockRestore();
+      startRunner.mockRestore();
+      watch.mockRestore();
+    }
+  });
+
+  it("rolls back resources and does not listen when store watching fails", async () => {
+    const watch = jest
+      .spyOn(ApiRunner.prototype, "watch")
+      .mockResolvedValue(undefined);
+    const startRunner = jest
+      .spyOn(ApiRunner.prototype, "start")
+      .mockResolvedValue(undefined);
+    const stopWatching = jest
+      .spyOn(ApiRunner.prototype, "stopWatching")
+      .mockResolvedValue(undefined);
+    const storeWatch = jest
+      .spyOn(StoreLoader.prototype, "watch")
+      .mockRejectedValue(new Error("store watch failed"));
+
+    try {
+      const result = await (app as any).counterfact({
+        ...mockConfig,
+        port: 0,
+      });
+      const listen = jest.spyOn(result.koaApp, "listen");
+
+      await expect(
+        result.start({
+          startServer: true,
+          buildCache: false,
+          generate: { routes: false, types: false },
+          watch: { routes: false, types: false },
+        }),
+      ).rejects.toThrow("store watch failed");
+      expect(stopWatching).toHaveBeenCalledTimes(1);
+      expect(listen).not.toHaveBeenCalled();
+      listen.mockRestore();
+    } finally {
+      storeWatch.mockRestore();
+      stopWatching.mockRestore();
+      startRunner.mockRestore();
+      watch.mockRestore();
+    }
+  });
+
+  it("terminates HTTP even when another shutdown operation fails", async () => {
+    const watch = jest
+      .spyOn(ApiRunner.prototype, "watch")
+      .mockResolvedValue(undefined);
+    const startRunner = jest
+      .spyOn(ApiRunner.prototype, "start")
+      .mockResolvedValue(undefined);
+    const stopWatching = jest
+      .spyOn(ApiRunner.prototype, "stopWatching")
+      .mockRejectedValue(new Error("runner stop failed"));
+    const storeWatch = jest
+      .spyOn(StoreLoader.prototype, "watch")
+      .mockResolvedValue(undefined);
+
+    try {
+      const result = await (app as any).counterfact({
+        ...mockConfig,
+        port: 0,
+      });
+      const listen = jest.spyOn(result.koaApp, "listen");
+      const { stop } = await result.start({
+        startServer: true,
+        buildCache: false,
+        generate: { routes: false, types: false },
+        watch: { routes: false, types: false },
+      });
+      const server = listen.mock.results[0]?.value;
+
+      await expect(stop()).rejects.toThrow(AggregateError);
+      expect(server?.listening).toBe(false);
+      listen.mockRestore();
+    } finally {
+      storeWatch.mockRestore();
+      stopWatching.mockRestore();
+      startRunner.mockRestore();
+      watch.mockRestore();
+    }
+  });
+
   it("preserves startup behavior when specs are omitted", async () => {
     await usingTemporaryFiles(async ($) => {
       const realCreate = ApiRunner.create;
