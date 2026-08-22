@@ -339,6 +339,34 @@ describe("a response builder", () => {
       expect(response?.headers?.["x-required-header"]).toBe("already-set");
     });
 
+    it("does not duplicate an already-set required header with different casing", async () => {
+      const operationWithRequiredHeaders: OpenApiOperation = {
+        responses: {
+          200: {
+            content: {
+              "application/json": { schema: { type: "object" } },
+            },
+            headers: {
+              "x-required-header": {
+                required: true,
+                schema: { type: "string" },
+              },
+            },
+          },
+        },
+      };
+
+      const response = await createResponseBuilder(
+        operationWithRequiredHeaders,
+      )[200]
+        ?.header("X-Required-Header", "already-set")
+        .random();
+
+      expect(response?.headers).toStrictEqual({
+        "X-Required-Header": "already-set",
+      });
+    });
+
     it("correctly handles alwaysFakeOptionals option", async () => {
       const operationWithoutExamples: OpenApiOperation = {
         responses: {

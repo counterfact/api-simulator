@@ -282,9 +282,12 @@ export function createResponseBuilder(
         const { content } = response;
 
         const generatedHeaders: { [name: string]: string } = {};
+        const existingHeaderNames = new Set(
+          Object.keys(this.headers ?? {}).map((name) => name.toLowerCase()),
+        );
 
         for (const [name, header] of Object.entries(response.headers ?? {})) {
-          if (header.required && !(name in (this.headers ?? {}))) {
+          if (header.required && !existingHeaderNames.has(name.toLowerCase())) {
             generatedHeaders[name] = (await generate(
               (header.schema ?? { type: "string" }) as JsonSchema,
               generateOptions,
