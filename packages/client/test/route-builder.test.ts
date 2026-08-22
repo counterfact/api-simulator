@@ -187,6 +187,34 @@ describe("RouteBuilder", () => {
       expect(builder.ready()).toBe(true);
     });
 
+    it("includes required path-item parameters", () => {
+      const catalog = createOpenApiRouteCatalog({
+        paths: {
+          "/path-item/{id}": {
+            get: { responses: { "200": {} } },
+            parameters: [
+              {
+                in: "path",
+                name: "id",
+                required: true,
+                type: "string",
+              },
+            ],
+          },
+        },
+      });
+      const builder = new RouteBuilder("/path-item/{id}", {
+        port: 9999,
+        routeCatalog: catalog,
+      }).method("get");
+
+      expect(builder.ready()).toBe(false);
+      expect(builder.missing()?.path).toEqual([
+        { description: undefined, name: "id", type: "string" },
+      ]);
+      expect(builder.path({ id: "one" }).ready()).toBe(true);
+    });
+
     it("returns true when no OpenAPI document is provided", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
         port: 9999,
