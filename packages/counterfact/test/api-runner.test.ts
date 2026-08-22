@@ -5,6 +5,7 @@ import { usingTemporaryFiles } from "using-temporary-files";
 import { ApiRunner } from "../src/api-runner.js";
 import { CodeGenerator, ScenarioFileGenerator } from "@counterfact/generator";
 import {
+  ChaosRegistry,
   ContextRegistry,
   Dispatcher,
   ModuleLoader,
@@ -106,6 +107,22 @@ describe("ApiRunner", () => {
           basePath: $.path("."),
         });
         expect(runner.dispatcher).toBeInstanceOf(Dispatcher);
+      });
+    });
+
+    it("passes a supplied chaos registry to the dispatcher", async () => {
+      await usingTemporaryFiles(async ($) => {
+        const chaosRegistry = new ChaosRegistry();
+        const runner = await ApiRunner.create(
+          { ...baseConfig, basePath: $.path(".") },
+          "",
+          "",
+          [],
+          undefined,
+          chaosRegistry,
+        );
+
+        expect(runner.dispatcher.chaosRegistry).toBe(chaosRegistry);
       });
     });
 
