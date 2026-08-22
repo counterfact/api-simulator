@@ -275,6 +275,20 @@ describe("RouteBuilder", () => {
           .ready(),
       ).toBe(true);
     });
+
+    it("treats required header names case-insensitively", () => {
+      const builder = new RouteBuilder("/complete/{id}", {
+        port: 9999,
+        routeCatalog: ROUTE_CATALOG,
+      })
+        .method("get")
+        .path({ id: "one" })
+        .query({ filter: "active" })
+        .headers({ "X-Token": "secret" });
+
+      expect(builder.ready()).toBe(true);
+      expect(builder.missing()).toBeUndefined();
+    });
   });
 
   describe("help()", () => {

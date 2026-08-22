@@ -183,7 +183,12 @@ export class RouteBuilder {
         missingParams.path = [...(missingParams.path ?? []), paramInfo];
       } else if (param.in === "query" && !(param.name in this._queryParams)) {
         missingParams.query = [...(missingParams.query ?? []), paramInfo];
-      } else if (param.in === "header" && !(param.name in this._headerParams)) {
+      } else if (
+        param.in === "header" &&
+        !Object.keys(this._headerParams).some(
+          (name) => name.toLowerCase() === param.name.toLowerCase(),
+        )
+      ) {
         missingParams.header = [...(missingParams.header ?? []), paramInfo];
       }
     }
