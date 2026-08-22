@@ -43,7 +43,7 @@ jobs:
 
       - name: Create or update the version pull request
         id: changesets
-        uses: changesets/action@v2.1.0
+        uses: changesets/action@v2.1.1
         with:
           github-token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
           version-script: yarn changeset version
@@ -80,7 +80,7 @@ jobs:
       - name: Build verified release artifacts
         run: yarn build
       - name: Publish merged versions
-        uses: changesets/action@v2.1.0
+        uses: changesets/action@v2.1.1
         with:
           github-token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
           publish-script: yarn release
