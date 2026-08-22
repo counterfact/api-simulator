@@ -11,6 +11,24 @@ function normalizeLocalPath(path: string): string {
   return nodePath.resolve(path);
 }
 
+function parseSupportedUrl(urlOrPath: string): URL | undefined {
+  try {
+    const url = new URL(urlOrPath);
+
+    if (
+      url.protocol === "file:" ||
+      url.protocol === "http:" ||
+      url.protocol === "https:"
+    ) {
+      return url;
+    }
+  } catch {
+    // A local path is not necessarily a valid URL.
+  }
+
+  return undefined;
+}
+
 /**
  * Reads the content of a file or URL and returns it as a UTF-8 string.
  *
@@ -23,23 +41,21 @@ function normalizeLocalPath(path: string): string {
  * @returns The file contents as a string.
  */
 export async function readFile(urlOrPath: string) {
-  if (urlOrPath.startsWith("http")) {
+  if (urlOrPath.includes("\0")) {
+    throw new Error("File path cannot contain NUL bytes.");
+  }
+
+  const url = parseSupportedUrl(urlOrPath);
+
+  if (url?.protocol === "http:" || url?.protocol === "https:") {
     const response = await nodeFetch(urlOrPath);
 
     return await response.text();
   }
 
-  if (urlOrPath.startsWith("file")) {
-    const fileUrl = new URL(urlOrPath);
-
-    if (fileUrl.protocol !== "file:") {
-      throw new Error(
-        `Unsupported URL protocol for file read: ${fileUrl.protocol}`,
-      );
-    }
-
+  if (url?.protocol === "file:") {
     // eslint-disable-next-line security/detect-non-literal-fs-filename -- file URL is parsed and protocol-validated immediately above.
-    return await fs.readFile(fileUrl, "utf8");
+    return await fs.readFile(url, "utf8");
   }
 
   const normalizedPath = normalizeLocalPath(urlOrPath);
