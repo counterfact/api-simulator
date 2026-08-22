@@ -1,4 +1,5 @@
-import type { REPLServer } from "node:repl";
+import repl, { type REPLServer, type ReplOptions } from "node:repl";
+import { PassThrough, Writable } from "node:stream";
 
 import { afterEach, jest } from "@jest/globals";
 
@@ -51,6 +52,14 @@ class ReplHarness {
 
   private readonly mock = new MockRepl();
 
+  private readonly input = new PassThrough();
+
+  private readonly replOutput = new Writable({
+    write(_chunk, _encoding, callback) {
+      callback();
+    },
+  });
+
   public output: string[] = [];
 
   public constructor(
@@ -62,17 +71,33 @@ class ReplHarness {
     store?: object,
     reportEvent?: ReplEventReporter,
   ) {
-    this.server = startRepl(
-      contextRegistry,
-      registry,
-      config,
-      (line) => this.output.push(line),
-      undefined,
-      scenarioRegistry,
-      apiBindings,
-      store,
-      reportEvent,
-    );
+    const originalStart = repl.start;
+    const startSpy = jest.spyOn(repl, "start").mockImplementation((options) => {
+      const replOptions: ReplOptions =
+        typeof options === "string" ? { prompt: options } : (options ?? {});
+
+      return originalStart({
+        ...replOptions,
+        input: this.input,
+        output: this.replOutput,
+      });
+    });
+
+    try {
+      this.server = startRepl(
+        contextRegistry,
+        registry,
+        config,
+        (line) => this.output.push(line),
+        undefined,
+        scenarioRegistry,
+        apiBindings,
+        store,
+        reportEvent,
+      );
+    } finally {
+      startSpy.mockRestore();
+    }
   }
 
   public call(name: string, options: string) {
@@ -88,6 +113,12 @@ class ReplHarness {
       this.mock.commandLog[0] === "clearBufferedCommand" &&
       this.mock.commandLog[1] === "displayPrompt"
     );
+  }
+
+  public close() {
+    this.server.close();
+    this.input.destroy();
+    this.replOutput.destroy();
   }
 }
 
@@ -113,16 +144,16 @@ function createHarness(
     reportEvent,
   );
 
-  openServers.push(harness.server);
+  openServers.push(harness);
 
   return { config, contextRegistry, harness, registry };
 }
 
-const openServers: REPLServer[] = [];
+const openServers: ReplHarness[] = [];
 
 afterEach(() => {
-  for (const server of openServers) {
-    server.close();
+  for (const harness of openServers) {
+    harness.close();
   }
 
   openServers.length = 0;

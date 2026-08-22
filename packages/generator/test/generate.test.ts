@@ -211,6 +211,38 @@ describe("OpenAPI paths with trailing slashes", () => {
     });
   });
 
+  it.each([
+    "customers",
+    "/customers\0private",
+    "/customers\\..\\private",
+    "/customers//private",
+    "/customers/./private",
+    "/customers/../private",
+  ])("rejects unsafe OpenAPI path %p before writing files", async (path) => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "openapi.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "Unsafe path", version: "1.0.0" },
+          paths: { [path]: operation("unsafeOperation") },
+        }),
+      );
+
+      const repository = new Repository();
+      const writeFiles = jest.fn(async () => {});
+      repository.writeFiles = writeFiles;
+
+      await expect(
+        new CodeGenerator($.path("openapi.json"), $.path("out"), {
+          routes: true,
+          types: true,
+        }).generate(repository),
+      ).rejects.toThrow("Invalid OpenAPI path");
+      expect(writeFiles).not.toHaveBeenCalled();
+    });
+  });
+
   it("prunes renamed path types in type-only mode and remains idempotent", async () => {
     await usingTemporaryFiles(async ($) => {
       const document = (path: string, operationId: string) => ({

@@ -102,6 +102,27 @@ describe("validateResponse", () => {
     expect(result.valid).toBe(true);
   });
 
+  it("matches response header names case-insensitively", () => {
+    const result = validateResponse(
+      {
+        responses: {
+          200: {
+            content: {},
+            headers: {
+              "x-trace-id": {
+                required: true,
+                schema: { type: "integer" },
+              },
+            },
+          },
+        },
+      },
+      { body: "ok", headers: { "X-Trace-ID": "42" }, status: 200 },
+    );
+
+    expect(result).toStrictEqual({ errors: [], valid: true });
+  });
+
   it("coerces boolean-typed header strings before validation", () => {
     const result = validateResponse(
       {

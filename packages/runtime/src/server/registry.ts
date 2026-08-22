@@ -138,11 +138,22 @@ function castParameter(value: string | number | boolean, type: string) {
 function castParameters(
   parameters: { [key: string]: string | number | boolean } = {},
   parameterTypes: Map<string, string> = new Map(),
+  caseInsensitive = false,
 ) {
   const copy: { [key: string]: boolean | number | string } = {};
 
+  const types = caseInsensitive
+    ? new Map(
+        Array.from(parameterTypes, ([key, value]) => [
+          key.toLowerCase(),
+          value,
+        ]),
+      )
+    : parameterTypes;
+
   Object.entries(parameters).forEach(([key, value]) => {
-    copy[key] = castParameter(value, parameterTypes.get(key) ?? "string");
+    const lookupKey = caseInsensitive ? key.toLowerCase() : key;
+    copy[key] = castParameter(value, types.get(lookupKey) ?? "string");
   });
 
   return copy;
@@ -344,7 +355,11 @@ export class Registry {
         x?: RequestDataWithBody;
       } = {
         ...requestData,
-        headers: castParameters(requestData.headers, parameterTypes.header),
+        headers: castParameters(
+          requestData.headers,
+          parameterTypes.header,
+          true,
+        ),
         matchedPath: handler.matchedPath,
         path: castParameters(handler.path, parameterTypes.path),
         query: castParameters(requestData.query, parameterTypes.query),

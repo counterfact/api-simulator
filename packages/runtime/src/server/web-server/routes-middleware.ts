@@ -120,6 +120,33 @@ function getAuthObject(
   return { password, username };
 }
 
+function pathWithinPrefix(
+  requestPath: string,
+  configuredPrefix: string,
+): string | undefined {
+  let prefixEnd = configuredPrefix.length;
+
+  while (prefixEnd > 0 && configuredPrefix.charCodeAt(prefixEnd - 1) === 47) {
+    prefixEnd -= 1;
+  }
+
+  const prefix = configuredPrefix.slice(0, prefixEnd);
+
+  if (prefix === "") {
+    return requestPath || "/";
+  }
+
+  if (requestPath === prefix) {
+    return "/";
+  }
+
+  if (!requestPath.startsWith(`${prefix}/`)) {
+    return undefined;
+  }
+
+  return requestPath.slice(prefix.length);
+}
+
 /**
  * Builds the Koa middleware function that bridges Koa's request context with
  * the Counterfact {@link Dispatcher}.
@@ -153,15 +180,15 @@ export function routesMiddleware(
     debug("middleware running for path: %s", ctx.request.path);
     debug("prefix: %s", prefix);
 
-    if (!ctx.request.path.startsWith(prefix)) {
+    const path = pathWithinPrefix(ctx.request.path, prefix);
+
+    if (path === undefined) {
       return await next();
     }
 
     const auth = getAuthObject(ctx);
 
     const { body, headers, query, rawBody } = ctx.request;
-
-    const path = ctx.request.path.slice(prefix.length);
 
     const method = ctx.request.method as RequestMethod;
 
@@ -261,12 +288,11 @@ export function routesMiddlewareForRunners(
   proxy = koaProxy,
 ): Koa.Middleware {
   return async function multiRunnerRoutesMiddleware(ctx, next) {
-    const candidates = runners
-      .filter(({ prefix }) => ctx.request.path.startsWith(prefix))
-      .map((runner) => ({
-        path: ctx.request.path.slice(runner.prefix.length),
-        runner,
-      }));
+    const candidates = runners.flatMap((runner) => {
+      const path = pathWithinPrefix(ctx.request.path, runner.prefix);
+
+      return path === undefined ? [] : [{ path, runner }];
+    });
 
     if (candidates.length === 0) {
       return await next();

@@ -29,7 +29,7 @@
     "test:package-closures": "node scripts/test-package-closures.mjs",
     "test:tsd": "tsd --typings ./packages/types/dist/index.d.ts --files ./packages/types/test/**/*.test-d.ts",
     "build": "yarn workspace counterfact build",
-    "typecheck": "tsc --build --noEmit --pretty false",
+    "typecheck": "tsc --noEmit --pretty false -p packages/types && tsc --noEmit --pretty false -p packages/openapi && tsc --noEmit --pretty false -p packages/runtime && tsc --noEmit --pretty false -p packages/client && tsc --noEmit --pretty false -p packages/generator && tsc --noEmit --pretty false -p packages/repl && tsc --noEmit --pretty false -p packages/counterfact",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release": "changeset publish",
     "prepare": "husky install",

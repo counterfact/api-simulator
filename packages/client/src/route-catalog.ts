@@ -34,6 +34,31 @@ export interface OpenApiRouteDocument {
   readonly paths: Readonly<Record<string, object>>;
 }
 
+function mergeParameters(
+  pathItemParameters: readonly RouteParameter[] | undefined,
+  operationParameters: readonly RouteParameter[] | undefined,
+): readonly RouteParameter[] | undefined {
+  if (!pathItemParameters || pathItemParameters.length === 0) {
+    return operationParameters;
+  }
+
+  if (!operationParameters || operationParameters.length === 0) {
+    return pathItemParameters;
+  }
+
+  const parameters = new Map<string, RouteParameter>();
+
+  for (const parameter of pathItemParameters) {
+    parameters.set(`${parameter.in}:${parameter.name}`, parameter);
+  }
+
+  for (const parameter of operationParameters) {
+    parameters.set(`${parameter.in}:${parameter.name}`, parameter);
+  }
+
+  return [...parameters.values()];
+}
+
 /**
  * Adapts an OpenAPI-like document to the client package's narrow route
  * catalog. The document is retained by reference so live OpenAPI reloads are
@@ -56,7 +81,25 @@ export function createOpenApiRouteCatalog(
       const pathItem = document.paths[matchingPath] as
         Record<string, unknown> | undefined;
 
-      return pathItem?.[method.toLowerCase()] as RouteOperation | undefined;
+      const operation = pathItem?.[method.toLowerCase()] as
+        RouteOperation | undefined;
+
+      if (!operation) {
+        return undefined;
+      }
+
+      const pathItemParameters = pathItem?.parameters as
+        readonly RouteParameter[] | undefined;
+      const parameters = mergeParameters(
+        pathItemParameters,
+        operation.parameters,
+      );
+
+      if (!pathItemParameters || pathItemParameters.length === 0) {
+        return operation;
+      }
+
+      return { ...operation, parameters };
     },
     listPaths() {
       return Object.keys(document.paths);

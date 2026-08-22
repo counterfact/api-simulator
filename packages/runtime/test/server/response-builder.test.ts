@@ -1,4 +1,5 @@
 import type { OpenApiOperation } from "@counterfact/types";
+import { jest } from "@jest/globals";
 import type { DispatcherConfig as Config } from "../../src/runtime-config.js";
 import { createResponseBuilder } from "../../src/server/response-builder.js";
 import retry from "jest-retries";
@@ -279,6 +280,20 @@ describe("a response builder", () => {
       // });
     });
 
+    it("does not log generation options while creating a random response", async () => {
+      const log = jest
+        .spyOn(console, "log")
+        .mockImplementation(() => undefined);
+
+      try {
+        await createResponseBuilder(operation)[200]?.random();
+
+        expect(log).not.toHaveBeenCalled();
+      } finally {
+        log.mockRestore();
+      }
+    });
+
     it("fills in required headers when calling random()", async () => {
       const operationWithRequiredHeaders: OpenApiOperation = {
         responses: {
@@ -337,6 +352,34 @@ describe("a response builder", () => {
         .random();
 
       expect(response?.headers?.["x-required-header"]).toBe("already-set");
+    });
+
+    it("does not duplicate an already-set required header with different casing", async () => {
+      const operationWithRequiredHeaders: OpenApiOperation = {
+        responses: {
+          200: {
+            content: {
+              "application/json": { schema: { type: "object" } },
+            },
+            headers: {
+              "x-required-header": {
+                required: true,
+                schema: { type: "string" },
+              },
+            },
+          },
+        },
+      };
+
+      const response = await createResponseBuilder(
+        operationWithRequiredHeaders,
+      )[200]
+        ?.header("X-Required-Header", "already-set")
+        .random();
+
+      expect(response?.headers).toStrictEqual({
+        "X-Required-Header": "already-set",
+      });
     });
 
     it("correctly handles alwaysFakeOptionals option", async () => {

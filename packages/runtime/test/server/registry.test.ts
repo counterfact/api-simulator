@@ -26,7 +26,18 @@ describe("a registry", () => {
     expect(registry.exists("GET", "/goodbye")).toBe(false);
   });
 
-  it.todo("returns debug information if path does not exist");
+  it("returns a diagnostic 404 response when no handler exists", async () => {
+    const registry = new Registry();
+
+    expect(
+      await registry.endpoint("GET", "/missing")({} as RequestDataWithBody),
+    ).toStrictEqual({
+      body: "Could not find a GET method matching /missing\n",
+      contentType: "text/plain",
+      headers: {},
+      status: 404,
+    });
+  });
 
   it("returns a function matching the URL and request method", async () => {
     const registry = new Registry();

@@ -1,6 +1,7 @@
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it, jest } from "@jest/globals";
 
 import {
+  RawHttpClient,
   RouteBuilder,
   createOpenApiRouteCatalog,
   createRouteFunction,
@@ -186,6 +187,34 @@ describe("RouteBuilder", () => {
       expect(builder.ready()).toBe(true);
     });
 
+    it("includes required path-item parameters", () => {
+      const catalog = createOpenApiRouteCatalog({
+        paths: {
+          "/path-item/{id}": {
+            get: { responses: { "200": {} } },
+            parameters: [
+              {
+                in: "path",
+                name: "id",
+                required: true,
+                type: "string",
+              },
+            ],
+          },
+        },
+      });
+      const builder = new RouteBuilder("/path-item/{id}", {
+        port: 9999,
+        routeCatalog: catalog,
+      }).method("get");
+
+      expect(builder.ready()).toBe(false);
+      expect(builder.missing()?.path).toEqual([
+        { description: undefined, name: "id", type: "string" },
+      ]);
+      expect(builder.path({ id: "one" }).ready()).toBe(true);
+    });
+
     it("returns true when no OpenAPI document is provided", () => {
       const builder = new RouteBuilder("/pet/{petId}", {
         port: 9999,
@@ -274,6 +303,20 @@ describe("RouteBuilder", () => {
           .headers({ "x-token": "secret" })
           .ready(),
       ).toBe(true);
+    });
+
+    it("treats required header names case-insensitively", () => {
+      const builder = new RouteBuilder("/complete/{id}", {
+        port: 9999,
+        routeCatalog: ROUTE_CATALOG,
+      })
+        .method("get")
+        .path({ id: "one" })
+        .query({ filter: "active" })
+        .headers({ "X-Token": "secret" });
+
+      expect(builder.ready()).toBe(true);
+      expect(builder.missing()).toBeUndefined();
     });
   });
 
@@ -394,6 +437,29 @@ describe("RouteBuilder", () => {
       await expect(builder.send()).rejects.toThrow(
         "Unsupported HTTP method: BREW",
       );
+    });
+
+    it("encodes path parameter values before sending", async () => {
+      const get = jest
+        .spyOn(RawHttpClient.prototype, "get")
+        .mockResolvedValue("HTTP/1.1 200 OK");
+
+      try {
+        await new RouteBuilder("/pet/{petId}", {
+          port: 9999,
+          routeCatalog: ROUTE_CATALOG,
+        })
+          .method("get")
+          .path({ petId: "one/two?admin=true#details" })
+          .send();
+
+        expect(get).toHaveBeenCalledWith(
+          "/pet/one%2Ftwo%3Fadmin%3Dtrue%23details",
+          {},
+        );
+      } finally {
+        get.mockRestore();
+      }
     });
   });
 

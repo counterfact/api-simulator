@@ -29,6 +29,54 @@ describe("createOpenApiRouteCatalog", () => {
     expect(catalog.getOperation("/pets", "post")).toBeUndefined();
   });
 
+  it("merges path-item parameters with operation parameters", () => {
+    const catalog = createOpenApiRouteCatalog({
+      paths: {
+        "/pets/{petId}": {
+          get: {
+            parameters: [
+              {
+                in: "header",
+                name: "x-token",
+                required: false,
+                type: "string",
+              },
+            ],
+          },
+          parameters: [
+            {
+              in: "path",
+              name: "petId",
+              required: true,
+              type: "string",
+            },
+            {
+              in: "header",
+              name: "x-token",
+              required: true,
+              type: "string",
+            },
+          ],
+        },
+      },
+    });
+
+    expect(catalog.getOperation("/pets/{petId}", "get")?.parameters).toEqual([
+      {
+        in: "path",
+        name: "petId",
+        required: true,
+        type: "string",
+      },
+      {
+        in: "header",
+        name: "x-token",
+        required: false,
+        type: "string",
+      },
+    ]);
+  });
+
   it("reads a live document instead of snapshotting it", () => {
     const document = {
       paths: { "/pets": { get: {} } } as Record<string, object>,

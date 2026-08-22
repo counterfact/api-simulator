@@ -22,6 +22,26 @@ describe("readFile", () => {
     });
   });
 
+  it("reads relative paths that begin with URL scheme names", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("file-spec.yaml", "local file spec");
+      await $.add("httpspec.yaml", "local http spec");
+      const originalWorkingDirectory = process.cwd();
+      process.chdir($.path("."));
+
+      try {
+        await expect(readFile("file-spec.yaml")).resolves.toBe(
+          "local file spec",
+        );
+        await expect(readFile("httpspec.yaml")).resolves.toBe(
+          "local http spec",
+        );
+      } finally {
+        process.chdir(originalWorkingDirectory);
+      }
+    });
+  });
+
   it("rejects local paths containing NUL bytes", async () => {
     await expect(readFile("bad\0path.txt")).rejects.toThrow(
       "File path cannot contain NUL bytes.",

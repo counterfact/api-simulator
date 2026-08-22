@@ -341,10 +341,22 @@ export class ApiRunner {
    * Stops all active file-system watchers across every sub-system.
    */
   public async stopWatching(): Promise<void> {
-    await this.codeGenerator.stopWatching();
-    await this.scenarioFileGenerator.stopWatching();
-    await this.transpiler.stopWatching();
-    await this.moduleLoader.stopWatching();
-    await this.openApiDocument?.stopWatching();
+    const results = await Promise.allSettled([
+      this.codeGenerator.stopWatching(),
+      this.scenarioFileGenerator.stopWatching(),
+      this.transpiler.stopWatching(),
+      this.moduleLoader.stopWatching(),
+      this.openApiDocument?.stopWatching(),
+    ]);
+    const errors = results.flatMap((result) =>
+      result.status === "rejected" ? [result.reason] : [],
+    );
+
+    if (errors.length > 0) {
+      throw new AggregateError(
+        errors,
+        "Failed to stop all API runner watchers",
+      );
+    }
   }
 }

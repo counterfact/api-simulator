@@ -9,7 +9,6 @@ import createDebug from "debug";
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
 import {
   toForwardSlashPath,
-  pathJoin,
   pathRelative,
   pathDirname,
 } from "./forward-slash-path.js";
@@ -22,6 +21,45 @@ const debug = createDebug("counterfact:server:repository");
 const __dirname = toForwardSlashPath(dirname(fileURLToPath(import.meta.url)));
 
 debug("dirname is %s", __dirname);
+
+function assertSafeRepositoryPath(path: string): void {
+  const segments = path.split("/");
+
+  if (
+    path === "" ||
+    path.includes("\0") ||
+    path.includes("\\") ||
+    nodePath.posix.isAbsolute(path) ||
+    nodePath.win32.isAbsolute(path) ||
+    segments.some(
+      (segment) => segment === "" || segment === "." || segment === "..",
+    )
+  ) {
+    throw new Error(
+      `Repository path ${JSON.stringify(path)} must be a safe, relative, forward-slash path.`,
+    );
+  }
+}
+
+function resolveDestinationPath(destination: string, path: string): string {
+  const destinationRoot = nodePath.resolve(destination);
+  const candidatePath = nodePath.resolve(destinationRoot, path);
+  const relativePath = nodePath.relative(destinationRoot, candidatePath);
+
+  if (
+    relativePath === ".." ||
+    relativePath.startsWith(`..${nodePath.sep}`) ||
+    nodePath.isAbsolute(relativePath)
+  ) {
+    throw new Error(
+      `Repository path ${JSON.stringify(path)} escapes destination ${JSON.stringify(destinationRoot)}.`,
+    );
+  }
+
+  assertSafeRepositoryPath(path);
+
+  return escapePathForWindows(candidatePath);
+}
 
 interface WriteFilesOptions {
   routes?: boolean;
@@ -52,6 +90,8 @@ export class Repository {
    */
   public get(path: string): Script {
     debug("getting script at %s", path);
+
+    assertSafeRepositoryPath(path);
 
     if (this.scripts.has(path)) {
       debug("already have script %s, returning it", path);
@@ -142,9 +182,8 @@ export class Repository {
       this.scripts.entries(),
 
       async ([path, script]) => {
+        const fullPath = resolveDestinationPath(destination, path);
         const contents = await script.contents();
-
-        const fullPath = escapePathForWindows(pathJoin(destination, path));
 
         await ensureDirectoryExists(fullPath);
 

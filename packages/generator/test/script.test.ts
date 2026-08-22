@@ -173,22 +173,22 @@ describe("a Script", () => {
       }
 
       modulePath() {
-        return "../../export-from-me.ts";
+        return "types/export-from-me.ts";
       }
     }
 
     const coder = new CoderThatWantsToImportAccount({});
 
-    const script = repository.get("import-to-me.ts");
+    const script = repository.get("routes/nested/import-to-me.ts");
 
     script.import(coder);
     script.importType(coder);
     script.importDefault(coder);
 
     expect(script.importStatements()).toStrictEqual([
-      'import { Account0 } from "../../export-from-me.js";',
-      'import type { Account1 } from "../../export-from-me.js";',
-      'import Account2 from "../../export-from-me.js";',
+      'import { Account0 } from "../../types/export-from-me.js";',
+      'import type { Account1 } from "../../types/export-from-me.js";',
+      'import Account2 from "../../types/export-from-me.js";',
     ]);
   });
 
