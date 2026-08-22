@@ -43,7 +43,7 @@
     "counterfact": "./packages/counterfact/bin/counterfact.js"
   },
   "devDependencies": {
-    "@changesets/cli": "3.0.0",
+    "@changesets/cli": "3.0.1",
     "@eslint/js": "10.0.1",
     "@jest/globals": "30.4.1",
     "@stryker-mutator/core": "10.0.0",

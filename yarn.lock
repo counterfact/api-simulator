@@ -1180,9 +1180,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@changesets/cli@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@changesets/cli@npm:3.0.0"
+"@changesets/cli@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@changesets/cli@npm:3.0.1"
   dependencies:
     "@changesets/apply-release-plan": "npm:^8.0.0"
     "@changesets/assemble-release-plan": "npm:^7.0.0"
@@ -1195,7 +1195,7 @@ __metadata:
     "@changesets/read": "npm:^1.0.0"
     "@changesets/should-skip-package": "npm:^1.0.0"
     "@changesets/types": "npm:^7.0.0"
-    "@changesets/write": "npm:^1.0.0"
+    "@changesets/write": "npm:^1.0.1"
     "@clack/prompts": "npm:^1.7.0"
     "@manypkg/get-packages": "npm:^3.1.0"
     "@pnpm/deps.graph-sequencer": "npm:^1100.0.1"
@@ -1207,7 +1207,7 @@ __metadata:
     tinyexec: "npm:^1.3.0"
   bin:
     changeset: bin.js
-  checksum: 10c0/f9afe4367dc4e267692a9d8bdb940c39a876267e99b737eb9550a435743cd5fe294d17a93c6f58703a2a260b45ff4b97331a4f42d943eee3a478980ca8f0746e
+  checksum: 10c0/8ff35257fcfc3b627196c16fa2a130e130d57e089fce13c791037222cccf9883e7face01d5cc762f022e0f2057ea05a4a3b0fe9f3a1c0902ea5e274693b817ad
   languageName: node
   linkType: hard
 
@@ -1312,7 +1312,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@changesets/write@npm:^1.0.0":
+"@changesets/write@npm:^1.0.1":
   version: 1.0.1
   resolution: "@changesets/write@npm:1.0.1"
   dependencies:
@@ -4692,7 +4692,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "counterfact-monorepo@workspace:."
   dependencies:
-    "@changesets/cli": "npm:3.0.0"
+    "@changesets/cli": "npm:3.0.1"
     "@eslint/js": "npm:10.0.1"
     "@jest/globals": "npm:30.4.1"
     "@stryker-mutator/core": "npm:10.0.0"
