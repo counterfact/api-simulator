@@ -1,4 +1,5 @@
 import type { OpenApiOperation } from "@counterfact/types";
+import { jest } from "@jest/globals";
 import type { DispatcherConfig as Config } from "../../src/runtime-config.js";
 import { createResponseBuilder } from "../../src/server/response-builder.js";
 import retry from "jest-retries";
@@ -277,6 +278,18 @@ describe("a response builder", () => {
       //   body: { value: "hello" },
       //   type: "application/json",
       // });
+    });
+
+    it("does not log generation options while creating a random response", async () => {
+      const log = jest.spyOn(console, "log").mockImplementation(() => undefined);
+
+      try {
+        await createResponseBuilder(operation)[200]?.random();
+
+        expect(log).not.toHaveBeenCalled();
+      } finally {
+        log.mockRestore();
+      }
     });
 
     it("fills in required headers when calling random()", async () => {

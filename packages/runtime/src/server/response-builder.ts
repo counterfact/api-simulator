@@ -295,8 +295,6 @@ export function createResponseBuilder(
           }
         }
 
-        console.log(generateOptions);
-
         return {
           ...this,
 
