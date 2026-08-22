@@ -37,10 +37,15 @@ export function validateResponse(
 
   const specHeaders = responseSpec.headers ?? {};
   const actualHeaders = response.headers ?? {};
+  const actualHeadersByLowercaseName = new Map(
+    Object.entries(actualHeaders).map(([name, value]) => [
+      name.toLowerCase(),
+      value,
+    ]),
+  );
 
   for (const [name, headerSpec] of Object.entries(specHeaders)) {
-    const actualValue =
-      actualHeaders[name] ?? actualHeaders[name.toLowerCase()];
+    const actualValue = actualHeadersByLowercaseName.get(name.toLowerCase());
 
     if (headerSpec.required === true && actualValue === undefined) {
       errors.push(`response header '${name}' is required`);
