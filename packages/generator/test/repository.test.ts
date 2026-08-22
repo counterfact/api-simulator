@@ -17,6 +17,38 @@ describe("a Repository", () => {
   });
 
   it.each([
+    "",
+    "../escaped.ts",
+    "/absolute.ts",
+    "C:\\absolute.ts",
+    "types\\..\\escaped.ts",
+    "types//escaped.ts",
+    "types/./escaped.ts",
+    "types/../escaped.ts",
+    "types/escaped\0.ts",
+  ])("rejects unsafe repository path %p", (path) => {
+    const repository = new Repository();
+
+    expect(() => repository.get(path)).toThrow(
+      "must be a safe, relative, forward-slash path",
+    );
+  });
+
+  it("rejects a destination escape injected directly into the scripts map", async () => {
+    await usingTemporaryFiles(async ({ path }) => {
+      const repository = new Repository();
+      const script = repository.get("types/safe.ts");
+
+      repository.scripts.clear();
+      repository.scripts.set("../escaped.ts", script);
+
+      await expect(
+        repository.writeFiles(path("output"), { routes: false, types: true }),
+      ).rejects.toThrow("escapes destination");
+    });
+  });
+
+  it.each([
     ["./types/paths/x.ts", "../../routes/_.context.ts"],
     ["./types/paths/a/x.ts", "../../../routes/_.context.ts"],
     ["./types/paths/a/b/x.ts", "../../../../routes/a/b/_.context.ts"],
