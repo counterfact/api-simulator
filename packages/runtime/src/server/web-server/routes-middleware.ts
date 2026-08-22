@@ -124,8 +124,13 @@ function pathWithinPrefix(
   requestPath: string,
   configuredPrefix: string,
 ): string | undefined {
-  const prefix =
-    configuredPrefix === "/" ? "" : configuredPrefix.replace(/\/+$/u, "");
+  let prefixEnd = configuredPrefix.length;
+
+  while (prefixEnd > 0 && configuredPrefix.charCodeAt(prefixEnd - 1) === 47) {
+    prefixEnd -= 1;
+  }
+
+  const prefix = configuredPrefix.slice(0, prefixEnd);
 
   if (prefix === "") {
     return requestPath || "/";

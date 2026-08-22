@@ -430,6 +430,31 @@ describe("koa middleware", () => {
     expect(ctx.body).toBe("root");
   });
 
+  it("normalizes long trailing-slash prefixes in linear time", async () => {
+    const registry = new Registry();
+    registry.add("/", { GET: () => ({ body: "root" }) });
+
+    const middleware = routesMiddleware(
+      `/api${"/".repeat(100_000)}`,
+      new Dispatcher(registry, new ContextRegistry()),
+      CONFIG,
+    );
+    const ctx = {
+      req: { path: "/api" },
+      request: {
+        headers: {},
+        method: "GET",
+        path: "/api",
+      },
+      set: jest.fn(),
+    } as unknown as ParameterizedContext;
+
+    await middleware(ctx, async () => await Promise.resolve());
+
+    expect(ctx.status).toBe(200);
+    expect(ctx.body).toBe("root");
+  });
+
   it("does not pass a request body for a GET request", async () => {
     const registry = new Registry();
 
