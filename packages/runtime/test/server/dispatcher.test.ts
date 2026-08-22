@@ -894,17 +894,17 @@ describe("a dispatcher", () => {
               },
               {
                 in: "header",
-                name: "numberInHeader",
+                name: "NumberInHeader",
                 type: "number",
               },
               {
                 in: "header",
-                name: "stringInHeader",
+                name: "StringInHeader",
                 type: "string",
               },
               {
                 in: "header",
-                name: "booleanInHeader",
+                name: "BooleanInHeader",
                 type: "boolean",
               },
             ],
