@@ -336,7 +336,7 @@ export class RouteBuilder {
     let url = this.routePath;
 
     for (const [key, value] of Object.entries(this._pathParams)) {
-      url = url.replaceAll(`{${key}}`, String(value));
+      url = url.replaceAll(`{${key}}`, encodeURIComponent(String(value)));
     }
 
     // Append query string

@@ -1,6 +1,7 @@
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it, jest } from "@jest/globals";
 
 import {
+  RawHttpClient,
   RouteBuilder,
   createOpenApiRouteCatalog,
   createRouteFunction,
@@ -408,6 +409,29 @@ describe("RouteBuilder", () => {
       await expect(builder.send()).rejects.toThrow(
         "Unsupported HTTP method: BREW",
       );
+    });
+
+    it("encodes path parameter values before sending", async () => {
+      const get = jest
+        .spyOn(RawHttpClient.prototype, "get")
+        .mockResolvedValue("HTTP/1.1 200 OK");
+
+      try {
+        await new RouteBuilder("/pet/{petId}", {
+          port: 9999,
+          routeCatalog: ROUTE_CATALOG,
+        })
+          .method("get")
+          .path({ petId: "one/two?admin=true#details" })
+          .send();
+
+        expect(get).toHaveBeenCalledWith(
+          "/pet/one%2Ftwo%3Fadmin%3Dtrue%23details",
+          {},
+        );
+      } finally {
+        get.mockRestore();
+      }
     });
   });
 
