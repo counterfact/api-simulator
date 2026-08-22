@@ -281,7 +281,9 @@ describe("a response builder", () => {
     });
 
     it("does not log generation options while creating a random response", async () => {
-      const log = jest.spyOn(console, "log").mockImplementation(() => undefined);
+      const log = jest
+        .spyOn(console, "log")
+        .mockImplementation(() => undefined);
 
       try {
         await createResponseBuilder(operation)[200]?.random();
