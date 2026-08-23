@@ -22,7 +22,7 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 ## Files to inspect first
 
 - `package.json` (canonical scripts)
-- `.github/copilot-instructions.md`
+- `AGENTS.md`
 - `packages/counterfact/docs/reference.md`
 - `packages/counterfact/docs/faq.md`
 - `.changeset/*.md` (format examples)
@@ -111,7 +111,7 @@ Keep that operating-system skip scoped to the real-terminal scenario so non-inte
 
 - When a non-trivial task reveals repeatable guidance, update the relevant skill file in the same PR, or create a new skill if applicable.
 - Put subsystem-specific learnings in the matching skill (`counterfact-cli-runtime`, `counterfact-runtime-architecture`, or `counterfact-generator-internals`).
-- Put cross-cutting learnings in `.github/copilot-instructions.md` only when they do not belong to a single subsystem skill.
+- Put cross-cutting learnings in `AGENTS.md` only when they do not belong to a single subsystem skill.
 
 ## How to validate the change
 
