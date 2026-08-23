@@ -11,7 +11,7 @@
 
 ## Manual acceptance tests
 
-<!-- Copilot: replace this section with 3–6 unchecked checkboxes per copilot-instructions.md. Each must describe an observable behavior. -->
+<!-- Agent: replace this section with 3–6 unchecked checkboxes per AGENTS.md. Each must describe an observable behavior. -->
 
 ## Tasks
 

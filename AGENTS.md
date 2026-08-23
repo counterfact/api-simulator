@@ -1,4 +1,6 @@
-# Copilot Instructions for Counterfact
+# Agent Instructions for Counterfact
+
+This is the canonical repository guidance for all coding agents.
 
 ## Skill-first workflow
 
