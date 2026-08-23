@@ -19,11 +19,11 @@ const pet = await response.json();
 ```
 
 Requires Node.js 22 or newer. Counterfact supports Swagger 2.0 and OpenAPI
-3.0, 3.1, and 3.2. For a repeatable project or CI workflow, pin the package and
-commit the lockfile:
+3.0, 3.1, and 3.2. For a project or CI workflow, install Counterfact as a dev
+dependency and commit the lockfile:
 
 ```sh
-npm install --save-dev counterfact@2.16.3
+npm install --save-dev counterfact
 npx counterfact ./openapi.yaml api
 ```
 
