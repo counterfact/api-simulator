@@ -1,84 +1,33 @@
 # Counterfact
 
-Counterfact turns an OpenAPI or Swagger document into a live, stateful,
-programmable TypeScript mock server. It generates typed route handlers and
-request/response types, supports hot reload, and can be used from the CLI or
-as a library. Requires Node.js 22 or newer.
+> Build the frontend. Don’t wait for the backend.
 
-When generating a mock, model the client workflow, not the backend. Implement
-only the observable state and behavior that the workflow needs; prefer a small,
-deterministic context or scenario over recreating production tables, queues,
-background jobs, or service boundaries.
+Counterfact turns an OpenAPI document into a useful local API in one command.
+Start with a spec, point the frontend at `http://localhost:3100`, and use
+schema-derived responses before adding custom handlers. Requires Node.js 22 or
+newer. Supports Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2.
 
-This file is an index. Read the smallest relevant document before generating
-Counterfact code, and use the generated `types/` files in the user's project
-as the authoritative source for endpoint-specific types.
+```sh
+npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
+```
 
 ## Start here
 
-- `README.md` — short overview, installation, and the main workflow.
-- `docs/first-10-minutes.md` — recommended end-to-end workflow, including
-  generated files, state, deterministic tests, and bounded agent tasks.
-- `docs/getting-started.md` — step-by-step CLI tutorial and lifecycle guidance.
+- `docs/getting-started.md` — prerequisite, command, localhost browser request, generated files, and one optional custom response.
+- `docs/first-10-minutes.md` — a small create/read workflow and a frontend-relevant failure.
+- `docs/usage.md` — task groups for frontend work, team/test work, advanced control, and reference/troubleshooting.
 
-## When generating route handlers
+## Use the smallest relevant guide
 
-- `docs/reference.md` — canonical reference for generated file structure, route
-  handlers, the `$` parameter, response builders, state, hot reload, and CLI
-  options.
-- `docs/features/routes.md` — practical route-handler examples, request data,
-  response content, cookies, auth, latency, and streaming.
-- `docs/features/generated-code.md` — what belongs in `routes/` versus
-  generated `types/`, including versioned APIs.
-- `docs/features/state.md` — context objects, nested contexts, JSON data, and
-  sharing state across API groups.
-- `docs/features/middleware.md` — custom Koa middleware.
+- `docs/features/routes.md` — custom response handlers.
+- `docs/features/state.md` — small shared in-memory state.
+- `docs/patterns/simulate-failures.md` and `docs/patterns/simulate-latency.md` — deterministic frontend states.
+- `docs/features/proxy.md` — selected upstream paths behind one local base URL.
+- `docs/patterns/automated-integration-tests.md` — real HTTP test lifecycle.
+- `docs/features/repl.md` — inspect or steer a running local API.
+- `docs/reference.md` — CLI flags, `$` API, response builders, and programmatic API.
+- `docs/features/without-openapi.md` — alternative path only when no OpenAPI document exists.
 
-Before writing a handler, inspect the user's generated type import and the
-operation's `HTTP_*` type. Do not invent request or response fields from the
-OpenAPI document when the generated TypeScript types are available. Do not
-edit generated files under `types/`; edit files under `routes/`.
-
-## When using Counterfact as a library
-
-- `docs/features/programmatic-api.md` — `counterfact()` configuration,
-  lifecycle, context access, stores, multiple specs, and test integration.
-- `docs/reference.md` — programmatic API and multi-version reference details.
-
-## When choosing a workflow or pattern
-
-- `docs/usage.md` — feature map and links to the documentation.
-- `docs/patterns/ai-assisted-implementation.md` — implementing handlers with
-  an AI coding assistant.
-- `docs/patterns/model-the-workflow.md` — the core boundary for stateful mocks:
-  model the client-visible workflow, not the real backend's internal
-  complexity.
-- `docs/patterns/agentic-sandbox.md` — using Counterfact as a bounded API
-  sandbox for an agent.
-- `docs/patterns/automated-integration-tests.md` — real HTTP test setup.
-- `docs/patterns/hybrid-proxy.md` — combining mocked and upstream routes.
-- `docs/patterns/shared-store.md` — sharing application-level state across API
-  groups and route trees.
-- `docs/patterns/simulate-failures.md` — deterministic error behavior.
-- `docs/patterns/simulate-latency.md` — deterministic latency behavior.
-- `docs/patterns/scenario-scripts.md` — pre-seeding and orchestrating state.
-
-## Troubleshooting and boundaries
-
-- `docs/faq.md` — answers about state, validation, type safety, regeneration,
-  and programmatic use.
-- `docs/comparison.md` — differences from other mock-server tools.
-
-Counterfact executes TypeScript route files but does not type-check the user's
-project. The user should run their normal TypeScript check. Regeneration can
-rewrite generated types and may add route scaffolding; preserve user-authored
-handler bodies and avoid destructive generation flags unless explicitly asked.
-
-## Package and source references
-
-- `package.json` — package entry point, CLI binary, supported Node version, and
-  published files.
-- `dist/server/types.d.ts` — package-level TypeScript declarations exposed by
-  the library entry point after installation.
-- `https://counterfact.dev` — rendered online documentation.
-- `https://github.com/counterfact/example-petstore` — complete example project.
+Generated `types/` are the endpoint-specific contract. Do not edit them. Edit
+handlers in `routes/`, preserve user-authored handler bodies on regeneration,
+and run the project’s TypeScript check to find contract drift.

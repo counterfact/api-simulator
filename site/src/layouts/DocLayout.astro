@@ -10,166 +10,56 @@ const { title, canonicalPath } = Astro.props;
 ---
 
 <MainLayout
-  title={title ? `${title} — Counterfact` : "Counterfact — API Simulator"}
+  title={title ? `${title} — Counterfact` : "Counterfact — Build the frontend. Don’t wait for the backend."}
+  description="Counterfact turns an OpenAPI document into a useful local API in one command."
   canonicalPath={canonicalPath}
 >
-  <div class="doc-page">
-    <nav class="doc-nav">
-      <a href="/" class="doc-home-link">← Home</a>
-    </nav>
+  <header class="doc-header">
+    <div class="doc-header-content">
+      <a href="/" class="doc-brand">Counterfact</a>
+      <nav aria-label="Documentation navigation" class="doc-nav">
+        <a href="/docs/getting-started">Quick start</a>
+        <a href="/docs/usage">Guides / Usage</a>
+        <a href="/docs/reference">Reference</a>
+        <a href="https://github.com/counterfact/api-simulator">GitHub</a>
+      </nav>
+    </div>
+  </header>
+  <main class="doc-page">
     <article class="doc-content">
       <slot />
     </article>
-  </div>
+  </main>
 </MainLayout>
 
 <style>
-  .doc-page {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem 4rem;
-  }
-
-  .doc-nav {
-    margin-bottom: 2rem;
-  }
-
-  .doc-home-link {
-    color: var(--blue-lt);
-    text-decoration: none;
-    font-size: 0.9rem;
-  }
-
-  .doc-home-link:hover {
-    text-decoration: underline;
-  }
-
-  .doc-content {
-    line-height: 1.75;
-    color: var(--ink);
-  }
-
-  .doc-content :global(h1) {
-    font-size: 2.2rem;
-    font-weight: 800;
-    margin-bottom: 1.25rem;
-    color: var(--ink);
-  }
-
-  .doc-content :global(h2) {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 2.5rem 0 0.75rem;
-    color: var(--ink);
-    border-bottom: 1px solid var(--rule);
-    padding-bottom: 0.4rem;
-  }
-
-  .doc-content :global(h3) {
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin: 1.75rem 0 0.5rem;
-    color: var(--ink);
-  }
-
-  .doc-content :global(p) {
-    margin-bottom: 1rem;
-    color: var(--ink-dim);
-  }
-
-  .doc-content :global(a) {
-    color: var(--blue-lt);
-    text-decoration: none;
-  }
-
-  .doc-content :global(a:hover) {
-    text-decoration: underline;
-  }
-
-  .doc-content :global(pre) {
-    background: var(--code-bg);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 1.25rem 1.5rem;
-    overflow-x: auto;
-    margin: 1.25rem 0;
-  }
-
-  .doc-content :global(code) {
-    font-family: "DM Mono", monospace;
-    font-size: 0.88em;
-    background: var(--code-bg);
-    color: var(--code-fg);
-    padding: 0.15em 0.4em;
-    border-radius: 3px;
-  }
-
-  .doc-content :global(pre code) {
-    background: none;
-    padding: 0;
-  }
-
-  .doc-content :global(ul),
-  .doc-content :global(ol) {
-    margin: 0.75rem 0 1rem 1.5rem;
-    color: var(--ink-dim);
-  }
-
-  .doc-content :global(li) {
-    margin-bottom: 0.4rem;
-  }
-
-  .doc-content :global(blockquote) {
-    border-left: 3px solid var(--blue);
-    padding: 0.5rem 1rem;
-    margin: 1rem 0;
-    color: var(--ink-dim);
-    background: var(--blue-glow);
-    border-radius: 0 4px 4px 0;
-  }
-
-  .doc-content :global(table) {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1.25rem 0;
-    font-size: 0.9rem;
-  }
-
-  .doc-content :global(th) {
-    text-align: left;
-    padding: 0.6rem 0.9rem;
-    background: var(--surface2);
-    color: var(--ink);
-    border-bottom: 2px solid var(--rule);
-  }
-
-  .doc-content :global(td) {
-    padding: 0.6rem 0.9rem;
-    border-bottom: 1px solid var(--rule);
-    color: var(--ink-dim);
-  }
-
-  .doc-content :global(tr:last-child td) {
-    border-bottom: none;
-  }
-
-  .doc-content :global(hr) {
-    border: none;
-    border-top: 1px solid var(--rule);
-    margin: 2rem 0;
-  }
-
-  .doc-content :global(strong) {
-    color: var(--ink);
-  }
-
+  .doc-header { background: var(--surface); border-bottom: 1px solid var(--rule); }
+  .doc-header-content, .doc-page { max-width: 760px; margin: 0 auto; padding-left: 1rem; padding-right: 1rem; }
+  .doc-header-content { align-items: center; display: flex; gap: 1rem; justify-content: space-between; min-height: 64px; }
+  .doc-brand { color: var(--ink); font-weight: 700; text-decoration: none; }
+  .doc-nav { display: flex; flex-wrap: wrap; gap: 0.65rem 1rem; }
+  .doc-nav a { color: var(--muted); font-size: 0.85rem; text-decoration: none; }
+  .doc-nav a:hover { color: var(--ink); text-decoration: underline; }
+  .doc-page { padding-top: 3rem; padding-bottom: 4rem; }
+  .doc-content { color: var(--ink); line-height: 1.75; }
+  .doc-content :global(h1) { font-size: clamp(2rem, 5vw, 2.7rem); font-weight: 800; margin-bottom: 1.25rem; }
+  .doc-content :global(h2) { border-bottom: 1px solid var(--rule); font-size: clamp(1.4rem, 3vw, 1.8rem); font-weight: 700; margin: 2.5rem 0 0.75rem; padding-bottom: 0.4rem; }
+  .doc-content :global(h3) { font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0 0.5rem; }
+  .doc-content :global(p) { color: var(--muted); margin-bottom: 1rem; }
+  .doc-content :global(a) { color: var(--blue); }
+  .doc-content :global(pre) { background: var(--code); border: 1px solid var(--rule); margin: 1.25rem 0; max-width: 100%; overflow-x: auto; padding: 1.1rem; }
+  .doc-content :global(code) { background: var(--code); color: var(--ink); font-family: var(--font-mono); font-size: 0.88em; padding: 0.12em 0.3em; }
+  .doc-content :global(pre code) { background: none; padding: 0; }
+  .doc-content :global(ul), .doc-content :global(ol) { color: var(--muted); margin: 0.75rem 0 1rem 1.5rem; }
+  .doc-content :global(li) { margin-bottom: 0.4rem; }
+  .doc-content :global(blockquote) { background: #edf6fb; border-left: 3px solid var(--blue); color: var(--muted); margin: 1rem 0; padding: 0.5rem 1rem; }
+  .doc-content :global(table) { border-collapse: collapse; display: block; font-size: 0.9rem; margin: 1.25rem 0; max-width: 100%; overflow-x: auto; width: 100%; }
+  .doc-content :global(th) { background: var(--code); border-bottom: 2px solid var(--rule); color: var(--ink); padding: 0.6rem 0.9rem; text-align: left; }
+  .doc-content :global(td) { border-bottom: 1px solid var(--rule); color: var(--muted); padding: 0.6rem 0.9rem; }
+  .doc-content :global(hr) { border: 0; border-top: 1px solid var(--rule); margin: 2rem 0; }
+  .doc-content :global(strong) { color: var(--ink); }
   @media (max-width: 640px) {
-    .doc-page {
-      padding: 1.5rem 1rem 3rem;
-    }
-
-    .doc-content :global(h1) {
-      font-size: 1.7rem;
-    }
+    .doc-header-content { align-items: flex-start; flex-direction: column; justify-content: center; padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .doc-page { padding-top: 2rem; }
   }
 </style>
