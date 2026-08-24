@@ -48,6 +48,7 @@ const { title, canonicalPath } = Astro.props;
   .doc-content :global(p) { color: var(--muted); margin-bottom: 1rem; }
   .doc-content :global(a) { color: var(--blue); }
   .doc-content :global(pre) { background: var(--code); border: 1px solid var(--rule); margin: 1.25rem 0; max-width: 100%; overflow-x: auto; padding: 1.1rem; }
+  .doc-content :global(pre.code-block) { padding-top: 3rem; position: relative; }
   .doc-content :global(code) { background: var(--code); color: var(--ink); font-family: var(--font-mono); font-size: 0.88em; padding: 0.12em 0.3em; }
   .doc-content :global(pre code) { background: none; padding: 0; }
   .doc-content :global(ul), .doc-content :global(ol) { color: var(--muted); margin: 0.75rem 0 1rem 1.5rem; }

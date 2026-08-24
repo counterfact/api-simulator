@@ -8,6 +8,13 @@
   --blue-dark: #04517f;
   --orange: #a24b00;
   --code: #f1f4f6;
+  --code-ink: #1c2733;
+  --code-comment: #576575;
+  --code-keyword: #9d174d;
+  --code-string: #0f766e;
+  --code-number: #1d4ed8;
+  --code-function: #6d28d9;
+  --code-link: #075985;
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
@@ -47,14 +54,25 @@ p { margin: 0; }
 .command-section, .quick-start, .more-section { border-top: 1px solid var(--rule); padding-block: 3.5rem; }
 .command-panel { align-items: center; background: var(--code); border: 1px solid var(--rule); display: flex; gap: 0.75rem; justify-content: space-between; padding: 0.85rem; }
 .command-panel code { color: var(--ink); font-size: clamp(0.7rem, 2.5vw, 0.92rem); overflow-wrap: anywhere; }
-.copy-button { background: transparent; border: 1px solid #aab5be; border-radius: 3px; color: var(--ink); cursor: pointer; flex: 0 0 auto; font: 700 0.8rem var(--font-sans); padding: 0.4rem 0.55rem; }
+.copy-button { background: var(--surface); border: 1px solid #aab5be; border-radius: 3px; color: var(--ink); cursor: pointer; flex: 0 0 auto; font: 700 0.8rem var(--font-sans); padding: 0.4rem 0.55rem; }
 .copy-button:hover { border-color: var(--blue); color: var(--blue-dark); }
+.code-copy-button { position: absolute; right: 0.7rem; top: 0.7rem; }
 .supporting-text { color: var(--muted); font-size: 0.94rem; margin-top: 0.9rem; }
 .steps { counter-reset: steps; list-style: none; margin: 2rem 0 0; padding: 0; }
 .steps li { border-top: 1px solid var(--rule); counter-increment: steps; padding: 1.5rem 0; }
 .steps li::before { color: var(--orange); content: "0" counter(steps); display: block; font: 700 0.78rem var(--font-mono); letter-spacing: 0.08em; margin-bottom: 0.55rem; }
 .steps p, .more-section p { color: var(--muted); max-width: 62ch; }
-pre { background: var(--code); border: 1px solid var(--rule); margin: 1rem 0 0; max-width: 100%; overflow-x: auto; padding: 1rem; white-space: pre; }
+pre { background: var(--code); border: 1px solid var(--rule); color: var(--code-ink); margin: 1rem 0 0; max-width: 100%; overflow-x: auto; padding: 1rem; white-space: pre; }
+pre.astro-code { background: var(--code) !important; color: var(--code-ink) !important; }
+pre.astro-code code { color: var(--code-ink) !important; }
+pre.astro-code span[style*="6A737D"] { color: var(--code-comment) !important; }
+pre.astro-code span[style*="D73A49"] { color: var(--code-keyword) !important; }
+pre.astro-code span[style*="E36209"] { color: var(--orange) !important; }
+pre.astro-code span[style*="005CC5"] { color: var(--code-number) !important; }
+pre.astro-code span[style*="22863A"] { color: var(--code-string) !important; }
+pre.astro-code span[style*="6F42C1"] { color: var(--code-function) !important; }
+pre a { color: var(--code-link) !important; text-decoration: underline; }
+.code-block { padding-top: 3rem; position: relative; }
 .link-list { display: flex; flex-wrap: wrap; gap: 0.6rem 1.1rem; margin-top: 1.25rem; }
 .link-list a { font-weight: 600; }
 .site-footer { border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.86rem; padding-block: 1.5rem; }

@@ -92,6 +92,10 @@ export default defineConfig({
   site: "https://counterfact.dev",
   output: "static",
   markdown: {
+    syntaxHighlight: "shiki",
+    shikiConfig: {
+      theme: "github-light",
+    },
     rehypePlugins: [rehypeStripMdLinks],
   },
 });
