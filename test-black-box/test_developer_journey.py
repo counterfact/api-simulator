@@ -263,6 +263,14 @@ def documented_artifacts_exist(journey):
         f"Generation failed.\nstdout:\n{generated.stdout}\n"
         f"stderr:\n{generated.stderr}"
     )
+    assert "\x1b[" not in generated.stdout, generated.stdout
+    assert str(journey.spec_path) not in generated.stdout, generated.stdout
+    assert str(journey.output) not in generated.stdout, generated.stdout
+    assert generated.stdout.index("Counterfact v") < generated.stdout.index(
+        "→ Reading OpenAPI document…"
+    ) < generated.stdout.index("✓ OpenAPI document ready") < generated.stdout.index(
+        "→ Generating routes and types…"
+    ) < generated.stdout.index("✓ Generated routes and types")
     expected_artifacts = [
         journey.output / "routes" / "_.context.ts",
         journey.output / "routes" / "pets.ts",
@@ -322,7 +330,18 @@ def start_counterfact(journey):
 def repl_and_swagger_are_ready(journey):
     journey.terminal.wait_for(PROMPT, STARTUP_TIMEOUT)
     displayed_url = f"http://localhost:{journey.port}"
-    assert displayed_url in journey.transcript(), journey.transcript()
+    transcript = journey.transcript()
+    assert b"\x1b[" in journey.terminal.output
+    assert displayed_url in transcript, transcript
+    assert transcript.index("Counterfact v") < transcript.index(
+        "→ Reading OpenAPI document…"
+    ) < transcript.index("✓ OpenAPI document ready") < transcript.index(
+        "→ Generating routes and types…"
+    ) < transcript.index("✓ Generated routes and types") < transcript.index(
+        f"✓ Mock server → {displayed_url}"
+    ) < transcript.index("✓ Swagger UI →") < transcript.index(
+        "✓ Watching routes and types"
+    ) < transcript.index("⬣> ")
     journey.response = journey.wait_for_http(
         "/counterfact/swagger",
         lambda response: response.status_code == 200,

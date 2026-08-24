@@ -31,6 +31,7 @@ Use this skill for CLI flags, option precedence, config file loading, startup di
 - Keep CLI precedence explicit: CLI flags override config file values (`program.getOptionValueSource`).
 - Treat sensitive values carefully in logs/telemetry (hash file locations, avoid raw secrets/paths).
 - Preserve existing defaults where no action flags are passed (serve/repl/watch/generate/buildCache behavior).
+- Keep startup status truthful and compact: report only work that has actually completed, do not expose local input/output paths in normal status lines, and use ANSI colour only for an interactive stdout that has not opted out through `NO_COLOR`.
 
 ## Common mistakes to avoid
 
