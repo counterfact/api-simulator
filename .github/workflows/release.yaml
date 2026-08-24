@@ -39,7 +39,7 @@ jobs:
       - name: Install trusted-publishing toolchain
         run: npm install --global npm@11.18.0
       - name: Release preflight
-        run: yarn release:preflight
+        run: node scripts/release-preflight.mjs
 
       - name: Create or update the version pull request
         id: changesets
