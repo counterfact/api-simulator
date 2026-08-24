@@ -511,6 +511,19 @@ npx counterfact@latest [spec] [output] [options]
 
 Run `npx counterfact@latest --help` for the full list.
 
+### Startup output
+
+On startup, Counterfact reports the real work it is doing: loading an OpenAPI
+document, generating enabled artifacts, and preparing the mock runtime. Once
+ready, it prints only the capabilities enabled for that run, such as the mock
+server URL, Swagger UI URL, and active file watching.
+
+Interactive terminals use colour to distinguish progress, successful work,
+links, warnings, and errors. Redirected output remains plain text, and setting
+the `NO_COLOR` environment variable disables colour even in an interactive
+terminal. Normal progress and readiness lines never print local OpenAPI or
+output-directory paths.
+
 ---
 
 ## See also
