@@ -15,5 +15,8 @@
   },
   "devDependencies": {
     "linkinator": "8.0.4"
+  },
+  "overrides": {
+    "satteri": "0.10.5"
   }
 }
