@@ -31,7 +31,7 @@ code { font-size: 0.9em; }
 .site-header { border-bottom: 1px solid var(--rule); background: var(--surface); }
 .header-content { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .brand { color: var(--ink); display: inline-flex; align-items: center; gap: 0.55rem; font-weight: 700; text-decoration: none; }
-.brand img { display: block; }
+.brand img { display: block; height: auto; width: 180px; }
 nav { display: flex; align-items: center; gap: clamp(0.7rem, 3vw, 1.4rem); }
 nav a { color: var(--muted); font-size: 0.9rem; text-decoration: none; }
 nav a:hover { color: var(--ink); text-decoration: underline; }
