@@ -14,6 +14,10 @@ Before making changes, load the most relevant skill and follow it as the primary
 
 Keep this file focused on cross-cutting rules that are not already covered by those skills.
 
+## Isolated change workspaces
+
+When implementing a new set of changes, create and use a dedicated branch in a separate Git worktree. Keep the original checkout available for integration work rather than making the changes there.
+
 ## Manual acceptance tests
 
 Every PR description must include a section titled exactly `## Manual acceptance tests` with 3–6 unchecked checkboxes. Each checkbox must describe an observable behavior (not an implementation detail), and must not be pre-checked.
