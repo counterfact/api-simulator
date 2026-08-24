@@ -2,823 +2,104 @@
 import MainLayout from "../layouts/MainLayout.astro";
 ---
 
-<MainLayout>
-
-    <div style="padding: 20px">
-      <img src="/counterfact.svg" alt="Counterfact logo" width="300" />
+<MainLayout
+  title="Counterfact — Build the frontend. Don’t wait for the backend."
+  description="Turn an OpenAPI document into a useful local API in one command, then add custom behavior only when your frontend needs it."
+  canonicalPath="/"
+>
+  <header class="site-header">
+    <div class="page-shell header-content">
+      <a class="brand" href="/" aria-label="Counterfact home">
+        <img src="/counterfact.svg" alt="" width="28" height="28" />
+        <span>Counterfact</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#quick-start">Quick start</a>
+        <a href="/docs/getting-started">Docs</a>
+        <a href="https://github.com/counterfact/api-simulator">GitHub</a>
+      </nav>
     </div>
-    <!-- ═══ INLINED SVG LOGO SYMBOL ═══ -->
-    <svg style="display: none" xmlns="http://www.w3.org/2000/svg">
-      <symbol id="cf-logo" viewBox="0 0 163.08567 27.527093">
-        <g transform="matrix(1.0103886,0,0,1.0103886,-29.555241,-50.917297)">
-          <g transform="matrix(0.27630185,0,0,0.27630185,16.871974,36.385623)">
-            <polygon
-              points="155.19615,103 130.19615,146.30127 105.19615,103"
-              fill="#f58e00"
-            />
-            <polygon
-              points="125,149.30127 75,149.30127 100,106"
-              fill="#0071b5"
-            />
-            <polygon
-              points="69.803848,146.30127 44.803848,103 94.803848,103"
-              fill="#0071b5"
-            />
-            <polygon
-              points="44.803848,97 69.803848,53.69873 94.803848,97"
-              fill="#0071b5"
-            />
-            <polygon points="75,50.69873 125,50.69873 100,94" fill="#0071b5" />
-            <polygon
-              points="130.19615,53.69873 155.19615,97 105.19615,97"
-              fill="#0071b5"
-            />
-          </g>
-        </g>
-        <g transform="translate(8.8561952,-0.31740497)">
-          <path
-            fill="#0071b5"
-            d="M 39.469822,10.780228 Q 38.066034,9.0667813 36.00164,9.0667813 q -0.908333,0 -1.692803,0.330303 -0.763826,0.330302 -1.321212,0.9083327 -0.557387,0.557386 -0.887689,1.341856 -0.309659,0.78447 -0.309659,1.692803 0,0.928977 0.309659,1.713448 0.330302,0.78447 0.887689,1.3625 0.578031,0.57803 1.341857,0.908334 0.763825,0.330303 1.651515,0.330303 1.94053,0 3.488825,-1.651516 v 4.789394 l -0.412879,0.144508 q -0.928976,0.330303 -1.734091,0.474811 -0.805114,0.165151 -1.589583,0.165151 -1.610227,0 -3.096591,-0.598674 -1.46572,-0.619319 -2.601137,-1.713447 -1.114773,-1.114773 -1.796023,-2.621781 -0.68125,-1.527651 -0.68125,-3.323675 0,-1.796023 0.660606,-3.282386 0.681251,-1.5070074 1.796023,-2.5804934 1.135417,-1.094128 2.621781,-1.692803 1.486364,-0.619317 3.117235,-0.619317 0.928978,0 1.816667,0.206439 0.908333,0.185795 1.899242,0.598673 z m 5.739013,5.016479 q 0,0.536741 0.185795,0.990908 0.20644,0.433522 0.5161,0.763826 0.330302,0.330302 0.763825,0.516099 0.454168,0.185794 0.949622,0.185794 0.495453,0 0.928977,-0.185794 0.454166,-0.185797 0.763825,-0.516099 0.330303,-0.330304 0.516099,-0.763826 0.20644,-0.454167 0.20644,-0.970265 0,-0.495454 -0.20644,-0.928978 -0.185796,-0.454167 -0.516099,-0.784469 -0.309659,-0.330304 -0.763825,-0.5161 -0.433524,-0.185794 -0.928977,-0.185794 -0.495454,0 -0.949622,0.185794 -0.433523,0.185796 -0.763825,0.5161 -0.30966,0.330302 -0.5161,0.763825 -0.185795,0.433522 -0.185795,0.928979 z m -3.942993,-0.04129 q 0,-1.176705 0.474811,-2.188258 0.474811,-1.032196 1.321211,-1.775379 0.846403,-0.763826 2.002464,-1.197348 1.176704,-0.433522 2.559849,-0.433522 1.3625,0 2.51856,0.433522 1.176704,0.412878 2.023106,1.176704 0.867045,0.743182 1.341856,1.796023 0.474811,1.032198 0.474811,2.291477 0,1.259281 -0.495454,2.312123 -0.474811,1.032196 -1.321213,1.796022 -0.846402,0.743182 -2.04375,1.156061 -1.176705,0.412879 -2.559848,0.412879 -1.362501,0 -2.518563,-0.412879 -1.15606,-0.412879 -2.002462,-1.176704 -0.825756,-0.763826 -1.300567,-1.816668 -0.474811,-1.073484 -0.474811,-2.374053 z m 18.600208,-5.20227 v 5.9661 q 0,1.961175 1.899242,1.961175 1.899242,0 1.899242,-1.961175 v -5.9661 h 3.736555 v 6.688638 q 0,2.14697 -1.424433,3.220454 -1.403788,1.073485 -4.211364,1.073485 -2.807577,0 -4.232008,-1.073485 -1.403788,-1.073488 -1.403788,-3.220458 v -6.688638 z m 10.074252,0 h 3.736558 v 1.341857 q 0.763823,-0.928978 1.548299,-1.238636 0.784462,-0.330304 1.837303,-0.330304 1.114777,0 1.89924,0.371591 0.805115,0.350947 1.362508,1.011553 0.454175,0.536743 0.619315,1.197349 0.165157,0.660606 0.165157,1.507007 v 6.729926 h -3.736558 v -5.34678 q 0,-0.784472 -0.123862,-1.259282 -0.103262,-0.495455 -0.392233,-0.78447 -0.247728,-0.247727 -0.557388,-0.350946 -0.30966,-0.103224 -0.660611,-0.103224 -0.949619,0 -1.465715,0.578031 -0.495455,0.557385 -0.495455,1.610227 v 5.656437 h -3.736558 z m 17.877642,3.117236 v 7.473107 h -3.736542 v -7.473107 h -1.238638 v -3.117236 h 1.238638 V 7.3739806 h 3.736542 v 3.1791664 h 2.126327 v 3.117236 z m 11.478028,0.639962 q -0.185801,-0.78447 -0.763829,-1.259281 -0.578036,-0.474811 -1.403791,-0.474811 -0.867046,0 -1.42443,0.454167 -0.536741,0.454167 -0.681237,1.279925 z m -4.376513,2.167613 q 0,2.415342 2.270832,2.415342 1.217991,0 1.837315,-0.99091 h 3.612684 q -1.09413,3.633334 -5.470643,3.633334 -1.341865,0 -2.456623,-0.392234 -1.114777,-0.41288 -1.919893,-1.15606 -0.784472,-0.743183 -1.218004,-1.77538 -0.433505,-1.032197 -0.433505,-2.312122 0,-1.321211 0.41287,-2.374053 0.41288,-1.073485 1.176708,-1.816667 0.76382,-0.743182 1.837301,-1.135417 1.094143,-0.412878 2.456641,-0.412878 1.341844,0 2.415334,0.412878 1.073484,0.392235 1.816664,1.15606 0.74319,0.763828 1.13541,1.878601 0.39225,1.094128 0.39225,2.477272 v 0.392234 z m 9.991641,-5.924811 h 3.73656 v 1.734092 q 0.59868,-0.949622 1.46571,-1.445077 0.86705,-0.516098 2.02311,-0.516098 0.1445,0 0.30966,0 0.1858,0 0.41289,0.04129 v 3.571402 q -0.74318,-0.371592 -1.61023,-0.371592 -1.30057,0 -1.96117,0.78447 -0.63997,0.763826 -0.63997,2.25019 v 4.541667 h -3.73656 z m 14.18238,3.117236 v 7.473107 h -3.73656 v -7.473107 h -1.34185 v -3.117236 h 1.34185 V 8.9635643 q 0,-1.3212127 0.24772,-2.1056817 0.20646,-0.660606 0.66062,-1.217993 0.45416,-0.578029 1.05284,-0.990909 0.61932,-0.412878 1.32122,-0.639963 0.70189,-0.227083 1.38313,-0.227083 0.47481,0 0.86705,0.103224 0.41287,0.103224 0.82576,0.289017 v 3.261742 q -0.37159,-0.185797 -0.70189,-0.268371 -0.30966,-0.103224 -0.66062,-0.103224 -0.22707,0 -0.4748,0.08258 -0.22708,0.06193 -0.43352,0.289014 -0.20645,0.227083 -0.28902,0.660608 -0.0619,0.412878 -0.0619,1.1354157 v 1.3212117 h 2.62178 v 3.117236 z m 7.72084,2.14697 q 0,0.516098 0.18579,0.970265 0.1858,0.433522 0.49545,0.763826 0.33031,0.330302 0.76384,0.516099 0.45416,0.185794 0.97025,0.185794 0.49546,0 0.92898,-0.185794 0.45417,-0.185797 0.76384,-0.516099 0.3303,-0.330304 0.51609,-0.763826 0.20643,-0.433523 0.20643,-0.928978 0,-0.495454 -0.20643,-0.928977 -0.18579,-0.454167 -0.51609,-0.784469 -0.30967,-0.330304 -0.76384,-0.516099 -0.43352,-0.185796 -0.92898,-0.185796 -0.51609,0 -0.97025,0.185796 -0.43353,0.185795 -0.76384,0.516099 -0.30965,0.330302 -0.49545,0.763825 -0.18579,0.41288 -0.18579,0.908334 z m 4.70682,-5.264206 h 3.7572 V 21.14349 h -3.7572 v -1.176702 q -1.19735,1.507008 -3.2411,1.507008 -1.15606,0 -2.12634,-0.412879 -0.97025,-0.433522 -1.6928,-1.197347 -0.72253,-0.763827 -1.13541,-1.796023 -0.39223,-1.032198 -0.39223,-2.250191 0,-1.135417 0.39223,-2.146969 0.39223,-1.032198 1.09414,-1.796023 0.70188,-0.763828 1.67215,-1.19735 0.97026,-0.454166 2.14696,-0.454166 1.98182,0 3.2824,1.383145 z m 14.28561,3.426895 q -0.97028,-0.660607 -1.96119,-0.660607 -0.53672,0 -1.01154,0.185796 -0.45417,0.185795 -0.80512,0.536742 -0.35094,0.330304 -0.55738,0.805115 -0.1858,0.454166 -0.1858,1.032197 0,0.557386 0.1858,1.032197 0.20644,0.454166 0.53674,0.805113 0.35095,0.330303 0.82576,0.516099 0.47482,0.185795 1.01154,0.185795 1.05286,0 1.96119,-0.722538 v 3.179167 q -1.38315,0.598674 -2.62179,0.598674 -1.15606,0 -2.20889,-0.392235 -1.0322,-0.392234 -1.83732,-1.114772 -0.78446,-0.743182 -1.25928,-1.754735 -0.4748,-1.032197 -0.4748,-2.291479 0,-1.259279 0.45416,-2.291476 0.45416,-1.052842 1.23863,-1.796024 0.78448,-0.763825 1.85796,-1.176703 1.09413,-0.433523 2.33277,-0.433523 1.36249,0 2.51856,0.57803 z m 6.2964,-0.309659 v 7.473107 h -3.73655 v -7.473107 h -1.23864 v -3.117236 h 1.23864 V 7.3739806 h 3.73655 v 3.1791664 h 2.12633 v 3.117236 z"
-          />
-        </g>
-      </symbol>
-    </svg>
+  </header>
 
-    <!-- ═══ NAV ═══ -->
-    <nav>
-      <div class="nav-inner">
-        <a href="#" class="nav-logo" aria-label="Counterfact home">
-          <svg aria-hidden="true"><use href="#cf-logo" /></svg>
-        </a>
-        <ul class="nav-links">
-          <li><a href="#how-it-works">How it works</a></li>
-          <li><a href="#workflow">Workflow</a></li>
-          <li><a href="#contract">Boundaries</a></li>
-          <li>
-            <a
-              href="/docs/getting-started"
-              >Docs</a
-            >
-          </li>
-          <li>
-            <a
-              class="nav-cta"
-              href="https://github.com/counterfact/api-simulator"
-            >
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path
-                  d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2 0-.4-.5-1.6.2-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17 6.1 18 6.4 18 6.4c.7 1.6.2 2.8.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"
-                />
-              </svg>
-              GitHub
-            </a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-
-    <!-- ═══ HERO ═══ -->
-    <section class="hero">
-      <div class="container">
-        <div class="hero-grid">
-          <div>
-            <!-- <div class="hero-eyebrow fade-up">
-          <svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
-          v2.9.0 · Node ≥ 22
-        </div> -->
-            <h1 class="fade-up">
-              Not just a<br /><span class="bl">mock</span> server.
-            </h1>
-            <p class="hero-sub fade-up">
-              Point Counterfact at an OpenAPI spec and get a live, stateful API
-              in seconds — with TypeScript safety, hot reload, shared state, and
-              a programmable REPL.
-            </p>
-            <div class="hero-actions fade-up">
-              <a href="#quickstart" class="btn-primary">
-                Get started
-                <svg
-                  width="14"
-                  height="14"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </a>
-              <a
-                href="/docs/getting-started"
-                class="btn-ghost"
-                >Read the docs</a
-              >
-            </div>
-          </div>
-
-          <div class="term-card fade-up">
-            <div class="term-titlebar">
-              <span class="tdot" style="background: #ff5f57"></span>
-              <span class="tdot" style="background: #febc2e"></span>
-              <span class="tdot" style="background: #28c840"></span>
-              <span class="term-label">terminal</span>
-            </div>
-            <div class="term-body">
-              <div class="tline">
-                <span class="p">$</span>
-                <span class="c"
-                  ><span class="cmd">npx</span>
-                  <span class="arg">counterfact@latest</span
-                  ><br />&nbsp;&nbsp;<span class="flag"
-                    >https://petstore3.swagger.io/…/openapi.json</span
-                  >
-                  <span class="arg">api</span></span
-                >
-              </div>
-              <div class="tsep"></div>
-              <div class="tline">
-                <span class="p"> </span
-                ><span class="out">Reading OpenAPI spec…</span>
-              </div>
-              <div class="tline">
-                <span class="p"> </span
-                ><span class="out">Generating routes/ and types/ …</span>
-              </div>
-              <div class="tline">
-                <span class="p"> </span
-                ><span class="ok">✓ 17 route files written</span>
-              </div>
-              <div class="tline">
-                <span class="p"> </span
-                ><span class="ok">✓ Server → http://localhost:3100</span>
-              </div>
-              <div class="tline">
-                <span class="p"> </span
-                ><span class="ok">✓ Swagger UI → /counterfact/swagger/</span>
-              </div>
-              <div class="tsep"></div>
-              <div class="tline">
-                <span class="pa">⬣&gt;</span>
-                <span class="c"><span class="repl-cursor"></span></span>
-              </div>
-            </div>
-          </div>
-        </div>
+  <main>
+    <section class="hero page-shell" aria-labelledby="page-title">
+      <p class="eyebrow">Local APIs from OpenAPI</p>
+      <h1 id="page-title">Build the frontend. Don’t wait for the backend.</h1>
+      <p class="lede">
+        Counterfact turns an OpenAPI document into a useful local API in one command.
+        Point your frontend at localhost and start building against generated responses
+        before the real backend is ready.
+      </p>
+      <div class="actions">
+        <a class="button button-primary" href="#quick-start">Try it now</a>
+        <a class="button button-secondary" href="/docs/getting-started">Read the docs</a>
       </div>
     </section>
 
-    <!-- ═══ FEATURES ═══ -->
-    <section class="features-sec">
-      <div class="container">
-        <div class="features-header">
-          <div>
-            <div class="sec-label">What you get</div>
-            <h2>Everything a mock server<br />should have been.</h2>
-          </div>
-          <p>
-            Static canned responses aren't enough. No shared state. No failure
-            injection. No control mid-run. Counterfact is an API simulator
-            without those limits.
-          </p>
-        </div>
-        <div class="features-grid">
-          <div class="feat">
-            <div class="feat-icon">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                />
-              </svg>
-            </div>
-            <h3>Contract-driven generation</h3>
-            <p>
-              TypeScript handlers and typed interfaces for supported operations,
-              derived from your OpenAPI spec. Regenerate after a contract
-              change and TypeScript identifies incompatible handler code.
-            </p>
-          </div>
-          <div class="feat">
-            <div class="feat-icon">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            </div>
-            <h3>Hot reload, no restart</h3>
-            <p>
-              Save a route file and the server picks it up instantly. Your
-              in-memory state survives every reload — no lost context, no
-              interruptions.
-            </p>
-          </div>
-          <div class="feat">
-            <div class="feat-icon am">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <h3>Programmable REPL</h3>
-            <p>
-              A live JavaScript prompt wired directly to your running server.
-              Inspect state, inject failures, toggle proxy routes — while the
-              server handles real traffic.
-            </p>
-          </div>
-          <div class="feat">
-            <div class="feat-icon">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-            </div>
-            <h3>Shared state across routes</h3>
-            <p>
-              Drop a <span class="pill">_.context.ts</span> in any directory to
-              share typed in-memory state. Routes in that context subtree see
-              the same data.
-            </p>
-          </div>
-          <div class="feat">
-            <div class="feat-icon">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-            </div>
-            <h3>Hybrid proxy mode</h3>
-            <p>
-              Forward some routes to a real backend while mocking everything
-              else. Toggle individual paths live from the REPL as the real API
-              comes online.
-            </p>
-          </div>
-          <div class="feat">
-            <div class="feat-icon am">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                />
-              </svg>
-            </div>
-            <h3>Deterministic resets</h3>
-            <p>
-              Keep seed logic in a typed startup scenario. Each fresh process
-              applies the same scenario; each test worker can use its own port
-              and in-memory state.
-            </p>
-          </div>
-        </div>
+    <section class="page-shell command-section" aria-labelledby="command-heading">
+      <h2 id="command-heading">Start with your OpenAPI document</h2>
+      <div class="command-panel">
+        <code id="install-cmd">npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api</code>
+        <button id="copy-btn" class="copy-button" type="button" aria-label="Copy command">Copy</button>
       </div>
+      <p class="supporting-text">
+        Requires Node.js 22+. For a repeatable project or CI workflow,
+        <a href="/docs/first-10-minutes#install-a-pinned-version">install a pinned version</a>
+        and commit the lockfile.
+      </p>
     </section>
 
-    <!-- ═══ HOW IT WORKS ═══ -->
-    <section class="howto-sec" id="how-it-works">
-      <div class="container">
-        <div class="howto-layout">
-          <div>
-            <div class="sec-label">How it works</div>
-            <h2 style="margin-bottom: 1.5rem">
-              From spec to live<br />server in one<br />command.
-            </h2>
-            <ul class="steps">
-              <li class="step">
-                <span class="step-n"></span>
-                <div class="step-body">
-                  <h3>Read your OpenAPI spec</h3>
-                  <p>
-                    Point Counterfact at a local OpenAPI 3.x file or URL. It
-                    generates from the paths, operations, parameters, request
-                    bodies, responses, and schemas it supports.
-                  </p>
-                </div>
-              </li>
-              <li class="step">
-                <span class="step-n"></span>
-                <div class="step-body">
-                  <h3>Generate typed TypeScript handlers</h3>
-                  <p>
-                    A <span class="pill">routes/</span> directory with one
-                    <span class="pill">.ts</span> per endpoint, plus full typed
-                    interfaces in <span class="pill">types/</span>. Existing
-                    handler code is preserved when generation adds operations.
-                  </p>
-                </div>
-              </li>
-              <li class="step">
-                <span class="step-n"></span>
-                <div class="step-body">
-                  <h3>Server starts immediately</h3>
-                  <p>
-                    Generated handlers are live, returning schema-derived
-                    random data by default. Swagger UI is available so you can
-                    explore immediately.
-                  </p>
-                </div>
-              </li>
-              <li class="step">
-                <span class="step-n"></span>
-                <div class="step-body">
-                  <h3>Program the behavior you need</h3>
-                  <p>
-                    Replace <span class="pill">.random()</span> with
-                    <span class="pill">.json()</span>, add state, wire up logic.
-                    Save — the server reloads instantly, state preserved.
-                  </p>
-                </div>
-              </li>
-              <li class="step">
-                <span class="step-n"></span>
-                <div class="step-body">
-                  <h3>Control live state and routing</h3>
-                  <p>
-                    Inspect state, inject failures, fire requests, toggle proxy
-                    routes — all from a live prompt, no file edits required.
-                  </p>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <div class="code-stack">
-            <div class="code-file">
-              <div class="code-tab">api/routes/pet/&#123;petId&#125;.ts</div>
-              <pre><code><span class="kw">import</span> <span class="kw">type</span> &#123; <span class="ty">HTTP_GET</span>, <span class="ty">HTTP_DELETE</span> &#125;
-  <span class="kw">from</span> <span class="st">"../../types/paths/pet/&#123;petId&#125;.types.js"</span>;
-
-<span class="kw">export const</span> <span class="fn">GET</span>: <span class="ty">HTTP_GET</span> = (<span class="nm">$</span>) => &#123;
-  <span class="kw">const</span> pet = <span class="nm">$</span>.context.<span class="fn">get</span>(<span class="nm">$</span>.path.petId);
-
-  <span class="kw">if</span> (!pet) &#123;
-    <span class="kw">return</span> <span class="nm">$</span>.response[<span class="nm">404</span>].<span class="fn">text</span>(
-      <span class="st">`Pet </span><span class="nm">$&#123;$</span>.path.petId<span class="nm">&#125;</span><span class="st"> not found`</span>
-    );
-  &#125;
-
-  <span class="kw">return</span> <span class="nm">$</span>.response[<span class="nm">200</span>].<span class="fn">json</span>(pet);
-&#125;;
-
-<span class="kw">export const</span> <span class="fn">DELETE</span>: <span class="ty">HTTP_DELETE</span> = (<span class="nm">$</span>) => &#123;
-  <span class="nm">$</span>.context.<span class="fn">remove</span>(<span class="nm">$</span>.path.petId);
-  <span class="kw">return</span> <span class="nm">$</span>.response[<span class="nm">200</span>];
-&#125;;</code></pre>
-            </div>
-            <div class="code-file">
-              <div class="code-tab">api/routes/_.context.ts</div>
-              <pre><code><span class="kw">import</span> <span class="kw">type</span> &#123; <span class="ty">Pet</span> &#125;
-  <span class="kw">from</span> <span class="st">"../types/components/pet.types.js"</span>;
-
-<span class="kw">export class</span> <span class="ty">Context</span> &#123;
-  <span class="kw">private</span> pets = <span class="kw">new</span> <span class="ty">Map</span>&lt;<span class="ty">number</span>, <span class="ty">Pet</span>&gt;();
-  <span class="kw">private</span> nextId = <span class="nm">1</span>;
-
-  <span class="fn">add</span>(pet: <span class="ty">Omit</span>&lt;<span class="ty">Pet</span>, <span class="st">"id"</span>&gt;): <span class="ty">Pet</span> &#123;
-    <span class="kw">const</span> id = <span class="kw">this</span>.nextId++;
-    <span class="kw">const</span> rec = &#123; ...pet, id &#125;;
-    <span class="kw">this</span>.pets.<span class="fn">set</span>(id, rec);
-    <span class="kw">return</span> rec;
-  &#125;
-
-  <span class="fn">get</span>(id: <span class="ty">number</span>) &#123; <span class="kw">return this</span>.pets.<span class="fn">get</span>(id); &#125;
-  <span class="fn">list</span>()         &#123; <span class="kw">return</span> [...<span class="kw">this</span>.pets.<span class="fn">values</span>()]; &#125;
-  <span class="fn">remove</span>(id: <span class="ty">number</span>) &#123; <span class="kw">this</span>.pets.<span class="fn">delete</span>(id); &#125;
+    <section id="quick-start" class="page-shell quick-start" aria-labelledby="quick-start-heading">
+      <p class="eyebrow">Quick start</p>
+      <h2 id="quick-start-heading">A useful API before you write a handler</h2>
+      <ol class="steps">
+        <li>
+          <h3>Run the command</h3>
+          <p>Counterfact reads the document, writes editable routes and generated types, then starts a server.</p>
+        </li>
+        <li>
+          <h3>Point the frontend at localhost</h3>
+          <p>The base URL is <code>http://localhost:3100</code>. A browser app can make an ordinary request:</p>
+          <pre><code>const response = await fetch("http://localhost:3100/pet/1");
+const pet = await response.json();</code></pre>
+        </li>
+        <li>
+          <h3>Get a generated response</h3>
+          <p>Supported operations return schema-derived sample data immediately. For example:</p>
+          <pre><code>&#123;
+  "id": 1,
+  "name": "string",
+  "status": "available"
 &#125;</code></pre>
-            </div>
-          </div>
-        </div>
-      </div>
+        </li>
+      </ol>
+      <p class="supporting-text">
+        The defaults are a useful starting point for frontend work and exploration—not a claim that your backend behavior is complete.
+      </p>
     </section>
 
-    <!-- ═══ WORKFLOW PROOF ═══ -->
-    <section class="workflow-sec" id="workflow">
-      <div class="container">
-        <div class="workflow-head">
-          <div>
-            <div class="sec-label am">A repeatable workflow</div>
-            <h2>Seed. Exercise.<br />Reproduce.</h2>
-          </div>
-          <p>
-            Here is one checkout edge case carried from a clean start through
-            a real HTTP request and into an automated test. The scenario code
-            stays with the project, so a teammate or coding agent can recreate
-            the same API world.
-          </p>
-        </div>
-        <div class="workflow-grid">
-          <article class="workflow-card">
-            <div class="workflow-card-head">
-              <span class="workflow-n">01 · deterministic start</span>
-              <h3>Seed a declined payment</h3>
-            </div>
-            <pre><code><span class="cm">// scenarios/index.ts</span>
-<span class="kw">export const</span> <span class="fn">startup</span>: <span class="ty">Scenario</span> = (<span class="nm">$</span>) =&gt; &#123;
-  <span class="nm">$</span>.context.orders.<span class="fn">reset</span>();
-  <span class="nm">$</span>.context.paymentMode =
-    <span class="st">"declined"</span>;
-&#125;;
-
-<span class="cm">// routes/orders.ts</span>
-<span class="kw">export const</span> <span class="fn">POST</span>: <span class="ty">HTTP_POST</span> = (<span class="nm">$</span>) =&gt;
-  <span class="nm">$</span>.context.paymentMode === <span class="st">"declined"</span>
-    ? <span class="nm">$</span>.response[<span class="nm">402</span>].<span class="fn">json</span>(&#123; code: <span class="st">"card_declined"</span> &#125;)
-    : <span class="nm">$</span>.response[<span class="nm">201</span>].<span class="fn">random</span>();</code></pre>
-            <p>
-              Counterfact runs <span class="pill">startup</span> for each new
-              server process. Restarting creates a fresh in-memory context and
-              applies the same seed you keep in version control.
-            </p>
-          </article>
-          <article class="workflow-card">
-            <div class="workflow-card-head">
-              <span class="workflow-n">02 · real client traffic</span>
-              <h3>Drive the browser flow</h3>
-            </div>
-            <pre><code><span class="p">$</span> curl -i -X POST \
-  localhost:3100/orders
-
-HTTP/1.1 <span class="nm">402</span>
-content-type: application/json
-
-&#123; <span class="st">"code"</span>: <span class="st">"card_declined"</span> &#125;</code></pre>
-            <p>
-              Requests to simulated routes and their preflight receive CORS
-              headers. Supported Basic/API-key values reach handlers; your
-              scenario code decides which credentials or permissions succeed.
-            </p>
-          </article>
-          <article class="workflow-card">
-            <div class="workflow-card-head">
-              <span class="workflow-n">03 · non-interactive CI</span>
-              <h3>Control it from the test</h3>
-            </div>
-            <pre><code><span class="kw">const</span> app = <span class="kw">await</span> <span class="fn">counterfact</span>(config);
-<span class="kw">const</span> &#123; stop &#125; = <span class="kw">await</span> app.<span class="fn">start</span>(config);
-
-app.contextRegistry.<span class="fn">find</span>(<span class="st">"/"</span>)
-  .paymentMode = <span class="st">"approved"</span>;
-
-<span class="kw">await</span> <span class="fn">expectCheckout</span>(<span class="nm">200</span>);
-<span class="kw">await</span> <span class="fn">stop</span>();</code></pre>
-            <p>
-              The programmatic API starts and stops with the suite—no REPL or
-              remote credentials. Give parallel workers distinct ports and
-              processes for isolated state.
-            </p>
-          </article>
-        </div>
-        <div class="workflow-note">
-          Counterfact makes this simulation repeatable; it does not prove the
-          production payment service behaves the same. Keep a targeted test
-          against the real backend before release.
-        </div>
+    <section class="page-shell more-section" aria-labelledby="more-heading">
+      <h2 id="more-heading">When your frontend needs more</h2>
+      <p>
+        Replace a generated response with a custom handler when a screen needs a specific case.
+        Add only the state, failures, latency, proxying, or tests that the workflow needs.
+      </p>
+      <div class="link-list" aria-label="Advanced Counterfact guides">
+        <a href="/docs/features/routes">Custom responses</a>
+        <a href="/docs/features/state">State</a>
+        <a href="/docs/patterns/simulate-failures">Failures and latency</a>
+        <a href="/docs/features/proxy">Proxying</a>
+        <a href="/docs/patterns/automated-integration-tests">Tests</a>
+        <a href="/docs/features/repl">REPL</a>
       </div>
     </section>
+  </main>
 
-    <!-- ═══ REPL ═══ -->
-    <section class="repl-sec" id="repl">
-      <div class="container">
-        <div class="repl-layout">
-          <div class="term-card">
-            <div class="term-titlebar">
-              <span class="tdot" style="background: #ff5f57"></span>
-              <span class="tdot" style="background: #febc2e"></span>
-              <span class="tdot" style="background: #28c840"></span>
-              <span class="term-label">counterfact REPL</span>
-            </div>
-            <div class="term-body">
-              <div class="tline">
-                <span class="pa">⬣&gt;</span
-                ><span class="c">context.<span class="fn">list</span>()</span>
-              </div>
-              <div class="tline">
-                <span class="p"> </span
-                ><span class="kc"
-                  >[ &#123; id: <span class="nm">1</span>, name:
-                  <span class="st">'Fluffy'</span>, status:
-                  <span class="st">'available'</span> &#125; ]</span
-                >
-              </div>
-              <div class="tsep"></div>
-              <div class="tline">
-                <span class="pa">⬣&gt;</span
-                ><span class="c"
-                  >context.<span class="fn">add</span>(&#123; name:
-                  <span class="st">'Rex'</span>, photoUrls: [], status:
-                  <span class="st">'pending'</span> &#125;)</span
-                >
-              </div>
-              <div class="tline">
-                <span class="p"> </span
-                ><span class="kc"
-                  >&#123; id: <span class="nm">2</span>, name:
-                  <span class="st">'Rex'</span>, … &#125;</span
-                >
-              </div>
-              <div class="tsep"></div>
-              <div class="tline">
-                <span class="pa">⬣&gt;</span
-                ><span class="c"
-                  >client.<span class="fn">get</span>(<span class="st"
-                    >"/pet/2"</span
-                  >)</span
-                >
-              </div>
-              <div class="tline">
-                <span class="p"> </span
-                ><span class="kc"
-                  >&#123; status: <span class="nm">200</span>, body: &#123; id:
-                  <span class="nm">2</span>, name:
-                  <span class="st">'Rex'</span>, … &#125; &#125;</span
-                >
-              </div>
-              <div class="tsep"></div>
-              <div class="tline">
-                <span class="pa">⬣&gt;</span
-                ><span class="c"
-                  ><span class="flag">.proxy</span> on /payments</span
-                >
-              </div>
-              <div class="tline">
-                <span class="p"> </span
-                ><span class="ok">✓ /payments/* → https://api.example.com</span>
-              </div>
-              <div class="tsep"></div>
-              <div class="tline">
-                <span class="pa">⬣&gt;</span
-                ><span class="c"
-                  >context.pets.<span class="fn">clear</span>()</span
-                >
-              </div>
-              <div class="tline">
-                <span class="p"> </span
-                ><span class="ok">✓ Cleared. GET /pet → []</span>
-              </div>
-              <div class="tsep"></div>
-              <div class="tline">
-                <span class="pa">⬣&gt;</span><span class="repl-cursor"></span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div class="sec-label am">The REPL</div>
-            <h2 style="margin-bottom: 1.2rem">DevTools<br />for your API.</h2>
-            <p style="margin-bottom: 1.3rem; font-size: 1.05rem">
-              A live JavaScript prompt wired directly to your running server.
-              The REPL exposes a <span class="pill">context</span> object and a
-              <span class="pill">client</span> — inspect state, modify data, and
-              fire requests all at once.
-            </p>
-            <p style="margin-bottom: 1.3rem; font-size: 1.05rem">
-              Want to test what happens when the database is empty? Clear it.
-              Need to simulate a 500? Set it up. Proxy half the API to a real
-              backend? One command.
-            </p>
-            <p style="font-size: 1.05rem">
-              A fresh process starts with fresh in-memory context. Add a typed
-              startup scenario when the exact seed must be repeatable.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ═══ AUDIENCE ═══ -->
-    <section class="audience-sec">
-      <div class="container">
-        <div class="sec-label">Who it's for</div>
-        <h2>Real enough to be useful.<br />Fake enough to be usable.</h2>
-        <div class="audience-grid">
-          <div class="aud-card">
-            <div class="aud-role">Frontend developer</div>
-            <h3>Stop waiting on the backend.</h3>
-            <p>
-              Your team has an OpenAPI spec. The backend is two sprints out. Run
-              Counterfact and build against a live, typed, stateful API today.
-              The handlers and seed scenarios live in version control, and
-              regenerated types surface contract changes in your editor.
-            </p>
-          </div>
-          <div class="aud-card">
-            <div class="aud-role">Test engineer</div>
-            <h3>Reproducible state, every time.</h3>
-            <p>
-              Set up exactly the state you need from the REPL. Run your test.
-              Or start Counterfact from test code, set context directly, and
-              stop it with the suite—without a shared database fixture.
-            </p>
-          </div>
-          <div class="aud-card am">
-            <div class="aud-role">AI agent / automation</div>
-            <h3>A stable API substrate.</h3>
-            <p>
-              Agentic workflows need deterministic, scriptable APIs. Counterfact
-              runs locally with explicit scenario code and programmatic state
-              control, leaving a reproducible verification environment for
-              human review.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ═══ CONTRACT BOUNDARIES ═══ -->
-    <section class="boundary-sec" id="contract">
-      <div class="container">
-        <div class="sec-label">Contract credibility</div>
-        <h2>What Counterfact checks.<br />What it cannot know.</h2>
-        <p class="boundary-intro">
-          A contract-backed simulator catches structural mismatches early. You
-          still own the behavior that is not expressed in OpenAPI.
-        </p>
-        <div class="boundary-grid">
-          <div class="boundary-card checked">
-            <h3>Checked or surfaced by Counterfact</h3>
-            <ul class="boundary-list">
-              <li>Generated handler types constrain declared status codes and response shapes at TypeScript compile time.</li>
-              <li>Required query, header, and cookie parameters—and supported JSON/form request bodies—are checked by default; detected mismatches return HTTP 400.</li>
-              <li>Declared response-header mismatches are returned as advisory <span class="pill">response-type-error</span> headers.</li>
-              <li>Watching a local spec regenerates types and exposes incompatible handler code while the simulator stays local.</li>
-            </ul>
-          </div>
-          <div class="boundary-card limit">
-            <h3>Behavior your team still owns</h3>
-            <ul class="boundary-list">
-              <li>Implement only the client-visible rules, decisions, and state transitions your simulated workflows need in handler/context code.</li>
-              <li>Generated random responses are schema-shaped examples, not proof of production behavior or data quality.</li>
-              <li>Hot reload preserves live state; use a fresh process plus a startup scenario when a clean reset matters.</li>
-              <li>Keep targeted real-backend and end-to-end tests—Counterfact complements them; it does not replace them.</li>
-            </ul>
-          </div>
-        </div>
-        <div class="trial-grid" role="group" aria-label="Trial readiness">
-          <div class="trial-item"><strong>Runtime</strong><span>Node.js 22 or newer; local npm package and CLI.</span></div>
-          <div class="trial-item"><strong>Contract</strong><span>OpenAPI 3.0–3.2 or Swagger 2.0; local file or URL.</span></div>
-          <div class="trial-item"><strong>Browser & auth</strong><span>CORS/preflight built in. Handlers implement auth outcomes.</span></div>
-          <div class="trial-item"><strong>Isolation</strong><span>In-memory state. Use one process and port per parallel worker.</span></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ═══ QUICKSTART ═══ -->
-    <section class="qs-sec" id="quickstart">
-      <div class="container">
-        <div class="sec-label" style="text-align: center">Get started</div>
-        <h2>Try it in one command.</h2>
-        <p>
-          No global install. Requires Node.js 22+ and a supported OpenAPI or
-          Swagger document.
-        </p>
-        <br />
-        <div class="install-block">
-          <code id="install-cmd"
-            >npx counterfact@latest
-            https://petstore3.swagger.io/api/v3/openapi.json api</code
-          >
-          <button class="copy-btn" id="copy-btn" type="button">
-            copy
-          </button>
-        </div>
-        <br />
-        <div style="margin-bottom: 2rem">
-          <a
-            href="/docs/getting-started"
-            class="btn-primary"
-            style="display: inline-flex; margin: 0 auto"
-          >
-            Read the getting started guide
-            <svg
-              width="14"
-              height="14"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </a>
-        </div>
-        <div class="qs-links">
-          <a
-            href="/docs/patterns"
-            >Patterns</a
-          >
-          <a
-            href="/docs/reference"
-            >Reference</a
-          >
-          <a
-            href="/docs/faq"
-            >FAQ</a
-          >
-          <a
-            href="/docs/comparison"
-            >Comparison</a
-          >
-          <a href="https://github.com/counterfact/example-petstore"
-            >Petstore example</a
-          >
-          <a href="https://github.com/counterfact/api-simulator"
-            >GitHub (142 ★)</a
-          >
-        </div>
-      </div>
-    </section>
-
-    <!-- ═══ FOOTER ═══ -->
-    <footer>
-      <div class="container">
-        <div class="footer-inner">
-          <div>
-            <svg
-              aria-label="Counterfact"
-              style="height: 18px; width: auto; opacity: 0.4"
-            >
-              <use href="#cf-logo" />
-            </svg>
-          </div>
-          <ul class="footer-links">
-            <li>
-              <a href="https://github.com/counterfact/api-simulator">GitHub</a>
-            </li>
-            <li>
-              <a
-                href="/docs/getting-started"
-                >Docs</a
-              >
-            </li>
-            <li>
-              <a
-                href="https://github.com/counterfact/api-simulator/blob/main/packages/counterfact/CHANGELOG.md"
-                >Changelog</a
-              >
-            </li>
-            <li>
-              <a
-                href="https://github.com/counterfact/api-simulator/blob/main/CONTRIBUTING.md"
-                >Contributing</a
-              >
-            </li>
-            <li>
-              <a href="https://patrickmcelhaney.org/">Patrick McElhaney</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </footer>
-
-    <script>
-      import "../scripts/main.js";
-    </script>
-  
+  <footer class="site-footer">
+    <div class="page-shell footer-content">
+      <span>Counterfact</span>
+      <a href="/docs/getting-started">Getting started</a>
+      <a href="https://github.com/counterfact/api-simulator">GitHub</a>
+    </div>
+  </footer>
 </MainLayout>

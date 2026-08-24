@@ -1,215 +1,93 @@
-# Getting Started
+# Build the frontend. Don’t wait for the backend.
 
-You have an OpenAPI spec. You need a backend. The real one isn't ready yet.
+Counterfact turns an OpenAPI document into a useful local API in one command.
+Use it when your frontend is ready but the backend is incomplete, unavailable,
+unstable, or owned by another team.
 
-**Counterfact** solves that problem in one command.
+## Prerequisite
 
----
+Use Node.js 22 or newer. Counterfact supports Swagger 2.0 and OpenAPI 3.0,
+3.1, and 3.2.
 
-## The scenario
+## Run one command
 
-Picture a common situation: your team has written a first draft of the OpenAPI doc. The frontend team is ready to build, but the backend isn't done yet — maybe it's two sprints out, maybe it's on another team's roadmap entirely.
-
-What do you do?
-
-You could hardcode fake responses. They'll be wrong within a week and silent about it.
-
-You could wait. Weeks of blocked work, calendar pressure, and frustration.
-
-Or you could run this:
+Give Counterfact an OpenAPI document and an output directory:
 
 ```sh
 npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 ```
 
-Counterfact reads the spec, generates typed TypeScript handlers for its supported operations, and starts a live server — all in one command. Within seconds you have a contract-derived API whose behavior you can implement and verify locally.
+Counterfact writes editable route files and generated TypeScript types to
+`api/`, then starts a local server at `http://localhost:3100`.
 
-> **Requires Node ≥ 22.0.0**  
-> Supports Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2.
-> Want to see a fully implemented version of the Petstore — with custom logic, state, and realistic handlers already wired in? Browse [counterfact/example-petstore](https://github.com/counterfact/example-petstore).
+For a project or CI workflow, install a pinned version and commit the lockfile:
 
----
-
-## What just happened
-
-When you ran that command, three things happened:
-
-**1. Code generation.** Counterfact read the spec and created a `routes/` directory with one `.ts` file per endpoint, plus a `types/` directory with fully typed request/response interfaces derived from the spec:
-
+```sh
+npm install --save-dev counterfact@2.16.3
+npx counterfact ./openapi.yaml api
 ```
+
+## Make a browser request
+
+Point your frontend at the local base URL. For the Petstore document above, a
+minimal request looks like this:
+
+```ts
+const response = await fetch("http://localhost:3100/pet/1");
+const pet = await response.json();
+```
+
+Supported operations return schema-derived sample data immediately—before you
+edit a handler. A response might look like this:
+
+```json
+{
+  "id": 1,
+  "name": "string",
+  "status": "available"
+}
+```
+
+The generated response is a useful contract-shaped starting point for frontend
+work and exploration. It is not a substitute for the business behavior you
+choose to model.
+
+## Know what was generated
+
+The output directory contains files you can own:
+
+```text
 api/
-├── routes/
-│   ├── pet.ts
-│   ├── pet/{petId}.ts
-│   └── store/order.ts
-└── types/
-    └── paths/
-        ├── pet.types.ts
-        └── ...
+├── routes/   # editable handlers, one path at a time
+└── types/    # generated request and response contracts
 ```
 
-**2. A server started.** Supported operations are live immediately. Generated handlers return schema-derived sample data (or an empty/streaming response when appropriate) — no editing required. These defaults are for exploration, not deterministic tests or realistic business behavior.
+Do not edit `types/`; regenerate them when the OpenAPI document changes. Edit
+handlers under `routes/`. Counterfact hot-reloads route changes while the
+server is running.
 
-**3. Swagger UI became available.** Point your browser at `http://localhost:3100/counterfact/swagger/` to explore and test the API. Pass `--open` if you want Counterfact to open it automatically.
+## Make one response explicit (optional)
 
----
-
-## Making it yours
-
-The generated files are yours to edit. Open one up:
+When a screen needs a specific case, replace the generated response in the
+corresponding handler:
 
 ```ts
 // api/routes/pet/{petId}.ts
 import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
 
-export const GET: HTTP_GET = ($) => {
-  return $.response[200].random(); // ← replace this
-};
-```
-
-Replace `.random()` with `.json()` and return whatever your frontend needs:
-
-```ts
-export const GET: HTTP_GET = ($) => {
-  if ($.path.petId === 99) {
-    return $.response[404].text("Pet not found");
-  }
-  return $.response[200].json({
+export const GET: HTTP_GET = ($) =>
+  $.response[200].json({
     id: $.path.petId,
     name: "Fluffy",
     status: "available",
   });
-};
 ```
 
-Save the file. The server picks it up **immediately** — no restart, no lost state. Your in-memory data survives every hot reload.
-
-TypeScript keeps you honest the whole way. If your response doesn't match the spec, your editor tells you before the server does. JSDoc comments from your OpenAPI descriptions appear inline as you type, so you never have to switch tabs to look up a field name.
-
----
-
-## Adding state
-
-Real APIs remember things. So can Counterfact.
-
-Create a `_.context.ts` file to share in-memory state across routes in the same directory:
-
-```ts
-// api/routes/_.context.ts
-import type { Pet } from "../types/components/schemas/Pet.js";
-
-export class Context {
-  private pets = new Map<number, Pet>();
-  private nextId = 1;
-
-  add(pet: Omit<Pet, "id">): Pet {
-    const id = this.nextId++;
-    const record = { ...pet, id };
-    this.pets.set(id, record);
-    return record;
-  }
-
-  get(id: number): Pet | undefined {
-    return this.pets.get(id);
-  }
-
-  list(): Pet[] {
-    return [...this.pets.values()];
-  }
-
-  remove(id: number): void {
-    this.pets.delete(id);
-  }
-}
-```
-
-Now your routes share that state:
-
-```ts
-// api/routes/pet.ts
-export const GET: HTTP_GET = ($) => {
-  return $.response[200].json($.context.list());
-};
-
-export const POST: HTTP_POST = ($) => {
-  return $.response[200].json($.context.add($.body));
-};
-```
-
-```ts
-// api/routes/pet/{petId}.ts
-export const GET: HTTP_GET = ($) => {
-  const pet = $.context.get($.path.petId);
-  if (!pet) return $.response[404].text(`Pet ${$.path.petId} not found`);
-  return $.response[200].json(pet);
-};
-
-export const DELETE: HTTP_DELETE = ($) => {
-  $.context.remove($.path.petId);
-  return $.response[200];
-};
-```
-
-POST a pet. GET it back. Delete it and watch the 404 appear. It behaves like a real API — because it is one, just running locally.
-
----
-
-## Exploring state without touching files
-
-The REPL is a JavaScript prompt connected directly to your running server. You can inspect state, modify it, and fire requests — all while the server handles traffic.
-
-```
-⬣> context.list()
-[ { id: 1, name: 'Fluffy', status: 'available' } ]
-
-⬣> context.add({ name: 'Rex', photoUrls: [], status: 'pending' })
-{ id: 2, name: 'Rex', photoUrls: [], status: 'pending' }
-
-⬣> client.get("/pet/2")
-{ status: 200, body: { id: 2, name: 'Rex', ... } }
-```
-
-Want to test what happens when the database is empty? Clear it in the REPL. Want to simulate a specific edge case without writing a test? Set it up in the REPL. It's DevTools for your mock server.
-
----
-
-## Working alongside a real backend
-
-Maybe half the API exists and half doesn't. Use the `--proxy-url` flag to forward real requests to the real backend while mocking everything else:
-
-```sh
-npx counterfact@latest openapi.yaml api --proxy-url https://api.example.com
-```
-
-You can toggle individual paths at runtime from the REPL:
-
-```
-⬣> .proxy on /payments    # forward /payments/* to the real API
-⬣> .proxy off /payments   # mock /payments/* again
-⬣> .proxy off             # mock everything again
-```
-
----
-
-## When the spec changes
-
-Specs evolve. When yours does, Counterfact handles it automatically: if you're running with `--watch`, it detects the change, regenerates the types, and your IDE picks up the updated interfaces immediately — no restart, no manual command.
-
-If you're not watching, you can regenerate on demand:
-
-```sh
-npx counterfact@latest openapi.yaml api --generate-types
-```
-
-Counterfact preserves existing handler bodies. Regeneration overwrites generated types and may append a type import and handler stub when the spec adds a new operation to an existing path. Run your project's TypeScript check to surface handlers that no longer match the updated contract; Counterfact does not run the compiler for you.
-
----
+Save the file and refresh the frontend—no server restart is needed.
 
 ## Next steps
 
-- [Patterns](./patterns/index.md) — explore an API, simulate failures, hybrid proxy, agentic coding, and more
-- [Reference](./reference.md) — `$` parameter, response builder methods, full CLI flags, architecture overview
-- [FAQ](./faq.md) — common questions about state, type safety, regeneration, and programmatic use
-- [How it compares](./comparison.md) — side-by-side with json-server, WireMock, Prism, Microcks, and MSW
-- [Petstore example](https://github.com/counterfact/example-petstore) — a complete worked example of the Swagger Petstore, fully implemented with Counterfact
-- [Usage](./usage.md) — full feature documentation
+- [First 10 minutes](./first-10-minutes.md) — add a small create/read workflow and one frontend-relevant failure.
+- [Usage](./usage.md) — find guides by job: frontend, testing, advanced control, or troubleshooting.
+- [Custom responses](./features/routes.md), [state](./features/state.md), [failures](./patterns/simulate-failures.md), and [proxying](./features/proxy.md) — add capabilities only when the workflow needs them.
+- [Without OpenAPI](./features/without-openapi.md) — use the deeper alternative when no OpenAPI document exists.

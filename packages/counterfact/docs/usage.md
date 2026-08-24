@@ -1,73 +1,45 @@
 # Usage
 
-Counterfact is three tools in one:
+Counterfact starts with an OpenAPI document, a local URL, and generated
+responses. Choose the next guide by the job your frontend, team, or test suite
+needs—not by a feature checklist.
 
-- a **code generator** that converts an [OpenAPI](https://support.smartbear.com/swaggerhub/docs/tutorials/openapi-3-tutorial.html) document to [TypeScript](https://www.typescriptlang.org/) route files
-- a **mock server** optimized for front-end development workflows
-- a **live REPL** for inspecting and manipulating server state at runtime
+## Frontend workflows
 
-Choose the path that matches what you’re building, then dive deeper when you need a specific feature or workflow.
+- [Getting started](./getting-started.md) — run a local API and make a browser request.
+- [Routes and custom responses](./features/routes.md) — shape the response a screen needs.
+- [State](./features/state.md) — share small in-memory state across routes.
+- [Hot reload](./features/hot-reload.md) — update handlers without restarting.
+- [Generated code](./features/generated-code.md) — understand editable routes and generated types.
+- [Simulate failures](./patterns/simulate-failures.md) and [simulate latency](./patterns/simulate-latency.md) — exercise error, empty, loading, and retry states.
 
----
+## Team and test workflows
 
-## Getting started
+- [First 10 minutes](./first-10-minutes.md) — a small create/read workflow with one failure.
+- [Automated integration tests](./patterns/automated-integration-tests.md) — start and stop a local API in tests.
+- [Scenario scripts](./patterns/scenario-scripts.md) — create repeatable starting states.
+- [Shared store](./patterns/shared-store.md) — coordinate state across API groups.
+- [AI-assisted implementation](./patterns/ai-assisted-implementation.md) and [agentic sandbox](./patterns/agentic-sandbox.md) — give coding agents a bounded, verifiable API task.
 
-New to Counterfact? Begin with the [Getting Started guide](./getting-started.md) for a step-by-step walkthrough.
+## Advanced control
 
----
+- [Proxy](./features/proxy.md) and [hybrid proxy](./patterns/hybrid-proxy.md) — combine local and upstream paths behind one base URL.
+- [REPL](./features/repl.md) — inspect or steer a running local API.
+- [Middleware](./features/middleware.md) — add cross-cutting behavior.
+- [Programmatic API](./features/programmatic-api.md) — embed Counterfact in another process.
+- [Multiple versions](./features/multiple-versions.md) — serve more than one API version.
+- [TypeScript native mode](./features/typescript-native-mode.md) — run route files directly.
 
-## Features
+## Reference and troubleshooting
 
-| Feature                                                        | Description                                                      |
-| -------------------------------------------------------------- | ---------------------------------------------------------------- |
-| [Generated code](./features/generated-code.md)                 | How Counterfact generates TypeScript from your OpenAPI spec      |
-| [Routes](./features/routes.md)                                 | Writing route handlers, building responses, reading request data |
-| [State (contexts and shared store)](./features/state.md)       | Sharing in-memory state across routes and API groups             |
-| [Hot reload](./features/hot-reload.md)                         | Live file updates without restarting the server                  |
-| [REPL](./features/repl.md)                                     | Interactive terminal for runtime inspection and control          |
-| [Proxy](./features/proxy.md)                                   | Mix real backend calls with mocked endpoints                     |
-| [Middleware](./features/middleware.md)                         | Cross-cutting request/response logic                             |
-| [TypeScript native mode](./features/typescript-native-mode.md) | Run route files directly without a compilation step              |
-| [Programmatic API](./features/programmatic-api.md)             | Embed Counterfact in test suites with Playwright, Cypress, etc.  |
-| [Without OpenAPI](./features/without-openapi.md)               | Use Counterfact without an OpenAPI document                      |
-| [Multiple versions](./features/multiple-versions.md)           | Serve multiple API versions simultaneously from a single process |
-
----
-
-## Patterns
-
-Patterns are practical ways to use Counterfact for common API development and testing jobs.
-
-See the [patterns index](./patterns/index.md) for the full list.
-
----
-
-## Reference
-
-Complete technical reference: the `$` parameter API, CLI flags, architecture overview, and more.
-
-→ [Reference](./reference.md)
-
----
-
-## FAQ
-
-Common questions about state, types, hot reload, code generation, and regeneration.
-
-→ [FAQ](./faq.md)
-
----
+- [Reference](./reference.md) — CLI flags, response builders, the `$` parameter, and architecture.
+- [FAQ](./faq.md) — state, validation, type safety, and regeneration questions.
+- [How Counterfact compares](./comparison.md) — comparison with json-server, WireMock, Prism, Microcks, and MSW.
+- [Without OpenAPI](./features/without-openapi.md) — the alternative path when no OpenAPI document exists.
 
 ## Telemetry and privacy
 
-Counterfact records startup options, hot-reload change categories (route/context/OpenAPI), and REPL command names. API file locations are hashed and command arguments are never sent.
-
-→ [Telemetry discussion](https://counterfact.dev/telemetry-discussion)
-
----
-
-## How it compares
-
-Side-by-side comparison with json-server, WireMock, Prism, Microcks, and MSW.
-
-→ [How it compares](./comparison.md)
+Counterfact records startup options, hot-reload change categories
+(route/context/OpenAPI), and REPL command names. API file locations are hashed
+and command arguments are never sent. See the
+[telemetry discussion](https://counterfact.dev/telemetry-discussion).
