@@ -46,7 +46,7 @@ jobs:
         uses: changesets/action@v2.1.1
         with:
           github-token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-          version-script: yarn changeset version
+          version-script: yarn release:version
 
   publish:
     name: Publish to npm
