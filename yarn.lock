@@ -2456,12 +2456,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@posthog/core@npm:^1.48.9":
-  version: 1.49.0
-  resolution: "@posthog/core@npm:1.49.0"
+"@posthog/core@npm:^1.48.11":
+  version: 1.49.1
+  resolution: "@posthog/core@npm:1.49.1"
   dependencies:
     "@posthog/types": "npm:^1.407.0"
-  checksum: 10c0/3a7a5900a549694db1e6ea0ba6e7a1263d19e8eca174d6a61c98a4a31271bfd3233dc850c94ccb08e8c4cb87271226d8dbdd34fae2a1799ca67b251431da7642
+  checksum: 10c0/0b7b65ba0e2f7642070e8343fb86b9bf72610823875379d0311d063d501e3c73678627c2326e558c401b28ea3817300e32d9fd94197187dfa779c75127ee1ebb
   languageName: node
   linkType: hard
 
@@ -4755,7 +4755,7 @@ __metadata:
     http-terminator: "npm:3.2.0"
     js-yaml: "npm:5.4.0"
     open: "npm:11.0.1"
-    posthog-node: "npm:5.51.1"
+    posthog-node: "npm:5.51.2"
   bin:
     counterfact: bin/counterfact.js
   languageName: unknown
@@ -9743,17 +9743,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-node@npm:5.51.1":
-  version: 5.51.1
-  resolution: "posthog-node@npm:5.51.1"
+"posthog-node@npm:5.51.2":
+  version: 5.51.2
+  resolution: "posthog-node@npm:5.51.2"
   dependencies:
-    "@posthog/core": "npm:^1.48.9"
+    "@posthog/core": "npm:^1.48.11"
   peerDependencies:
     rxjs: ^7.0.0
   peerDependenciesMeta:
     rxjs:
       optional: true
-  checksum: 10c0/9d51197bebee27da51e6c5822597f3bb9e9a22084a9ac0255eeb4c58d42f7d616f9263d787512ad2b5559f1e069fbdad33440c8fb5ce24bb370459789785118e
+  checksum: 10c0/a7a065d4a7ca4009662501cd72d4eef270d9b0ddcec4cc5a2956f4575a76601b2b609127b4e58ca48b5c289365cde0417eb421fb178b2d610a715db4a1c60760
   languageName: node
   linkType: hard
 
