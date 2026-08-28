@@ -34,6 +34,8 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - Keep tests focused by subsystem (`packages/counterfact/test/cli`, `packages/counterfact/test/server`, `packages/counterfact/test/typescript-generator`, `packages/counterfact/test/util`).
 - Preserve documented behavior promises (e.g., regen preserves route edits; types are regenerated).
 - For user-facing behavior changes: add a changeset and update docs under `packages/counterfact/docs/`.
+- After Changesets versions workspace packages, run `yarn install --mode skip-build` so `yarn.lock` matches the new internal versions before immutable installation.
+- Use OS-assigned ephemeral ports for tests that start network servers; fixed high ports can collide on shared CI hosts.
 
 ## Black-box test boundary
 

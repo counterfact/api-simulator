@@ -1,5 +1,11 @@
 # @counterfact/openapi
 
+## 0.1.3
+
+### Patch Changes
+
+- 28aafab: Treat local filenames beginning with URL scheme text as filesystem paths.
+
 ## 0.1.2
 
 ### Patch Changes

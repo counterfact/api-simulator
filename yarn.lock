@@ -1345,17 +1345,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@counterfact/client@npm:0.1.0, @counterfact/client@workspace:packages/client":
+"@counterfact/client@npm:0.1.1, @counterfact/client@workspace:packages/client":
   version: 0.0.0-use.local
   resolution: "@counterfact/client@workspace:packages/client"
   languageName: unknown
   linkType: soft
 
-"@counterfact/generator@npm:0.1.2, @counterfact/generator@workspace:packages/generator":
+"@counterfact/generator@npm:0.1.3, @counterfact/generator@workspace:packages/generator":
   version: 0.0.0-use.local
   resolution: "@counterfact/generator@workspace:packages/generator"
   dependencies:
-    "@counterfact/openapi": "npm:0.1.2"
+    "@counterfact/openapi": "npm:0.1.3"
     "@counterfact/types": "npm:0.1.0"
     chokidar: "npm:5.0.0"
     debug: "npm:4.4.3"
@@ -1363,7 +1363,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@counterfact/openapi@npm:0.1.2, @counterfact/openapi@workspace:packages/openapi":
+"@counterfact/openapi@npm:0.1.3, @counterfact/openapi@workspace:packages/openapi":
   version: 0.0.0-use.local
   resolution: "@counterfact/openapi@workspace:packages/openapi"
   dependencies:
@@ -1375,20 +1375,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@counterfact/repl@npm:0.1.2, @counterfact/repl@workspace:packages/repl":
+"@counterfact/repl@npm:0.1.3, @counterfact/repl@workspace:packages/repl":
   version: 0.0.0-use.local
   resolution: "@counterfact/repl@workspace:packages/repl"
   dependencies:
-    "@counterfact/client": "npm:0.1.0"
-    "@counterfact/runtime": "npm:0.1.2"
+    "@counterfact/client": "npm:0.1.1"
+    "@counterfact/runtime": "npm:0.1.3"
   languageName: unknown
   linkType: soft
 
-"@counterfact/runtime@npm:0.1.2, @counterfact/runtime@workspace:packages/runtime":
+"@counterfact/runtime@npm:0.1.3, @counterfact/runtime@workspace:packages/runtime":
   version: 0.0.0-use.local
   resolution: "@counterfact/runtime@workspace:packages/runtime"
   dependencies:
-    "@counterfact/openapi": "npm:0.1.2"
+    "@counterfact/openapi": "npm:0.1.3"
     "@counterfact/types": "npm:0.1.0"
     "@hapi/accept": "npm:6.0.3"
     "@types/koa": "npm:3.0.3"
@@ -4745,11 +4745,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "counterfact@workspace:packages/counterfact"
   dependencies:
-    "@counterfact/client": "npm:0.1.0"
-    "@counterfact/generator": "npm:0.1.2"
-    "@counterfact/openapi": "npm:0.1.2"
-    "@counterfact/repl": "npm:0.1.2"
-    "@counterfact/runtime": "npm:0.1.2"
+    "@counterfact/client": "npm:0.1.1"
+    "@counterfact/generator": "npm:0.1.3"
+    "@counterfact/openapi": "npm:0.1.3"
+    "@counterfact/repl": "npm:0.1.3"
+    "@counterfact/runtime": "npm:0.1.3"
     commander: "npm:15.0.0"
     debug: "npm:4.4.3"
     http-terminator: "npm:3.2.0"

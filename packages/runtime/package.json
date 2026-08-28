@@ -1,6 +1,6 @@
 {
   "name": "@counterfact/runtime",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Run Counterfact routes with hot reload, validation, proxying, Koa, or MSW.",
   "type": "module",
   "main": "./dist/index.js",
@@ -61,7 +61,7 @@
     "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/runtime/test"
   },
   "dependencies": {
-    "@counterfact/openapi": "0.1.2",
+    "@counterfact/openapi": "0.1.3",
     "@counterfact/types": "0.1.0",
     "@hapi/accept": "6.0.3",
     "@types/koa": "3.0.3",

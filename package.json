@@ -31,6 +31,7 @@
     "build": "yarn workspace counterfact build",
     "typecheck": "tsc --noEmit --pretty false -p packages/types && tsc --noEmit --pretty false -p packages/openapi && tsc --noEmit --pretty false -p packages/runtime && tsc --noEmit --pretty false -p packages/client && tsc --noEmit --pretty false -p packages/generator && tsc --noEmit --pretty false -p packages/repl && tsc --noEmit --pretty false -p packages/counterfact",
     "release:preflight": "node scripts/release-preflight.mjs",
+    "release:version": "changeset version && yarn install --mode skip-build",
     "release": "changeset publish",
     "prepare": "husky install",
     "lint": "eslint . --plugin file-progress --rule 'file-progress/activate: 1' --ignore-pattern dist --ignore-pattern out --ignore-pattern coverage",
