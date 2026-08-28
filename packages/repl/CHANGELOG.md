@@ -1,5 +1,12 @@
 # @counterfact/repl
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [99dab55]
+  - @counterfact/runtime@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes

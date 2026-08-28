@@ -1,5 +1,13 @@
 # @counterfact/openapi
 
+## 0.1.4
+
+### Patch Changes
+
+- 99dab55: Updated dependency `js-yaml` in `counterfact` to `5.4.0`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.0`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.0`.
+
 ## 0.1.3
 
 ### Patch Changes
