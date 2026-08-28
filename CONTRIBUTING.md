@@ -31,6 +31,53 @@ and server runtime are currently part of the `counterfact` workspace. Root
 scripts coordinate builds and checks, so contributors do not need to change
 directories for the standard workflow.
 
+### Development container
+
+Counterfact includes a [Development Container](./.devcontainer/devcontainer.json)
+for a reproducible Node 24, Yarn 4, and Python environment. It is intended for
+local development and testing; it does not grant a coding agent access outside
+the checked-out repository.
+
+Install Docker Desktop and a Dev Containers-compatible editor, then open this
+repository and choose **Reopen in Container**. The container enables Corepack;
+its post-create setup installs the immutable Yarn dependency tree and installs
+the Python dependencies used by the black-box test suite into a container-local
+virtual environment.
+
+Run the full Linux CI-equivalent check inside the container with:
+
+```sh
+bash .devcontainer/verify.sh
+```
+
+#### Codex Desktop
+
+The development container makes dependencies reproducible. Codex Desktop's
+native sandbox remains the boundary for agent commands, so a devcontainer does
+not automatically make every Desktop command execute inside Docker.
+
+In ChatGPT Desktop, select **Codex**, open the project local-environment
+settings, and add actions that run these commands in the integrated terminal:
+
+```sh
+# Set up a newly created worktree
+yarn install --immutable
+
+# Fast checks
+yarn lint && yarn typecheck && yarn test
+
+# Product black-box tests
+yarn build && yarn test:black-box
+
+# Full Linux CI-equivalent check (when the worktree is opened in the container)
+bash .devcontainer/verify.sh
+```
+
+Use a separate Git worktree and branch for each task. After the required checks
+pass, task branches may be pushed and opened as pull requests; releases,
+deployments, production data, paid services, and credential changes require
+separate authorization.
+
 ### Mutation testing
 
 Mutation testing runs against one workspace package at a time so reports stay actionable and CI can process packages in parallel.

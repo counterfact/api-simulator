@@ -58,6 +58,19 @@ site/                         # Documentation website
 | Lint (auto-fix)               | `yarn lint:fix`                  |
 | Run against Petstore          | `yarn go:petstore`               |
 
+## Development container
+
+The repository's `.devcontainer` supplies the reproducible Linux development
+environment used for contributor validation: Node 24, Corepack/Yarn 4, and
+Python dependencies for black-box tests. Use the non-root `node` user and keep
+the container limited to the intended repository mount; do not expose Docker,
+host credentials, SSH agents, or production secrets.
+
+Run `bash .devcontainer/verify.sh` inside the container for the Linux
+CI-equivalent suite. Codex Desktop's native workspace sandbox remains separate
+from the development container: use the devcontainer for reproducible
+dependencies and tests, and use a dedicated Git worktree/branch for each task.
+
 ## New issue proposals
 
 Never create GitHub issues directly. Propose them as Markdown files under `.github/issue-proposals/` and follow `.github/instructions/issue-proposals.instructions.md`.
