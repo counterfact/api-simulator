@@ -1,5 +1,33 @@
 # counterfact
 
+## 2.16.4
+
+### Patch Changes
+
+- 8800421: Show compact, color-coded CLI startup progress and readiness details.
+- 8d00ff3: Attempt every API runner watcher cleanup even when one shutdown fails.
+- 2672325: Updated dependency `posthog-node` in `counterfact` to `5.49.2`.
+- d9d8495: Updated dependency `posthog-node` in `counterfact` to `5.50.0`.
+- 1a6fe52: Updated dependency `posthog-node` in `counterfact` to `5.51.1`.
+- 4c12126: Roll back partially started resources and complete every shutdown operation after failures.
+- Updated dependencies [5e59b84]
+- Updated dependencies [5e4b9eb]
+- Updated dependencies [f90e88d]
+- Updated dependencies [28aafab]
+- Updated dependencies [fb73d12]
+- Updated dependencies [8712a09]
+- Updated dependencies [8b13036]
+- Updated dependencies [28aafab]
+- Updated dependencies [afc52c0]
+- Updated dependencies [3bfb75d]
+- Updated dependencies [28aafab]
+- Updated dependencies [28aafab]
+  - @counterfact/client@0.1.1
+  - @counterfact/generator@0.1.3
+  - @counterfact/runtime@0.1.3
+  - @counterfact/openapi@0.1.3
+  - @counterfact/repl@0.1.3
+
 ## 2.16.3
 
 ### Patch Changes
