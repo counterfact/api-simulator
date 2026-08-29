@@ -13,4 +13,5 @@ export {
   type RouteCatalog,
   type RouteOperation,
   type RouteParameter,
+  type RouteRequestBody,
 } from "./route-catalog.js";

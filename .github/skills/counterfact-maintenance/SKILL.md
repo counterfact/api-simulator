@@ -40,6 +40,12 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - A push to `main` with no remaining changesets publishes the merged package versions automatically; a manual Release workflow dispatch is the retry and recovery path.
 - Keep the `npm-publish` environment name, OIDC permission, and provenance setting aligned with the npm trusted-publisher configuration.
 - Use OS-assigned ephemeral ports for tests that start network servers; fixed high ports can collide on shared CI hosts.
+- When an OpenAPI-aware request builder gains an input kind or encoding rule,
+  keep the route-catalog metadata, immutable builder state, required-input
+  diagnostics, help and inspection output, wire serialization, public docs,
+  focused unit tests, and ephemeral-port integration tests aligned. Define and
+  test precedence whenever two builder methods compete for the same HTTP
+  request entity.
 
 ## Black-box test boundary
 

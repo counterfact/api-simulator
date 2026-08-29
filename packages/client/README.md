@@ -39,8 +39,18 @@ await pet.send();
 ```
 
 Builder methods are immutable: calling `path()`, `query()`, `headers()`,
-`body()`, or `method()` returns a new builder, so a common request can be
-safely branched into reusable variants.
+`cookies()`, `body()`, `form()`, or `method()` returns a new builder, so a
+common request can be safely branched into reusable variants.
+
+The builder validates required OpenAPI path, query, header, cookie, body, and
+form inputs. Use `cookies()` to merge percent-encoded cookie pairs with an
+existing `Cookie` header. Use `form()` for OpenAPI form content; it sends
+URL-encoded data by default and text-only multipart data when
+`multipart/form-data` is the sole declared form type. Binary and file form
+parts are not supported.
+
+Only one request entity is active. Calling `body()` after `form()`, or `form()`
+after `body()`, clears the earlier entity so the last method wins.
 
 See [`examples/reusable-request.mjs`](./examples/reusable-request.mjs) for a
 complete example with a local HTTP server.
