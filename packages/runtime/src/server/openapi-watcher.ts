@@ -1,5 +1,6 @@
 import { type FSWatcher, watch } from "chokidar";
 import createDebug from "debug";
+import { getLocalOpenApiSourcePaths } from "@counterfact/openapi";
 
 import { waitForEvent } from "../util/wait-for-event.js";
 import { CHOKIDAR_OPTIONS } from "./constants.js";
@@ -21,29 +22,28 @@ export class OpenApiWatcher {
   }
 
   public async watch(): Promise<void> {
-    if (this.openApiPath === "_" || this.openApiPath.startsWith("http")) {
+    const [watchablePath] = getLocalOpenApiSourcePaths([this.openApiPath]);
+
+    if (watchablePath === undefined) {
       return;
     }
 
-    this.watcher = watch(this.openApiPath, CHOKIDAR_OPTIONS).on(
-      "change",
-      () => {
-        void (async () => {
-          try {
-            this.dispatcher.openApiDocument = await loadOpenApiDocument(
-              this.openApiPath,
-            );
-            debug("reloaded OpenAPI document from %s", this.openApiPath);
-          } catch (error: unknown) {
-            debug(
-              "failed to reload OpenAPI document from %s: %o",
-              this.openApiPath,
-              error,
-            );
-          }
-        })();
-      },
-    );
+    this.watcher = watch(watchablePath, CHOKIDAR_OPTIONS).on("change", () => {
+      void (async () => {
+        try {
+          this.dispatcher.openApiDocument = await loadOpenApiDocument(
+            this.openApiPath,
+          );
+          debug("reloaded OpenAPI document from %s", this.openApiPath);
+        } catch (error: unknown) {
+          debug(
+            "failed to reload OpenAPI document from %s: %o",
+            this.openApiPath,
+            error,
+          );
+        }
+      })();
+    });
 
     await waitForEvent(this.watcher, "ready");
   }

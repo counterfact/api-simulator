@@ -31,6 +31,7 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Preserve regeneration contract: existing route files are not overwritten; generated types are overwritten.
 - Support OpenAPI features through typed coders and requirement traversal rather than ad-hoc string logic.
 - Keep generated output deterministic and formatted via existing script/repository pipeline.
+- Build generator watch sets through `@counterfact/openapi` source classification: watch every unique local contributing input (base document plus overlays), exclude remote inputs and `_`, and regenerate from the complete ordered input set after any change. Do not infer URL-ness from a string prefix.
 
 ## Common mistakes to avoid
 

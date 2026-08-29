@@ -141,6 +141,84 @@ describe("OpenApiDocument", () => {
     });
   });
 
+  it("reloads the complete document when a local overlay changes", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("openapi.json", JSON.stringify(OPENAPI));
+      await $.add(
+        "overlay.json",
+        JSON.stringify({
+          overlay: "1.0.0",
+          actions: [
+            {
+              target: "$.paths['/example'].get.responses['200']",
+              update: { description: "Initial overlay" },
+            },
+          ],
+        }),
+      );
+
+      const doc = new OpenApiDocument($.path("openapi.json"), [
+        $.path("overlay.json"),
+      ]);
+
+      await doc.load();
+      await doc.watch();
+
+      await $.add(
+        "overlay.json",
+        JSON.stringify({
+          overlay: "1.0.0",
+          actions: [
+            {
+              target: "$.paths['/example'].get.responses['200']",
+              update: { description: "Reloaded overlay" },
+            },
+          ],
+        }),
+      );
+
+      await waitForEvent(doc, "reload");
+      await doc.stopWatching();
+
+      expect(doc.paths["/example"]?.get?.responses?.["200"]?.description).toBe(
+        "Reloaded overlay",
+      );
+    });
+  });
+
+  it("watches a local relative path that begins with 'http'", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("httpspec.json", JSON.stringify(OPENAPI));
+      const originalWorkingDirectory = process.cwd();
+      process.chdir($.path("."));
+
+      try {
+        const doc = new OpenApiDocument("httpspec.json");
+        await doc.load();
+        await doc.watch();
+
+        await $.add(
+          "httpspec.json",
+          JSON.stringify({
+            ...OPENAPI,
+            paths: {
+              "/http-prefix-reloaded": {
+                get: { responses: { "200": { description: "OK" } } },
+              },
+            },
+          }),
+        );
+
+        await waitForEvent(doc, "reload");
+        await doc.stopWatching();
+
+        expect(Object.keys(doc.paths)).toStrictEqual(["/http-prefix-reloaded"]);
+      } finally {
+        process.chdir(originalWorkingDirectory);
+      }
+    });
+  });
+
   it("does not watch when source is '_'", async () => {
     const doc = new OpenApiDocument("_");
 

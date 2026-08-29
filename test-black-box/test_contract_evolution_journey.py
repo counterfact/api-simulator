@@ -90,16 +90,16 @@ def write_ordered_overlays(journey):
             ],
         },
     )
+    journey.second_overlay_document = {
+        "overlay": "1.0.0",
+        "info": {"title": "Second", "version": "1.0.0"},
+        "actions": [
+            {"target": GREETING_TARGET, "update": {"value": "second"}},
+            {"target": "$.paths['/removed-by-overlay']", "remove": True},
+        ],
+    }
     journey.second_overlay = journey.write_json(
-        "second-overlay.json",
-        {
-            "overlay": "1.0.0",
-            "info": {"title": "Second", "version": "1.0.0"},
-            "actions": [
-                {"target": GREETING_TARGET, "update": {"value": "second"}},
-                {"target": "$.paths['/removed-by-overlay']", "remove": True},
-            ],
-        },
+        "second-overlay.json", journey.second_overlay_document
     )
 
 
@@ -144,6 +144,25 @@ def last_overlay_wins(journey):
 def removed_overlay_route_is_omitted(journey):
     assert not (journey.output / "routes" / "removed-by-overlay.ts").exists()
     assert journey.request("get", "/removed-by-overlay").status_code == 404
+
+
+@when("I change a response example in the final overlay")
+def change_final_overlay_example(journey):
+    journey.second_overlay_document["actions"][0]["update"]["value"] = (
+        "overlay-reloaded"
+    )
+    journey.write_json("second-overlay.json", journey.second_overlay_document)
+
+
+@then("the live server returns the changed overlay example")
+def live_server_uses_changed_overlay(journey):
+    response = journey.wait_for_http(
+        "/greeting",
+        lambda candidate: (
+            candidate.status_code == 200 and candidate.text == "overlay-reloaded"
+        ),
+    )
+    assert response.text == "overlay-reloaded"
 
 
 @when("I change an existing response example in the source contract")
