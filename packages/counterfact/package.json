@@ -94,7 +94,7 @@
     "commander": "15.0.0",
     "debug": "4.4.3",
     "http-terminator": "3.2.0",
-    "js-yaml": "5.4.0",
+    "js-yaml": "5.4.1",
     "open": "11.0.1",
     "posthog-node": "5.51.2"
   }
