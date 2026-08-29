@@ -1,0 +1,26 @@
+{
+  "name": "counterfact-react-vite-example",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "vite build",
+    "generate": "counterfact openapi.yaml api --generate --no-update-check",
+    "test": "node --test test/api.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run generate && npm run typecheck && npm run build && npm test"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "counterfact": "2.16.5",
+    "typescript": "^6.0.0",
+    "vite": "^7.1.0"
+  }
+}

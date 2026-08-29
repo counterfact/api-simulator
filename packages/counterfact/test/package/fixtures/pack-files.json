@@ -30,6 +30,8 @@
   "docs/patterns/mock-with-dummy-data.md",
   "docs/patterns/model-the-workflow.md",
   "docs/patterns/multiple-versions.md",
+  "docs/patterns/playwright-error-states.md",
+  "docs/patterns/react-vite.md",
   "docs/patterns/reference-implementation.md",
   "docs/patterns/repl-inspection.md",
   "docs/patterns/scenario-scripts.md",

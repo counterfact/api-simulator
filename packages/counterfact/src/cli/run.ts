@@ -25,6 +25,7 @@ import {
   hashTelemetryLocation,
   isTelemetryEnabled,
   sendTelemetry,
+  sendTelemetryAndWait,
 } from "./telemetry.js";
 
 const debug = createDebug("counterfact:cli:run");
@@ -137,6 +138,15 @@ export function buildStartupTelemetryProperties(
         : source === "_"
           ? "without-openapi"
           : "single-spec",
+    sourceKind:
+      specs !== undefined
+        ? "multi-spec"
+        : source === "_"
+          ? "without-openapi"
+          : /^https?:\/\//u.test(source)
+            ? "remote"
+            : "local",
+    specCount: apiSources.length,
     openBrowser: Boolean(options.open),
     port: options.port,
     prune: Boolean(options.prune),
@@ -352,6 +362,8 @@ function buildProgram(version: string): Command {
 
     writeStartupLine(startupOutput.title(version));
 
+    sendTelemetry("counterfact_start_attempted", startupTelemetryProperties);
+
     if (config.startAdminApi && !config.adminApiToken) {
       writeWarning(
         "⚠️  WARNING: The admin API is enabled without an authentication token.\n" +
@@ -391,6 +403,10 @@ function buildProgram(version: string): Command {
       try {
         return await counterfact(config, specs);
       } catch (error) {
+        await sendTelemetryAndWait("counterfact_start_failed", {
+          ...startupTelemetryProperties,
+          failureCategory: "initialization",
+        });
         process.stderr.write(
           `\n${startupOutput.error(`❌ ${error instanceof Error ? error.message : String(error)}`)}\n\n`,
         );
@@ -420,7 +436,7 @@ function buildProgram(version: string): Command {
 
     if (!isTelemetryDisabled) {
       writeWarning(
-        "⚠️  Telemetry will be enabled by default starting May 1, 2026.\n" +
+        "⚠️  Counterfact collects anonymous usage telemetry.\n" +
           "   Learn more and how to disable: https://counterfact.dev/telemetry-discussion",
       );
     }
@@ -433,6 +449,15 @@ function buildProgram(version: string): Command {
     try {
       await start(config);
     } catch (error) {
+      await sendTelemetryAndWait("counterfact_start_failed", {
+        ...startupTelemetryProperties,
+        failureCategory:
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "EADDRINUSE"
+            ? "port-in-use"
+            : "runtime-start",
+      });
       process.stderr.write(
         `\n${startupOutput.error(`❌ ${error instanceof Error ? error.message : String(error)}`)}\n\n`,
       );

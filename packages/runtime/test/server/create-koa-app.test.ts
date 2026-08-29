@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import Koa from "koa";
 import request from "supertest";
 
@@ -46,6 +47,47 @@ describe("createKoaApp", () => {
     expect(response.status).toBe(200);
     expect(response.headers["access-control-allow-origin"]).toBe("*");
     expect(response.body).toEqual({ method: "GET", path: "/health" });
+  });
+
+  it("reports only the first served API request without its path", async () => {
+    const contextRegistry = new ContextRegistry();
+    const registry = new Registry();
+    const reportEvent = jest.fn();
+    registry.add("/health", {
+      GET: () => ({ body: "ok", status: 200 }),
+    });
+
+    const app = createKoaApp({
+      runners: [
+        {
+          contextRegistry,
+          dispatcher: new Dispatcher(registry, contextRegistry),
+          openApiPath: "unused.yaml",
+          overlays: [],
+          prefix: "",
+          registry,
+          subdirectory: "",
+        },
+      ],
+      config: {
+        basePath: ".",
+        port: 0,
+        proxyPaths: new Map(),
+        proxyUrl: "",
+        startAdminApi: false,
+      },
+      reportEvent,
+    });
+
+    await request(app.callback()).get("/health");
+    await request(app.callback()).get("/health?private=value");
+
+    expect(reportEvent).toHaveBeenCalledTimes(1);
+    expect(reportEvent).toHaveBeenCalledWith("first_api_request_served", {
+      statusClass: "2xx",
+    });
+    expect(JSON.stringify(reportEvent.mock.calls)).not.toContain("health");
+    expect(JSON.stringify(reportEvent.mock.calls)).not.toContain("private");
   });
 });
 

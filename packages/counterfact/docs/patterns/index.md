@@ -13,6 +13,8 @@ When your project involves multiple versions or multiple specs, [Multiple API Ve
 | Pattern                                                              | When to use it                                                                                       |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | [Explore a New API](./explore-new-api.md)                            | You have a spec but no running backend or production access                                          |
+| [React and Vite](./react-vite.md)                                    | You want to build a frontend screen against a local contract-shaped API                              |
+| [Playwright Error States](./playwright-error-states.md)              | You want deterministic browser coverage for success and failure states                               |
 | [Executable Spec](./executable-spec.md)                              | You want immediate feedback on how spec changes affect the running server during API design          |
 | [Mock APIs with Dummy Data](./mock-with-dummy-data.md)               | You need realistic-looking responses to build a UI, run a demo, or write assertions                  |
 | [Model the Workflow, Not the Backend](./model-the-workflow.md)       | A workflow needs shared state, but the simulator should remain small and deterministic               |

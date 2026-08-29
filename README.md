@@ -9,6 +9,8 @@ The published package and canonical user documentation live in
 - [Start with the beginner guide](./packages/counterfact/docs/getting-started.md)
 - [Install and use Counterfact](./packages/counterfact/README.md)
 - [Browse documentation by task](./packages/counterfact/docs/usage.md)
+- [Build with React and Vite](./examples/react-vite/README.md)
+- [Test browser error states with Playwright](./examples/playwright-error-states/README.md)
 - [Contribute](./CONTRIBUTING.md)
 - [Review architecture decisions](./docs/adr/)
 

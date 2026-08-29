@@ -338,6 +338,7 @@ export async function counterfact<TStore = unknown>(
   const koaApp = createKoaApp({
     runners,
     config,
+    reportEvent: sendTelemetry,
     adminApi: {
       adminApiToken: config.adminApiToken,
       basePath: config.basePath,

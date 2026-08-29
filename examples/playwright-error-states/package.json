@@ -1,0 +1,20 @@
+{
+  "name": "counterfact-playwright-error-states-example",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "api": "counterfact openapi.yaml api --serve --watch --no-update-check --port 4321",
+    "dev": "vite --host 127.0.0.1 --port 4320",
+    "generate": "counterfact openapi.yaml api --generate --no-update-check",
+    "test": "playwright test",
+    "verify": "npm run generate && npm test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "counterfact": "2.16.5",
+    "vite": "^7.1.0"
+  }
+}
