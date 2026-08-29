@@ -10,9 +10,11 @@
     "yarn": ">=4.5.2"
   },
   "scripts": {
+    "check:agent-guidance": "node scripts/check-agent-guidance.mjs",
     "check:boundaries": "node scripts/check-package-boundaries.mjs",
     "check:publishable": "node scripts/check-publishable.mjs",
     "test": "yarn workspace counterfact test",
+    "test:agent-guidance": "node --test scripts/check-agent-guidance.test.mjs",
     "test:boundaries": "node --test scripts/check-package-boundaries.test.mjs",
     "test:client": "yarn workspace @counterfact/client test",
     "test:client-packed": "yarn workspace @counterfact/client test:packed-consumer",
