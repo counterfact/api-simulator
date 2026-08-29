@@ -50,7 +50,7 @@
     "prepack": "yarn build"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "16.0.0",
+    "@apidevtools/json-schema-ref-parser": "16.0.1",
     "@types/json-schema": "7.0.15",
     "js-yaml": "5.4.0",
     "jsonpath-plus": "10.4.0",

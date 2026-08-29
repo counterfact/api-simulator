@@ -15,15 +15,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apidevtools/json-schema-ref-parser@npm:16.0.0":
-  version: 16.0.0
-  resolution: "@apidevtools/json-schema-ref-parser@npm:16.0.0"
+"@apidevtools/json-schema-ref-parser@npm:16.0.1":
+  version: 16.0.1
+  resolution: "@apidevtools/json-schema-ref-parser@npm:16.0.1"
   dependencies:
     js-yaml: "npm:^5.2.3"
     undici: "npm:^8.10.0"
   peerDependencies:
     "@types/json-schema": ^7.0.15
-  checksum: 10c0/f63da9cd73f38541f4a5e10ad8d124dd75f1d39d6feae569742a6fd66d603a70123308ce89d8c0754b8596c20f1d04b719a9fd985441d3b380ebc244c4252fcf
+  checksum: 10c0/6698985256fc42fbec54783237f0ae5162a06752aa7180b07ab8f50b18555a4605545d009842913813d6308418b2e78753c5022a2375297b2603e1a217712caa
   languageName: node
   linkType: hard
 
@@ -1367,7 +1367,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@counterfact/openapi@workspace:packages/openapi"
   dependencies:
-    "@apidevtools/json-schema-ref-parser": "npm:16.0.0"
+    "@apidevtools/json-schema-ref-parser": "npm:16.0.1"
     "@types/json-schema": "npm:7.0.15"
     js-yaml: "npm:5.4.0"
     jsonpath-plus: "npm:10.4.0"
