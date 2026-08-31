@@ -5,12 +5,17 @@ description: >
   black-box test boundaries, release/versioning workflow, documentation
   requirements, and compatibility.
 applyTo:
-  - "packages/counterfact/src/**/*.ts"
-  - "packages/counterfact/test/**/*.ts"
+  - "AGENTS.md"
+  - "CONTRIBUTING.md"
+  - "package.json"
+  - "packages/*/src/**/*"
+  - "packages/*/test/**/*"
   - "packages/counterfact/docs/**/*.md"
-  - "test-black-box/**/*.py"
+  - "test-black-box/**/*"
   - "docs/**/*.md"
+  - "scripts/**/*"
   - ".changeset/*.md"
+  - ".github/pull_request_template.md"
   - ".github/workflows/**/*.yaml"
   - ".github/workflows/**/*.yml"
 ---
@@ -27,19 +32,35 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - `AGENTS.md`
 - `packages/counterfact/docs/reference.md`
 - `packages/counterfact/docs/faq.md`
-- `.changeset/*.md` (format examples)
-- `packages/counterfact/test/**/*` for existing patterns/fixtures
+- `.changeset/README.md` (format and release guidance)
+- The affected package's `README.md`, `package.json`, and tests
+- `.github/workflows/ci.yaml` for the complete CI verification contract
 
 ## Existing conventions to follow
 
-- Use `usingTemporaryFiles()` for filesystem-heavy tests.
-- Keep tests focused by subsystem (`packages/counterfact/test/cli`, `packages/counterfact/test/server`, `packages/counterfact/test/typescript-generator`, `packages/counterfact/test/util`).
+- Use `usingTemporaryFiles()` for filesystem-heavy tests. Standalone packed-consumer harnesses under `packages/*/test/package/` may use Node filesystem APIs because they run outside Jest and create isolated consumer installations.
+- Keep tests with their owning package. Use the root focused scripts for client, generator, runtime, and REPL tests while iterating.
 - Preserve documented behavior promises (e.g., regen preserves route edits; types are regenerated).
 - For user-facing behavior changes: add a changeset and update docs under `packages/counterfact/docs/`.
 - After Changesets versions workspace packages, run `yarn install --mode skip-build --no-immutable` so `yarn.lock` can match the new internal versions before immutable installation; CI enables Yarn immutability by default, so the explicit override is required in `release:version`.
 - A push to `main` with no remaining changesets publishes the merged package versions automatically; a manual Release workflow dispatch is the retry and recovery path.
 - Keep the `npm-publish` environment name, OIDC permission, and provenance setting aligned with the npm trusted-publisher configuration.
 - Use OS-assigned ephemeral ports for tests that start network servers; fixed high ports can collide on shared CI hosts.
+- Treat `yarn lint:fix` as a scoped repair command, not baseline verification. Run `yarn lint` first so unrelated files are not rewritten accidentally.
+- Run build-producing verification sequentially. Workspace builds remove and recreate shared `dist` directories, so concurrent black-box, TSD, packed-consumer, or package-closure commands can invalidate one another's outputs.
+
+## Verification by affected area
+
+| Area                 | Focused checks                                          | Broader checks when applicable                                                  |
+| -------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Facade or CLI        | affected `packages/counterfact/test` paths              | build, lint, typecheck, unit tests, black-box tests                             |
+| Runtime              | `yarn test:runtime`                                     | build, boundaries, unit tests, black-box tests for observable behavior          |
+| Generator            | `yarn test:generator`                                   | build, typecheck, snapshots, boundaries, package closures                       |
+| Client               | `yarn test:client`                                      | build, typecheck, packed consumer, boundaries                                   |
+| REPL                 | `yarn test:repl`                                        | build, typecheck, packed consumer, PTY black-box tests for interactive behavior |
+| OpenAPI or types     | affected Jest or TSD tests                              | build, typecheck, boundaries, package closures                                  |
+| Packaging or release | boundaries, publishable checks, package closures        | `yarn release:preflight`                                                        |
+| Agent guidance       | `yarn check:agent-guidance && yarn test:agent-guidance` | lint and Markdown review                                                        |
 
 ## Black-box test boundary
 
@@ -101,13 +122,14 @@ Keep that operating-system skip scoped to the real-terminal scenario so non-inte
 
 ## Common mistakes to avoid
 
-- Introducing direct fs imports in tests instead of `usingTemporaryFiles` helper.
+- Introducing direct fs imports in Jest tests instead of `usingTemporaryFiles`, or widening the packed-consumer exception.
 - Treating a Python-launched Node consumer as a product black-box test because it runs in a child process.
 - Testing a REPL completer callback directly instead of operating the CLI through a terminal.
 - Adding a direct pytest black-box test instead of extending or adding a Gherkin journey.
 - Sharing a generated project, fixed port, server process, or mutable contract across scenarios.
 - Omitting focused tests because a broad black-box test already covers the behavior.
 - Treating package-consumer coverage as proof that packed artifacts are complete.
+- Running build-producing verification in parallel and mistaking cross-command `dist` races for product failures.
 - Shipping behavior changes without docs + changeset updates.
 - Breaking backward compatibility unintentionally (CLI defaults, regeneration guarantees, response semantics).
 - Relying only on broad tests; skip targeted tests for touched areas.
@@ -116,13 +138,14 @@ Keep that operating-system skip scoped to the real-terminal scenario so non-inte
 ## Embedding learnings into guidance
 
 - When a non-trivial task reveals repeatable guidance, update the relevant skill file in the same PR, or create a new skill if applicable.
-- Put subsystem-specific learnings in the matching skill (`counterfact-cli-runtime`, `counterfact-runtime-architecture`, or `counterfact-generator-internals`).
+- Put subsystem-specific learnings in the matching CLI, runtime, generator, OpenAPI, or client/REPL skill.
 - Put cross-cutting learnings in `AGENTS.md` only when they do not belong to a single subsystem skill.
 
 ## How to validate the change
 
-- Baseline: `yarn lint:fix`, `yarn lint`, `yarn build`, `yarn test`.
+- Baseline: `yarn lint`, `yarn typecheck`, `yarn build`, `yarn test`.
 - Run targeted tests for touched modules before full test run.
 - If server startup or CLI behavior changed, run `yarn build` then `yarn test:black-box`.
 - For black-box changes, run the boundary searches above and resolve or explicitly reclassify every finding in the touched scope.
 - Ensure PR notes include manual acceptance tests with observable outcomes.
+- Run `yarn check:agent-guidance && yarn test:agent-guidance` when guidance, package layout, root scripts, or PR workflow documentation changes.

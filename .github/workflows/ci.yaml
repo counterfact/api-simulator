@@ -49,6 +49,10 @@ jobs:
             const docsOnly = files.every((file) => file.filename.toLowerCase().endsWith(".md"));
             core.setOutput("docs_only", docsOnly ? "true" : "false");
 
+      - name: Agent guidance integrity
+        if: matrix.os != 'windows-latest'
+        run: node scripts/check-agent-guidance.mjs
+
       - name: Skip heavy checks for docs-only changes
         if: steps.docs-only.outputs.docs_only == 'true'
         run: echo "Markdown-only pull request detected. Skipping lint/type/tests while keeping required checks green."
@@ -68,6 +72,9 @@ jobs:
       - name: Package Boundary Tests
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         run: yarn test:boundaries
+      - name: Agent Guidance Tests
+        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        run: yarn test:agent-guidance
       - name: Package Boundaries
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         run: yarn check:boundaries

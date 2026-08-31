@@ -2,12 +2,13 @@
 
 ## Status
 
-Implemented (publication pending)
+Implemented and published
 
 The repository migration and release preparation were completed on 2026-08-06.
-Initial npm package creation, trusted-publisher configuration, and publication
-remain explicit maintainer-approved release operations rather than work for the
-migration branch.
+The focused packages have since been published and the `counterfact` facade now
+consumes them through their declared exports. The context below describes the
+pre-migration repository and the constraints that governed the extraction; it
+is historical rather than a description of the current source layout.
 
 ## Context
 

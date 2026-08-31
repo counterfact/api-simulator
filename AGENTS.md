@@ -9,6 +9,8 @@ Before making changes, load the most relevant skill and follow it as the primary
 - `.github/skills/counterfact-cli-runtime/SKILL.md`
 - `.github/skills/counterfact-runtime-architecture/SKILL.md`
 - `.github/skills/counterfact-generator-internals/SKILL.md`
+- `.github/skills/counterfact-openapi/SKILL.md`
+- `.github/skills/counterfact-client-repl/SKILL.md`
 - `.github/skills/counterfact-maintenance/SKILL.md`
 - `.github/skills/counterfact-repo-basics/SKILL.md`
 
@@ -24,6 +26,7 @@ Every PR description must include a section titled exactly `## Manual acceptance
 
 - Cover the main success path, at least one edge case, and one regression check where applicable.
 - Exception: if a PR only adds files under `.github/issue-proposals/`, this section may be omitted.
+- Leave the boxes unchecked when opening the PR. The reviewer checks them as the behaviors are observed; the merge check requires all listed tests to be checked before merge.
 
 ## Repository learning check
 
@@ -62,6 +65,8 @@ If no durable learning was discovered, explicitly record `Learning found: No` an
 ## File system operations in tests
 
 When tests need to read or write files, use `usingTemporaryFiles()` from `using-temporary-files`. Do not import `node:fs`, `fs`, `node:fs/promises`, or `fs/promises` directly in test files.
+
+Standalone packed-consumer smoke harnesses under `packages/*/test/package/` are the narrow exception. They run outside the Jest test environment and may use Node filesystem APIs to create and remove their isolated consumer installation.
 
 Use the helper methods:
 
