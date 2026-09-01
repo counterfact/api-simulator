@@ -406,10 +406,10 @@ export class RouteBuilder {
   }
 
   /**
-   * Returns a human-readable help string describing the operation, its
+   * Writes human-readable help describing the operation, its
    * parameters, and the expected responses.
    */
-  public help(): string {
+  public help(): void {
     const method = this._method ?? "[no method set]";
     const operation = this.getOperation();
     const lines: string[] = [];
@@ -546,7 +546,7 @@ export class RouteBuilder {
       }
     }
 
-    return lines.join("\n");
+    console.log(lines.join("\n"));
   }
 
   /**

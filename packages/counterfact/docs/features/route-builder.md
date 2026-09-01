@@ -107,6 +107,9 @@ HTTP/1.1 200 OK
 { "id": 42, "name": "Rex", ... }
 ```
 
+The REPL prints the complete outbound request body. For text-only multipart
+forms, this includes every form field and the final multipart boundary.
+
 If a required path, query, header, cookie, body, or form input is missing,
 `send()` throws a descriptive error instead of making the request.
 
@@ -148,7 +151,9 @@ The returned object can contain `path`, `query`, `header`, `cookie`, `body`, and
 
 ### `.help()`
 
-Prints the OpenAPI summary, description, parameter list, and documented responses for the selected operation.
+Writes the OpenAPI summary, description, parameter list, and documented
+responses for the selected operation to the console. It does not return the
+formatted help text.
 
 ```js
 route("/pet/{petId}").method("get").help();

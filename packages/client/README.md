@@ -34,7 +34,7 @@ const route = createRouteFunction(3000, "localhost", catalog);
 const pet = route("/pets/{petId}").method("get").path({ petId: 42 });
 
 console.log(pet.ready());
-console.log(pet.help());
+pet.help();
 await pet.send();
 ```
 

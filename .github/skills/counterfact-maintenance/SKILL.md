@@ -35,6 +35,7 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - Use `usingTemporaryFiles()` for filesystem-heavy tests.
 - Keep tests focused by subsystem (`packages/counterfact/test/cli`, `packages/counterfact/test/server`, `packages/counterfact/test/typescript-generator`, `packages/counterfact/test/util`).
 - Preserve documented behavior promises (e.g., regen preserves route edits; types are regenerated).
+- When terminal output displays an HTTP message, split its head and body at the first `\r\n\r\n` separator only: multipart bodies contain additional separators that must remain visible.
 - For user-facing behavior changes: add a changeset and update docs under `packages/counterfact/docs/`.
 - After Changesets versions workspace packages, run `yarn install --mode skip-build --no-immutable` so `yarn.lock` can match the new internal versions before immutable installation; CI enables Yarn immutability by default, so the explicit override is required in `release:version`.
 - A push to `main` with no remaining changesets publishes the merged package versions automatically; a manual Release workflow dispatch is the retry and recovery path.

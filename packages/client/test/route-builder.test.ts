@@ -161,6 +161,19 @@ const REQUIRED_INPUT_CATALOG = createOpenApiRouteCatalog({
   },
 });
 
+function captureHelp(builder: RouteBuilder): string {
+  const log = jest.spyOn(console, "log").mockImplementation(() => undefined);
+
+  try {
+    expect(builder.help()).toBeUndefined();
+    expect(log).toHaveBeenCalledTimes(1);
+
+    return String(log.mock.calls[0]?.[0]);
+  } finally {
+    log.mockRestore();
+  }
+}
+
 describe("RouteBuilder", () => {
   describe("fluent builder API", () => {
     it("creates a builder with the given path", () => {
@@ -539,7 +552,7 @@ describe("RouteBuilder", () => {
         port: 9999,
       }).method("get");
 
-      const help = builder.help();
+      const help = captureHelp(builder);
 
       expect(help).toContain("GET /pet/{petId}");
     });
@@ -550,7 +563,7 @@ describe("RouteBuilder", () => {
         port: 9999,
       }).method("get");
 
-      const help = builder.help();
+      const help = captureHelp(builder);
 
       expect(help).toContain("petId (integer, required)");
     });
@@ -561,7 +574,7 @@ describe("RouteBuilder", () => {
         port: 9999,
       }).method("get");
 
-      const help = builder.help();
+      const help = captureHelp(builder);
 
       expect(help).toContain("status (string, optional)");
       expect(help).toContain("available | pending | sold");
@@ -573,7 +586,7 @@ describe("RouteBuilder", () => {
         port: 9999,
       }).method("get");
 
-      const help = builder.help();
+      const help = captureHelp(builder);
 
       expect(help).toContain("200");
       expect(help).toContain("404");
@@ -585,16 +598,16 @@ describe("RouteBuilder", () => {
         port: 9999,
       });
 
-      expect(builder.help()).toContain("[no method set]");
+      expect(captureHelp(builder)).toContain("[no method set]");
     });
 
     it("documents summaries, descriptions, headers, and parameter enums", () => {
-      const help = new RouteBuilder("/complete/{id}", {
-        port: 9999,
-        routeCatalog: ROUTE_CATALOG,
-      })
-        .method("get")
-        .help();
+      const help = captureHelp(
+        new RouteBuilder("/complete/{id}", {
+          port: 9999,
+          routeCatalog: ROUTE_CATALOG,
+        }).method("get"),
+      );
 
       expect(help).toContain("Complete operation");
       expect(help).toContain("Every supported kind of parameter");
@@ -607,24 +620,24 @@ describe("RouteBuilder", () => {
     });
 
     it("documents cookie, formData, and OpenAPI 2 body inputs", () => {
-      const cookieHelp = new RouteBuilder("/cookies", {
-        port: 9999,
-        routeCatalog: REQUIRED_INPUT_CATALOG,
-      })
-        .method("get")
-        .help();
-      const formHelp = new RouteBuilder("/oas2/form", {
-        port: 9999,
-        routeCatalog: REQUIRED_INPUT_CATALOG,
-      })
-        .method("post")
-        .help();
-      const bodyHelp = new RouteBuilder("/oas2/body", {
-        port: 9999,
-        routeCatalog: REQUIRED_INPUT_CATALOG,
-      })
-        .method("post")
-        .help();
+      const cookieHelp = captureHelp(
+        new RouteBuilder("/cookies", {
+          port: 9999,
+          routeCatalog: REQUIRED_INPUT_CATALOG,
+        }).method("get"),
+      );
+      const formHelp = captureHelp(
+        new RouteBuilder("/oas2/form", {
+          port: 9999,
+          routeCatalog: REQUIRED_INPUT_CATALOG,
+        }).method("post"),
+      );
+      const bodyHelp = captureHelp(
+        new RouteBuilder("/oas2/body", {
+          port: 9999,
+          routeCatalog: REQUIRED_INPUT_CATALOG,
+        }).method("post"),
+      );
 
       expect(cookieHelp).toContain("Cookies:");
       expect(cookieHelp).toContain("session (string, required)");
@@ -635,12 +648,12 @@ describe("RouteBuilder", () => {
     });
 
     it("documents OpenAPI 3 requestBody content", () => {
-      const help = new RouteBuilder("/oas3/form", {
-        port: 9999,
-        routeCatalog: REQUIRED_INPUT_CATALOG,
-      })
-        .method("post")
-        .help();
+      const help = captureHelp(
+        new RouteBuilder("/oas3/form", {
+          port: 9999,
+          routeCatalog: REQUIRED_INPUT_CATALOG,
+        }).method("post"),
+      );
 
       expect(help).toContain("requestBody (required)");
       expect(help).toContain("Modern form payload");
