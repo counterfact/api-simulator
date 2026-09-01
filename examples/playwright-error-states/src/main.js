@@ -8,7 +8,7 @@ const status = document.querySelector("#status");
 const detail = document.querySelector("#detail");
 
 try {
-  const response = await fetch(`http://localhost:4321/profiles/${profileId}`);
+  const response = await fetch(`http://127.0.0.1:4321/profiles/${profileId}`);
 
   if (response.status === 404) {
     status.textContent = "Profile not found";

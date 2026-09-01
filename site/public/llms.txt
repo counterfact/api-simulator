@@ -15,8 +15,9 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 
 - [Getting Started](https://counterfact.dev/docs/getting-started) — prerequisite, one command, localhost browser request, generated files, and one optional custom response.
 - [First 10 minutes](https://counterfact.dev/docs/first-10-minutes) — add a small stateful create/read workflow and one frontend-relevant failure.
-- [React and Vite](https://counterfact.dev/docs/patterns/react-vite) — build a screen against a local contract-shaped API.
-- [Playwright error states](https://counterfact.dev/docs/patterns/playwright-error-states) — verify success and failure states through real HTTP.
+- [Runnable examples](https://counterfact.dev/docs/examples) — repository-hosted applications with their own setup instructions.
+- [React and Vite](https://counterfact.dev/docs/examples/react-vite) — start Counterfact and Vite in two terminals, then open an Ada Lovelace profile screen.
+- [Playwright error states](https://counterfact.dev/docs/examples/playwright-error-states) — install Chromium and verify success, not-found, and service-unavailable states through real HTTP.
 - [Usage](https://counterfact.dev/docs/usage) — guides grouped by frontend work, team/test work, advanced control, and troubleshooting.
 
 ## Add only what the workflow needs

@@ -1,6 +1,9 @@
 # Usage Patterns
 
-These playbooks show how people use Counterfact in real development and test work. Start with the path that matches your situation, then follow the links as your API grows.
+These playbooks show reusable ways people use Counterfact in real development
+and test work. Start with the path that matches your situation, then follow the
+links as your API grows. For complete framework-specific applications with
+their own setup instructions, see [Runnable examples](../examples/index.md).
 
 Most projects start with [Explore a New API](./explore-new-api.md) or [Executable Spec](./executable-spec.md) to get a running server from an OpenAPI spec with no code. From there, [Mock APIs with Dummy Data](./mock-with-dummy-data.md) and [AI-Assisted Implementation](./ai-assisted-implementation.md) are the natural next steps for adding useful responses — the former by hand, the latter with an AI agent doing the heavy lifting. [Model the Workflow, Not the Backend](./model-the-workflow.md) sets the boundary for both: prefer deterministic handlers and add only the state that a supported client workflow can observe.
 
@@ -13,8 +16,6 @@ When your project involves multiple versions or multiple specs, [Multiple API Ve
 | Pattern                                                              | When to use it                                                                                       |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | [Explore a New API](./explore-new-api.md)                            | You have a spec but no running backend or production access                                          |
-| [React and Vite](./react-vite.md)                                    | You want to build a frontend screen against a local contract-shaped API                              |
-| [Playwright Error States](./playwright-error-states.md)              | You want deterministic browser coverage for success and failure states                               |
 | [Executable Spec](./executable-spec.md)                              | You want immediate feedback on how spec changes affect the running server during API design          |
 | [Mock APIs with Dummy Data](./mock-with-dummy-data.md)               | You need realistic-looking responses to build a UI, run a demo, or write assertions                  |
 | [Model the Workflow, Not the Backend](./model-the-workflow.md)       | A workflow needs shared state, but the simulator should remain small and deterministic               |
@@ -40,3 +41,4 @@ When your project involves multiple versions or multiple specs, [Multiple API Ve
 - [FAQ](../faq.md)
 - [How it compares](../comparison.md)
 - [Usage](../usage.md)
+- [Runnable examples](../examples/index.md)

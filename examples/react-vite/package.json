@@ -6,7 +6,9 @@
     "node": ">=22"
   },
   "scripts": {
+    "api": "counterfact openapi.yaml api --generate --serve --watch --no-update-check --port 4310",
     "build": "vite build",
+    "dev": "vite --host 127.0.0.1 --port 4309",
     "generate": "counterfact openapi.yaml api --generate --no-update-check",
     "test": "node --test test/api.test.mjs",
     "typecheck": "tsc --noEmit",

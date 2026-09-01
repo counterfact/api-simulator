@@ -2,20 +2,25 @@
 
 Counterfact runs as a real HTTP server, so Playwright can exercise a browser
 against deterministic success and failure behavior without intercepting the
-application's requests.
+application's requests. The complete, repository-hosted application is at
+[`examples/playwright-error-states`](https://github.com/counterfact/api-simulator/tree/main/examples/playwright-error-states);
+it is not included in the `counterfact` npm package.
 
 ## Run the verified example
 
+Clone Counterfact, then run the example from its repository-relative path:
+
 ```sh
-cd examples/playwright-error-states
+git clone https://github.com/counterfact/api-simulator.git
+cd api-simulator/examples/playwright-error-states
 npm ci
 npx playwright install chromium
 npm run verify
 ```
 
-The example starts Counterfact and Vite as Playwright web servers. Its browser
-checks cover a successful profile, a missing profile, and a temporary service
-failure.
+Playwright starts and stops Counterfact and Vite as web servers. Its browser
+checks cover a successful profile, a not-found profile, and a service-
+unavailable profile.
 
 ## Model only the states the screen needs
 
@@ -52,5 +57,5 @@ process without running another server. Use Counterfact when multiple clients
 or processes need a shared, stateful HTTP API. They can also be combined: MSW
 can intercept the browser request and forward it to Counterfact.
 
-See [automated integration tests](./automated-integration-tests.md) for server
-lifecycle and isolation guidance.
+See [automated integration tests](../patterns/automated-integration-tests.md)
+for server lifecycle and isolation guidance.

@@ -17,18 +17,38 @@ export async function getStaticPaths() {
       props: { doc, isMdAlias: true },
     });
   }
+
+  // Framework-specific guides moved from Patterns to Examples. Keep both
+  // historical public URL forms as permanent redirects without retaining
+  // duplicate Markdown files in the published package.
+  const legacyRedirects = {
+    "patterns/react-vite": "examples/react-vite",
+    "patterns/playwright-error-states": "examples/playwright-error-states",
+  };
+  for (const [legacySlug, targetDocId] of Object.entries(legacyRedirects)) {
+    const doc = docs.find((candidate) => candidate.id === targetDocId);
+    if (!doc) throw new Error(`Missing legacy redirect target: ${targetDocId}`);
+
+    for (const slug of [legacySlug, `${legacySlug}.md`]) {
+      routes.push({
+        params: { slug },
+        props: { doc, redirectPath: `/docs/${targetDocId}` },
+      });
+    }
+  }
+
   return routes;
 }
 
-const { doc, isMdAlias } = Astro.props;
+const { doc, isMdAlias, redirectPath } = Astro.props;
 
 // Canonical URL always points to the clean (no .md) path.
 const canonicalPath = `/docs/${doc.id}`;
 
 // For .md alias pages, redirect to the clean URL so that relative links inside
 // the rendered document always resolve against the clean base path.
-if (isMdAlias) {
-  return Astro.redirect(canonicalPath, 301);
+if (isMdAlias || redirectPath) {
+  return Astro.redirect(redirectPath ?? canonicalPath, 301);
 }
 
 const { Content, headings } = await render(doc);

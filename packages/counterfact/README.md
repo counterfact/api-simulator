@@ -42,6 +42,7 @@ local API is running.
 - [Usage](./docs/usage.md) — guides grouped by frontend, team/test, advanced, and reference work.
 - [Reference](./docs/reference.md) — CLI flags, response builders, generated files, and programmatic API.
 - [Patterns](./docs/patterns/index.md) — focused workflows, including failures, latency, proxying, and tests.
+- [Runnable examples](./docs/examples/index.md) — repository-hosted React/Vite and Playwright applications with complete setup instructions; their source is not included in this npm package.
 - [Without OpenAPI](./docs/features/without-openapi.md) — the deeper alternative when no OpenAPI document exists.
 
 For a complete checked-in example, see the

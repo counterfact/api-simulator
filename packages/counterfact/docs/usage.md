@@ -11,14 +11,14 @@ needs—not by a feature checklist.
 - [State](./features/state.md) — share small in-memory state across routes.
 - [Hot reload](./features/hot-reload.md) — update handlers without restarting.
 - [Generated code](./features/generated-code.md) — understand editable routes and generated types.
-- [React and Vite](./patterns/react-vite.md) — build a screen against a local contract-shaped API.
+- [React and Vite example](./examples/react-vite.md) — run a repository-hosted screen against a local contract-shaped API.
 - [Simulate failures](./patterns/simulate-failures.md) and [simulate latency](./patterns/simulate-latency.md) — exercise error, empty, loading, and retry states.
 
 ## Team and test workflows
 
 - [First 10 minutes](./first-10-minutes.md) — a small create/read workflow with one failure.
 - [Automated integration tests](./patterns/automated-integration-tests.md) — start and stop a local API in tests.
-- [Playwright error states](./patterns/playwright-error-states.md) — verify success, not-found, and temporary-failure UI states.
+- [Playwright error states example](./examples/playwright-error-states.md) — run repository-hosted browser checks for success, not-found, and service-unavailable UI states.
 - [Scenario scripts](./patterns/scenario-scripts.md) — create repeatable starting states.
 - [Shared store](./patterns/shared-store.md) — coordinate state across API groups.
 - [AI-assisted implementation](./patterns/ai-assisted-implementation.md) and [agentic sandbox](./patterns/agentic-sandbox.md) — give coding agents a bounded, verifiable API task.
@@ -31,6 +31,12 @@ needs—not by a feature checklist.
 - [Programmatic API](./features/programmatic-api.md) — embed Counterfact in another process.
 - [Multiple versions](./features/multiple-versions.md) — serve more than one API version.
 - [TypeScript native mode](./features/typescript-native-mode.md) — run route files directly.
+
+## Runnable examples
+
+- [Examples index](./examples/index.md) — repository-hosted applications with their own lockfiles and setup instructions.
+- [React and Vite](./examples/react-vite.md) — start Counterfact and Vite in two terminals, then open the Ada Lovelace profile screen.
+- [Playwright error states](./examples/playwright-error-states.md) — install Chromium and let Playwright manage Counterfact and Vite while it verifies three UI states.
 
 ## Reference and troubleshooting
 

@@ -4,7 +4,7 @@ export interface Profile {
   role: string;
 }
 
-const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:4310";
+const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:4310";
 
 export async function loadProfile(profileId: number): Promise<Profile> {
   const response = await fetch(`${apiBaseUrl}/profiles/${profileId}`);

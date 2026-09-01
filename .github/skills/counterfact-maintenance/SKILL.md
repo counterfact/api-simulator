@@ -40,6 +40,12 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - A push to `main` with no remaining changesets publishes the merged package versions automatically; a manual Release workflow dispatch is the retry and recovery path.
 - Keep the `npm-publish` environment name, OIDC permission, and provenance setting aligned with the npm trusted-publisher configuration.
 - Use OS-assigned ephemeral ports for tests that start network servers; fixed high ports can collide on shared CI hosts.
+- Put complete framework-specific applications under `examples/`, and document
+  them under `docs/examples/` rather than `docs/patterns/`. Packaged example
+  guides must link to their repository-hosted source, state that it is not in
+  the npm package, and give a human-runnable setup path (including every
+  process, browser URL, and stop instruction) in addition to any automated
+  verification command.
 
 ## Black-box test boundary
 
