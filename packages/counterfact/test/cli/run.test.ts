@@ -5,6 +5,8 @@ import {
   normalizeSpecOption,
 } from "../../src/cli/run.js";
 
+const LOCATION_HASH_KEY = "a".repeat(64);
+
 describe("normalizeSpecOption", () => {
   describe("when given undefined", () => {
     it("returns undefined", () => {
@@ -141,6 +143,7 @@ describe("buildStartupTelemetryProperties", () => {
       },
       "/tmp/openapi.yaml",
       "1.2.3",
+      LOCATION_HASH_KEY,
     );
 
     expect(properties["mode"]).toBe("single-spec");
@@ -166,6 +169,7 @@ describe("buildStartupTelemetryProperties", () => {
       },
       "_",
       "1.2.3",
+      LOCATION_HASH_KEY,
       [
         { source: "https://example.com/v1/openapi.yaml", group: "v1" },
         { source: "/tmp/v2/openapi.yaml", group: "v2" },
@@ -193,6 +197,7 @@ describe("buildStartupTelemetryProperties", () => {
       },
       "_",
       "1.2.3",
+      LOCATION_HASH_KEY,
     );
 
     expect(properties["mode"]).toBe("without-openapi");
@@ -210,6 +215,7 @@ describe("buildStartupTelemetryProperties", () => {
       },
       "https://example.com/openapi.yaml",
       "1.2.3",
+      LOCATION_HASH_KEY,
     );
 
     expect(properties["sourceKind"]).toBe("remote");

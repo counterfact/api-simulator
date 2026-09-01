@@ -55,6 +55,7 @@ describe("createKoaApp", () => {
     const reportEvent = jest.fn();
     registry.add("/health", {
       GET: () => ({ body: "ok", status: 200 }),
+      POST: () => ({ body: "ok", status: 200 }),
     });
 
     const app = createKoaApp({
@@ -79,15 +80,27 @@ describe("createKoaApp", () => {
       reportEvent,
     });
 
-    await request(app.callback()).get("/health");
+    await request(app.callback())
+      .post("/health?private-query=value")
+      .set("Authorization", "Bearer private-token")
+      .set("X-Private-Header", "private-header")
+      .send({ privateBody: "private-body" });
     await request(app.callback()).get("/health?private=value");
 
     expect(reportEvent).toHaveBeenCalledTimes(1);
     expect(reportEvent).toHaveBeenCalledWith("first_api_request_served", {
       statusClass: "2xx",
     });
-    expect(JSON.stringify(reportEvent.mock.calls)).not.toContain("health");
-    expect(JSON.stringify(reportEvent.mock.calls)).not.toContain("private");
+    const reportedPayload = JSON.stringify(reportEvent.mock.calls);
+    for (const privateValue of [
+      "health",
+      "private-query",
+      "private-token",
+      "private-header",
+      "private-body",
+    ]) {
+      expect(reportedPayload).not.toContain(privateValue);
+    }
   });
 });
 
