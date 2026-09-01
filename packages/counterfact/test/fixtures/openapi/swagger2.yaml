@@ -1,0 +1,29 @@
+swagger: "2.0"
+
+info:
+  title: Swagger 2 Form Test
+  version: "1.0.0"
+
+consumes:
+  - application/x-www-form-urlencoded
+
+paths:
+  /submit:
+    post:
+      operationId: submitForm
+      parameters:
+        - name: username
+          in: formData
+          description: Account name
+          required: true
+          type: string
+
+        - name: note
+          in: formData
+          description: A note containing characters that require encoding
+          required: true
+          type: string
+
+      responses:
+        "204":
+          description: Form accepted

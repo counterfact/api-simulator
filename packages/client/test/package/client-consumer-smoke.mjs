@@ -155,7 +155,15 @@ try {
     .headers({ "X-Consumer": "packed" })
     .body({ status: "sold" });
   assert.equal(request.ready(), true);
-  assert.match(request.help(), /Update a pet/);
+  const helpOutput = [];
+  const originalLog = console.log;
+  console.log = (message) => helpOutput.push(String(message));
+  try {
+    assert.equal(request.help(), undefined);
+  } finally {
+    console.log = originalLog;
+  }
+  assert.match(helpOutput.join("\\n"), /Update a pet/);
 
   const rawResponse = await request.send();
   assert(rawResponse.includes("HTTP/1.1 200 OK"));

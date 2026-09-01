@@ -11,6 +11,7 @@ Feature: Kick the tires on a stateful Counterfact API
     Then the REPL and Swagger UI are ready
     And the open REPL autocompletes the initial pet routes
     And the route builder distinguishes a missing and supplied pet ID
+    And the route builder requires the documented pet body
     And a REPL request for the missing pet returns 404
     And request validation rejects an invalid pet
     When I create Fluffy through the REPL

@@ -1,3 +1,5 @@
+import { inspect } from "node:util";
+
 import { describe, expect, it, jest } from "@jest/globals";
 
 import {
@@ -79,6 +81,98 @@ const OPEN_API_DOCUMENT: OpenApiRouteDocument = {
   },
 };
 const ROUTE_CATALOG = createOpenApiRouteCatalog(OPEN_API_DOCUMENT);
+const REQUIRED_INPUT_CATALOG = createOpenApiRouteCatalog({
+  paths: {
+    "/cookies": {
+      get: {
+        parameters: [
+          {
+            description: "Browser session",
+            in: "cookie",
+            name: "session",
+            required: true,
+            type: "string",
+          },
+        ],
+        responses: { "200": {} },
+      },
+    },
+    "/oas2/body": {
+      post: {
+        parameters: [
+          {
+            description: "Legacy payload",
+            in: "body",
+            name: "payload",
+            required: true,
+            schema: { type: "object" },
+          },
+        ],
+        responses: { "200": {} },
+      },
+    },
+    "/oas2/form": {
+      post: {
+        consumes: ["application/x-www-form-urlencoded"],
+        parameters: [
+          {
+            description: "Account name",
+            in: "formData",
+            name: "username",
+            required: true,
+            type: "string",
+          },
+          {
+            in: "formData",
+            name: "remember",
+            required: false,
+            type: "boolean",
+          },
+        ],
+        responses: { "200": {} },
+      },
+    },
+    "/oas3/form": {
+      post: {
+        requestBody: {
+          content: {
+            "application/x-www-form-urlencoded": {
+              schema: { type: "object" },
+            },
+          },
+          description: "Modern form payload",
+          required: true,
+        },
+        responses: { "200": {} },
+      },
+    },
+    "/oas3/json": {
+      post: {
+        requestBody: {
+          content: {
+            "application/json": { schema: { type: "object" } },
+          },
+          description: "Modern JSON payload",
+          required: true,
+        },
+        responses: { "200": {} },
+      },
+    },
+  },
+});
+
+function captureHelp(builder: RouteBuilder): string {
+  const log = jest.spyOn(console, "log").mockImplementation(() => undefined);
+
+  try {
+    expect(builder.help()).toBeUndefined();
+    expect(log).toHaveBeenCalledTimes(1);
+
+    return String(log.mock.calls[0]?.[0]);
+  } finally {
+    log.mockRestore();
+  }
+}
 
 describe("RouteBuilder", () => {
   describe("fluent builder API", () => {
@@ -119,6 +213,20 @@ describe("RouteBuilder", () => {
     it("returns a new instance from body()", () => {
       const original = new RouteBuilder("/pet", { port: 9999 });
       const updated = original.body({ name: "Rex" });
+
+      expect(updated).not.toBe(original);
+    });
+
+    it("returns a new instance from cookies()", () => {
+      const original = new RouteBuilder("/pet", { port: 9999 });
+      const updated = original.cookies({ session: "abc" });
+
+      expect(updated).not.toBe(original);
+    });
+
+    it("returns a new instance from form()", () => {
+      const original = new RouteBuilder("/pet", { port: 9999 });
+      const updated = original.form({ name: "Rex" });
 
       expect(updated).not.toBe(original);
     });
@@ -222,6 +330,63 @@ describe("RouteBuilder", () => {
 
       expect(builder.ready()).toBe(true);
     });
+
+    it("requires body() for a required OpenAPI 2 body parameter", () => {
+      const builder = new RouteBuilder("/oas2/body", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+
+      expect(builder.ready()).toBe(false);
+      expect(builder.form({ payload: "wrong entity" }).ready()).toBe(false);
+      expect(builder.body({ accepted: true }).ready()).toBe(true);
+    });
+
+    it("requires every required OpenAPI 2 formData field in form()", () => {
+      const builder = new RouteBuilder("/oas2/form", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      })
+        .method("post")
+        .form({ remember: true });
+
+      expect(builder.ready()).toBe(false);
+      expect(builder.form({ username: "patrick" }).ready()).toBe(true);
+    });
+
+    it("uses body or form for OpenAPI 3 requestBody according to content", () => {
+      const json = new RouteBuilder("/oas3/json", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+      const form = new RouteBuilder("/oas3/form", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+
+      expect(json.form({ name: "Rex" }).ready()).toBe(false);
+      expect(json.body({ name: "Rex" }).ready()).toBe(true);
+      expect(form.body({ name: "Rex" }).ready()).toBe(false);
+      expect(form.form({ name: "Rex" }).ready()).toBe(true);
+    });
+
+    it("clears the competing request entity when body() or form() is called", () => {
+      const json = new RouteBuilder("/oas3/json", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+      const form = new RouteBuilder("/oas3/form", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+
+      expect(json.body({ name: "Rex" }).form({ name: "Fluffy" }).ready()).toBe(
+        false,
+      );
+      expect(form.form({ name: "Rex" }).body({ name: "Fluffy" }).ready()).toBe(
+        false,
+      );
+    });
   });
 
   describe("missing()", () => {
@@ -318,6 +483,66 @@ describe("RouteBuilder", () => {
       expect(builder.ready()).toBe(true);
       expect(builder.missing()).toBeUndefined();
     });
+
+    it("reports and satisfies required cookies", () => {
+      const builder = new RouteBuilder("/cookies", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("get");
+
+      expect(builder.missing()?.cookie).toEqual([
+        {
+          description: "Browser session",
+          name: "session",
+          type: "string",
+        },
+      ]);
+      expect(builder.cookies({ session: "abc" }).missing()).toBeUndefined();
+    });
+
+    it("accepts required cookies from a case-insensitive Cookie header", () => {
+      const builder = new RouteBuilder("/cookies", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      })
+        .method("get")
+        .headers({ cOoKiE: "session=abc; theme=dark" });
+
+      expect(builder.missing()).toBeUndefined();
+    });
+
+    it("reports required OpenAPI 2 body and formData inputs", () => {
+      const body = new RouteBuilder("/oas2/body", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+      const form = new RouteBuilder("/oas2/form", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+
+      expect(body.missing()?.body?.map(({ name }) => name)).toEqual([
+        "payload",
+      ]);
+      expect(form.missing()?.formData?.map(({ name }) => name)).toEqual([
+        "username",
+      ]);
+    });
+
+    it("reports a required OpenAPI 3 requestBody", () => {
+      const builder = new RouteBuilder("/oas3/json", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+
+      expect(builder.missing()?.body).toEqual([
+        {
+          description: "Modern JSON payload",
+          name: "requestBody",
+          type: "object",
+        },
+      ]);
+    });
   });
 
   describe("help()", () => {
@@ -327,7 +552,7 @@ describe("RouteBuilder", () => {
         port: 9999,
       }).method("get");
 
-      const help = builder.help();
+      const help = captureHelp(builder);
 
       expect(help).toContain("GET /pet/{petId}");
     });
@@ -338,7 +563,7 @@ describe("RouteBuilder", () => {
         port: 9999,
       }).method("get");
 
-      const help = builder.help();
+      const help = captureHelp(builder);
 
       expect(help).toContain("petId (integer, required)");
     });
@@ -349,7 +574,7 @@ describe("RouteBuilder", () => {
         port: 9999,
       }).method("get");
 
-      const help = builder.help();
+      const help = captureHelp(builder);
 
       expect(help).toContain("status (string, optional)");
       expect(help).toContain("available | pending | sold");
@@ -361,7 +586,7 @@ describe("RouteBuilder", () => {
         port: 9999,
       }).method("get");
 
-      const help = builder.help();
+      const help = captureHelp(builder);
 
       expect(help).toContain("200");
       expect(help).toContain("404");
@@ -373,16 +598,16 @@ describe("RouteBuilder", () => {
         port: 9999,
       });
 
-      expect(builder.help()).toContain("[no method set]");
+      expect(captureHelp(builder)).toContain("[no method set]");
     });
 
     it("documents summaries, descriptions, headers, and parameter enums", () => {
-      const help = new RouteBuilder("/complete/{id}", {
-        port: 9999,
-        routeCatalog: ROUTE_CATALOG,
-      })
-        .method("get")
-        .help();
+      const help = captureHelp(
+        new RouteBuilder("/complete/{id}", {
+          port: 9999,
+          routeCatalog: ROUTE_CATALOG,
+        }).method("get"),
+      );
 
       expect(help).toContain("Complete operation");
       expect(help).toContain("Every supported kind of parameter");
@@ -392,6 +617,47 @@ describe("RouteBuilder", () => {
       expect(help).toContain("Headers:");
       expect(help).toContain("An access token");
       expect(help).toContain("204");
+    });
+
+    it("documents cookie, formData, and OpenAPI 2 body inputs", () => {
+      const cookieHelp = captureHelp(
+        new RouteBuilder("/cookies", {
+          port: 9999,
+          routeCatalog: REQUIRED_INPUT_CATALOG,
+        }).method("get"),
+      );
+      const formHelp = captureHelp(
+        new RouteBuilder("/oas2/form", {
+          port: 9999,
+          routeCatalog: REQUIRED_INPUT_CATALOG,
+        }).method("post"),
+      );
+      const bodyHelp = captureHelp(
+        new RouteBuilder("/oas2/body", {
+          port: 9999,
+          routeCatalog: REQUIRED_INPUT_CATALOG,
+        }).method("post"),
+      );
+
+      expect(cookieHelp).toContain("Cookies:");
+      expect(cookieHelp).toContain("session (string, required)");
+      expect(formHelp).toContain("Form Fields:");
+      expect(formHelp).toContain("username (string, required)");
+      expect(bodyHelp).toContain("Request Body:");
+      expect(bodyHelp).toContain("payload (object, required)");
+    });
+
+    it("documents OpenAPI 3 requestBody content", () => {
+      const help = captureHelp(
+        new RouteBuilder("/oas3/form", {
+          port: 9999,
+          routeCatalog: REQUIRED_INPUT_CATALOG,
+        }).method("post"),
+      );
+
+      expect(help).toContain("requestBody (required)");
+      expect(help).toContain("Modern form payload");
+      expect(help).toContain("application/x-www-form-urlencoded");
     });
   });
 
@@ -429,6 +695,25 @@ describe("RouteBuilder", () => {
         .path({ id: "one" });
 
       await expect(builder.send()).rejects.toThrow(/filter[\s\S]*x-token/u);
+    });
+
+    it("lists missing cookie, formData, and body inputs", async () => {
+      const cookie = new RouteBuilder("/cookies", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("get");
+      const form = new RouteBuilder("/oas2/form", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+      const body = new RouteBuilder("/oas3/json", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+
+      await expect(cookie.send()).rejects.toThrow(/cookie:[\s\S]*session/u);
+      await expect(form.send()).rejects.toThrow(/formData:[\s\S]*username/u);
+      await expect(body.send()).rejects.toThrow(/body:[\s\S]*requestBody/u);
     });
 
     it("rejects unsupported HTTP methods", async () => {
@@ -532,6 +817,49 @@ describe("RouteBuilder", () => {
       const inspect = builder[Symbol.for("nodejs.util.inspect.custom")]();
 
       expect(inspect).toContain("Ready: true");
+    });
+
+    it("shows required cookies and form fields", () => {
+      const cookieInspect = new RouteBuilder("/cookies", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      })
+        .method("get")
+        .cookies({ session: "abc" });
+      const formInspect = new RouteBuilder("/oas2/form", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      })
+        .method("post")
+        .form({ username: "patrick" });
+
+      expect(inspect(cookieInspect)).toContain("Cookies:");
+      expect(inspect(cookieInspect)).toContain("session: abc");
+      expect(inspect(formInspect)).toContain("Form:");
+      expect(inspect(formInspect)).toContain("username: patrick");
+    });
+
+    it("shows whether an OpenAPI 3 request body is set with body or form", () => {
+      const missingBuilder = new RouteBuilder("/oas3/json", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+      const bodyBuilder = new RouteBuilder("/oas3/json", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      })
+        .method("post")
+        .body({ name: "Rex" });
+      const formBuilder = new RouteBuilder("/oas3/form", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      })
+        .method("post")
+        .form({ name: "Rex" });
+
+      expect(inspect(missingBuilder)).toContain("requestBody: [missing]");
+      expect(inspect(bodyBuilder)).toContain("requestBody: [set with body()]");
+      expect(inspect(formBuilder)).toContain("requestBody: [set with form()]");
     });
   });
 

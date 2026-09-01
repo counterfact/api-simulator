@@ -40,6 +40,8 @@
     "go:petstore": "yarn build && yarn counterfact https://petstore3.swagger.io/api/v3/openapi.json out",
     "go:petstore2": "yarn build && yarn counterfact https://petstore.swagger.io/v2/swagger.json out",
     "go:example": "yarn build && node ./packages/counterfact/bin/counterfact.js ./packages/counterfact/test/fixtures/openapi/example.yaml out",
+    "go:swagger2": "yarn build && node ./packages/counterfact/bin/counterfact.js ./packages/counterfact/test/fixtures/openapi/swagger2.yaml out",
+    "go:multipart": "yarn build && node ./packages/counterfact/bin/counterfact.js ./packages/counterfact/test/fixtures/openapi/multipart.yaml out",
     "go:multiple-apis": "yarn build && node ./packages/counterfact/bin/counterfact.js --config ./packages/counterfact/test/fixtures/config/multiple-apis.yaml",
     "counterfact": "./packages/counterfact/bin/counterfact.js"
   },
