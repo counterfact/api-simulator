@@ -16,7 +16,7 @@ import {
   ScenarioRegistry,
   Transpiler,
 } from "@counterfact/runtime";
-import { sendTelemetry } from "./cli/telemetry.js";
+import { reportRuntimeTelemetry } from "./cli/telemetry.js";
 import type { Config } from "./config.js";
 import { pathJoin } from "./util/forward-slash-path.js";
 
@@ -183,7 +183,7 @@ export class ApiRunner {
       pathJoin(modulesPath, "scenarios"),
       this.scenarioRegistry,
       groupState?.getStore,
-      sendTelemetry,
+      reportRuntimeTelemetry,
     );
   }
 
@@ -227,7 +227,7 @@ export class ApiRunner {
         : await loadOpenApiDocument(
             config.openApiPath,
             config.overlays ?? [],
-            sendTelemetry,
+            reportRuntimeTelemetry,
           );
 
     return new ApiRunner(

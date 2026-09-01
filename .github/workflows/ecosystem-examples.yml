@@ -1,0 +1,51 @@
+name: Ecosystem examples
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ecosystem-examples.yml"
+      - "examples/react-vite/**"
+      - "examples/playwright-error-states/**"
+      - "packages/counterfact/docs/examples/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ecosystem-examples.yml"
+      - "examples/react-vite/**"
+      - "examples/playwright-error-states/**"
+      - "packages/counterfact/docs/examples/**"
+
+permissions:
+  contents: read
+
+jobs:
+  react-vite:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/react-vite
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: examples/react-vite/package-lock.json
+      - run: npm ci
+      - run: npm run verify
+
+  playwright-error-states:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/playwright-error-states
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: examples/playwright-error-states/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run verify

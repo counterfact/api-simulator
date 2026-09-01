@@ -9,6 +9,9 @@ The published package and canonical user documentation live in
 - [Start with the beginner guide](./packages/counterfact/docs/getting-started.md)
 - [Install and use Counterfact](./packages/counterfact/README.md)
 - [Browse documentation by task](./packages/counterfact/docs/usage.md)
+- [Run the React and Vite example](./examples/react-vite/README.md) — `examples/react-vite/`; starts Counterfact and Vite in two terminals.
+- [Run the Playwright error-states example](./examples/playwright-error-states/README.md) — `examples/playwright-error-states/`; installs Chromium and verifies three browser states.
+- [Browse the packaged examples guides](./packages/counterfact/docs/examples/index.md)
 - [Contribute](./CONTRIBUTING.md)
 - [Review architecture decisions](./docs/adr/)
 

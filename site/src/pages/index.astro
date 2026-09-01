@@ -14,8 +14,8 @@ import MainLayout from "../layouts/MainLayout.astro";
       </a>
       <nav aria-label="Primary navigation">
         <a href="#quick-start">Quick start</a>
-        <a href="/docs/getting-started">Docs</a>
-        <a href="https://github.com/counterfact/api-simulator">GitHub</a>
+        <a href="/docs/getting-started" data-analytics-event="getting_started_opened">Docs</a>
+        <a href="https://github.com/counterfact/api-simulator" data-analytics-event="github_opened">GitHub</a>
       </nav>
     </div>
   </header>
@@ -30,8 +30,8 @@ import MainLayout from "../layouts/MainLayout.astro";
         before the real backend is ready.
       </p>
       <div class="actions">
-        <a class="button button-primary" href="#quick-start">Try it now</a>
-        <a class="button button-secondary" href="/docs/getting-started">Read the docs</a>
+        <a class="button button-primary" href="#quick-start" data-analytics-event="quickstart_opened">Try it now</a>
+        <a class="button button-secondary" href="/docs/getting-started" data-analytics-event="getting_started_opened">Read the docs</a>
       </div>
     </section>
 
@@ -39,13 +39,57 @@ import MainLayout from "../layouts/MainLayout.astro";
       <h2 id="command-heading">Start with your OpenAPI document</h2>
       <div class="command-panel">
         <code id="install-cmd">npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api</code>
-        <button id="copy-btn" class="copy-button" type="button" aria-label="Copy command">Copy</button>
+        <button id="copy-btn" class="copy-button" type="button" aria-label="Copy command" data-analytics-event="quickstart_command_copied">Copy</button>
       </div>
       <p class="supporting-text">
         Requires Node.js 22+. For a repeatable project or CI workflow,
         <a href="/docs/first-10-minutes#install-a-pinned-version">install a pinned version</a>
         and commit the lockfile.
       </p>
+    </section>
+
+    <section class="page-shell workflow-section" aria-labelledby="workflow-heading">
+      <p class="eyebrow">The development loop</p>
+      <h2 id="workflow-heading">Start generated. Make only the behavior your screen needs.</h2>
+      <div class="workflow-grid">
+        <div>
+          <p>
+            Counterfact generates editable, typed route handlers from the contract.
+            Change one response, save the file, and refresh the frontend. The server
+            hot-reloads the handler without throwing away your in-memory state.
+          </p>
+          <ol class="compact-steps">
+            <li>Make the first browser request.</li>
+            <li>Shape one response for the current screen.</li>
+            <li>Add a small create/read workflow when state matters.</li>
+            <li>Exercise one loading, empty, or failure state.</li>
+          </ol>
+        </div>
+        <pre><code>// api/routes/pet/&#123;petId&#125;.ts
+export const GET: HTTP_GET = ($) =&gt;
+  $.response[200].json(&#123;
+    id: $.path.petId,
+    name: "Fluffy",
+    status: "available"
+  &#125;);</code></pre>
+      </div>
+    </section>
+
+    <section class="page-shell examples-section" aria-labelledby="examples-heading">
+      <p class="eyebrow">Use it in a real workflow</p>
+      <h2 id="examples-heading">Two runnable paths beyond Petstore</h2>
+      <div class="example-grid">
+        <article>
+          <h3>React and Vite</h3>
+          <p>Build a profile screen against a local API while the production endpoint is still unavailable.</p>
+          <a href="/docs/examples/react-vite" data-analytics-event="ecosystem_example_opened" data-analytics-example="react-vite">Run the React example</a>
+        </article>
+        <article>
+          <h3>Playwright error states</h3>
+          <p>Verify success, not-found, and temporary-failure UI states through a real HTTP boundary.</p>
+          <a href="/docs/examples/playwright-error-states" data-analytics-event="ecosystem_example_opened" data-analytics-example="playwright">Run the Playwright example</a>
+        </article>
+      </div>
     </section>
 
     <section id="quick-start" class="page-shell quick-start" aria-labelledby="quick-start-heading">
@@ -90,6 +134,7 @@ const pet = await response.json();</code></pre>
         <a href="/docs/features/proxy">Proxying</a>
         <a href="/docs/patterns/automated-integration-tests">Tests</a>
         <a href="/docs/features/repl">REPL</a>
+        <a href="/docs/comparison" data-analytics-event="comparison_opened">Compare tools</a>
       </div>
     </section>
   </main>
@@ -97,8 +142,8 @@ const pet = await response.json();</code></pre>
   <footer class="site-footer">
     <div class="page-shell footer-content">
       <span>Counterfact</span>
-      <a href="/docs/getting-started">Getting started</a>
-      <a href="https://github.com/counterfact/api-simulator">GitHub</a>
+      <a href="/docs/getting-started" data-analytics-event="getting_started_opened">Getting started</a>
+      <a href="https://github.com/counterfact/api-simulator" data-analytics-event="github_opened">GitHub</a>
     </div>
   </footer>
 </MainLayout>

@@ -11,12 +11,14 @@ needs—not by a feature checklist.
 - [State](./features/state.md) — share small in-memory state across routes.
 - [Hot reload](./features/hot-reload.md) — update handlers without restarting.
 - [Generated code](./features/generated-code.md) — understand editable routes and generated types.
+- [React and Vite example](./examples/react-vite.md) — run a repository-hosted screen against a local contract-shaped API.
 - [Simulate failures](./patterns/simulate-failures.md) and [simulate latency](./patterns/simulate-latency.md) — exercise error, empty, loading, and retry states.
 
 ## Team and test workflows
 
 - [First 10 minutes](./first-10-minutes.md) — a small create/read workflow with one failure.
 - [Automated integration tests](./patterns/automated-integration-tests.md) — start and stop a local API in tests.
+- [Playwright error states example](./examples/playwright-error-states.md) — run repository-hosted browser checks for success, not-found, and service-unavailable UI states.
 - [Scenario scripts](./patterns/scenario-scripts.md) — create repeatable starting states.
 - [Shared store](./patterns/shared-store.md) — coordinate state across API groups.
 - [AI-assisted implementation](./patterns/ai-assisted-implementation.md) and [agentic sandbox](./patterns/agentic-sandbox.md) — give coding agents a bounded, verifiable API task.
@@ -30,6 +32,12 @@ needs—not by a feature checklist.
 - [Multiple versions](./features/multiple-versions.md) — serve more than one API version.
 - [TypeScript native mode](./features/typescript-native-mode.md) — run route files directly.
 
+## Runnable examples
+
+- [Examples index](./examples/index.md) — repository-hosted applications with their own lockfiles and setup instructions.
+- [React and Vite](./examples/react-vite.md) — start Counterfact and Vite in two terminals, then open the Ada Lovelace profile screen.
+- [Playwright error states](./examples/playwright-error-states.md) — install Chromium and let Playwright manage Counterfact and Vite while it verifies three UI states.
+
 ## Reference and troubleshooting
 
 - [Reference](./reference.md) — CLI flags, response builders, the `$` parameter, and architecture.
@@ -39,7 +47,14 @@ needs—not by a feature checklist.
 
 ## Telemetry and privacy
 
-Counterfact records startup options, hot-reload change categories
-(route/context/OpenAPI), and REPL command names. API file locations are hashed
-and command arguments are never sent. See the
+Counterfact records start attempts and outcomes, the first API request served,
+startup options, hot-reload change categories (route/context/OpenAPI), and REPL
+command names. A random installation identifier links these anonymous events
+for retention analysis and rotates after 180 days. Each run receives a separate
+session identifier.
+
+API file locations are hashed. Counterfact never sends raw paths, OpenAPI
+documents or URLs, request paths or data, headers, tokens, error messages,
+project names, or command arguments. Telemetry is disabled in CI and when
+`COUNTERFACT_TELEMETRY_DISABLED=true`. See the
 [telemetry discussion](https://counterfact.dev/telemetry-discussion).

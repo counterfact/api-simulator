@@ -51,7 +51,7 @@ p { margin: 0; }
 .button-secondary { border: 1px solid #b4c0ca; color: var(--ink); }
 .button-secondary:hover { border-color: var(--blue); color: var(--blue-dark); text-decoration: none; }
 
-.command-section, .quick-start, .more-section { border-top: 1px solid var(--rule); padding-block: 3.5rem; }
+.command-section, .quick-start, .workflow-section, .examples-section, .more-section { border-top: 1px solid var(--rule); padding-block: 3.5rem; }
 .command-panel { align-items: center; background: var(--code); border: 1px solid var(--rule); display: flex; gap: 0.75rem; justify-content: space-between; padding: 0.85rem; }
 .command-panel code { color: var(--ink); font-size: clamp(0.7rem, 2.5vw, 0.92rem); overflow-wrap: anywhere; }
 .copy-button { background: var(--surface); border: 1px solid #aab5be; border-radius: 3px; color: var(--ink); cursor: pointer; flex: 0 0 auto; font: 700 0.8rem var(--font-sans); padding: 0.4rem 0.55rem; }
@@ -61,7 +61,7 @@ p { margin: 0; }
 .steps { counter-reset: steps; list-style: none; margin: 2rem 0 0; padding: 0; }
 .steps li { border-top: 1px solid var(--rule); counter-increment: steps; padding: 1.5rem 0; }
 .steps li::before { color: var(--orange); content: "0" counter(steps); display: block; font: 700 0.78rem var(--font-mono); letter-spacing: 0.08em; margin-bottom: 0.55rem; }
-.steps p, .more-section p { color: var(--muted); max-width: 62ch; }
+.steps p, .workflow-section p, .examples-section p, .more-section p { color: var(--muted); max-width: 62ch; }
 pre { background: var(--code); border: 1px solid var(--rule); color: var(--code-ink); margin: 1rem 0 0; max-width: 100%; overflow-x: auto; padding: 1rem; white-space: pre; }
 pre.astro-code { background: var(--code) !important; color: var(--code-ink) !important; }
 pre.astro-code code { color: var(--code-ink) !important; }
@@ -75,6 +75,13 @@ pre a { color: var(--code-link) !important; text-decoration: underline; }
 .code-block { padding-top: 3rem; position: relative; }
 .link-list { display: flex; flex-wrap: wrap; gap: 0.6rem 1.1rem; margin-top: 1.25rem; }
 .link-list a { font-weight: 600; }
+.workflow-grid { display: grid; gap: 2rem; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin-top: 2rem; }
+.workflow-grid pre { margin: 0; }
+.compact-steps { margin: 1.25rem 0 0; padding-left: 1.25rem; }
+.compact-steps li + li { margin-top: 0.45rem; }
+.example-grid { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 2rem; }
+.example-grid article { background: var(--surface); border: 1px solid var(--rule); padding: 1.25rem; }
+.example-grid article a { display: inline-block; font-weight: 700; margin-top: 1rem; }
 .site-footer { border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.86rem; padding-block: 1.5rem; }
 .footer-content { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; }
 .footer-content span { color: var(--ink); font-weight: 700; margin-right: auto; }
@@ -83,4 +90,5 @@ pre a { color: var(--code-link) !important; text-decoration: underline; }
   .header-content { align-items: flex-start; flex-direction: column; justify-content: center; padding-block: 0.8rem; }
   .command-panel { align-items: flex-start; }
   .footer-content span { flex-basis: 100%; }
+  .workflow-grid, .example-grid { grid-template-columns: 1fr; }
 }
