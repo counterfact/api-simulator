@@ -160,7 +160,7 @@ export class RouteBuilder {
     this._body = options.body;
     this._formParams = options.formParams ?? {};
     this._formSet = "formParams" in options;
-    this._bodySet = "body" in options && !this._formSet;
+    this._bodySet = options.body !== undefined && !this._formSet;
     this._port = options.port;
     this._host = options.host ?? "localhost";
     this._routeCatalog = options.routeCatalog;

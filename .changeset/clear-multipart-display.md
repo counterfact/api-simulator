@@ -1,5 +1,5 @@
 ---
-"@counterfact/client": patch
+"@counterfact/client": minor
 ---
 
 Display complete multipart request bodies in the REPL client output, and write

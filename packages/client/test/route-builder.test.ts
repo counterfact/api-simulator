@@ -342,6 +342,33 @@ describe("RouteBuilder", () => {
       expect(builder.body({ accepted: true }).ready()).toBe(true);
     });
 
+    it("does not treat an undefined body as a supplied required body", () => {
+      const swagger2 = new RouteBuilder("/oas2/body", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+      const openapi3 = new RouteBuilder("/oas3/json", {
+        port: 9999,
+        routeCatalog: REQUIRED_INPUT_CATALOG,
+      }).method("post");
+
+      expect(swagger2.body(undefined).ready()).toBe(false);
+      expect(
+        swagger2
+          .body(undefined)
+          .missing()
+          ?.body?.map(({ name }) => name),
+      ).toEqual(["payload"]);
+      expect(openapi3.body(undefined).ready()).toBe(false);
+      expect(
+        openapi3
+          .body(undefined)
+          .missing()
+          ?.body?.map(({ name }) => name),
+      ).toEqual(["requestBody"]);
+      expect(openapi3.body(null).ready()).toBe(true);
+    });
+
     it("requires every required OpenAPI 2 formData field in form()", () => {
       const builder = new RouteBuilder("/oas2/form", {
         port: 9999,
