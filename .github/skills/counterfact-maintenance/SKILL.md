@@ -40,6 +40,7 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - A push to `main` with no remaining changesets publishes the merged package versions automatically; a manual Release workflow dispatch is the retry and recovery path.
 - Keep the `npm-publish` environment name, OIDC permission, and provenance setting aligned with the npm trusted-publisher configuration.
 - Use OS-assigned ephemeral ports for tests that start network servers; fixed high ports can collide on shared CI hosts.
+- When a status check is required by a merge-queue ruleset, configure its workflow to run on `merge_group` with `checks_requested`; a `pull_request`-only workflow leaves the queue's synthetic commit without that check and eventually times out.
 
 ## Black-box test boundary
 
