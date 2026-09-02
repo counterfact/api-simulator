@@ -302,7 +302,13 @@ No. Counterfact watches the routes directory and hot-reloads changed files immed
 
 ## When do I need to restart?
 
-If your OpenAPI spec is a remote URL, Counterfact only fetches it once at startup. To pick up spec changes you need to restart (or use a local copy and `--watch`). If your spec is a local file, Counterfact watches it and regenerates types automatically — no restart required.
+Counterfact watches every local file that contributes to the OpenAPI document,
+including the base spec and ordered overlays. Editing any of those files
+reloads the complete composed document and regenerates enabled artifacts, so no
+restart is required. HTTP(S) inputs are loaded at startup but are not watched;
+restart to pick up a remote-only change. If a remote base uses a local overlay,
+editing that overlay triggers a fresh load of the remote base before all
+overlays are reapplied.
 
 ---
 

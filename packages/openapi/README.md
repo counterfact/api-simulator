@@ -24,5 +24,10 @@ void bundled;
 one document while retaining internal references. Overlay paths are applied in
 the order provided.
 
+`classifyOpenApiSource` distinguishes local inputs from parsed HTTP(S) URLs,
+and `getLocalOpenApiSourcePaths` returns unique local watcher inputs while
+excluding remote URLs and Counterfact's `_` sentinel. File URLs are normalized
+to local paths; ordinary file names such as `httpspec.yaml` remain local.
+
 See [`examples/load-local-spec.mjs`](./examples/load-local-spec.mjs) for a
 complete public-import example.
