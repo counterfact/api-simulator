@@ -1,0 +1,131 @@
+---
+import QualityLayout from "../../../../layouts/QualityLayout.astro";
+import {
+  auditCases,
+  commitUrl,
+  issueUrl,
+  prUrl,
+  releaseUrl,
+  type AuditCase,
+} from "../../../../data/quality-2026";
+
+export function getStaticPaths() {
+  return auditCases.map((item, index) => ({
+    params: { issue: String(item.issue) },
+    props: {
+      item,
+      previous: index > 0 ? auditCases[index - 1] : undefined,
+      next: index < auditCases.length - 1 ? auditCases[index + 1] : undefined,
+    },
+  }));
+}
+
+interface Props {
+  item: AuditCase;
+  previous?: AuditCase;
+  next?: AuditCase;
+}
+
+const { item, previous, next } = Astro.props;
+const verdictClass = item.category === "Defect in a 2026 feature"
+  ? "quality-verdict quality-verdict-feature"
+  : "quality-verdict";
+---
+
+<QualityLayout
+  title={`#${item.issue}: ${item.shortTitle} — Counterfact 2026 Quality Audit`}
+  description={item.finding}
+  canonicalPath={`/quality/2026/cases/${item.issue}`}
+  active="cases"
+>
+  <header class="quality-page-header">
+    <div class="quality-reading">
+      <p class="quality-crumbs">
+        <a href="/quality/2026">2026 quality audit</a> /
+        <a href="/quality/2026/cases">Case files</a> / #{item.issue}
+      </p>
+      <p class="quality-kicker">{item.area} · Case #{item.issue}</p>
+      <h1>{item.title}</h1>
+      <p class="quality-deck">{item.failure}</p>
+    </div>
+  </header>
+
+  <article class="quality-section quality-reading quality-prose">
+    <dl class="quality-case-facts">
+      <div>
+        <dt>Reporter</dt>
+        <dd>{item.reporter}</dd>
+      </div>
+      <div>
+        <dt>Reported</dt>
+        <dd>{item.reportedOn}</dd>
+      </div>
+      <div>
+        <dt>Reported version</dt>
+        <dd>{item.reportedVersion}</dd>
+      </div>
+      <div>
+        <dt>Fix</dt>
+        <dd>PR #{item.fixPr}</dd>
+      </div>
+      <div>
+        <dt>First fixed release</dt>
+        <dd>{item.fixedRelease}</dd>
+      </div>
+      <div>
+        <dt>Report to release</dt>
+        <dd>{item.responseDays} {item.responseDays === 1 ? "day" : "days"}</dd>
+      </div>
+    </dl>
+
+    <section class={verdictClass} aria-labelledby="verdict-heading">
+      <p class="quality-verdict-label">Classification · {item.confidence} confidence</p>
+      <h2 id="verdict-heading">{item.category}</h2>
+      <p>{item.finding}</p>
+    </section>
+
+    <section class="quality-evidence-list" aria-labelledby="evidence-heading">
+      <h2 id="evidence-heading">Evidence trail</h2>
+      <div class="quality-evidence-item">
+        <h3>Origin</h3>
+        <p>
+          <a href={commitUrl(item.originCommit)}><code>{item.originCommit.slice(0, 8)}</code></a>,
+          committed {item.originDate}; first affected release {item.firstAffectedRelease}.
+          {" "}{item.originSummary}
+        </p>
+      </div>
+      <div class="quality-evidence-item">
+        <h3>Source history and behavioral evidence</h3>
+        <p>{item.historyEvidence}</p>
+      </div>
+      <div class="quality-evidence-item">
+        <h3>Release chronology</h3>
+        <p>{item.releaseEvidence}</p>
+      </div>
+    </section>
+
+    {item.nuance && (
+      <aside class="quality-callout">
+        <strong>Why the distinction matters:</strong> {item.nuance}
+      </aside>
+    )}
+
+    <div class="quality-source-links" aria-label="Primary sources">
+      <a href={issueUrl(item.issue)}>Issue #{item.issue}</a>
+      <a href={prUrl(item.fixPr)}>Fix PR #{item.fixPr}</a>
+      <a href={commitUrl(item.originCommit)}>Origin commit</a>
+      <a href={releaseUrl(item.fixedRelease)}>Release {item.fixedRelease}</a>
+    </div>
+
+    <nav class="quality-next-prev" aria-label="Case file pagination">
+      {previous ? (
+        <a href={`/quality/2026/cases/${previous.issue}`}>← #{previous.issue} {previous.shortTitle}</a>
+      ) : <span />}
+      {next ? (
+        <a href={`/quality/2026/cases/${next.issue}`}>#{next.issue} {next.shortTitle} →</a>
+      ) : (
+        <a href="/quality/2026/methodology">Methodology →</a>
+      )}
+    </nav>
+  </article>
+</QualityLayout>

@@ -1,0 +1,188 @@
+---
+import QualityLayout from "../../../layouts/QualityLayout.astro";
+import {
+  auditCases,
+  categoryCounts,
+} from "../../../data/quality-2026";
+
+const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
+---
+
+<QualityLayout
+  title="Counterfact 2026 Quality Audit"
+  description="An evidence-backed audit of every confirmed bug reported by an external Counterfact user in 2026 through September 3."
+  canonicalPath="/quality/2026"
+  active="overview"
+>
+  <section class="quality-hero">
+    <div class="quality-wide">
+      <p class="quality-kicker">Independent reports · traced through source history</p>
+      <h1>What Counterfact’s 2026 bug reports actually show</h1>
+      <p class="quality-deck">
+        Nine confirmed defects were reported by external users through September 3.
+        Eight already existed by the end of 2025. One arrived inside a feature first
+        released in 2026. None was a regression from previously working behavior
+        caused by a 2026 change.
+      </p>
+      <p class="quality-dateline">
+        Audit period: January 1–September 3, 2026 · Published September 3, 2026
+      </p>
+      <div class="quality-hero-actions">
+        <a class="quality-button quality-button-primary" href="/quality/2026/cases">
+          Explore the case files
+        </a>
+        <a class="quality-button quality-button-secondary" href="/quality/2026/methodology">
+          Review the method
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="quality-section quality-wide" aria-labelledby="result-heading">
+    <p class="quality-section-label">The result</p>
+    <h2 id="result-heading">A lopsided historical distribution</h2>
+    <p class="quality-section-intro">
+      Each confirmed defect received exactly one primary classification. The categories
+      describe when the faulty behavior entered the released product—not when it was
+      noticed or fixed.
+    </p>
+    <div class="quality-result-grid">
+      {
+        categoryCounts.map((category) => (
+          <article class="quality-result-card" data-tone={category.tone}>
+            <span class="quality-result-number">{category.count}</span>
+            <span class="quality-result-percent">{category.percent}% of confirmed bugs</span>
+            <span class="quality-result-label">{category.label}</span>
+          </article>
+        ))
+      }
+    </div>
+    <div class="quality-callout">
+      <strong>The bounded conclusion:</strong> this externally reported issue set provides
+      no evidence that the 2026 maintainer-and-agent workflow traded quality for speed.
+      That is a statement about the audited population, not proof that unknown defects do
+      not exist or that an agent can never introduce one.
+    </div>
+  </section>
+
+  <section class="quality-section">
+    <div class="quality-wide quality-split">
+      <div class="quality-prose">
+        <p class="quality-section-label">Why the finding matters</p>
+        <h2>Quality held while the project got much busier</h2>
+        <p>
+          The result did not emerge from a quiet maintenance year. By September 3,
+          Counterfact had published 28 releases—3.1 times the nine published in the same
+          period of 2025—and merged 625 pull requests, 2.8 times the prior-year count.
+          The product added request validation, reusable scenarios, multiple APIs and
+          versions, substantial OpenAPI 3.2 support, Overlays, a shared store, and modular
+          packages for embedding.
+        </p>
+        <p>
+          Testing expanded at the same time. A consistent source scan finds 72 test files
+          on the September 3 main branch, up from 35 at the final 2025 release, and 904
+          explicit test declarations, up from 240. Main-branch line coverage reported by
+          Coveralls rose from 84.26% on that release to 91.73%, even as coverage broadened
+          from the former single-package source tree to six packages.
+        </p>
+        <p>
+          Adoption signals also moved upward: npm recorded 62,132 downloads from January
+          through August, 12.2% more than the same months in 2025, while GitHub stars rose
+          from 131 at the end of 2025 to 168 on the audit date. These are imperfect proxies,
+          but they show that the small defect count was not produced by disappearing use.
+        </p>
+        <p>
+          <a href="/quality/2026/context">See the full delivery, testing, usage, and feature context →</a>
+        </p>
+      </div>
+      <dl class="quality-stat-list" aria-label="Audit facts">
+        <div>
+          <dt>Confirmed external bugs</dt>
+          <dd>9</dd>
+        </div>
+        <div>
+          <dt>Released within five days</dt>
+          <dd>{fastFixes} of 9</dd>
+        </div>
+        <div>
+          <dt>Generator or OpenAPI cases</dt>
+          <dd>6</dd>
+        </div>
+        <div>
+          <dt>Runtime cases</dt>
+          <dd>2</dd>
+        </div>
+        <div>
+          <dt>Packaging cases</dt>
+          <dd>1</dd>
+        </div>
+        <div>
+          <dt>Confidence</dt>
+          <dd>High for all 9</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="quality-section quality-wide" aria-labelledby="map-heading">
+    <p class="quality-section-label">Read the evidence</p>
+    <h2 id="map-heading">A report designed to be inspected</h2>
+    <p class="quality-section-intro">
+      The summary is intentionally short. The supporting material is separated by the
+      question a reader is trying to answer.
+    </p>
+    <div class="quality-link-grid">
+      <a class="quality-link-card" href="/quality/2026/cases">
+        <span>10 records</span>
+        <h3>Case files</h3>
+        <p>
+          Nine classified defects and one release-provenance exception, each with source,
+          commit, fix, release, and confidence details.
+        </p>
+      </a>
+      <a class="quality-link-card" href="/quality/2026/context">
+        <span>Year-over-year context</span>
+        <h3>Delivery and adoption</h3>
+        <p>
+          Release velocity, pull-request volume, test growth, coverage, usage signals, and
+          a timeline of the year’s major features.
+        </p>
+      </a>
+      <a class="quality-link-card" href="/quality/2026/methodology">
+        <span>Rules and limits</span>
+        <h3>Methodology</h3>
+        <p>
+          Population criteria, classification rules, evidence standard, validation steps,
+          and what this audit cannot establish.
+        </p>
+      </a>
+    </div>
+  </section>
+
+  <section class="quality-section">
+    <div class="quality-reading quality-prose">
+      <p class="quality-section-label">Synthesis</p>
+      <h2>The pattern is older edge cases, found and closed quickly</h2>
+      <p>
+        Six cases concerned code generation or interpretation of OpenAPI details: nested
+        required properties, reserved identifiers, schema-less responses, colon-bearing
+        routes, Path Item metadata, and path-level parameters. Two concerned runtime request
+        behavior: root middleware and exploded object query parameters. One concerned package
+        installation hygiene.
+      </p>
+      <p>
+        The concentration is technically coherent. Counterfact sits at a difficult boundary
+        between a broad specification, generated TypeScript, filesystem-safe route names,
+        and live HTTP behavior. Most externally discovered failures were unusual but valid
+        inputs reaching assumptions that had survived for years. Once the reproductions
+        arrived, eight of nine corrections reached a public release within five calendar days.
+      </p>
+      <p>
+        The strongest quality story is therefore not “no bugs.” It is that a faster,
+        AI-assisted development system expanded capability and verification, attracted
+        continued use, and closed externally reported gaps without producing an observable
+        wave of same-year regressions in this population.
+      </p>
+    </div>
+  </section>
+</QualityLayout>

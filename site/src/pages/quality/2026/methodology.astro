@@ -1,0 +1,154 @@
+---
+import QualityLayout from "../../../layouts/QualityLayout.astro";
+---
+
+<QualityLayout
+  title="Methodology — Counterfact 2026 Quality Audit"
+  description="Scope, classification rules, evidence standards, validation, and limitations for Counterfact’s 2026 external bug audit."
+  canonicalPath="/quality/2026/methodology"
+  active="methodology"
+>
+  <header class="quality-page-header">
+    <div class="quality-wide">
+      <p class="quality-crumbs"><a href="/quality/2026">2026 quality audit</a> / Methodology</p>
+      <p class="quality-kicker">Scope, rules, and limits</p>
+      <h1>How the audit reached its conclusions</h1>
+      <p class="quality-deck">
+        The classification is based on observable history and release chronology, not the
+        language of issue titles, fix pull requests, or assumptions about who wrote the code.
+      </p>
+    </div>
+  </header>
+
+  <article class="quality-section quality-reading quality-prose">
+    <h2>Population</h2>
+    <p>
+      The audit covers public GitHub issues opened from January 1 through September 3, 2026
+      by human reporters who were not Counterfact organization members or maintainers at the
+      time. Outside contributors remain external. Bug-like observations confined to unrelated
+      pull-request reviews, discussions, or private communication are outside scope.
+    </p>
+    <p>
+      The issue search was rerun without relying on labels. This matters because all nine
+      confirmed defects in the population were unlabeled. Maintainer-authored issues,
+      automated bug-hunt issues, enhancements, and questions that did not describe confirmed
+      faulty behavior were excluded.
+    </p>
+    <p>
+      Ten reports survived the external-human screen. Nine described confirmed product defects
+      with an accepted fix or explicit maintainer confirmation. Issue #2348—the question about
+      the legitimacy of release 2.16.2—was reviewed separately because the release was authentic.
+    </p>
+
+    <h2>Classification rules</h2>
+    <ol>
+      <li>
+        <strong>2026 regression:</strong> the same supported behavior demonstrably worked before
+        a specific 2026 change and failed afterward.
+      </li>
+      <li>
+        <strong>Defect in a 2026 feature:</strong> the applicable capability first appeared in
+        2026 and was defective in its initial release.
+      </li>
+      <li>
+        <strong>Pre-existing in 2025:</strong> the failure reproduces at the 2025 boundary, or
+        the responsible logic demonstrably predates 2026 without an intervening working state.
+      </li>
+    </ol>
+    <p>
+      The rules are applied in that order. Every confirmed bug receives one primary category.
+      Confidence and notes carry uncertainty; the audit does not invent a fourth catch-all class.
+    </p>
+
+    <h2>Edge-case policy</h2>
+    <ul>
+      <li>
+        A 2026 refactor that exposes an older latent defect remains pre-existing unless the
+        refactor changed previously correct observable behavior.
+      </li>
+      <li>
+        A missing edge case in a long-standing subsystem is pre-existing when the same input
+        would have failed in 2025, even if nobody reported it until 2026.
+      </li>
+      <li>
+        A capability intentionally introduced in 2026 is a feature defect when it never worked
+        correctly; it is a regression only if an earlier released version worked.
+      </li>
+      <li>
+        “Regression test” in a fix description means the test prevents recurrence. It does not,
+        by itself, date the origin of the bug.
+      </li>
+    </ul>
+
+    <h2>Evidence standard</h2>
+    <p>
+      Each case began with the report, accepted fix, merge commit, and first release containing
+      the fix. The faulty logic was then traced backward using file history, blame, rename-aware
+      history, and content searches. Tags and npm publication dates distinguished an internal
+      commit from a released behavior.
+    </p>
+    <p>
+      High-confidence classifications require at least two corroborating evidence types—for
+      example, source ancestry plus a tagged comparison, or code history plus a focused test
+      added by the accepted fix. Historical states were compared at the end of 2025, immediately
+      around suspected introducing changes, and at the reporter’s version where applicable.
+    </p>
+
+    <h2>Context metrics</h2>
+    <p>
+      Release counts come from npm publication timestamps. Pull-request counts come from GitHub’s
+      merged-PR search for identical January 1–September 3 windows; the author breakdown is
+      reported so dependency automation is visible. Test-file and declaration counts use the
+      same filename and source patterns at tag 1.4.7 and the September 3 main commit. Coverage
+      percentages are the corresponding public Coveralls results.
+    </p>
+    <p>
+      npm download totals use the registry’s public point API for January 1–August 31 in each
+      year. Historical star counts use GitHub’s timestamped stargazer records. These numbers are
+      date-qualified because downloads and stars can change after publication.
+    </p>
+
+    <h2>Limitations</h2>
+    <ul>
+      <li>
+        External reports are not the complete defect population. Internal findings and unknown,
+        unreported bugs are not counted.
+      </li>
+      <li>
+        Nine defects are a small sample, and one reporter supplied six of them. The distribution
+        should not be treated as a universal defect rate.
+      </li>
+      <li>
+        GitHub authorship identifies provenance, not sole responsibility. Contributions pass
+        project review, and agent-authored pull requests still require specification, review,
+        integration, and release decisions.
+      </li>
+      <li>
+        Pull requests, releases, tests, coverage percentages, downloads, and stars illuminate
+        different dimensions; none is a standalone measure of engineering quality.
+      </li>
+      <li>
+        The repository’s 2026 package reorganization changes the coverage denominator. The
+        before-and-after percentages are real public results, but not a controlled experiment
+        over an identical file set.
+      </li>
+      <li>
+        The absence of an observed 2026 regression does not prove that no such regression exists.
+        It establishes only that none appears in the defined, validated public-report population.
+      </li>
+    </ul>
+
+    <div class="quality-callout">
+      <strong>Reproducible takeaway:</strong> the site separates facts demonstrated by issue
+      records, source history, tags, release data, and public metrics from interpretations based
+      on those facts. Follow the links in each case file to inspect the primary evidence.
+    </div>
+
+    <div class="quality-source-links">
+      <a href="https://github.com/counterfact/api-simulator/issues?q=is%3Aissue%20created%3A2026-01-01..2026-09-03">2026 issue search</a>
+      <a href="https://github.com/counterfact/api-simulator/releases">Release history</a>
+      <a href="https://www.npmjs.com/package/counterfact?activeTab=versions">npm versions</a>
+      <a href="https://coveralls.io/github/counterfact/api-simulator?branch=main">Coverage</a>
+    </div>
+  </article>
+</QualityLayout>

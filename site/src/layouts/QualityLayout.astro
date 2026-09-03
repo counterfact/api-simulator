@@ -1,0 +1,67 @@
+---
+import MainLayout from "./MainLayout.astro";
+import "../styles/quality.css";
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  active?: "overview" | "cases" | "context" | "methodology";
+}
+
+const { title, description, canonicalPath, active } = Astro.props;
+
+const navItems = [
+  { key: "overview", label: "Overview", href: "/quality/2026" },
+  { key: "cases", label: "Case files", href: "/quality/2026/cases" },
+  { key: "context", label: "Delivery context", href: "/quality/2026/context" },
+  {
+    key: "methodology",
+    label: "Methodology",
+    href: "/quality/2026/methodology",
+  },
+] as const;
+---
+
+<MainLayout title={title} description={description} canonicalPath={canonicalPath}>
+  <header class="quality-header">
+    <div class="quality-wide quality-header-main">
+      <a class="quality-brand" href="/" aria-label="Counterfact home">
+        <img src="/counterfact.svg" alt="Counterfact" width="180" height="31" />
+      </a>
+      <span class="quality-edition">2026 quality audit</span>
+    </div>
+    <nav class="quality-nav" aria-label="Quality audit navigation">
+      <div class="quality-wide quality-nav-inner">
+        {
+          navItems.map((item) => (
+            <a
+              href={item.href}
+              aria-current={active === item.key ? "page" : undefined}
+            >
+              {item.label}
+            </a>
+          ))
+        }
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <slot />
+  </main>
+
+  <footer class="quality-footer">
+    <div class="quality-wide quality-footer-inner">
+      <p>
+        A source-linked audit of externally reported Counterfact bugs, covering
+        January 1–September 3, 2026.
+      </p>
+      <div>
+        <a href="/">Counterfact home</a>
+        <a href="/docs/getting-started">Documentation</a>
+        <a href="https://github.com/counterfact/api-simulator">GitHub</a>
+      </div>
+    </div>
+  </footer>
+</MainLayout>

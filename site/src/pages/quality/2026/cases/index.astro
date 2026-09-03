@@ -1,0 +1,73 @@
+---
+import QualityLayout from "../../../../layouts/QualityLayout.astro";
+import { auditCases } from "../../../../data/quality-2026";
+---
+
+<QualityLayout
+  title="Case Files — Counterfact 2026 Quality Audit"
+  description="The issue-by-issue evidence behind Counterfact’s 2026 externally reported bug audit."
+  canonicalPath="/quality/2026/cases"
+  active="cases"
+>
+  <header class="quality-page-header">
+    <div class="quality-wide">
+      <p class="quality-crumbs"><a href="/quality/2026">2026 quality audit</a> / Case files</p>
+      <p class="quality-kicker">Issue-by-issue evidence</p>
+      <h1>Nine defects. Nine histories.</h1>
+      <p class="quality-deck">
+        Each classification follows the faulty behavior backward through source history and
+        forward through the release containing its fix. Open a case for the full reasoning,
+        links, and any important distinction.
+      </p>
+    </div>
+  </header>
+
+  <section class="quality-section quality-wide">
+    <div class="quality-case-list">
+      {
+        auditCases.map((item) => (
+          <article class="quality-case-card">
+            <div class="quality-case-number">#{item.issue}</div>
+            <div>
+              <h2><a href={`/quality/2026/cases/${item.issue}`}>{item.shortTitle}</a></h2>
+              <p class="quality-case-meta">
+                {item.reporter} · {item.reportedOn} · {item.area} · fixed in {item.fixedRelease}
+              </p>
+            </div>
+            <span class:list={[
+              "quality-badge",
+              item.category === "Defect in a 2026 feature"
+                ? "quality-badge-feature"
+                : "quality-badge-legacy",
+            ]}>
+              {item.category}
+            </span>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="quality-section">
+    <div class="quality-reading quality-prose">
+      <p class="quality-section-label">Reviewed exception</p>
+      <h2>Issue #2348 was a valid concern, but not a product defect</h2>
+      <p>
+        An external user asked whether npm release 2.16.2 was legitimate because it had no
+        corresponding GitHub tag or release and introduced several new @counterfact packages.
+        The publication was authentic: it was the initial modular-package release, performed
+        locally during a release-workflow transition. The absence of normal provenance signals
+        created understandable concern, and GitHub-based publishing resumed with 2.16.5.
+      </p>
+      <p>
+        The audit records this as a release-provenance and communication gap. It is not forced
+        into a taxonomy designed to date faulty product behavior.
+      </p>
+      <div class="quality-source-links">
+        <a href="https://github.com/counterfact/api-simulator/issues/2348">Read issue #2348</a>
+        <a href="https://www.npmjs.com/package/counterfact/v/2.16.2">Inspect 2.16.2 on npm</a>
+        <a href="https://github.com/counterfact/api-simulator/releases/tag/counterfact%402.16.5">See the restored GitHub release</a>
+      </div>
+    </div>
+  </section>
+</QualityLayout>
