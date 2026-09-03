@@ -26,6 +26,10 @@ export interface AuditCase {
   nuance?: string;
 }
 
+export interface AuditException {
+  issue: number;
+}
+
 export const auditCases: AuditCase[] = [
   {
     issue: 1506,
@@ -286,21 +290,30 @@ export const auditCases: AuditCase[] = [
   },
 ];
 
-export const categoryCounts = [
-  { label: "2026 regression", count: 0, percent: 0, tone: "neutral" },
-  {
-    label: "Defect in a 2026 feature",
-    count: 1,
-    percent: 11.1,
-    tone: "feature",
-  },
-  {
-    label: "Pre-existing in 2025",
-    count: 8,
-    percent: 88.9,
-    tone: "legacy",
-  },
-] as const;
+export const auditExceptions: AuditException[] = [{ issue: 2348 }];
+
+export const totalCases = auditCases.length;
+export const totalRecords = totalCases + auditExceptions.length;
+
+const categoryDefinitions: Array<{
+  label: AuditCategory;
+  tone: "neutral" | "feature" | "legacy";
+}> = [
+  { label: "2026 regression", tone: "neutral" },
+  { label: "Defect in a 2026 feature", tone: "feature" },
+  { label: "Pre-existing in 2025", tone: "legacy" },
+];
+
+export const categoryCounts = categoryDefinitions.map(({ label, tone }) => {
+  const count = auditCases.filter((item) => item.category === label).length;
+
+  return {
+    label,
+    count,
+    percent: totalCases === 0 ? 0 : Number(((count / totalCases) * 100).toFixed(1)),
+    tone,
+  };
+});
 
 export const deliveryMetrics = [
   {

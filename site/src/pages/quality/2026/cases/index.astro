@@ -38,7 +38,9 @@ import { auditCases } from "../../../../data/quality-2026";
               "quality-badge",
               item.category === "Defect in a 2026 feature"
                 ? "quality-badge-feature"
-                : "quality-badge-legacy",
+                : item.category === "Pre-existing in 2025"
+                  ? "quality-badge-legacy"
+                  : undefined,
             ]}>
               {item.category}
             </span>

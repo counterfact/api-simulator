@@ -3,6 +3,8 @@ import QualityLayout from "../../../layouts/QualityLayout.astro";
 import {
   auditCases,
   categoryCounts,
+  totalCases,
+  totalRecords,
 } from "../../../data/quality-2026";
 
 const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
@@ -98,11 +100,11 @@ const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
       <dl class="quality-stat-list" aria-label="Audit facts">
         <div>
           <dt>Confirmed external bugs</dt>
-          <dd>9</dd>
+          <dd>{totalCases}</dd>
         </div>
         <div>
           <dt>Released within five days</dt>
-          <dd>{fastFixes} of 9</dd>
+          <dd>{fastFixes} of {totalCases}</dd>
         </div>
         <div>
           <dt>Generator or OpenAPI cases</dt>
@@ -118,7 +120,7 @@ const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
         </div>
         <div>
           <dt>Confidence</dt>
-          <dd>High for all 9</dd>
+          <dd>High for all {totalCases}</dd>
         </div>
       </dl>
     </div>
@@ -133,7 +135,7 @@ const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
     </p>
     <div class="quality-link-grid">
       <a class="quality-link-card" href="/quality/2026/cases">
-        <span>10 records</span>
+        <span>{totalRecords} records</span>
         <h3>Case files</h3>
         <p>
           Nine classified defects and one release-provenance exception, each with source,
