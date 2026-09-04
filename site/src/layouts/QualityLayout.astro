@@ -6,7 +6,7 @@ interface Props {
   title: string;
   description: string;
   canonicalPath: string;
-  active?: "article" | "cases" | "candidates" | "context" | "methodology";
+  active?: "article" | "cases" | "candidates" | "context" | "feedback" | "methodology";
 }
 
 const { title, description, canonicalPath, active } = Astro.props;
@@ -28,6 +28,11 @@ const navItems = [
     key: "context",
     label: "Supplementary data",
     href: "/quality/2026/context",
+  },
+  {
+    key: "feedback",
+    label: "Feedback and review",
+    href: "/quality/2026/feedback",
   },
 ] as const;
 ---
