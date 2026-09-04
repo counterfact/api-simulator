@@ -2645,19 +2645,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@posthog/core@npm:^1.49.1":
-  version: 1.49.2
-  resolution: "@posthog/core@npm:1.49.2"
+"@posthog/core@npm:^1.50.0":
+  version: 1.50.5
+  resolution: "@posthog/core@npm:1.50.5"
   dependencies:
-    "@posthog/types": "npm:^1.407.1"
-  checksum: 10c0/ae1430f4455e7ccfc967e3033c72e04c41a997d55aad861930b927b429a047b88b14607378429e0f7f82799c2d7d88d9bbd7b7a5d1fe5305e70bfc0dfe36abb7
+    "@posthog/types": "npm:^1.409.0"
+  checksum: 10c0/0bd8db388c0cb43bf8f55f9236bd00f33703e3840cf412eea70a07c8de2ae5a6147aaae37339d02a350704a711fe87a85524238147f43e718bfbf29aee778352
   languageName: node
   linkType: hard
 
-"@posthog/types@npm:^1.407.1":
-  version: 1.407.1
-  resolution: "@posthog/types@npm:1.407.1"
-  checksum: 10c0/0dd4effcec2a267b92035397bc8ced875618f5e07395470c474f164510be254ed145b3aca583935fc64dd6937a9a7e60a3941414f63bb0e0a1c6acf94e9a668e
+"@posthog/types@npm:^1.409.0":
+  version: 1.409.0
+  resolution: "@posthog/types@npm:1.409.0"
+  checksum: 10c0/ea356ea32c91fdc905e0b23e74976ac4b08d3f891679c5ba2dfc77496a5f8b7943b8057d7a8be6f4a21f8f9950d607b2708ac795e269cf5d49e18031bbe31b31
   languageName: node
   linkType: hard
 
@@ -5104,7 +5104,7 @@ __metadata:
     http-terminator: "npm:3.2.0"
     js-yaml: "npm:5.4.1"
     open: "npm:11.0.1"
-    posthog-node: "npm:5.51.4"
+    posthog-node: "npm:5.51.6"
   bin:
     counterfact: bin/counterfact.js
   languageName: unknown
@@ -10103,17 +10103,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-node@npm:5.51.4":
-  version: 5.51.4
-  resolution: "posthog-node@npm:5.51.4"
+"posthog-node@npm:5.51.6":
+  version: 5.51.6
+  resolution: "posthog-node@npm:5.51.6"
   dependencies:
-    "@posthog/core": "npm:^1.49.1"
+    "@posthog/core": "npm:^1.50.0"
   peerDependencies:
     rxjs: ^7.0.0
   peerDependenciesMeta:
     rxjs:
       optional: true
-  checksum: 10c0/17220dc7c5b98c6870c71995f7b37ad87f218d4e711f2da1520e4f046512789cf9260de5de5fca8ec7478827d9ed6a57eefd9bb24304facb944b2f51760ddcca
+  checksum: 10c0/1174a573e0ffc4e1dfff03ec3c099940bf5f8565ef72e17d7a56fd5cbced70604ca07a5c43115266e80534c8e0fa84b14b245efc9dcc373a16bac064ec410b95
   languageName: node
   linkType: hard
 
