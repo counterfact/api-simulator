@@ -2122,12 +2122,17 @@ describe("given a request that contains the differently cased path", () => {
     function makeResponseDispatcher(
       validateResponses: boolean,
       handlerHeaders: Record<string, string> = {},
+      includeStatus = true,
     ) {
       const registry = new Registry();
 
       registry.add("/widgets", {
         GET() {
-          return { body: "ok", headers: handlerHeaders, status: 200 };
+          return {
+            body: "ok",
+            headers: handlerHeaders,
+            ...(includeStatus ? { status: 200 } : {}),
+          };
         },
       });
 
@@ -2168,6 +2173,25 @@ describe("given a request that contains the differently cased path", () => {
         .map(([, value]) => value);
 
       expect(errorValues?.[0]).toContain("x-required-header");
+    });
+
+    it("validates an implicit 200 response against the 200 response spec", async () => {
+      const dispatcher = makeResponseDispatcher(true, {}, false);
+
+      const response = await dispatcher.request({
+        body: "",
+        headers: {},
+        method: "GET",
+        path: "/widgets",
+        query: {},
+        req: { path: "/widgets" },
+      });
+
+      expect(response.status).toBeUndefined();
+      expect(response.appendedHeaders).toContainEqual([
+        "response-type-error",
+        "response header 'x-required-header' is required",
+      ]);
     });
 
     it("adds response-type-error headers when a response header has the wrong type", async () => {
