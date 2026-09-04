@@ -1,0 +1,144 @@
+---
+import QualityLayout from "../../../layouts/QualityLayout.astro";
+import {
+  auditEvidence,
+  deliveryMetrics,
+  featureTimeline,
+  testingMetrics,
+} from "../../../data/quality-2026";
+
+const supplemental = auditEvidence.activity.supplementalFullWindow;
+const adoption = auditEvidence.activity.adoption;
+---
+
+<QualityLayout
+  title="Supplementary data — Counterfact quality study"
+  description="Delivery, testing, coverage, adoption, and product-scope measurements supporting the Counterfact quality study."
+  canonicalPath="/quality/2026/context"
+  active="context"
+>
+  <article class="appendix-page quality-reading quality-prose">
+    <header class="appendix-header">
+      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Supplementary data</p>
+      <h1>Supplementary delivery and product data</h1>
+      <p>
+        Defect counts need context. This appendix records how much work entered the
+        project, how automated verification changed, whether public exposure
+        contracted, and which substantial capabilities shipped during the study.
+        None of these measurements is treated as a standalone quality score.
+      </p>
+    </header>
+
+    <h2>Matched-window delivery activity</h2>
+    <table class="research-table">
+      <thead><tr><th scope="col">Measure</th><th scope="col">2025 comparison</th><th scope="col">2026 post-adoption</th></tr></thead>
+      <tbody>
+        {deliveryMetrics.map((metric) => (
+          <tr>
+            <th scope="row">{metric.label}<span class="cell-detail">{metric.note}</span></th>
+            <td>{metric.before}</td>
+            <td>{metric.after}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p>
+      Non-dependency merges increased from 15 to 281, or 18.7 times. The complete
+      2026 matched window contains 558 merges: 277 dependency-bot changes, 197
+      agent-authored changes, 80 maintainer-authored changes, and four changes by
+      other contributors. The 2025 matched window contains 153 merges: 138
+      dependency-bot changes, eleven maintainer-authored changes, and four changes
+      by other contributors.
+    </p>
+    <p>
+      Authorship identifies provenance, not review effort or product value. A pull
+      request can be trivial or extensive, and every accepted agent-authored change
+      remained subject to maintainer review and release decisions.
+    </p>
+
+    <h2>Automated verification snapshots</h2>
+    <table class="research-table">
+      <thead><tr><th scope="col">Measure</th><th scope="col">Before adoption</th><th scope="col">September 3</th></tr></thead>
+      <tbody>
+        {testingMetrics.map((metric) => (
+          <tr><th scope="row">{metric.label}</th><td>{metric.displayBefore}</td><td>{metric.displayAfter}</td></tr>
+        ))}
+      </tbody>
+    </table>
+    <p>
+      The file count includes JavaScript and TypeScript files containing at least
+      one explicit <code>it</code> or <code>test</code> declaration, plus Python
+      files named <code>test_*.py</code>. Declaration counts include those
+      JavaScript and TypeScript calls, including modifiers. Parameterized tests
+      can execute more cases than this static count implies. The exact counter is
+      available in the repository and both invocations appear under Methods.
+    </p>
+    <p>
+      Public line coverage rose by 8.846 percentage points, from{" "}
+      <a href={auditEvidence.activity.snapshots.preAdoption.coverageSource}>82.884%</a>{" "}
+      immediately before adoption to{" "}
+      <a href={auditEvidence.activity.snapshots.endOfObservation.coverageSource}>91.73%</a>{" "}
+      at the observation endpoint. During that interval the project was reorganized
+      into multiple packages, so the percentages are real results over changing
+      source sets rather than a controlled measurement over identical files.
+    </p>
+
+    <h2>Full-window sensitivity measurements</h2>
+    <p>
+      The original January 1–September 3 comparison counted{" "}
+      {supplemental.mergedPullRequests["2025"]} merged pull requests and{" "}
+      {supplemental.publishedReleases["2025"]} releases in 2025, versus{" "}
+      {supplemental.mergedPullRequests["2026"]} merged pull requests and{" "}
+      {supplemental.publishedReleases["2026"]} releases in 2026. It used the final{" "}
+      2025 release snapshot—{supplemental.testFiles["2025"]} test files and{" "}
+      {supplemental.testDeclarations["2025"]} declarations—rather than the more
+      precise March 10 pre-adoption snapshot used in the article.
+    </p>
+
+    <h2>Public exposure did not contract</h2>
+    <table class="research-table">
+      <thead><tr><th scope="col">Measure</th><th scope="col">Earlier observation</th><th scope="col">2026 observation</th></tr></thead>
+      <tbody>
+        <tr>
+          <th scope="row">npm downloads, January–August</th>
+          <td>{adoption.npmDownloadsJanuaryThroughAugust["2025"].toLocaleString()}</td>
+          <td>{adoption.npmDownloadsJanuaryThroughAugust["2026"].toLocaleString()}</td>
+        </tr>
+        <tr>
+          <th scope="row">GitHub stars</th>
+          <td>{adoption.githubStars.endOf2025} at year-end 2025</td>
+          <td>{adoption.githubStars.observedAt} on September 3</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Downloads include repeated and automated installations; stars indicate
+      interest rather than active use. They are included only to show that the
+      project’s externally visible footprint did not disappear while defects were
+      being observed.
+    </p>
+
+    <h2>Major capabilities released in 2026</h2>
+    <ol class="chronology-list">
+      {featureTimeline.map((feature) => (
+        <li>
+          <p><strong>{feature.release}, {feature.date}:</strong> <a href={feature.href}>{feature.title}</a></p>
+          <p>{feature.detail}</p>
+        </li>
+      ))}
+    </ol>
+
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://www.npmjs.com/package/counterfact?activeTab=versions">npm publication history</a></li>
+      <li><a href="https://api.npmjs.org/downloads/point/2025-01-01:2025-08-31/counterfact">2025 npm download interval</a></li>
+      <li><a href="https://api.npmjs.org/downloads/point/2026-01-01:2026-08-31/counterfact">2026 npm download interval</a></li>
+      <li><a href="https://github.com/counterfact/api-simulator/stargazers">GitHub stargazers</a></li>
+      <li><a href="/quality/2026/data.json">Complete machine-readable dataset</a></li>
+    </ul>
+    <p>
+      Exact query strings, timestamps, commits, and calculation rules are published
+      in the <a href="/quality/2026/methodology">methods appendix</a>.
+    </p>
+  </article>
+</QualityLayout>

@@ -1,0 +1,190 @@
+---
+import QualityLayout from "../../../layouts/QualityLayout.astro";
+import { auditEvidence } from "../../../data/quality-2026";
+---
+
+<QualityLayout
+  title="Methods and reproducibility — Counterfact quality study"
+  description="Study design, population rules, classification criteria, sources, calculations, and limitations for the Counterfact quality study."
+  canonicalPath="/quality/2026/methodology"
+  active="methodology"
+>
+  <article class="appendix-page quality-reading quality-prose">
+    <header class="appendix-header">
+      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Methods and reproducibility</p>
+      <h1>Methods and reproducibility</h1>
+      <p>
+        This appendix defines the intervention, population, outcomes,
+        classifications, and limitations used in the study. The checked-in
+        verifier recomputes the reported cohorts from the same data rendered by
+        the site.
+      </p>
+    </header>
+
+    <h2>Hypothesis and study design</h2>
+    <blockquote>
+      {auditEvidence.study.hypothesis}
+    </blockquote>
+    <p>
+      The study is a retrospective observational self-audit. The hypothesis was
+      formulated after the observation period and was not preregistered. Results
+      can describe what changed in this repository; they cannot isolate the effect
+      of AI from changes in testing, review, architecture, contributors, feature
+      mix, or maintainer experience.
+    </p>
+
+    <h2>Intervention and comparison windows</h2>
+    <p>
+      The intervention begins at{" "}<time datetime={auditEvidence.study.intervention.startedAt}>March 10,
+      2026 at 16:38:20 UTC</time>, when{" "}
+      <a href={auditEvidence.study.intervention.source}>the first agent-authored
+      product change entered <code>main</code></a>. The parent of that merge,{" "}
+      <a href={`https://github.com/counterfact/api-simulator/commit/${auditEvidence.study.intervention.baselineCommit}`}><code>{auditEvidence.study.intervention.baselineCommit.slice(0, 8)}</code></a>,
+      is the pre-adoption repository snapshot.
+    </p>
+    <table class="research-table">
+      <thead><tr><th scope="col">Cohort</th><th scope="col">Start, inclusive</th><th scope="col">End, exclusive</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">2025 matched comparison</th><td>March 10, 2025 16:38:20 UTC</td><td>September 4, 2025 00:00 UTC</td></tr>
+        <tr><th scope="row">2026 post-adoption</th><td>March 10, 2026 16:38:20 UTC</td><td>September 4, 2026 00:00 UTC</td></tr>
+      </tbody>
+    </table>
+    <p>
+      A supplementary screen covers January 1 through September 3 in both years.
+      It preserves all records collected in the original audit and tests whether
+      the primary boundary changes the origin pattern.
+    </p>
+
+    <h2>Population</h2>
+    <p>
+      The source population is public GitHub issues and accepted standalone defect
+      pull requests opened by human reporters who were not Counterfact organization
+      members or maintainers at the time. Outside contributors remain external.
+      Searches were rerun without relying on labels.
+    </p>
+    <p>
+      A record enters the product-defect cohort only when it describes confirmed
+      faulty behavior. Maintainer-authored reports, automated bug-hunt issues,
+      enhancements, invalid-input reports, and questions without confirmed faulty
+      behavior are excluded. A pull request tied to a qualifying issue is evidence
+      for that issue, not a second report. Standalone accepted defect pull requests
+      remain eligible.
+    </p>
+    <p>
+      The complete review population contains nineteen candidates: fourteen
+      included product defects, three exclusions, one deduplicated pull request,
+      and one process-quality incident. Each disposition appears in the
+      <a href="/quality/2026/candidates">candidate ledger</a> with its rationale and
+      primary source.
+    </p>
+
+    <h2>Primary outcomes</h2>
+    <ol>
+      <li>
+        <strong>Introduced product defects per 100 non-dependency merges.</strong>{" "}
+        A defect is introduced during a window when its first confirmed affected
+        public release was published inside that window. The report must also be
+        opened inside the window.
+      </li>
+      <li>
+        <strong>Report-to-release time.</strong> Calendar days from the external
+        report to the first public release containing the accepted correction,
+        summarized by the median to reduce sensitivity to long-lived outliers.
+      </li>
+      <li>
+        <strong>Automated verification.</strong> JavaScript and TypeScript files
+        containing explicit <code>it</code>/<code>test</code> declarations, Python
+        files named <code>test_*.py</code>, the number of those JavaScript and
+        TypeScript declarations, and the public Coveralls line-coverage result at
+        the pre-adoption and end-of-observation snapshots.
+      </li>
+    </ol>
+    <p>
+      Pull-request and release counts measure delivery activity, not product value.
+      Dependency-only pull requests are removed from the primary delivery
+      denominator. npm downloads and GitHub stars appear only as exposure context.
+    </p>
+
+    <h2>Defect-origin classification</h2>
+    <ol>
+      <li><strong>Same-year regression:</strong> supported behavior demonstrably worked before a specific change in the report year and failed afterward.</li>
+      <li><strong>Defect in a same-year feature:</strong> the applicable capability first appeared in the report year and was defective in its initial release.</li>
+      <li><strong>Pre-existing:</strong> the failure is confirmed before the report year without an intervening working state.</li>
+    </ol>
+    <p>
+      The rules are applied in that order. Every product defect receives one
+      primary category. The post-adoption analysis adds a separate time boundary:
+      a 2026 feature defect can still predate adoption when its first affected
+      release shipped before March 10.
+    </p>
+
+    <h2>Edge-case policy</h2>
+    <ul>
+      <li>A refactor that exposes an older latent defect does not become its origin unless it changed previously correct observable behavior.</li>
+      <li>A missing edge case in a long-standing subsystem is pre-existing when the same valid input would have failed before the comparison boundary.</li>
+      <li>A newly introduced capability is a feature defect when it never worked correctly; it is a regression only if an earlier released version worked.</li>
+      <li>“Regression test” in a fix description means the test prevents recurrence. It does not date the origin of the bug.</li>
+    </ul>
+
+    <h2>Evidence standard</h2>
+    <p>
+      Each case begins with the report, accepted fix, merge commit, and first
+      release containing the correction. The faulty logic is traced backward using
+      file history, blame, rename-aware history, content searches, tags, and npm
+      publication dates. Historical states are compared around suspected origins
+      and at the reporter’s version where applicable.
+    </p>
+    <p>
+      Classification confidence and chronology confidence are recorded separately.
+      “Exact origin” is used only when history identifies the introducing change.
+      “Confirmed affected by” is a conservative bound: the linked commit and release
+      demonstrate that the defect existed by that point without claiming it began
+      there. Each <a href="/quality/2026/cases">case appendix</a> exposes the source
+      history and release chronology used for its classification.
+    </p>
+
+    <h2>Maturity sensitivity</h2>
+    <p>
+      A supplementary calculation keeps only cases whose first confirmed affected
+      release had at least ninety complete days of observation before its cohort’s
+      September 4 cutoff. All fourteen product cases meet that threshold. This does
+      not make later releases defect-free; it prevents them from supporting claims
+      for which they had too little observation time.
+    </p>
+
+    <h2>Reproduction and data availability</h2>
+    <p>
+      The <a href="/quality/2026/data.json">machine-readable evidence manifest</a>
+      contains the hypothesis, exact windows, intervention commit, all nineteen
+      candidate dispositions, all fourteen case histories, the process incident,
+      activity measurements, source URLs, and feature chronology. The repository’s
+      offline verifier checks window membership, totals, deduplication, source
+      completeness, maturity, and pull-request author sums without depending on a
+      live search result.
+    </p>
+    <details>
+      <summary>Recorded source queries and commands</summary>
+      <ul class="command-list">
+        {auditEvidence.queries.map((query) => <li><code>{query}</code></li>)}
+        {auditEvidence.commands.map((command) => <li><code>{command}</code></li>)}
+      </ul>
+    </details>
+
+    <h2>Limitations and disclosure</h2>
+    <ul>
+      <li>External reports are not the complete defect population. Internal findings and unknown, unreported bugs are absent.</li>
+      <li>Fourteen defects are a small sample, and one reporter supplied six of the 2026 issue reports.</li>
+      <li>GitHub authorship records provenance, not sole responsibility. Agent-authored work still passed human specification, review, integration, and release decisions.</li>
+      <li>Pull requests, releases, tests, coverage, downloads, and stars measure different dimensions and cannot be combined into a universal quality score.</li>
+      <li>The package reorganization changed the coverage denominator, so the public percentages do not describe an identical set of files.</li>
+      <li>The absence of an observed post-adoption defect introduction does not prove that none exists.</li>
+    </ul>
+    <p>
+      The audit was conducted and written by Counterfact’s maintainer, who adopted
+      and benefits from coding-agent workflows. Coding agents assisted with the
+      repository work. Source links, explicit exclusions, checked calculations, and
+      the complete candidate ledger are provided so readers can challenge the
+      author’s decisions directly.
+    </p>
+  </article>
+</QualityLayout>

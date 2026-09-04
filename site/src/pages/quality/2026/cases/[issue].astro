@@ -1,0 +1,106 @@
+---
+import QualityLayout from "../../../../layouts/QualityLayout.astro";
+import {
+  allProductCases,
+  caseIsInPrimaryWindow,
+  casePath,
+  caseWasIntroducedInPrimaryWindow,
+  categoryLabel,
+  commitUrl,
+  prUrl,
+  reportUrl,
+  releaseUrl,
+  type AuditCase,
+} from "../../../../data/quality-2026";
+
+export function getStaticPaths() {
+  return allProductCases.map((item, index) => ({
+    params: {
+      issue: item.reportYear === 2025
+        ? `2025-${item.issue}`
+        : `${item.reportKind === "pull request" ? "pr-" : ""}${item.issue}`,
+    },
+    props: {
+      item,
+      previous: index > 0 ? allProductCases[index - 1] : undefined,
+      next: index < allProductCases.length - 1 ? allProductCases[index + 1] : undefined,
+    },
+  }));
+}
+
+interface Props {
+  item: AuditCase;
+  previous?: AuditCase;
+  next?: AuditCase;
+}
+
+const { item, previous, next } = Astro.props;
+---
+
+<QualityLayout
+  title={`#${item.issue}: ${item.shortTitle} — Counterfact quality study`}
+  description={item.finding}
+  canonicalPath={casePath(item)}
+  active="cases"
+>
+  <article class="appendix-page quality-reading quality-prose">
+    <header class="appendix-header">
+      <p class="breadcrumbs">
+        <a href="/quality/2026">Article</a> /{" "}
+        <a href="/quality/2026/cases">Defect cases</a> / #{item.issue}
+      </p>
+      <h1>{item.title}</h1>
+      <p>{item.failure}</p>
+    </header>
+
+    <dl class="case-facts">
+      <div><dt>Report</dt><dd>{item.reportKind === "pull request" ? "Pull request" : "Issue"} #{item.issue}</dd></div>
+      <div><dt>Reporter</dt><dd>{item.reporter}</dd></div>
+      <div><dt>Reported</dt><dd>{item.reportedOn}</dd></div>
+      <div><dt>Reported version</dt><dd>{item.reportedVersion}</dd></div>
+      <div><dt>Primary matched window</dt><dd>{caseIsInPrimaryWindow(item) ? "Included" : "Outside primary window"}</dd></div>
+      <div><dt>First affected release entered primary window</dt><dd>{caseWasIntroducedInPrimaryWindow(item) ? "Yes" : "No"}</dd></div>
+      <div><dt>Origin classification</dt><dd>{categoryLabel(item.category, item.reportYear)}</dd></div>
+      <div><dt>Classification confidence</dt><dd>{item.confidence}</dd></div>
+      <div><dt>Chronology confidence</dt><dd>{item.chronologyConfidence}</dd></div>
+      <div><dt>Accepted correction</dt><dd>PR #{item.fixPr}</dd></div>
+      <div><dt>First fixed release</dt><dd>{item.fixedRelease}</dd></div>
+      <div><dt>Report to release</dt><dd>{item.responseDays} {item.responseDays === 1 ? "day" : "days"}</dd></div>
+    </dl>
+
+    <section aria-labelledby="case-finding">
+      <h2 id="case-finding">Finding</h2>
+      <p>{item.finding}</p>
+      {item.nuance && <p>{item.nuance}</p>}
+    </section>
+
+    <section aria-labelledby="case-evidence">
+      <h2 id="case-evidence">Evidence trail</h2>
+      <h3>Origin</h3>
+      <p>
+        {item.evidencePrecision}: <a href={commitUrl(item.originCommit)}><code>{item.originCommit.slice(0, 8)}</code></a>,
+        committed {item.originDate}; {item.evidencePrecision === "Exact origin" ? "first affected release" : "confirmed affected release"} {item.firstAffectedRelease}.
+        {" "}{item.originSummary}
+      </p>
+      <h3>Source history and behavioral evidence</h3>
+      <p>{item.historyEvidence}</p>
+      <h3>Release chronology</h3>
+      <p>{item.releaseEvidence}</p>
+    </section>
+
+    <section aria-labelledby="case-sources">
+      <h2 id="case-sources">Primary sources</h2>
+      <ol class="reference-list">
+        <li><a href={reportUrl(item)}>{item.reportKind === "issue" ? "Issue" : "Pull request"} #{item.issue}</a></li>
+        <li><a href={prUrl(item.fixPr)}>Accepted correction, PR #{item.fixPr}</a></li>
+        <li><a href={commitUrl(item.originCommit)}>Origin or earliest confirmed affected commit</a></li>
+        <li><a href={releaseUrl(item.fixedRelease)}>Release {item.fixedRelease}</a></li>
+      </ol>
+    </section>
+
+    <nav class="case-pagination" aria-label="Case appendix pagination">
+      {previous ? <a href={casePath(previous)}>← #{previous.issue} {previous.shortTitle}</a> : <span />}
+      {next ? <a href={casePath(next)}>#{next.issue} {next.shortTitle} →</a> : <a href="/quality/2026/methodology">Methods →</a>}
+    </nav>
+  </article>
+</QualityLayout>
