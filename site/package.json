@@ -12,8 +12,8 @@
     "check-links": "astro preview --port 4321 & SERVER_PID=$!; sleep 5 && linkinator http://localhost:4321 --recurse --skip 'https://|http://(?!localhost)' --verbosity error; EXIT=$?; kill $SERVER_PID 2>/dev/null; exit $EXIT"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "^7.2.3",
-    "astro": "7.2.9"
+    "@astrojs/markdown-remark": "^7.3.0",
+    "astro": "7.2.10"
   },
   "devDependencies": {
     "linkinator": "8.1.0"
