@@ -1,0 +1,116 @@
+---
+import QualityLayout from "../../../layouts/QualityLayout.astro";
+import {
+  allProductCases,
+  candidateIsInPrimaryWindow,
+  candidates,
+  casePath,
+  dispositionLabel,
+  formatDate,
+} from "../../../data/quality-2026";
+
+const casesById = new Map(allProductCases.map((item) => [item.id, item]));
+const candidatesById = new Map(candidates.map((item) => [item.id, item]));
+const cohorts = ([2025, 2026] as const).map((year) => ({
+  year,
+  candidates: candidates.filter((candidate) => candidate.year === year),
+}));
+---
+
+<QualityLayout
+  title="Candidate disposition ledger — Counterfact quality study"
+  description="Every issue and pull request reviewed for the Counterfact quality study, including its inclusion decision and rationale."
+  canonicalPath="/quality/2026/candidates"
+  active="candidates"
+>
+  <article class="appendix-page">
+    <header class="appendix-header quality-reading">
+      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Candidate disposition ledger</p>
+      <h1>Candidate disposition ledger</h1>
+      <p>
+        This appendix lists all 19 records that reached manual review. No
+        exclusion is hidden behind a summary count. The title, reporter, date,
+        source, decision, and rationale come from the same evidence manifest
+        used to calculate the article’s results.
+      </p>
+    </header>
+
+    <section class="quality-figure-wide appendix-introduction">
+      <dl class="definition-list">
+        <div><dt>Included product defect</dt><dd>Confirmed faulty product behavior counted once in the defect cohort.</dd></div>
+        <div><dt>Excluded</dt><dd>A reviewed report that did not meet the product-defect population rule.</dd></div>
+        <div><dt>Deduplicated</dt><dd>A pull request used as evidence for an included issue, not counted as a second report.</dd></div>
+        <div><dt>Process incident</dt><dd>An externally visible workflow or provenance failure analyzed outside product-defect percentages.</dd></div>
+      </dl>
+    </section>
+
+    {
+      cohorts.map((cohort) => (
+        <section class="candidate-cohort quality-figure-wide" aria-labelledby={`cohort-${cohort.year}`}>
+          <h2 id={`cohort-${cohort.year}`}>{cohort.year} reviewed candidates</h2>
+          <div class="table-scroll">
+            <table class="research-table candidate-table">
+              <thead>
+                <tr>
+                  <th scope="col">Record</th>
+                  <th scope="col">Reporter and date</th>
+                  <th scope="col">Primary window</th>
+                  <th scope="col">Decision and rationale</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cohort.candidates.map((candidate) => {
+                  const detail = casesById.get(candidate.id);
+                  const linked = candidate.linkedCandidateId
+                    ? candidatesById.get(candidate.linkedCandidateId)
+                    : undefined;
+                  return (
+                    <tr id={candidate.id}>
+                      <th scope="row">
+                        <a href={candidate.sourceUrl}>
+                          {candidate.kind === "pull request" ? "PR" : "Issue"} #{candidate.number}
+                        </a>
+                        <span class="cell-detail">{candidate.title}</span>
+                      </th>
+                      <td>
+                        {candidate.author}
+                        <time class="cell-detail" datetime={candidate.openedAt}>
+                          {formatDate(candidate.openedAt)}<br />{candidate.openedAt}
+                        </time>
+                      </td>
+                      <td>{candidateIsInPrimaryWindow(candidate) ? "Yes" : "No; supplementary only"}</td>
+                      <td>
+                        <strong>{dispositionLabel(candidate.disposition)}</strong>
+                        <span class="cell-detail">{candidate.reason}</span>
+                        {linked && (
+                          <span class="cell-detail">
+                            Linked to <a href={`#${linked.id}`}>
+                              {linked.kind === "pull request" ? "PR" : "issue"} #{linked.number}
+                            </a>.
+                          </span>
+                        )}
+                        {detail && (
+                          <span class="cell-detail"><a href={casePath(detail)}>Read the case evidence</a>.</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))
+    }
+
+    <footer class="appendix-notes quality-reading quality-prose">
+      <h2>Review the source data</h2>
+      <p>
+        Download the <a href="/quality/2026/data.json">complete underlying dataset</a>{" "}
+        to inspect the precise timestamps, source links, classifications, and
+        calculation inputs. The <a href="/quality/2026/methodology">methods appendix</a>{" "}
+        publishes the population and deduplication rules used for these decisions.
+      </p>
+    </footer>
+  </article>
+</QualityLayout>

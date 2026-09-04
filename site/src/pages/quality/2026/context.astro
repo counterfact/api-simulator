@@ -1,210 +1,144 @@
 ---
 import QualityLayout from "../../../layouts/QualityLayout.astro";
 import {
+  auditEvidence,
   deliveryMetrics,
   featureTimeline,
+  testingMetrics,
 } from "../../../data/quality-2026";
+
+const supplemental = auditEvidence.activity.supplementalFullWindow;
+const adoption = auditEvidence.activity.adoption;
 ---
 
 <QualityLayout
-  title="Delivery and Adoption — Counterfact 2026 Quality Audit"
-  description="The development pace, test growth, adoption signals, and major product features surrounding Counterfact’s 2026 bug audit."
+  title="Supplementary data — Counterfact quality study"
+  description="Delivery, testing, coverage, adoption, and product-scope measurements supporting the Counterfact quality study."
   canonicalPath="/quality/2026/context"
   active="context"
 >
-  <header class="quality-page-header">
-    <div class="quality-wide">
-      <p class="quality-crumbs"><a href="/quality/2026">2026 quality audit</a> / Delivery context</p>
-      <p class="quality-kicker">The denominator around the defects</p>
-      <h1>More delivery activity, broader tests, more use</h1>
-      <p class="quality-deck">
-        A low bug count means little without the environment around it. In 2026,
-        Counterfact’s delivery rate accelerated, its verification system expanded,
-        adoption signals continued upward, and the product’s scope grew materially.
+  <article class="appendix-page quality-reading quality-prose">
+    <header class="appendix-header">
+      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Supplementary data</p>
+      <h1>Supplementary delivery and product data</h1>
+      <p>
+        Defect counts need context. This appendix records how much work entered the
+        project, how automated verification changed, whether public exposure
+        contracted, and which substantial capabilities shipped during the study.
+        None of these measurements is treated as a standalone quality score.
       </p>
-    </div>
-  </header>
+    </header>
 
-  <section class="quality-section quality-wide" aria-labelledby="pace-heading">
-    <p class="quality-section-label">Development pace</p>
-    <h2 id="pace-heading">Delivery accelerated by several measures</h2>
-    <p class="quality-section-intro">
-      Same-period comparisons reduce the distortion of comparing a partial year with a full
-      one. Pull-request volume includes automation; the note below separates it.
-    </p>
-    <table class="quality-metric-table">
-      <thead>
-        <tr>
-          <th scope="col">Measure</th>
-          <th scope="col">2025</th>
-          <th scope="col">2026</th>
-          <th scope="col">Change</th>
-        </tr>
-      </thead>
+    <h2>Matched-window delivery activity</h2>
+    <table class="research-table">
+      <thead><tr><th scope="col">Measure</th><th scope="col">2025 comparison</th><th scope="col">2026 post-adoption</th></tr></thead>
       <tbody>
-        {
-          deliveryMetrics.map((metric) => (
-            <tr>
-              <td>
-                {metric.label}
-                <span class="quality-metric-note">{metric.note}</span>
-              </td>
-              <td>{metric.before}</td>
-              <td>{metric.after}</td>
-              <td>{metric.change}</td>
-            </tr>
-          ))
-        }
+        {deliveryMetrics.map((metric) => (
+          <tr>
+            <th scope="row">{metric.label}<span class="cell-detail">{metric.note}</span></th>
+            <td>{metric.before}</td>
+            <td>{metric.after}</td>
+          </tr>
+        ))}
       </tbody>
     </table>
-    <div class="quality-callout">
-      Of the 625 merged pull requests in 2026, 314 came from Renovate or Dependabot.
-      Removing those dependency bots leaves 311 merges, versus 30 in the same period of
-      2025—a 10.4× increase. Of those 311, 197 were authored through GitHub Copilot,
-      103 by the maintainer, and 11 by other contributors. Authorship is not a measure of
-      review effort or value, but the breakdown shows where the increased volume came from.
-    </div>
-    <p class="quality-note">
-      Pull-request counts are workflow activity, not interchangeable units of product value.
-      Release counts can also include patches and dependency-only publications. Both are
-      presented as pace indicators, then paired with the feature chronology below.
+    <p>
+      Non-dependency merges increased from 15 to 281, or 18.7 times. The complete
+      2026 matched window contains 558 merges: 277 dependency-bot changes, 197
+      agent-authored changes, 80 maintainer-authored changes, and four changes by
+      other contributors. The 2025 matched window contains 153 merges: 138
+      dependency-bot changes, eleven maintainer-authored changes, and four changes
+      by other contributors.
     </p>
-  </section>
-
-  <section class="quality-section">
-    <div class="quality-wide quality-split">
-      <div class="quality-prose">
-        <p class="quality-section-label">Verification</p>
-        <h2>Test coverage increased in breadth, depth, and measured percentage</h2>
-        <p>
-          At the final 2025 release, Counterfact had 35 conventionally named test files and
-          240 explicit <code>it()</code>/<code>test()</code> declarations. The September 3
-          main branch has 72 files and 904 declarations. Those static counts understate
-          parameterized cases, but they provide a consistent repository-level comparison.
-        </p>
-        <p>
-          Coverage also widened structurally. The 2025 Jest configuration collected from one
-          <code>src</code> tree; the current configuration covers the client, Counterfact
-          facade, generator, OpenAPI, runtime, and REPL packages. Five black-box Gherkin
-          journeys now exercise configured portfolios, contract evolution, the developer
-          journey, generated OpenAPI, and legacy Swagger behavior through the running product.
-        </p>
-        <p>
-          The measured main-branch line-coverage result rose from 84.26% on 1.4.7 to 91.73%
-          on September 3—an increase of 7.47 percentage points. The project’s configured global
-          minimums did not rise, so the improvement came from actual covered code rather than
-          a relaxed gate. Because the codebase was reorganized into packages, the two
-          percentages are informative but not a perfectly fixed-denominator experiment.
-        </p>
-        <div class="quality-source-links">
-          <a href="https://coveralls.io/builds/76781774">1.4.7 coverage result</a>
-          <a href="https://coveralls.io/github/counterfact/api-simulator/commit/77f0bc6fd2c3bc935d2eb2da80190369d91f7084">September 3 main coverage</a>
-          <a href="https://github.com/counterfact/api-simulator/tree/main/test-black-box/features">Black-box journeys</a>
-        </div>
-      </div>
-      <div class="quality-bars" aria-label="Testing growth comparison">
-        <div>
-          <div class="quality-bar-label"><strong>Test files</strong><span>35 → 72</span></div>
-          <div class="quality-bar-row"><span>2025</span><div class="quality-bar-track"><div class="quality-bar-fill" style="width: 48.6%"></div></div></div>
-          <div class="quality-bar-row"><span>2026</span><div class="quality-bar-track"><div class="quality-bar-fill" style="width: 100%"></div></div></div>
-        </div>
-        <div>
-          <div class="quality-bar-label"><strong>Test declarations</strong><span>240 → 904</span></div>
-          <div class="quality-bar-row"><span>2025</span><div class="quality-bar-track"><div class="quality-bar-fill" style="width: 26.5%"></div></div></div>
-          <div class="quality-bar-row"><span>2026</span><div class="quality-bar-track"><div class="quality-bar-fill" style="width: 100%"></div></div></div>
-        </div>
-        <div>
-          <div class="quality-bar-label"><strong>Line coverage</strong><span>84.26% → 91.73%</span></div>
-          <div class="quality-bar-row"><span>2025</span><div class="quality-bar-track"><div class="quality-bar-fill" style="width: 84.26%"></div></div></div>
-          <div class="quality-bar-row"><span>2026</span><div class="quality-bar-track"><div class="quality-bar-fill" style="width: 91.73%"></div></div></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="quality-section quality-wide" aria-labelledby="usage-heading">
-    <p class="quality-section-label">Adoption signals</p>
-    <h2 id="usage-heading">Use continued to grow</h2>
-    <p class="quality-section-intro">
-      Package downloads and repository stars are imperfect: downloads include repeat installs
-      and automation, while stars signal interest rather than active use. Together they show
-      that Counterfact’s externally visible footprint did not contract during the audit year.
+    <p>
+      Authorship identifies provenance, not review effort or product value. A pull
+      request can be trivial or extensive, and every accepted agent-authored change
+      remained subject to maintainer review and release decisions.
     </p>
-    <div class="quality-result-grid">
-      <article class="quality-result-card">
-        <span class="quality-result-number">62,132</span>
-        <span class="quality-result-percent">npm downloads, Jan–Aug 2026</span>
-        <span class="quality-result-label">12.2% above the same period in 2025</span>
-      </article>
-      <article class="quality-result-card" data-tone="feature">
-        <span class="quality-result-number">3,222</span>
-        <span class="quality-result-percent">npm downloads, Aug 23–29</span>
-        <span class="quality-result-label">A date-qualified weekly snapshot</span>
-      </article>
-      <article class="quality-result-card" data-tone="legacy">
-        <span class="quality-result-number">168</span>
-        <span class="quality-result-percent">GitHub stars on September 3</span>
-        <span class="quality-result-label">Up 28.2% from 131 at year-end 2025</span>
-      </article>
-    </div>
-    <div class="quality-source-links">
-      <a href="https://api.npmjs.org/downloads/point/2025-01-01:2025-08-31/counterfact">2025 npm period</a>
-      <a href="https://api.npmjs.org/downloads/point/2026-01-01:2026-08-31/counterfact">2026 npm period</a>
-      <a href="https://api.npmjs.org/downloads/point/2026-08-23:2026-08-29/counterfact">Weekly npm snapshot</a>
-      <a href="https://github.com/counterfact/api-simulator/stargazers">GitHub stargazers</a>
-    </div>
-  </section>
 
-  <section class="quality-section" aria-labelledby="features-heading">
-    <div class="quality-wide">
-      <p class="quality-section-label">Product scope</p>
-      <h2 id="features-heading">Substantial features shipped throughout the year</h2>
-      <p class="quality-section-intro">
-        The release count reflects more than packaging churn. These milestones changed what
-        Counterfact could simulate, how it could be controlled, and how other tools could embed it.
-      </p>
-      <div class="quality-timeline">
-        {
-          featureTimeline.map((feature) => (
-            <article class="quality-timeline-item">
-              <div class="quality-timeline-release">
-                {feature.release}
-                <span>{feature.date}</span>
-              </div>
-              <div>
-                <h3><a href={feature.href}>{feature.title}</a></h3>
-                <p>{feature.detail}</p>
-              </div>
-            </article>
-          ))
-        }
-      </div>
-    </div>
-  </section>
+    <h2>Automated verification snapshots</h2>
+    <table class="research-table">
+      <thead><tr><th scope="col">Measure</th><th scope="col">Before adoption</th><th scope="col">September 3</th></tr></thead>
+      <tbody>
+        {testingMetrics.map((metric) => (
+          <tr><th scope="row">{metric.label}</th><td>{metric.displayBefore}</td><td>{metric.displayAfter}</td></tr>
+        ))}
+      </tbody>
+    </table>
+    <p>
+      The file count includes JavaScript and TypeScript files containing at least
+      one explicit <code>it</code> or <code>test</code> declaration, plus Python
+      files named <code>test_*.py</code>. Declaration counts include those
+      JavaScript and TypeScript calls, including modifiers. Parameterized tests
+      can execute more cases than this static count implies. The exact counter is
+      available in the repository and both invocations appear under Methods.
+    </p>
+    <p>
+      Public line coverage rose by 8.846 percentage points, from{" "}
+      <a href={auditEvidence.activity.snapshots.preAdoption.coverageSource}>82.884%</a>{" "}
+      immediately before adoption to{" "}
+      <a href={auditEvidence.activity.snapshots.endOfObservation.coverageSource}>91.73%</a>{" "}
+      at the observation endpoint. During that interval the project was reorganized
+      into multiple packages, so the percentages are real results over changing
+      source sets rather than a controlled measurement over identical files.
+    </p>
 
-  <section class="quality-section">
-    <div class="quality-reading quality-prose">
-      <p class="quality-section-label">Interpretation</p>
-      <h2>Why this context changes the quality story</h2>
-      <p>
-        A defect count by itself is a numerator without a denominator. Counterfact’s public
-        development activity nearly tripled, non-dependency delivery activity grew by roughly
-        an order of magnitude, releases tripled, and the number and scope of tests expanded.
-        Users also had more product surface to exercise and growing reasons to exercise it.
-      </p>
-      <p>
-        Against that backdrop, finding no same-year regression among the ten confirmed 2026
-        product defects is useful descriptive evidence. The matching 2025 cohort also contains
-        no same-year regression, however, so the comparison does not demonstrate that review,
-        tests, agents, or any other workflow input caused the result. The audit cannot see
-        unreported bugs, normalize every change by risk, or separate contributors to quality.
-      </p>
-      <p>
-        The defensible claim is narrower: increased velocity and product ambition coincided
-        with no observed same-year regression in this defined external-report population. Two
-        2026 feature defects and one release-provenance incident prevent that statement from
-        becoming a blanket claim that quality “held.”
-      </p>
-    </div>
-  </section>
+    <h2>Full-window sensitivity measurements</h2>
+    <p>
+      The original January 1–September 3 comparison counted{" "}
+      {supplemental.mergedPullRequests["2025"]} merged pull requests and{" "}
+      {supplemental.publishedReleases["2025"]} releases in 2025, versus{" "}
+      {supplemental.mergedPullRequests["2026"]} merged pull requests and{" "}
+      {supplemental.publishedReleases["2026"]} releases in 2026. It used the final{" "}
+      2025 release snapshot—{supplemental.testFiles["2025"]} test files and{" "}
+      {supplemental.testDeclarations["2025"]} declarations—rather than the more
+      precise March 10 pre-adoption snapshot used in the article.
+    </p>
+
+    <h2>Public exposure did not contract</h2>
+    <table class="research-table">
+      <thead><tr><th scope="col">Measure</th><th scope="col">Earlier observation</th><th scope="col">2026 observation</th></tr></thead>
+      <tbody>
+        <tr>
+          <th scope="row">npm downloads, January–August</th>
+          <td>{adoption.npmDownloadsJanuaryThroughAugust["2025"].toLocaleString()}</td>
+          <td>{adoption.npmDownloadsJanuaryThroughAugust["2026"].toLocaleString()}</td>
+        </tr>
+        <tr>
+          <th scope="row">GitHub stars</th>
+          <td>{adoption.githubStars.endOf2025} at year-end 2025</td>
+          <td>{adoption.githubStars.observedAt} on September 3</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Downloads include repeated and automated installations; stars indicate
+      interest rather than active use. They are included only to show that the
+      project’s externally visible footprint did not disappear while defects were
+      being observed.
+    </p>
+
+    <h2>Major capabilities released in 2026</h2>
+    <ol class="chronology-list">
+      {featureTimeline.map((feature) => (
+        <li>
+          <p><strong>{feature.release}, {feature.date}:</strong> <a href={feature.href}>{feature.title}</a></p>
+          <p>{feature.detail}</p>
+        </li>
+      ))}
+    </ol>
+
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://www.npmjs.com/package/counterfact?activeTab=versions">npm publication history</a></li>
+      <li><a href="https://api.npmjs.org/downloads/point/2025-01-01:2025-08-31/counterfact">2025 npm download interval</a></li>
+      <li><a href="https://api.npmjs.org/downloads/point/2026-01-01:2026-08-31/counterfact">2026 npm download interval</a></li>
+      <li><a href="https://github.com/counterfact/api-simulator/stargazers">GitHub stargazers</a></li>
+      <li><a href="/quality/2026/data.json">Complete machine-readable dataset</a></li>
+    </ul>
+    <p>
+      Exact query strings, timestamps, commits, and calculation rules are published
+      in the <a href="/quality/2026/methodology">methods appendix</a>.
+    </p>
+  </article>
 </QualityLayout>

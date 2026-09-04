@@ -1,225 +1,348 @@
 ---
 import QualityLayout from "../../../layouts/QualityLayout.astro";
 import {
-  auditCases,
-  baselineCases,
-  categoryCounts,
-  categoryLabel,
+  auditEvidence,
   comparisonSummary,
-  totalCases,
-  totalRecords,
+  primaryComparisonSummary,
+  testingMetrics,
 } from "../../../data/quality-2026";
 
-const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
-const baselineFastFixes = baselineCases.filter((item) => item.responseDays <= 5).length;
+const before = primaryComparisonSummary[0];
+const after = primaryComparisonSummary[1];
+const snapshots = auditEvidence.activity.snapshots;
+const fullBefore = comparisonSummary[0];
+const fullAfter = comparisonSummary[1];
 ---
 
 <QualityLayout
-  title="Counterfact 2026 Quality Audit"
-  description="An evidence-backed comparison of confirmed external Counterfact product-defect reports in matching 2025 and 2026 windows."
+  title="Did AI-assisted development change Counterfact’s software quality?"
+  description="A source-linked, retrospective study of Counterfact’s quality before and after coding agents entered the development workflow."
   canonicalPath="/quality/2026"
-  active="overview"
+  active="article"
 >
-  <section class="quality-hero">
-    <div class="quality-wide">
-      <p class="quality-kicker">Independent reports · traced through source history</p>
-      <h1>What Counterfact’s 2026 bug reports actually show</h1>
-      <p class="quality-deck">
-        Ten confirmed product defects were reported by external users through September 3.
-        Eight predated 2026. Two arrived inside a feature first released in 2026. None
-        was a regression from previously working behavior caused by a 2026 change. The
-        same screen found four product defects in the matching 2025 window, all pre-existing.
+  <article class="research-article">
+    <header class="article-header quality-reading">
+      <p class="hypothesis">
+        <strong>Hypothesis:</strong> After agent-authored code first entered
+        Counterfact’s main branch, development output would increase without
+        worsening the rate of newly introduced externally reported defects,
+        report-to-release time, or automated test coverage.
       </p>
-      <p class="quality-dateline">
-        Audit period: January 1–September 3, 2026 · Published September 3, 2026
+      <h1>Did AI-assisted development change Counterfact’s software quality?</h1>
+      <p class="article-byline">Patrick McElhaney · September 4, 2026</p>
+      <p class="article-lede">
+        Counterfact is a TypeScript tool that turns an OpenAPI description into a
+        live, stateful mock API. On March 10, 2026, I began merging work authored
+        by coding agents into the project. I wanted to answer a simple question:
+        has quality increased, decreased, or stayed the same since I started
+        using AI?
       </p>
-      <div class="quality-hero-actions">
-        <a class="quality-button quality-button-primary" href="/quality/2026/cases">
-          Explore the case files
-        </a>
-        <a class="quality-button quality-button-secondary" href="/quality/2026/methodology">
-          Review the method
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <section class="quality-section quality-wide" aria-labelledby="result-heading">
-    <p class="quality-section-label">The result</p>
-    <h2 id="result-heading">A lopsided historical distribution</h2>
-    <p class="quality-section-intro">
-      Each confirmed defect received exactly one primary classification. The categories
-      describe when the faulty behavior entered the released product—not when it was
-      noticed or fixed. The adjacent 2025 baseline uses identical report dates and rules.
-    </p>
-    <div class="quality-result-grid">
-      {
-        categoryCounts.map((category) => (
-          <article class="quality-result-card" data-tone={category.tone}>
-            <span class="quality-result-number">{category.count}</span>
-            <span class="quality-result-percent">{category.percent}% of confirmed bugs</span>
-            <span class="quality-result-label">{categoryLabel(category.label, 2026)}</span>
-          </article>
-        ))
-      }
-    </div>
-    <div class="quality-callout">
-      <strong>The bounded conclusion:</strong> the 2026 cohort contains no same-year product
-      regression, including when limited to releases with at least 90 complete days of
-      observation. It does contain two defects born with a 2026 feature and one separate
-      release-provenance incident. These observations do not establish what caused the pattern.
-    </div>
-  </section>
-
-  <section class="quality-section quality-wide" aria-labelledby="comparison-heading">
-    <p class="quality-section-label">Matched comparison</p>
-    <h2 id="comparison-heading">Same rules, same dates, side by side</h2>
-    <p class="quality-section-intro">
-      The comparison is descriptive rather than causal. It answers how the two public-report
-      cohorts differ; it cannot isolate the effect of agents, review, testing, usage, or product mix.
-    </p>
-    <table class="quality-metric-table">
-      <thead>
-        <tr>
-          <th scope="col">Measure</th>
-          {comparisonSummary.map((summary) => <th scope="col">{summary.year}</th>)}
-        </tr>
-      </thead>
-      <tbody>
-        <tr><th scope="row">Confirmed product defects</th>{comparisonSummary.map((summary) => <td>{summary.total}</td>)}</tr>
-        <tr><th scope="row">Same-year regressions</th>{comparisonSummary.map((summary) => <td>{summary.regressions}</td>)}</tr>
-        <tr><th scope="row">Defects born with a same-year feature</th>{comparisonSummary.map((summary) => <td>{summary.featureDefects}</td>)}</tr>
-        <tr><th scope="row">Pre-existing defects</th>{comparisonSummary.map((summary) => <td>{summary.preExisting}</td>)}</tr>
-        <tr>
-          <th scope="row">90-day mature-release sensitivity</th>
-          {comparisonSummary.map((summary) => <td>{summary.matureTotal} included</td>)}
-        </tr>
-      </tbody>
-    </table>
-    <p class="quality-note">
-      Issue #2348 is recorded separately as a 2026 process-quality incident and is excluded
-      from both product-defect columns.
-    </p>
-  </section>
-
-  <section class="quality-section">
-    <div class="quality-wide quality-split">
-      <div class="quality-prose">
-        <p class="quality-section-label">Why the finding matters</p>
-        <h2>The product got much busier; the defect mix did not shift toward regressions</h2>
+      <section class="abstract" aria-labelledby="abstract-heading">
+        <h2 id="abstract-heading">Abstract</h2>
         <p>
-          The result did not emerge from a quiet maintenance year. By September 3,
-          Counterfact had published 28 releases—3.1 times the nine published in the same
-          period of 2025—and merged 625 pull requests, 2.8 times the prior-year count.
-          The product added request validation, reusable scenarios, multiple APIs and
-          versions, substantial OpenAPI 3.2 support, Overlays, a shared store, and modular
-          packages for embedding.
+          On the measures available, quality increased. The audit found no
+          externally reported product defect whose first affected release entered
+          the post-adoption window. Median report-to-release time fell from six
+          days to one, test files increased from 36 to 72, explicit test
+          declarations from 270 to 904, and reported line coverage from 82.884%
+          to 91.73%, while non-dependency delivery increased from 15 to 281 merged
+          pull requests. These observations are not a causal estimate. They do
+          not establish that AI produced the improvement, and they do not measure
+          unreported defects.
+        </p>
+      </section>
+    </header>
+
+    <div class="article-body quality-reading quality-prose">
+      <section aria-labelledby="study-question">
+        <h2 id="study-question">Research question</h2>
+        <p>
+          The concern behind this study is straightforward. Coding agents can
+          produce changes much faster than a maintainer working alone. If review
+          and verification do not keep pace, that additional output could simply
+          convert speed into defects. Counterfact offers a useful, bounded case:
+          its repository and release history are public, its behavior spans code
+          generation and a live HTTP runtime, and external users report concrete
+          failures through GitHub.
         </p>
         <p>
-          Testing expanded at the same time. A consistent source scan finds 72 test files
-          on the September 3 main branch, up from 35 at the final 2025 release, and 904
-          explicit test declarations, up from 240. Main-branch line coverage reported by
-          Coveralls rose from 84.26% on that release to 91.73%, even as coverage broadened
-          from the former single-package source tree to six packages.
+          The hypothesis therefore has two parts. Output should rise, and three
+          observable quality indicators should not worsen: defects introduced
+          during the study window, time from report to corrected release, and
+          automated verification. A failure on those indicators would count
+          against the hypothesis even if more features shipped.
+        </p>
+      </section>
+
+      <section aria-labelledby="methods-summary">
+        <h2 id="methods-summary">Methods</h2>
+        <p>
+          This is a retrospective observational self-audit, not a controlled or
+          preregistered experiment. The intervention begins at{" "}
+          <a href={auditEvidence.study.intervention.source}>the first agent-authored
+          product change merged to <code>main</code></a> on March 10, 2026. The
+          primary comparison uses the same March 10–September 3 interval in 2025.
+          The broader January 1–September 3 cohorts remain as a sensitivity check.
         </p>
         <p>
-          Adoption signals also moved upward: npm recorded 62,132 downloads from January
-          through August, 12.2% more than the same months in 2025, while GitHub stars rose
-          from 131 at the end of 2025 to 168 on the audit date. These are imperfect proxies,
-          but they show that the small defect count was not produced by disappearing use.
+          The defect population contains public issues and accepted standalone
+          pull requests opened by external humans and confirmed to describe faulty
+          product behavior. Each included case was traced backward through source
+          and release history. A report filed after adoption does not count as an
+          AI-period defect unless its first affected release also entered during
+          that period. Enhancements, invalid-input reports, duplicates, and a
+          release-provenance incident are recorded but not counted as product
+          defects.
         </p>
         <p>
-          <a href="/quality/2026/context">See the full delivery, testing, usage, and feature context →</a>
+          The complete rules, exact timestamps, queries, and evidence standards
+          are in <a href="/quality/2026/methodology">the methods appendix</a>.
+          Every reviewed record is listed in{" "}
+          <a href="/quality/2026/candidates">the candidate disposition ledger</a>.
+        </p>
+      </section>
+    </div>
+
+    <section class="article-figure quality-figure-wide" aria-labelledby="primary-results">
+      <div class="figure-heading">
+        <h2 id="primary-results">Results</h2>
+        <p>
+          Table 1. Primary matched-window outcomes. The 2026 window begins at the
+          exact intervention timestamp; both windows end September 4 at 00:00 UTC.
         </p>
       </div>
-      <dl class="quality-stat-list" aria-label="Audit facts">
-        <div>
-          <dt>2026 product defects</dt>
-          <dd>{totalCases}</dd>
-        </div>
-        <div>
-          <dt>2026 released within five days</dt>
-          <dd>{fastFixes} of {totalCases}</dd>
-        </div>
-        <div>
-          <dt>2025 baseline defects</dt>
-          <dd>{baselineCases.length}</dd>
-        </div>
-        <div>
-          <dt>2025 released within five days</dt>
-          <dd>{baselineFastFixes} of {baselineCases.length}</dd>
-        </div>
-        <div>
-          <dt>Same-year regressions</dt>
-          <dd>0 in either cohort</dd>
-        </div>
-        <div>
-          <dt>Process incidents</dt>
-          <dd>1, outside product percentages</dd>
-        </div>
-      </dl>
-    </div>
-  </section>
+      <div class="table-scroll">
+        <table class="research-table">
+          <thead>
+            <tr>
+              <th scope="col">Measure</th>
+              <th scope="col">2025 comparison</th>
+              <th scope="col">2026 post-adoption</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">External product-defect reports</th>
+              <td>{before.totalReports}</td>
+              <td>{after.totalReports}</td>
+            </tr>
+            <tr>
+              <th scope="row">First affected release entered during window</th>
+              <td>{before.introduced}</td>
+              <td>{after.introduced}</td>
+            </tr>
+            <tr>
+              <th scope="row">Introduced defects per 100 non-dependency merges</th>
+              <td>{before.introducedPer100Merges.toFixed(2)}</td>
+              <td>{after.introducedPer100Merges.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <th scope="row">Median report-to-release time</th>
+              <td>{before.medianResponseDays} days</td>
+              <td>{after.medianResponseDays} day</td>
+            </tr>
+            <tr>
+              <th scope="row">Non-dependency merged pull requests</th>
+              <td>{before.nonDependencyMerges}</td>
+              <td>{after.nonDependencyMerges}</td>
+            </tr>
+            <tr>
+              <th scope="row">Published releases</th>
+              <td>{before.releases}</td>
+              <td>{after.releases}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="figure-note">
+        “Introduced” is dated by the first affected public release, not the date a
+        user discovered the defect. Dependency-only pull requests are excluded
+        from the delivery denominator.
+      </p>
+    </section>
 
-  <section class="quality-section quality-wide" aria-labelledby="map-heading">
-    <p class="quality-section-label">Read the evidence</p>
-    <h2 id="map-heading">A report designed to be inspected</h2>
-    <p class="quality-section-intro">
-      The summary is intentionally short. The supporting material is separated by the
-      question a reader is trying to answer.
-    </p>
-    <div class="quality-link-grid">
-      <a class="quality-link-card" href="/quality/2026/cases">
-        <span>{totalRecords} records</span>
-        <h3>Case files</h3>
+    <div class="article-body quality-reading quality-prose">
+      <section aria-labelledby="reported-versus-introduced">
+        <h2 id="reported-versus-introduced">More reports, but none traced to the intervention period</h2>
         <p>
-          Ten 2026 defects, four complete 2025 baseline cases, and one release-provenance
-          incident, each with source, chronology, release, and confidence details.
+          External users reported seven confirmed product defects after adoption,
+          compared with three in the matched 2025 interval. That increase is
+          visible and should not be explained away. Source history changes its
+          interpretation, however: all seven post-adoption reports concerned
+          behavior already present before the first agent-authored change reached{" "}
+          <code>main</code>. Six were old edge cases. The seventh belonged to an
+          operation-ID feature first released on February 26, twelve days before
+          the intervention.
         </p>
-      </a>
-      <a class="quality-link-card" href="/quality/2026/context">
-        <span>Year-over-year context</span>
-        <h3>Delivery and adoption</h3>
         <p>
-          Release velocity, pull-request volume, test growth, coverage, usage signals, and
-          a timeline of the year’s major features.
+          The finding is therefore not “fewer bugs.” It is that the observed
+          post-adoption reports did not identify a product defect introduced in
+          the post-adoption release cohort, despite a large increase in delivery.
+          This population cannot reveal defects that users did not encounter or
+          report.
         </p>
-      </a>
-      <a class="quality-link-card" href="/quality/2026/methodology">
-        <span>Rules and limits</span>
-        <h3>Methodology</h3>
-        <p>
-          Population criteria, classification rules, evidence standard, validation steps,
-          and what this audit cannot establish.
-        </p>
-      </a>
-    </div>
-  </section>
+      </section>
 
-  <section class="quality-section">
-    <div class="quality-reading quality-prose">
-      <p class="quality-section-label">Synthesis</p>
-      <h2>The pattern is older edge cases, found and closed quickly</h2>
-      <p>
-        Seven 2026 cases concerned code generation or interpretation of OpenAPI details: nested
-        required properties, reserved identifiers, schema-less responses, colon-bearing
-        routes, Path Item metadata, and path-level parameters. Two concerned runtime request
-        behavior: root middleware and exploded object query parameters. One concerned package
-        installation hygiene.
-      </p>
-      <p>
-        The concentration is technically coherent. Counterfact sits at a difficult boundary
-        between a broad specification, generated TypeScript, filesystem-safe route names,
-        and live HTTP behavior. Most externally discovered failures were unusual but valid
-        inputs reaching assumptions that had survived for years. Once the reproductions
-        arrived, nine of ten 2026 corrections reached a public release within five calendar days.
-      </p>
-      <p>
-        The strongest defensible story is therefore not “no bugs” or “AI caused quality.”
-        It is that a faster, AI-assisted development period coincided with expanded capability
-        and verification, while this defined external-report population contains no same-year
-        regression. The process incident and the two feature defects remain part of that record.
-      </p>
+      <section aria-labelledby="response-result">
+        <h2 id="response-result">Corrections reached users faster</h2>
+        <p>
+          Median time from report to the first release containing the accepted
+          correction fell from six calendar days in the matched 2025 cohort to one
+          day after adoption. All seven post-adoption reports reached a corrected
+          release within five days. This measures release response, not the effort
+          required to diagnose, review, or test each correction.
+        </p>
+      </section>
     </div>
-  </section>
+
+    <figure class="article-figure quality-figure-wide" aria-labelledby="verification-heading">
+      <figcaption class="figure-heading">
+        <h2 id="verification-heading">Automated verification expanded</h2>
+        <p>
+          Figure 1. Repository snapshots immediately before the first agent-authored
+          merge and at the September 3 observation point.
+        </p>
+      </figcaption>
+      <div class="comparison-bars">
+        {
+          testingMetrics.map((metric) => (
+            <div class="comparison-measure">
+              <div class="comparison-label">
+                <strong>{metric.label}</strong>
+                <span>{metric.displayBefore} → {metric.displayAfter}</span>
+              </div>
+              <div class="comparison-row">
+                <span>Before</span>
+                <div class="bar-track">
+                  <div
+                    class="bar-fill bar-fill-before"
+                    style={`width: ${Math.max(4, (metric.before / metric.after) * 100)}%`}
+                  ></div>
+                </div>
+              </div>
+              <div class="comparison-row">
+                <span>After</span>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: 100%"></div>
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+      <div class="table-scroll compact-table">
+        <table class="research-table">
+          <thead>
+            <tr><th scope="col">Measure</th><th scope="col">Before</th><th scope="col">After</th></tr>
+          </thead>
+          <tbody>
+            {testingMetrics.map((metric) => (
+              <tr><th scope="row">{metric.label}</th><td>{metric.displayBefore}</td><td>{metric.displayAfter}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="figure-note">
+        Coverage sources:{" "}<a href={snapshots.preAdoption.coverageSource}>pre-adoption
+        build</a>{" "}and <a href={snapshots.endOfObservation.coverageSource}>September 3
+        build</a>. The 2026 package reorganization changed the coverage denominator;
+        the percentages are public results, not a fixed-codebase experiment.
+      </p>
+    </figure>
+
+    <div class="article-body quality-reading quality-prose">
+      <section aria-labelledby="sensitivity-heading">
+        <h2 id="sensitivity-heading">The broader audit gives the same origin pattern</h2>
+        <p>
+          The supplementary January 1–September 3 screen contains{" "}
+          {fullBefore.total} product defects in 2025 and {fullAfter.total} in 2026.
+          The 2026 set contains {fullAfter.preExisting} defects predating 2026 and{" "}
+          {fullAfter.featureDefects} defects born with a feature first released in
+          February 2026. It contains {fullAfter.regressions === 0 ? "no regressions" : `${fullAfter.regressions} regressions`} caused by a
+          2026 change. All fourteen cases meet the 90-day maturity threshold used
+          in the audit, so removing newer releases does not change those totals.
+        </p>
+        <p>
+          Three 2026 product records fall before the AI-adoption boundary. They
+          remain visible in the <a href="/quality/2026/cases">defect appendix</a>{" "}
+          and the <a href="/quality/2026/candidates">candidate ledger</a>, but they
+          are not used in the primary post-adoption comparison.
+        </p>
+      </section>
+
+      <section aria-labelledby="process-heading">
+        <h2 id="process-heading">One post-adoption process failure remains part of the result</h2>
+        <p>
+          Release 2.16.2 was authentic, but it appeared on npm without the normal
+          Git tag, GitHub release, or visible publishing provenance. An external
+          user reasonably questioned whether it was legitimate. The audit records
+          this as a process-quality incident rather than a product defect because
+          the published code was genuine. Excluding it from product percentages
+          does not remove it from the interpretation.
+        </p>
+      </section>
+
+      <section aria-labelledby="discussion-heading">
+        <h2 id="discussion-heading">Discussion</h2>
+        <p>
+          The observed combination is consistent with quality increasing while
+          output increased: no post-adoption first-affected release appears in the
+          external defect cohort, corrections shipped faster, and automated
+          verification became broader and deeper. That is enough to reject the
+          simple claim that greater use of coding agents necessarily reduced
+          Counterfact’s quality during this period.
+        </p>
+        <p>
+          It is not enough to identify the cause. Testing, explicit architecture,
+          tighter review gates, changes in contributors, the kinds of features
+          attempted, and ordinary learning by the maintainer all changed during
+          the same period. Agent-authored pull requests still depended on human
+          prompts, review, integration, and release decisions. A different project
+          or a less constrained workflow could produce a different result.
+        </p>
+      </section>
+
+      <section aria-labelledby="limitations-heading">
+        <h2 id="limitations-heading">Limitations</h2>
+        <ul>
+          <li>The sample contains fourteen product cases, and one reporter supplied six of the 2026 issue reports.</li>
+          <li>External reports omit internal findings, silently abandoned use, and unknown defects.</li>
+          <li>Pull requests and releases are unequal units of work and risk; their counts provide context, not a controlled exposure measure.</li>
+          <li>Coverage increased across a codebase reorganized into multiple packages, so the before and after denominators are not identical.</li>
+          <li>The hypothesis was formulated retrospectively and the audit was performed by the project maintainer, who uses and benefits from agentic coding tools.</li>
+          <li>Zero observed post-adoption defect introductions is not proof that no such defect exists.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="conclusion-heading">
+        <h2 id="conclusion-heading">Conclusion</h2>
+        <p>
+          The most defensible directional answer is <strong>quality increased on
+          the measures available</strong>. Counterfact shipped substantially more
+          non-dependency work, resolved external reports faster, and expanded its
+          automated verification without an observed externally reported defect
+          introduced by a post-adoption release. The study does not show that AI
+          caused those changes. It shows that, in this repository and period, the
+          feared quality decline is not present in the evidence examined.
+        </p>
+      </section>
+
+      <section aria-labelledby="data-heading">
+        <h2 id="data-heading">Data availability and peer review</h2>
+        <p>
+          The complete evidence is public. Readers can inspect every candidate
+          decision, every included case, the source and release chronology behind
+          each classification, and the exact machine-readable data used for the
+          calculations.
+        </p>
+        <ol class="reference-list">
+          <li><a href="/quality/2026/candidates">Candidate disposition ledger</a></li>
+          <li><a href="/quality/2026/cases">Defect case appendix</a></li>
+          <li><a href="/quality/2026/methodology">Methods and reproducibility appendix</a></li>
+          <li><a href="/quality/2026/context">Supplementary delivery and product context</a></li>
+          <li><a href="/quality/2026/data.json">Download the complete underlying dataset (JSON)</a></li>
+        </ol>
+      </section>
+    </div>
+  </article>
 </QualityLayout>

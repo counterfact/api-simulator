@@ -2,7 +2,9 @@
 import QualityLayout from "../../../../layouts/QualityLayout.astro";
 import {
   allProductCases,
+  caseIsInPrimaryWindow,
   casePath,
+  caseWasIntroducedInPrimaryWindow,
   categoryLabel,
   commitUrl,
   prUrl,
@@ -33,105 +35,72 @@ interface Props {
 }
 
 const { item, previous, next } = Astro.props;
-const verdictClass = item.category === "Defect in same-year feature"
-  ? "quality-verdict quality-verdict-feature"
-  : "quality-verdict";
 ---
 
 <QualityLayout
-  title={`#${item.issue}: ${item.shortTitle} — Counterfact 2026 Quality Audit`}
+  title={`#${item.issue}: ${item.shortTitle} — Counterfact quality study`}
   description={item.finding}
   canonicalPath={casePath(item)}
   active="cases"
 >
-  <header class="quality-page-header">
-    <div class="quality-reading">
-      <p class="quality-crumbs">
-        <a href="/quality/2026">2026 quality audit</a> /
-        <a href="/quality/2026/cases">Case files</a> / #{item.issue}
+  <article class="appendix-page quality-reading quality-prose">
+    <header class="appendix-header">
+      <p class="breadcrumbs">
+        <a href="/quality/2026">Article</a> /{" "}
+        <a href="/quality/2026/cases">Defect cases</a> / #{item.issue}
       </p>
-      <p class="quality-kicker">{item.area} · {item.reportYear} {item.reportKind} #{item.issue}</p>
       <h1>{item.title}</h1>
-      <p class="quality-deck">{item.failure}</p>
-    </div>
-  </header>
+      <p>{item.failure}</p>
+    </header>
 
-  <article class="quality-section quality-reading quality-prose">
-    <dl class="quality-case-facts">
-      <div>
-        <dt>Reporter</dt>
-        <dd>{item.reporter}</dd>
-      </div>
-      <div>
-        <dt>Reported</dt>
-        <dd>{item.reportedOn}</dd>
-      </div>
-      <div>
-        <dt>Reported version</dt>
-        <dd>{item.reportedVersion}</dd>
-      </div>
-      <div>
-        <dt>Fix</dt>
-        <dd>PR #{item.fixPr}</dd>
-      </div>
-      <div>
-        <dt>First fixed release</dt>
-        <dd>{item.fixedRelease}</dd>
-      </div>
-      <div>
-        <dt>Report to release</dt>
-        <dd>{item.responseDays} {item.responseDays === 1 ? "day" : "days"}</dd>
-      </div>
+    <dl class="case-facts">
+      <div><dt>Report</dt><dd>{item.reportKind === "pull request" ? "Pull request" : "Issue"} #{item.issue}</dd></div>
+      <div><dt>Reporter</dt><dd>{item.reporter}</dd></div>
+      <div><dt>Reported</dt><dd>{item.reportedOn}</dd></div>
+      <div><dt>Reported version</dt><dd>{item.reportedVersion}</dd></div>
+      <div><dt>Primary matched window</dt><dd>{caseIsInPrimaryWindow(item) ? "Included" : "Outside primary window"}</dd></div>
+      <div><dt>First affected release entered primary window</dt><dd>{caseWasIntroducedInPrimaryWindow(item) ? "Yes" : "No"}</dd></div>
+      <div><dt>Origin classification</dt><dd>{categoryLabel(item.category, item.reportYear)}</dd></div>
+      <div><dt>Classification confidence</dt><dd>{item.confidence}</dd></div>
+      <div><dt>Chronology confidence</dt><dd>{item.chronologyConfidence}</dd></div>
+      <div><dt>Accepted correction</dt><dd>PR #{item.fixPr}</dd></div>
+      <div><dt>First fixed release</dt><dd>{item.fixedRelease}</dd></div>
+      <div><dt>Report to release</dt><dd>{item.responseDays} {item.responseDays === 1 ? "day" : "days"}</dd></div>
     </dl>
 
-    <section class={verdictClass} aria-labelledby="verdict-heading">
-      <p class="quality-verdict-label">Classification · {item.confidence} confidence</p>
-      <h2 id="verdict-heading">{categoryLabel(item.category, item.reportYear)}</h2>
+    <section aria-labelledby="case-finding">
+      <h2 id="case-finding">Finding</h2>
       <p>{item.finding}</p>
+      {item.nuance && <p>{item.nuance}</p>}
     </section>
 
-    <section class="quality-evidence-list" aria-labelledby="evidence-heading">
-      <h2 id="evidence-heading">Evidence trail</h2>
-      <div class="quality-evidence-item">
-        <h3>Origin</h3>
-        <p>
-          {item.evidencePrecision}: <a href={commitUrl(item.originCommit)}><code>{item.originCommit.slice(0, 8)}</code></a>,
-          committed {item.originDate}; {item.evidencePrecision === "Exact origin" ? "first affected release" : "confirmed affected release"} {item.firstAffectedRelease}.
-          {" "}{item.originSummary}
-        </p>
-      </div>
-      <div class="quality-evidence-item">
-        <h3>Source history and behavioral evidence</h3>
-        <p>{item.historyEvidence}</p>
-      </div>
-      <div class="quality-evidence-item">
-        <h3>Release chronology</h3>
-        <p>{item.releaseEvidence}</p>
-      </div>
+    <section aria-labelledby="case-evidence">
+      <h2 id="case-evidence">Evidence trail</h2>
+      <h3>Origin</h3>
+      <p>
+        {item.evidencePrecision}: <a href={commitUrl(item.originCommit)}><code>{item.originCommit.slice(0, 8)}</code></a>,
+        committed {item.originDate}; {item.evidencePrecision === "Exact origin" ? "first affected release" : "confirmed affected release"} {item.firstAffectedRelease}.
+        {" "}{item.originSummary}
+      </p>
+      <h3>Source history and behavioral evidence</h3>
+      <p>{item.historyEvidence}</p>
+      <h3>Release chronology</h3>
+      <p>{item.releaseEvidence}</p>
     </section>
 
-    {item.nuance && (
-      <aside class="quality-callout">
-        <strong>Why the distinction matters:</strong> {item.nuance}
-      </aside>
-    )}
+    <section aria-labelledby="case-sources">
+      <h2 id="case-sources">Primary sources</h2>
+      <ol class="reference-list">
+        <li><a href={reportUrl(item)}>{item.reportKind === "issue" ? "Issue" : "Pull request"} #{item.issue}</a></li>
+        <li><a href={prUrl(item.fixPr)}>Accepted correction, PR #{item.fixPr}</a></li>
+        <li><a href={commitUrl(item.originCommit)}>Origin or earliest confirmed affected commit</a></li>
+        <li><a href={releaseUrl(item.fixedRelease)}>Release {item.fixedRelease}</a></li>
+      </ol>
+    </section>
 
-    <div class="quality-source-links" aria-label="Primary sources">
-      <a href={reportUrl(item)}>{item.reportKind === "issue" ? "Issue" : "Pull request"} #{item.issue}</a>
-      <a href={prUrl(item.fixPr)}>Fix PR #{item.fixPr}</a>
-      <a href={commitUrl(item.originCommit)}>Origin commit</a>
-      <a href={releaseUrl(item.fixedRelease)}>Release {item.fixedRelease}</a>
-    </div>
-
-    <nav class="quality-next-prev" aria-label="Case file pagination">
-      {previous ? (
-        <a href={casePath(previous)}>← #{previous.issue} {previous.shortTitle}</a>
-      ) : <span />}
-      {next ? (
-        <a href={casePath(next)}>#{next.issue} {next.shortTitle} →</a>
-      ) : (
-        <a href="/quality/2026/methodology">Methodology →</a>
-      )}
+    <nav class="case-pagination" aria-label="Case appendix pagination">
+      {previous ? <a href={casePath(previous)}>← #{previous.issue} {previous.shortTitle}</a> : <span />}
+      {next ? <a href={casePath(next)}>#{next.issue} {next.shortTitle} →</a> : <a href="/quality/2026/methodology">Methods →</a>}
     </nav>
   </article>
 </QualityLayout>

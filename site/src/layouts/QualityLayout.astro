@@ -6,33 +6,41 @@ interface Props {
   title: string;
   description: string;
   canonicalPath: string;
-  active?: "overview" | "cases" | "context" | "methodology";
+  active?: "article" | "cases" | "candidates" | "context" | "methodology";
 }
 
 const { title, description, canonicalPath, active } = Astro.props;
 
 const navItems = [
-  { key: "overview", label: "Overview", href: "/quality/2026" },
-  { key: "cases", label: "Case files", href: "/quality/2026/cases" },
-  { key: "context", label: "Delivery context", href: "/quality/2026/context" },
+  { key: "article", label: "Article", href: "/quality/2026" },
   {
     key: "methodology",
-    label: "Methodology",
+    label: "Methods",
     href: "/quality/2026/methodology",
+  },
+  {
+    key: "candidates",
+    label: "Candidate ledger",
+    href: "/quality/2026/candidates",
+  },
+  { key: "cases", label: "Defect cases", href: "/quality/2026/cases" },
+  {
+    key: "context",
+    label: "Supplementary data",
+    href: "/quality/2026/context",
   },
 ] as const;
 ---
 
 <MainLayout title={title} description={description} canonicalPath={canonicalPath}>
   <header class="quality-header">
-    <div class="quality-wide quality-header-main">
+    <div class="quality-reading quality-header-main">
       <a class="quality-brand" href="/" aria-label="Counterfact home">
         <img src="/counterfact.svg" alt="Counterfact" width="180" height="31" />
       </a>
-      <span class="quality-edition">2026 quality audit</span>
     </div>
     <nav class="quality-nav" aria-label="Quality audit navigation">
-      <div class="quality-wide quality-nav-inner">
+      <div class="quality-reading quality-nav-inner">
         {
           navItems.map((item) => (
             <a
@@ -52,14 +60,15 @@ const navItems = [
   </main>
 
   <footer class="quality-footer">
-    <div class="quality-wide quality-footer-inner">
+    <div class="quality-reading quality-footer-inner">
       <p>
-        A source-linked audit of externally reported Counterfact bugs, comparing
-        matching January 1–September 3 windows in 2025 and 2026.
+        A retrospective, source-linked study of Counterfact’s software quality
+        before and after agentic coding entered the project workflow.
       </p>
       <div>
         <a href="/">Counterfact home</a>
         <a href="/docs/getting-started">Documentation</a>
+        <a href="/quality/2026/data.json">Underlying data</a>
         <a href="https://github.com/counterfact/api-simulator">GitHub</a>
       </div>
     </div>
