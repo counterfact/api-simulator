@@ -23,36 +23,37 @@ import QualityLayout from "../../../layouts/QualityLayout.astro";
   <article class="quality-section quality-reading quality-prose">
     <h2>Population</h2>
     <p>
-      The audit covers public GitHub issues opened from January 1 through September 3, 2026
-      by human reporters who were not Counterfact organization members or maintainers at the
-      time. Outside contributors remain external. Bug-like observations confined to unrelated
-      pull-request reviews, discussions, or private communication are outside scope.
+      The audit compares two identical report windows: January 1 00:00 UTC through September 4
+      00:00 UTC, end-exclusive, in 2025 and 2026. It covers public GitHub issues and accepted
+      standalone defect pull requests opened by human reporters who were not Counterfact
+      organization members or maintainers at the time. Outside contributors remain external.
     </p>
     <p>
-      The issue search was rerun without relying on labels. This matters because all nine
-      confirmed defects in the population were unlabeled. Maintainer-authored issues,
-      automated bug-hunt issues, enhancements, and questions that did not describe confirmed
-      faulty behavior were excluded.
+      Searches were rerun without relying on labels. Maintainer-authored reports, automated
+      bug-hunt issues, enhancements, invalid-input reports, and questions that did not describe
+      confirmed faulty behavior were excluded. A pull request tied to a qualifying issue is
+      evidence for that issue, not a second report.
     </p>
     <p>
-      Ten reports survived the external-human screen. Nine described confirmed product defects
-      with an accepted fix or explicit maintainer confirmation. Issue #2348—the question about
-      the legitimacy of release 2.16.2—was reviewed separately because the release was authentic.
+      The final product cohorts contain four 2025 defects and ten 2026 defects. 2026 PR #1516
+      is included because it independently reported and fixed faulty behavior without a separate
+      issue. Issue #2348 is a process-quality incident: it is analyzed, but excluded from product
+      defect percentages because the published code was authentic.
     </p>
 
     <h2>Classification rules</h2>
     <ol>
       <li>
-        <strong>2026 regression:</strong> the same supported behavior demonstrably worked before
-        a specific 2026 change and failed afterward.
+        <strong>Same-year regression:</strong> the same supported behavior demonstrably worked
+        before a specific change in the report year and failed afterward.
       </li>
       <li>
-        <strong>Defect in a 2026 feature:</strong> the applicable capability first appeared in
-        2026 and was defective in its initial release.
+        <strong>Defect in a same-year feature:</strong> the applicable capability first appeared
+        in the report year and was defective in its initial release.
       </li>
       <li>
-        <strong>Pre-existing in 2025:</strong> the failure reproduces at the 2025 boundary, or
-        the responsible logic demonstrably predates 2026 without an intervening working state.
+        <strong>Pre-existing:</strong> the failure is confirmed before the report year without
+        an intervening working state.
       </li>
     </ol>
     <p>
@@ -88,10 +89,26 @@ import QualityLayout from "../../../layouts/QualityLayout.astro";
       commit from a released behavior.
     </p>
     <p>
-      High-confidence classifications require at least two corroborating evidence types—for
+      Classification confidence and chronology confidence are recorded separately. High-confidence classifications require at least two corroborating evidence types—for
       example, source ancestry plus a tagged comparison, or code history plus a focused test
       added by the accepted fix. Historical states were compared at the end of 2025, immediately
       around suspected introducing changes, and at the reporter’s version where applicable.
+    </p>
+    <p>
+      “Exact origin” is used only when history identifies the introducing change. “Confirmed
+      affected by” is a conservative bound: the linked commit and release demonstrate the defect
+      existed by that point, without claiming it began there. The #1933 history uses this bound
+      because the 2023 TypeScript conversion preserved an older query shape rather than creating it.
+    </p>
+
+    <h2>Maturity sensitivity</h2>
+    <p>
+      A second calculation keeps only cases whose first confirmed affected release had at least
+      90 complete days of observation before its cohort's September 4 cutoff. All fourteen
+      product cases meet that threshold, so the sensitivity result is unchanged: zero same-year
+      regressions in both cohorts, two 2026 feature defects, and the remaining cases pre-existing.
+      This does not make late releases defect-free; it removes them from claims they had too little
+      time to support.
     </p>
 
     <h2>Context metrics</h2>
@@ -115,7 +132,7 @@ import QualityLayout from "../../../layouts/QualityLayout.astro";
         unreported bugs are not counted.
       </li>
       <li>
-        Nine defects are a small sample, and one reporter supplied six of them. The distribution
+        Fourteen defects are a small sample, and one reporter supplied six of the 2026 issue reports. The distribution
         should not be treated as a universal defect rate.
       </li>
       <li>
@@ -133,22 +150,26 @@ import QualityLayout from "../../../layouts/QualityLayout.astro";
         over an identical file set.
       </li>
       <li>
-        The absence of an observed 2026 regression does not prove that no such regression exists.
+        The absence of an observed 2026 regression does not prove that no such regression exists
+        or that any particular development tool caused the observed result.
         It establishes only that none appears in the defined, validated public-report population.
       </li>
     </ul>
 
     <div class="quality-callout">
-      <strong>Reproducible takeaway:</strong> the site separates facts demonstrated by issue
-      records, source history, tags, release data, and public metrics from interpretations based
-      on those facts. Follow the links in each case file to inspect the primary evidence.
+      <strong>Reproducible takeaway:</strong> the checked-in evidence manifest records exact
+      windows, queries, candidate dispositions, npm timestamps, category inputs, metric sources,
+      and rerun commands. The offline verifier recomputes cohort totals, category totals, the
+      90-day sensitivity, deduplication invariants, and the pull-request author sum.
     </div>
 
     <div class="quality-source-links">
+      <a href="https://github.com/counterfact/api-simulator/issues?q=is%3Aissue%20created%3A2025-01-01..2025-09-03">2025 issue search</a>
       <a href="https://github.com/counterfact/api-simulator/issues?q=is%3Aissue%20created%3A2026-01-01..2026-09-03">2026 issue search</a>
       <a href="https://github.com/counterfact/api-simulator/releases">Release history</a>
       <a href="https://www.npmjs.com/package/counterfact?activeTab=versions">npm versions</a>
-      <a href="https://coveralls.io/github/counterfact/api-simulator?branch=main">Coverage</a>
+      <a href="https://coveralls.io/github/counterfact/api-simulator/commit/77f0bc6fd2c3bc935d2eb2da80190369d91f7084">September 3 coverage snapshot</a>
+      <a href="https://github.com/counterfact/api-simulator/blob/main/site/src/data/quality-audit-evidence.json">Evidence manifest</a>
     </div>
   </article>
 </QualityLayout>

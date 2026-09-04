@@ -1,0 +1,383 @@
+{
+  "schemaVersion": 1,
+  "generatedForCommit": "77f0bc6fd2c3bc935d2eb2da80190369d91f7084",
+  "observedAt": "2026-09-03T18:00:00Z",
+  "windows": {
+    "2025": {
+      "start": "2025-01-01T00:00:00Z",
+      "endExclusive": "2025-09-04T00:00:00Z"
+    },
+    "2026": {
+      "start": "2026-01-01T00:00:00Z",
+      "endExclusive": "2026-09-04T00:00:00Z"
+    }
+  },
+  "maturityDays": 90,
+  "populationRules": {
+    "include": "Public issue or accepted standalone pull request opened in the window by a human external author and describing confirmed faulty product behavior.",
+    "deduplicate": "A pull request linked to an included issue is evidence for that issue, not a second report.",
+    "process": "Release-integrity and workflow failures are recorded separately from product defects."
+  },
+  "queries": [
+    "repo:counterfact/api-simulator is:issue created:2025-01-01..2025-09-03",
+    "repo:counterfact/api-simulator is:pr created:2025-01-01..2025-09-03",
+    "repo:counterfact/api-simulator is:issue created:2026-01-01..2026-09-03",
+    "repo:counterfact/api-simulator is:pr created:2026-01-01..2026-09-03",
+    "repo:counterfact/api-simulator is:pr is:merged merged:2025-01-01..2025-09-03",
+    "repo:counterfact/api-simulator is:pr is:merged merged:2026-01-01..2026-09-03"
+  ],
+  "commands": [
+    "gh search issues --repo counterfact/api-simulator --created 2025-01-01..2025-09-03 --limit 1000 --json number,author,createdAt,title,url",
+    "gh search prs --repo counterfact/api-simulator --created 2025-01-01..2025-09-03 --limit 1000 --json number,author,createdAt,mergedAt,title,url",
+    "gh search issues --repo counterfact/api-simulator --created 2026-01-01..2026-09-03 --limit 1000 --json number,author,createdAt,title,url",
+    "gh search prs --repo counterfact/api-simulator --created 2026-01-01..2026-09-03 --limit 1000 --json number,author,createdAt,mergedAt,title,url",
+    "gh api -X GET search/issues -f q='repo:counterfact/api-simulator is:pr is:merged merged:2025-01-01..2025-09-03'",
+    "gh api -X GET search/issues -f q='repo:counterfact/api-simulator is:pr is:merged merged:2026-01-01..2026-09-03'",
+    "npm view counterfact time --json",
+    "npm --prefix site run verify:audit"
+  ],
+  "sourceIndex": {
+    "issue-1160": [
+      "https://github.com/counterfact/api-simulator/issues/1160",
+      "https://github.com/counterfact/api-simulator/pull/1161",
+      "https://github.com/counterfact/api-simulator/commit/3d03bb5674ed14a3f27365c57cc3e1f2a865481b"
+    ],
+    "issue-1244": [
+      "https://github.com/counterfact/api-simulator/issues/1244",
+      "https://github.com/counterfact/api-simulator/pull/1553",
+      "https://github.com/counterfact/api-simulator/commit/326d9a10e7b9f2ea577ce697e224f31ad1b361a7"
+    ],
+    "issue-1370": [
+      "https://github.com/counterfact/api-simulator/issues/1370",
+      "https://github.com/counterfact/api-simulator/pull/1372",
+      "https://github.com/counterfact/api-simulator/commit/3d03bb5674ed14a3f27365c57cc3e1f2a865481b"
+    ],
+    "issue-1381": [
+      "https://github.com/counterfact/api-simulator/issues/1381",
+      "https://github.com/counterfact/api-simulator/pull/1386",
+      "https://github.com/counterfact/api-simulator/commit/7cd98d5a8d27a3e5efc7a51d2878ebc33b65f256"
+    ],
+    "issue-1506": [
+      "https://github.com/counterfact/api-simulator/issues/1506",
+      "https://github.com/counterfact/api-simulator/pull/1507",
+      "https://github.com/counterfact/api-simulator/commit/2af86557341ccdc270fa2387ca05c807bac9d22a"
+    ],
+    "issue-1515": [
+      "https://github.com/counterfact/api-simulator/issues/1515",
+      "https://github.com/counterfact/api-simulator/pull/1524",
+      "https://github.com/counterfact/api-simulator/commit/59fda9f84f37745e5a3e2566ca70b5abff48013b"
+    ],
+    "pr-1516": [
+      "https://github.com/counterfact/api-simulator/pull/1516",
+      "https://github.com/counterfact/api-simulator/commit/e0696850a6b666d191f1265d798609aca94ca285"
+    ],
+    "issue-1617": [
+      "https://github.com/counterfact/api-simulator/issues/1617",
+      "https://github.com/counterfact/api-simulator/pull/1622",
+      "https://github.com/counterfact/api-simulator/commit/e0696850a6b666d191f1265d798609aca94ca285"
+    ],
+    "issue-1618": [
+      "https://github.com/counterfact/api-simulator/issues/1618",
+      "https://github.com/counterfact/api-simulator/pull/1621",
+      "https://github.com/counterfact/api-simulator/commit/cf49cad1e335f2e7843b904285e4f5d7f72382cb"
+    ],
+    "issue-1619": [
+      "https://github.com/counterfact/api-simulator/issues/1619",
+      "https://github.com/counterfact/api-simulator/pull/1620",
+      "https://github.com/counterfact/api-simulator/commit/8f0d2d2091ebb3741e66db1a43b251ea4717a6c5"
+    ],
+    "issue-1842": [
+      "https://github.com/counterfact/api-simulator/issues/1842",
+      "https://github.com/counterfact/api-simulator/pull/1843",
+      "https://github.com/counterfact/api-simulator/commit/748424dfe5b46e852ec756bbabab1b2315c86479"
+    ],
+    "issue-1933": [
+      "https://github.com/counterfact/api-simulator/issues/1933",
+      "https://github.com/counterfact/api-simulator/pull/1935",
+      "https://github.com/counterfact/api-simulator/commit/023788931d612875c70748b1e78094158edbe6b8"
+    ],
+    "issue-1971": [
+      "https://github.com/counterfact/api-simulator/issues/1971",
+      "https://github.com/counterfact/api-simulator/pull/1972",
+      "https://github.com/counterfact/api-simulator/commit/193bc9b0a35abd6be199a58a25a5376c64c59dc4"
+    ],
+    "issue-2075": [
+      "https://github.com/counterfact/api-simulator/issues/2075",
+      "https://github.com/counterfact/api-simulator/pull/2076",
+      "https://github.com/counterfact/api-simulator/commit/c4dda369fb51fcfa072a49b5a23dc9143b57c9e8"
+    ],
+    "issue-2348": [
+      "https://github.com/counterfact/api-simulator/issues/2348",
+      "https://www.npmjs.com/package/counterfact/v/2.16.2",
+      "https://github.com/counterfact/api-simulator/releases/tag/counterfact%402.16.5"
+    ]
+  },
+  "candidates": [
+    {
+      "year": 2025,
+      "kind": "issue",
+      "number": 1160,
+      "disposition": "product-defect",
+      "reason": "Accepted fix #1161 corrected a generated/runtime property mismatch."
+    },
+    {
+      "year": 2025,
+      "kind": "issue",
+      "number": 1170,
+      "disposition": "excluded",
+      "reason": "Enhancement request for a new global default-header capability."
+    },
+    {
+      "year": 2025,
+      "kind": "issue",
+      "number": 1185,
+      "disposition": "excluded",
+      "reason": "Explicit feature request for a json-schema-faker option."
+    },
+    {
+      "year": 2025,
+      "kind": "issue",
+      "number": 1244,
+      "disposition": "product-defect",
+      "reason": "Valid multi-file OpenAPI input broke the built-in viewer; accepted fix #1553 bundled references."
+    },
+    {
+      "year": 2025,
+      "kind": "issue",
+      "number": 1356,
+      "disposition": "excluded",
+      "reason": "Example used invalid OpenAPI type: date-time syntax and the reporter self-closed it without a product fix."
+    },
+    {
+      "year": 2025,
+      "kind": "issue",
+      "number": 1370,
+      "disposition": "product-defect",
+      "reason": "Valid parameterized JSON media type hid a supported generated shortcut."
+    },
+    {
+      "year": 2025,
+      "kind": "pull request",
+      "number": 1372,
+      "disposition": "deduplicated",
+      "reason": "Accepted external fix linked to included issue #1370."
+    },
+    {
+      "year": 2025,
+      "kind": "issue",
+      "number": 1381,
+      "disposition": "product-defect",
+      "reason": "Valid colon-bearing route failed on supported Windows filesystems."
+    },
+    {
+      "year": 2026,
+      "kind": "issue",
+      "number": 1506,
+      "disposition": "product-defect",
+      "reason": "Accepted fix #1507."
+    },
+    {
+      "year": 2026,
+      "kind": "issue",
+      "number": 1515,
+      "disposition": "product-defect",
+      "reason": "Accepted fix #1524."
+    },
+    {
+      "year": 2026,
+      "kind": "pull request",
+      "number": 1516,
+      "disposition": "product-defect",
+      "reason": "Standalone external report and accepted fix with maintainer approval."
+    },
+    {
+      "year": 2026,
+      "kind": "issue",
+      "number": 1617,
+      "disposition": "product-defect",
+      "reason": "Accepted fix #1622."
+    },
+    {
+      "year": 2026,
+      "kind": "issue",
+      "number": 1618,
+      "disposition": "product-defect",
+      "reason": "Accepted fix #1621."
+    },
+    {
+      "year": 2026,
+      "kind": "issue",
+      "number": 1619,
+      "disposition": "product-defect",
+      "reason": "Accepted fix #1620."
+    },
+    {
+      "year": 2026,
+      "kind": "issue",
+      "number": 1842,
+      "disposition": "product-defect",
+      "reason": "Accepted fix #1843."
+    },
+    {
+      "year": 2026,
+      "kind": "issue",
+      "number": 1933,
+      "disposition": "product-defect",
+      "reason": "Accepted fix #1935."
+    },
+    {
+      "year": 2026,
+      "kind": "issue",
+      "number": 1971,
+      "disposition": "product-defect",
+      "reason": "Accepted fix #1972."
+    },
+    {
+      "year": 2026,
+      "kind": "issue",
+      "number": 2075,
+      "disposition": "product-defect",
+      "reason": "Accepted fix #2076."
+    },
+    {
+      "year": 2026,
+      "kind": "issue",
+      "number": 2348,
+      "disposition": "process-incident",
+      "reason": "Authentic release lacked expected public provenance; not faulty product behavior."
+    }
+  ],
+  "productCases": [
+    {
+      "id": "issue-1160",
+      "year": 2025,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "0.8.0",
+      "firstAffectedPublishedAt": "2022-09-18T01:32:28.654Z"
+    },
+    {
+      "id": "issue-1244",
+      "year": 2025,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "0.29.0",
+      "firstAffectedPublishedAt": "2023-10-24T18:51:51.125Z"
+    },
+    {
+      "id": "issue-1370",
+      "year": 2025,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "0.8.0",
+      "firstAffectedPublishedAt": "2022-09-18T01:32:28.654Z"
+    },
+    {
+      "id": "issue-1381",
+      "year": 2025,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "0.10.3",
+      "firstAffectedPublishedAt": "2022-10-03T17:42:05.238Z"
+    },
+    {
+      "id": "issue-1506",
+      "year": 2026,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "0.8.0",
+      "firstAffectedPublishedAt": "2022-09-18T01:32:28.654Z"
+    },
+    {
+      "id": "issue-1515",
+      "year": 2026,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "1.3.0",
+      "firstAffectedPublishedAt": "2025-04-23T01:33:28.087Z"
+    },
+    {
+      "id": "pr-1516",
+      "year": 2026,
+      "category": "Defect in same-year feature",
+      "firstAffectedRelease": "2.0.0",
+      "firstAffectedPublishedAt": "2026-02-26T20:50:41.958Z"
+    },
+    {
+      "id": "issue-1617",
+      "year": 2026,
+      "category": "Defect in same-year feature",
+      "firstAffectedRelease": "2.0.0",
+      "firstAffectedPublishedAt": "2026-02-26T20:50:41.958Z"
+    },
+    {
+      "id": "issue-1618",
+      "year": 2026,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "0.13.0",
+      "firstAffectedPublishedAt": "2022-10-22T02:50:08.717Z"
+    },
+    {
+      "id": "issue-1619",
+      "year": 2026,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "1.4.5",
+      "firstAffectedPublishedAt": "2025-09-05T00:17:55.340Z"
+    },
+    {
+      "id": "issue-1842",
+      "year": 2026,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "0.5.0",
+      "firstAffectedPublishedAt": "2022-07-18T20:46:08.562Z"
+    },
+    {
+      "id": "issue-1933",
+      "year": 2026,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "0.13.1",
+      "firstAffectedPublishedAt": "2022-11-17T00:50:25.076Z"
+    },
+    {
+      "id": "issue-1971",
+      "year": 2026,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "0.5.0",
+      "firstAffectedPublishedAt": "2022-07-18T20:46:08.562Z"
+    },
+    {
+      "id": "issue-2075",
+      "year": 2026,
+      "category": "Pre-existing",
+      "firstAffectedRelease": "0.39.0",
+      "firstAffectedPublishedAt": "2024-04-18T22:51:21.572Z"
+    }
+  ],
+  "processIncidents": [
+    {
+      "id": "issue-2348",
+      "year": 2026,
+      "release": "2.16.2",
+      "publishedAt": "2026-08-19T20:09:05.856Z",
+      "source": "https://github.com/counterfact/api-simulator/issues/2348"
+    }
+  ],
+  "activity": {
+    "mergedPullRequests": { "2025": 226, "2026": 625 },
+    "publishedReleases": { "2025": 9, "2026": 28 },
+    "testFiles": { "2025": 35, "2026": 72 },
+    "testDeclarations": { "2025": 240, "2026": 904 },
+    "pullRequestAuthors2026": {
+      "dependencyBots": 314,
+      "copilot": 197,
+      "maintainer": 103,
+      "other": 11
+    },
+    "coverage": {
+      "2025": {
+        "percent": 84.26,
+        "source": "https://coveralls.io/builds/76781774"
+      },
+      "2026": {
+        "percent": 91.73,
+        "source": "https://coveralls.io/github/counterfact/api-simulator/commit/77f0bc6fd2c3bc935d2eb2da80190369d91f7084",
+        "check": "https://github.com/counterfact/api-simulator/actions/runs/33722238152/job/100543591129",
+        "observedAt": "2026-09-03T18:00:00Z"
+      }
+    }
+  }
+}

@@ -1,23 +1,28 @@
 ---
 import QualityLayout from "../../../../layouts/QualityLayout.astro";
-import { auditCases } from "../../../../data/quality-2026";
+import {
+  auditCasesInReportOrder,
+  baselineCases,
+  casePath,
+  categoryLabel,
+} from "../../../../data/quality-2026";
 ---
 
 <QualityLayout
   title="Case Files — Counterfact 2026 Quality Audit"
-  description="The issue-by-issue evidence behind Counterfact’s 2026 externally reported bug audit."
+  description="Case-by-case evidence for Counterfact’s 2025 baseline, 2026 product-defect cohort, and separate process-quality incident."
   canonicalPath="/quality/2026/cases"
   active="cases"
 >
   <header class="quality-page-header">
     <div class="quality-wide">
       <p class="quality-crumbs"><a href="/quality/2026">2026 quality audit</a> / Case files</p>
-      <p class="quality-kicker">Issue-by-issue evidence</p>
-      <h1>Nine defects. Nine histories.</h1>
+      <p class="quality-kicker">Case-by-case evidence</p>
+      <h1>Ten 2026 defects, with a full 2025 baseline.</h1>
       <p class="quality-deck">
-        Each classification follows the faulty behavior backward through source history and
-        forward through the release containing its fix. Open a case for the full reasoning,
-        links, and any important distinction.
+        Issue reports and accepted standalone external defect pull requests follow the same
+        inclusion rule. Each case traces the behavior backward through source history and
+        forward through the release containing its fix.
       </p>
     </div>
   </header>
@@ -25,24 +30,24 @@ import { auditCases } from "../../../../data/quality-2026";
   <section class="quality-section quality-wide">
     <div class="quality-case-list">
       {
-        auditCases.map((item) => (
+        auditCasesInReportOrder.map((item) => (
           <article class="quality-case-card">
             <div class="quality-case-number">#{item.issue}</div>
             <div>
-              <h2><a href={`/quality/2026/cases/${item.issue}`}>{item.shortTitle}</a></h2>
+              <h2><a href={casePath(item)}>{item.shortTitle}</a></h2>
               <p class="quality-case-meta">
                 {item.reporter} · {item.reportedOn} · {item.area} · fixed in {item.fixedRelease}
               </p>
             </div>
             <span class:list={[
               "quality-badge",
-              item.category === "Defect in a 2026 feature"
+              item.category === "Defect in same-year feature"
                 ? "quality-badge-feature"
-                : item.category === "Pre-existing in 2025"
+                : item.category === "Pre-existing"
                   ? "quality-badge-legacy"
                   : undefined,
             ]}>
-              {item.category}
+              {categoryLabel(item.category, item.reportYear)}
             </span>
           </article>
         ))
@@ -50,10 +55,36 @@ import { auditCases } from "../../../../data/quality-2026";
     </div>
   </section>
 
+  <section class="quality-section quality-wide" aria-labelledby="baseline-heading">
+    <p class="quality-section-label">Comparison baseline</p>
+    <h2 id="baseline-heading">The same screen applied to January–September 2025</h2>
+    <p class="quality-section-intro">
+      Four reports met the product-defect rule. Three other candidates were excluded as two
+      feature requests and one invalid-input report; external PR #1372 was deduplicated with
+      its linked issue #1370.
+    </p>
+    <div class="quality-case-list">
+      {baselineCases.map((item) => (
+        <article class="quality-case-card">
+          <div class="quality-case-number">2025<br />#{item.issue}</div>
+          <div>
+            <h2><a href={casePath(item)}>{item.shortTitle}</a></h2>
+            <p class="quality-case-meta">
+              {item.reporter} · {item.reportedOn} · {item.area} · fixed in {item.fixedRelease}
+            </p>
+          </div>
+          <span class="quality-badge quality-badge-legacy">
+            {categoryLabel(item.category, item.reportYear)}
+          </span>
+        </article>
+      ))}
+    </div>
+  </section>
+
   <section class="quality-section">
     <div class="quality-reading quality-prose">
-      <p class="quality-section-label">Reviewed exception</p>
-      <h2>Issue #2348 was a valid concern, but not a product defect</h2>
+      <p class="quality-section-label">Process-quality incident</p>
+      <h2>Issue #2348 exposed a real release-provenance failure</h2>
       <p>
         An external user asked whether npm release 2.16.2 was legitimate because it had no
         corresponding GitHub tag or release and introduced several new @counterfact packages.
@@ -62,8 +93,9 @@ import { auditCases } from "../../../../data/quality-2026";
         created understandable concern, and GitHub-based publishing resumed with 2.16.5.
       </p>
       <p>
-        The audit records this as a release-provenance and communication gap. It is not forced
-        into a taxonomy designed to date faulty product behavior.
+        The audit records this as a process-quality incident. It remains outside product-bug
+        percentages, but it is included in the overall interpretation: the workflow did have
+        an externally visible quality failure, even though the published code was authentic.
       </p>
       <div class="quality-source-links">
         <a href="https://github.com/counterfact/api-simulator/issues/2348">Read issue #2348</a>

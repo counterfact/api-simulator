@@ -1,21 +1,27 @@
 ---
 import QualityLayout from "../../../../layouts/QualityLayout.astro";
 import {
-  auditCases,
+  allProductCases,
+  casePath,
+  categoryLabel,
   commitUrl,
-  issueUrl,
   prUrl,
+  reportUrl,
   releaseUrl,
   type AuditCase,
 } from "../../../../data/quality-2026";
 
 export function getStaticPaths() {
-  return auditCases.map((item, index) => ({
-    params: { issue: String(item.issue) },
+  return allProductCases.map((item, index) => ({
+    params: {
+      issue: item.reportYear === 2025
+        ? `2025-${item.issue}`
+        : `${item.reportKind === "pull request" ? "pr-" : ""}${item.issue}`,
+    },
     props: {
       item,
-      previous: index > 0 ? auditCases[index - 1] : undefined,
-      next: index < auditCases.length - 1 ? auditCases[index + 1] : undefined,
+      previous: index > 0 ? allProductCases[index - 1] : undefined,
+      next: index < allProductCases.length - 1 ? allProductCases[index + 1] : undefined,
     },
   }));
 }
@@ -27,7 +33,7 @@ interface Props {
 }
 
 const { item, previous, next } = Astro.props;
-const verdictClass = item.category === "Defect in a 2026 feature"
+const verdictClass = item.category === "Defect in same-year feature"
   ? "quality-verdict quality-verdict-feature"
   : "quality-verdict";
 ---
@@ -35,7 +41,7 @@ const verdictClass = item.category === "Defect in a 2026 feature"
 <QualityLayout
   title={`#${item.issue}: ${item.shortTitle} — Counterfact 2026 Quality Audit`}
   description={item.finding}
-  canonicalPath={`/quality/2026/cases/${item.issue}`}
+  canonicalPath={casePath(item)}
   active="cases"
 >
   <header class="quality-page-header">
@@ -44,7 +50,7 @@ const verdictClass = item.category === "Defect in a 2026 feature"
         <a href="/quality/2026">2026 quality audit</a> /
         <a href="/quality/2026/cases">Case files</a> / #{item.issue}
       </p>
-      <p class="quality-kicker">{item.area} · Case #{item.issue}</p>
+      <p class="quality-kicker">{item.area} · {item.reportYear} {item.reportKind} #{item.issue}</p>
       <h1>{item.title}</h1>
       <p class="quality-deck">{item.failure}</p>
     </div>
@@ -80,7 +86,7 @@ const verdictClass = item.category === "Defect in a 2026 feature"
 
     <section class={verdictClass} aria-labelledby="verdict-heading">
       <p class="quality-verdict-label">Classification · {item.confidence} confidence</p>
-      <h2 id="verdict-heading">{item.category}</h2>
+      <h2 id="verdict-heading">{categoryLabel(item.category, item.reportYear)}</h2>
       <p>{item.finding}</p>
     </section>
 
@@ -89,8 +95,8 @@ const verdictClass = item.category === "Defect in a 2026 feature"
       <div class="quality-evidence-item">
         <h3>Origin</h3>
         <p>
-          <a href={commitUrl(item.originCommit)}><code>{item.originCommit.slice(0, 8)}</code></a>,
-          committed {item.originDate}; first affected release {item.firstAffectedRelease}.
+          {item.evidencePrecision}: <a href={commitUrl(item.originCommit)}><code>{item.originCommit.slice(0, 8)}</code></a>,
+          committed {item.originDate}; {item.evidencePrecision === "Exact origin" ? "first affected release" : "confirmed affected release"} {item.firstAffectedRelease}.
           {" "}{item.originSummary}
         </p>
       </div>
@@ -111,7 +117,7 @@ const verdictClass = item.category === "Defect in a 2026 feature"
     )}
 
     <div class="quality-source-links" aria-label="Primary sources">
-      <a href={issueUrl(item.issue)}>Issue #{item.issue}</a>
+      <a href={reportUrl(item)}>{item.reportKind === "issue" ? "Issue" : "Pull request"} #{item.issue}</a>
       <a href={prUrl(item.fixPr)}>Fix PR #{item.fixPr}</a>
       <a href={commitUrl(item.originCommit)}>Origin commit</a>
       <a href={releaseUrl(item.fixedRelease)}>Release {item.fixedRelease}</a>
@@ -119,10 +125,10 @@ const verdictClass = item.category === "Defect in a 2026 feature"
 
     <nav class="quality-next-prev" aria-label="Case file pagination">
       {previous ? (
-        <a href={`/quality/2026/cases/${previous.issue}`}>← #{previous.issue} {previous.shortTitle}</a>
+        <a href={casePath(previous)}>← #{previous.issue} {previous.shortTitle}</a>
       ) : <span />}
       {next ? (
-        <a href={`/quality/2026/cases/${next.issue}`}>#{next.issue} {next.shortTitle} →</a>
+        <a href={casePath(next)}>#{next.issue} {next.shortTitle} →</a>
       ) : (
         <a href="/quality/2026/methodology">Methodology →</a>
       )}

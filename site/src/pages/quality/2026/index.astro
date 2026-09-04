@@ -2,17 +2,21 @@
 import QualityLayout from "../../../layouts/QualityLayout.astro";
 import {
   auditCases,
+  baselineCases,
   categoryCounts,
+  categoryLabel,
+  comparisonSummary,
   totalCases,
   totalRecords,
 } from "../../../data/quality-2026";
 
 const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
+const baselineFastFixes = baselineCases.filter((item) => item.responseDays <= 5).length;
 ---
 
 <QualityLayout
   title="Counterfact 2026 Quality Audit"
-  description="An evidence-backed audit of every confirmed bug reported by an external Counterfact user in 2026 through September 3."
+  description="An evidence-backed comparison of confirmed external Counterfact product-defect reports in matching 2025 and 2026 windows."
   canonicalPath="/quality/2026"
   active="overview"
 >
@@ -21,10 +25,10 @@ const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
       <p class="quality-kicker">Independent reports · traced through source history</p>
       <h1>What Counterfact’s 2026 bug reports actually show</h1>
       <p class="quality-deck">
-        Nine confirmed defects were reported by external users through September 3.
-        Eight already existed by the end of 2025. One arrived inside a feature first
-        released in 2026. None was a regression from previously working behavior
-        caused by a 2026 change.
+        Ten confirmed product defects were reported by external users through September 3.
+        Eight predated 2026. Two arrived inside a feature first released in 2026. None
+        was a regression from previously working behavior caused by a 2026 change. The
+        same screen found four product defects in the matching 2025 window, all pre-existing.
       </p>
       <p class="quality-dateline">
         Audit period: January 1–September 3, 2026 · Published September 3, 2026
@@ -46,7 +50,7 @@ const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
     <p class="quality-section-intro">
       Each confirmed defect received exactly one primary classification. The categories
       describe when the faulty behavior entered the released product—not when it was
-      noticed or fixed.
+      noticed or fixed. The adjacent 2025 baseline uses identical report dates and rules.
     </p>
     <div class="quality-result-grid">
       {
@@ -54,24 +58,55 @@ const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
           <article class="quality-result-card" data-tone={category.tone}>
             <span class="quality-result-number">{category.count}</span>
             <span class="quality-result-percent">{category.percent}% of confirmed bugs</span>
-            <span class="quality-result-label">{category.label}</span>
+            <span class="quality-result-label">{categoryLabel(category.label, 2026)}</span>
           </article>
         ))
       }
     </div>
     <div class="quality-callout">
-      <strong>The bounded conclusion:</strong> this externally reported issue set provides
-      no evidence that the 2026 maintainer-and-agent workflow traded quality for speed.
-      That is a statement about the audited population, not proof that unknown defects do
-      not exist or that an agent can never introduce one.
+      <strong>The bounded conclusion:</strong> the 2026 cohort contains no same-year product
+      regression, including when limited to releases with at least 90 complete days of
+      observation. It does contain two defects born with a 2026 feature and one separate
+      release-provenance incident. These observations do not establish what caused the pattern.
     </div>
+  </section>
+
+  <section class="quality-section quality-wide" aria-labelledby="comparison-heading">
+    <p class="quality-section-label">Matched comparison</p>
+    <h2 id="comparison-heading">Same rules, same dates, side by side</h2>
+    <p class="quality-section-intro">
+      The comparison is descriptive rather than causal. It answers how the two public-report
+      cohorts differ; it cannot isolate the effect of agents, review, testing, usage, or product mix.
+    </p>
+    <table class="quality-metric-table">
+      <thead>
+        <tr>
+          <th scope="col">Measure</th>
+          {comparisonSummary.map((summary) => <th scope="col">{summary.year}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">Confirmed product defects</th>{comparisonSummary.map((summary) => <td>{summary.total}</td>)}</tr>
+        <tr><th scope="row">Same-year regressions</th>{comparisonSummary.map((summary) => <td>{summary.regressions}</td>)}</tr>
+        <tr><th scope="row">Defects born with a same-year feature</th>{comparisonSummary.map((summary) => <td>{summary.featureDefects}</td>)}</tr>
+        <tr><th scope="row">Pre-existing defects</th>{comparisonSummary.map((summary) => <td>{summary.preExisting}</td>)}</tr>
+        <tr>
+          <th scope="row">90-day mature-release sensitivity</th>
+          {comparisonSummary.map((summary) => <td>{summary.matureTotal} included</td>)}
+        </tr>
+      </tbody>
+    </table>
+    <p class="quality-note">
+      Issue #2348 is recorded separately as a 2026 process-quality incident and is excluded
+      from both product-defect columns.
+    </p>
   </section>
 
   <section class="quality-section">
     <div class="quality-wide quality-split">
       <div class="quality-prose">
         <p class="quality-section-label">Why the finding matters</p>
-        <h2>Quality held while the project got much busier</h2>
+        <h2>The product got much busier; the defect mix did not shift toward regressions</h2>
         <p>
           The result did not emerge from a quiet maintenance year. By September 3,
           Counterfact had published 28 releases—3.1 times the nine published in the same
@@ -99,28 +134,28 @@ const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
       </div>
       <dl class="quality-stat-list" aria-label="Audit facts">
         <div>
-          <dt>Confirmed external bugs</dt>
+          <dt>2026 product defects</dt>
           <dd>{totalCases}</dd>
         </div>
         <div>
-          <dt>Released within five days</dt>
+          <dt>2026 released within five days</dt>
           <dd>{fastFixes} of {totalCases}</dd>
         </div>
         <div>
-          <dt>Generator or OpenAPI cases</dt>
-          <dd>6</dd>
+          <dt>2025 baseline defects</dt>
+          <dd>{baselineCases.length}</dd>
         </div>
         <div>
-          <dt>Runtime cases</dt>
-          <dd>2</dd>
+          <dt>2025 released within five days</dt>
+          <dd>{baselineFastFixes} of {baselineCases.length}</dd>
         </div>
         <div>
-          <dt>Packaging cases</dt>
-          <dd>1</dd>
+          <dt>Same-year regressions</dt>
+          <dd>0 in either cohort</dd>
         </div>
         <div>
-          <dt>Confidence</dt>
-          <dd>High for all {totalCases}</dd>
+          <dt>Process incidents</dt>
+          <dd>1, outside product percentages</dd>
         </div>
       </dl>
     </div>
@@ -138,8 +173,8 @@ const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
         <span>{totalRecords} records</span>
         <h3>Case files</h3>
         <p>
-          Nine classified defects and one release-provenance exception, each with source,
-          commit, fix, release, and confidence details.
+          Ten 2026 defects, four complete 2025 baseline cases, and one release-provenance
+          incident, each with source, chronology, release, and confidence details.
         </p>
       </a>
       <a class="quality-link-card" href="/quality/2026/context">
@@ -166,7 +201,7 @@ const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
       <p class="quality-section-label">Synthesis</p>
       <h2>The pattern is older edge cases, found and closed quickly</h2>
       <p>
-        Six cases concerned code generation or interpretation of OpenAPI details: nested
+        Seven 2026 cases concerned code generation or interpretation of OpenAPI details: nested
         required properties, reserved identifiers, schema-less responses, colon-bearing
         routes, Path Item metadata, and path-level parameters. Two concerned runtime request
         behavior: root middleware and exploded object query parameters. One concerned package
@@ -177,13 +212,13 @@ const fastFixes = auditCases.filter((item) => item.responseDays <= 5).length;
         between a broad specification, generated TypeScript, filesystem-safe route names,
         and live HTTP behavior. Most externally discovered failures were unusual but valid
         inputs reaching assumptions that had survived for years. Once the reproductions
-        arrived, eight of nine corrections reached a public release within five calendar days.
+        arrived, nine of ten 2026 corrections reached a public release within five calendar days.
       </p>
       <p>
-        The strongest quality story is therefore not “no bugs.” It is that a faster,
-        AI-assisted development system expanded capability and verification, attracted
-        continued use, and closed externally reported gaps without producing an observable
-        wave of same-year regressions in this population.
+        The strongest defensible story is therefore not “no bugs” or “AI caused quality.”
+        It is that a faster, AI-assisted development period coincided with expanded capability
+        and verification, while this defined external-report population contains no same-year
+        regression. The process incident and the two feature defects remain part of that record.
       </p>
     </div>
   </section>

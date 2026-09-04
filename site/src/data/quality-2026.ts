@@ -1,7 +1,16 @@
+import evidence from "./quality-audit-evidence.json";
+
 export type AuditCategory =
-  "2026 regression" | "Defect in a 2026 feature" | "Pre-existing in 2025";
+  "Same-year regression" | "Defect in same-year feature" | "Pre-existing";
+
+export type EvidencePrecision = "Exact origin" | "Confirmed affected by";
+
+export type ReportKind = "issue" | "pull request";
 
 export interface AuditCase {
+  id: string;
+  reportYear: 2025 | 2026;
+  reportKind: ReportKind;
   issue: number;
   title: string;
   shortTitle: string;
@@ -11,6 +20,8 @@ export interface AuditCase {
   area: "Generator" | "Runtime" | "Packaging";
   category: AuditCategory;
   confidence: "High" | "Medium" | "Low";
+  chronologyConfidence: "High" | "Medium" | "Low";
+  evidencePrecision: EvidencePrecision;
   fixPr: number;
   fixedRelease: string;
   fixedOn: string;
@@ -26,12 +37,18 @@ export interface AuditCase {
   nuance?: string;
 }
 
-export interface AuditException {
+export interface ProcessIncident {
   issue: number;
+  title: string;
+  reportedOn: string;
+  finding: string;
 }
 
 export const auditCases: AuditCase[] = [
   {
+    id: "issue-1506",
+    reportYear: 2026,
+    reportKind: "issue",
     issue: 1506,
     title:
       "Optional properties become required when their nested schemas contain required properties",
@@ -40,8 +57,10 @@ export const auditCases: AuditCase[] = [
     reportedOn: "February 25, 2026",
     reportedVersion: "Not specified",
     area: "Generator",
-    category: "Pre-existing in 2025",
+    category: "Pre-existing",
     confidence: "High",
+    chronologyConfidence: "High",
+    evidencePrecision: "Exact origin",
     fixPr: 1507,
     fixedRelease: "2.0.0",
     fixedOn: "February 26, 2026",
@@ -61,6 +80,9 @@ export const auditCases: AuditCase[] = [
       "The origin commit is contained in 0.8.0; the accepted fix shipped in 2.0.0 one day after the report.",
   },
   {
+    id: "issue-1515",
+    reportYear: 2026,
+    reportKind: "issue",
     issue: 1515,
     title: "Root middleware is not executed",
     shortTitle: "Root middleware did not run",
@@ -68,27 +90,32 @@ export const auditCases: AuditCase[] = [
     reportedOn: "March 2, 2026",
     reportedVersion: "1.5.0",
     area: "Runtime",
-    category: "Pre-existing in 2025",
+    category: "Pre-existing",
     confidence: "High",
+    chronologyConfidence: "High",
+    evidencePrecision: "Exact origin",
     fixPr: 1524,
     fixedRelease: "2.2.0",
     fixedOn: "March 19, 2026",
     responseDays: 17,
-    originCommit: "49c4baf08a7543910fc6d97ba92378da75dff3a4",
-    originDate: "February 15, 2025",
+    originCommit: "59fda9f84f37745e5a3e2566ca70b5abff48013b",
+    originDate: "February 14, 2025",
     firstAffectedRelease: "1.3.0",
     originSummary:
-      "A registry change represented the root path as an empty string while root middleware remained registered under a slash.",
+      "A recursive middleware lookup stopped when it reached the empty root path instead of performing the existing '/' registry lookup.",
     failure:
       "Middleware placed at the route root was skipped, although the same middleware ran when placed under a subroute.",
     finding:
       "The empty-string-versus-slash mismatch was introduced in February 2025 and released in 1.3.0. It remained present through the version named by the reporter.",
     historyEvidence:
-      "The reporter’s diagnosis matches the registry history: recursion reached the top-level directory as an empty string, so it never matched middleware stored at '/'. The fix normalizes the lookup and includes a root-level middleware test.",
+      "The February 14 recursion change replaced the explicit '/' lookup and returned when the remaining path became empty. A later commit changed the recursion terminal value but did not create the behavior. The fix restores a normalized root lookup and includes a root-level middleware test.",
     releaseEvidence:
-      "The faulty commit first appears in 1.3.0. The correction shipped in 2.2.0, 17 calendar days after the report—the only case in the audit that took more than five days to reach a release.",
+      "The faulty commit first appears in 1.3.0. The correction shipped in 2.2.0, 17 calendar days after the report—the only 2026 product case that took more than five days to reach a release.",
   },
   {
+    id: "issue-1617",
+    reportYear: 2026,
+    reportKind: "issue",
     issue: 1617,
     title: "Reserved-keyword operationId values generate invalid TypeScript",
     shortTitle: "Reserved operation IDs broke generated TypeScript",
@@ -96,8 +123,10 @@ export const auditCases: AuditCase[] = [
     reportedOn: "April 2, 2026",
     reportedVersion: "2.4.0",
     area: "Generator",
-    category: "Defect in a 2026 feature",
+    category: "Defect in same-year feature",
     confidence: "High",
+    chronologyConfidence: "High",
+    evidencePrecision: "Exact origin",
     fixPr: 1622,
     fixedRelease: "2.5.0",
     fixedOn: "April 3, 2026",
@@ -116,9 +145,12 @@ export const auditCases: AuditCase[] = [
     releaseEvidence:
       "The feature and defect first shipped together in 2.0.0. The fix shipped in 2.5.0 the day after the report.",
     nuance:
-      "This is the audit’s only bug attributable to code introduced in 2026. Calling it a feature defect is more precise than calling it a regression: the newly introduced behavior never had a working released state. The contribution passed project review, so authorship identifies provenance, not exclusive responsibility.",
+      "This is one of two bugs attributable to code introduced in 2026. Calling it a feature defect is more precise than calling it a regression: the newly introduced behavior never had a working released state. The contribution passed project review, so authorship identifies provenance, not exclusive responsibility.",
   },
   {
+    id: "issue-1618",
+    reportYear: 2026,
+    reportKind: "issue",
     issue: 1618,
     title: "A response without a schema breaks generated type definitions",
     shortTitle: "Schema-less responses broke type generation",
@@ -126,8 +158,10 @@ export const auditCases: AuditCase[] = [
     reportedOn: "April 2, 2026",
     reportedVersion: "2.4.0",
     area: "Generator",
-    category: "Pre-existing in 2025",
+    category: "Pre-existing",
     confidence: "High",
+    chronologyConfidence: "High",
+    evidencePrecision: "Exact origin",
     fixPr: 1621,
     fixedRelease: "2.5.0",
     fixedOn: "April 3, 2026",
@@ -147,6 +181,9 @@ export const auditCases: AuditCase[] = [
       "The faulty implementation appears in 0.13.0; the accepted fix shipped in 2.5.0 one day after the report.",
   },
   {
+    id: "issue-1619",
+    reportYear: 2026,
+    reportKind: "issue",
     issue: 1619,
     title: "Routes containing colons generate incorrect type-import paths",
     shortTitle: "Colon routes produced the wrong import path",
@@ -154,8 +191,10 @@ export const auditCases: AuditCase[] = [
     reportedOn: "April 2, 2026",
     reportedVersion: "2.4.0",
     area: "Generator",
-    category: "Pre-existing in 2025",
+    category: "Pre-existing",
     confidence: "High",
+    chronologyConfidence: "High",
+    evidencePrecision: "Exact origin",
     fixPr: 1620,
     fixedRelease: "2.5.0",
     fixedOn: "April 3, 2026",
@@ -175,6 +214,9 @@ export const auditCases: AuditCase[] = [
       "The mismatch first shipped in 1.4.5. It was corrected in 2.5.0 one day after the report.",
   },
   {
+    id: "issue-1842",
+    reportYear: 2026,
+    reportKind: "issue",
     issue: 1842,
     title: "Non-operation Path Item fields cause a generator TypeError",
     shortTitle: "Path Item metadata crashed the generator",
@@ -182,8 +224,10 @@ export const auditCases: AuditCase[] = [
     reportedOn: "April 13, 2026",
     reportedVersion: "2.7.0",
     area: "Generator",
-    category: "Pre-existing in 2025",
+    category: "Pre-existing",
     confidence: "High",
+    chronologyConfidence: "High",
+    evidencePrecision: "Exact origin",
     fixPr: 1843,
     fixedRelease: "2.8.1",
     fixedOn: "April 14, 2026",
@@ -203,6 +247,9 @@ export const auditCases: AuditCase[] = [
       "The responsible traversal is present by 0.5.0. The fix shipped in 2.8.1 the next day.",
   },
   {
+    id: "issue-1933",
+    reportYear: 2026,
+    reportKind: "issue",
     issue: 1933,
     title: "Object-valued query parameters do not use OpenAPI’s exploded form",
     shortTitle: "Exploded object query parameters were not assembled",
@@ -210,29 +257,34 @@ export const auditCases: AuditCase[] = [
     reportedOn: "April 21, 2026",
     reportedVersion: "2.9.0",
     area: "Runtime",
-    category: "Pre-existing in 2025",
+    category: "Pre-existing",
     confidence: "High",
+    chronologyConfidence: "Medium",
+    evidencePrecision: "Confirmed affected by",
     fixPr: 1935,
     fixedRelease: "2.10.0",
     fixedOn: "April 25, 2026",
     responseDays: 4,
-    originCommit: "cf377e4a9d45d0e98ab4721ea73852dcdc98340f",
-    originDate: "July 17, 2023",
-    firstAffectedRelease: "0.26.0",
+    originCommit: "023788931d612875c70748b1e78094158edbe6b8",
+    originDate: "November 12, 2022",
+    firstAffectedRelease: "0.13.1",
     originSummary:
-      "Runtime query handling exposed only the web framework’s flat query object and never assembled OpenAPI form-exploded object parameters under their declared name.",
+      "The earliest confirmed OpenAPI-aware query conversion still exposed the web framework’s flat query object and did not assemble form-exploded object parameters under their declared name.",
     failure:
       "A request such as ?page=0&size=100 did not populate $.query.pageable and, once request validation existed, was rejected as missing the required pageable parameter.",
     finding:
       "Request validation made the mismatch more visible in 2026, but it did not create the underlying deserialization omission. The same exploded input could not have produced the declared object in 2025.",
     historyEvidence:
-      "The flat query assignment is present in the 2023 dispatcher conversion and persists through the 2025 boundary. The fix adds OpenAPI style/explode-aware assembly to both validation and handler input.",
+      "The flat query assignment is already present when OpenAPI-aware parameter conversion shipped in 0.13.1 and persists through the 2025 boundary. The later TypeScript conversion preserved rather than introduced it. The fix adds OpenAPI style/explode-aware assembly to both validation and handler input.",
     releaseEvidence:
-      "The responsible runtime shape is present by 0.26.0. Correct exploded-object support shipped in 2.10.0 four days after the report.",
+      "The omission is confirmed in 0.13.1; the audit does not claim that commit is the exact first possible origin. Correct exploded-object support shipped in 2.10.0 four days after the report.",
     nuance:
       "This is the clearest latent-defect case. A new validator changed the symptom from incorrectly shaped handler data to a visible 400 response, but the supported OpenAPI serialization could not be consumed correctly before the validator existed either. Under the audit rules, increased visibility is not a new regression.",
   },
   {
+    id: "issue-1971",
+    reportYear: 2026,
+    reportKind: "issue",
     issue: 1971,
     title: "Path-level parameters are ignored",
     shortTitle: "Path-level parameters were ignored",
@@ -240,8 +292,10 @@ export const auditCases: AuditCase[] = [
     reportedOn: "April 30, 2026",
     reportedVersion: "2.10.0",
     area: "Generator",
-    category: "Pre-existing in 2025",
+    category: "Pre-existing",
     confidence: "High",
+    chronologyConfidence: "High",
+    evidencePrecision: "Exact origin",
     fixPr: 1972,
     fixedRelease: "2.11.0",
     fixedOn: "May 5, 2026",
@@ -261,6 +315,9 @@ export const auditCases: AuditCase[] = [
       "The omission exists by 0.5.0. The correction shipped in 2.11.0 five days after the report.",
   },
   {
+    id: "issue-2075",
+    reportYear: 2026,
+    reportKind: "issue",
     issue: 2075,
     title: "Published package runs an obsolete patch-package postinstall hook",
     shortTitle: "The package ran an obsolete postinstall hook",
@@ -268,8 +325,10 @@ export const auditCases: AuditCase[] = [
     reportedOn: "May 15, 2026",
     reportedVersion: "Not specified; 2.11.0 was current",
     area: "Packaging",
-    category: "Pre-existing in 2025",
+    category: "Pre-existing",
     confidence: "High",
+    chronologyConfidence: "High",
+    evidencePrecision: "Exact origin",
     fixPr: 2076,
     fixedRelease: "2.12.0",
     fixedOn: "May 16, 2026",
@@ -288,20 +347,207 @@ export const auditCases: AuditCase[] = [
     releaseEvidence:
       "The hook first shipped in 0.39.0. Its removal reached 2.12.0 one day after the report.",
   },
+  {
+    id: "pr-1516",
+    reportYear: 2026,
+    reportKind: "pull request",
+    issue: 1516,
+    title:
+      "Invalid operationId characters generate invalid TypeScript identifiers",
+    shortTitle: "Invalid operation IDs broke generated TypeScript",
+    reporter: "nkincy",
+    reportedOn: "March 2, 2026",
+    reportedVersion: "2.0.0",
+    area: "Generator",
+    category: "Defect in same-year feature",
+    confidence: "High",
+    chronologyConfidence: "High",
+    evidencePrecision: "Exact origin",
+    fixPr: 1516,
+    fixedRelease: "2.0.1",
+    fixedOn: "March 2, 2026",
+    responseDays: 0,
+    originCommit: "e0696850a6b666d191f1265d798609aca94ca285",
+    originDate: "February 23, 2026",
+    firstAffectedRelease: "2.0.0",
+    originSummary:
+      "The new operationId-based export feature used punctuation-bearing operation identifiers verbatim as TypeScript identifiers.",
+    failure:
+      "Operation IDs containing characters that TypeScript identifiers cannot contain produced generated source that failed to parse.",
+    finding:
+      "The capability and defect shipped together in 2.0.0. The external contributor reported and fixed the defect directly in an accepted pull request rather than opening a separate issue.",
+    historyEvidence:
+      "The operationId export implementation introduced the verbatim identifier. PR #1516 adds identifier sanitization and focused coverage; a maintainer approved it and all required checks passed before merge.",
+    releaseEvidence:
+      "The feature and defect first shipped in 2.0.0. The accepted contributor fix shipped later on the report date in 2.0.1.",
+    nuance:
+      "This record is why the population includes accepted standalone external defect pull requests. Counting only issues would omit a real public report merely because its author supplied the repair at the same time.",
+  },
 ];
 
-export const auditExceptions: AuditException[] = [{ issue: 2348 }];
+export const baselineCases: AuditCase[] = [
+  {
+    id: "issue-1160",
+    reportYear: 2025,
+    reportKind: "issue",
+    issue: 1160,
+    title: "Generated context types expose $.header instead of $.headers",
+    shortTitle: "The generated context used the wrong headers property",
+    reporter: "NicholasRasi",
+    reportedOn: "January 16, 2025",
+    reportedVersion: "1.1.5",
+    area: "Generator",
+    category: "Pre-existing",
+    confidence: "High",
+    chronologyConfidence: "Medium",
+    evidencePrecision: "Confirmed affected by",
+    fixPr: 1161,
+    fixedRelease: "1.1.6",
+    fixedOn: "January 18, 2025",
+    responseDays: 2,
+    originCommit: "3d03bb5674ed14a3f27365c57cc3e1f2a865481b",
+    originDate: "August 13, 2022",
+    firstAffectedRelease: "0.8.0",
+    originSummary:
+      "The early generated response-builder context declared a singular header property while runtime context exposed headers.",
+    failure:
+      "TypeScript rejected the runtime-supported $.headers property and suggested a nonexistent singular $.header property instead.",
+    finding:
+      "The mismatch is present years before the 2025 report. The cited release is a confirmed affected bound, not a claim that no earlier package was affected.",
+    historyEvidence:
+      "History traces the singular generated declaration to the early response-builder type. The accepted fix changes only the generated name and the release note explicitly identifies #1160.",
+    releaseEvidence:
+      "The audit confirms the mismatch by 0.8.0 and in the reporter's 1.1.5. The fix shipped in 1.1.6 two calendar days after the report.",
+  },
+  {
+    id: "issue-1244",
+    reportYear: 2025,
+    reportKind: "issue",
+    issue: 1244,
+    title: "Swagger UI cannot resolve references in external YAML files",
+    shortTitle: "External YAML references broke Swagger UI",
+    reporter: "sugiruu",
+    reportedOn: "March 28, 2025",
+    reportedVersion: "Not specified",
+    area: "Runtime",
+    category: "Pre-existing",
+    confidence: "High",
+    chronologyConfidence: "Medium",
+    evidencePrecision: "Confirmed affected by",
+    fixPr: 1553,
+    fixedRelease: "2.2.1",
+    fixedOn: "March 20, 2026",
+    responseDays: 357,
+    originCommit: "326d9a10e7b9f2ea577ce697e224f31ad1b361a7",
+    originDate: "October 4, 2023",
+    firstAffectedRelease: "0.29.0",
+    originSummary:
+      "The documented OpenAPI viewer served the root document without bundling sibling-file references for the browser.",
+    failure:
+      "A valid multi-file OpenAPI document worked as one file but displayed unresolved-reference errors in Counterfact's Swagger UI.",
+    finding:
+      "The serving path is confirmed to preserve external references well before 2025. The audit does not claim the extraction commit was the first possible occurrence.",
+    historyEvidence:
+      "The 2023 middleware state serves the document without producing a self-contained browser payload. The accepted fix bundles external references and reproduces the multi-file report in tests.",
+    releaseEvidence:
+      "The behavior is confirmed by 0.29.0 and at the 2025 report. The eventual correction shipped in 2.2.1, 357 days after the report.",
+  },
+  {
+    id: "issue-1370",
+    reportYear: 2025,
+    reportKind: "issue",
+    issue: 1370,
+    title: "JSON response shortcuts require an exact content-type key",
+    shortTitle: "Content-type parameters hid the JSON shortcut",
+    reporter: "IhorR-DevBrother",
+    reportedOn: "August 14, 2025",
+    reportedVersion: "Not specified",
+    area: "Generator",
+    category: "Pre-existing",
+    confidence: "High",
+    chronologyConfidence: "Medium",
+    evidencePrecision: "Confirmed affected by",
+    fixPr: 1372,
+    fixedRelease: "1.4.2",
+    fixedOn: "August 20, 2025",
+    responseDays: 6,
+    originCommit: "3d03bb5674ed14a3f27365c57cc3e1f2a865481b",
+    originDate: "August 13, 2022",
+    firstAffectedRelease: "0.8.0",
+    originSummary:
+      "The early response-builder shortcut type matched media types exactly rather than recognizing parameters such as charset.",
+    failure:
+      "A response declared as application/json; charset=utf-8 did not expose the generated .json() convenience method.",
+    finding:
+      "The exact-match type predates 2025. PR #1372 is counted with its linked issue, not as a second external report.",
+    historyEvidence:
+      "The old conditional type requires exact key membership. The external contributor's accepted fix switches to a contains match; a later release reverted it and a separate 2026 repair restored the behavior.",
+    releaseEvidence:
+      "The exact-match behavior is confirmed by 0.8.0. The initial fix shipped in 1.4.2 six days after the report.",
+  },
+  {
+    id: "issue-1381",
+    reportYear: 2025,
+    reportKind: "issue",
+    issue: 1381,
+    title: "OpenAPI paths containing colons create invalid Windows filenames",
+    shortTitle: "Colon routes failed on Windows",
+    reporter: "xehmer",
+    reportedOn: "September 2, 2025",
+    reportedVersion: "1.4.2",
+    area: "Generator",
+    category: "Pre-existing",
+    confidence: "High",
+    chronologyConfidence: "Medium",
+    evidencePrecision: "Confirmed affected by",
+    fixPr: 1386,
+    fixedRelease: "1.4.5",
+    fixedOn: "September 5, 2025",
+    responseDays: 3,
+    originCommit: "7cd98d5a8d27a3e5efc7a51d2878ebc33b65f256",
+    originDate: "October 3, 2022",
+    firstAffectedRelease: "0.10.3",
+    originSummary:
+      "Route-to-file generation used URL path text as filename text without a Windows-safe transformation.",
+    failure:
+      "A valid route such as /stuff:action could not be generated on Windows because colons are forbidden in filenames.",
+    finding:
+      "The filename scheme is confirmed affected years before the report. The precise earliest affected package is bounded rather than asserted beyond the available tagged comparison.",
+    historyEvidence:
+      "The long-standing route filename scheme retained the colon. The fix introduces one Windows-safe transformation and adds a colon-bearing OpenAPI route to black-box and generator coverage.",
+    releaseEvidence:
+      "The behavior is confirmed by 0.10.3 and in the reported 1.4.2. The fix shipped in 1.4.5 three calendar days after the report.",
+  },
+];
+
+export const auditCasesInReportOrder = [...auditCases].sort(
+  (left, right) => left.issue - right.issue,
+);
+export const allProductCases = [...auditCasesInReportOrder, ...baselineCases];
+
+export const processIncidents: ProcessIncident[] = [
+  {
+    issue: 2348,
+    title: "Release 2.16.2 lacked normal public provenance signals",
+    reportedOn: "August 25, 2026",
+    finding:
+      "The release was authentic, but the missing tag, GitHub release, and green publishing provenance made a reasonable user question whether it was legitimate.",
+  },
+];
+
+// Backward-compatible export for the original page modules.
+export const auditExceptions = processIncidents;
 
 export const totalCases = auditCases.length;
-export const totalRecords = totalCases + auditExceptions.length;
+export const totalRecords = allProductCases.length + processIncidents.length;
 
 const categoryDefinitions: Array<{
   label: AuditCategory;
   tone: "neutral" | "feature" | "legacy";
 }> = [
-  { label: "2026 regression", tone: "neutral" },
-  { label: "Defect in a 2026 feature", tone: "feature" },
-  { label: "Pre-existing in 2025", tone: "legacy" },
+  { label: "Same-year regression", tone: "neutral" },
+  { label: "Defect in same-year feature", tone: "feature" },
+  { label: "Pre-existing", tone: "legacy" },
 ];
 
 export const categoryCounts = categoryDefinitions.map(({ label, tone }) => {
@@ -310,38 +556,93 @@ export const categoryCounts = categoryDefinitions.map(({ label, tone }) => {
   return {
     label,
     count,
-    percent: totalCases === 0 ? 0 : Number(((count / totalCases) * 100).toFixed(1)),
+    percent:
+      totalCases === 0 ? 0 : Number(((count / totalCases) * 100).toFixed(1)),
     tone,
   };
 });
 
+const matureIds = new Set(
+  evidence.productCases
+    .filter((item) => {
+      const end = Date.parse(
+        evidence.windows[String(item.year) as "2025" | "2026"].endExclusive,
+      );
+      const published = Date.parse(item.firstAffectedPublishedAt);
+      return end - published >= evidence.maturityDays * 24 * 60 * 60 * 1000;
+    })
+    .map((item) => item.id),
+);
+
+export const comparisonSummary = [
+  { year: 2025 as const, cases: baselineCases },
+  { year: 2026 as const, cases: auditCases },
+].map(({ year, cases }) => ({
+  year,
+  total: cases.length,
+  regressions: cases.filter((item) => item.category === "Same-year regression")
+    .length,
+  featureDefects: cases.filter(
+    (item) => item.category === "Defect in same-year feature",
+  ).length,
+  preExisting: cases.filter((item) => item.category === "Pre-existing").length,
+  matureTotal: cases.filter((item) => matureIds.has(item.id)).length,
+}));
+
+export const categoryLabel = (category: AuditCategory, year: 2025 | 2026) => {
+  if (category === "Same-year regression") return `${year} regression`;
+  if (category === "Defect in same-year feature") {
+    return `Defect in a ${year} feature`;
+  }
+
+  return `Pre-existing before ${year}`;
+};
+
+const activity = evidence.activity;
+const ratio = (after: number, before: number) =>
+  `${(after / before).toFixed(1)}×`;
+const percentGrowth = (after: number, before: number) =>
+  `+${Math.round((after / before - 1) * 100)}%`;
+
 export const deliveryMetrics = [
   {
     label: "Merged pull requests",
-    before: "226",
-    after: "625",
-    change: "2.8×",
+    before: String(activity.mergedPullRequests["2025"]),
+    after: String(activity.mergedPullRequests["2026"]),
+    change: ratio(
+      activity.mergedPullRequests["2026"],
+      activity.mergedPullRequests["2025"],
+    ),
     note: "January 1–September 3, year over year; includes dependency automation.",
   },
   {
     label: "Published releases",
-    before: "9",
-    after: "28",
-    change: "3.1×",
+    before: String(activity.publishedReleases["2025"]),
+    after: String(activity.publishedReleases["2026"]),
+    change: ratio(
+      activity.publishedReleases["2026"],
+      activity.publishedReleases["2025"],
+    ),
     note: "January 1–September 3, based on npm publication timestamps.",
   },
   {
     label: "Test files",
-    before: "35",
-    after: "72",
-    change: "+106%",
+    before: String(activity.testFiles["2025"]),
+    after: String(activity.testFiles["2026"]),
+    change: percentGrowth(
+      activity.testFiles["2026"],
+      activity.testFiles["2025"],
+    ),
     note: "Static repository count at 1.4.7 and at the September 3 main branch.",
   },
   {
     label: "Explicit test declarations",
-    before: "240",
-    after: "904",
-    change: "+277%",
+    before: String(activity.testDeclarations["2025"]),
+    after: String(activity.testDeclarations["2026"]),
+    change: percentGrowth(
+      activity.testDeclarations["2026"],
+      activity.testDeclarations["2025"],
+    ),
     note: "Static count of it/test declarations; parameterized cases can execute more tests.",
   },
 ] as const;
@@ -424,3 +725,11 @@ export const commitUrl = (commit: string) =>
 
 export const releaseUrl = (version: string) =>
   `https://github.com/counterfact/api-simulator/releases/tag/v${version}`;
+
+export const reportUrl = (item: AuditCase) =>
+  item.reportKind === "pull request" ? prUrl(item.issue) : issueUrl(item.issue);
+
+export const casePath = (item: AuditCase) =>
+  item.reportYear === 2025
+    ? `/quality/2026/cases/2025-${item.issue}`
+    : `/quality/2026/cases/${item.reportKind === "pull request" ? "pr-" : ""}${item.issue}`;

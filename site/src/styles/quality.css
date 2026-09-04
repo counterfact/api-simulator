@@ -576,6 +576,13 @@
   white-space: nowrap;
 }
 
+.quality-metric-table tbody th {
+  color: var(--quality-navy);
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 .quality-metric-note {
   color: var(--muted);
   display: block;
