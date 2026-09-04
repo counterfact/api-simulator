@@ -70,7 +70,7 @@ const incident = processIncidents[0];
     <section class="appendix-notes quality-reading quality-prose" aria-labelledby="process-case">
       <h2 id="process-case">Process-quality incident: issue #{incident.issue}</h2>
       <p>
-        <a href={incident.sourceUrl}>{incident.title}</a>. {incident.finding}
+        <a href={incident.sourceUrl}>{incident.title}</a>. {incident.finding}{" "}
         GitHub-based publishing resumed with release 2.16.5. The incident is
         included in the study’s interpretation but excluded from product-defect
         percentages because the published code was authentic.
@@ -85,7 +85,7 @@ const incident = processIncidents[0];
     <footer class="appendix-notes quality-reading quality-prose">
       <h2>Population transparency</h2>
       <p>
-        The <a href="/quality/2026/candidates">candidate disposition ledger</a>
+        The <a href="/quality/2026/candidates">candidate disposition ledger</a>{" "}
         also lists the three exclusions and the deduplicated pull request so the
         denominator can be reviewed rather than inferred from this case list.
       </p>
