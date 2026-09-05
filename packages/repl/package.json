@@ -1,6 +1,6 @@
 {
   "name": "@counterfact/repl",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Inspect and manipulate a running Counterfact simulator from a Node.js REPL.",
   "type": "module",
   "main": "./dist/index.js",
@@ -53,6 +53,6 @@
   },
   "dependencies": {
     "@counterfact/client": "0.1.1",
-    "@counterfact/runtime": "0.1.4"
+    "@counterfact/runtime": "0.1.5"
   }
 }
