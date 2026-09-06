@@ -1,6 +1,10 @@
 ---
 name: counterfact-pr-creation
 description: Create Counterfact pull requests with the required agent-authored acceptance and repository-learning notes; do not use to review another PR.
+applyTo:
+  - ".github/pull_request_template.md"
+  - ".github/skills/**/*.md"
+  - "AGENTS.md"
 ---
 
 # Counterfact PR Creation Skill
