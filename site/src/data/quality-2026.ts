@@ -366,6 +366,7 @@ const numberRange = (values: number[]) => ({
 });
 const displayNumber = (value: number, maximumFractionDigits = 2) =>
   value.toLocaleString("en-US", { maximumFractionDigits });
+const displayDays = (value: number) => `${value} ${value === 1 ? "day" : "days"}`;
 const displayRange = (values: number[], suffix = "") => {
   const range = numberRange(values);
   return `${displayNumber(range.minimum)}–${displayNumber(range.maximum)}${suffix}`;
@@ -500,7 +501,7 @@ export const retrospectiveBaselineRows = [
       actual2026.medianResponseDays,
       " days",
     ),
-    displayActual: `${actual2026.medianResponseDays} day`,
+    displayActual: displayDays(actual2026.medianResponseDays),
   },
   {
     label: "Introduced qualifying reports, exposure-scaled",
