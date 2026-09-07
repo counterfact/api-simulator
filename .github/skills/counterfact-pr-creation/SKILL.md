@@ -22,8 +22,8 @@ Their absence most likely means the PR was not opened by an agent.
 
 ## Manual acceptance tests
 
-Every agent-created PR description must include a section titled exactly `## Manual acceptance tests` with 3–6 unchecked checkboxes.
-Each checkbox must describe an observable behavior, not an implementation detail, and must not be pre-checked.
+Every agent-created PR description must include a section titled exactly `## Manual acceptance tests` with 3–6 checklist items that start unchecked.
+Each checklist item must describe an observable behavior, not an implementation detail; complete the items before merge.
 
 - Cover the main success path, at least one edge case, and one regression check where applicable.
 - A PR that only adds files under `.github/issue-proposals/` may omit this section.
