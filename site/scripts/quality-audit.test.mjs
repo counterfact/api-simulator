@@ -142,14 +142,17 @@ test("checked-in primary cohorts reproduce the article results", () => {
   ]);
 });
 
-test("automated verification snapshots report the historical cohort additions", () => {
+test("automated verification snapshots retain all five cohort endpoints", () => {
   const { comparison2022, comparison2023, comparison2024, comparison2025 } =
     manifest.activity.snapshots;
   const { preAdoption, endOfObservation } = manifest.activity.snapshots;
+  const historicCoverage = manifest.activity.historicCohorts;
+  const supplementalCoverage = manifest.activity.supplementalFullWindow.coverage;
   assert.deepEqual(
     {
       comparison2022: {
         status: comparison2022.status,
+        firstReachableCommit: comparison2022.firstReachableCommit,
         endTestFiles: comparison2022.end.testFiles,
         endTestDeclarations: comparison2022.end.testDeclarations,
       },
@@ -168,15 +171,19 @@ test("automated verification snapshots report the historical cohort additions", 
         testDeclarations:
           comparison2025.end.testDeclarations -
           comparison2025.start.testDeclarations,
+        branchCoveragePercent:
+          comparison2025.start.branchCoverage.branchCoveragePercent,
+        coverageKind: comparison2025.start.branchCoverage.kind,
+        failedSuites: comparison2025.start.branchCoverage.testResult.failedSuites,
       },
       aiCohort: {
         testFiles: endOfObservation.testFiles - preAdoption.testFiles,
         testDeclarations:
           endOfObservation.testDeclarations - preAdoption.testDeclarations,
-        lineCoveragePercentagePoints: Number(
+        branchCoveragePercentagePoints: Number(
           (
-            endOfObservation.lineCoveragePercent -
-            preAdoption.lineCoveragePercent
+            endOfObservation.branchCoveragePercent -
+            preAdoption.branchCoveragePercent
           ).toFixed(3),
         ),
       },
@@ -184,17 +191,40 @@ test("automated verification snapshots report the historical cohort additions", 
     {
       comparison2022: {
         status: "not_estimable",
+        firstReachableCommit: "238c74baa4748932dc5580cc0a18016b9442d21e",
         endTestFiles: 21,
         endTestDeclarations: 94,
       },
       comparison2023: { testFiles: 0, testDeclarations: 10 },
       comparison2024: { testFiles: 6, testDeclarations: 48 },
-      comparison2025: { testFiles: 1, testDeclarations: 6 },
+      comparison2025: {
+        testFiles: 1,
+        testDeclarations: 6,
+        branchCoveragePercent: 89.72,
+        coverageKind: "local-recomputation",
+        failedSuites: 1,
+      },
       aiCohort: {
         testFiles: 36,
         testDeclarations: 634,
-        lineCoveragePercentagePoints: 8.846,
+        branchCoveragePercentagePoints: 0.071,
       },
+    },
+  );
+  assert.deepEqual(
+    {
+      2022: historicCoverage["2022"].coverage.end.branchCoveragePercent,
+      2023: historicCoverage["2023"].coverage.end.branchCoveragePercent,
+      2024: historicCoverage["2024"].coverage.end.branchCoveragePercent,
+      2025: supplementalCoverage["2025"].branchCoveragePercent,
+      2026: endOfObservation.branchCoveragePercent,
+    },
+    {
+      2022: 95.51282051282051,
+      2023: 91.74560216508796,
+      2024: 89.85637342908439,
+      2025: 90.13107170393215,
+      2026: 89.41451990632319,
     },
   );
 });
@@ -213,8 +243,8 @@ test("historic delivery and coverage retain matched-window limitations", () => {
         releases: cohorts["2023"].publishedReleases,
         coverageChange: Number(
           (
-            cohorts["2023"].coverage.end.coveredPercent -
-            cohorts["2023"].coverage.start.coveredPercent
+            cohorts["2023"].coverage.end.branchCoveragePercent -
+            cohorts["2023"].coverage.start.branchCoveragePercent
           ).toFixed(3),
         ),
       },
@@ -223,8 +253,8 @@ test("historic delivery and coverage retain matched-window limitations", () => {
         releases: cohorts["2024"].publishedReleases,
         coverageChange: Number(
           (
-            cohorts["2024"].coverage.end.coveredPercent -
-            cohorts["2024"].coverage.start.coveredPercent
+            cohorts["2024"].coverage.end.branchCoveragePercent -
+            cohorts["2024"].coverage.start.branchCoveragePercent
           ).toFixed(3),
         ),
       },
@@ -238,12 +268,12 @@ test("historic delivery and coverage retain matched-window limitations", () => {
       2023: {
         nonDependencyMerges: 50,
         releases: 19,
-        coverageChange: -2.294,
+        coverageChange: -2.686,
       },
       2024: {
         nonDependencyMerges: 75,
         releases: 24,
-        coverageChange: -3.629,
+        coverageChange: -0.827,
       },
     },
   );
@@ -389,19 +419,19 @@ test("coverage reference stays a two-cohort descriptive midpoint", () => {
   const cohorts = manifest.activity.historicCohorts;
   const changes = ["2023", "2024"].map(
     (year) =>
-      cohorts[year].coverage.end.coveredPercent -
-      cohorts[year].coverage.start.coveredPercent,
+      cohorts[year].coverage.end.branchCoveragePercent -
+      cohorts[year].coverage.start.branchCoveragePercent,
   );
-  assert.equal(Number(median(changes).toFixed(3)), -2.961);
+  assert.equal(Number(median(changes).toFixed(3)), -1.756);
   assert.equal(
     Number(
       (
-        manifest.activity.snapshots.endOfObservation.lineCoveragePercent -
-        manifest.activity.snapshots.preAdoption.lineCoveragePercent -
+        manifest.activity.snapshots.endOfObservation.branchCoveragePercent -
+        manifest.activity.snapshots.preAdoption.branchCoveragePercent -
         median(changes)
       ).toFixed(3),
     ),
-    11.807,
+    1.827,
   );
 });
 
