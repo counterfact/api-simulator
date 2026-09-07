@@ -243,80 +243,80 @@ const comparison2022Snapshots = snapshots.comparison2022;
 const comparison2023Snapshots = snapshots.comparison2023;
 const comparison2024Snapshots = snapshots.comparison2024;
 const comparison2025Snapshots = snapshots.comparison2025;
-
-export const testingMetrics = [
-  {
-    label: "Conventional test files",
-    before: snapshots.preAdoption.testFiles,
-    after: snapshots.endOfObservation.testFiles,
-    displayBefore: String(snapshots.preAdoption.testFiles),
-    displayAfter: String(snapshots.endOfObservation.testFiles),
-    displayChange: displaySignedChange(
-      snapshots.endOfObservation.testFiles - snapshots.preAdoption.testFiles,
-    ),
-  },
-  {
-    label: "Explicit test declarations",
-    before: snapshots.preAdoption.testDeclarations,
-    after: snapshots.endOfObservation.testDeclarations,
-    displayBefore: String(snapshots.preAdoption.testDeclarations),
-    displayAfter: String(snapshots.endOfObservation.testDeclarations),
-    displayChange: displaySignedChange(
-      snapshots.endOfObservation.testDeclarations -
-        snapshots.preAdoption.testDeclarations,
-    ),
-  },
-  {
-    label: "Reported line coverage",
-    before: snapshots.preAdoption.lineCoveragePercent,
-    after: snapshots.endOfObservation.lineCoveragePercent,
-    displayBefore: `${snapshots.preAdoption.lineCoveragePercent}%`,
-    displayAfter: `${snapshots.endOfObservation.lineCoveragePercent}%`,
-    displayChange: displaySignedChange(
-      Number(
-        (
-          snapshots.endOfObservation.lineCoveragePercent -
-          snapshots.preAdoption.lineCoveragePercent
-        ).toFixed(3),
-      ),
-      " percentage points",
-    ),
-  },
-] as const;
-
-export const testCohortAdditions = [
-  {
-    label: "2022 comparison",
-    note: comparison2022Snapshots.reason,
-    displayTestFiles: `Not available → ${comparison2022Snapshots.end.testFiles}`,
-    displayTestFilesAdded: "Not estimable",
-    displayDeclarations: `Not available → ${comparison2022Snapshots.end.testDeclarations}`,
-    displayDeclarationsAdded: "Not estimable",
-  },
-  cohortAddition(
-    "2023 comparison",
-    comparison2023Snapshots.start,
-    comparison2023Snapshots.end,
-  ),
-  cohortAddition(
-    "2024 comparison",
-    comparison2024Snapshots.start,
-    comparison2024Snapshots.end,
-  ),
-  cohortAddition(
-    "2025 comparison",
-    comparison2025Snapshots.start,
-    comparison2025Snapshots.end,
-  ),
-  cohortAddition(
-    "2026 AI cohort",
-    snapshots.preAdoption,
-    snapshots.endOfObservation,
-  ),
-];
-
 const historicCohorts = evidence.activity.historicCohorts;
 const formatCoverage = (percent: number) => `${percent.toFixed(3)}%`;
+
+type VerificationSnapshot = TestCountSnapshot & {
+  lineCoveragePercent: number;
+  coverageSource: string;
+};
+
+const verificationCohort = (
+  year: number,
+  start: TestCountSnapshot | undefined,
+  end: VerificationSnapshot,
+  note?: string,
+) => ({
+  year,
+  testFiles: start
+    ? `${start.testFiles} → ${end.testFiles}`
+    : `Not available → ${end.testFiles}`,
+  testDeclarations: start
+    ? `${start.testDeclarations} → ${end.testDeclarations}`
+    : `Not available → ${end.testDeclarations}`,
+  lineCoveragePercent: end.lineCoveragePercent,
+  coverageSource: end.coverageSource,
+  note,
+});
+
+export const verificationCohorts = [
+  verificationCohort(
+    2022,
+    undefined,
+    {
+      ...comparison2022Snapshots.end,
+      lineCoveragePercent: historicCohorts["2022"].coverage.end.coveredPercent,
+      coverageSource: historicCohorts["2022"].coverage.end.source,
+    },
+    comparison2022Snapshots.reason,
+  ),
+  verificationCohort(
+    2023,
+    comparison2023Snapshots.start,
+    {
+      ...comparison2023Snapshots.end,
+      lineCoveragePercent: historicCohorts["2023"].coverage.end.coveredPercent,
+      coverageSource: historicCohorts["2023"].coverage.end.source,
+    },
+  ),
+  verificationCohort(
+    2024,
+    comparison2024Snapshots.start,
+    {
+      ...comparison2024Snapshots.end,
+      lineCoveragePercent: historicCohorts["2024"].coverage.end.coveredPercent,
+      coverageSource: historicCohorts["2024"].coverage.end.source,
+    },
+  ),
+  verificationCohort(
+    2025,
+    comparison2025Snapshots.start,
+    {
+      ...comparison2025Snapshots.end,
+      lineCoveragePercent: evidence.activity.supplementalFullWindow.coverage["2025"].percent,
+      coverageSource: evidence.activity.supplementalFullWindow.coverage["2025"].source,
+    },
+  ),
+  verificationCohort(
+    2026,
+    snapshots.preAdoption,
+    {
+      ...snapshots.endOfObservation,
+      lineCoveragePercent: snapshots.endOfObservation.lineCoveragePercent,
+      coverageSource: snapshots.endOfObservation.coverageSource,
+    },
+  ),
+];
 
 export const historicDeliveryAndCoverage = [2022, 2023, 2024].map((year) => {
   const cohort = historicCohorts[String(year) as "2022" | "2023" | "2024"];
@@ -342,6 +342,34 @@ export const historicDeliveryAndCoverage = [2022, 2023, 2024].map((year) => {
 });
 
 const historicDefectCohorts = evidence.activity.historicDefectCohorts;
+
+export const matchedWindowCohorts = [2022, 2023, 2024].map((year) => {
+  const cohort = historicCohorts[String(year) as "2022" | "2023" | "2024"];
+  const defects =
+    historicDefectCohorts[String(year) as "2022" | "2023" | "2024"];
+  return {
+    year,
+    totalReports: defects.qualifyingExternalProductDefects,
+    introduced: defects.introducedWithinWindow,
+    medianResponseDays: defects.medianResponseDays,
+    allMergedPullRequests: cohort.mergedPullRequests,
+    nonDependencyMerges: cohort.nonDependencyMergedPullRequests,
+    releases: cohort.publishedReleases,
+  };
+}).concat(
+  primaryComparisonSummary.map((cohort) => ({
+    year: cohort.year,
+    totalReports: cohort.totalReports,
+    introduced: cohort.introduced,
+    medianResponseDays: cohort.medianResponseDays,
+    allMergedPullRequests:
+      evidence.activity.primaryWindow.mergedPullRequests[
+        String(cohort.year) as "2025" | "2026"
+      ],
+    nonDependencyMerges: cohort.nonDependencyMerges,
+    releases: cohort.releases,
+  })),
+);
 
 export const historicDefectSummaries = [2022, 2023, 2024].map((year) => {
   const cohort =

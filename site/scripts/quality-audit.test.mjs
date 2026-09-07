@@ -142,10 +142,12 @@ test("checked-in primary cohorts reproduce the article results", () => {
   ]);
 });
 
-test("automated verification snapshots report the historical cohort additions", () => {
+test("automated verification snapshots retain all five cohort endpoints", () => {
   const { comparison2022, comparison2023, comparison2024, comparison2025 } =
     manifest.activity.snapshots;
   const { preAdoption, endOfObservation } = manifest.activity.snapshots;
+  const historicCoverage = manifest.activity.historicCohorts;
+  const supplementalCoverage = manifest.activity.supplementalFullWindow.coverage;
   assert.deepEqual(
     {
       comparison2022: {
@@ -195,6 +197,22 @@ test("automated verification snapshots report the historical cohort additions", 
         testDeclarations: 634,
         lineCoveragePercentagePoints: 8.846,
       },
+    },
+  );
+  assert.deepEqual(
+    {
+      2022: historicCoverage["2022"].coverage.end.coveredPercent,
+      2023: historicCoverage["2023"].coverage.end.coveredPercent,
+      2024: historicCoverage["2024"].coverage.end.coveredPercent,
+      2025: supplementalCoverage["2025"].percent,
+      2026: endOfObservation.lineCoveragePercent,
+    },
+    {
+      2022: 92.0652173913044,
+      2023: 85.17208105500161,
+      2024: 82.59851736246586,
+      2025: 84.26,
+      2026: 91.73,
     },
   );
 });

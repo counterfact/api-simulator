@@ -2,19 +2,12 @@
 import QualityLayout from "../../../layouts/QualityLayout.astro";
 import {
   auditEvidence,
-  comparisonSummary,
   gitHistoricalBaselineRows,
-  primaryComparisonSummary,
+  matchedWindowCohorts,
   retrospectiveBaselineRows,
-  testCohortAdditions,
-  testingMetrics,
+  verificationCohorts,
 } from "../../../data/quality-2026";
 
-const before = primaryComparisonSummary[0];
-const after = primaryComparisonSummary[1];
-const snapshots = auditEvidence.activity.snapshots;
-const fullBefore = comparisonSummary[0];
-const fullAfter = comparisonSummary[1];
 const historicalBaseline = Object.fromEntries(
   retrospectiveBaselineRows.map((row) => [row.label, row]),
 );
@@ -91,10 +84,9 @@ const gitBaseline = Object.fromEntries(
           preregistered experiment. The intervention begins at{" "}
           <a href={auditEvidence.study.intervention.source}>the first agent-authored
           product change merged to <code>main</code></a> on March 10, 2026. The
-          primary comparison uses the same March 10–September 3 interval in 2025.
-          Additional matched cohorts in 2022–2024 provide historical context, with
-          each measure using only years that have a complete comparable observation.
-          The broader January 1–September 3 cohorts remain as a sensitivity check.
+          primary comparison uses the same March 10–September 3 interval in each
+          year from 2022 through 2025. Each measure uses every historical year
+          with a complete comparable observation.
         </p>
         <p>
           The defect population contains public issues and accepted standalone
@@ -119,8 +111,9 @@ const gitBaseline = Object.fromEntries(
       <div class="figure-heading">
         <h2 id="primary-results">Results</h2>
         <p>
-          Table 1. Primary matched-window outcomes. The 2026 window begins at the
-          exact intervention timestamp; both windows end September 4 at 00:00 UTC.
+          Table 1. Matched-window outcomes across the four pre-AI historical
+          cohorts and the 2026 post-adoption cohort. Every window begins March 10
+          at 16:38:20 UTC and ends September 4 at 00:00 UTC.
         </p>
       </div>
       <div class="table-scroll">
@@ -128,40 +121,39 @@ const gitBaseline = Object.fromEntries(
           <thead>
             <tr>
               <th scope="col">Measure</th>
-              <th scope="col">2025 comparison</th>
-              <th scope="col">2026 post-adoption</th>
+              {matchedWindowCohorts.map((cohort) => (
+                <th scope="col">{cohort.year}{cohort.year === 2026 && " post-adoption"}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
             <tr>
               <th scope="row">External product-defect reports</th>
-              <td>{before.totalReports}</td>
-              <td>{after.totalReports}</td>
+              {matchedWindowCohorts.map((cohort) => <td>{cohort.totalReports}</td>)}
             </tr>
             <tr>
               <th scope="row">First affected release entered during window</th>
-              <td>{before.introduced}</td>
-              <td>{after.introduced}</td>
+              {matchedWindowCohorts.map((cohort) => <td>{cohort.introduced}</td>)}
             </tr>
             <tr>
               <th scope="row">Introduced defects per 100 non-dependency merges</th>
-              <td>{before.introducedPer100Merges.toFixed(2)}</td>
-              <td>{after.introducedPer100Merges.toFixed(2)}</td>
+              {matchedWindowCohorts.map((cohort) => (
+                <td>{((cohort.introduced / cohort.nonDependencyMerges) * 100).toFixed(2)}</td>
+              ))}
             </tr>
             <tr>
               <th scope="row">Median report-to-release time</th>
-              <td>{before.medianResponseDays} days</td>
-              <td>{after.medianResponseDays} day</td>
+              {matchedWindowCohorts.map((cohort) => (
+                <td>{cohort.medianResponseDays === null ? "Not estimable" : `${cohort.medianResponseDays} ${cohort.medianResponseDays === 1 ? "day" : "days"}`}</td>
+              ))}
             </tr>
             <tr>
               <th scope="row">Non-dependency merged pull requests</th>
-              <td>{before.nonDependencyMerges}</td>
-              <td>{after.nonDependencyMerges}</td>
+              {matchedWindowCohorts.map((cohort) => <td>{cohort.nonDependencyMerges}</td>)}
             </tr>
             <tr>
               <th scope="row">Published releases</th>
-              <td>{before.releases}</td>
-              <td>{after.releases}</td>
+              {matchedWindowCohorts.map((cohort) => <td>{cohort.releases}</td>)}
             </tr>
           </tbody>
         </table>
@@ -178,13 +170,14 @@ const gitBaseline = Object.fromEntries(
         <h2 id="reported-versus-introduced">More reports, but none traced to the intervention period</h2>
         <p>
           External users reported seven confirmed product defects after adoption,
-          compared with three in the matched 2025 interval. That increase is
-          visible and should not be explained away. Source history changes its
-          interpretation, however: all seven post-adoption reports concerned
-          behavior already present before the first agent-authored change reached{" "}
-          <code>main</code>. Six were old edge cases. The seventh belonged to an
-          operation-ID feature first released on February 26, twelve days before
-          the intervention.
+          matching the highest count in the four 2022–2025 historical cohorts
+          (whose counts ranged from zero to seven). That increase from the
+          immediately preceding 2025 cohort is visible and should not be explained
+          away. Source history changes its interpretation, however: all seven
+          post-adoption reports concerned behavior already present before the first
+          agent-authored change reached <code>main</code>. Six were old edge cases.
+          The seventh belonged to an operation-ID feature first released on
+          February 26, twelve days before the intervention.
         </p>
         <p>
           The finding is therefore not “fewer bugs.” It is that the observed
@@ -199,10 +192,12 @@ const gitBaseline = Object.fromEntries(
         <h2 id="response-result">Corrections reached users faster</h2>
         <p>
           Median time from report to the first release containing the accepted
-          correction fell from six calendar days in the matched 2025 cohort to one
-          day after adoption. All seven post-adoption reports reached a corrected
-          release within five days. This measures release response, not the effort
-          required to diagnose, review, or test each correction.
+          correction was one day after adoption, below the five- to six-day
+          medians in the report-bearing 2023–2025 historical cohorts. (The 2022
+          cohort had no qualifying reports, so no median is estimable.) All seven
+          post-adoption reports reached a corrected release within five days. This
+          measures release response, not the effort required to diagnose, review,
+          or test each correction.
         </p>
       </section>
     </div>
@@ -211,67 +206,32 @@ const gitBaseline = Object.fromEntries(
       <figcaption class="figure-heading">
         <h2 id="verification-heading">Automated verification expanded</h2>
         <p>
-          Figure 1. Repository snapshots immediately before the first agent-authored
-          merge and at the September 3 observation point. The cohort table uses the
-          same March–September span in earlier years where repository history permits.
+          Table 2. Matched March–September verification snapshots for every
+          available cohort. The 2022 start snapshot is unavailable because the
+          repository’s reachable history begins after the March boundary.
         </p>
       </figcaption>
-      <div class="comparison-bars">
-        {
-          testingMetrics.map((metric) => (
-            <div class="comparison-measure">
-              <div class="comparison-label">
-                <strong>{metric.label}</strong>
-                <span>{metric.displayBefore} → {metric.displayAfter} ({metric.displayChange})</span>
-              </div>
-              <div class="comparison-row">
-                <span>Before</span>
-                <div class="bar-track">
-                  <div
-                    class="bar-fill bar-fill-before"
-                    style={`width: ${Math.max(4, (metric.before / metric.after) * 100)}%`}
-                  ></div>
-                </div>
-              </div>
-              <div class="comparison-row">
-                <span>After</span>
-                <div class="bar-track">
-                  <div class="bar-fill" style="width: 100%"></div>
-                </div>
-              </div>
-            </div>
-          ))
-        }
-      </div>
       <div class="table-scroll compact-table">
         <table class="research-table">
           <thead>
-            <tr><th scope="col">Cohort</th><th scope="col">Test files, start → end</th><th scope="col">Files added</th><th scope="col">Declarations, start → end</th><th scope="col">Declarations added</th></tr>
+            <tr><th scope="col">Cohort</th><th scope="col">Test files, start → end</th><th scope="col">Declarations, start → end</th><th scope="col">Reported line coverage at endpoint</th></tr>
           </thead>
           <tbody>
-            {testCohortAdditions.map((cohort) => (
-              <tr><th scope="row">{cohort.label}{cohort.note && <span class="cell-detail">{cohort.note}</span>}</th><td>{cohort.displayTestFiles}</td><td>{cohort.displayTestFilesAdded}</td><td>{cohort.displayDeclarations}</td><td>{cohort.displayDeclarationsAdded}</td></tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div class="table-scroll compact-table">
-        <table class="research-table">
-          <thead>
-            <tr><th scope="col">Measure</th><th scope="col">Before adoption</th><th scope="col">September 3</th><th scope="col">Change during AI cohort</th></tr>
-          </thead>
-          <tbody>
-            {testingMetrics.map((metric) => (
-              <tr><th scope="row">{metric.label}</th><td>{metric.displayBefore}</td><td>{metric.displayAfter}</td><td>{metric.displayChange}</td></tr>
+            {verificationCohorts.map((cohort) => (
+              <tr>
+                <th scope="row">{cohort.year}{cohort.year === 2026 && " AI cohort"}{cohort.note && <span class="cell-detail">{cohort.note}</span>}</th>
+                <td>{cohort.testFiles}</td>
+                <td>{cohort.testDeclarations}</td>
+                <td><a href={cohort.coverageSource}>{cohort.lineCoveragePercent.toFixed(3)}%</a></td>
+              </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p class="figure-note">
-        Coverage sources:{" "}<a href={snapshots.preAdoption.coverageSource}>pre-adoption
-        build</a>{" "}and <a href={snapshots.endOfObservation.coverageSource}>September 3
-        build</a>. The 2026 package reorganization changed the coverage denominator;
-        the percentages are public results, not a fixed-codebase experiment.
+        Each percentage links to its public Coveralls result. The 2026 package
+        reorganization changed the coverage denominator, so the values are public
+        observations over changing source sets, not a fixed-codebase experiment.
       </p>
     </figure>
 
@@ -310,25 +270,6 @@ const gitBaseline = Object.fromEntries(
           <a href="/quality/2026/context">supplementary data</a> shows every cohort,
           historical range, churn category, coverage reference, and comparison
           with the benchmark.
-        </p>
-      </section>
-
-      <section aria-labelledby="sensitivity-heading">
-        <h2 id="sensitivity-heading">The broader audit gives the same origin pattern</h2>
-        <p>
-          The supplementary January 1–September 3 screen contains{" "}
-          {fullBefore.total} product defects in 2025 and {fullAfter.total} in 2026.
-          The 2026 set contains {fullAfter.preExisting} defects predating 2026 and{" "}
-          {fullAfter.featureDefects} defects born with a feature first released in
-          February 2026. It contains {fullAfter.regressions === 0 ? "no regressions" : `${fullAfter.regressions} regressions`} caused by a
-          2026 change. All fourteen cases meet the 90-day maturity threshold used
-          in the audit, so removing newer releases does not change those totals.
-        </p>
-        <p>
-          Three 2026 product records fall before the AI-adoption boundary. They
-          remain visible in the <a href="/quality/2026/cases">defect appendix</a>{" "}
-          and the <a href="/quality/2026/candidates">candidate ledger</a>, but they
-          are not used in the primary post-adoption comparison.
         </p>
       </section>
 

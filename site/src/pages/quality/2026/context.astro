@@ -3,15 +3,13 @@ import QualityLayout from "../../../layouts/QualityLayout.astro";
 import {
   auditEvidence,
   coverageReference,
-  deliveryMetrics,
   featureTimeline,
   gitCohortMetrics,
   gitHistoricalBaselineRows,
   historicDefectSummaries,
   historicDeliveryAndCoverage,
+  matchedWindowCohorts,
   retrospectiveBaselineRows,
-  testCohortAdditions,
-  testingMetrics,
 } from "../../../data/quality-2026";
 
 const supplemental = auditEvidence.activity.supplementalFullWindow;
@@ -37,25 +35,44 @@ const adoption = auditEvidence.activity.adoption;
     </header>
 
     <h2>Matched-window delivery activity</h2>
-    <table class="research-table">
-      <thead><tr><th scope="col">Measure</th><th scope="col">2025 comparison</th><th scope="col">2026 post-adoption</th></tr></thead>
+    <div class="table-scroll">
+      <table class="research-table">
+      <thead><tr><th scope="col">Measure</th>{matchedWindowCohorts.map((cohort) => <th scope="col">{cohort.year}{cohort.year === 2026 && " post-adoption"}</th>)}</tr></thead>
       <tbody>
-        {deliveryMetrics.map((metric) => (
-          <tr>
-            <th scope="row">{metric.label}<span class="cell-detail">{metric.note}</span></th>
-            <td>{metric.before}</td>
-            <td>{metric.after}</td>
-          </tr>
-        ))}
+        <tr>
+          <th scope="row">All merged pull requests</th>
+          {matchedWindowCohorts.map((cohort) => <td>{cohort.allMergedPullRequests}</td>)}
+        </tr>
+        <tr>
+          <th scope="row">Non-dependency merged pull requests</th>
+          {matchedWindowCohorts.map((cohort) => <td>{cohort.nonDependencyMerges}</td>)}
+        </tr>
+        <tr>
+          <th scope="row">Published releases</th>
+          {matchedWindowCohorts.map((cohort) => <td>{cohort.releases}</td>)}
+        </tr>
+        <tr>
+          <th scope="row">Qualifying external product-defect reports</th>
+          {matchedWindowCohorts.map((cohort) => <td>{cohort.totalReports}</td>)}
+        </tr>
+        <tr>
+          <th scope="row">First introduced during window</th>
+          {matchedWindowCohorts.map((cohort) => <td>{cohort.introduced}</td>)}
+        </tr>
+        <tr>
+          <th scope="row">Median report-to-release</th>
+          {matchedWindowCohorts.map((cohort) => <td>{cohort.medianResponseDays === null ? "Not estimable" : `${cohort.medianResponseDays} ${cohort.medianResponseDays === 1 ? "day" : "days"}`}</td>)}
+        </tr>
       </tbody>
-    </table>
+      </table>
+    </div>
     <p>
-      Non-dependency merges increased from 15 to 281, or 18.7 times. The complete
-      2026 matched window contains 558 merges: 277 dependency-bot changes, 197
-      agent-authored changes, 80 maintainer-authored changes, and four changes by
-      other contributors. The 2025 matched window contains 153 merges: 138
-      dependency-bot changes, eleven maintainer-authored changes, and four changes
-      by other contributors.
+      The 2026 matched window has 281 non-dependency merges, compared with a
+      15–75 range across 2022–2025. Its 558 total merges include 277
+      dependency-bot changes, 197 agent-authored changes, 80 maintainer-authored
+      changes, and four changes by other contributors. The full historical range
+      remains visible because the immediately preceding 2025 cohort alone is not
+      a sufficient baseline.
     </p>
     <p>
       Authorship identifies provenance, not review effort or product value. A pull
@@ -107,24 +124,12 @@ const adoption = auditEvidence.activity.adoption;
     </p>
 
     <h2>Automated verification snapshots</h2>
-    <table class="research-table">
-      <thead><tr><th scope="col">Measure</th><th scope="col">Before adoption</th><th scope="col">September 3</th><th scope="col">Change during AI cohort</th></tr></thead>
-      <tbody>
-        {testingMetrics.map((metric) => (
-          <tr><th scope="row">{metric.label}</th><td>{metric.displayBefore}</td><td>{metric.displayAfter}</td><td>{metric.displayChange}</td></tr>
-        ))}
-      </tbody>
-    </table>
-    <div class="table-scroll">
-      <table class="research-table">
-        <thead><tr><th scope="col">Cohort</th><th scope="col">Test files, start → end</th><th scope="col">Files added</th><th scope="col">Declarations, start → end</th><th scope="col">Declarations added</th></tr></thead>
-        <tbody>
-          {testCohortAdditions.map((cohort) => (
-            <tr><th scope="row">{cohort.label}{cohort.note && <span class="cell-detail">{cohort.note}</span>}</th><td>{cohort.displayTestFiles}</td><td>{cohort.displayTestFilesAdded}</td><td>{cohort.displayDeclarations}</td><td>{cohort.displayDeclarationsAdded}</td></tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <p>
+      The article’s single <a href="/quality/2026#verification-heading">five-year
+      verification table</a> provides the matched test-file, declaration, and
+      endpoint line-coverage observations for 2022–2026. Keeping the data in one
+      place avoids treating the 2025–2026 comparison as the only historical frame.
+    </p>
     <p>
       The file count includes JavaScript and TypeScript files containing at least
       one explicit <code>it</code> or <code>test</code> declaration, plus Python
@@ -134,13 +139,11 @@ const adoption = auditEvidence.activity.adoption;
       available in the repository and both invocations appear under Methods.
     </p>
     <p>
-      Public line coverage rose by 8.846 percentage points, from{" "}
-      <a href={auditEvidence.activity.snapshots.preAdoption.coverageSource}>82.884%</a>{" "}
-      immediately before adoption to{" "}
-      <a href={auditEvidence.activity.snapshots.endOfObservation.coverageSource}>91.73%</a>{" "}
-      at the observation endpoint. During that interval the project was reorganized
-      into multiple packages, so the percentages are real results over changing
-      source sets rather than a controlled measurement over identical files.
+      Public line coverage was 91.73% at the 2026 endpoint, following endpoint
+      observations of 92.065% (2022), 85.172% (2023), 82.599% (2024), and 84.260%
+      (2025). During the 2026 interval the project was reorganized into multiple
+      packages, so the percentages are real results over changing source sets
+      rather than a controlled measurement over identical files.
     </p>
 
     <h2>Commit and line-change activity</h2>
@@ -268,7 +271,9 @@ const adoption = auditEvidence.activity.adoption;
       {supplemental.publishedReleases["2026"]} releases in 2026. It used the final{" "}
       2025 release snapshot—{supplemental.testFiles["2025"]} test files and{" "}
       {supplemental.testDeclarations["2025"]} declarations—rather than the more
-      precise March 10 pre-adoption snapshot used in the article.
+      precise March 10 pre-adoption snapshot used in the article. This retained
+      two-year sensitivity check is not the report’s historical baseline: the
+      matched 2022–2025 cohorts are used for that purpose.
     </p>
 
     <h2>Public exposure did not contract</h2>
