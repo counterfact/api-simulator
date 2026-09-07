@@ -467,3 +467,17 @@ test("validateManifest catches incomplete evidence relationships", () => {
   };
   assert.ok(validateManifest(manifest).length >= 8);
 });
+
+test("validateManifest reports structurally incomplete manifests", () => {
+  const errors = validateManifest({
+    schemaVersion: 2,
+    productCases: [],
+    candidates: [],
+    processIncidents: [],
+  });
+  assert.ok(
+    errors.some((error) =>
+      error.startsWith("manifest validation could not complete:"),
+    ),
+  );
+});

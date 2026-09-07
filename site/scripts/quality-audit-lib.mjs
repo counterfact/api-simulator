@@ -56,6 +56,14 @@ export function matureCases(cases, windowEndExclusive, maturityDays) {
 }
 
 export function validateManifest(manifest) {
+  try {
+    return validateManifestUnchecked(manifest);
+  } catch (error) {
+    return [`manifest validation could not complete: ${error.message}`];
+  }
+}
+
+function validateManifestUnchecked(manifest) {
   const errors = [];
   if (manifest.schemaVersion !== 2)
     errors.push(`unsupported schema version: ${manifest.schemaVersion}`);
