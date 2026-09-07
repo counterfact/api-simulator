@@ -102,6 +102,91 @@ describe("createKoaApp", () => {
       expect(reportedPayload).not.toContain(privateValue);
     }
   });
+
+  it("does not suppress a valid first-request event after an invalid status", async () => {
+    const contextRegistry = new ContextRegistry();
+    const registry = new Registry();
+    const reportEvent = jest.fn();
+    let requestCount = 0;
+    registry.add("/health", {
+      GET: () => {
+        requestCount += 1;
+        return { body: "ok", status: requestCount === 1 ? 600 : 200 };
+      },
+    });
+
+    const app = createKoaApp({
+      runners: [
+        {
+          contextRegistry,
+          dispatcher: new Dispatcher(registry, contextRegistry),
+          openApiPath: "unused.yaml",
+          overlays: [],
+          prefix: "",
+          registry,
+          subdirectory: "",
+        },
+      ],
+      config: {
+        basePath: ".",
+        port: 0,
+        proxyPaths: new Map(),
+        proxyUrl: "",
+        startAdminApi: false,
+      },
+      reportEvent,
+    });
+
+    await request(app.callback()).get("/health");
+    await request(app.callback()).get("/health");
+
+    expect(reportEvent).toHaveBeenCalledTimes(1);
+    expect(reportEvent).toHaveBeenCalledWith("first_api_request_served", {
+      statusClass: "2xx",
+    });
+  });
+
+  it("does not let telemetry failures interrupt request handling or suppress retry", async () => {
+    const contextRegistry = new ContextRegistry();
+    const registry = new Registry();
+    const reportEvent = jest
+      .fn()
+      .mockImplementationOnce(() => {
+        throw new Error("telemetry unavailable");
+      });
+    registry.add("/health", {
+      GET: () => ({ body: "ok", status: 200 }),
+    });
+
+    const app = createKoaApp({
+      runners: [
+        {
+          contextRegistry,
+          dispatcher: new Dispatcher(registry, contextRegistry),
+          openApiPath: "unused.yaml",
+          overlays: [],
+          prefix: "",
+          registry,
+          subdirectory: "",
+        },
+      ],
+      config: {
+        basePath: ".",
+        port: 0,
+        proxyPaths: new Map(),
+        proxyUrl: "",
+        startAdminApi: false,
+      },
+      reportEvent,
+    });
+
+    const firstResponse = await request(app.callback()).get("/health");
+    const secondResponse = await request(app.callback()).get("/health");
+
+    expect(firstResponse.status).toBe(200);
+    expect(secondResponse.status).toBe(200);
+    expect(reportEvent).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe("JSON prettification middleware", () => {

@@ -272,9 +272,10 @@ export function routesMiddleware(
     }
 
     ctx.status = response.status ?? HTTP_STATUS_CODE_OK;
-    reportEvent("first_api_request_served", {
-      statusClass: `${Math.floor(ctx.status / 100)}xx`,
-    });
+    const statusClass = `${Math.floor(ctx.status / 100)}xx`;
+    if (["1xx", "2xx", "3xx", "4xx", "5xx"].includes(statusClass)) {
+      reportEvent("first_api_request_served", { statusClass });
+    }
 
     return undefined;
   };

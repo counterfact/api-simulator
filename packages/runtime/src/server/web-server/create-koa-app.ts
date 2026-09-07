@@ -67,10 +67,23 @@ export function createKoaApp({
       return;
     }
 
-    if (event === "first_api_request_served") {
-      firstApiRequestReported = true;
+    if (
+      event === "first_api_request_served" &&
+      !["1xx", "2xx", "3xx", "4xx", "5xx"].includes(
+        String(properties?.statusClass),
+      )
+    ) {
+      return;
     }
-    reportEvent(event, properties);
+
+    try {
+      reportEvent(event, properties);
+      if (event === "first_api_request_served") {
+        firstApiRequestReported = true;
+      }
+    } catch {
+      // Observability must never interrupt API request handling.
+    }
   };
 
   for (const runner of runners) {
