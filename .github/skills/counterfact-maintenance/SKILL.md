@@ -130,4 +130,3 @@ Keep that operating-system skip scoped to the real-terminal scenario so non-inte
 - Run targeted tests for touched modules before full test run.
 - If server startup or CLI behavior changed, run `yarn build` then `yarn test:black-box`.
 - For black-box changes, run the boundary searches above and resolve or explicitly reclassify every finding in the touched scope.
-- Ensure PR notes include manual acceptance tests with observable outcomes.
