@@ -2,7 +2,7 @@
 
 <h1><img src="./counterfact.svg" alt="Counterfact" border="0"></h1>
 
-## Prototype your UI before investing in backend development
+## Prototype your UI before investing in backend development.
 
 </div>
 
