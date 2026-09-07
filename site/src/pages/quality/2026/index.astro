@@ -45,13 +45,16 @@ const gitBaseline = Object.fromEntries(
         <p>
           On the measures available, quality increased. The audit found no
           externally reported product defect whose first affected release entered
-          the post-adoption window. Median report-to-release time fell from six
-          days to one, test files increased from 36 to 72, explicit test
-          declarations from 270 to 904, and reported line coverage from 82.884%
-          to 91.73%, while non-dependency delivery increased from 15 to 281 merged
-          pull requests. These observations are not a causal estimate. They do
-          not establish that AI produced the improvement, and they do not measure
-          unreported defects.
+          the post-adoption window. In the matched 2026 period, 36 test files and
+          634 explicit test declarations were added, compared with additions of
+          0, 6, and 1 files and 10, 48, and 6 declarations in the complete
+          2023–2025 historical cohorts. Public branch coverage moved from 89.344%
+          to 89.415% (+0.071 percentage points), while the two earlier complete
+          branch-coverage intervals declined by 2.686 and 0.827 points; 2022 and
+          2025 lack a Coveralls start build. Non-dependency delivery reached 281
+          merged pull requests, above the 15–75 range in 2022–2025. These
+          observations are not a causal estimate. They do not establish that AI
+          produced the improvement, and they do not measure unreported defects.
         </p>
       </section>
     </header>
@@ -214,22 +217,31 @@ const gitBaseline = Object.fromEntries(
       <div class="table-scroll compact-table">
         <table class="research-table">
           <thead>
-            <tr><th scope="col">Cohort</th><th scope="col">Test files, start → end</th><th scope="col">Declarations, start → end</th><th scope="col">Reported line coverage at endpoint</th></tr>
+            <tr><th scope="col">Cohort</th><th scope="col">Test files, start → end</th><th scope="col">Declarations, start → end</th><th scope="col">Reported branch coverage, start → end</th></tr>
           </thead>
           <tbody>
             {verificationCohorts.map((cohort) => (
               <tr>
-                <th scope="row">{cohort.year}{cohort.year === 2026 && " AI cohort"}{cohort.note && <span class="cell-detail">{cohort.note}</span>}</th>
+                <th scope="row">
+                  {cohort.year}{cohort.year === 2026 && " AI cohort"}
+                  {cohort.note && <span class="cell-detail">{cohort.note}</span>}
+                  {cohort.firstReachableCommit && <span class="cell-detail">First main-reachable commit: <a href={`https://github.com/counterfact/api-simulator/commit/${cohort.firstReachableCommit}`}><code>{cohort.firstReachableCommit.slice(0, 8)}</code></a></span>}
+                </th>
                 <td>{cohort.testFiles}</td>
                 <td>{cohort.testDeclarations}</td>
-                <td><a href={cohort.coverageSource}>{cohort.lineCoveragePercent.toFixed(3)}%</a></td>
+                <td>
+                  {cohort.branchCoverageStart
+                    ? <><a href={cohort.branchCoverageStart.source}>{cohort.branchCoverageStart.branchCoveragePercent.toFixed(3)}%</a> → </>
+                    : "Not available → "}
+                  <a href={cohort.branchCoverageEnd.source}>{cohort.branchCoverageEnd.branchCoveragePercent.toFixed(3)}%</a>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p class="figure-note">
-        Each percentage links to its public Coveralls result. The 2026 package
+        Each value links to its public Coveralls result. The 2026 package
         reorganization changed the coverage denominator, so the values are public
         observations over changing source sets, not a fixed-codebase experiment.
       </p>

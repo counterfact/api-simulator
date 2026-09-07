@@ -899,6 +899,7 @@
           "end": {
             "commit": "13c246c1795e66cffc1a0e022b407660ec384b02",
             "coveredPercent": 92.0652173913044,
+            "branchCoveragePercent": 95.51282051282051,
             "source": "https://coveralls.io/builds/52174439"
           }
         }
@@ -912,11 +913,13 @@
           "start": {
             "commit": "06c354e0f30d52776006929f7c7e657520adf330",
             "coveredPercent": 87.4656188605108,
+            "branchCoveragePercent": 94.43155452436194,
             "source": "https://coveralls.io/builds/57532255"
           },
           "end": {
             "commit": "061d88e7ba072dbfa931ec306b4e6ae94f32b155",
             "coveredPercent": 85.17208105500161,
+            "branchCoveragePercent": 91.74560216508796,
             "source": "https://coveralls.io/builds/62400840"
           }
         }
@@ -930,11 +933,13 @@
           "start": {
             "commit": "f17e758dbf87d58fb09e8910190d590c216609e5",
             "coveredPercent": 86.227261989133,
+            "branchCoveragePercent": 90.6832298136646,
             "source": "https://coveralls.io/builds/66186038"
           },
           "end": {
             "commit": "7eaccb20ae8f26e4b767dfb9f4f9e92b09623744",
             "coveredPercent": 82.59851736246586,
+            "branchCoveragePercent": 89.85637342908439,
             "source": "https://coveralls.io/builds/69559350"
           }
         }
@@ -1112,6 +1117,7 @@
       "comparison2022": {
         "status": "not_estimable",
         "reason": "The first main-reachable commit is 238c74baa4748932dc5580cc0a18016b9442d21e on April 8, 2022, after the March 10 start boundary.",
+        "firstReachableCommit": "238c74baa4748932dc5580cc0a18016b9442d21e",
         "end": {
           "commit": "13c246c1795e66cffc1a0e022b407660ec384b02",
           "observedAt": "2022-09-04T00:00:00Z",
@@ -1167,6 +1173,7 @@
         "testFiles": 36,
         "testDeclarations": 270,
         "lineCoveragePercent": 82.884,
+        "branchCoveragePercent": 89.34368383909668,
         "coverageSource": "https://coveralls.io/builds/78168279"
       },
       "endOfObservation": {
@@ -1175,6 +1182,8 @@
         "testFiles": 72,
         "testDeclarations": 904,
         "lineCoveragePercent": 91.73,
+        "branchCoveragePercent": 89.41451990632319,
+        "branchCoverageSource": "https://coveralls.io/builds/81535061",
         "coverageSource": "https://coveralls.io/github/counterfact/api-simulator/commit/77f0bc6fd2c3bc935d2eb2da80190369d91f7084"
       }
     },
@@ -1204,10 +1213,14 @@
       "coverage": {
         "2025": {
           "percent": 84.26,
+          "branchCoveragePercent": 90.13107170393215,
+          "branchCoverageSource": "https://coveralls.io/builds/75373758",
           "source": "https://coveralls.io/builds/76781774"
         },
         "2026": {
           "percent": 91.73,
+          "branchCoveragePercent": 89.41451990632319,
+          "branchCoverageSource": "https://coveralls.io/builds/81535061",
           "source": "https://coveralls.io/github/counterfact/api-simulator/commit/77f0bc6fd2c3bc935d2eb2da80190369d91f7084",
           "check": "https://github.com/counterfact/api-simulator/actions/runs/33722238152/job/100543591129",
           "observedAt": "2026-09-03T18:00:00Z"

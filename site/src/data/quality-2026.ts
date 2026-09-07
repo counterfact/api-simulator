@@ -246,16 +246,19 @@ const comparison2025Snapshots = snapshots.comparison2025;
 const historicCohorts = evidence.activity.historicCohorts;
 const formatCoverage = (percent: number) => `${percent.toFixed(3)}%`;
 
-type VerificationSnapshot = TestCountSnapshot & {
-  lineCoveragePercent: number;
-  coverageSource: string;
+type BranchCoverageSnapshot = {
+  branchCoveragePercent: number;
+  source: string;
 };
 
 const verificationCohort = (
   year: number,
   start: TestCountSnapshot | undefined,
-  end: VerificationSnapshot,
+  end: TestCountSnapshot,
+  branchCoverageStart: BranchCoverageSnapshot | undefined,
+  branchCoverageEnd: BranchCoverageSnapshot,
   note?: string,
+  firstReachableCommit?: string,
 ) => ({
   year,
   testFiles: start
@@ -264,56 +267,82 @@ const verificationCohort = (
   testDeclarations: start
     ? `${start.testDeclarations} → ${end.testDeclarations}`
     : `Not available → ${end.testDeclarations}`,
-  lineCoveragePercent: end.lineCoveragePercent,
-  coverageSource: end.coverageSource,
+  branchCoverageStart,
+  branchCoverageEnd,
   note,
+  firstReachableCommit,
 });
 
 export const verificationCohorts = [
   verificationCohort(
     2022,
     undefined,
+    comparison2022Snapshots.end,
+    undefined,
     {
-      ...comparison2022Snapshots.end,
-      lineCoveragePercent: historicCohorts["2022"].coverage.end.coveredPercent,
-      coverageSource: historicCohorts["2022"].coverage.end.source,
+      branchCoveragePercent:
+        historicCohorts["2022"].coverage.end.branchCoveragePercent,
+      source: historicCohorts["2022"].coverage.end.source,
     },
-    comparison2022Snapshots.reason,
+    "The March start snapshot is unavailable because main-reachable history begins after the boundary.",
+    comparison2022Snapshots.firstReachableCommit,
   ),
   verificationCohort(
     2023,
     comparison2023Snapshots.start,
+    comparison2023Snapshots.end,
     {
-      ...comparison2023Snapshots.end,
-      lineCoveragePercent: historicCohorts["2023"].coverage.end.coveredPercent,
-      coverageSource: historicCohorts["2023"].coverage.end.source,
+      branchCoveragePercent:
+        historicCohorts["2023"].coverage.start.branchCoveragePercent,
+      source: historicCohorts["2023"].coverage.start.source,
+    },
+    {
+      branchCoveragePercent:
+        historicCohorts["2023"].coverage.end.branchCoveragePercent,
+      source: historicCohorts["2023"].coverage.end.source,
     },
   ),
   verificationCohort(
     2024,
     comparison2024Snapshots.start,
+    comparison2024Snapshots.end,
     {
-      ...comparison2024Snapshots.end,
-      lineCoveragePercent: historicCohorts["2024"].coverage.end.coveredPercent,
-      coverageSource: historicCohorts["2024"].coverage.end.source,
+      branchCoveragePercent:
+        historicCohorts["2024"].coverage.start.branchCoveragePercent,
+      source: historicCohorts["2024"].coverage.start.source,
+    },
+    {
+      branchCoveragePercent:
+        historicCohorts["2024"].coverage.end.branchCoveragePercent,
+      source: historicCohorts["2024"].coverage.end.source,
     },
   ),
   verificationCohort(
     2025,
     comparison2025Snapshots.start,
+    comparison2025Snapshots.end,
+    undefined,
     {
-      ...comparison2025Snapshots.end,
-      lineCoveragePercent: evidence.activity.supplementalFullWindow.coverage["2025"].percent,
-      coverageSource: evidence.activity.supplementalFullWindow.coverage["2025"].source,
+      branchCoveragePercent:
+        evidence.activity.supplementalFullWindow.coverage["2025"]
+          .branchCoveragePercent,
+      source:
+        evidence.activity.supplementalFullWindow.coverage["2025"]
+          .branchCoverageSource,
     },
+    "No Coveralls build is available at the March start commit.",
   ),
   verificationCohort(
     2026,
     snapshots.preAdoption,
+    snapshots.endOfObservation,
     {
-      ...snapshots.endOfObservation,
-      lineCoveragePercent: snapshots.endOfObservation.lineCoveragePercent,
-      coverageSource: snapshots.endOfObservation.coverageSource,
+      branchCoveragePercent: snapshots.preAdoption.branchCoveragePercent,
+      source: snapshots.preAdoption.coverageSource,
+    },
+    {
+      branchCoveragePercent: snapshots.endOfObservation.branchCoveragePercent,
+      source: snapshots.endOfObservation.branchCoverageSource,
     },
   ),
 ];
@@ -325,18 +354,21 @@ export const historicDeliveryAndCoverage = [2022, 2023, 2024].map((year) => {
     return {
       year,
       ...cohort,
-      coverageDisplay: `Not available → ${formatCoverage(coverage.end.coveredPercent)}`,
+      coverageDisplay: `Not available → ${formatCoverage(coverage.end.branchCoveragePercent)}`,
       coverageChange: "Not estimable",
       coverageNote: coverage.reason,
     };
   }
   const change = Number(
-    (coverage.end.coveredPercent - coverage.start.coveredPercent).toFixed(3),
+    (
+      coverage.end.branchCoveragePercent -
+      coverage.start.branchCoveragePercent
+    ).toFixed(3),
   );
   return {
     year,
     ...cohort,
-    coverageDisplay: `${formatCoverage(coverage.start.coveredPercent)} → ${formatCoverage(coverage.end.coveredPercent)}`,
+    coverageDisplay: `${formatCoverage(coverage.start.branchCoveragePercent)} → ${formatCoverage(coverage.end.branchCoveragePercent)}`,
     coverageChange: `${displaySignedChange(change)} percentage points`,
   };
 });
@@ -546,12 +578,12 @@ export const retrospectiveBaselineRows = [
 
 const completeHistoricalCoverageChanges = ["2023", "2024"].map((year) => {
   const coverage = historicCohorts[year as "2023" | "2024"].coverage;
-  return coverage.end.coveredPercent - coverage.start.coveredPercent;
+  return coverage.end.branchCoveragePercent - coverage.start.branchCoveragePercent;
 });
 const coverageReferenceMidpoint = median(completeHistoricalCoverageChanges);
 const actualCoverageChange =
-  snapshots.endOfObservation.lineCoveragePercent -
-  snapshots.preAdoption.lineCoveragePercent;
+  snapshots.endOfObservation.branchCoveragePercent -
+  snapshots.preAdoption.branchCoveragePercent;
 export const coverageReference = {
   historicalYears: "2023–2024",
   midpoint: coverageReferenceMidpoint,
