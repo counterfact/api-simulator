@@ -70,6 +70,12 @@ export class ChaosRule {
   }
 
   public status(code: number): this {
+    if (!Number.isInteger(code) || code < 100 || code > 599) {
+      throw new RangeError(
+        `Chaos rule status must be an integer between 100 and 599. Received: ${String(code)}`,
+      );
+    }
+
     this.statusCode = code;
     this.touch();
     return this;

@@ -85,6 +85,24 @@ describe("ChaosRule", () => {
     },
   );
 
+  it.each([99, 600, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+    "rejects an invalid status code of %s",
+    (status) => {
+      expect(() => new ChaosRule("").status(status)).toThrow(RangeError);
+    },
+  );
+
+  it.each([100, 200, 404, 599])(
+    "accepts the valid status code %s",
+    (status) => {
+      expect(
+        new ChaosRule("")
+          .status(status)
+          .tryApply({ body: "ok", status: 200 }),
+      ).toMatchObject({ response: { status } });
+    },
+  );
+
   it("accepts zero as an exhausted next count", () => {
     const rule = new ChaosRule("").next(0);
 
