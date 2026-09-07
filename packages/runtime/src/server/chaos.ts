@@ -82,6 +82,12 @@ export class ChaosRule {
   }
 
   public delay(ms: number): this {
+    if (!Number.isFinite(ms) || ms < 0) {
+      throw new RangeError(
+        `Chaos rule delay must be a finite, non-negative number. Received: ${String(ms)}`,
+      );
+    }
+
     this.delayMilliseconds = ms;
     this.touch();
     return this;

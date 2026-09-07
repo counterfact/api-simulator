@@ -103,6 +103,19 @@ describe("ChaosRule", () => {
     },
   );
 
+  it.each([-1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    "rejects an invalid delay of %s",
+    (delay) => {
+      expect(() => new ChaosRule("").delay(delay)).toThrow(RangeError);
+    },
+  );
+
+  it.each([0, 2_000])("accepts the valid delay %s", (delay) => {
+    expect(
+      new ChaosRule("").delay(delay).tryApply({ body: "ok", status: 200 }),
+    ).toMatchObject({ delayMs: delay });
+  });
+
   it("accepts zero as an exhausted next count", () => {
     const rule = new ChaosRule("").next(0);
 
