@@ -63,6 +63,34 @@ console.log(
     .join(", ")}).`,
 );
 
+const historicalCohorts = manifest.activity.historicCohorts;
+const historicalDefects = manifest.activity.historicDefectCohorts;
+const pooledHistoricalMerges =
+  historicalCohorts["2022"].nonDependencyMergedPullRequests +
+  historicalCohorts["2023"].nonDependencyMergedPullRequests +
+  historicalCohorts["2024"].nonDependencyMergedPullRequests +
+  manifest.activity.primaryWindow.nonDependencyMergedPullRequests["2025"];
+const pooledHistoricalIntroductions =
+  historicalDefects["2022"].introducedWithinWindow +
+  historicalDefects["2023"].introducedWithinWindow +
+  historicalDefects["2024"].introducedWithinWindow +
+  selectIntroducedCases(
+    manifest.productCases,
+    2025,
+    manifest.study.primaryWindows["2025"],
+  ).length;
+const exposureScaledBenchmark =
+  (pooledHistoricalIntroductions / pooledHistoricalMerges) *
+  manifest.activity.primaryWindow.nonDependencyMergedPullRequests["2026"];
+console.log(
+  `Retrospective defect benchmark: ${pooledHistoricalIntroductions}/${pooledHistoricalMerges} pre-AI introductions per non-dependency PR; ${exposureScaledBenchmark.toFixed(2)} after scaling to the 2026 exposure.`,
+);
+
+const gitCohorts = manifest.activity.cohortGitMetrics.cohorts;
+console.log(
+  `2026 Git activity: ${gitCohorts["2026"].firstParentCommits} first-parent commits; ${gitCohorts["2026"].additions.toLocaleString()} additions; ${gitCohorts["2026"].deletions.toLocaleString()} deletions; ${gitCohorts["2026"].churn.toLocaleString()} lines of churn.`,
+);
+
 if (errors.length > 0) {
   for (const error of errors) console.error(`ERROR: ${error}`);
   process.exitCode = 1;

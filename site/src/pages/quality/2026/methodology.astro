@@ -45,10 +45,20 @@ import { auditEvidence } from "../../../data/quality-2026";
     <table class="research-table">
       <thead><tr><th scope="col">Cohort</th><th scope="col">Start, inclusive</th><th scope="col">End, exclusive</th></tr></thead>
       <tbody>
+        <tr><th scope="row">2022 historical comparison</th><td>March 10, 2022 16:38:20 UTC</td><td>September 4, 2022 00:00 UTC</td></tr>
+        <tr><th scope="row">2023 historical comparison</th><td>March 10, 2023 16:38:20 UTC</td><td>September 4, 2023 00:00 UTC</td></tr>
+        <tr><th scope="row">2024 historical comparison</th><td>March 10, 2024 16:38:20 UTC</td><td>September 4, 2024 00:00 UTC</td></tr>
         <tr><th scope="row">2025 matched comparison</th><td>March 10, 2025 16:38:20 UTC</td><td>September 4, 2025 00:00 UTC</td></tr>
         <tr><th scope="row">2026 post-adoption</th><td>March 10, 2026 16:38:20 UTC</td><td>September 4, 2026 00:00 UTC</td></tr>
       </tbody>
     </table>
+    <p>
+      The repository’s reachable history begins April 8, 2022. That cohort can
+      contribute complete GitHub report, pull-request, and npm release counts,
+      but cannot support a March-to-September repository snapshot delta. Its
+      partial Git activity is shown descriptively and excluded from test-growth,
+      coverage-change, commit, and churn baselines.
+    </p>
     <p>
       A supplementary screen covers January 1 through September 3 in both years.
       It preserves all records collected in the original audit and tests whether
@@ -105,6 +115,46 @@ import { auditEvidence } from "../../../data/quality-2026";
       denominator. npm downloads and GitHub stars appear only as exposure context.
     </p>
 
+    <h2>Commit and churn measurement</h2>
+    <p>
+      Commit activity uses committer timestamps and the same start-inclusive,
+      end-exclusive UTC boundaries. The headline count includes only first-parent
+      commits reachable from <code>main</code>. Each is diffed against its first
+      parent with rename detection; a merge therefore contributes the net change
+      it introduced to the mainline once. Topic-branch commits are not counted
+      separately. The analysis ref is the immutable September 3 observation commit,
+      so later merges cannot alter a historical cohort.
+    </p>
+    <p>
+      Textual additions and deletions come from Git numstat output. Churn is their
+      sum. A path changed in multiple commits contributes multiple file-touch
+      occurrences. Binary touches are counted separately and omitted from line
+      totals. Each path enters exactly one category, in priority order: lockfiles
+      and generated artifacts; tests; documentation, changesets, and site content;
+      then source/other. This is a deterministic path classification, not a semantic
+      judgment about the value or difficulty of each line.
+    </p>
+
+    <h2>Retrospective historical baselines</h2>
+    <p>
+      The historical-baseline comparison was constructed after the 2026 outcomes
+      were known. For ordinary measures it reports the median and minimum–maximum
+      range of every complete comparable pre-AI cohort. The range describes the
+      small observed sample; it is not a confidence or prediction interval. The
+      response-time figure is a median of cohort medians because individual
+      historical report intervals are not all stored in the manifest.
+    </p>
+    <p>
+      The introduced-defect benchmark pools qualifying within-window
+      introductions and non-dependency merged pull requests across 2022–2025, then
+      applies that rate to the observed 2026 PR count. It is an exposure-scaled
+      expected-value benchmark, not a predicted defect count, a significance test,
+      or a causal counterfactual. Coverage has only two complete historical deltas,
+      so their midpoint is labeled as reference context rather than a forecast.
+      Commit and churn medians are also descriptive workload context and do not
+      replace the audit’s declared PR exposure denominator.
+    </p>
+
     <h2>Defect-origin classification</h2>
     <ol>
       <li><strong>Same-year regression:</strong> supported behavior demonstrably worked before a specific change in the report year and failed afterward.</li>
@@ -159,8 +209,10 @@ import { auditEvidence } from "../../../data/quality-2026";
       candidate dispositions, all fourteen case histories, the process incident,
       activity measurements, source URLs, and feature chronology. The repository’s
       offline verifier checks window membership, totals, deduplication, source
-      completeness, maturity, and pull-request author sums without depending on a
-      live search result.
+      completeness, maturity, pull-request author sums, historical-baseline inputs,
+      and checked-in churn totals without depending on a live search result. The
+      churn snapshot command can regenerate the Git-derived activity table from
+      local history.
     </p>
     <details>
       <summary>Recorded source queries and commands</summary>
@@ -176,6 +228,9 @@ import { auditEvidence } from "../../../data/quality-2026";
       <li>Fourteen defects are a small sample, and one reporter supplied six of the 2026 issue reports.</li>
       <li>GitHub authorship records provenance, not sole responsibility. Agent-authored work still passed human specification, review, integration, and release decisions.</li>
       <li>Pull requests, releases, tests, coverage, downloads, and stars measure different dimensions and cannot be combined into a universal quality score.</li>
+      <li>The retrospective baselines were selected after the 2026 results were visible, use only three or four observations per measure, and are not causal estimates.</li>
+      <li>The pooled historical defect-rate numerator contains only four events; its exposure-scaled benchmark is highly unstable.</li>
+      <li>Commit counts and churn depend on merge strategy, generated files, formatting, and repository reorganization; lines changed are not engineering effort.</li>
       <li>The package reorganization changed the coverage denominator, so the public percentages do not describe an identical set of files.</li>
       <li>The absence of an observed post-adoption defect introduction does not prove that none exists.</li>
     </ul>

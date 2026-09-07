@@ -7,6 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "snapshot:audit": "node scripts/quality-snapshot.mjs",
+    "snapshot:churn": "node scripts/quality-churn.mjs",
     "test:audit": "node --test scripts/quality-audit.test.mjs",
     "verify:audit": "node scripts/verify-quality-audit.mjs",
     "preview": "astro preview",

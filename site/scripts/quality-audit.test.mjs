@@ -10,6 +10,11 @@ import {
   summarizeCases,
   validateManifest,
 } from "./quality-audit-lib.mjs";
+import {
+  classifyPath,
+  isCommitInCohortWindow,
+  parseNumstat,
+} from "./quality-churn-lib.mjs";
 
 test("summarizeCases keeps report years and categories separate", () => {
   const cases = [
@@ -44,6 +49,49 @@ test("primary windows include the start and exclude the end", () => {
   assert.equal(isWithinWindow("2026-03-10T16:38:20Z", window), true);
   assert.equal(isWithinWindow("2026-09-03T23:59:59Z", window), true);
   assert.equal(isWithinWindow("2026-09-04T00:00:00Z", window), false);
+});
+
+test("churn windows include the exact start and exclude the exact end", () => {
+  assert.equal(
+    isCommitInCohortWindow(2026, "2026-03-10T11:38:20-05:00"),
+    true,
+  );
+  assert.equal(
+    isCommitInCohortWindow(2026, "2026-09-04T00:00:00Z"),
+    false,
+  );
+});
+
+test("churn path categories apply a stable, exclusive priority", () => {
+  assert.equal(classifyPath(".yarn/releases/yarn.cjs"), "lockOrGenerated");
+  assert.equal(classifyPath("site/src/pages/example.test.ts"), "tests");
+  assert.equal(classifyPath("site/src/pages/index.astro"), "documentation");
+  assert.equal(classifyPath("packages/runtime/src/index.ts"), "sourceOrOther");
+});
+
+test("numstat parser handles ordinary, renamed, and binary records", () => {
+  const records = parseNumstat(
+    Buffer.from(
+      "2\t1\tpackages/runtime/src/index.ts\0" +
+        "0\t0\t\0old.test.ts\0new.test.ts\0" +
+        "-\t-\timage.png\0",
+    ),
+  );
+  assert.deepEqual(records, [
+    {
+      added: "2",
+      deleted: "1",
+      path: "packages/runtime/src/index.ts",
+      renamed: false,
+    },
+    {
+      added: "0",
+      deleted: "0",
+      path: "new.test.ts",
+      renamed: true,
+    },
+    { added: "-", deleted: "-", path: "image.png", renamed: false },
+  ]);
 });
 
 test("reported and introduced cohorts remain distinct", () => {
@@ -92,6 +140,269 @@ test("checked-in primary cohorts reproduce the article results", () => {
     { year: 2025, reports: 3, introduced: 0, medianResponseDays: 6 },
     { year: 2026, reports: 7, introduced: 0, medianResponseDays: 1 },
   ]);
+});
+
+test("automated verification snapshots report the historical cohort additions", () => {
+  const { comparison2022, comparison2023, comparison2024, comparison2025 } =
+    manifest.activity.snapshots;
+  const { preAdoption, endOfObservation } = manifest.activity.snapshots;
+  assert.deepEqual(
+    {
+      comparison2022: {
+        status: comparison2022.status,
+        endTestFiles: comparison2022.end.testFiles,
+        endTestDeclarations: comparison2022.end.testDeclarations,
+      },
+      comparison2023: {
+        testFiles: comparison2023.end.testFiles - comparison2023.start.testFiles,
+        testDeclarations:
+          comparison2023.end.testDeclarations - comparison2023.start.testDeclarations,
+      },
+      comparison2024: {
+        testFiles: comparison2024.end.testFiles - comparison2024.start.testFiles,
+        testDeclarations:
+          comparison2024.end.testDeclarations - comparison2024.start.testDeclarations,
+      },
+      comparison2025: {
+        testFiles: comparison2025.end.testFiles - comparison2025.start.testFiles,
+        testDeclarations:
+          comparison2025.end.testDeclarations -
+          comparison2025.start.testDeclarations,
+      },
+      aiCohort: {
+        testFiles: endOfObservation.testFiles - preAdoption.testFiles,
+        testDeclarations:
+          endOfObservation.testDeclarations - preAdoption.testDeclarations,
+        lineCoveragePercentagePoints: Number(
+          (
+            endOfObservation.lineCoveragePercent -
+            preAdoption.lineCoveragePercent
+          ).toFixed(3),
+        ),
+      },
+    },
+    {
+      comparison2022: {
+        status: "not_estimable",
+        endTestFiles: 21,
+        endTestDeclarations: 94,
+      },
+      comparison2023: { testFiles: 0, testDeclarations: 10 },
+      comparison2024: { testFiles: 6, testDeclarations: 48 },
+      comparison2025: { testFiles: 1, testDeclarations: 6 },
+      aiCohort: {
+        testFiles: 36,
+        testDeclarations: 634,
+        lineCoveragePercentagePoints: 8.846,
+      },
+    },
+  );
+});
+
+test("historic delivery and coverage retain matched-window limitations", () => {
+  const cohorts = manifest.activity.historicCohorts;
+  assert.deepEqual(
+    {
+      2022: {
+        nonDependencyMerges: cohorts["2022"].nonDependencyMergedPullRequests,
+        releases: cohorts["2022"].publishedReleases,
+        coverageStatus: cohorts["2022"].coverage.status,
+      },
+      2023: {
+        nonDependencyMerges: cohorts["2023"].nonDependencyMergedPullRequests,
+        releases: cohorts["2023"].publishedReleases,
+        coverageChange: Number(
+          (
+            cohorts["2023"].coverage.end.coveredPercent -
+            cohorts["2023"].coverage.start.coveredPercent
+          ).toFixed(3),
+        ),
+      },
+      2024: {
+        nonDependencyMerges: cohorts["2024"].nonDependencyMergedPullRequests,
+        releases: cohorts["2024"].publishedReleases,
+        coverageChange: Number(
+          (
+            cohorts["2024"].coverage.end.coveredPercent -
+            cohorts["2024"].coverage.start.coveredPercent
+          ).toFixed(3),
+        ),
+      },
+    },
+    {
+      2022: {
+        nonDependencyMerges: 63,
+        releases: 7,
+        coverageStatus: "not_estimable",
+      },
+      2023: {
+        nonDependencyMerges: 50,
+        releases: 19,
+        coverageChange: -2.294,
+      },
+      2024: {
+        nonDependencyMerges: 75,
+        releases: 24,
+        coverageChange: -3.629,
+      },
+    },
+  );
+});
+
+test("historic defect cohorts distinguish reports from introduced defects", () => {
+  const cohorts = manifest.activity.historicDefectCohorts;
+  assert.deepEqual(
+    {
+      2022: {
+        reports: cohorts["2022"].qualifyingExternalProductDefects,
+        introduced: cohorts["2022"].introducedWithinWindow,
+        median: cohorts["2022"].medianResponseDays,
+      },
+      2023: {
+        reports: cohorts["2023"].qualifyingExternalProductDefects,
+        introduced: cohorts["2023"].introducedWithinWindow,
+        median: cohorts["2023"].medianResponseDays,
+        introducedReports: cohorts["2023"].introducedReports.map(
+          (report) => report.number,
+        ),
+      },
+      2024: {
+        reports: cohorts["2024"].qualifyingExternalProductDefects,
+        introduced: cohorts["2024"].introducedWithinWindow,
+        median: cohorts["2024"].medianResponseDays,
+        introducedReports: cohorts["2024"].introducedReports.map(
+          (report) => report.number,
+        ),
+      },
+    },
+    {
+      2022: { reports: 0, introduced: 0, median: null },
+      2023: { reports: 5, introduced: 1, median: 5, introducedReports: [491] },
+      2024: {
+        reports: 7,
+        introduced: 3,
+        median: 6,
+        introducedReports: [866, 906, 918],
+      },
+    },
+  );
+});
+
+test("checked-in commit and churn metrics retain exact matched-window totals", () => {
+  const cohorts = manifest.activity.cohortGitMetrics.cohorts;
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(cohorts).map(([year, cohort]) => [year, {
+        firstParentCommits: cohort.firstParentCommits,
+        additions: cohort.additions,
+        deletions: cohort.deletions,
+        churn: cohort.churn,
+        categoryChurn: Object.values(cohort.categoryChurn).reduce(
+          (total, value) => total + value,
+          0,
+        ),
+      }]),
+    ),
+    {
+      2022: { firstParentCommits: 181, additions: 42770, deletions: 9252, churn: 52022, categoryChurn: 52022 },
+      2023: { firstParentCommits: 129, additions: 7535, deletions: 5036, churn: 12571, categoryChurn: 12571 },
+      2024: { firstParentCommits: 205, additions: 163929, deletions: 165287, churn: 329216, categoryChurn: 329216 },
+      2025: { firstParentCommits: 152, additions: 9714, deletions: 7256, churn: 16970, categoryChurn: 16970 },
+      2026: { firstParentCommits: 548, additions: 104938, deletions: 46409, churn: 151347, categoryChurn: 151347 },
+    },
+  );
+  assert.equal(cohorts["2022"].status, "partial_history");
+  assert.equal(cohorts["2024"].categoryChurn.lockOrGenerated, 312983);
+});
+
+test("retrospective baselines use every complete eligible pre-AI cohort", () => {
+  const delivery = manifest.activity.historicCohorts;
+  const defects = manifest.activity.historicDefectCohorts;
+  const primary = manifest.activity.primaryWindow;
+  const historicNonDependencyMerges = [
+    delivery["2022"].nonDependencyMergedPullRequests,
+    delivery["2023"].nonDependencyMergedPullRequests,
+    delivery["2024"].nonDependencyMergedPullRequests,
+    primary.nonDependencyMergedPullRequests["2025"],
+  ];
+  const historicReleases = [
+    delivery["2022"].publishedReleases,
+    delivery["2023"].publishedReleases,
+    delivery["2024"].publishedReleases,
+    primary.publishedReleases["2025"],
+  ];
+  const historicIntroductions =
+    defects["2022"].introducedWithinWindow +
+    defects["2023"].introducedWithinWindow +
+    defects["2024"].introducedWithinWindow +
+    selectIntroducedCases(
+      manifest.productCases,
+      2025,
+      manifest.study.primaryWindows["2025"],
+    ).length;
+  const pooledMerges = historicNonDependencyMerges.reduce(
+    (total, value) => total + value,
+    0,
+  );
+  assert.equal(median(historicNonDependencyMerges), 56.5);
+  assert.equal(median(historicReleases), 13);
+  assert.equal(
+    median([
+      0,
+      6,
+      1,
+    ]),
+    1,
+  );
+  assert.equal(median([10, 48, 6]), 10);
+  assert.equal(
+    median([
+      defects["2022"].qualifyingExternalProductDefects,
+      defects["2023"].qualifyingExternalProductDefects,
+      defects["2024"].qualifyingExternalProductDefects,
+      3,
+    ]),
+    4,
+  );
+  assert.equal(median([5, 6, 6]), 6);
+  assert.deepEqual(
+    {
+      gitCommitMedian: median([129, 205, 152]),
+      gitChurnMedian: median([12571, 329216, 16970]),
+    },
+    { gitCommitMedian: 152, gitChurnMedian: 16970 },
+  );
+  assert.equal(pooledMerges, 203);
+  assert.equal(historicIntroductions, 4);
+  assert.equal(
+    Number(
+      (
+        (historicIntroductions / pooledMerges) *
+        primary.nonDependencyMergedPullRequests["2026"]
+      ).toFixed(2),
+    ),
+    5.54,
+  );
+});
+
+test("coverage reference stays a two-cohort descriptive midpoint", () => {
+  const cohorts = manifest.activity.historicCohorts;
+  const changes = ["2023", "2024"].map(
+    (year) =>
+      cohorts[year].coverage.end.coveredPercent -
+      cohorts[year].coverage.start.coveredPercent,
+  );
+  assert.equal(Number(median(changes).toFixed(3)), -2.961);
+  assert.equal(
+    Number(
+      (
+        manifest.activity.snapshots.endOfObservation.lineCoveragePercent -
+        manifest.activity.snapshots.preAdoption.lineCoveragePercent -
+        median(changes)
+      ).toFixed(3),
+    ),
+    11.807,
+  );
 });
 
 test("candidate ledger exposes every reviewed disposition", () => {

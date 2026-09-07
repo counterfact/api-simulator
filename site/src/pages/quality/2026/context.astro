@@ -2,8 +2,15 @@
 import QualityLayout from "../../../layouts/QualityLayout.astro";
 import {
   auditEvidence,
+  coverageReference,
   deliveryMetrics,
   featureTimeline,
+  gitCohortMetrics,
+  gitHistoricalBaselineRows,
+  historicDefectSummaries,
+  historicDeliveryAndCoverage,
+  retrospectiveBaselineRows,
+  testCohortAdditions,
   testingMetrics,
 } from "../../../data/quality-2026";
 
@@ -56,15 +63,68 @@ const adoption = auditEvidence.activity.adoption;
       remained subject to maintainer review and release decisions.
     </p>
 
+    <h2>Earlier matched-window delivery and coverage</h2>
+    <p>
+      The following historical context uses the same March 10–September 3 window.
+      It is descriptive only: these cohorts predate the intervention and are not
+      estimates of an AI effect.
+    </p>
+    <div class="table-scroll">
+      <table class="research-table">
+        <thead><tr><th scope="col">Cohort</th><th scope="col">All merged PRs</th><th scope="col">Non-dependency merged PRs</th><th scope="col">Published releases</th><th scope="col">Coveralls line coverage, start → end</th><th scope="col">Coverage change</th></tr></thead>
+        <tbody>
+          {historicDeliveryAndCoverage.map((cohort) => (
+            <tr><th scope="row">{cohort.year}{cohort.coverageNote && <span class="cell-detail">{cohort.coverageNote}</span>}</th><td>{cohort.mergedPullRequests}</td><td>{cohort.nonDependencyMergedPullRequests}</td><td>{cohort.publishedReleases}</td><td>{cohort.coverageDisplay}</td><td>{cohort.coverageChange}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Coveralls values are the historical CI results, not a coverage recomputation
+      with a modern toolchain. Dependency-only pull requests are excluded only
+      from the non-dependency column; all merged pull requests remain visible for
+      context.
+    </p>
+
+    <h2>Earlier externally reported product defects</h2>
+    <p>
+      These complete public GitHub issue and pull-request censuses use the same
+      exact window. A reported defect counts as introduced only when the first
+      confirmed affected public release also fell within that year’s window.
+    </p>
+    <div class="table-scroll">
+      <table class="research-table">
+        <thead><tr><th scope="col">Cohort</th><th scope="col">Issues / PRs reviewed</th><th scope="col">Qualifying external product-defect reports</th><th scope="col">First introduced during window</th><th scope="col">Reported defects predating window</th><th scope="col">Median report-to-release</th></tr></thead>
+        <tbody>
+          {historicDefectSummaries.map((cohort) => (
+            <tr><th scope="row">{cohort.year}{cohort.note && <span class="cell-detail">{cohort.note}</span>}</th><td>{cohort.reviewedIssues} / {cohort.reviewedPullRequests}</td><td>{cohort.qualifyingExternalProductDefects}</td><td>{cohort.introducedReports.length === 0 ? cohort.introducedDisplay : cohort.introducedReports.map((report) => <><a href={report.sourceUrl}>#{report.number}</a>{" "}</>)}</td><td>{cohort.preExistingOrPreWindow}</td><td>{cohort.responseDisplay}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The 2023 within-window introduction was <a href="https://github.com/counterfact/api-simulator/issues/491">#491</a>, first released in 0.20.4. The 2024 introductions were <a href="https://github.com/counterfact/api-simulator/issues/866">#866</a> (0.39.0), <a href="https://github.com/counterfact/api-simulator/issues/906">#906</a> (0.40.0), and <a href="https://github.com/counterfact/api-simulator/issues/918">#918</a> (0.38.0). Their source history and the exact census queries are retained in the machine-readable evidence manifest.
+    </p>
+
     <h2>Automated verification snapshots</h2>
     <table class="research-table">
-      <thead><tr><th scope="col">Measure</th><th scope="col">Before adoption</th><th scope="col">September 3</th></tr></thead>
+      <thead><tr><th scope="col">Measure</th><th scope="col">Before adoption</th><th scope="col">September 3</th><th scope="col">Change during AI cohort</th></tr></thead>
       <tbody>
         {testingMetrics.map((metric) => (
-          <tr><th scope="row">{metric.label}</th><td>{metric.displayBefore}</td><td>{metric.displayAfter}</td></tr>
+          <tr><th scope="row">{metric.label}</th><td>{metric.displayBefore}</td><td>{metric.displayAfter}</td><td>{metric.displayChange}</td></tr>
         ))}
       </tbody>
     </table>
+    <div class="table-scroll">
+      <table class="research-table">
+        <thead><tr><th scope="col">Cohort</th><th scope="col">Test files, start → end</th><th scope="col">Files added</th><th scope="col">Declarations, start → end</th><th scope="col">Declarations added</th></tr></thead>
+        <tbody>
+          {testCohortAdditions.map((cohort) => (
+            <tr><th scope="row">{cohort.label}{cohort.note && <span class="cell-detail">{cohort.note}</span>}</th><td>{cohort.displayTestFiles}</td><td>{cohort.displayTestFilesAdded}</td><td>{cohort.displayDeclarations}</td><td>{cohort.displayDeclarationsAdded}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
     <p>
       The file count includes JavaScript and TypeScript files containing at least
       one explicit <code>it</code> or <code>test</code> declaration, plus Python
@@ -81,6 +141,122 @@ const adoption = auditEvidence.activity.adoption;
       at the observation endpoint. During that interval the project was reorganized
       into multiple packages, so the percentages are real results over changing
       source sets rather than a controlled measurement over identical files.
+    </p>
+
+    <h2>Commit and line-change activity</h2>
+    <p>
+      The audit now counts first-parent commits and cumulative textual changes on{" "}
+      <code>main</code>. Each mainline integration is compared only with its first
+      parent, so a merged topic branch is counted once. The analysis is pinned to
+      the audit’s immutable September 3 observation commit.
+    </p>
+    <div class="table-scroll">
+      <table class="research-table">
+        <thead><tr><th scope="col">Cohort</th><th scope="col">First-parent commits</th><th scope="col">Lines added</th><th scope="col">Lines deleted</th><th scope="col">Total churn</th><th scope="col">File-touch occurrences</th></tr></thead>
+        <tbody>
+          {gitCohortMetrics.map((cohort) => (
+            <tr>
+              <th scope="row">{cohort.year}{cohort.year === 2026 && " AI cohort"}{"status" in cohort && <span class="cell-detail">{cohort.reason}</span>}</th>
+              <td>{cohort.firstParentCommits.toLocaleString()}</td>
+              <td>{cohort.additions.toLocaleString()}</td>
+              <td>{cohort.deletions.toLocaleString()}</td>
+              <td>{cohort.churn.toLocaleString()}</td>
+              <td>{cohort.fileTouchOccurrences.toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <div class="table-scroll">
+      <table class="research-table">
+        <thead><tr><th scope="col">Cohort</th><th scope="col">Test churn</th><th scope="col">Docs/site churn</th><th scope="col">Lock/generated churn</th><th scope="col">Source/other churn</th></tr></thead>
+        <tbody>
+          {gitCohortMetrics.map((cohort) => (
+            <tr>
+              <th scope="row">{cohort.year}{cohort.year === 2026 && " AI cohort"}</th>
+              <td>{cohort.categoryChurn.tests.toLocaleString()}</td>
+              <td>{cohort.categoryChurn.documentation.toLocaleString()}</td>
+              <td>{cohort.categoryChurn.lockOrGenerated.toLocaleString()}</td>
+              <td>{cohort.categoryChurn.sourceOrOther.toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Churn is additions plus deletions, not effort or product value. File-touch
+      occurrences count a path once per first-parent commit, not distinct files.
+      Categories are deterministic path rules applied in this order: lockfiles and
+      generated files, tests, docs/site, then source/other. The 2024 raw total is
+      dominated by a 148,049-line Yarn artifact that was added and later removed;
+      it is classified as lock/generated. The 2022 row covers only reachable
+      history beginning April 8 and is excluded from repository-derived baselines.
+    </p>
+
+    <h2>Retrospective historical-baseline comparison</h2>
+    <p>
+      These baselines were constructed after the 2026 outcomes were known. They
+      summarize matched pre-AI cohorts and provide descriptive points of
+      comparison; they are not prospective predictions, prediction intervals,
+      causal estimates, or estimates of what necessarily would have happened
+      without AI. Each measure uses every pre-AI cohort with a complete comparable
+      observation.
+    </p>
+    <div class="table-scroll">
+      <table class="research-table">
+        <thead><tr><th scope="col">Measure</th><th scope="col">Historical basis</th><th scope="col">2026 benchmark</th><th scope="col">2026 observed</th><th scope="col">Observed − benchmark</th></tr></thead>
+        <tbody>
+          {retrospectiveBaselineRows.map((row) => (
+            <tr>
+              <th scope="row">{row.label}{row.note && <span class="cell-detail">{row.note}</span>}</th>
+              <td>{row.historicalBasis}</td>
+              <td>{row.displayBenchmark}</td>
+              <td>{row.displayActual}</td>
+              <td>{row.displayDifference}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      “Historical range” is the minimum and maximum of the eligible pre-AI
+      cohorts, not a statistical confidence or prediction interval. The
+      exposure-scaled defect benchmark applies the pooled pre-AI rate—four
+      qualifying within-window introductions across 203 non-dependency merged
+      PRs, or 1.97 per 100—to the 281 observed 2026 PRs. The resulting 5.54 is an
+      expected-value benchmark, not a claim that 5.54 defects necessarily existed
+      or that AI prevented them. No significance test is claimed.
+    </p>
+    <table class="research-table">
+      <thead><tr><th scope="col">Coverage comparison</th><th scope="col">Value</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Two-cohort pre-AI reference midpoint<span class="cell-detail">2023–2024 only; not a forecast.</span></th><td>{coverageReference.displayMidpoint}</td></tr>
+        <tr><th scope="row">Observed pre-AI range</th><td>{coverageReference.displayRange}</td></tr>
+        <tr><th scope="row">Observed 2026 change</th><td>{coverageReference.displayActual}</td></tr>
+        <tr><th scope="row">Observed minus reference midpoint</th><td>{coverageReference.displayDifference}</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Coverage has only two complete comparable pre-AI changes, and the 2026
+      package reorganization changed its denominator. The midpoint is therefore
+      reference context only. Commit and churn medians are likewise additional
+      workload context, not inputs to the defect-rate benchmark:
+    </p>
+    <div class="table-scroll">
+      <table class="research-table">
+        <thead><tr><th scope="col">Workload measure</th><th scope="col">Historical basis</th><th scope="col">2026 benchmark</th><th scope="col">2026 observed</th><th scope="col">Observed − benchmark</th></tr></thead>
+        <tbody>
+          {gitHistoricalBaselineRows.map((row) => (
+            <tr><th scope="row">{row.label}</th><td>{row.historicalBasis}</td><td>{row.displayBenchmark}</td><td>{row.displayActual}</td><td>{row.displayDifference}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Only 2023–2025 contribute to those repository-derived medians. Three
+      observations, differing merge strategies, mechanical changes, and the 2026
+      package reorganization do not support a stable churn-adjusted quality model.
+      Non-dependency merged PRs remain the audit’s declared exposure denominator.
     </p>
 
     <h2>Full-window sensitivity measurements</h2>
