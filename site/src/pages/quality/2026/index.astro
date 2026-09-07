@@ -50,10 +50,8 @@ const gitBaseline = Object.fromEntries(
           0, 6, and 1 files and 10, 48, and 6 declarations in the complete
           2023–2025 historical cohorts. Public branch coverage moved from 89.344%
           to 89.415% (+0.071 percentage points), while the two earlier complete
-          branch-coverage intervals declined by 2.686 and 0.827 points. The 2025
-          local recomputation moved from 89.720% to 90.131%, but its unchanged
-          historical suite retained one failing assertion; 2022 lacks a start
-          observation. Non-dependency delivery reached 281
+          branch-coverage intervals declined by 2.686 and 0.827 points; 2022
+          lacks a start observation. Non-dependency delivery reached 281
           merged pull requests, above the 15–75 range in 2022–2025. These
           observations are not a causal estimate. They do not establish that AI
           produced the improvement, and they do not measure unreported defects.
@@ -233,7 +231,7 @@ const gitBaseline = Object.fromEntries(
                 <td>{cohort.testDeclarations}</td>
                 <td>
                   {cohort.branchCoverageStart
-                    ? <><a href={cohort.branchCoverageStart.source}>{cohort.branchCoverageStart.branchCoveragePercent.toFixed(3)}%</a>{cohort.branchCoverageStart.sourceLabel && ` (${cohort.branchCoverageStart.sourceLabel})`} → </>
+                    ? <><a href={cohort.branchCoverageStart.source}>{cohort.branchCoverageStart.branchCoveragePercent.toFixed(3)}%</a>{cohort.branchCoverageStart.footnoteMarker && <sup aria-label="See table footnote">{cohort.branchCoverageStart.footnoteMarker}</sup>} → </>
                     : "Not available → "}
                   <a href={cohort.branchCoverageEnd.source}>{cohort.branchCoverageEnd.branchCoveragePercent.toFixed(3)}%</a>
                 </td>
@@ -243,12 +241,13 @@ const gitBaseline = Object.fromEntries(
         </table>
       </div>
       <p class="figure-note">
-        Coveralls values link to their public results. The 2025 start value links
-        to the exact commit because it is a locally recomputed observation, not a
-        Coveralls build; its cohort note records the non-green historical suite.
+        <sup>*</sup> Locally recomputed at the exact March start commit. It is not
+        a Coveralls build; the unchanged historical suite had one failing
+        response-builder assertion.
+      </p>
+      <p class="figure-note">
         The 2026 package reorganization changed the coverage denominator, so the
-        values are observations over changing source sets, not a fixed-codebase
-        experiment.
+        values are observations over changing source sets, not a fixed-codebase experiment.
       </p>
     </figure>
 
