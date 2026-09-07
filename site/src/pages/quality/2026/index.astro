@@ -3,7 +3,10 @@ import QualityLayout from "../../../layouts/QualityLayout.astro";
 import {
   auditEvidence,
   comparisonSummary,
+  gitHistoricalBaselineRows,
   primaryComparisonSummary,
+  retrospectiveBaselineRows,
+  testCohortAdditions,
   testingMetrics,
 } from "../../../data/quality-2026";
 
@@ -12,6 +15,12 @@ const after = primaryComparisonSummary[1];
 const snapshots = auditEvidence.activity.snapshots;
 const fullBefore = comparisonSummary[0];
 const fullAfter = comparisonSummary[1];
+const historicalBaseline = Object.fromEntries(
+  retrospectiveBaselineRows.map((row) => [row.label, row]),
+);
+const gitBaseline = Object.fromEntries(
+  gitHistoricalBaselineRows.map((row) => [row.label, row]),
+);
 ---
 
 <QualityLayout
@@ -83,6 +92,8 @@ const fullAfter = comparisonSummary[1];
           <a href={auditEvidence.study.intervention.source}>the first agent-authored
           product change merged to <code>main</code></a> on March 10, 2026. The
           primary comparison uses the same March 10–September 3 interval in 2025.
+          Additional matched cohorts in 2022–2024 provide historical context, with
+          each measure using only years that have a complete comparable observation.
           The broader January 1–September 3 cohorts remain as a sensitivity check.
         </p>
         <p>
@@ -201,7 +212,8 @@ const fullAfter = comparisonSummary[1];
         <h2 id="verification-heading">Automated verification expanded</h2>
         <p>
           Figure 1. Repository snapshots immediately before the first agent-authored
-          merge and at the September 3 observation point.
+          merge and at the September 3 observation point. The cohort table uses the
+          same March–September span in earlier years where repository history permits.
         </p>
       </figcaption>
       <div class="comparison-bars">
@@ -210,7 +222,7 @@ const fullAfter = comparisonSummary[1];
             <div class="comparison-measure">
               <div class="comparison-label">
                 <strong>{metric.label}</strong>
-                <span>{metric.displayBefore} → {metric.displayAfter}</span>
+                <span>{metric.displayBefore} → {metric.displayAfter} ({metric.displayChange})</span>
               </div>
               <div class="comparison-row">
                 <span>Before</span>
@@ -234,11 +246,23 @@ const fullAfter = comparisonSummary[1];
       <div class="table-scroll compact-table">
         <table class="research-table">
           <thead>
-            <tr><th scope="col">Measure</th><th scope="col">Before</th><th scope="col">After</th></tr>
+            <tr><th scope="col">Cohort</th><th scope="col">Test files, start → end</th><th scope="col">Files added</th><th scope="col">Declarations, start → end</th><th scope="col">Declarations added</th></tr>
+          </thead>
+          <tbody>
+            {testCohortAdditions.map((cohort) => (
+              <tr><th scope="row">{cohort.label}{cohort.note && <span class="cell-detail">{cohort.note}</span>}</th><td>{cohort.displayTestFiles}</td><td>{cohort.displayTestFilesAdded}</td><td>{cohort.displayDeclarations}</td><td>{cohort.displayDeclarationsAdded}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div class="table-scroll compact-table">
+        <table class="research-table">
+          <thead>
+            <tr><th scope="col">Measure</th><th scope="col">Before adoption</th><th scope="col">September 3</th><th scope="col">Change during AI cohort</th></tr>
           </thead>
           <tbody>
             {testingMetrics.map((metric) => (
-              <tr><th scope="row">{metric.label}</th><td>{metric.displayBefore}</td><td>{metric.displayAfter}</td></tr>
+              <tr><th scope="row">{metric.label}</th><td>{metric.displayBefore}</td><td>{metric.displayAfter}</td><td>{metric.displayChange}</td></tr>
             ))}
           </tbody>
         </table>
@@ -252,6 +276,43 @@ const fullAfter = comparisonSummary[1];
     </figure>
 
     <div class="article-body quality-reading quality-prose">
+      <section aria-labelledby="historical-baseline-heading">
+        <h2 id="historical-baseline-heading">The 2026 result compared with retrospective pre-AI baselines</h2>
+        <p>
+          Across complete pre-AI cohorts, the median was{" "}
+          {historicalBaseline["Non-dependency merged PRs"].displayBenchmark}{" "}
+          non-dependency merges, {historicalBaseline["Published releases"].displayBenchmark}{" "}
+          releases, {historicalBaseline["Test files added"].displayBenchmark} added
+          test file, and {historicalBaseline["Test declarations added"].displayBenchmark}{" "}
+          added declarations. The observed 2026 values were{" "}
+          {historicalBaseline["Non-dependency merged PRs"].displayActual},{" "}
+          {historicalBaseline["Published releases"].displayActual},{" "}
+          {historicalBaseline["Test files added"].displayActual}, and{" "}
+          {historicalBaseline["Test declarations added"].displayActual}, respectively.
+        </p>
+        <p>
+          Pooling 2022–2025 produces four qualifying within-window introductions
+          across 203 non-dependency merges. Applying that 1.97-per-100 historical
+          rate to the 281 observed 2026 merges gives a 5.54 exposure-scaled
+          expected-value benchmark; the observed count was zero. This is a
+          post-hoc descriptive comparison, not a prospective prediction, a
+          significance test, evidence that AI prevented 5.54 defects, or a causal
+          estimate.
+        </p>
+        <p>
+          Git activity supplies additional workload context: the 2023–2025 median
+          was {gitBaseline["First-parent commits"].displayBenchmark} first-parent
+          commits and {gitBaseline["Total textual churn"].displayBenchmark}; 2026
+          recorded {gitBaseline["First-parent commits"].displayActual} and{" "}
+          {gitBaseline["Total textual churn"].displayActual}. Churn is highly
+          sensitive to generated files, restructuring, and merge strategy, so it
+          is not used as the defect denominator. The{" "}
+          <a href="/quality/2026/context">supplementary data</a> shows every cohort,
+          historical range, churn category, coverage reference, and comparison
+          with the benchmark.
+        </p>
+      </section>
+
       <section aria-labelledby="sensitivity-heading">
         <h2 id="sensitivity-heading">The broader audit gives the same origin pattern</h2>
         <p>
@@ -309,6 +370,8 @@ const fullAfter = comparisonSummary[1];
           <li>The sample contains fourteen product cases, and one reporter supplied six of the 2026 issue reports.</li>
           <li>External reports omit internal findings, silently abandoned use, and unknown defects.</li>
           <li>Pull requests and releases are unequal units of work and risk; their counts provide context, not a controlled exposure measure.</li>
+          <li>Historical baselines were constructed after the 2026 result was visible and use only three or four observations per measure; their ranges are not prediction intervals.</li>
+          <li>The pooled historical defect-rate benchmark rests on only four introduced reports, while commit and churn counts are strongly workflow-dependent.</li>
           <li>Coverage increased across a codebase reorganized into multiple packages, so the before and after denominators are not identical.</li>
           <li>The hypothesis was formulated retrospectively and the audit was performed by the project maintainer, who uses and benefits from agentic coding tools.</li>
           <li>Zero observed post-adoption defect introductions is not proof that no such defect exists.</li>

@@ -23,6 +23,20 @@
         "endExclusive": "2026-09-04T00:00:00Z"
       }
     },
+    "historicalWindows": {
+      "2022": {
+        "start": "2022-03-10T16:38:20Z",
+        "endExclusive": "2022-09-04T00:00:00Z"
+      },
+      "2023": {
+        "start": "2023-03-10T16:38:20Z",
+        "endExclusive": "2023-09-04T00:00:00Z"
+      },
+      "2024": {
+        "start": "2024-03-10T16:38:20Z",
+        "endExclusive": "2024-09-04T00:00:00Z"
+      }
+    },
     "supplementalWindows": {
       "2025": {
         "start": "2025-01-01T00:00:00Z",
@@ -37,7 +51,14 @@
       "Externally reported product defects introduced during the comparison window per 100 non-dependency merged pull requests.",
       "Median calendar days from qualifying report to first public release containing the correction.",
       "Automated test-file count, explicit test declarations, and reported line coverage at the pre-adoption and end-of-observation snapshots."
-    ]
+    ],
+    "retrospectiveComparison": {
+      "constructedAfterObservation": true,
+      "ordinaryMeasureRule": "Use the median and observed range of every pre-AI cohort with a complete comparable measurement.",
+      "introducedDefectRule": "Pool qualifying within-window introductions and non-dependency merged pull requests across every eligible pre-AI cohort, then apply that rate to the observed 2026 exposure.",
+      "coverageRule": "Treat the midpoint of the two complete pre-AI coverage changes as a descriptive reference, not a forecast.",
+      "interpretation": "Descriptive historical baselines, not prospective predictions, prediction intervals, causal estimates, or estimates of what necessarily would have happened without AI."
+    }
   },
   "maturityDays": 90,
   "populationRules": {
@@ -46,6 +67,12 @@
     "process": "Release-integrity and workflow failures are recorded separately from product defects."
   },
   "queries": [
+    "repo:counterfact/api-simulator is:issue created:2022-03-10..2022-09-03",
+    "repo:counterfact/api-simulator is:pr created:2022-03-10..2022-09-03",
+    "repo:counterfact/api-simulator is:issue created:2023-03-10..2023-09-03",
+    "repo:counterfact/api-simulator is:pr created:2023-03-10..2023-09-03",
+    "repo:counterfact/api-simulator is:issue created:2024-03-10..2024-09-03",
+    "repo:counterfact/api-simulator is:pr created:2024-03-10..2024-09-03",
     "repo:counterfact/api-simulator is:issue created:2025-01-01..2025-09-03",
     "repo:counterfact/api-simulator is:pr created:2025-01-01..2025-09-03",
     "repo:counterfact/api-simulator is:issue created:2026-01-01..2026-09-03",
@@ -66,8 +93,24 @@
     "npm --prefix site run verify:audit",
     "gh search prs --repo counterfact/api-simulator --merged --merged-at 2025-03-10..2025-09-03 --limit 1000 --json number,author,closedAt,title",
     "gh search prs --repo counterfact/api-simulator --merged --merged-at 2026-03-10..2026-09-03 --limit 1000 --json number,author,closedAt,title",
+    "gh search prs --repo counterfact/api-simulator --merged --merged-at 2022-03-10..2022-09-03 --limit 1000 --json number,author,closedAt,title",
+    "gh search prs --repo counterfact/api-simulator --merged --merged-at 2023-03-10..2023-09-03 --limit 1000 --json number,author,closedAt,title",
+    "gh search prs --repo counterfact/api-simulator --merged --merged-at 2024-03-10..2024-09-03 --limit 1000 --json number,author,closedAt,title",
+    "curl -fsSL https://coveralls.io/builds/13c246c1795e66cffc1a0e022b407660ec384b02.json",
+    "curl -fsSL https://coveralls.io/builds/06c354e0f30d52776006929f7c7e657520adf330.json",
+    "curl -fsSL https://coveralls.io/builds/061d88e7ba072dbfa931ec306b4e6ae94f32b155.json",
+    "curl -fsSL https://coveralls.io/builds/f17e758dbf87d58fb09e8910190d590c216609e5.json",
+    "curl -fsSL https://coveralls.io/builds/7eaccb20ae8f26e4b767dfb9f4f9e92b09623744.json",
+    "npm --prefix site run snapshot:audit -- 13c246c1795e66cffc1a0e022b407660ec384b02",
+    "npm --prefix site run snapshot:audit -- 06c354e0f30d52776006929f7c7e657520adf330",
+    "npm --prefix site run snapshot:audit -- 061d88e7ba072dbfa931ec306b4e6ae94f32b155",
+    "npm --prefix site run snapshot:audit -- f17e758dbf87d58fb09e8910190d590c216609e5",
+    "npm --prefix site run snapshot:audit -- 7eaccb20ae8f26e4b767dfb9f4f9e92b09623744",
+    "npm --prefix site run snapshot:audit -- d8eeb73d6a16f266719384f7c6ef5b3a1f556e4b",
+    "npm --prefix site run snapshot:audit -- 939d149f753edcc0c2de10db1afb60c335840231",
     "npm --prefix site run snapshot:audit -- 68a3f505ce457f10e4ab30dea47ed8fdde2eb48a",
-    "npm --prefix site run snapshot:audit -- 77f0bc6fd2c3bc935d2eb2da80190369d91f7084"
+    "npm --prefix site run snapshot:audit -- 77f0bc6fd2c3bc935d2eb2da80190369d91f7084",
+    "npm --prefix site run snapshot:churn -- 77f0bc6fd2c3bc935d2eb2da80190369d91f7084"
   ],
   "candidates": [
     {
@@ -844,7 +887,280 @@
         }
       }
     },
+    "historicCohorts": {
+      "2022": {
+        "mergedPullRequests": 108,
+        "dependencyBotPullRequests": 45,
+        "nonDependencyMergedPullRequests": 63,
+        "publishedReleases": 7,
+        "coverage": {
+          "status": "not_estimable",
+          "reason": "The March boundary predates main-reachable history and the first reachable commit has no Coveralls build.",
+          "end": {
+            "commit": "13c246c1795e66cffc1a0e022b407660ec384b02",
+            "coveredPercent": 92.0652173913044,
+            "source": "https://coveralls.io/builds/52174439"
+          }
+        }
+      },
+      "2023": {
+        "mergedPullRequests": 128,
+        "dependencyBotPullRequests": 78,
+        "nonDependencyMergedPullRequests": 50,
+        "publishedReleases": 19,
+        "coverage": {
+          "start": {
+            "commit": "06c354e0f30d52776006929f7c7e657520adf330",
+            "coveredPercent": 87.4656188605108,
+            "source": "https://coveralls.io/builds/57532255"
+          },
+          "end": {
+            "commit": "061d88e7ba072dbfa931ec306b4e6ae94f32b155",
+            "coveredPercent": 85.17208105500161,
+            "source": "https://coveralls.io/builds/62400840"
+          }
+        }
+      },
+      "2024": {
+        "mergedPullRequests": 199,
+        "dependencyBotPullRequests": 124,
+        "nonDependencyMergedPullRequests": 75,
+        "publishedReleases": 24,
+        "coverage": {
+          "start": {
+            "commit": "f17e758dbf87d58fb09e8910190d590c216609e5",
+            "coveredPercent": 86.227261989133,
+            "source": "https://coveralls.io/builds/66186038"
+          },
+          "end": {
+            "commit": "7eaccb20ae8f26e4b767dfb9f4f9e92b09623744",
+            "coveredPercent": 82.59851736246586,
+            "source": "https://coveralls.io/builds/69559350"
+          }
+        }
+      }
+    },
+    "cohortGitMetrics": {
+      "analysisRef": "77f0bc6fd2c3bc935d2eb2da80190369d91f7084",
+      "clock": "committer timestamp",
+      "algorithm": {
+        "window": "March 10 at 16:38:20 UTC, inclusive, through September 4 at 00:00 UTC, exclusive.",
+        "headlineCommitPopulation": "First-parent commits reachable from main.",
+        "headlineChurnComparison": "Each selected first-parent commit compared with its first parent; a selected root commit is compared with the empty tree.",
+        "renameDetection": "git diff -M",
+        "binaryHandling": "Binary file touches are counted but omitted from textual line totals.",
+        "categoryPriority": [
+          "lockfiles/generated",
+          "tests",
+          "docs/site",
+          "source/other"
+        ]
+      },
+      "cohorts": {
+        "2022": {
+          "status": "partial_history",
+          "reason": "The first main-reachable commit is April 8, after the March 10 cohort boundary.",
+          "firstIncludedCommit": "238c74baa4748932dc5580cc0a18016b9442d21e",
+          "lastIncludedCommit": "13c246c1795e66cffc1a0e022b407660ec384b02",
+          "firstParentCommits": 181,
+          "additions": 42770,
+          "deletions": 9252,
+          "churn": 52022,
+          "fileTouchOccurrences": 724,
+          "binaryFileTouchOccurrences": 0,
+          "renamedFileOccurrences": 31,
+          "categoryChurn": {
+            "tests": 18097,
+            "documentation": 1948,
+            "lockOrGenerated": 24429,
+            "sourceOrOther": 7548
+          }
+        },
+        "2023": {
+          "firstIncludedCommit": "25deaabd21aff38d5701a712f4a61455d3b13620",
+          "lastIncludedCommit": "061d88e7ba072dbfa931ec306b4e6ae94f32b155",
+          "firstParentCommits": 129,
+          "additions": 7535,
+          "deletions": 5036,
+          "churn": 12571,
+          "fileTouchOccurrences": 378,
+          "binaryFileTouchOccurrences": 0,
+          "renamedFileOccurrences": 0,
+          "categoryChurn": {
+            "tests": 1782,
+            "documentation": 514,
+            "lockOrGenerated": 8672,
+            "sourceOrOther": 1603
+          }
+        },
+        "2024": {
+          "firstIncludedCommit": "a586be5e659cdf95a519cefd301946ad47899a4a",
+          "lastIncludedCommit": "7eaccb20ae8f26e4b767dfb9f4f9e92b09623744",
+          "firstParentCommits": 205,
+          "additions": 163929,
+          "deletions": 165287,
+          "churn": 329216,
+          "fileTouchOccurrences": 747,
+          "binaryFileTouchOccurrences": 0,
+          "renamedFileOccurrences": 2,
+          "categoryChurn": {
+            "tests": 11582,
+            "documentation": 1070,
+            "lockOrGenerated": 312983,
+            "sourceOrOther": 3581
+          },
+          "note": "Raw churn includes a 148,049-line Yarn artifact added and later removed; it remains in lock/generated, not source/other."
+        },
+        "2025": {
+          "firstIncludedCommit": "66d68a7ddcd6f0a9354146bb13d1aedb1c486dc3",
+          "lastIncludedCommit": "939d149f753edcc0c2de10db1afb60c335840231",
+          "firstParentCommits": 152,
+          "additions": 9714,
+          "deletions": 7256,
+          "churn": 16970,
+          "fileTouchOccurrences": 336,
+          "binaryFileTouchOccurrences": 0,
+          "renamedFileOccurrences": 0,
+          "categoryChurn": {
+            "tests": 409,
+            "documentation": 131,
+            "lockOrGenerated": 15665,
+            "sourceOrOther": 765
+          }
+        },
+        "2026": {
+          "firstIncludedCommit": "d244e0140aa4d1e315aeec2369e00b16c8ff7a49",
+          "lastIncludedCommit": "77f0bc6fd2c3bc935d2eb2da80190369d91f7084",
+          "firstParentCommits": 548,
+          "additions": 104938,
+          "deletions": 46409,
+          "churn": 151347,
+          "fileTouchOccurrences": 3182,
+          "binaryFileTouchOccurrences": 0,
+          "renamedFileOccurrences": 275,
+          "categoryChurn": {
+            "tests": 30867,
+            "documentation": 37671,
+            "lockOrGenerated": 58167,
+            "sourceOrOther": 24642
+          }
+        }
+      }
+    },
+    "historicDefectCohorts": {
+      "2022": {
+        "reviewedIssues": 54,
+        "reviewedPullRequests": 119,
+        "qualifyingExternalProductDefects": 0,
+        "introducedWithinWindow": 0,
+        "preExistingOrPreWindow": 0,
+        "medianResponseDays": null,
+        "introducedReports": [],
+        "note": "No qualifying external product-defect reports were observed. The empty cohort has no report-to-release median."
+      },
+      "2023": {
+        "reviewedIssues": 12,
+        "reviewedPullRequests": 140,
+        "qualifyingExternalProductDefects": 5,
+        "introducedWithinWindow": 1,
+        "preExistingOrPreWindow": 4,
+        "medianResponseDays": 5,
+        "introducedReports": [
+          {
+            "number": 491,
+            "title": "Quick Start broke generated TypeScript loading",
+            "sourceUrl": "https://github.com/counterfact/api-simulator/issues/491",
+            "firstAffectedRelease": "0.20.4",
+            "firstAffectedCommit": "b69914f19fd8cd8a35ef4513a3b34d8c81718bb2"
+          }
+        ]
+      },
+      "2024": {
+        "reviewedIssues": 36,
+        "reviewedPullRequests": 206,
+        "qualifyingExternalProductDefects": 7,
+        "introducedWithinWindow": 3,
+        "preExistingOrPreWindow": 4,
+        "medianResponseDays": 6,
+        "introducedReports": [
+          {
+            "number": 866,
+            "title": "Package postinstall required an unavailable dependency",
+            "sourceUrl": "https://github.com/counterfact/api-simulator/issues/866",
+            "firstAffectedRelease": "0.39.0",
+            "firstAffectedCommit": "c4dda369fb51fcfa072a49b5a23dc9143b57c9e8"
+          },
+          {
+            "number": 906,
+            "title": "CJS hot reload failed for extensionless local imports",
+            "sourceUrl": "https://github.com/counterfact/api-simulator/issues/906",
+            "firstAffectedRelease": "0.40.0",
+            "firstAffectedCommit": "485bd42365bbf55d7a695fcd6da0d5de26550652"
+          },
+          {
+            "number": 918,
+            "title": "Operation return typing made the JSON shortcut incomplete",
+            "sourceUrl": "https://github.com/counterfact/api-simulator/issues/918",
+            "firstAffectedRelease": "0.38.0",
+            "firstAffectedCommit": "9e7923c219b4da73be701803632525d1ae63d4c6"
+          }
+        ],
+        "note": "One additional OpenAPI 3.1 report, #1005, is excluded as unsupported new capability; including it changes neither the within-window introduction count nor the conclusion."
+      }
+    },
     "snapshots": {
+      "comparison2022": {
+        "status": "not_estimable",
+        "reason": "The first main-reachable commit is 238c74baa4748932dc5580cc0a18016b9442d21e on April 8, 2022, after the March 10 start boundary.",
+        "end": {
+          "commit": "13c246c1795e66cffc1a0e022b407660ec384b02",
+          "observedAt": "2022-09-04T00:00:00Z",
+          "testFiles": 21,
+          "testDeclarations": 94
+        }
+      },
+      "comparison2023": {
+        "start": {
+          "commit": "06c354e0f30d52776006929f7c7e657520adf330",
+          "observedAt": "2023-03-10T16:38:20Z",
+          "testFiles": 24,
+          "testDeclarations": 137
+        },
+        "end": {
+          "commit": "061d88e7ba072dbfa931ec306b4e6ae94f32b155",
+          "observedAt": "2023-09-04T00:00:00Z",
+          "testFiles": 24,
+          "testDeclarations": 147
+        }
+      },
+      "comparison2024": {
+        "start": {
+          "commit": "f17e758dbf87d58fb09e8910190d590c216609e5",
+          "observedAt": "2024-03-10T16:38:20Z",
+          "testFiles": 28,
+          "testDeclarations": 175
+        },
+        "end": {
+          "commit": "7eaccb20ae8f26e4b767dfb9f4f9e92b09623744",
+          "observedAt": "2024-09-04T00:00:00Z",
+          "testFiles": 34,
+          "testDeclarations": 223
+        }
+      },
+      "comparison2025": {
+        "start": {
+          "commit": "d8eeb73d6a16f266719384f7c6ef5b3a1f556e4b",
+          "observedAt": "2025-03-10T16:38:20Z",
+          "testFiles": 34,
+          "testDeclarations": 233
+        },
+        "end": {
+          "commit": "939d149f753edcc0c2de10db1afb60c335840231",
+          "observedAt": "2025-09-04T00:00:00Z",
+          "testFiles": 35,
+          "testDeclarations": 239
+        }
+      },
       "preAdoption": {
         "commit": "68a3f505ce457f10e4ab30dea47ed8fdde2eb48a",
         "observedAt": "2026-03-10T16:38:19Z",

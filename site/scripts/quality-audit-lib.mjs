@@ -56,6 +56,14 @@ export function matureCases(cases, windowEndExclusive, maturityDays) {
 }
 
 export function validateManifest(manifest) {
+  try {
+    return validateManifestUnchecked(manifest);
+  } catch (error) {
+    return [`manifest validation could not complete: ${error.message}`];
+  }
+}
+
+function validateManifestUnchecked(manifest) {
   const errors = [];
   if (manifest.schemaVersion !== 2)
     errors.push(`unsupported schema version: ${manifest.schemaVersion}`);
@@ -147,6 +155,41 @@ export function validateManifest(manifest) {
         `${year} pull-request author groups total ${authorTotal}, expected ${expected}`,
       );
     }
+  }
+
+  const gitCohorts = manifest.activity.cohortGitMetrics?.cohorts;
+  if (
+    manifest.activity.cohortGitMetrics?.analysisRef !==
+    manifest.generatedForCommit
+  ) {
+    errors.push("cohort Git analysis ref does not match generated-for commit");
+  }
+  if (!gitCohorts) {
+    errors.push("missing cohort Git metrics");
+  } else {
+    for (const year of [2022, 2023, 2024, 2025, 2026]) {
+      const cohort = gitCohorts[String(year)];
+      if (!cohort) {
+        errors.push(`missing ${year} cohort Git metrics`);
+        continue;
+      }
+      if (cohort.additions + cohort.deletions !== cohort.churn) {
+        errors.push(`${year} additions and deletions do not equal churn`);
+      }
+      const categorizedChurn = Object.values(cohort.categoryChurn).reduce(
+        (total, value) => total + value,
+        0,
+      );
+      if (categorizedChurn !== cohort.churn) {
+        errors.push(
+          `${year} categorized churn ${categorizedChurn} does not equal ${cohort.churn}`,
+        );
+      }
+    }
+  }
+
+  if (!manifest.study?.retrospectiveComparison?.constructedAfterObservation) {
+    errors.push("retrospective comparison disclosure is missing");
   }
   return errors;
 }
