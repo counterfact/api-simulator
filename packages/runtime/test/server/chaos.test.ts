@@ -78,6 +78,19 @@ describe("ChaosRule", () => {
     expect(rule.tryApply(response)).toBeNull();
   });
 
+  it.each([-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+    "rejects an invalid next count of %s",
+    (count) => {
+      expect(() => new ChaosRule("").next(count)).toThrow(RangeError);
+    },
+  );
+
+  it("accepts zero as an exhausted next count", () => {
+    const rule = new ChaosRule("").next(0);
+
+    expect(rule.isEligible).toBe(false);
+  });
+
   it("does not consume its count when stopped or skipped by probability", () => {
     const rule = new ChaosRule("").next(2).probability(0).status(500);
     const response = { body: "ok", status: 200 };

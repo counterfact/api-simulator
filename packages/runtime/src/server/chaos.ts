@@ -46,6 +46,12 @@ export class ChaosRule {
   }
 
   public next(count = 1): this {
+    if (!Number.isInteger(count) || count < 0) {
+      throw new RangeError(
+        `Chaos rule count must be a non-negative integer. Received: ${String(count)}`,
+      );
+    }
+
     this.remaining = count;
     this.touch();
     return this;
