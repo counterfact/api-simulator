@@ -171,6 +171,10 @@ test("automated verification snapshots retain all five cohort endpoints", () => 
         testDeclarations:
           comparison2025.end.testDeclarations -
           comparison2025.start.testDeclarations,
+        branchCoveragePercent:
+          comparison2025.start.branchCoverage.branchCoveragePercent,
+        coverageKind: comparison2025.start.branchCoverage.kind,
+        failedSuites: comparison2025.start.branchCoverage.testResult.failedSuites,
       },
       aiCohort: {
         testFiles: endOfObservation.testFiles - preAdoption.testFiles,
@@ -193,7 +197,13 @@ test("automated verification snapshots retain all five cohort endpoints", () => 
       },
       comparison2023: { testFiles: 0, testDeclarations: 10 },
       comparison2024: { testFiles: 6, testDeclarations: 48 },
-      comparison2025: { testFiles: 1, testDeclarations: 6 },
+      comparison2025: {
+        testFiles: 1,
+        testDeclarations: 6,
+        branchCoveragePercent: 89.72,
+        coverageKind: "local-recomputation",
+        failedSuites: 1,
+      },
       aiCohort: {
         testFiles: 36,
         testDeclarations: 634,

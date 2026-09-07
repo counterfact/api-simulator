@@ -140,12 +140,14 @@ const adoption = auditEvidence.activity.adoption;
     </p>
     <p>
       Public branch coverage moved from 89.344% to 89.415% in 2026. The available
-      earlier pairs are 94.432% to 91.746% (2023) and 90.683% to 89.856% (2024);
-      2022 and 2025 have no Coveralls build at the March start boundary. Their
-      endpoints are 95.513% and 90.131%, respectively. During the 2026 interval
-      the project was reorganized into multiple packages, so the percentages are
-      real results over changing source sets rather than a controlled measurement
-      over identical files.
+      earlier pairs are 94.432% to 91.746% (2023) and 90.683% to 89.856% (2024).
+      The 2025 start commit has no Coveralls build, but a local recomputation at
+      that exact commit measured 89.720% before the public 90.131% endpoint; the
+      unchanged historical suite retained one failing response-builder assertion.
+      The 2022 cohort has no March start observation and ends at 95.513%. During
+      the 2026 interval the project was reorganized into multiple packages, so the
+      percentages are real results over changing source sets rather than a
+      controlled measurement over identical files.
     </p>
 
     <h2>Commit and line-change activity</h2>

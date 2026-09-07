@@ -1158,7 +1158,26 @@
           "commit": "d8eeb73d6a16f266719384f7c6ef5b3a1f556e4b",
           "observedAt": "2025-03-10T16:38:20Z",
           "testFiles": 34,
-          "testDeclarations": 233
+          "testDeclarations": 233,
+          "branchCoverage": {
+            "kind": "local-recomputation",
+            "branchCoveragePercent": 89.72,
+            "source": "https://github.com/counterfact/api-simulator/commit/d8eeb73d6a16f266719384f7c6ef5b3a1f556e4b",
+            "observedAt": "2026-09-07",
+            "nodeVersion": "v22.2.0",
+            "yarnVersion": "1.22.22",
+            "command": "yarn test --coverage",
+            "testResult": {
+              "passedSuites": 32,
+              "failedSuites": 1,
+              "passedTests": 262,
+              "failedTests": 1,
+              "skippedTests": 2,
+              "todoTests": 1,
+              "failure": "test/server/response-builder.test.ts: a response builder > has shortcuts for json, text, and html"
+            },
+            "note": "The unchanged historical suite did not pass: one response-builder assertion failed. This is a local coverage recomputation, not a Coveralls build."
+          }
         },
         "end": {
           "commit": "939d149f753edcc0c2de10db1afb60c335840231",

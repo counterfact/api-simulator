@@ -249,6 +249,7 @@ const formatCoverage = (percent: number) => `${percent.toFixed(3)}%`;
 type BranchCoverageSnapshot = {
   branchCoveragePercent: number;
   source: string;
+  sourceLabel?: string;
 };
 
 const verificationCohort = (
@@ -321,7 +322,12 @@ export const verificationCohorts = [
     2025,
     comparison2025Snapshots.start,
     comparison2025Snapshots.end,
-    undefined,
+    {
+      branchCoveragePercent:
+        comparison2025Snapshots.start.branchCoverage.branchCoveragePercent,
+      source: comparison2025Snapshots.start.branchCoverage.source,
+      sourceLabel: "local recomputation",
+    },
     {
       branchCoveragePercent:
         evidence.activity.supplementalFullWindow.coverage["2025"]
@@ -330,7 +336,7 @@ export const verificationCohorts = [
         evidence.activity.supplementalFullWindow.coverage["2025"]
           .branchCoverageSource,
     },
-    "No Coveralls build is available at the March start commit.",
+    "The 89.720% start value was locally recomputed at the exact March commit with Node v22.2.0; the unchanged historical suite had one failing response-builder assertion. It is not a Coveralls build.",
   ),
   verificationCohort(
     2026,
