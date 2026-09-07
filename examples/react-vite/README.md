@@ -41,6 +41,12 @@ npm run verify
 builds the Vite application, then starts Counterfact and checks its API
 response over real HTTP. It does not open or prove the browser client.
 
+If port 4310 is already in use, run the API test on another port:
+
+```sh
+COUNTERFACT_TEST_PORT=4311 npm test
+```
+
 For the packaged guide and the repository-hosted source, see [React and
 Vite](../../packages/counterfact/docs/examples/react-vite.md).
 

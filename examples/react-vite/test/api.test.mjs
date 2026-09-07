@@ -7,7 +7,7 @@ import { counterfact } from "counterfact";
 process.env.COUNTERFACT_TELEMETRY_DISABLED = "true";
 process.env.CHOKIDAR_USEPOLLING = "1";
 
-const port = 4310;
+const port = Number(process.env.COUNTERFACT_TEST_PORT ?? 4310);
 const config = {
   alwaysFakeOptionals: false,
   basePath: path.resolve("api"),
