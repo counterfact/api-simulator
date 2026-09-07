@@ -4,7 +4,7 @@
 
 ![MIT License](https://img.shields.io/badge/license-MIT-blue) [![Coverage Status](https://coveralls.io/repos/github/counterfact/api-simulator/badge.svg)](https://coveralls.io/github/counterfact/api-simulator) ![Swagger 2.0](https://img.shields.io/badge/Swagger-2.0-85EA2D) ![OpenAPI 3.0–3.2](https://img.shields.io/badge/OpenAPI-3.x-6BA539) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/counterfact/api-simulator)
 
-## Prototype your UI before investing in backend development
+## Prototype your UI before investing in backend development.
 
 </div>
 
