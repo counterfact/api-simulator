@@ -461,6 +461,18 @@ test("manifest declares branch coverage and the mixed 2025 pair", () => {
   assert.match(manifest.study.primaryOutcomes[2], /reported branch coverage/);
 });
 
+test("manifest defines the same-window defect outcome consistently", () => {
+  const descriptions = [
+    manifest.study.primaryOutcomes[0],
+    manifest.study.retrospectiveComparison.introducedDefectRule,
+  ];
+  for (const description of descriptions) {
+    assert.match(description, /external report/);
+    assert.match(description, /first affected public release/);
+    assert.match(description, /both/);
+  }
+});
+
 test("validateManifest catches incomplete evidence relationships", () => {
   const manifest = {
     schemaVersion: 2,

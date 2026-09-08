@@ -35,12 +35,13 @@ const adoption = auditEvidence.activity.adoption;
     <h2>Earlier externally reported product defects</h2>
     <p>
       These complete public GitHub issue and pull-request censuses use the same
-      exact window. A reported defect counts as introduced only when the first
-      confirmed affected public release also fell within that year’s window.
+      exact window. A case enters the same-window count only when both its
+      external report and first confirmed affected public release fell within
+      that year’s window.
     </p>
     <div class="table-scroll">
       <table class="research-table">
-        <thead><tr><th scope="col">Cohort</th><th scope="col">Issues / PRs reviewed</th><th scope="col">Qualifying external product-defect reports</th><th scope="col">First introduced during window</th><th scope="col">Reported defects predating window</th><th scope="col">Median report-to-release</th></tr></thead>
+        <thead><tr><th scope="col">Cohort</th><th scope="col">Issues / PRs reviewed</th><th scope="col">Qualifying external product-defect reports</th><th scope="col">Same-window report + affected release</th><th scope="col">Reported defects predating window</th><th scope="col">Median report-to-release</th></tr></thead>
         <tbody>
           {historicDefectSummaries.map((cohort) => (
             <tr><th scope="row">{cohort.year}{cohort.note && <span class="cell-detail">{cohort.note}</span>}</th><td>{cohort.reviewedIssues} / {cohort.reviewedPullRequests}</td><td>{cohort.qualifyingExternalProductDefects}</td><td>{cohort.introducedReports.length === 0 ? cohort.introducedDisplay : cohort.introducedReports.map((report) => <><a href={report.sourceUrl}>#{report.number}</a>{" "}</>)}</td><td>{cohort.preExistingOrPreWindow}</td><td>{cohort.responseDisplay}</td></tr>
@@ -49,7 +50,7 @@ const adoption = auditEvidence.activity.adoption;
       </table>
     </div>
     <p>
-      The 2023 within-window introduction was <a href="https://github.com/counterfact/api-simulator/issues/491">#491</a>, first released in 0.20.4. The 2024 introductions were <a href="https://github.com/counterfact/api-simulator/issues/866">#866</a> (0.39.0), <a href="https://github.com/counterfact/api-simulator/issues/906">#906</a> (0.40.0), and <a href="https://github.com/counterfact/api-simulator/issues/918">#918</a> (0.38.0). Their source history and the exact census queries are retained in the machine-readable evidence manifest.
+      The 2023 same-window case was <a href="https://github.com/counterfact/api-simulator/issues/491">#491</a>, first released in 0.20.4. The 2024 same-window cases were <a href="https://github.com/counterfact/api-simulator/issues/866">#866</a> (0.39.0), <a href="https://github.com/counterfact/api-simulator/issues/906">#906</a> (0.40.0), and <a href="https://github.com/counterfact/api-simulator/issues/918">#918</a> (0.38.0). Their source history and the exact census queries are retained in the machine-readable evidence manifest.
     </p>
 
     <h2>Commit and line-change activity</h2>

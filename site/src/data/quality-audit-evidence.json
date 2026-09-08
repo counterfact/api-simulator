@@ -61,14 +61,14 @@
       }
     },
     "primaryOutcomes": [
-      "Externally reported product defects introduced during the comparison window per 100 non-dependency merged pull requests.",
+      "Product-defect cases whose external report and first affected public release both entered the comparison window per 100 non-dependency merged pull requests.",
       "Median calendar days from qualifying report to first public release containing the correction.",
       "Automated test-file count, explicit test declarations, and reported branch coverage at the pre-adoption and end-of-observation snapshots."
     ],
     "retrospectiveComparison": {
       "constructedAfterObservation": true,
       "ordinaryMeasureRule": "Use the median and observed range of every pre-AI cohort with a complete comparable measurement.",
-      "introducedDefectRule": "Pool qualifying within-window introductions and non-dependency merged pull requests across every eligible pre-AI cohort, then apply that rate to the observed 2026 exposure.",
+      "introducedDefectRule": "Pool qualifying cases whose external report and first affected public release both entered the cohort window, along with non-dependency merged pull requests, across every eligible pre-AI cohort; then apply that rate to the observed 2026 exposure.",
       "coverageRule": "Treat the midpoint of the two complete pre-AI coverage changes as a descriptive reference, not a forecast.",
       "interpretation": "Descriptive historical baselines, not prospective predictions, prediction intervals, causal estimates, or estimates of what necessarily would have happened without AI."
     }
