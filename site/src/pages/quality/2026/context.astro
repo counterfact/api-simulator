@@ -7,8 +7,6 @@ import {
   gitCohortMetrics,
   gitHistoricalBaselineRows,
   historicDefectSummaries,
-  historicDeliveryAndCoverage,
-  matchedWindowCohorts,
   retrospectiveBaselineRows,
 } from "../../../data/quality-2026";
 
@@ -27,81 +25,12 @@ const adoption = auditEvidence.activity.adoption;
       <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Supplementary data</p>
       <h1>Supplementary delivery and product data</h1>
       <p>
-        Defect counts need context. This appendix records how much work entered the
-        project, how automated verification changed, whether public exposure
-        contracted, and which substantial capabilities shipped during the study.
-        None of these measurements is treated as a standalone quality score.
+        This appendix preserves the audit detail behind the article’s matched-window
+        results: historical defect censuses, workload context, descriptive
+        baselines, public exposure, and product scope. None of these measurements
+        is treated as a standalone quality score.
       </p>
     </header>
-
-    <h2>Matched-window delivery activity</h2>
-    <div class="table-scroll">
-      <table class="research-table">
-      <thead><tr><th scope="col">Measure</th>{matchedWindowCohorts.map((cohort) => <th scope="col">{cohort.year}{cohort.year === 2026 && " post-adoption"}</th>)}</tr></thead>
-      <tbody>
-        <tr>
-          <th scope="row">All merged pull requests</th>
-          {matchedWindowCohorts.map((cohort) => <td>{cohort.allMergedPullRequests}</td>)}
-        </tr>
-        <tr>
-          <th scope="row">Non-dependency merged pull requests</th>
-          {matchedWindowCohorts.map((cohort) => <td>{cohort.nonDependencyMerges}</td>)}
-        </tr>
-        <tr>
-          <th scope="row">Published releases</th>
-          {matchedWindowCohorts.map((cohort) => <td>{cohort.releases}</td>)}
-        </tr>
-        <tr>
-          <th scope="row">Qualifying external product-defect reports</th>
-          {matchedWindowCohorts.map((cohort) => <td>{cohort.totalReports}</td>)}
-        </tr>
-        <tr>
-          <th scope="row">First introduced during window</th>
-          {matchedWindowCohorts.map((cohort) => <td>{cohort.introduced}</td>)}
-        </tr>
-        <tr>
-          <th scope="row">Median report-to-release</th>
-          {matchedWindowCohorts.map((cohort) => <td>{cohort.medianResponseDays === null ? "Not estimable" : `${cohort.medianResponseDays} ${cohort.medianResponseDays === 1 ? "day" : "days"}`}</td>)}
-        </tr>
-      </tbody>
-      </table>
-    </div>
-    <p>
-      The 2026 matched window has 281 non-dependency merges, compared with a
-      15–75 range across 2022–2025. Its 558 total merges include 277
-      dependency-bot changes, 197 agent-authored changes, 80 maintainer-authored
-      changes, and four changes by other contributors. The full historical range
-      remains visible because the immediately preceding 2025 cohort alone is not
-      a sufficient baseline.
-    </p>
-    <p>
-      Authorship identifies provenance, not review effort or product value. A pull
-      request can be trivial or extensive, and every accepted agent-authored change
-      remained subject to maintainer review and release decisions.
-    </p>
-
-    <h2>Earlier matched-window delivery and coverage</h2>
-    <p>
-      The following historical context uses the same March 10–September 3 window.
-      It is descriptive only: these cohorts predate the intervention and are not
-      estimates of an AI effect.
-    </p>
-    <div class="table-scroll">
-      <table class="research-table">
-        <thead><tr><th scope="col">Cohort</th><th scope="col">All merged PRs</th><th scope="col">Non-dependency merged PRs</th><th scope="col">Published releases</th><th scope="col">Coveralls branch coverage, start → end</th><th scope="col">Coverage change</th></tr></thead>
-        <tbody>
-          {historicDeliveryAndCoverage.map((cohort) => (
-            <tr><th scope="row">{cohort.year}{cohort.coverageNote && <span class="cell-detail">{cohort.coverageNote}</span>}</th><td>{cohort.mergedPullRequests}</td><td>{cohort.nonDependencyMergedPullRequests}</td><td>{cohort.publishedReleases}</td><td>{cohort.coverageDisplay}</td><td>{cohort.coverageChange}</td></tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <p>
-      Coveralls values are the historical CI results, not a coverage recomputation
-      with a modern toolchain. Dependency-only pull requests are excluded only
-      from the non-dependency column; all merged pull requests remain visible for
-      context.
-    </p>
 
     <h2>Earlier externally reported product defects</h2>
     <p>
@@ -121,30 +50,6 @@ const adoption = auditEvidence.activity.adoption;
     </div>
     <p>
       The 2023 within-window introduction was <a href="https://github.com/counterfact/api-simulator/issues/491">#491</a>, first released in 0.20.4. The 2024 introductions were <a href="https://github.com/counterfact/api-simulator/issues/866">#866</a> (0.39.0), <a href="https://github.com/counterfact/api-simulator/issues/906">#906</a> (0.40.0), and <a href="https://github.com/counterfact/api-simulator/issues/918">#918</a> (0.38.0). Their source history and the exact census queries are retained in the machine-readable evidence manifest.
-    </p>
-
-    <h2>Automated verification snapshots</h2>
-    <p>
-      The article’s single <a href="/quality/2026#verification-heading">five-year
-      verification table</a> provides the matched test-file, declaration, and
-      branch-coverage start and end observations for 2022–2026. Keeping the data in one
-      place avoids treating the 2025–2026 comparison as the only historical frame.
-    </p>
-    <p>
-      The file count includes JavaScript and TypeScript files containing at least
-      one explicit <code>it</code> or <code>test</code> declaration, plus Python
-      files named <code>test_*.py</code>. Declaration counts include those
-      JavaScript and TypeScript calls, including modifiers. Parameterized tests
-      can execute more cases than this static count implies. The exact counter is
-      available in the repository and both invocations appear under Methods.
-    </p>
-    <p>
-      Public branch coverage moved from 89.344% to 89.415% in 2026. The available
-      earlier pairs are 94.432% to 91.746% (2023) and 90.683% to 89.856% (2024).
-      The 2022 cohort has no March start observation and ends at 95.513%. During
-      the 2026 interval the project was reorganized into multiple packages, so the
-      percentages are real results over changing source sets rather than a
-      controlled measurement over identical files.
     </p>
 
     <h2>Commit and line-change activity</h2>
