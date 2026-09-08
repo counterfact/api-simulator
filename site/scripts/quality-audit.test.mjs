@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import manifest from "../src/data/quality-audit-evidence.json" with { type: "json" };
+import baseManifest from "../src/data/quality-audit-evidence.json" with { type: "json" };
+import historicalLedger from "../src/data/quality-historical-candidates.json" with { type: "json" };
 import {
+  exactPoissonInterval,
   isWithinWindow,
+  kaplanMeier,
   median,
   matureCases,
   selectIntroducedCases,
@@ -15,6 +18,11 @@ import {
   isCommitInCohortWindow,
   parseNumstat,
 } from "./quality-churn-lib.mjs";
+
+const manifest = {
+  ...baseManifest,
+  historicalCandidates: historicalLedger.records,
+};
 
 test("summarizeCases keeps report years and categories separate", () => {
   const cases = [
@@ -39,6 +47,41 @@ test("matureCases applies an exact 90-day boundary", () => {
     { firstAffectedPublishedAt: "2026-06-06T00:00:00.001Z" },
   ];
   assert.equal(matureCases(cases, "2026-09-04T00:00:00Z", 90).length, 1);
+});
+
+test("exact Poisson intervals retain uncertainty around zero events", () => {
+  const interval = exactPoissonInterval(0, 14);
+  assert.equal(interval.lower, 0);
+  assert.ok(interval.upper > 0.26 && interval.upper < 0.27);
+});
+
+test("Kaplan-Meier estimates include administrative censoring", () => {
+  assert.deepEqual(
+    kaplanMeier([
+      { days: 1, event: true },
+      { days: 90, event: false },
+    ]),
+    {
+      observations: 2,
+      events: 1,
+      medianDays: 1,
+      resolvedBy90: 0.5,
+      points: [
+        { days: 1, atRisk: 2, events: 1, censored: 0, survival: 0.5 },
+        { days: 90, atRisk: 1, events: 0, censored: 1, survival: 0.5 },
+      ],
+    },
+  );
+});
+
+test("historical candidate ledger is a complete record-level census", () => {
+  const counts = Object.fromEntries(
+    [2022, 2023, 2024].map((year) => [
+      year,
+      historicalLedger.records.filter((item) => item.year === year).length,
+    ]),
+  );
+  assert.deepEqual(counts, { 2022: 173, 2023: 152, 2024: 242 });
 });
 
 test("primary windows include the start and exclude the end", () => {
@@ -307,7 +350,7 @@ test("historic defect cohorts distinguish reports from introduced defects", () =
     },
     {
       2022: { reports: 0, introduced: 0, median: null },
-      2023: { reports: 5, introduced: 1, median: 5, introducedReports: [491] },
+      2023: { reports: 4, introduced: 1, median: 10, introducedReports: [491] },
       2024: {
         reports: 7,
         introduced: 3,
@@ -392,9 +435,9 @@ test("retrospective baselines use every complete eligible pre-AI cohort", () => 
       defects["2024"].qualifyingExternalProductDefects,
       3,
     ]),
-    4,
+    3.5,
   );
-  assert.equal(median([5, 6, 6]), 6);
+  assert.equal(median([10, 6, 6]), 6);
   assert.deepEqual(
     {
       gitCommitMedian: median([129, 205, 152]),
@@ -461,16 +504,15 @@ test("manifest declares branch coverage and the mixed 2025 pair", () => {
   assert.match(manifest.study.primaryOutcomes[2], /reported branch coverage/);
 });
 
-test("manifest defines the same-window defect outcome consistently", () => {
-  const descriptions = [
-    manifest.study.primaryOutcomes[0],
-    manifest.study.retrospectiveComparison.introducedDefectRule,
-  ];
-  for (const description of descriptions) {
-    assert.match(description, /external report/);
-    assert.match(description, /first affected public release/);
-    assert.match(description, /both/);
-  }
+test("manifest distinguishes the mature primary outcome from the same-window retrospective rule", () => {
+  assert.match(manifest.study.primaryOutcomes[0], /first released by June 6/);
+  assert.match(manifest.study.primaryOutcomes[0], /reported within 90 days/);
+
+  const retrospectiveRule =
+    manifest.study.retrospectiveComparison.introducedDefectRule;
+  assert.match(retrospectiveRule, /external report/);
+  assert.match(retrospectiveRule, /first affected public release/);
+  assert.match(retrospectiveRule, /both/);
 });
 
 test("validateManifest catches incomplete evidence relationships", () => {

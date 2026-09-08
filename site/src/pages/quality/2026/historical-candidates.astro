@@ -1,0 +1,67 @@
+---
+import QualityLayout from "../../../layouts/QualityLayout.astro";
+import { historicalCandidates } from "../../../data/quality-2026";
+
+const years = [2022, 2023, 2024];
+---
+
+<QualityLayout
+  title="Historical candidate disposition ledger"
+  description="The complete 2022–2024 issue and pull-request census underlying Counterfact’s historical quality cohorts."
+  canonicalPath="/quality/2026/historical-candidates"
+  active="candidates"
+>
+  <article class="research-article">
+    <header class="article-header quality-reading">
+      <p class="eyebrow">Record-level evidence</p>
+      <h1>Historical candidate disposition ledger</h1>
+      <p class="article-lede">
+        This ledger publishes all 567 GitHub records returned for the exact
+        2022–2024 windows: 102 issues and 465 pull requests. It makes the
+        population-rule exclusions and the eleven included external product
+        reports auditable record by record.
+      </p>
+      <p>
+        Review was performed by the study author. No independent adjudication is
+        claimed. Pull requests are excluded by rule unless they independently
+        report faulty product behavior; fixes linked to included issues are
+        deduplicated.
+      </p>
+    </header>
+
+    <div class="article-body quality-reading quality-prose">
+      {years.map((year) => {
+        const records = historicalCandidates.filter((item) => item.year === year);
+        const included = records.filter((item) => item.disposition === "product-defect");
+        return (
+          <section aria-labelledby={`year-${year}`}>
+            <h2 id={`year-${year}`}>{year}: {records.length} records, {included.length} included reports</h2>
+            <div class="table-scroll">
+              <table class="research-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Record</th>
+                    <th scope="col">Author / association</th>
+                    <th scope="col">Disposition</th>
+                    <th scope="col">Reason and review method</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {records.map((item) => (
+                    <tr>
+                      <th scope="row"><a href={item.sourceUrl}>{item.kind === "issue" ? "Issue" : "PR"} #{item.number}: {item.title}</a></th>
+                      <td>{item.author}<span class="cell-detail">{item.authorAssociation}</span></td>
+                      <td>{item.disposition}</td>
+                      <td>{item.reason}<span class="cell-detail">{item.reviewMethod}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        );
+      })}
+      <p><a href="/quality/2026/candidates">Return to the 2025–2026 ledger</a></p>
+    </div>
+  </article>
+</QualityLayout>
