@@ -81,20 +81,22 @@ import { auditEvidence } from "../../../data/quality-2026";
       remain eligible.
     </p>
     <p>
-      The complete review population contains nineteen candidates: fourteen
+      The record-level 2025–2026 review contains nineteen candidates: fourteen
       included product defects, three exclusions, one deduplicated pull request,
       and one process-quality incident. Each disposition appears in the
       <a href="/quality/2026/candidates">candidate ledger</a> with its rationale and
-      primary source.
+      primary source. The 2022–2024 extensions currently retain aggregate census
+      totals and source links for the four within-window introductions rather
+      than a complete record-level ledger.
     </p>
 
     <h2>Primary outcomes</h2>
     <ol>
       <li>
-        <strong>Introduced product defects per 100 non-dependency merges.</strong>{" "}
-        A defect is introduced during a window when its first confirmed affected
-        public release was published inside that window. The report must also be
-        opened inside the window.
+        <strong>Defects both introduced and externally reported within the window.</strong>{" "}
+        A case qualifies when its first confirmed affected public release and
+        external report both entered the window. Non-dependency merges provide
+        descriptive exposure context; they are not equal risk units.
       </li>
       <li>
         <strong>Report-to-release time.</strong> Calendar days from the external
@@ -145,11 +147,11 @@ import { auditEvidence } from "../../../data/quality-2026";
       historical report intervals are not all stored in the manifest.
     </p>
     <p>
-      The introduced-defect benchmark pools qualifying within-window
-      introductions and non-dependency merged pull requests across 2022–2025, then
-      applies that rate to the observed 2026 PR count. It is an exposure-scaled
-      expected-value benchmark, not a predicted defect count, a significance test,
-      or a causal counterfactual. Coverage has only two complete historical deltas,
+      The supplementary appendix keeps a mechanical comparison that pools
+      qualifying same-window cases and non-dependency merged pull requests across
+      2022–2025, then scales that rate to the observed 2026 PR count. It is not a
+      predicted defect count, a significance test, or a causal counterfactual.
+      Coverage has only two complete historical deltas,
       so their midpoint is labeled as reference context rather than a forecast.
       Commit and churn medians are also descriptive workload context and do not
       replace the audit’s declared PR exposure denominator.
@@ -193,23 +195,27 @@ import { auditEvidence } from "../../../data/quality-2026";
       history and release chronology used for its classification.
     </p>
 
-    <h2>Maturity sensitivity</h2>
+    <h2>Current maturity limitation</h2>
     <p>
-      A supplementary calculation keeps only cases whose first confirmed affected
-      release had at least ninety complete days of observation before its cohort’s
-      September 4 cutoff. All fourteen product cases meet that threshold. This does
-      not make later releases defect-free; it prevents them from supporting claims
-      for which they had too little observation time.
+      The original supplementary calculation checked whether already-observed
+      cases had a first affected release at least ninety days before the September
+      4 cutoff. All fourteen observed cases did. That check does not give every
+      release equal time to produce a report and cannot reveal unreported cases.
+      Releases late in the window therefore remain right-truncated; the current
+      same-window result must not be read as a complete count of defects introduced
+      after adoption.
     </p>
 
     <h2>Reproduction and data availability</h2>
     <p>
-      The <a href="/quality/2026/data.json">machine-readable evidence manifest</a>
+      The{" "}<a href="/quality/2026/data.json">machine-readable evidence manifest</a>{" "}
       contains the hypothesis, exact windows, intervention commit, all nineteen
-      candidate dispositions, all fourteen case histories, the process incident,
-      activity measurements, source URLs, and feature chronology. The repository’s
+      dispositions and fourteen case histories from the 2025–2026 record-level
+      review, aggregate historical extensions, the process incident, activity
+      measurements, source URLs, and feature chronology. The repository’s
       offline verifier checks window membership, totals, deduplication, source
-      completeness, maturity, pull-request author sums, historical-baseline inputs,
+      completeness within the published ledger, pull-request author sums,
+      historical-baseline inputs,
       and checked-in churn totals without depending on a live search result. The
       churn snapshot command can regenerate the Git-derived activity table from
       local history.
@@ -233,13 +239,15 @@ import { auditEvidence } from "../../../data/quality-2026";
       <li>Commit counts and churn depend on merge strategy, generated files, formatting, and repository reorganization; lines changed are not engineering effort.</li>
       <li>The package reorganization changed the coverage denominator, so the public percentages do not describe an identical set of files.</li>
       <li>The absence of an observed post-adoption defect introduction does not prove that none exists.</li>
+      <li>The same-window rule gives late releases less time to produce an eligible report; the current maturity check does not repair that right truncation.</li>
     </ul>
     <p>
       The audit was conducted and written by Counterfact’s maintainer, who adopted
       and benefits from coding-agent workflows. Coding agents assisted with the
       repository work. Source links, explicit exclusions, checked calculations, and
-      the complete candidate ledger are provided so readers can challenge the
-      author’s decisions directly.
+      the complete 2025–2026 candidate ledger are provided so readers can
+      challenge those decisions directly. The historical aggregate extension is
+      labeled separately until its record-level evidence is published.
     </p>
   </article>
 </QualityLayout>

@@ -67,6 +67,22 @@ function validateManifestUnchecked(manifest) {
   const errors = [];
   if (manifest.schemaVersion !== 2)
     errors.push(`unsupported schema version: ${manifest.schemaVersion}`);
+  if (manifest.analysis?.coverageMetric !== "branch") {
+    errors.push("analysis coverage metric must be branch");
+  }
+  if (
+    !manifest.study?.primaryOutcomes?.some((outcome) =>
+      outcome.includes("reported branch coverage"),
+    )
+  ) {
+    errors.push("primary outcomes must declare reported branch coverage");
+  }
+  if (
+    manifest.analysis?.coverageComparability?.["2025"] !==
+    "not_comparable_mixed_sources"
+  ) {
+    errors.push("2025 coverage pair must be marked not comparable");
+  }
 
   const ids = new Set();
   for (const item of manifest.productCases) {

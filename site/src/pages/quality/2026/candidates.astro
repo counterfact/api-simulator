@@ -19,7 +19,7 @@ const cohorts = ([2025, 2026] as const).map((year) => ({
 
 <QualityLayout
   title="Candidate disposition ledger — Counterfact quality study"
-  description="Every issue and pull request reviewed for the Counterfact quality study, including its inclusion decision and rationale."
+  description="Every issue and pull request in the record-level 2025–2026 quality review, including its inclusion decision and rationale."
   canonicalPath="/quality/2026/candidates"
   active="candidates"
 >
@@ -28,10 +28,11 @@ const cohorts = ([2025, 2026] as const).map((year) => ({
       <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Candidate disposition ledger</p>
       <h1>Candidate disposition ledger</h1>
       <p>
-        This appendix lists all 19 records that reached manual review. No
-        exclusion is hidden behind a summary count. The title, reporter, date,
-        source, decision, and rationale come from the same evidence manifest
-        used to calculate the article’s results.
+        This appendix lists all 19 records in the original record-level 2025–2026
+        review. No exclusion in that review is hidden behind a summary count. The
+        2022–2024 extension currently publishes aggregate census results rather
+        than candidate-by-candidate dispositions; that evidence gap is disclosed
+        in the article and methods.
       </p>
     </header>
 
@@ -106,7 +107,7 @@ const cohorts = ([2025, 2026] as const).map((year) => ({
     <footer class="appendix-notes quality-reading quality-prose">
       <h2>Review the source data</h2>
       <p>
-        Download the <a href="/quality/2026/data.json">complete underlying dataset</a>{" "}
+        Download the <a href="/quality/2026/data.json">published underlying dataset</a>{" "}
         to inspect the precise timestamps, source links, classifications, and
         calculation inputs. The <a href="/quality/2026/methodology">methods appendix</a>{" "}
         publishes the population and deduplication rules used for these decisions.

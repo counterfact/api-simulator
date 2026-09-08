@@ -17,7 +17,7 @@ const gitBaseline = Object.fromEntries(
 ---
 
 <QualityLayout
-  title="Did AI-assisted development change Counterfact’s software quality?"
+  title="What happened to Counterfact’s quality indicators after adopting agentic coding?"
   description="A source-linked, retrospective study of Counterfact’s quality before and after coding agents entered the development workflow."
   canonicalPath="/quality/2026"
   active="article"
@@ -30,31 +30,32 @@ const gitBaseline = Object.fromEntries(
         worsening the rate of newly introduced externally reported defects,
         report-to-release time, or automated test coverage.
       </p>
-      <h1>Did AI-assisted development change Counterfact’s software quality?</h1>
-      <p class="article-byline">Patrick McElhaney via Codex · September 4, 2026</p>
+      <h1>What happened to Counterfact’s quality indicators after adopting agentic coding?</h1>
+      <p class="article-byline">
+        Patrick McElhaney via Codex · Published September 4, 2026 · Updated
+        September 8, 2026 · Analysis v{auditEvidence.analysis.version}
+      </p>
       <p class="article-lede">
         <a href="https://github.com/counterfact/api-simulator">Counterfact</a> is
         a TypeScript tool that turns an OpenAPI description into a live, stateful
         mock API. On March 10, 2026, I began merging work authored by coding
-        agents into the project. I wanted to answer a simple question: has
-        quality increased, decreased, or stayed the same since I started using
-        AI?
+        agents into the project. I wanted to understand what happened to the
+        project’s observable quality indicators as that workflow became a major
+        part of delivery.
       </p>
       <section class="abstract" aria-labelledby="abstract-heading">
         <h2 id="abstract-heading">Abstract</h2>
         <p>
-          On the measures available, quality increased. The audit found no
-          externally reported product defect whose first affected release entered
-          the post-adoption window. In the matched 2026 period, 36 test files and
-          634 explicit test declarations were added, compared with additions of
-          0, 6, and 1 files and 10, 48, and 6 declarations in the complete
-          2023–2025 historical cohorts. Public branch coverage moved from 89.344%
-          to 89.415% (+0.071 percentage points), while the two earlier complete
-          branch-coverage intervals declined by 2.686 and 0.827 points; 2022
-          lacks a start observation. Non-dependency delivery reached 281
-          merged pull requests, above the 15–75 range in 2022–2025. These
-          observations are not a causal estimate. They do not establish that AI
-          produced the improvement, and they do not measure unreported defects.
+          Delivery and test inventory increased substantially after adoption.
+          The audit observed no product defect whose first affected release and
+          external report both entered the post-adoption window. In the matched
+          2026 period, 36 test files and 634 explicit test declarations were
+          added, public branch coverage remained approximately stable, and
+          non-dependency delivery reached 281 merged pull requests, above the
+          15–75 range in 2022–2025. Observed external reports also reached a
+          corrected release faster. The retrospective design, same-window report
+          rule, and incomplete visibility into defects do not establish an
+          overall quality increase or an AI effect.
         </p>
       </section>
     </header>
@@ -104,8 +105,11 @@ const gitBaseline = Object.fromEntries(
         <p>
           The complete rules, exact timestamps, queries, and evidence standards
           are in <a href="/quality/2026/methodology">the methods appendix</a>.
-          Every reviewed record is listed in{" "}
+          Every record in the original 2025–2026 review is listed in{" "}
           <a href="/quality/2026/candidates">the candidate disposition ledger</a>.
+          The 2022–2024 extensions currently publish aggregate census results and
+          source links for the within-window introductions, not a record-level
+          disposition ledger.
         </p>
       </section>
     </div>
@@ -135,11 +139,11 @@ const gitBaseline = Object.fromEntries(
               {matchedWindowCohorts.map((cohort) => <td>{cohort.totalReports}</td>)}
             </tr>
             <tr>
-              <th scope="row">First affected release entered during window</th>
+              <th scope="row">First affected release and external report both entered during window</th>
               {matchedWindowCohorts.map((cohort) => <td>{cohort.introduced}</td>)}
             </tr>
             <tr>
-              <th scope="row">Introduced defects per 100 non-dependency merges</th>
+              <th scope="row">Same-window cases per 100 non-dependency merges</th>
               {matchedWindowCohorts.map((cohort) => (
                 <td>{((cohort.introduced / cohort.nonDependencyMerges) * 100).toFixed(2)}</td>
               ))}
@@ -162,9 +166,9 @@ const gitBaseline = Object.fromEntries(
         </table>
       </div>
       <p class="figure-note">
-        “Introduced” is dated by the first affected public release, not the date a
-        user discovered the defect. Dependency-only pull requests are excluded
-        from the delivery denominator.
+        A same-window case has both its first affected public release and its
+        external report inside the window. Dependency-only pull requests are
+        excluded from the delivery denominator.
       </p>
     </section>
 
@@ -230,10 +234,11 @@ const gitBaseline = Object.fromEntries(
                 <td>{cohort.testFiles}</td>
                 <td>{cohort.testDeclarations}</td>
                 <td>
-                  {cohort.branchCoverageStart
-                    ? <><a href={cohort.branchCoverageStart.source}>{cohort.branchCoverageStart.branchCoveragePercent.toFixed(3)}%</a>{cohort.branchCoverageStart.footnoteMarker && <sup aria-label="See table footnote">{cohort.branchCoverageStart.footnoteMarker}</sup>} → </>
-                    : "Not available → "}
-                  <a href={cohort.branchCoverageEnd.source}>{cohort.branchCoverageEnd.branchCoveragePercent.toFixed(3)}%</a>
+                  {cohort.coverageComparisonStatus === "not_comparable"
+                    ? <><a href={cohort.branchCoverageStart!.source}>{cohort.branchCoverageStart!.branchCoveragePercent.toFixed(3)}%</a> and <a href={cohort.branchCoverageEnd.source}>{cohort.branchCoverageEnd.branchCoveragePercent.toFixed(3)}%</a><span class="cell-detail">Not comparable: local recomputation and Coveralls observation.</span></>
+                    : <>{cohort.branchCoverageStart
+                      ? <><a href={cohort.branchCoverageStart.source}>{cohort.branchCoverageStart.branchCoveragePercent.toFixed(3)}%</a> → </>
+                      : "Not available → "}<a href={cohort.branchCoverageEnd.source}>{cohort.branchCoverageEnd.branchCoveragePercent.toFixed(3)}%</a></>}
                 </td>
               </tr>
             ))}
@@ -241,9 +246,10 @@ const gitBaseline = Object.fromEntries(
         </table>
       </div>
       <p class="figure-note">
-        <sup>*</sup> Locally recomputed at the exact March start commit. It is not
-        a Coveralls build; the unchanged historical suite had one failing
-        response-builder assertion.
+        The 2025 start value was locally recomputed at the exact March commit,
+        while the end value is a Coveralls observation. The unchanged historical
+        suite had one failing response-builder assertion, so no coverage delta is
+        inferred from that pair.
       </p>
       <p class="figure-note">
         The 2026 package reorganization changed the coverage denominator, so the
@@ -267,13 +273,14 @@ const gitBaseline = Object.fromEntries(
           {historicalBaseline["Test declarations added"].displayActual}, respectively.
         </p>
         <p>
-          Pooling 2022–2025 produces four qualifying within-window introductions
-          across 203 non-dependency merges. Applying that 1.97-per-100 historical
-          rate to the 281 observed 2026 merges gives a 5.54 exposure-scaled
-          expected-value benchmark; the observed count was zero. This is a
-          post-hoc descriptive comparison, not a prospective prediction, a
-          significance test, evidence that AI prevented 5.54 defects, or a causal
-          estimate.
+          The pre-AI cohorts contain four observed defects whose first affected
+          release and external report both entered their matched windows, across
+          203 non-dependency merges. The post-adoption cohort contains zero across
+          281 merges under the same rule. Because pull requests are unequal risk
+          units and late-window releases have less time to produce a report, this
+          is descriptive context rather than a prediction, significance test, or
+          causal counterfactual. The supplementary data retains the arithmetic
+          exposure-scaling exercise and its assumptions.
         </p>
         <p>
           Git activity supplies additional workload context: the 2023–2025 median
@@ -304,12 +311,12 @@ const gitBaseline = Object.fromEntries(
       <section aria-labelledby="discussion-heading">
         <h2 id="discussion-heading">Discussion</h2>
         <p>
-          The observed combination is consistent with quality increasing while
-          output increased: no post-adoption first-affected release appears in the
-          external defect cohort, corrections shipped faster, and automated
-          verification became broader and deeper. That is enough to reject the
-          simple claim that greater use of coding agents necessarily reduced
-          Counterfact’s quality during this period.
+          The observed combination is favorable but measure-specific. Delivery
+          and test inventory increased, public branch coverage remained
+          approximately stable, no same-window externally reported introduction
+          was observed, and observed corrections shipped faster. Test counts do
+          not establish test effectiveness, and the defect population does not
+          establish the absence of defects introduced late in the window.
         </p>
         <p>
           It is not enough to identify the cause. Testing, explicit architecture,
@@ -331,37 +338,39 @@ const gitBaseline = Object.fromEntries(
           <li>The pooled historical defect-rate benchmark rests on only four introduced reports, while commit and churn counts are strongly workflow-dependent.</li>
           <li>Coverage increased across a codebase reorganized into multiple packages, so the before and after denominators are not identical.</li>
           <li>The hypothesis was formulated retrospectively and the audit was performed by the project maintainer, who uses and benefits from agentic coding tools.</li>
-          <li>Zero observed post-adoption defect introductions is not proof that no such defect exists.</li>
+          <li>Zero observed post-adoption same-window cases is not proof that no such defect exists.</li>
         </ul>
       </section>
 
       <section aria-labelledby="conclusion-heading">
         <h2 id="conclusion-heading">Conclusion</h2>
         <p>
-          The most defensible directional answer is <strong>quality increased on
-          the measures available</strong>. Counterfact shipped substantially more
-          non-dependency work, resolved external reports faster, and expanded its
-          automated verification without an observed externally reported defect
-          introduced by a post-adoption release. The study does not show that AI
-          caused those changes. It shows that, in this repository and period, the
-          feared quality decline is not present in the evidence examined.
+          Counterfact shipped substantially more non-dependency work, expanded
+          its test inventory, maintained approximately stable reported branch
+          coverage, and resolved the observed external reports faster. Under the
+          audit’s current same-window rule, no observed defect was both first
+          released and externally reported after adoption. These observations do
+          not establish an overall quality increase, exclude late or unreported
+          defects, or identify AI as the cause.
         </p>
       </section>
 
       <section aria-labelledby="data-heading">
         <h2 id="data-heading">Data availability and peer review</h2>
         <p>
-          The complete evidence is public. Readers can inspect every candidate
-          decision, every included case, the source and release chronology behind
-          each classification, and the exact machine-readable data used for the
-          calculations.
+          The record-level 2025–2026 evidence is public. Readers can inspect every
+          candidate decision in that review, every included case, the source and
+          release chronology behind each classification, and the exact
+          machine-readable inputs used for the calculations. The 2022–2024
+          historical extension is currently available as checked aggregate data
+          with source links for its within-window introductions.
         </p>
         <ol class="reference-list">
           <li><a href="/quality/2026/candidates">Candidate disposition ledger</a></li>
           <li><a href="/quality/2026/cases">Defect case appendix</a></li>
           <li><a href="/quality/2026/methodology">Methods and reproducibility appendix</a></li>
           <li><a href="/quality/2026/context">Supplementary delivery and product context</a></li>
-          <li><a href="/quality/2026/data.json">Download the complete underlying dataset (JSON)</a></li>
+          <li><a href="/quality/2026/data.json">Download the published underlying dataset (JSON)</a></li>
           <li><a href="/quality/2026/feedback">Feedback and review</a></li>
         </ol>
       </section>

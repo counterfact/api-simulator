@@ -260,6 +260,7 @@ const verificationCohort = (
   branchCoverageEnd: BranchCoverageSnapshot,
   note?: string,
   firstReachableCommit?: string,
+  coverageComparisonStatus: "comparable" | "not_estimable" | "not_comparable" | "changing_source_set" = "comparable",
 ) => ({
   year,
   testFiles: start
@@ -272,6 +273,7 @@ const verificationCohort = (
   branchCoverageEnd,
   note,
   firstReachableCommit,
+  coverageComparisonStatus,
 });
 
 export const verificationCohorts = [
@@ -287,6 +289,7 @@ export const verificationCohorts = [
     },
     "The March start snapshot is unavailable because main-reachable history begins after the boundary.",
     comparison2022Snapshots.firstReachableCommit,
+    "not_estimable",
   ),
   verificationCohort(
     2023,
@@ -336,6 +339,9 @@ export const verificationCohorts = [
         evidence.activity.supplementalFullWindow.coverage["2025"]
           .branchCoverageSource,
     },
+    undefined,
+    undefined,
+    "not_comparable",
   ),
   verificationCohort(
     2026,
@@ -349,6 +355,9 @@ export const verificationCohorts = [
       branchCoveragePercent: snapshots.endOfObservation.branchCoveragePercent,
       source: snapshots.endOfObservation.branchCoverageSource,
     },
+    undefined,
+    undefined,
+    "changing_source_set",
   ),
 ];
 

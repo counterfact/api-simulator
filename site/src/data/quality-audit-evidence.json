@@ -2,6 +2,19 @@
   "schemaVersion": 2,
   "generatedForCommit": "77f0bc6fd2c3bc935d2eb2da80190369d91f7084",
   "observedAt": "2026-09-03T18:00:00Z",
+  "analysis": {
+    "version": "2.1",
+    "publishedOn": "2026-09-04",
+    "updatedOn": "2026-09-08",
+    "coverageMetric": "branch",
+    "coverageComparability": {
+      "2022": "not_estimable",
+      "2023": "comparable_coveralls_pair",
+      "2024": "comparable_coveralls_pair",
+      "2025": "not_comparable_mixed_sources",
+      "2026": "changing_source_set"
+    }
+  },
   "study": {
     "hypothesis": "After agent-authored code first entered Counterfact's main branch, development output would increase without worsening the rate of newly introduced externally reported defects, report-to-release time, or automated test coverage.",
     "design": "Retrospective observational self-audit; the hypothesis was formulated after the observation period and was not preregistered.",
@@ -50,7 +63,7 @@
     "primaryOutcomes": [
       "Externally reported product defects introduced during the comparison window per 100 non-dependency merged pull requests.",
       "Median calendar days from qualifying report to first public release containing the correction.",
-      "Automated test-file count, explicit test declarations, and reported line coverage at the pre-adoption and end-of-observation snapshots."
+      "Automated test-file count, explicit test declarations, and reported branch coverage at the pre-adoption and end-of-observation snapshots."
     ],
     "retrospectiveComparison": {
       "constructedAfterObservation": true,

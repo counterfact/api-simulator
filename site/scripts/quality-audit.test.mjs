@@ -452,6 +452,15 @@ test("candidate ledger exposes every reviewed disposition", () => {
   assert.deepEqual(validateManifest(manifest), []);
 });
 
+test("manifest declares branch coverage and the mixed 2025 pair", () => {
+  assert.equal(manifest.analysis.coverageMetric, "branch");
+  assert.equal(
+    manifest.analysis.coverageComparability["2025"],
+    "not_comparable_mixed_sources",
+  );
+  assert.match(manifest.study.primaryOutcomes[2], /reported branch coverage/);
+});
+
 test("validateManifest catches incomplete evidence relationships", () => {
   const manifest = {
     schemaVersion: 2,
