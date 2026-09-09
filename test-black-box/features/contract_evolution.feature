@@ -9,6 +9,8 @@ Feature: Evolve a contract without stale behavior
     Then the external schema drives generated types and a deterministic response
     And the last overlay update wins
     And the overlay-removed route has no generated artifact
+    When I change a response example in the final overlay
+    Then the live server returns the changed overlay example
     When I change an existing response example in the source contract
     Then the live server returns the changed example
     When I remove the obsolete operation and regenerate with prune

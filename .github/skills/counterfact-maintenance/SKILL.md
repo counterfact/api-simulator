@@ -47,6 +47,10 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
   focused unit tests, and ephemeral-port integration tests aligned. Define and
   test precedence whenever two builder methods compete for the same HTTP
   request entity.
+- When a status check is required by a merge-queue ruleset, configure its workflow to run on `merge_group` with `checks_requested`; a `pull_request`-only workflow leaves the queue's synthetic commit without that check and eventually times out.
+- When a pull-request workflow's decision depends on labels, include `labeled` and `unlabeled` activity types so a label change refreshes the required status rather than leaving a stale result.
+- For public repository-history audits, record classification confidence separately from chronology confidence. Use an exact origin only when the introducing change is demonstrated; otherwise publish the earliest confirmed affected bound and label it as a bound.
+- Keep audit windows, population rules, candidate dispositions, deduplication rules, immutable source identifiers, and derived totals in a checked-in manifest with an offline consistency check. Do not make a headline denominator depend only on hand-maintained page copy or a live search URL.
 
 ## Black-box test boundary
 
@@ -119,6 +123,7 @@ Keep that operating-system skip scoped to the real-terminal scenario so non-inte
 - Breaking backward compatibility unintentionally (CLI defaults, regeneration guarantees, response semantics).
 - Relying only on broad tests; skip targeted tests for touched areas.
 - Writing task-specific "decision logs" without turning repeatable lessons into durable instructions.
+- Presenting a source-preserving refactor as a defect's origin, or silently omitting standalone external defect pull requests from a report population.
 
 ## Embedding learnings into guidance
 
@@ -132,4 +137,3 @@ Keep that operating-system skip scoped to the real-terminal scenario so non-inte
 - Run targeted tests for touched modules before full test run.
 - If server startup or CLI behavior changed, run `yarn build` then `yarn test:black-box`.
 - For black-box changes, run the boundary searches above and resolve or explicitly reclassify every finding in the touched scope.
-- Ensure PR notes include manual acceptance tests with observable outcomes.

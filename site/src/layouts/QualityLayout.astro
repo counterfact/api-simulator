@@ -1,0 +1,81 @@
+---
+import MainLayout from "./MainLayout.astro";
+import "../styles/quality.css";
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  active?: "article" | "cases" | "candidates" | "context" | "feedback" | "methodology";
+}
+
+const { title, description, canonicalPath, active } = Astro.props;
+
+const navItems = [
+  { key: "article", label: "Article", href: "/quality/2026" },
+  {
+    key: "methodology",
+    label: "Methods",
+    href: "/quality/2026/methodology",
+  },
+  {
+    key: "candidates",
+    label: "Candidate ledger",
+    href: "/quality/2026/candidates",
+  },
+  { key: "cases", label: "Defect cases", href: "/quality/2026/cases" },
+  {
+    key: "context",
+    label: "Supplementary data",
+    href: "/quality/2026/context",
+  },
+  {
+    key: "feedback",
+    label: "Feedback and review",
+    href: "/quality/2026/feedback",
+  },
+] as const;
+---
+
+<MainLayout title={title} description={description} canonicalPath={canonicalPath}>
+  <header class="quality-header">
+    <div class="quality-reading quality-header-main">
+      <a class="quality-brand" href="/" aria-label="Counterfact home">
+        <img src="/counterfact.svg" alt="Counterfact" width="180" height="31" />
+      </a>
+    </div>
+    <nav class="quality-nav" aria-label="Quality audit navigation">
+      <div class="quality-reading quality-nav-inner">
+        {
+          navItems.map((item) => (
+            <a
+              href={item.href}
+              aria-current={active === item.key ? "page" : undefined}
+            >
+              {item.label}
+            </a>
+          ))
+        }
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <slot />
+  </main>
+
+  <footer class="quality-footer">
+    <div class="quality-reading quality-footer-inner">
+      <p>
+        A retrospective, source-linked study of Counterfact’s software quality
+        before and after agentic coding entered the project workflow.
+      </p>
+      <div>
+        <a href="/">Counterfact home</a>
+        <a href="/docs/getting-started">Documentation</a>
+        <a href="/quality/2026/data.json">Underlying data</a>
+        <a href="https://github.com/counterfact/api-simulator">GitHub</a>
+      </div>
+    </div>
+  </footer>
+</MainLayout>

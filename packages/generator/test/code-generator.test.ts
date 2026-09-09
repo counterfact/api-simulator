@@ -101,7 +101,7 @@ describe("a CodeGenerator", () => {
         { routes: true, types: true },
       );
 
-      const changed = { ...OPENAPI };
+      const changed = structuredClone(OPENAPI);
 
       changed.components.schemas.Example.type = "integer";
 
@@ -150,6 +150,37 @@ describe("a CodeGenerator", () => {
     });
   });
 
+  it("watches a local relative path that begins with 'http'", async () => {
+    await usingTemporaryFiles(async ({ add, path, read }) => {
+      await add("httpspec.json", JSON.stringify(OPENAPI));
+      const originalWorkingDirectory = process.cwd();
+      process.chdir(path("."));
+
+      try {
+        const generator = new CodeGenerator("httpspec.json", path("./out"), {
+          routes: true,
+          types: true,
+        });
+        const changed = structuredClone(OPENAPI);
+        changed.components.schemas.Example.type = "integer";
+
+        await generator.watch();
+        await add("httpspec.json", JSON.stringify(changed));
+        await waitForEvent(generator, "generate");
+
+        const exampleComponent = await read(
+          "./out/types/components/schemas/Example.ts",
+        );
+
+        await generator.stopWatching();
+
+        expect(exampleComponent).toContain("export type Example = number;\n");
+      } finally {
+        process.chdir(originalWorkingDirectory);
+      }
+    });
+  });
+
   it("does not update the code when the spec changes if watch is false", async () => {
     await usingTemporaryFiles(async ({ add, path, read }) => {
       await add("openapi.json", JSON.stringify(OPENAPI));
@@ -160,7 +191,7 @@ describe("a CodeGenerator", () => {
         { routes: true, types: false },
       );
 
-      const changed = { ...OPENAPI };
+      const changed = structuredClone(OPENAPI);
 
       changed.components.schemas.Example.type = "integer";
 

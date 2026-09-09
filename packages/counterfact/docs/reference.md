@@ -262,6 +262,13 @@ Store reloads update prototype methods and add new enumerable fields without
 overwriting existing state. A broken or deleted store source leaves the last
 good live object in place.
 
+When OpenAPI watching is enabled, Counterfact also watches every local input
+that contributes to the composed contract: the base document and each local
+overlay. Saving any of them reloads the complete base-plus-overlay document and
+regenerates the enabled artifacts. HTTP(S) inputs are loaded at startup but are
+not watched; a local overlay remains watchable even when the base document is
+remote.
+
 No restart required.
 
 ---
@@ -445,6 +452,10 @@ Pass `--overlay` one or more times. Overlays are applied in the order they appea
 ```bash
 npx counterfact@latest openapi.yaml ./out --overlay base-overlay.yaml --overlay env-overlay.yaml
 ```
+
+With `--watch`, changes to any local overlay reapply the complete ordered
+overlay chain and update the running server. Remote HTTP(S) overlays are not
+polled or watched.
 
 ### Programmatic usage
 

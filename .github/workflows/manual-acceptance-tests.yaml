@@ -29,7 +29,9 @@ name: Manual acceptance tests
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+  merge_group:
+    types: [checks_requested]
 
 jobs:
   manual-acceptance-tests:
@@ -37,8 +39,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Skip pull-request validation for a merge group
+        if: github.event_name == 'merge_group'
+        run: echo "Skipping manual acceptance test validation for a merge-group commit; the pull request was validated before queue admission."
+
       - name: Decide whether to enforce
         id: decide
+        if: github.event_name == 'pull_request'
         env:
           PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           PR_BODY: ${{ github.event.pull_request.body }}
@@ -65,7 +72,7 @@ jobs:
         run: echo "Skipping manual acceptance test validation (design PR, not a Copilot PR, or no section present)"
 
       - name: Validate PR body
-        if: steps.decide.outputs.enforce == 'true'
+        if: github.event_name == 'pull_request' && steps.decide.outputs.enforce == 'true'
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |

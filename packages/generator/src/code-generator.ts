@@ -5,6 +5,7 @@ import nodePath from "node:path";
 
 import { type FSWatcher, watch } from "chokidar";
 import createDebug from "debug";
+import { getLocalOpenApiSourcePaths } from "@counterfact/openapi";
 
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
 import { OperationCoder } from "./operation-coder.js";
@@ -247,9 +248,10 @@ export class CodeGenerator extends EventTarget {
    * Resolves once the watcher is ready.
    */
   public async watch() {
-    const watchablePaths = this.openapiPath.startsWith("http")
-      ? [...this.overlays]
-      : [this.openapiPath, ...this.overlays];
+    const watchablePaths = getLocalOpenApiSourcePaths([
+      this.openapiPath,
+      ...this.overlays,
+    ]);
 
     if (watchablePaths.length === 0) {
       return;

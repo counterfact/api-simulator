@@ -10,4 +10,9 @@ export {
   loadOpenApiDocument,
   type OpenApiDocument,
 } from "./load-openapi-document.js";
+export {
+  classifyOpenApiSource,
+  getLocalOpenApiSourcePaths,
+  type OpenApiSource,
+} from "./openapi-source.js";
 export { readFile } from "./read-file.js";
