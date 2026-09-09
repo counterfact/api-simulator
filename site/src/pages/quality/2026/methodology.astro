@@ -85,23 +85,25 @@ import { auditEvidence } from "../../../data/quality-2026";
       included product defects, three exclusions, one deduplicated pull request,
       and one process-quality incident. Each disposition appears in the
       <a href="/quality/2026/candidates">candidate ledger</a> with its rationale and
-      primary source. The 2022–2024 extensions currently retain aggregate census
-      totals and source links for the four within-window introductions rather
-      than a complete record-level ledger.
+      primary source. The <a href="/quality/2026/historical-candidates">2022–2024 ledger</a>{" "}
+      publishes all 567 records returned by the historical census, including
+      author association, disposition, rationale, and review method.
     </p>
 
     <h2>Primary outcomes</h2>
     <ol>
       <li>
-        <strong>Defects both introduced and externally reported within the window.</strong>{" "}
-        A case qualifies when its first confirmed affected public release and
-        external report both entered the window. Non-dependency merges provide
-        descriptive exposure context; they are not equal risk units.
+        <strong>Ninety-day mature defect count.</strong>{" "}
+        Releases enter from March 10 at 16:38:20 UTC through June 6 at 00:00 UTC.
+        Each receives exactly ninety days for a qualifying external report to
+        arrive. The raw event count is primary; per-release and per-PR rates are
+        sensitivity analyses because those units carry unequal risk.
       </li>
       <li>
-        <strong>Report-to-release time.</strong> Calendar days from the external
-        report to the first public release containing the accepted correction,
-        summarized by the median to reduce sensitivity to long-lived outliers.
+        <strong>Report-to-release time.</strong> Reports enter through June 6 and
+        are followed for exactly ninety days. Time to the first public corrected
+        release is summarized with Kaplan–Meier estimation; unresolved reports
+        are administratively censored rather than treated as resolved or dropped.
       </li>
       <li>
         <strong>Automated verification.</strong> JavaScript and TypeScript files
@@ -143,8 +145,8 @@ import { auditEvidence } from "../../../data/quality-2026";
       were known. For ordinary measures it reports the median and minimum–maximum
       range of every complete comparable pre-AI cohort. The range describes the
       small observed sample; it is not a confidence or prediction interval. The
-      response-time figure is a median of cohort medians because individual
-      historical report intervals are not all stored in the manifest.
+      mature-cohort response analysis uses the checked-in individual event and
+      censoring records rather than a median of aggregate medians.
     </p>
     <p>
       The supplementary appendix keeps a mechanical comparison that pools
@@ -195,15 +197,14 @@ import { auditEvidence } from "../../../data/quality-2026";
       history and release chronology used for its classification.
     </p>
 
-    <h2>Current maturity limitation</h2>
+    <h2>Ninety-day maturity design</h2>
     <p>
-      The original supplementary calculation checked whether already-observed
-      cases had a first affected release at least ninety days before the September
-      4 cutoff. All fourteen observed cases did. That check does not give every
-      release equal time to produce a report and cannot reveal unreported cases.
-      Releases late in the window therefore remain right-truncated; the current
-      same-window result must not be read as a complete count of defects introduced
-      after adoption.
+      The primary analysis closes release and report intake on June 6, exactly
+      ninety days before the September 4 observation boundary. This removes the
+      unequal follow-up caused by admitting late-window releases. It does not
+      reveal silently abandoned use or defects reported after ninety days, so the
+      event count remains an observed-report measure rather than a complete defect
+      count.
     </p>
 
     <h2>Reproduction and data availability</h2>
@@ -211,7 +212,7 @@ import { auditEvidence } from "../../../data/quality-2026";
       The{" "}<a href="/quality/2026/data.json">machine-readable evidence manifest</a>{" "}
       contains the hypothesis, exact windows, intervention commit, all nineteen
       dispositions and fourteen case histories from the 2025–2026 record-level
-      review, aggregate historical extensions, the process incident, activity
+      review, all 567 historical dispositions, the process incident, activity
       measurements, source URLs, and feature chronology. The repository’s
       offline verifier checks window membership, totals, deduplication, source
       completeness within the published ledger, pull-request author sums,
@@ -239,15 +240,14 @@ import { auditEvidence } from "../../../data/quality-2026";
       <li>Commit counts and churn depend on merge strategy, generated files, formatting, and repository reorganization; lines changed are not engineering effort.</li>
       <li>The package reorganization changed the coverage denominator, so the public percentages do not describe an identical set of files.</li>
       <li>The absence of an observed post-adoption defect introduction does not prove that none exists.</li>
-      <li>The same-window rule gives late releases less time to produce an eligible report; the current maturity check does not repair that right truncation.</li>
+      <li>The 90-day rule equalizes follow-up but cannot capture reports that arrive later or defects that are never reported.</li>
     </ul>
     <p>
       The audit was conducted and written by Counterfact’s maintainer, who adopted
       and benefits from coding-agent workflows. Coding agents assisted with the
       repository work. Source links, explicit exclusions, checked calculations, and
-      the complete 2025–2026 candidate ledger are provided so readers can
-      challenge those decisions directly. The historical aggregate extension is
-      labeled separately until its record-level evidence is published.
+      both complete candidate ledgers are provided so readers can challenge those
+      decisions directly. This is author review, not independent adjudication.
     </p>
   </article>
 </QualityLayout>

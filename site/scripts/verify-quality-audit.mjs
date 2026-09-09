@@ -12,10 +12,23 @@ import {
 const manifestPath = fileURLToPath(
   new URL("../src/data/quality-audit-evidence.json", import.meta.url),
 );
-const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+const historicalCandidatesPath = fileURLToPath(
+  new URL("../src/data/quality-historical-candidates.json", import.meta.url),
+);
+const manifest = {
+  ...JSON.parse(await readFile(manifestPath, "utf8")),
+  historicalCandidates: JSON.parse(
+    await readFile(historicalCandidatesPath, "utf8"),
+  ).records,
+};
 const errors = validateManifest(manifest);
 
 function printDiagnostics(manifest) {
+  for (const [year, cohort] of Object.entries(manifest.matureAnalysis.cohorts)) {
+    console.log(
+      `${year} mature cohort: ${cohort.events} event(s), ${cohort.publishedReleases} release(s), ${cohort.nonDependencyMergedPullRequests} non-dependency merge(s), ${cohort.responseObservations.length} response observation(s).`,
+    );
+  }
   for (const year of [2025, 2026]) {
     const primaryWindow = manifest.study.primaryWindows[String(year)];
     const primaryCases = selectReportedCases(

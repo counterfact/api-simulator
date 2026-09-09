@@ -1,9 +1,9 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "generatedForCommit": "77f0bc6fd2c3bc935d2eb2da80190369d91f7084",
   "observedAt": "2026-09-03T18:00:00Z",
   "analysis": {
-    "version": "2.1",
+    "version": "3.0",
     "publishedOn": "2026-09-04",
     "updatedOn": "2026-09-08",
     "coverageMetric": "branch",
@@ -36,6 +36,12 @@
         "endExclusive": "2026-09-04T00:00:00Z"
       }
     },
+    "matureWindows": {
+      "definition": "Releases and external reports enter from the cohort start through June 6 at 00:00 UTC; every included record is then followed for exactly 90 days through September 4 at 00:00 UTC.",
+      "releaseAndReportEndExclusive": "06-06T00:00:00Z",
+      "followUpDays": 90,
+      "followUpEndExclusive": "09-04T00:00:00Z"
+    },
     "historicalWindows": {
       "2022": {
         "start": "2022-03-10T16:38:20Z",
@@ -61,8 +67,8 @@
       }
     },
     "primaryOutcomes": [
-      "Product-defect cases whose external report and first affected public release both entered the comparison window per 100 non-dependency merged pull requests.",
-      "Median calendar days from qualifying report to first public release containing the correction.",
+      "Raw count of externally reported product defects first released by June 6 and reported within 90 days; rate denominators are sensitivity analyses.",
+      "Kaplan-Meier time to first public corrected release for reports entering by June 6, administratively censored at 90 days.",
       "Automated test-file count, explicit test declarations, and reported branch coverage at the pre-adoption and end-of-observation snapshots."
     ],
     "retrospectiveComparison": {
@@ -74,6 +80,84 @@
     }
   },
   "maturityDays": 90,
+  "matureAnalysis": {
+    "primaryMeasure": "raw event count",
+    "rateMeasures": "sensitivity analyses only",
+    "startupSensitivityYear": 2022,
+    "primaryHistoricalYears": [2023, 2024, 2025],
+    "cohorts": {
+      "2022": {
+        "releaseWindowStart": "2022-03-10T16:38:20Z",
+        "releaseWindowEndExclusive": "2022-06-06T00:00:00Z",
+        "followUpEndExclusive": "2022-09-04T00:00:00Z",
+        "events": 0,
+        "publishedReleases": 0,
+        "sourceBearingReleases": 0,
+        "nonDependencyMergedPullRequests": 0,
+        "rateStatus": "not_estimable_startup_cohort",
+        "responseObservations": []
+      },
+      "2023": {
+        "releaseWindowStart": "2023-03-10T16:38:20Z",
+        "releaseWindowEndExclusive": "2023-06-06T00:00:00Z",
+        "followUpEndExclusive": "2023-09-04T00:00:00Z",
+        "events": 0,
+        "publishedReleases": 3,
+        "sourceBearingReleases": 3,
+        "nonDependencyMergedPullRequests": 8,
+        "responseObservations": []
+      },
+      "2024": {
+        "releaseWindowStart": "2024-03-10T16:38:20Z",
+        "releaseWindowEndExclusive": "2024-06-06T00:00:00Z",
+        "followUpEndExclusive": "2024-09-04T00:00:00Z",
+        "events": 3,
+        "eventIds": ["issue-866", "issue-906", "issue-918"],
+        "publishedReleases": 19,
+        "sourceBearingReleases": 19,
+        "nonDependencyMergedPullRequests": 57,
+        "responseObservations": [
+          { "id": "issue-820", "days": 34, "event": true },
+          { "id": "issue-828", "days": 15, "event": true },
+          { "id": "issue-835", "days": 25, "event": true },
+          { "id": "issue-866", "days": 0, "event": true },
+          { "id": "issue-890", "days": 0, "event": true },
+          { "id": "issue-906", "days": 1, "event": true },
+          { "id": "issue-918", "days": 6, "event": true }
+        ]
+      },
+      "2025": {
+        "releaseWindowStart": "2025-03-10T16:38:20Z",
+        "releaseWindowEndExclusive": "2025-06-06T00:00:00Z",
+        "followUpEndExclusive": "2025-09-04T00:00:00Z",
+        "events": 0,
+        "publishedReleases": 2,
+        "sourceBearingReleases": 2,
+        "nonDependencyMergedPullRequests": 8,
+        "responseObservations": [
+          { "id": "issue-1244", "days": 90, "event": false }
+        ]
+      },
+      "2026": {
+        "releaseWindowStart": "2026-03-10T16:38:20Z",
+        "releaseWindowEndExclusive": "2026-06-06T00:00:00Z",
+        "followUpEndExclusive": "2026-09-04T00:00:00Z",
+        "events": 0,
+        "publishedReleases": 14,
+        "sourceBearingReleases": 14,
+        "nonDependencyMergedPullRequests": 235,
+        "responseObservations": [
+          { "id": "issue-1617", "days": 1, "event": true },
+          { "id": "issue-1618", "days": 1, "event": true },
+          { "id": "issue-1619", "days": 1, "event": true },
+          { "id": "issue-1842", "days": 1, "event": true },
+          { "id": "issue-1933", "days": 4, "event": true },
+          { "id": "issue-1971", "days": 5, "event": true },
+          { "id": "issue-2075", "days": 1, "event": true }
+        ]
+      }
+    }
+  },
   "populationRules": {
     "include": "Public issue or accepted standalone pull request opened in the window by a human external author and describing confirmed faulty product behavior.",
     "deduplicate": "A pull request linked to an included issue is evidence for that issue, not a second report.",
@@ -1079,19 +1163,20 @@
       "2023": {
         "reviewedIssues": 12,
         "reviewedPullRequests": 140,
-        "qualifyingExternalProductDefects": 5,
+        "qualifyingExternalProductDefects": 4,
         "introducedWithinWindow": 1,
-        "preExistingOrPreWindow": 4,
-        "medianResponseDays": 5,
+        "preExistingOrPreWindow": 3,
+        "medianResponseDays": 10,
         "introducedReports": [
           {
             "number": 491,
-            "title": "Quick Start broke generated TypeScript loading",
+            "title": "All requests return Error: not acceptable",
             "sourceUrl": "https://github.com/counterfact/api-simulator/issues/491",
             "firstAffectedRelease": "0.20.4",
             "firstAffectedCommit": "b69914f19fd8cd8a35ef4513a3b34d8c81718bb2"
           }
-        ]
+        ],
+        "note": "The record-level ledger corrects the prior aggregate of five: four eligible external issue reports remain after linked fixes and unmerged pull requests are deduplicated or excluded. The even-cohort response median is 10 days."
       },
       "2024": {
         "reviewedIssues": 36,

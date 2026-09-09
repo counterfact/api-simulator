@@ -3,7 +3,7 @@ import QualityLayout from "../../../layouts/QualityLayout.astro";
 import {
   auditEvidence,
   gitHistoricalBaselineRows,
-  matchedWindowCohorts,
+  primaryMatureCohorts,
   retrospectiveBaselineRows,
   verificationCohorts,
 } from "../../../data/quality-2026";
@@ -14,6 +14,15 @@ const historicalBaseline = Object.fromEntries(
 const gitBaseline = Object.fromEntries(
   gitHistoricalBaselineRows.map((row) => [row.label, row]),
 );
+const formatRate = (
+  rate: number | null,
+  interval: { lower: number; upper: number } | null,
+  scale = 1,
+) =>
+  rate === null || interval === null
+    ? "Not estimable"
+    : `${(rate * scale).toFixed(2)} (95% exact CI ${(interval.lower * scale).toFixed(2)}–${(interval.upper * scale).toFixed(2)})`;
+const mature2026 = primaryMatureCohorts.find((cohort) => cohort.year === 2026)!;
 ---
 
 <QualityLayout
@@ -53,12 +62,47 @@ const gitBaseline = Object.fromEntries(
           added, public branch coverage remained approximately stable, and
           non-dependency delivery reached 281 merged pull requests, above the
           15–75 range in 2022–2025. Observed external reports also reached a
-          corrected release faster. The retrospective design, same-window report
-          rule, and incomplete visibility into defects do not establish an
+          corrected release faster. The retrospective design, 90-day observation
+          boundary, and incomplete visibility into defects do not establish an
           overall quality increase or an AI effect.
         </p>
       </section>
     </header>
+
+    <section class="study-summary quality-figure-wide" aria-labelledby="summary-heading">
+      <div class="study-summary-copy">
+        <p class="eyebrow">At a glance</p>
+        <h2 id="summary-heading">Favorable observations, wide uncertainty</h2>
+        <p>
+          The mature 2026 cohort has no observed externally reported event across
+          14 releases and 235 non-dependency merges. That is compatible with a
+          favorable period, but exact intervals remain wide and this design
+          cannot observe silent or late reports.
+        </p>
+      </div>
+      <dl class="study-summary-grid">
+        <div>
+          <dt>Primary 2026 result</dt>
+          <dd><strong>{mature2026.events}</strong> mature events</dd>
+        </div>
+        <div>
+          <dt>Observed exposure</dt>
+          <dd><strong>{mature2026.nonDependencyMergedPullRequests}</strong> PRs · <strong>{mature2026.publishedReleases}</strong> releases</dd>
+        </div>
+        <div>
+          <dt>Correction response</dt>
+          <dd><strong>{mature2026.response.medianDays}</strong> day KM median · 7/7 resolved</dd>
+        </div>
+        <div>
+          <dt>Auditability</dt>
+          <dd><strong>567</strong> historical records published</dd>
+        </div>
+      </dl>
+      <p class="study-summary-verdict">
+        <strong>Interpretation:</strong> descriptive evidence only; causal AI
+        attribution is not estimable from this study.
+      </p>
+    </section>
 
     <div class="article-body quality-reading quality-prose">
       <section aria-labelledby="study-question">
@@ -88,9 +132,10 @@ const gitBaseline = Object.fromEntries(
           preregistered experiment. The intervention begins at{" "}
           <a href={auditEvidence.study.intervention.source}>the first agent-authored
           product change merged to <code>main</code></a> on March 10, 2026. The
-          primary comparison uses the same March 10–September 3 interval in each
-          year from 2022 through 2025. Each measure uses every historical year
-          with a complete comparable observation.
+          defect comparison closes intake on June 6 so every release receives
+          exactly ninety days of follow-up. Verification and delivery context use
+          the longer matched March 10–September 3 interval. Each measure uses
+          every historical year with a complete comparable observation.
         </p>
         <p>
           The defect population contains public issues and accepted standalone
@@ -107,9 +152,8 @@ const gitBaseline = Object.fromEntries(
           are in <a href="/quality/2026/methodology">the methods appendix</a>.
           Every record in the original 2025–2026 review is listed in{" "}
           <a href="/quality/2026/candidates">the candidate disposition ledger</a>.
-          The 2022–2024 extensions currently publish aggregate census results and
-          source links for the within-window introductions, not a record-level
-          disposition ledger.
+          The <a href="/quality/2026/historical-candidates">2022–2024 ledger</a>{" "}
+          publishes all 567 historical issue and pull-request dispositions.
         </p>
       </section>
     </div>
@@ -118,57 +162,73 @@ const gitBaseline = Object.fromEntries(
       <div class="figure-heading">
         <h2 id="primary-results">Results</h2>
         <p>
-          Table 1. Matched-window outcomes across the four pre-AI historical
-          cohorts and the 2026 post-adoption cohort. Every window begins March 10
-          at 16:38:20 UTC and ends September 4 at 00:00 UTC.
+          Table 1. Ninety-day mature cohorts. Releases and reports enter from
+          March 10 at 16:38:20 UTC through June 6 at 00:00 UTC; follow-up
+          continues exactly ninety days through September 4. Raw event count is
+          primary. Rates are sensitivity analyses.
         </p>
       </div>
-      <div class="table-scroll">
-        <table class="research-table">
+      <div class="mature-event-chart" role="img" aria-label="Mature externally reported events by year: zero in 2023, three in 2024, zero in 2025, and zero in 2026.">
+        {primaryMatureCohorts.map((cohort) => (
+          <div class="mature-event-row">
+            <span>{cohort.year}</span>
+            <span class="mature-event-track" aria-hidden="true">
+              <span class:list={["mature-event-bar", { "is-zero": cohort.events === 0 }]} style={`--event-count: ${cohort.events}`}></span>
+            </span>
+            <strong>{cohort.events}</strong>
+          </div>
+        ))}
+      </div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ninety-day mature cohort results; scroll horizontally to see all years">
+        <table class="research-table wide-data-table">
           <thead>
             <tr>
               <th scope="col">Measure</th>
-              {matchedWindowCohorts.map((cohort) => (
+              {primaryMatureCohorts.map((cohort) => (
                 <th scope="col">{cohort.year}{cohort.year === 2026 && " post-adoption"}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             <tr>
-              <th scope="row">External product-defect reports</th>
-              {matchedWindowCohorts.map((cohort) => <td>{cohort.totalReports}</td>)}
+              <th scope="row">Mature externally reported events (primary)</th>
+              {primaryMatureCohorts.map((cohort) => <td><strong>{cohort.events}</strong></td>)}
             </tr>
             <tr>
-              <th scope="row">First affected release and external report both entered during window</th>
-              {matchedWindowCohorts.map((cohort) => <td>{cohort.introduced}</td>)}
-            </tr>
-            <tr>
-              <th scope="row">Same-window cases per 100 non-dependency merges</th>
-              {matchedWindowCohorts.map((cohort) => (
-                <td>{((cohort.introduced / cohort.nonDependencyMerges) * 100).toFixed(2)}</td>
+              <th scope="row">Events per published release (sensitivity)</th>
+              {primaryMatureCohorts.map((cohort) => (
+                <td>{formatRate(cohort.releaseRate, cohort.releaseInterval)}</td>
               ))}
             </tr>
             <tr>
-              <th scope="row">Median report-to-release time</th>
-              {matchedWindowCohorts.map((cohort) => (
-                <td>{cohort.medianResponseDays === null ? "Not estimable" : `${cohort.medianResponseDays} ${cohort.medianResponseDays === 1 ? "day" : "days"}`}</td>
+              <th scope="row">Events per 100 non-dependency merges (sensitivity)</th>
+              {primaryMatureCohorts.map((cohort) => (
+                <td>{formatRate(cohort.prRate, cohort.prInterval, 100)}</td>
+              ))}
+            </tr>
+            <tr>
+              <th scope="row">Kaplan–Meier median time to corrected release</th>
+              {primaryMatureCohorts.map((cohort) => (
+                <td>{cohort.response.medianDays === null ? "Not estimable" : `${cohort.response.medianDays} ${cohort.response.medianDays === 1 ? "day" : "days"}`}</td>
               ))}
             </tr>
             <tr>
               <th scope="row">Non-dependency merged pull requests</th>
-              {matchedWindowCohorts.map((cohort) => <td>{cohort.nonDependencyMerges}</td>)}
+              {primaryMatureCohorts.map((cohort) => <td>{cohort.nonDependencyMergedPullRequests}</td>)}
             </tr>
             <tr>
               <th scope="row">Published releases</th>
-              {matchedWindowCohorts.map((cohort) => <td>{cohort.releases}</td>)}
+              {primaryMatureCohorts.map((cohort) => <td>{cohort.publishedReleases}</td>)}
             </tr>
           </tbody>
         </table>
       </div>
       <p class="figure-note">
-        A same-window case has both its first affected public release and its
-        external report inside the window. Dependency-only pull requests are
-        excluded from the delivery denominator.
+        The 2022 startup cohort had no release or non-dependency merge before the
+        mature intake cutoff, so it is retained as a non-estimable sensitivity
+        rather than pooled into the primary 2023–2025 history. Exact Poisson
+        intervals show sampling uncertainty; they do not address reporting bias
+        or unequal release risk.
       </p>
     </section>
 
@@ -198,13 +258,12 @@ const gitBaseline = Object.fromEntries(
       <section aria-labelledby="response-result">
         <h2 id="response-result">Corrections reached users faster</h2>
         <p>
-          Median time from report to the first release containing the accepted
-          correction was one day after adoption, below the five- to six-day
-          medians in the report-bearing 2023–2025 historical cohorts. (The 2022
-          cohort had no qualifying reports, so no median is estimable.) All seven
-          post-adoption reports reached a corrected release within five days. This
-          measures release response, not the effort required to diagnose, review,
-          or test each correction.
+          In the mature response cohorts, the Kaplan–Meier median time from report
+          to the first corrected release was one day after adoption and six days
+          in 2024. No 2023 report entered before the June 6 cutoff. The single 2025
+          report remained unresolved at ninety days and is censored rather than
+          discarded. All seven 2026 reports reached a corrected release within
+          five days. This measures release response, not diagnosis or review effort.
         </p>
       </section>
     </div>
@@ -313,8 +372,8 @@ const gitBaseline = Object.fromEntries(
         <p>
           The observed combination is favorable but measure-specific. Delivery
           and test inventory increased, public branch coverage remained
-          approximately stable, no same-window externally reported introduction
-          was observed, and observed corrections shipped faster. Test counts do
+          approximately stable, no mature post-adoption event was observed, and
+          observed corrections shipped faster. Test counts do
           not establish test effectiveness, and the defect population does not
           establish the absence of defects introduced late in the window.
         </p>
@@ -338,7 +397,7 @@ const gitBaseline = Object.fromEntries(
           <li>The pooled historical defect-rate benchmark rests on only four introduced reports, while commit and churn counts are strongly workflow-dependent.</li>
           <li>Coverage increased across a codebase reorganized into multiple packages, so the before and after denominators are not identical.</li>
           <li>The hypothesis was formulated retrospectively and the audit was performed by the project maintainer, who uses and benefits from agentic coding tools.</li>
-          <li>Zero observed post-adoption same-window cases is not proof that no such defect exists.</li>
+          <li>Zero observed post-adoption mature events is not proof that no such defect exists.</li>
         </ul>
       </section>
 
@@ -348,8 +407,8 @@ const gitBaseline = Object.fromEntries(
           Counterfact shipped substantially more non-dependency work, expanded
           its test inventory, maintained approximately stable reported branch
           coverage, and resolved the observed external reports faster. Under the
-          audit’s current same-window rule, no observed defect was both first
-          released and externally reported after adoption. These observations do
+          audit’s 90-day mature-cohort rule, no qualifying event was observed
+          after adoption. These observations do
           not establish an overall quality increase, exclude late or unreported
           defects, or identify AI as the cause.
         </p>
@@ -362,11 +421,12 @@ const gitBaseline = Object.fromEntries(
           candidate decision in that review, every included case, the source and
           release chronology behind each classification, and the exact
           machine-readable inputs used for the calculations. The 2022–2024
-          historical extension is currently available as checked aggregate data
-          with source links for its within-window introductions.
+          extension now includes every record-level disposition and authorship
+          association returned by the published census.
         </p>
         <ol class="reference-list">
           <li><a href="/quality/2026/candidates">Candidate disposition ledger</a></li>
+          <li><a href="/quality/2026/historical-candidates">Historical disposition ledger</a></li>
           <li><a href="/quality/2026/cases">Defect case appendix</a></li>
           <li><a href="/quality/2026/methodology">Methods and reproducibility appendix</a></li>
           <li><a href="/quality/2026/context">Supplementary delivery and product context</a></li>
