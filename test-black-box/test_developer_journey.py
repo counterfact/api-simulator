@@ -366,6 +366,23 @@ def route_builder_reports_readiness(journey):
     _assert_repl_scalar(ready_path, "true", journey.transcript())
 
 
+@then("the route builder requires the documented pet body")
+def route_builder_requires_pet_body(journey):
+    missing_body = journey.terminal.command(
+        'route("/pets").method("post").ready()'
+    )
+    _assert_repl_scalar(missing_body, "false", journey.transcript())
+    wrong_entity = journey.terminal.command(
+        'route("/pets").method("post").form({ name: "Fluffy" }).ready()'
+    )
+    _assert_repl_scalar(wrong_entity, "false", journey.transcript())
+    ready_body = journey.terminal.command(
+        'route("/pets").method("post").body('
+        '{ name: "Fluffy", status: "available" }).ready()'
+    )
+    _assert_repl_scalar(ready_body, "true", journey.transcript())
+
+
 @then("a REPL request for the missing pet returns 404")
 def repl_observes_missing_pet(journey):
     journey.repl_output = journey.terminal.command(
@@ -397,8 +414,8 @@ def invalid_pet_is_rejected(journey):
 @when("I create Fluffy through the REPL")
 def create_fluffy(journey):
     journey.repl_output = journey.terminal.command(
-        'void (await client.post("/pets", '
-        '{ name: "Fluffy", status: "available" }))'
+        'void (await route("/pets").method("post").body('
+        '{ name: "Fluffy", status: "available" }).send())'
     )
     _assert_repl_http_status(
         journey.repl_output, "201 Created", journey.transcript()

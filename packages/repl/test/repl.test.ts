@@ -912,6 +912,8 @@ describe("REPL", () => {
       expect(prefix).toBe("");
       expect(completions).toEqual([
         "body(",
+        "cookies(",
+        "form(",
         "headers(",
         "help(",
         "method(",
@@ -958,6 +960,8 @@ describe("REPL", () => {
       expect(prefix).toBe("");
       expect(completions).toEqual([
         "body(",
+        "cookies(",
+        "form(",
         "headers(",
         "help(",
         "method(",

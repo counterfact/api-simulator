@@ -43,6 +43,20 @@ route("/pet/findByStatus").method("get").query({ status: "available" });
 route("/pet").method("post").headers({ "x-api-key": "secret" });
 ```
 
+Header names are matched case-insensitively when Counterfact checks required
+OpenAPI header parameters.
+
+### Cookies
+
+```js
+route("/account").method("get").cookies({ session: "abc 123" });
+```
+
+Cookie names and values supplied through `.cookies()` are percent-encoded and
+merged with any existing `Cookie` header. A `Cookie` header also satisfies
+required OpenAPI cookie parameters; the header name is matched
+case-insensitively.
+
 ### Request body
 
 Pass a string or a plain object. Objects are serialised to JSON automatically.
@@ -50,6 +64,27 @@ Pass a string or a plain object. Objects are serialised to JSON automatically.
 ```js
 route("/pet").method("post").body({ name: "Rex", photoUrls: [] });
 ```
+
+Required Swagger/OpenAPI 2 `body` parameters must be supplied with `.body()`.
+For OpenAPI 3, `.body()` satisfies a required `requestBody` when the operation
+declares a non-form content type such as `application/json`.
+
+### Form fields
+
+```js
+route("/sessions").method("post").form({ username: "patrick", remember: true });
+```
+
+Required Swagger/OpenAPI 2 `formData` fields must have matching keys in
+`.form()`. For OpenAPI 3, `.form()` satisfies a required `requestBody` when its
+content includes `application/x-www-form-urlencoded` or `multipart/form-data`.
+
+Forms are URL-encoded when that type is declared, and by default when no form
+type is declared. Counterfact sends text-only multipart data when multipart is
+the sole declared form type. Binary and file parts are not supported.
+
+Only one request entity is active at a time: calling `.body()` after `.form()`,
+or `.form()` after `.body()`, clears the earlier entity. The last method wins.
 
 ## Sending the request
 
@@ -72,7 +107,11 @@ HTTP/1.1 200 OK
 { "id": 42, "name": "Rex", ... }
 ```
 
-If a required parameter is missing, `send()` throws a descriptive error instead of making the request.
+The REPL prints the complete outbound request body. For text-only multipart
+forms, this includes every form field and the final multipart boundary.
+
+If a required path, query, header, cookie, body, or form input is missing,
+`send()` throws a descriptive error instead of making the request.
 
 ## Inspecting a builder
 
@@ -106,9 +145,15 @@ route("/pet/{petId}").method("get").missing();
 // { path: [{ name: "petId", type: "integer" }] }
 ```
 
+The returned object can contain `path`, `query`, `header`, `cookie`, `body`, and
+`formData` groups. OpenAPI 3 request bodies are reported in the `body` group as
+`requestBody`.
+
 ### `.help()`
 
-Prints the OpenAPI summary, description, parameter list, and documented responses for the selected operation.
+Writes the OpenAPI summary, description, parameter list, and documented
+responses for the selected operation to the console. It does not return the
+formatted help text.
 
 ```js
 route("/pet/{petId}").method("get").help();

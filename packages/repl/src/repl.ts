@@ -45,6 +45,8 @@ export type ReplEventReporter = (event: ReplEvent) => void;
 
 const ROUTE_BUILDER_METHODS = [
   "body(",
+  "cookies(",
+  "form(",
   "headers(",
   "help(",
   "method(",
