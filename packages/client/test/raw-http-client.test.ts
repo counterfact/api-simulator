@@ -1,5 +1,7 @@
 import net from "node:net";
 
+import { jest } from "@jest/globals";
+
 import { RawHttpClient } from "../src/index.js";
 
 /**
@@ -102,6 +104,43 @@ describe("RawHttpClient", () => {
     const raw = await capture.request;
 
     expect(raw).not.toMatch(/content-type/i);
+  });
+
+  it("prints every multipart request part and its closing boundary", async () => {
+    const capture = await captureRequest();
+    const client = new RawHttpClient("127.0.0.1", capture.port);
+    const boundary = "counterfact-display-test";
+    const body = [
+      `--${boundary}\r\n`,
+      'Content-Disposition: form-data; name="name"\r\n\r\n',
+      "Rex\r\n",
+      `--${boundary}\r\n`,
+      'Content-Disposition: form-data; name="count"\r\n\r\n',
+      "2\r\n",
+      `--${boundary}--\r\n`,
+    ].join("");
+    const output: string[] = [];
+    const write = jest
+      .spyOn(process.stdout, "write")
+      .mockImplementation((chunk) => {
+        output.push(String(chunk));
+        return true;
+      });
+
+    try {
+      await client.post("/upload", body, {
+        "Content-Type": `multipart/form-data; boundary=${boundary}`,
+      });
+
+      const printed = output.join("");
+      expect(printed).toContain('Content-Disposition: form-data; name="name"');
+      expect(printed).toContain("Rex");
+      expect(printed).toContain('Content-Disposition: form-data; name="count"');
+      expect(printed).toContain("2");
+      expect(printed).toContain(`--${boundary}--`);
+    } finally {
+      write.mockRestore();
+    }
   });
 
   it("sends Content-Type: application/json for PUT with object body", async () => {

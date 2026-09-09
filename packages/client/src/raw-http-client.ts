@@ -51,6 +51,25 @@ function highlightJson(text: string) {
   );
 }
 
+/**
+ * Splits an HTTP message at its first head/body separator.
+ *
+ * Request and response bodies can themselves contain `\r\n\r\n`, notably in
+ * multipart form data, so splitting every occurrence would truncate the
+ * displayed body after its first part.
+ */
+function splitHttpMessage(raw: string): [head: string, body: string] {
+  const separator = "\r\n\r\n";
+  const separatorIndex = raw.indexOf(separator);
+
+  if (separatorIndex === -1) return [raw, ""];
+
+  return [
+    raw.slice(0, separatorIndex),
+    raw.slice(separatorIndex + separator.length),
+  ];
+}
+
 function stringifyBody(body: string | object) {
   if (typeof body === "string") {
     return body;
@@ -192,7 +211,7 @@ export class RawHttpClient {
   }
 
   #printRequest(raw: string, requestNumber: number) {
-    const [head = "", body = ""] = raw.split("\r\n\r\n");
+    const [head, body] = splitHttpMessage(raw);
     const lines = head.split("\r\n");
 
     process.stdout.write(
@@ -216,7 +235,7 @@ export class RawHttpClient {
   }
 
   #printResponse(raw: string, requestNumber: number) {
-    const [head = "", body = ""] = raw.split("\r\n\r\n");
+    const [head, body] = splitHttpMessage(raw);
     const lines = head.split("\r\n");
     const statusLine = lines[0] ?? "";
 
@@ -240,7 +259,7 @@ export class RawHttpClient {
     if (body) {
       process.stdout.write("\n");
 
-      const outBody = isLikelyJson(head!.toLowerCase(), body)
+      const outBody = isLikelyJson(head.toLowerCase(), body)
         ? highlightJson(body)
         : body;
 
