@@ -1,4 +1,9 @@
 import evidence from "./quality-audit-evidence.json" with { type: "json" };
+import historicalCandidateEvidence from "./quality-historical-candidates.json" with { type: "json" };
+import {
+  exactPoissonInterval,
+  kaplanMeier,
+} from "../../scripts/quality-audit-lib.mjs";
 
 export type AuditCategory =
   | "Same-year regression"
@@ -74,7 +79,10 @@ export interface ProcessIncident {
   sources: string[];
 }
 
-export const auditEvidence = evidence;
+export const auditEvidence = {
+  ...evidence,
+  historicalCandidates: historicalCandidateEvidence.records,
+};
 export const auditCases = evidence.productCases.filter(
   (item) => item.reportYear === 2026,
 ) as AuditCase[];
@@ -91,6 +99,7 @@ export const allProductCases = [
   ),
 ];
 export const candidates = evidence.candidates as AuditCandidate[];
+export const historicalCandidates = historicalCandidateEvidence.records;
 export const processIncidents = evidence.processIncidents as ProcessIncident[];
 export const auditExceptions = processIncidents;
 export const featureTimeline = evidence.featureTimeline;
@@ -159,6 +168,38 @@ export const primaryComparisonSummary = ([2025, 2026] as const).map((year) => {
         : Number(((introduced / nonDependencyMerges) * 100).toFixed(2)),
   };
 });
+
+export const matureCohorts = Object.entries(
+  evidence.matureAnalysis.cohorts,
+).map(([year, cohort]) => {
+  const releaseInterval = exactPoissonInterval(
+    cohort.events,
+    cohort.publishedReleases,
+  );
+  const prInterval = exactPoissonInterval(
+    cohort.events,
+    cohort.nonDependencyMergedPullRequests,
+  );
+  return {
+    year: Number(year),
+    ...cohort,
+    releaseRate:
+      cohort.publishedReleases === 0
+        ? null
+        : cohort.events / cohort.publishedReleases,
+    releaseInterval,
+    prRate:
+      cohort.nonDependencyMergedPullRequests === 0
+        ? null
+        : cohort.events / cohort.nonDependencyMergedPullRequests,
+    prInterval,
+    response: kaplanMeier(cohort.responseObservations),
+  };
+});
+
+export const primaryMatureCohorts = matureCohorts.filter(
+  (cohort) => cohort.year >= 2023,
+);
 
 const categoryDefinitions: Array<{
   label: AuditCategory;
@@ -260,6 +301,7 @@ const verificationCohort = (
   branchCoverageEnd: BranchCoverageSnapshot,
   note?: string,
   firstReachableCommit?: string,
+  coverageComparisonStatus: "comparable" | "not_estimable" | "not_comparable" | "changing_source_set" = "comparable",
 ) => ({
   year,
   testFiles: start
@@ -272,6 +314,7 @@ const verificationCohort = (
   branchCoverageEnd,
   note,
   firstReachableCommit,
+  coverageComparisonStatus,
 });
 
 export const verificationCohorts = [
@@ -287,6 +330,7 @@ export const verificationCohorts = [
     },
     "The March start snapshot is unavailable because main-reachable history begins after the boundary.",
     comparison2022Snapshots.firstReachableCommit,
+    "not_estimable",
   ),
   verificationCohort(
     2023,
@@ -336,6 +380,9 @@ export const verificationCohorts = [
         evidence.activity.supplementalFullWindow.coverage["2025"]
           .branchCoverageSource,
     },
+    undefined,
+    undefined,
+    "not_comparable",
   ),
   verificationCohort(
     2026,
@@ -349,6 +396,9 @@ export const verificationCohorts = [
       branchCoveragePercent: snapshots.endOfObservation.branchCoveragePercent,
       source: snapshots.endOfObservation.branchCoverageSource,
     },
+    undefined,
+    undefined,
+    "changing_source_set",
   ),
 ];
 

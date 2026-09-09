@@ -12,10 +12,23 @@ import {
 const manifestPath = fileURLToPath(
   new URL("../src/data/quality-audit-evidence.json", import.meta.url),
 );
-const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+const historicalCandidatesPath = fileURLToPath(
+  new URL("../src/data/quality-historical-candidates.json", import.meta.url),
+);
+const manifest = {
+  ...JSON.parse(await readFile(manifestPath, "utf8")),
+  historicalCandidates: JSON.parse(
+    await readFile(historicalCandidatesPath, "utf8"),
+  ).records,
+};
 const errors = validateManifest(manifest);
 
 function printDiagnostics(manifest) {
+  for (const [year, cohort] of Object.entries(manifest.matureAnalysis.cohorts)) {
+    console.log(
+      `${year} mature cohort: ${cohort.events} event(s), ${cohort.publishedReleases} release(s), ${cohort.nonDependencyMergedPullRequests} non-dependency merge(s), ${cohort.responseObservations.length} response observation(s).`,
+    );
+  }
   for (const year of [2025, 2026]) {
     const primaryWindow = manifest.study.primaryWindows[String(year)];
     const primaryCases = selectReportedCases(
@@ -32,7 +45,7 @@ function printDiagnostics(manifest) {
     const nonDependencyMerges =
       manifest.activity.primaryWindow.nonDependencyMergedPullRequests[String(year)];
     console.log(
-      `${year} primary window: ${primaryCases.length} external product reports; ${introduced.length} first affected releases entered during the window (${introduced.length === 0 ? "0" : ((introduced.length / nonDependencyMerges) * 100).toFixed(2)} per 100 non-dependency merges); median report-to-release time: ${responseMedian} ${responseMedian === 1 ? "day" : "days"}.`,
+      `${year} primary window: ${primaryCases.length} external product reports; ${introduced.length} cases had both the first affected release and report inside the window (${introduced.length === 0 ? "0" : ((introduced.length / nonDependencyMerges) * 100).toFixed(2)} per 100 non-dependency merges); median report-to-release time: ${responseMedian} ${responseMedian === 1 ? "day" : "days"}.`,
     );
 
     const cases = manifest.productCases.filter(
@@ -48,7 +61,7 @@ function printDiagnostics(manifest) {
       year,
     );
     console.log(
-      `${year}: ${summary.total} product defects (${summary.counts["Same-year regression"]} regressions, ${summary.counts["Defect in same-year feature"]} feature defects, ${summary.counts["Pre-existing"]} pre-existing); 90-day sensitivity: ${matureSummary.total}`,
+      `${year}: ${summary.total} product defects (${summary.counts["Same-year regression"]} regressions, ${summary.counts["Defect in same-year feature"]} feature defects, ${summary.counts["Pre-existing"]} pre-existing); observed cases at least 90 days old: ${matureSummary.total}`,
     );
   }
 
