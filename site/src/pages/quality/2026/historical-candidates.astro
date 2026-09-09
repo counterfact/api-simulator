@@ -36,8 +36,8 @@ const years = [2022, 2023, 2024];
         return (
           <section aria-labelledby={`year-${year}`}>
             <h2 id={`year-${year}`}>{year}: {records.length} records, {included.length} included reports</h2>
-            <div class="table-scroll">
-              <table class="research-table">
+            <div class="table-scroll" tabindex="0" role="region" aria-label={`${year} candidate dispositions; scroll horizontally for all columns`}>
+              <table class="research-table wide-data-table historical-ledger-table">
                 <thead>
                   <tr>
                     <th scope="col">Record</th>

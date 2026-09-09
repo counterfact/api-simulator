@@ -22,6 +22,7 @@ const formatRate = (
   rate === null || interval === null
     ? "Not estimable"
     : `${(rate * scale).toFixed(2)} (95% exact CI ${(interval.lower * scale).toFixed(2)}–${(interval.upper * scale).toFixed(2)})`;
+const mature2026 = primaryMatureCohorts.find((cohort) => cohort.year === 2026)!;
 ---
 
 <QualityLayout
@@ -68,6 +69,41 @@ const formatRate = (
       </section>
     </header>
 
+    <section class="study-summary quality-figure-wide" aria-labelledby="summary-heading">
+      <div class="study-summary-copy">
+        <p class="eyebrow">At a glance</p>
+        <h2 id="summary-heading">Favorable observations, wide uncertainty</h2>
+        <p>
+          The mature 2026 cohort has no observed externally reported event across
+          14 releases and 235 non-dependency merges. That is compatible with a
+          favorable period, but exact intervals remain wide and this design
+          cannot observe silent or late reports.
+        </p>
+      </div>
+      <dl class="study-summary-grid">
+        <div>
+          <dt>Primary 2026 result</dt>
+          <dd><strong>{mature2026.events}</strong> mature events</dd>
+        </div>
+        <div>
+          <dt>Observed exposure</dt>
+          <dd><strong>{mature2026.nonDependencyMergedPullRequests}</strong> PRs · <strong>{mature2026.publishedReleases}</strong> releases</dd>
+        </div>
+        <div>
+          <dt>Correction response</dt>
+          <dd><strong>{mature2026.response.medianDays}</strong> day KM median · 7/7 resolved</dd>
+        </div>
+        <div>
+          <dt>Auditability</dt>
+          <dd><strong>567</strong> historical records published</dd>
+        </div>
+      </dl>
+      <p class="study-summary-verdict">
+        <strong>Interpretation:</strong> descriptive evidence only; causal AI
+        attribution is not estimable from this study.
+      </p>
+    </section>
+
     <div class="article-body quality-reading quality-prose">
       <section aria-labelledby="study-question">
         <h2 id="study-question">Research question</h2>
@@ -96,9 +132,10 @@ const formatRate = (
           preregistered experiment. The intervention begins at{" "}
           <a href={auditEvidence.study.intervention.source}>the first agent-authored
           product change merged to <code>main</code></a> on March 10, 2026. The
-          primary comparison uses the same March 10–September 3 interval in each
-          year from 2022 through 2025. Each measure uses every historical year
-          with a complete comparable observation.
+          defect comparison closes intake on June 6 so every release receives
+          exactly ninety days of follow-up. Verification and delivery context use
+          the longer matched March 10–September 3 interval. Each measure uses
+          every historical year with a complete comparable observation.
         </p>
         <p>
           The defect population contains public issues and accepted standalone
@@ -131,8 +168,19 @@ const formatRate = (
           primary. Rates are sensitivity analyses.
         </p>
       </div>
-      <div class="table-scroll">
-        <table class="research-table">
+      <div class="mature-event-chart" role="img" aria-label="Mature externally reported events by year: zero in 2023, three in 2024, zero in 2025, and zero in 2026.">
+        {primaryMatureCohorts.map((cohort) => (
+          <div class="mature-event-row">
+            <span>{cohort.year}</span>
+            <span class="mature-event-track" aria-hidden="true">
+              <span class:list={["mature-event-bar", { "is-zero": cohort.events === 0 }]} style={`--event-count: ${cohort.events}`}></span>
+            </span>
+            <strong>{cohort.events}</strong>
+          </div>
+        ))}
+      </div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Ninety-day mature cohort results; scroll horizontally to see all years">
+        <table class="research-table wide-data-table">
           <thead>
             <tr>
               <th scope="col">Measure</th>
