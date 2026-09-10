@@ -1,116 +1,53 @@
 ---
 import QualityLayout from "../../../layouts/QualityLayout.astro";
-import {
-  allProductCases,
-  candidateIsInPrimaryWindow,
-  candidates,
-  casePath,
-  dispositionLabel,
-  formatDate,
-} from "../../../data/quality-2026";
+import evidence from "../../../data/quality-audit-evidence.json" with { type: "json" };
 
-const casesById = new Map(allProductCases.map((item) => [item.id, item]));
-const candidatesById = new Map(candidates.map((item) => [item.id, item]));
-const cohorts = ([2025, 2026] as const).map((year) => ({
-  year,
-  candidates: candidates.filter((candidate) => candidate.year === year),
-}));
+const study = evidence.caseStudy as any;
+const originalCandidates = evidence.candidates as any[];
+const expandedCandidates = study.candidates as any[];
+const defects = new Map((study.defects as any[]).map((record) => [record.id, record]));
+const adjudications = { ...study.adjudication.repairs, ...study.adjudication.cases } as Record<string, any>;
+const grouped = expandedCandidates.reduce((groups: Record<string, any[]>, record: any) => {
+  (groups[record.disposition] ??= []).push(record);
+  return groups;
+}, {});
+const groups = Object.entries(grouped).sort(([left], [right]) => left.localeCompare(right));
+const mainlineScreen = study.mainlineScreen as any[];
+const directMainline = mainlineScreen.filter((record) => record.disposition === "unresolved_direct_mainline_candidate");
+const label = (value:string) => value.replaceAll("_", " ").replaceAll("-", " ");
+const date = (value: string) => value.slice(0, 10);
 ---
 
-<QualityLayout
-  title="Candidate disposition ledger — Counterfact quality study"
-  description="Every issue and pull request in the record-level 2025–2026 quality review, including its inclusion decision and rationale."
-  canonicalPath="/quality/2026/candidates"
-  active="candidates"
->
-  <article class="appendix-page">
-    <header class="appendix-header quality-reading">
-      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Candidate disposition ledger</p>
-      <h1>Candidate disposition ledger</h1>
-      <p>
-        This appendix lists all 19 records in the original 2025–2026 review. No
-        exclusion in that review is hidden behind a summary count. The separate
-        <a href="/quality/2026/historical-candidates">historical disposition ledger</a>{" "}
-        now publishes all 567 records in the 2022–2024 census.
-      </p>
-    </header>
+<QualityLayout title="Public-record census — Counterfact quality study" description="Detailed external-report cases, the public-record census, and the historical ledger for the Counterfact quality study." canonicalPath="/quality/2026/candidates" active="candidates">
+  <article class="appendix-page quality-reading quality-prose">
+    <header class="appendix-header"><p class="breadcrumbs"><a href="/quality/2026">Article</a> / Public-record census</p><h1>Public-record census</h1><p>This page presents detailed external-report cases from 2025–2026, a public-record census for the observation period, and a historical ledger for 2022–2024.</p></header>
 
-    <section class="quality-figure-wide appendix-introduction">
-      <dl class="definition-list">
-        <div><dt>Included product defect</dt><dd>Confirmed faulty product behavior counted once in the defect cohort.</dd></div>
-        <div><dt>Excluded</dt><dd>A reviewed report that did not meet the product-defect population rule.</dd></div>
-        <div><dt>Deduplicated</dt><dd>A pull request used as evidence for an included issue, not counted as a second report.</dd></div>
-        <div><dt>Process incident</dt><dd>An externally visible workflow or provenance failure analyzed outside product-defect percentages.</dd></div>
-      </dl>
+    <section aria-labelledby="original-ledger">
+      <h2 id="original-ledger">Detailed external-report cases (2025–2026)</h2>
+      <p>These 19 source-linked rows provide the screening record for the detailed case pages. They are a focused external-report screen, distinct from the public-record census below.</p>
+      <div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Record</th><th scope="col">Opened</th><th scope="col">Disposition</th><th scope="col">Rationale</th></tr></thead><tbody>{originalCandidates.map((record) => <tr><th scope="row"><a href={record.sourceUrl}>{record.kind === "pull request" ? "PR" : "Issue"} #{record.number}</a><span class="cell-detail">{record.title}</span></th><td>{date(record.openedAt)}</td><td>{label(record.disposition)}</td><td>{record.reason}</td></tr>)}</tbody></table></div>
     </section>
 
-    {
-      cohorts.map((cohort) => (
-        <section class="candidate-cohort quality-figure-wide" aria-labelledby={`cohort-${cohort.year}`}>
-          <h2 id={`cohort-${cohort.year}`}>{cohort.year} reviewed candidates</h2>
-          <div class="table-scroll">
-            <table class="research-table candidate-table">
-              <thead>
-                <tr>
-                  <th scope="col">Record</th>
-                  <th scope="col">Reporter and date</th>
-                  <th scope="col">Primary window</th>
-                  <th scope="col">Decision and rationale</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cohort.candidates.map((candidate) => {
-                  const detail = casesById.get(candidate.id);
-                  const linked = candidate.linkedCandidateId
-                    ? candidatesById.get(candidate.linkedCandidateId)
-                    : undefined;
-                  return (
-                    <tr id={candidate.id}>
-                      <th scope="row">
-                        <a href={candidate.sourceUrl}>
-                          {candidate.kind === "pull request" ? "PR" : "Issue"} #{candidate.number}
-                        </a>
-                        <span class="cell-detail">{candidate.title}</span>
-                      </th>
-                      <td>
-                        {candidate.author}
-                        <time class="cell-detail" datetime={candidate.openedAt}>
-                          {formatDate(candidate.openedAt)}<br />{candidate.openedAt}
-                        </time>
-                      </td>
-                      <td>{candidateIsInPrimaryWindow(candidate) ? "Yes" : "No; supplementary only"}</td>
-                      <td>
-                        <strong>{dispositionLabel(candidate.disposition)}</strong>
-                        <span class="cell-detail">{candidate.reason}</span>
-                        {linked && (
-                          <span class="cell-detail">
-                            Linked to <a href={`#${linked.id}`}>
-                              {linked.kind === "pull request" ? "PR" : "issue"} #{linked.number}
-                            </a>.
-                          </span>
-                        )}
-                        {detail && (
-                          <span class="cell-detail"><a href={casePath(detail)}>Read the case evidence</a>.</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ))
-    }
-
-    <footer class="appendix-notes quality-reading quality-prose">
-      <h2>Review the source data</h2>
-      <p>
-        Download the <a href="/quality/2026/data.json">published underlying dataset</a>{" "}
-        to inspect the precise timestamps, source links, classifications, and
-        calculation inputs. The <a href="/quality/2026/methodology">methods appendix</a>{" "}
-        publishes the population and deduplication rules used for these decisions.
-      </p>
-    </footer>
+    <p>The <a href="/quality/2026/historical-candidates">historical ledger (2022–2024)</a> provides the screening decisions used in the historical comparisons.</p>
+    <section aria-labelledby="adjudicated-findings"><h2 id="adjudicated-findings">Adjudicated findings and chronology</h2><p>These {study.defects.length} records include confirmed product defects, process incidents, and unresolved findings. Their total is not a defect count. Affected bounds are distinguished from exact origins; discovery remains unknown unless the source attributes it.</p>
+    <details><summary>Individual findings, release status, discovery, and corrections</summary><div class="table-scroll"><table class="research-table"><thead><tr><th>Record and disposition</th><th>Report and discovery</th><th>Release status at report</th><th>Affected release and origin</th><th>First corrected publication</th></tr></thead><tbody>{study.defects.map((r:any)=><tr id={`finding-${r.id}`}><th scope="row"><a href={r.sources[0]}>{r.id}</a><span class="cell-detail">{r.title}</span><span class="cell-detail">{label(r.disposition)}</span></th><td>{r.reportedAt ?? 'Unresolved'}<span class="cell-detail">{label(r.discoveryChannel)}</span></td><td>{label(r.releaseStatus)}<span class="cell-detail">{r.classificationNote}</span></td><td>{r.firstAffectedRelease ?? 'Unresolved'}<span class="cell-detail">{r.firstAffectedPublishedAt ?? 'Unknown publication'}; {r.firstAffectedPrecision ?? 'unknown'} origin precision; {r.originStatus ?? 'unresolved'} relative to adoption.</span></td><td>{r.fixedRelease ?? 'Unresolved'}<span class="cell-detail">{r.fixedPublishedAt ?? 'Unknown publication'}</span></td></tr>)}</tbody></table></div></details></section>
+    <section aria-labelledby="census">
+      <span id="expanded"></span><h2 id="census">Public-record census</h2>
+      <p>Each closed disclosure contains source-linked records for one final disposition. The labels are census decisions, including exclusions and unresolved records; a closed disclosure does not remove its records from the document or require JavaScript.</p>
+      {groups.map(([disposition, records]) => <details><summary>{label(disposition)}: {(records as any[]).length.toLocaleString()} candidate{(records as any[]).length === 1 ? "" : "s"}</summary><div class="table-scroll"><table class="research-table candidate-table"><thead><tr><th scope="col">Record</th><th scope="col">Reported</th><th scope="col">Disposition and rationale</th><th scope="col">Coordinator-reviewed detail</th></tr></thead><tbody>{(records as any[]).map((record) => {
+        const detail = defects.get(record.id);
+        const adjudication = adjudications[record.id];
+        const fields = adjudication?.fields;
+        const sources = adjudication?.sources ?? detail?.sources ?? [];
+        return <tr id={record.id}><th scope="row"><a href={record.source}>{record.id}</a><span class="cell-detail">{record.title}</span></th><td>{date(record.reportedAt)}</td><td><strong>{label(record.disposition)}</strong><span class="cell-detail">{record.reason}</span></td><td>{detail || fields ? <><span>{fields?.classificationNote ?? detail?.classificationNote}</span>{sources.length > 0 && <span class="cell-detail">{sources.map((source: string, index: number) => <><a href={source}>supporting source {index + 1}</a>{" "}</>)}</span>}</> : <span class="cell-detail">No coordinator override recorded; the source-ledger disposition is shown.</span>}</td></tr>;
+      })}</tbody></table></div></details>)}
+    </section>
+    <section aria-labelledby="mainline-screen">
+      <h2 id="mainline-screen">Direct-mainline screen</h2>
+      <p>The census also screened {mainlineScreen.length.toLocaleString()} first-parent commits. Most link to the issue or pull-request census; the unresolved direct-mainline candidates appear below because their subjects alone do not establish a report time, affected release, or confirmed product repair.</p>
+      <details><summary>{directMainline.length} unresolved direct-mainline candidate{directMainline.length === 1 ? "" : "s"}</summary><div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Commit</th><th scope="col">Recorded author timestamp</th><th scope="col">Subject</th><th scope="col">Rationale</th></tr></thead><tbody>{directMainline.map((record) => <tr><th scope="row"><a href={`https://github.com/counterfact/api-simulator/commit/${record.sha}`}>{record.sha}</a></th><td>{record.date}</td><td>{record.subject}</td><td>{record.rationale}</td></tr>)}</tbody></table></div></details>
+      <details><summary>All {mainlineScreen.length.toLocaleString()} screened first-parent commits</summary><div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Commit</th><th scope="col">Recorded author timestamp</th><th scope="col">Subject</th><th scope="col">Screen disposition</th><th scope="col">Rationale</th></tr></thead><tbody>{mainlineScreen.map((record) => <tr><th scope="row"><a href={`https://github.com/counterfact/api-simulator/commit/${record.sha}`}>{record.sha}</a></th><td>{record.date}</td><td>{record.subject}</td><td>{label(record.disposition)}</td><td>{record.rationale}</td></tr>)}</tbody></table></div></details>
+    </section>
+    <footer class="appendix-notes"><p>See <a href="/quality/2026/context#diagnostics">unresolved-record diagnostics</a> for records whose available evidence does not establish a final product-defect finding.</p></footer>
   </article>
 </QualityLayout>

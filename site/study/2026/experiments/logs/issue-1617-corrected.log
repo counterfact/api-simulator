@@ -1,0 +1,8 @@
+(node:64222) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64222) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+Test Suites: 1 passed, 1 total
+Tests:       27 skipped, 3 passed, 30 total
+Snapshots:   0 total
+Time:        0.178 s, estimated 1 s
+Ran all test suites matching test/typescript-generator/operation-type-coder.test.js with tests matching "reserved word".

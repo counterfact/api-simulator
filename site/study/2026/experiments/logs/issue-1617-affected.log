@@ -1,0 +1,93 @@
+(node:64234) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64234) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+FAIL test/typescript-generator/operation-type-coder.audit.test.js
+  an OperationTypeCoder
+    ○ skipped generates a list of potential names
+    ○ skipped creates a type declaration
+    ○ skipped returns the module path
+    ○ skipped returns the module path for /
+    ○ skipped generates a complex post operation
+    ○ skipped generates a complex post operation (OpenAPI 2)
+    ○ skipped generates a complex post operation (OpenAPI 2, consumes in root)
+    ○ skipped generates a complex post operation (OpenAPI 2 with produces at the root)
+    ○ skipped generates a simple get operation
+    ○ skipped generates a simple get operation (OpenAPI 2)
+    ○ skipped falls back to root level produces (OpenAPI 2)
+    ○ skipped generates an auth object for basic authentication
+    ○ skipped uses operationId for type names when available
+    ○ skipped falls back to HTTP_METHOD when operationId is not available
+    ○ skipped exports parameter types separately and references them
+    ○ skipped does not export parameter types when they are 'never'
+    ○ skipped generates a strongly-typed cookie object from cookie parameters
+    ○ skipped uses 'unknown' body type when response content has no schema
+    getOperationBaseName
+      ✕ appends underscore when operationId is a reserved word (2 ms)
+      ✕ appends underscore when operationId is another reserved word
+      ✕ appends underscore when operationId becomes a reserved word after stripping trailing non-identifier chars (1 ms)
+      ○ skipped falls back to HTTP method when operationId is absent
+      ○ skipped returns a plain operationId unchanged
+      ○ skipped converts hyphenated operationId to camelCase
+      ○ skipped converts dot-separated operationId to camelCase
+      ○ skipped converts space-separated operationId to camelCase
+      ○ skipped camelCases across non-identifier characters
+      ○ skipped prefixes with underscore when operationId starts with a digit
+      ○ skipped appends underscore when operationId is await
+      ○ skipped does not append underscore when operationId already has a suffix making it non-reserved
+
+  ● an OperationTypeCoder › getOperationBaseName › appends underscore when operationId is a reserved word
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "delete_"
+    Received: "delete"
+
+      137 |       );
+      138 |
+    > 139 |       expect(coder.getOperationBaseName()).toBe("delete_");
+          |                                            ^
+      140 |     });
+      141 |
+      142 |     it("appends underscore when operationId is another reserved word", () => {
+
+      at Object.toBe (test/typescript-generator/operation-type-coder.audit.test.js:139:44)
+
+  ● an OperationTypeCoder › getOperationBaseName › appends underscore when operationId is another reserved word
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "import_"
+    Received: "import"
+
+      146 |       );
+      147 |
+    > 148 |       expect(coder.getOperationBaseName()).toBe("import_");
+          |                                            ^
+      149 |     });
+      150 |
+      151 |     it("appends underscore when operationId is await", () => {
+
+      at Object.toBe (test/typescript-generator/operation-type-coder.audit.test.js:148:44)
+
+  ● an OperationTypeCoder › getOperationBaseName › appends underscore when operationId becomes a reserved word after stripping trailing non-identifier chars
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "delete_"
+    Received: "delete!!"
+
+      163 |       );
+      164 |
+    > 165 |       expect(coder.getOperationBaseName()).toBe("delete_");
+          |                                            ^
+      166 |     });
+      167 |
+      168 |     it("does not append underscore when operationId already has a suffix making it non-reserved", () => {
+
+      at Object.toBe (test/typescript-generator/operation-type-coder.audit.test.js:165:44)
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 27 skipped, 30 total
+Snapshots:   0 total
+Time:        0.2 s, estimated 1 s
+Ran all test suites matching test/typescript-generator/operation-type-coder.audit.test.js with tests matching "reserved word".

@@ -1,0 +1,9 @@
+{
+  "retrieved_at": "2026-09-09T13:55:06Z",
+  "query": "repo:counterfact/api-simulator is:issue created:<2026-09-04",
+  "pages": 4,
+  "records": 395,
+  "total_count": 395,
+  "terminal_empty_page": 5,
+  "sha256": "00e24948c9e975b0869f7866ea5c871ff2f0c8fa0ad0ab8413ea758b72053618"
+}

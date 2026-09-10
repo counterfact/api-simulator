@@ -1,0 +1,60 @@
+(node:64266) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64266) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+FAIL test/server/dispatcher.audit.test.ts
+  ● given a request that contains the differently cased path › exploded object query parameters › accepts a request when object properties are sent as individual query params
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 400
+
+      1457 |       });
+      1458 |
+    > 1459 |       expect(response.status).toBe(200);
+           |                               ^
+      1460 |     });
+      1461 |
+      1462 |     it("rejects a request when no object properties are provided and the parameter is required", async () => {
+
+      at Object.toBe (test/server/dispatcher.audit.test.ts:1459:31)
+
+  ● given a request that contains the differently cased path › exploded object query parameters › reconstructs the object under the parameter name for the handler
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"pageable": {"page": "0", "size": "100"}}
+    Received: undefined
+
+      1488 |       });
+      1489 |
+    > 1490 |       expect(getCapturedQuery()).toEqual({
+           |                                  ^
+      1491 |         pageable: { page: "0", size: "100" },
+      1492 |       });
+      1493 |     });
+
+      at Object.toEqual (test/server/dispatcher.audit.test.ts:1490:34)
+
+  ● given a request that contains the differently cased path › exploded object query parameters › preserves unrelated query params outside the object
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"pageable": {"page": "0"}, "unrelated": "yes"}
+    Received: undefined
+
+      1505 |       });
+      1506 |
+    > 1507 |       expect(getCapturedQuery()).toEqual({
+           |                                  ^
+      1508 |         pageable: { page: "0" },
+      1509 |         unrelated: "yes",
+      1510 |       });
+
+      at Object.toEqual (test/server/dispatcher.audit.test.ts:1507:34)
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 49 skipped, 1 passed, 53 total
+Snapshots:   0 total
+Time:        0.182 s, estimated 1 s
+Ran all test suites matching test/server/dispatcher.audit.test.ts with tests matching "exploded object query parameters".

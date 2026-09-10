@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import baseManifest from "../src/data/quality-audit-evidence.json" with { type: "json" };
+import archivedManifest from "../src/data/quality-audit-evidence-v3.json" with { type: "json" };
 import historicalLedger from "../src/data/quality-historical-candidates.json" with { type: "json" };
 import {
   exactPoissonInterval,
@@ -22,6 +23,12 @@ import {
 const manifest = {
   ...baseManifest,
   historicalCandidates: historicalLedger.records,
+};
+
+const v4Manifest = () => {
+  const copy = structuredClone(manifest);
+  const study = copy.caseStudy;
+  return copy;
 };
 
 test("summarizeCases keeps report years and categories separate", () => {
@@ -95,14 +102,8 @@ test("primary windows include the start and exclude the end", () => {
 });
 
 test("churn windows include the exact start and exclude the exact end", () => {
-  assert.equal(
-    isCommitInCohortWindow(2026, "2026-03-10T11:38:20-05:00"),
-    true,
-  );
-  assert.equal(
-    isCommitInCohortWindow(2026, "2026-09-04T00:00:00Z"),
-    false,
-  );
+  assert.equal(isCommitInCohortWindow(2026, "2026-03-10T11:38:20-05:00"), true);
+  assert.equal(isCommitInCohortWindow(2026, "2026-09-04T00:00:00Z"), false);
 });
 
 test("churn path categories apply a stable, exclusive priority", () => {
@@ -171,11 +172,8 @@ test("checked-in primary cohorts reproduce the article results", () => {
     return {
       year,
       reports: cases.length,
-      introduced: selectIntroducedCases(
-        manifest.productCases,
-        year,
-        window,
-      ).length,
+      introduced: selectIntroducedCases(manifest.productCases, year, window)
+        .length,
       medianResponseDays: median(cases.map((item) => item.responseDays)),
     };
   });
@@ -190,7 +188,8 @@ test("automated verification snapshots retain all five cohort endpoints", () => 
     manifest.activity.snapshots;
   const { preAdoption, endOfObservation } = manifest.activity.snapshots;
   const historicCoverage = manifest.activity.historicCohorts;
-  const supplementalCoverage = manifest.activity.supplementalFullWindow.coverage;
+  const supplementalCoverage =
+    manifest.activity.supplementalFullWindow.coverage;
   assert.deepEqual(
     {
       comparison2022: {
@@ -200,24 +199,30 @@ test("automated verification snapshots retain all five cohort endpoints", () => 
         endTestDeclarations: comparison2022.end.testDeclarations,
       },
       comparison2023: {
-        testFiles: comparison2023.end.testFiles - comparison2023.start.testFiles,
+        testFiles:
+          comparison2023.end.testFiles - comparison2023.start.testFiles,
         testDeclarations:
-          comparison2023.end.testDeclarations - comparison2023.start.testDeclarations,
+          comparison2023.end.testDeclarations -
+          comparison2023.start.testDeclarations,
       },
       comparison2024: {
-        testFiles: comparison2024.end.testFiles - comparison2024.start.testFiles,
+        testFiles:
+          comparison2024.end.testFiles - comparison2024.start.testFiles,
         testDeclarations:
-          comparison2024.end.testDeclarations - comparison2024.start.testDeclarations,
+          comparison2024.end.testDeclarations -
+          comparison2024.start.testDeclarations,
       },
       comparison2025: {
-        testFiles: comparison2025.end.testFiles - comparison2025.start.testFiles,
+        testFiles:
+          comparison2025.end.testFiles - comparison2025.start.testFiles,
         testDeclarations:
           comparison2025.end.testDeclarations -
           comparison2025.start.testDeclarations,
         branchCoveragePercent:
           comparison2025.start.branchCoverage.branchCoveragePercent,
         coverageKind: comparison2025.start.branchCoverage.kind,
-        failedSuites: comparison2025.start.branchCoverage.testResult.failedSuites,
+        failedSuites:
+          comparison2025.start.branchCoverage.testResult.failedSuites,
       },
       aiCohort: {
         testFiles: endOfObservation.testFiles - preAdoption.testFiles,
@@ -365,23 +370,56 @@ test("checked-in commit and churn metrics retain exact matched-window totals", (
   const cohorts = manifest.activity.cohortGitMetrics.cohorts;
   assert.deepEqual(
     Object.fromEntries(
-      Object.entries(cohorts).map(([year, cohort]) => [year, {
-        firstParentCommits: cohort.firstParentCommits,
-        additions: cohort.additions,
-        deletions: cohort.deletions,
-        churn: cohort.churn,
-        categoryChurn: Object.values(cohort.categoryChurn).reduce(
-          (total, value) => total + value,
-          0,
-        ),
-      }]),
+      Object.entries(cohorts).map(([year, cohort]) => [
+        year,
+        {
+          firstParentCommits: cohort.firstParentCommits,
+          additions: cohort.additions,
+          deletions: cohort.deletions,
+          churn: cohort.churn,
+          categoryChurn: Object.values(cohort.categoryChurn).reduce(
+            (total, value) => total + value,
+            0,
+          ),
+        },
+      ]),
     ),
     {
-      2022: { firstParentCommits: 181, additions: 42770, deletions: 9252, churn: 52022, categoryChurn: 52022 },
-      2023: { firstParentCommits: 129, additions: 7535, deletions: 5036, churn: 12571, categoryChurn: 12571 },
-      2024: { firstParentCommits: 205, additions: 163929, deletions: 165287, churn: 329216, categoryChurn: 329216 },
-      2025: { firstParentCommits: 152, additions: 9714, deletions: 7256, churn: 16970, categoryChurn: 16970 },
-      2026: { firstParentCommits: 548, additions: 104938, deletions: 46409, churn: 151347, categoryChurn: 151347 },
+      2022: {
+        firstParentCommits: 181,
+        additions: 42770,
+        deletions: 9252,
+        churn: 52022,
+        categoryChurn: 52022,
+      },
+      2023: {
+        firstParentCommits: 129,
+        additions: 7535,
+        deletions: 5036,
+        churn: 12571,
+        categoryChurn: 12571,
+      },
+      2024: {
+        firstParentCommits: 205,
+        additions: 163929,
+        deletions: 165287,
+        churn: 329216,
+        categoryChurn: 329216,
+      },
+      2025: {
+        firstParentCommits: 152,
+        additions: 9714,
+        deletions: 7256,
+        churn: 16970,
+        categoryChurn: 16970,
+      },
+      2026: {
+        firstParentCommits: 548,
+        additions: 104938,
+        deletions: 46409,
+        churn: 151347,
+        categoryChurn: 151347,
+      },
     },
   );
   assert.equal(cohorts["2022"].status, "partial_history");
@@ -419,14 +457,7 @@ test("retrospective baselines use every complete eligible pre-AI cohort", () => 
   );
   assert.equal(median(historicNonDependencyMerges), 56.5);
   assert.equal(median(historicReleases), 13);
-  assert.equal(
-    median([
-      0,
-      6,
-      1,
-    ]),
-    1,
-  );
+  assert.equal(median([0, 6, 1]), 1);
   assert.equal(median([10, 48, 6]), 10);
   assert.equal(
     median([
@@ -482,8 +513,9 @@ test("candidate ledger exposes every reviewed disposition", () => {
   assert.equal(manifest.candidates.length, 19);
   assert.deepEqual(
     Object.fromEntries(
-      Object.entries(Object.groupBy(manifest.candidates, (item) => item.disposition))
-        .map(([key, items]) => [key, items.length]),
+      Object.entries(
+        Object.groupBy(manifest.candidates, (item) => item.disposition),
+      ).map(([key, items]) => [key, items.length]),
     ),
     {
       "product-defect": 14,
@@ -492,7 +524,58 @@ test("candidate ledger exposes every reviewed disposition", () => {
       "process-incident": 1,
     },
   );
-  assert.deepEqual(validateManifest(manifest), []);
+  assert.deepEqual(validateManifest(v4Manifest()), []);
+});
+
+test("archived schema three still reproduces its original consistency checks", () => {
+  const archived = {
+    ...archivedManifest,
+    historicalCandidates: historicalLedger.records,
+  };
+  assert.deepEqual(validateManifest(archived), []);
+});
+
+test("schema four validates source-linked delivery, experiments, and stored derivations", () => {
+  const valid = v4Manifest();
+  const invalidDisposition = structuredClone(valid);
+  invalidDisposition.caseStudy.delivery.pullRequests[0].disposition =
+    "non_dependency";
+  assert.match(
+    validateManifest(invalidDisposition).join("\n"),
+    /invalid delivery pull request disposition/,
+  );
+
+  const wrongCount = structuredClone(valid);
+  wrongCount.caseStudy.delivery.counts[
+    "mature-intake-2026"
+  ].publishedReleases += 1;
+  assert.match(
+    validateManifest(wrongCount).join("\n"),
+    /delivery count mismatch for mature-intake-2026: publishedReleases/,
+  );
+
+  const changedSource = structuredClone(valid);
+  changedSource.caseStudy.sourceFiles[0].sha256 = "0".repeat(64);
+  assert.match(
+    validateManifest(changedSource).join("\n"),
+    /source hash mismatch/,
+  );
+
+  const staleMature = structuredClone(valid);
+  staleMature.caseStudy.supportingMature["mature-intake-2026"].eventIds.push(
+    "invented",
+  );
+  assert.match(
+    validateManifest(staleMature).join("\n"),
+    /stored supportingMature does not match recomputed derivation/,
+  );
+
+  const invalidExperiment = structuredClone(valid);
+  invalidExperiment.caseStudy.experiments.fixed7.results[0].outcome = "none";
+  assert.match(
+    validateManifest(invalidExperiment).join("\n"),
+    /fixed7 results/,
+  );
 });
 
 test("manifest declares branch coverage and the mixed 2025 pair", () => {
@@ -551,10 +634,10 @@ test("validateManifest catches incomplete evidence relationships", () => {
     activity: {
       primaryWindow: {
         pullRequestAuthors: {
-          "2025": { dependencyBots: 0 },
-          "2026": { dependencyBots: 1 },
+          2025: { dependencyBots: 0 },
+          2026: { dependencyBots: 1 },
         },
-        mergedPullRequests: { "2025": 0, "2026": 2 },
+        mergedPullRequests: { 2025: 0, 2026: 2 },
       },
     },
   };
@@ -573,4 +656,20 @@ test("validateManifest reports structurally incomplete manifests", () => {
       error.startsWith("manifest validation could not complete:"),
     ),
   );
+});
+
+
+test("experiment output and environment hashes detect artifact drift", () => {
+  const changed=structuredClone(baseManifest);
+  changed.caseStudy.experiments.fixed7.artifacts[0].sha256="0".repeat(64);
+  assert.ok(validateManifest(changed).some(error=>error.includes("experiment artifact hash mismatch")));
+});
+
+
+test("matched and continuous stored delivery totals are checked as well as mature totals", () => {
+  for(const name of ["matched-2026","continuous-2024-09-01-to-cutoff"]) {
+    const changed=structuredClone(baseManifest);
+    changed.caseStudy.delivery.counts[name].publishedReleases += 1;
+    assert.ok(validateManifest(changed).some(error=>error.includes(`delivery count mismatch for ${name}`)));
+  }
 });

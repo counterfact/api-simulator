@@ -1,0 +1,68 @@
+(node:64236) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+FAIL test/typescript-generator/operation-type-coder.audit.test.js
+  an OperationTypeCoder
+    ✕ uses 'unknown' body type when response content has no schema (15 ms)
+    ○ skipped generates a list of potential names
+    ○ skipped creates a type declaration
+    ○ skipped returns the module path
+    ○ skipped returns the module path for /
+    ○ skipped generates a complex post operation
+    ○ skipped generates a complex post operation (OpenAPI 2)
+    ○ skipped generates a complex post operation (OpenAPI 2, consumes in root)
+    ○ skipped generates a complex post operation (OpenAPI 2 with produces at the root)
+    ○ skipped generates a simple get operation
+    ○ skipped generates a simple get operation (OpenAPI 2)
+    ○ skipped falls back to root level produces (OpenAPI 2)
+    ○ skipped generates an auth object for basic authentication
+    ○ skipped uses operationId for type names when available
+    ○ skipped falls back to HTTP_METHOD when operationId is not available
+    ○ skipped exports parameter types separately and references them
+    ○ skipped does not export parameter types when they are 'never'
+    ○ skipped generates a strongly-typed cookie object from cookie parameters
+    getOperationBaseName
+      ○ skipped falls back to HTTP method when operationId is absent
+      ○ skipped returns a plain operationId unchanged
+      ○ skipped converts hyphenated operationId to camelCase
+      ○ skipped converts dot-separated operationId to camelCase
+      ○ skipped converts space-separated operationId to camelCase
+      ○ skipped camelCases across non-identifier characters
+      ○ skipped prefixes with underscore when operationId starts with a digit
+      ○ skipped appends underscore when operationId is a reserved word
+      ○ skipped appends underscore when operationId is another reserved word
+      ○ skipped appends underscore when operationId is await
+      ○ skipped appends underscore when operationId becomes a reserved word after stripping trailing non-identifier chars
+      ○ skipped does not append underscore when operationId already has a suffix making it non-reserved
+
+  ● an OperationTypeCoder › uses 'unknown' body type when response content has no schema
+
+    expect(received).not.toThrow()
+
+    Error name:    "TypeError"
+    Error message: "Cannot read properties of undefined (reading 'isReference')"
+
+          61 |
+          62 |   write(script) {
+        > 63 |     if (this.requirement.isReference) {
+             |                          ^
+          64 |       return script.importType(this);
+          65 |     }
+          66 |
+
+      at SchemaTypeCoder.isReference [as write] (src/typescript-generator/schema-type-coder.js:63:26)
+      at write (src/typescript-generator/operation-type-coder.js:30:67)
+      at callback (src/typescript-generator/requirement.js:74:46)
+      at callback (src/typescript-generator/requirement.js:66:7)
+                at Array.forEach (<anonymous>)
+      at Requirement.forEach (src/typescript-generator/requirement.js:65:28)
+      at Requirement.forEach [as map] (src/typescript-generator/requirement.js:74:10)
+      at map (src/typescript-generator/operation-type-coder.js:26:42)
+      at callback (src/typescript-generator/requirement.js:74:46)
+      at callback (src/typescript-generator/requirement.js:66:7)
+      at Object.toThrow (test/typescript-generator/operation-type-coder.audit.test.js:696:56)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 29 skipped, 30 total
+Snapshots:   0 total
+Time:        0.387 s, estimated 1 s
+Ran all test suites matching /test\/typescript-generator\/operation-type-coder.audit.test.js/i with tests matching "no schema".

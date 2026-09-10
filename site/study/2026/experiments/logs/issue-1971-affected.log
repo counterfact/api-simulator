@@ -1,0 +1,54 @@
+(node:64279) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64279) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+FAIL test/server/dispatcher.audit.test.ts
+  ● a dispatcher › converts path-level parameters to numbers when defined at path item level
+
+    expect(received).toStrictEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "intId": 42,
+    +   "intId": "42",
+      }
+
+      899 |     });
+      900 |
+    > 901 |     expect(result.body).toStrictEqual({ intId: 42 });
+          |                         ^
+      902 |   });
+      903 |
+      904 |   it("merges path-item-level and operation-level parameters for type conversion", async () => {
+
+      at Object.toStrictEqual (test/server/dispatcher.audit.test.ts:901:25)
+
+  ● a dispatcher › merges path-item-level and operation-level parameters for type conversion
+
+    expect(received).toStrictEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "count": 3,
+    -   "pathId": 7,
+    +   "pathId": "7",
+      }
+
+      963 |     });
+      964 |
+    > 965 |     expect(result.body).toStrictEqual({ count: 3, pathId: 7 });
+          |                         ^
+      966 |   });
+      967 |
+      968 |   it("attaches the root produces array to an operation", () => {
+
+      at Object.toStrictEqual (test/server/dispatcher.audit.test.ts:965:25)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 59 skipped, 61 total
+Snapshots:   0 total
+Time:        0.182 s, estimated 1 s
+Ran all test suites matching test/server/dispatcher.audit.test.ts with tests matching "converts path-level parameters to numbers when defined at path item level|merges path-item-level and operation-level parameters".

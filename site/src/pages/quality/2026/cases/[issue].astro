@@ -2,6 +2,7 @@
 import QualityLayout from "../../../../layouts/QualityLayout.astro";
 import {
   allProductCases,
+  auditEvidence,
   caseIsInPrimaryWindow,
   casePath,
   caseWasIntroducedInPrimaryWindow,
@@ -35,6 +36,9 @@ interface Props {
 }
 
 const { item, previous, next } = Astro.props;
+const record = auditEvidence.caseStudy.defects.find(r=>r.id===item.id);
+const elapsed = record?.fixedPublishedAt ? (Date.parse(record.fixedPublishedAt)-Date.parse(item.reportedAt))/86400000 : null;
+const experiment = auditEvidence.caseStudy.experiments.fixed7.results.find(r=>String(r.id)===String(item.issue));
 ---
 
 <QualityLayout
@@ -47,10 +51,10 @@ const { item, previous, next } = Astro.props;
     <header class="appendix-header">
       <p class="breadcrumbs">
         <a href="/quality/2026">Article</a> /{" "}
-        <a href="/quality/2026/cases">Defect cases</a> / #{item.issue}
+        <a href="/quality/2026/cases">Case records</a> / #{item.issue}
       </p>
       <h1>{item.title}</h1>
-      <p>{item.failure}</p>
+      <p>{item.failure}</p><p>This page traces one detailed external-report case through the available source and release evidence. The <a href="/quality/2026/candidates#census">public-record census</a> includes additional discovery channels and separately identified recurrences.</p>
     </header>
 
     <dl class="case-facts">
@@ -58,16 +62,17 @@ const { item, previous, next } = Astro.props;
       <div><dt>Reporter</dt><dd>{item.reporter}</dd></div>
       <div><dt>Reported</dt><dd>{item.reportedOn}</dd></div>
       <div><dt>Reported version</dt><dd>{item.reportedVersion}</dd></div>
-      <div><dt>Primary matched window</dt><dd>{caseIsInPrimaryWindow(item) ? "Included" : "Outside primary window"}</dd></div>
-      <div><dt>First affected release entered primary window</dt><dd>{caseWasIntroducedInPrimaryWindow(item) ? "Yes" : "No"}</dd></div>
+      <div><dt>Matched window</dt><dd>{caseIsInPrimaryWindow(item) ? "Included" : "Outside matched window"}</dd></div>
+      <div><dt>First affected release entered matched window</dt><dd>{caseWasIntroducedInPrimaryWindow(item) ? "Yes" : "No"}</dd></div>
       <div><dt>Origin classification</dt><dd>{categoryLabel(item.category, item.reportYear)}</dd></div>
       <div><dt>Classification confidence</dt><dd>{item.confidence}</dd></div>
       <div><dt>Chronology confidence</dt><dd>{item.chronologyConfidence}</dd></div>
       <div><dt>Accepted correction</dt><dd>PR #{item.fixPr}</dd></div>
       <div><dt>First fixed release</dt><dd>{item.fixedRelease}</dd></div>
-      <div><dt>Report to release</dt><dd>{item.responseDays} {item.responseDays === 1 ? "day" : "days"}</dd></div>
+      <div><dt>Report to release</dt><dd>{elapsed === null ? "Unresolved" : `${elapsed.toFixed(2)} elapsed days`}<span class="cell-detail">Report: {item.reportedAt}; corrected publication: {record?.fixedPublishedAt ?? "unresolved"}.</span></dd></div>
     </dl>
 
+    {experiment && <p><a href={`/quality/2026/experiments#issue-${experiment.id}`}>Historical test demonstration and reproducible commands</a></p>}
     <section aria-labelledby="case-finding">
       <h2 id="case-finding">Finding</h2>
       <p>{item.finding}</p>

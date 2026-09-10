@@ -1,3 +1,5 @@
+import { validateCaseStudy } from "./quality-case-study-lib.mjs";
+
 export const categories = [
   "Same-year regression",
   "Defect in same-year feature",
@@ -20,8 +22,7 @@ export function summarizeCases(cases, year) {
 export function isWithinWindow(timestamp, window) {
   const value = Date.parse(timestamp);
   return (
-    value >= Date.parse(window.start) &&
-    value < Date.parse(window.endExclusive)
+    value >= Date.parse(window.start) && value < Date.parse(window.endExclusive)
   );
 }
 
@@ -123,7 +124,9 @@ export function validateManifest(manifest) {
 
 function validateManifestUnchecked(manifest) {
   const errors = [];
-  if (manifest.schemaVersion !== 3)
+  if (manifest.schemaVersion === 4) {
+    errors.push(...validateCaseStudy(manifest.caseStudy ?? manifest).errors);
+  } else if (manifest.schemaVersion !== 3)
     errors.push(`unsupported schema version: ${manifest.schemaVersion}`);
   if (manifest.analysis?.coverageMetric !== "branch") {
     errors.push("analysis coverage metric must be branch");
@@ -140,9 +143,9 @@ function validateManifestUnchecked(manifest) {
     errors.push("mature analysis must declare raw event count as primary");
   }
   const historicalCandidates = manifest.historicalCandidates;
-  if (!Array.isArray(historicalCandidates)) {
+  if (!Array.isArray(historicalCandidates) && manifest.schemaVersion !== 4) {
     errors.push("missing historical candidate ledger");
-  } else {
+  } else if (Array.isArray(historicalCandidates)) {
     const expected = { 2022: 173, 2023: 152, 2024: 242 };
     const expectedDefects = { 2022: 0, 2023: 4, 2024: 7 };
     for (const year of [2022, 2023, 2024]) {
@@ -252,7 +255,8 @@ function validateManifestUnchecked(manifest) {
   );
   const processIds = new Set(manifest.processIncidents.map((item) => item.id));
   for (const id of processCandidateIds) {
-    if (!processIds.has(id)) errors.push(`process candidate has no incident: ${id}`);
+    if (!processIds.has(id))
+      errors.push(`process candidate has no incident: ${id}`);
   }
 
   for (const year of [2025, 2026]) {

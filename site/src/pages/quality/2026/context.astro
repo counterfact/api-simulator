@@ -1,232 +1,70 @@
 ---
 import QualityLayout from "../../../layouts/QualityLayout.astro";
-import {
-  auditEvidence,
-  coverageReference,
-  featureTimeline,
-  gitCohortMetrics,
-  gitHistoricalBaselineRows,
-  historicDefectSummaries,
-  retrospectiveBaselineRows,
-} from "../../../data/quality-2026";
+import evidence from "../../../data/quality-audit-evidence.json" with { type: "json" };
+import { deriveMature, derivePeriods } from "../../../../scripts/quality-case-study-lib.mjs";
+import { exactPoissonInterval } from "../../../../scripts/quality-audit-lib.mjs";
 
-const supplemental = auditEvidence.activity.supplementalFullWindow;
-const adoption = auditEvidence.activity.adoption;
+const study = evidence.caseStudy as any;
+const mature = deriveMature(study.matureRecords, study.delivery, study.delivery.windows) as Record<string, any>;
+const periods = derivePeriods(study) as Record<string, any>;
+const featureTimeline = evidence.featureTimeline;
+const unplacedUnresolved = (study.unresolvedRecords as any[]).filter((record) => !record.reportedAt && record.sources?.length);
+const matureRecords = new Map((study.matureRecords as any[]).map((record) => [record.id, record]));
+const matchedWindows = Object.entries(study.delivery.windows).filter(([name]) => name.startsWith("matched-"));
+const inWindow = (value: string, window: any) => value >= window.start && value < window.endExclusive;
+const matched = matchedWindows.map(([name, window]: [string, any]) => ({ name, window, reportIds: (study.matureRecords as any[]).filter((record) => inWindow(record.reportedAt, window)).map((record) => record.id) }));
+const rate = (events: number, denominator: number) => denominator > 0 ? (events / denominator) * 100 : null;
+const interval = (events: number, denominator: number) => denominator > 0 ? exactPoissonInterval(events, denominator) : null;
+const formatDate = (value: string) => new Date(value).toISOString().slice(0, 10);
 ---
 
-<QualityLayout
-  title="Supplementary data — Counterfact quality study"
-  description="Delivery, testing, coverage, adoption, and product-scope measurements supporting the Counterfact quality study."
-  canonicalPath="/quality/2026/context"
-  active="context"
->
+<QualityLayout title="Supporting evidence — Counterfact quality study" description="Recomputed mature-cohort, delivery, response, and capability records supporting the Counterfact quality study." canonicalPath="/quality/2026/context" active="context">
   <article class="appendix-page quality-reading quality-prose">
     <header class="appendix-header">
-      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Supplementary data</p>
-      <h1>Supplementary delivery and product data</h1>
-      <p>
-        This appendix preserves the audit detail behind the article’s matched-window
-        results: historical defect censuses, workload context, descriptive
-        baselines, public exposure, and product scope. None of these measurements
-        is treated as a standalone quality score.
-      </p>
+      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Supporting analyses</p>
+      <h1>Supporting delivery and response evidence</h1>
+      <p>These retrospective comparisons support the study question. They describe the observed delivery and correction record; they do not estimate a counterfactual defect total or establish a causal effect of coding agents.</p>
     </header>
 
-    <h2>Earlier externally reported product defects</h2>
-    <p>
-      These complete public GitHub issue and pull-request censuses use the same
-      exact window. A case enters the same-window count only when both its
-      external report and first confirmed affected public release fell within
-      that year’s window.
-    </p>
-    <div class="table-scroll">
-      <table class="research-table">
-        <thead><tr><th scope="col">Cohort</th><th scope="col">Issues / PRs reviewed</th><th scope="col">Qualifying external product-defect reports</th><th scope="col">Same-window report + affected release</th><th scope="col">Reported defects predating window</th><th scope="col">Median report-to-release</th></tr></thead>
-        <tbody>
-          {historicDefectSummaries.map((cohort) => (
-            <tr><th scope="row">{cohort.year}{cohort.note && <span class="cell-detail">{cohort.note}</span>}</th><td>{cohort.reviewedIssues} / {cohort.reviewedPullRequests}</td><td>{cohort.qualifyingExternalProductDefects}</td><td>{cohort.introducedReports.length === 0 ? cohort.introducedDisplay : cohort.introducedReports.map((report) => <><a href={report.sourceUrl}>#{report.number}</a>{" "}</>)}</td><td>{cohort.preExistingOrPreWindow}</td><td>{cohort.responseDisplay}</td></tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <p>
-      The 2023 same-window case was <a href="https://github.com/counterfact/api-simulator/issues/491">#491</a>, first released in 0.20.4. The 2024 same-window cases were <a href="https://github.com/counterfact/api-simulator/issues/866">#866</a> (0.39.0), <a href="https://github.com/counterfact/api-simulator/issues/906">#906</a> (0.40.0), and <a href="https://github.com/counterfact/api-simulator/issues/918">#918</a> (0.38.0). Their source history and the exact census queries are retained in the machine-readable evidence manifest.
-    </p>
+    <section aria-labelledby="mature">
+      <h2 id="mature">Mature intake cohorts</h2>
+      <p>Each intake window is recomputed from the mature-record, delivery, and window records. An unresolved chronology is displayed as incomplete rather than counted as zero.</p>
+      <div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Intake window</th><th scope="col">Eligible event records</th><th scope="col">Reports observed for response</th><th scope="col">Non-dependency merged PRs</th><th scope="col">Published releases</th><th scope="col">Response record</th></tr></thead><tbody>
+        {Object.entries(mature).map(([name, cohort]) => <tr><th scope="row">{name.replace("mature-intake-", "").replace("matched-", "")}<span class="cell-detail">{study.delivery.windows[name].start.slice(0, 10)} to {study.delivery.windows[name].endExclusive.slice(0, 10)}</span></th><td>{cohort.incomplete ? <>Unresolved ({cohort.counters.eventRecords} confirmed; {cohort.unresolvedIds.length} origins pending)</> : cohort.counters.eventRecords}</td><td>{cohort.counters.responseRecords}</td><td>{cohort.counters.deliveryNonDependencyPullRequestCount}<span class="cell-detail">{cohort.incomplete || cohort.counters.deliveryNonDependencyPullRequestCount === 0 ? "Rate not reported" : `${rate(cohort.counters.eventRecords, cohort.counters.deliveryNonDependencyPullRequestCount)?.toFixed(2)} per 100; exact 95% interval ${(interval(cohort.counters.eventRecords, cohort.counters.deliveryNonDependencyPullRequestCount)!.lower * 100).toFixed(2)}–${(interval(cohort.counters.eventRecords, cohort.counters.deliveryNonDependencyPullRequestCount)!.upper * 100).toFixed(2)}`}</span></td><td>{cohort.counters.deliveryReleaseCount}<span class="cell-detail">{cohort.incomplete || cohort.counters.deliveryReleaseCount === 0 ? "Rate not reported" : `${rate(cohort.counters.eventRecords, cohort.counters.deliveryReleaseCount)?.toFixed(2)} per 100; exact 95% interval ${(interval(cohort.counters.eventRecords, cohort.counters.deliveryReleaseCount)!.lower * 100).toFixed(2)}–${(interval(cohort.counters.eventRecords, cohort.counters.deliveryReleaseCount)!.upper * 100).toFixed(2)}`}</span></td><td>{cohort.counters.correctedWithinFollowup} corrected within follow-up; {cohort.counters.censored} censored{cohort.incomplete && <span class="cell-detail">Incomplete: {cohort.unresolvedIds.join(", ")}</span>}</td></tr>)}
+      </tbody></table></div>
+      <p>The delivery denominators above come from merged pull-request and npm-publication records within each stated window. Reported rates and exact Poisson intervals describe those observed counts only; they are not a reliability model or a causal estimate. Incomplete cohorts and zero denominators suppress rate display. The full source, including classification rules, is in <a href="/quality/2026/data.json">Download data</a>.</p>
+    </section>
 
-    <h2>Commit and line-change activity</h2>
-    <p>
-      The audit now counts first-parent commits and cumulative textual changes on{" "}
-      <code>main</code>. Each mainline integration is compared only with its first
-      parent, so a merged topic branch is counted once. The analysis is pinned to
-      the audit’s immutable September 3 observation commit.
-    </p>
-    <div class="table-scroll">
-      <table class="research-table">
-        <thead><tr><th scope="col">Cohort</th><th scope="col">First-parent commits</th><th scope="col">Lines added</th><th scope="col">Lines deleted</th><th scope="col">Total churn</th><th scope="col">File-touch occurrences</th></tr></thead>
-        <tbody>
-          {gitCohortMetrics.map((cohort) => (
-            <tr>
-              <th scope="row">{cohort.year}{cohort.year === 2026 && " AI cohort"}{"status" in cohort && <span class="cell-detail">{cohort.reason}</span>}</th>
-              <td>{cohort.firstParentCommits.toLocaleString()}</td>
-              <td>{cohort.additions.toLocaleString()}</td>
-              <td>{cohort.deletions.toLocaleString()}</td>
-              <td>{cohort.churn.toLocaleString()}</td>
-              <td>{cohort.fileTouchOccurrences.toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <div class="table-scroll">
-      <table class="research-table">
-        <thead><tr><th scope="col">Cohort</th><th scope="col">Test churn</th><th scope="col">Docs/site churn</th><th scope="col">Lock/generated churn</th><th scope="col">Source/other churn</th></tr></thead>
-        <tbody>
-          {gitCohortMetrics.map((cohort) => (
-            <tr>
-              <th scope="row">{cohort.year}{cohort.year === 2026 && " AI cohort"}</th>
-              <td>{cohort.categoryChurn.tests.toLocaleString()}</td>
-              <td>{cohort.categoryChurn.documentation.toLocaleString()}</td>
-              <td>{cohort.categoryChurn.lockOrGenerated.toLocaleString()}</td>
-              <td>{cohort.categoryChurn.sourceOrOther.toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <p>
-      Churn is additions plus deletions, not effort or product value. File-touch
-      occurrences count a path once per first-parent commit, not distinct files.
-      Categories are deterministic path rules applied in this order: lockfiles and
-      generated files, tests, docs/site, then source/other. The 2024 raw total is
-      dominated by a 148,049-line Yarn artifact that was added and later removed;
-      it is classified as lock/generated. The 2022 row covers only reachable
-      history beginning April 8 and is excluded from repository-derived baselines.
-    </p>
+    <section aria-labelledby="matched-population">
+      <h2 id="matched-population">Matched five-year report records</h2>
+      <p>This matched-window view derives report IDs from mature records whose report timestamps fall inside each delivery window.</p>
+      <div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Window</th><th scope="col">Reported mature records</th></tr></thead><tbody>{matched.map((row) => <tr><th scope="row">{row.name}<span class="cell-detail">{row.window.start.slice(0, 10)} to {row.window.endExclusive.slice(0, 10)}</span></th><td>{row.reportIds.length}<span class="cell-detail">{row.reportIds.join(", ") || "No report IDs"}</span></td></tr>)}</tbody></table></div>
+    </section>
 
-    <h2>Retrospective historical-baseline comparison</h2>
-    <p>
-      These baselines were constructed after the 2026 outcomes were known. They
-      summarize matched pre-AI cohorts and provide descriptive points of
-      comparison; they are not prospective predictions, prediction intervals,
-      causal estimates, or estimates of what necessarily would have happened
-      without AI. Each measure uses every pre-AI cohort with a complete comparable
-      observation.
-    </p>
-    <div class="table-scroll">
-      <table class="research-table">
-        <thead><tr><th scope="col">Measure</th><th scope="col">Historical basis</th><th scope="col">2026 benchmark</th><th scope="col">2026 observed</th><th scope="col">Observed − benchmark</th></tr></thead>
-        <tbody>
-          {retrospectiveBaselineRows.map((row) => (
-            <tr>
-              <th scope="row">{row.label}{row.note && <span class="cell-detail">{row.note}</span>}</th>
-              <td>{row.historicalBasis}</td>
-              <td>{row.displayBenchmark}</td>
-              <td>{row.displayActual}</td>
-              <td>{row.displayDifference}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <p>
-      “Historical range” is the minimum and maximum of the eligible pre-AI
-      cohorts, not a statistical confidence or prediction interval. The
-      exposure-scaled defect benchmark applies the pooled pre-AI rate—four
-      qualifying within-window introductions across 203 non-dependency merged
-      PRs, or 1.97 per 100—to the 281 observed 2026 PRs. The resulting 5.54 is an
-      expected-value benchmark, not a claim that 5.54 defects necessarily existed
-      or that AI prevented them. No significance test is claimed.
-    </p>
-    <table class="research-table">
-      <thead><tr><th scope="col">Coverage comparison</th><th scope="col">Value</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">Two-cohort pre-AI reference midpoint<span class="cell-detail">2023–2024 only; not a forecast.</span></th><td>{coverageReference.displayMidpoint}</td></tr>
-        <tr><th scope="row">Observed pre-AI range</th><td>{coverageReference.displayRange}</td></tr>
-        <tr><th scope="row">Observed 2026 change</th><td>{coverageReference.displayActual}</td></tr>
-        <tr><th scope="row">Observed minus reference midpoint</th><td>{coverageReference.displayDifference}</td></tr>
-      </tbody>
-    </table>
-    <p>
-      Coverage has only two complete comparable pre-AI changes, and the 2026
-      package reorganization changed its denominator. The midpoint is therefore
-      reference context only. Commit and churn medians are likewise additional
-      workload context, not inputs to the defect-rate benchmark:
-    </p>
-    <div class="table-scroll">
-      <table class="research-table">
-        <thead><tr><th scope="col">Workload measure</th><th scope="col">Historical basis</th><th scope="col">2026 benchmark</th><th scope="col">2026 observed</th><th scope="col">Observed − benchmark</th></tr></thead>
-        <tbody>
-          {gitHistoricalBaselineRows.map((row) => (
-            <tr><th scope="row">{row.label}</th><td>{row.historicalBasis}</td><td>{row.displayBenchmark}</td><td>{row.displayActual}</td><td>{row.displayDifference}</td></tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <p>
-      Only 2023–2025 contribute to those repository-derived medians. Three
-      observations, differing merge strategies, mechanical changes, and the 2026
-      package reorganization do not support a stable churn-adjusted quality model.
-      Non-dependency merged PRs remain the audit’s declared exposure denominator.
-    </p>
+    <section aria-labelledby="adoption-periods">
+      <h2 id="adoption-periods">Pre- and post-adoption delivery record</h2>
+      <p>The pre-adoption interval runs from September 1, 2024 to the recorded adoption timestamp; the post-adoption interval runs from that timestamp to September 4, 2026. The durations differ, so this table reports counts only and makes no rate or effect claim.</p>
+      <div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Period</th><th scope="col">Non-dependency merged PRs</th><th scope="col">Published releases</th><th scope="col">Released reports by discovery channel</th><th scope="col">Pre-release reports</th><th scope="col">Unknown release status</th></tr></thead><tbody>
+        {Object.entries(periods).map(([name, period]) => <tr><th scope="row">{name.replace("mature-intake-", "").replace("matched-", "")}<span class="cell-detail">{period.start} to {period.endExclusive}</span></th><td>{period.nonDependencyMergedPullRequestIds.length}</td><td>{period.publishedReleaseIds.length}</td><td>external human: {period.releasedByChannel["external-human"]}; internal human: {period.releasedByChannel["internal-human"]}; automated agent: {period.releasedByChannel["automated-agent"]}; unknown: {period.releasedByChannel.unknown}</td><td>{period.preReleaseIds.length}</td><td>{period.unknownReleaseIds.length}</td></tr>)}
+      </tbody></table></div>
+    </section>
 
-    <h2>Full-window sensitivity measurements</h2>
-    <p>
-      The original January 1–September 3 comparison counted{" "}
-      {supplemental.mergedPullRequests["2025"]} merged pull requests and{" "}
-      {supplemental.publishedReleases["2025"]} releases in 2025, versus{" "}
-      {supplemental.mergedPullRequests["2026"]} merged pull requests and{" "}
-      {supplemental.publishedReleases["2026"]} releases in 2026. It used the final{" "}
-      2025 release snapshot—{supplemental.testFiles["2025"]} test files and{" "}
-      {supplemental.testDeclarations["2025"]} declarations—rather than the more
-      precise March 10 pre-adoption snapshot used in the article. This retained
-      two-year sensitivity check is not the report’s historical baseline: the
-      matched 2022–2025 cohorts are used for that purpose.
-    </p>
+    <section aria-labelledby="response-observations">
+      <h2 id="response-observations">Response observations</h2>
+      <p>A response observation records the report date, the 90-day follow-up deadline, and either a first corrected publication or the applicable censoring point. The deadline is a study boundary for comparable historical follow-up, not a repair objective, MTTR, or time-to-restore measure. It is separate from the eligible-event count because a report may be observable without satisfying that event definition.</p>
+      {Object.entries(mature).map(([name, cohort]) => <details><summary>{name}: {cohort.responseObservations.length} response observation{cohort.responseObservations.length === 1 ? "" : "s"}</summary>{cohort.responseObservations.length === 0 ? <p>No response observations are available for this intake window.</p> : <div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Record</th><th scope="col">Reported</th><th scope="col">90-day deadline</th><th scope="col">Observed until</th><th scope="col">Status</th><th scope="col">Elapsed days</th></tr></thead><tbody>{cohort.responseObservations.map((row: any) => <tr><th scope="row">{matureRecords.get(row.id)?.sources?.[0] ? <a href={matureRecords.get(row.id).sources[0]}>{row.id}</a> : row.id}</th><td>{formatDate(row.reportAt)}</td><td>{formatDate(row.deadline)}</td><td>{formatDate(row.observedUntil)}</td><td>{row.status}</td><td>{row.elapsedDays.toFixed(2)}</td></tr>)}</tbody></table></div>}</details>)}
+    </section>
 
-    <h2>Public exposure did not contract</h2>
-    <table class="research-table">
-      <thead><tr><th scope="col">Measure</th><th scope="col">Earlier observation</th><th scope="col">2026 observation</th></tr></thead>
-      <tbody>
-        <tr>
-          <th scope="row">npm downloads, January–August</th>
-          <td>{adoption.npmDownloadsJanuaryThroughAugust["2025"].toLocaleString()}</td>
-          <td>{adoption.npmDownloadsJanuaryThroughAugust["2026"].toLocaleString()}</td>
-        </tr>
-        <tr>
-          <th scope="row">GitHub stars</th>
-          <td>{adoption.githubStars.endOf2025} at year-end 2025</td>
-          <td>{adoption.githubStars.observedAt} on September 3</td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
-      Downloads include repeated and automated installations; stars indicate
-      interest rather than active use. They are included only to show that the
-      project’s externally visible footprint did not disappear while defects were
-      being observed.
-    </p>
+    <section aria-labelledby="diagnostics">
+      <h2 id="diagnostics">Unresolved-record diagnostics</h2>
+      <p>{study.unresolvedRecords.length} detailed records remain unresolved in the public-record census. They are not treated as confirmed defects, absent defects, or a zero response count.</p>
+      <ul>{study.unresolvedRecords.filter((record: any) => record.sources?.length).map((record: any) => <li><a href={record.sources[0]}>{record.id}</a>: {record.reason}</li>)}</ul>
+      {unplacedUnresolved.length > 0 && <details><summary>{unplacedUnresolved.length} unresolved direct-mainline candidates cannot be placed in a report-time month</summary><p>These records remain globally unresolved. Their author and committer timestamps support the record, but neither is presented as an invented discovery time or a zero monthly count.</p><div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Commit</th><th scope="col">Authored</th><th scope="col">Committed</th><th scope="col">Reason</th></tr></thead><tbody>{unplacedUnresolved.map((record: any) => <tr><th scope="row"><a href={record.sources[0]}>{record.id.replace("commit-", "")}</a></th><td>{record.authoredAt}</td><td>{record.committedAt}</td><td>{record.reason}</td></tr>)}</tbody></table></div></details>}
+    </section>
 
-    <h2>Major capabilities released in 2026</h2>
-    <ol class="chronology-list">
-      {featureTimeline.map((feature) => (
-        <li>
-          <p><strong>{feature.release}, {feature.date}:</strong> <a href={feature.href}>{feature.title}</a></p>
-          <p>{feature.detail}</p>
-        </li>
-      ))}
-    </ol>
-
-    <h2>Sources</h2>
-    <ul>
-      <li><a href="https://www.npmjs.com/package/counterfact?activeTab=versions">npm publication history</a></li>
-      <li><a href="https://api.npmjs.org/downloads/point/2025-01-01:2025-08-31/counterfact">2025 npm download interval</a></li>
-      <li><a href="https://api.npmjs.org/downloads/point/2026-01-01:2026-08-31/counterfact">2026 npm download interval</a></li>
-      <li><a href="https://github.com/counterfact/api-simulator/stargazers">GitHub stargazers</a></li>
-      <li><a href="/quality/2026/data.json">Complete machine-readable dataset</a></li>
-    </ul>
-    <p>
-      Exact query strings, timestamps, commits, and calculation rules are published
-      in the <a href="/quality/2026/methodology">methods appendix</a>.
-    </p>
+    <section aria-labelledby="capabilities">
+      <h2 id="capabilities">Major capabilities released in 2026</h2>
+      <ol class="chronology-list">{featureTimeline.map((feature) => <li><p><strong>{feature.release}, {feature.date}:</strong> <a href={feature.href}>{feature.title}</a></p><p>{feature.detail}</p></li>)}</ol>
+    </section>
   </article>
 </QualityLayout>

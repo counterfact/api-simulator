@@ -17,23 +17,17 @@ const incident = processIncidents[0];
 ---
 
 <QualityLayout
-  title="Defect case appendix — Counterfact quality study"
+  title="Case records — Counterfact quality study"
   description="Source and release histories for every product defect included in the Counterfact quality study."
   canonicalPath="/quality/2026/cases"
   active="cases"
 >
   <article class="appendix-page">
     <header class="appendix-header quality-reading">
-      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Defect case appendix</p>
-      <h1>Defect case appendix</h1>
+      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Case records</p>
+      <h1>Case records</h1>
       <p>
-        Fourteen reports met the product-defect rule: four in the full 2025
-        screen and ten in 2026. Each case traces the reported behavior backward
-        through source history and forward to the first release containing the
-        accepted correction. This appendix preserves the original two-year case
-        inventory; the article’s matched-window results separately incorporate
-        the 2022–2024 historical cohorts. Primary-window membership is shown
-        separately from defect origin.
+        These detailed external-report cases from 2025–2026 trace reported behavior through the available source and release evidence. Matched-window membership remains separate from defect origin. The <a href="/quality/2026/candidates#census">public-record census</a> provides the broader candidate record.
       </p>
     </header>
 
@@ -47,7 +41,7 @@ const incident = processIncidents[0];
                 <tr>
                   <th scope="col">Report</th>
                   <th scope="col">Reported</th>
-                  <th scope="col">Primary window</th>
+                  <th scope="col">Matched window</th>
                   <th scope="col">Origin classification</th>
                   <th scope="col">First fixed release</th>
                 </tr>
@@ -57,9 +51,9 @@ const incident = processIncidents[0];
                   <tr>
                     <th scope="row"><a href={casePath(item)}>#{item.issue}: {item.shortTitle}</a><span class="cell-detail">{item.reporter} · {item.area}</span></th>
                     <td>{item.reportedOn}</td>
-                    <td>{caseIsInPrimaryWindow(item) ? "Included" : "Outside primary window"}</td>
+                    <td>{caseIsInPrimaryWindow(item) ? "Included" : "Outside matched window"}</td>
                     <td>{categoryLabel(item.category, item.reportYear)}</td>
-                    <td>{item.fixedRelease}<span class="cell-detail">{item.responseDays} {item.responseDays === 1 ? "day" : "days"} after report</span></td>
+                    <td>{item.fixedRelease}<span class="cell-detail">{item.responseDays} calendar {item.responseDays === 1 ? "day" : "days"} after report</span></td>
                   </tr>
                 ))}
               </tbody>
@@ -87,9 +81,10 @@ const incident = processIncidents[0];
     <footer class="appendix-notes quality-reading quality-prose">
       <h2>Population transparency</h2>
       <p>
-        The <a href="/quality/2026/candidates">candidate disposition ledger</a>{" "}
-        also lists the three exclusions and the deduplicated pull request so the
-        denominator can be reviewed rather than inferred from this case list.
+        The <a href="/quality/2026/candidates#original-ledger">detailed external-report ledger</a>{" "}
+        shows the screening decisions for these cases. The
+        <a href="/quality/2026/candidates#census">public-record census</a> provides
+        the broader candidate record.
       </p>
     </footer>
   </article>

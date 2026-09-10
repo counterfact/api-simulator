@@ -1,0 +1,3 @@
+# Preserve raw public-record snapshots and terminal captures exactly as collected.
+site/study/2026/source/** -whitespace
+site/study/2026/experiments/logs/** -whitespace
