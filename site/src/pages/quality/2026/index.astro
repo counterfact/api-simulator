@@ -1,6 +1,6 @@
 ---
 import QualityLayout from "../../../layouts/QualityLayout.astro";
-import { auditEvidence } from "../../../data/quality-2026";
+import { auditEvidence, verificationCohorts } from "../../../data/quality-2026";
 import { derivePeriods } from "../../../../scripts/quality-case-study-lib.mjs";
 const study = auditEvidence.caseStudy;
 const periods = derivePeriods(study);
@@ -15,6 +15,11 @@ const maxDays = Math.max(...reports.map(r=>days(r.reportedAt,pub.get(r.fixedRele
 const deliveryRows=Object.entries(study.delivery.windows).filter(([name])=>/^matched-202[2-6]$/.test(name)).map(([name,w])=>({year:name.slice(-4),count:study.delivery.pullRequests.filter(r=>r.disposition==='non-dependency' && r.mergedAt>=w.start && r.mergedAt<w.endExclusive).length}));
 const demonstrated=experiments.filter(r=>r.outcome==='demonstrated_detection').length;
 const outcomeLabel = (value:string) => value.replaceAll("_", " ");
+const declarationChange = (cohort: typeof verificationCohorts[number]) => {
+  if (cohort.year === 2022) return "Not calculable";
+  const [start, end] = cohort.testDeclarations.split(" → ").map(Number);
+  return `+${end - start}`;
+};
 ---
 <QualityLayout title="Six months of agent-assisted development in Counterfact" description="A Codex-authored evaluation of whether agent assistance increased Counterfact delivery while keeping verification and repair effective. Evidence, methods, and reproducible checks." canonicalPath="/quality/2026" active="article">
 <article class="research-article">
@@ -48,6 +53,16 @@ const outcomeLabel = (value:string) => value.replaceAll("_", " ");
 <div class="article-body quality-reading quality-prose">
 <p>The releases give that activity concrete meaning. March brought an Admin API. April added request validation, reusable scenarios, and multiple APIs in one process. May added API versioning and broader OpenAPI support; August brought a shared store and modular packages. The <a href="/quality/2026/context#capabilities">release chronology</a> links those capabilities to their sources.</p>
 <p>The delivery expectation is supported: activity increased, and the release history shows what that work put into users’ hands.</p>
+<section><h2>Test declarations grew in every comparable cohort</h2>
+<p>The 2026 cohort added 634 explicit test declarations in the matched window. The earlier comparable cohorts added 10, 48, and 6. That is a large expansion in verification inventory alongside delivery, although a count does not show whether a check can detect an important failure.</p>
+</section>
+</div>
+<section class="article-figure quality-figure-wide" aria-labelledby="declarations-heading">
+<div class="figure-heading"><h2 id="declarations-heading">Explicit test declarations in comparable windows</h2><p>March 10 at 16:38:20 UTC through September 3, each year. Counts include JavaScript and TypeScript declarations in conventional test files.</p></div>
+<div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Cohort</th><th scope="col">Start</th><th scope="col">End</th><th scope="col">Net new</th></tr></thead><tbody>{verificationCohorts.map(cohort=><tr><th scope="row">{cohort.year}{cohort.year===2026 ? " · agent-assisted period" : ""}</th><td>{cohort.year===2022 ? "Not available" : cohort.testDeclarations.split(" → ")[0]}</td><td>{cohort.testDeclarations.split(" → ")[1]}</td><td>{declarationChange(cohort)}</td></tr>)}</tbody></table></div>
+<p class="figure-note">The repository’s reachable history begins after the 2022 start boundary, so that cohort has no comparable net change. These are inventory counts, not evidence that every test is useful; the seven paired experiments below address a narrower behavioral question.</p>
+</section>
+<div class="article-body quality-reading quality-prose">
 <section><h2>2. The external repair loop was working</h2>
 <p>Seven confirmed external defect reports arrived after adoption. All seven concerned behavior already present in releases before adoption. Five reached a corrected release on the next calendar date; all seven within five calendar days. The study counts a repair when it reaches a public release, not when an issue closes.</p>
 <p>There are only seven reports, and one person supplied six of them. They show that these observed failures were handled promptly. They do not measure everything users encountered, and they do not establish a lower defect rate.</p>
