@@ -1,0 +1,148 @@
+{
+  "artifacts": [
+    {
+      "path": "site/study/2026/experiments/README.md",
+      "sha256": "c3df5070d4606fdafe71928344befd5b82c59b2d43c970eb2887be18ff287166"
+    },
+    {
+      "path": "site/study/2026/experiments/assert-packaging-lifecycle.mjs",
+      "sha256": "bc5f8a5752b62b1b39a3f118d0fba20ff1b972de4d3d7cef884a356ee29638a5"
+    },
+    {
+      "path": "site/study/2026/experiments/environments/1617/.yarnrc.yml",
+      "sha256": "473e6def86fc03638120e0c01d0c8bbab095677256460fa4ea763e5d4697f270"
+    },
+    {
+      "path": "site/study/2026/experiments/environments/1617/package.json",
+      "sha256": "fbf0baee39699830ecc10d4846d52c7b5e479a5b393f66a349a244fdb7f94f45"
+    },
+    {
+      "path": "site/study/2026/experiments/environments/1617/yarn.lock",
+      "sha256": "f0eda2dc793bd981633d1b135d2f1d25155a29ab727d1775ce65077384ea04ca"
+    },
+    {
+      "path": "site/study/2026/experiments/environments/1618/.yarnrc.yml",
+      "sha256": "473e6def86fc03638120e0c01d0c8bbab095677256460fa4ea763e5d4697f270"
+    },
+    {
+      "path": "site/study/2026/experiments/environments/1618/package.json",
+      "sha256": "7604c8eb15d195bbc4e03b74010c8407a07a97f772be0033921c97cce8ff034c"
+    },
+    {
+      "path": "site/study/2026/experiments/environments/1618/yarn.lock",
+      "sha256": "328f121450c3b47817c577eac3cad5fdc46ca64a510d39b77fc6e73507135d94"
+    },
+    {
+      "path": "site/study/2026/experiments/environments/2075-2.11.0/package-lock.json",
+      "sha256": "89176bb1a5240d805ded261a313728e59935259491f3e4f9c15d0605544e3c6e"
+    },
+    {
+      "path": "site/study/2026/experiments/environments/2075-2.11.0/package.json",
+      "sha256": "2e6147cc2a504e1475f9807dc9b96a8f3150d1a4e10a4589a575324ddd812e9a"
+    },
+    {
+      "path": "site/study/2026/experiments/environments/2075-2.12.0/package-lock.json",
+      "sha256": "bb5bb037d4289984ddd9424b54ca076bc66e00e5d38810adbddb1f09bb781589"
+    },
+    {
+      "path": "site/study/2026/experiments/environments/2075-2.12.0/package.json",
+      "sha256": "d698315fc9baf60a411bccb331542f5c61a2a677569a700217a4ebcba8718382"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1617-affected.log",
+      "sha256": "ff1ae47a01173703695737f615ca3a0e4522c9a8b410159d8ea969db2fc32f14"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1617-corrected.log",
+      "sha256": "5e1ff6933672dd68f6a5cd38df049551e50d132e445cc1e9838dc0197a80ee6e"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1618-affected.log",
+      "sha256": "f155de9135af1ea3f5a8106de5d6efa90d4d2034754c88cc081a9e508f73e5bd"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1618-corrected-containing-release.log",
+      "sha256": "b32da514d030faad2a284ab9baf96ea5a3c958bcb5026220ddfd62122d9b76c8"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1619-affected.log",
+      "sha256": "b6dcd1e798ba130f8b1b41ecd5434acdf79f8409245084b1144ff97f0b545f7b"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1619-corrected.log",
+      "sha256": "1cf1da25b76385bb059e450d7d847c21a9b641ec850ed0b8505087dab4890647"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1842-affected.log",
+      "sha256": "d1fbf3628629ceda0ed66c1cd91b6ced35d2d27bb08123273ca8d9e1fec5e76d"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1842-corrected.log",
+      "sha256": "c5579c9eedcc6ea8af6cf621caca8fec7f8b553f419f977034d60769e2c4522b"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1933-affected.log",
+      "sha256": "c4390e9ed6901bc354e3553b34349dd52f83463bf9e8c6f701a50521abb23ac9"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1933-corrected.log",
+      "sha256": "5cd2fe9601b6da22735c1e05b5af5d3489583ce741a628b234a44f8101c27136"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1971-affected.log",
+      "sha256": "219785bade70b92ad989441498d2993ea88f94e59cef47d1ea895eac730bad35"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-1971-corrected.log",
+      "sha256": "1539e0d0c5afb633953822345f298e97e0f577fd2bf03ab28efdf0dbe940ce7e"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-2075-2.11.0-install.log",
+      "sha256": "a9597c328691de240033b828b965ba95f25894e1ebe5a228dd0f1d338ecb3887"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-2075-2.11.0-package.json",
+      "sha256": "7b69bd3b4f6748a298261c9eec8bd45600a8667c838b71b02edd3b8e5f73dccf"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-2075-2.12.0-install.log",
+      "sha256": "274b334dbda9f24227ab1db7673e8c1028d1b9025661d2fa765ed555f0c38d81"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-2075-2.12.0-package.json",
+      "sha256": "ca4fcc3b717e82ff40de8f9a9555b47717ed94ff73805e041f07a5c27850c923"
+    },
+    {
+      "path": "site/study/2026/experiments/logs/issue-2075-assertion.log",
+      "sha256": "ddf8db51fb180cb7f87662fb5a42b65bcce8159cb667a82437173519d372612c"
+    },
+    {
+      "path": "site/study/2026/experiments/reproducers/issue-1617-operation-type-coder.audit.test.js",
+      "sha256": "685f6cf6b34b1a3e98f536f4156cdf35ef503a4cc48b96112dbfa01ec47ba10d"
+    },
+    {
+      "path": "site/study/2026/experiments/reproducers/issue-1618-operation-type-coder.audit.test.js",
+      "sha256": "685f6cf6b34b1a3e98f536f4156cdf35ef503a4cc48b96112dbfa01ec47ba10d"
+    },
+    {
+      "path": "site/study/2026/experiments/reproducers/issue-1619-script.audit.test.js",
+      "sha256": "da594a4b4cbb306882a8cec60cb2043a162f75de79288a6f2eae154a63981684"
+    },
+    {
+      "path": "site/study/2026/experiments/reproducers/issue-1842-generate.audit.test.ts",
+      "sha256": "6d3d2dc0d13dcc8cee023195a361796a5f1d982f51cb1bc3f2fc129e02e129e9"
+    },
+    {
+      "path": "site/study/2026/experiments/reproducers/issue-1933-dispatcher.audit.test.ts",
+      "sha256": "5820cff72e416f154303f1fe96880d547005a209517f427a93492a6de95f52e2"
+    },
+    {
+      "path": "site/study/2026/experiments/reproducers/issue-1971-dispatcher.audit.test.ts",
+      "sha256": "266ad9faed8cd7a2a45bb8cbafaf660421dd53c377f6743622638d506b47251c"
+    },
+    {
+      "path": "site/study/2026/experiments/results.json",
+      "sha256": "2e90da71d55aa3948df0e121a64089d31df862edb3c2a5f34d89cea196b1ea9a"
+    }
+  ]
+}

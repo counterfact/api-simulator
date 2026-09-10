@@ -1,439 +1,99 @@
 ---
 import QualityLayout from "../../../layouts/QualityLayout.astro";
-import {
-  auditEvidence,
-  gitHistoricalBaselineRows,
-  primaryMatureCohorts,
-  retrospectiveBaselineRows,
-  verificationCohorts,
-} from "../../../data/quality-2026";
-
-const historicalBaseline = Object.fromEntries(
-  retrospectiveBaselineRows.map((row) => [row.label, row]),
-);
-const gitBaseline = Object.fromEntries(
-  gitHistoricalBaselineRows.map((row) => [row.label, row]),
-);
-const formatRate = (
-  rate: number | null,
-  interval: { lower: number; upper: number } | null,
-  scale = 1,
-) =>
-  rate === null || interval === null
-    ? "Not estimable"
-    : `${(rate * scale).toFixed(2)} (95% exact CI ${(interval.lower * scale).toFixed(2)}–${(interval.upper * scale).toFixed(2)})`;
-const mature2026 = primaryMatureCohorts.find((cohort) => cohort.year === 2026)!;
+import { auditEvidence, verificationCohorts } from "../../../data/quality-2026";
+import { derivePeriods } from "../../../../scripts/quality-case-study-lib.mjs";
+const study = auditEvidence.caseStudy;
+const periods = derivePeriods(study);
+const matched = { nonDependencyPullRequests: periods.postAdoption.nonDependencyMergedPullRequestIds.length, publishedReleases: periods.postAdoption.publishedReleaseIds.length };
+const historicalMaximum = Math.max(...Object.entries(study.delivery.windows).filter(([key])=>/^matched-202[2-5]$/.test(key)).map(([,w])=>study.delivery.pullRequests.filter(r=>r.disposition==='non-dependency' && r.mergedAt>=w.start && r.mergedAt<w.endExclusive).length));
+const experiments = study.experiments.fixed7.results;
+const fixedIds = new Set([1617, 1618, 1619, 1842, 1933, 1971, 2075]);
+const reports = auditEvidence.productCases.filter(c => fixedIds.has(c.issue));
+const pub = new Map(study.delivery.releases.map(r=>[r.version,r.publishedAt]));
+const days = (from:string,to:string) => (Date.parse(to)-Date.parse(from))/86400000;
+const maxDays = Math.max(...reports.map(r=>days(r.reportedAt,pub.get(r.fixedRelease)!)));
+const deliveryRows=Object.entries(study.delivery.windows).filter(([name])=>/^matched-202[2-6]$/.test(name)).map(([name,w])=>({year:name.slice(-4),count:study.delivery.pullRequests.filter(r=>r.disposition==='non-dependency' && r.mergedAt>=w.start && r.mergedAt<w.endExclusive).length}));
+const demonstrated=experiments.filter(r=>r.outcome==='demonstrated_detection').length;
+const outcomeLabel = (value:string) => value.replaceAll("_", " ");
+const declarationChange = (cohort: typeof verificationCohorts[number]) => {
+  if (cohort.year === 2022) return "Not calculable";
+  const [start, end] = cohort.testDeclarations.split(" → ").map(Number);
+  return `+${end - start}`;
+};
 ---
-
-<QualityLayout
-  title="What happened to Counterfact’s quality indicators after adopting agentic coding?"
-  description="A source-linked, retrospective study of Counterfact’s quality before and after coding agents entered the development workflow."
-  canonicalPath="/quality/2026"
-  active="article"
->
-  <article class="research-article">
-    <header class="article-header quality-reading">
-      <p class="hypothesis">
-        <strong>Hypothesis:</strong> After agent-authored code first entered
-        Counterfact’s main branch, development output would increase without
-        worsening the rate of newly introduced externally reported defects,
-        report-to-release time, or automated test coverage.
-      </p>
-      <h1>What happened to Counterfact’s quality indicators after adopting agentic coding?</h1>
-      <p class="article-byline">
-        Patrick McElhaney via Codex · Published September 4, 2026 · Updated
-        September 8, 2026 · Analysis v{auditEvidence.analysis.version}
-      </p>
-      <p class="article-lede">
-        <a href="https://github.com/counterfact/api-simulator">Counterfact</a> is
-        a TypeScript tool that turns an OpenAPI description into a live, stateful
-        mock API. On March 10, 2026, I began merging work authored by coding
-        agents into the project. I wanted to understand what happened to the
-        project’s observable quality indicators as that workflow became a major
-        part of delivery.
-      </p>
-      <section class="abstract" aria-labelledby="abstract-heading">
-        <h2 id="abstract-heading">Abstract</h2>
-        <p>
-          Delivery and test inventory increased substantially after adoption.
-          The audit observed no product defect whose first affected release and
-          external report both entered the post-adoption window. In the matched
-          2026 period, 36 test files and 634 explicit test declarations were
-          added, public branch coverage remained approximately stable, and
-          non-dependency delivery reached 281 merged pull requests, above the
-          15–75 range in 2022–2025. Observed external reports also reached a
-          corrected release faster. The retrospective design, 90-day observation
-          boundary, and incomplete visibility into defects do not establish an
-          overall quality increase or an AI effect.
-        </p>
-      </section>
-    </header>
-
-    <section class="study-summary quality-figure-wide" aria-labelledby="summary-heading">
-      <div class="study-summary-copy">
-        <p class="eyebrow">At a glance</p>
-        <h2 id="summary-heading">Favorable observations, wide uncertainty</h2>
-        <p>
-          The mature 2026 cohort has no observed externally reported event across
-          14 releases and 235 non-dependency merges. That is compatible with a
-          favorable period, but exact intervals remain wide and this design
-          cannot observe silent or late reports.
-        </p>
-      </div>
-      <dl class="study-summary-grid">
-        <div>
-          <dt>Primary 2026 result</dt>
-          <dd><strong>{mature2026.events}</strong> mature events</dd>
-        </div>
-        <div>
-          <dt>Observed exposure</dt>
-          <dd><strong>{mature2026.nonDependencyMergedPullRequests}</strong> PRs · <strong>{mature2026.publishedReleases}</strong> releases</dd>
-        </div>
-        <div>
-          <dt>Correction response</dt>
-          <dd><strong>{mature2026.response.medianDays}</strong> day KM median · 7/7 resolved</dd>
-        </div>
-        <div>
-          <dt>Auditability</dt>
-          <dd><strong>567</strong> historical records published</dd>
-        </div>
-      </dl>
-      <p class="study-summary-verdict">
-        <strong>Interpretation:</strong> descriptive evidence only; causal AI
-        attribution is not estimable from this study.
-      </p>
-    </section>
-
-    <div class="article-body quality-reading quality-prose">
-      <section aria-labelledby="study-question">
-        <h2 id="study-question">Research question</h2>
-        <p>
-          The concern behind this study is straightforward. Coding agents can
-          produce changes much faster than a maintainer working alone. If review
-          and verification do not keep pace, that additional output could simply
-          convert speed into defects. Counterfact offers a useful, bounded case:
-          its repository and release history are public, its behavior spans code
-          generation and a live HTTP runtime, and external users report concrete
-          failures through GitHub.
-        </p>
-        <p>
-          The hypothesis therefore has two parts. Output should rise, and three
-          observable quality indicators should not worsen: defects introduced
-          during the study window, time from report to corrected release, and
-          automated verification. A failure on those indicators would count
-          against the hypothesis even if more features shipped.
-        </p>
-      </section>
-
-      <section aria-labelledby="methods-summary">
-        <h2 id="methods-summary">Methods</h2>
-        <p>
-          This is a retrospective observational self-audit, not a controlled or
-          preregistered experiment. The intervention begins at{" "}
-          <a href={auditEvidence.study.intervention.source}>the first agent-authored
-          product change merged to <code>main</code></a> on March 10, 2026. The
-          defect comparison closes intake on June 6 so every release receives
-          exactly ninety days of follow-up. Verification and delivery context use
-          the longer matched March 10–September 3 interval. Each measure uses
-          every historical year with a complete comparable observation.
-        </p>
-        <p>
-          The defect population contains public issues and accepted standalone
-          pull requests opened by external humans and confirmed to describe faulty
-          product behavior. Each included case was traced backward through source
-          and release history. A report filed after adoption does not count as an
-          AI-period defect unless its first affected release also entered during
-          that period. Enhancements, invalid-input reports, duplicates, and a
-          release-provenance incident are recorded but not counted as product
-          defects.
-        </p>
-        <p>
-          The complete rules, exact timestamps, queries, and evidence standards
-          are in <a href="/quality/2026/methodology">the methods appendix</a>.
-          Every record in the original 2025–2026 review is listed in{" "}
-          <a href="/quality/2026/candidates">the candidate disposition ledger</a>.
-          The <a href="/quality/2026/historical-candidates">2022–2024 ledger</a>{" "}
-          publishes all 567 historical issue and pull-request dispositions.
-        </p>
-      </section>
-    </div>
-
-    <section class="article-figure quality-figure-wide" aria-labelledby="primary-results">
-      <div class="figure-heading">
-        <h2 id="primary-results">Results</h2>
-        <p>
-          Table 1. Ninety-day mature cohorts. Releases and reports enter from
-          March 10 at 16:38:20 UTC through June 6 at 00:00 UTC; follow-up
-          continues exactly ninety days through September 4. Raw event count is
-          primary. Rates are sensitivity analyses.
-        </p>
-      </div>
-      <div class="mature-event-chart" role="img" aria-label="Mature externally reported events by year: zero in 2023, three in 2024, zero in 2025, and zero in 2026.">
-        {primaryMatureCohorts.map((cohort) => (
-          <div class="mature-event-row">
-            <span>{cohort.year}</span>
-            <span class="mature-event-track" aria-hidden="true">
-              <span class:list={["mature-event-bar", { "is-zero": cohort.events === 0 }]} style={`--event-count: ${cohort.events}`}></span>
-            </span>
-            <strong>{cohort.events}</strong>
-          </div>
-        ))}
-      </div>
-      <div class="table-scroll" tabindex="0" role="region" aria-label="Ninety-day mature cohort results; scroll horizontally to see all years">
-        <table class="research-table wide-data-table">
-          <thead>
-            <tr>
-              <th scope="col">Measure</th>
-              {primaryMatureCohorts.map((cohort) => (
-                <th scope="col">{cohort.year}{cohort.year === 2026 && " post-adoption"}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">Mature externally reported events (primary)</th>
-              {primaryMatureCohorts.map((cohort) => <td><strong>{cohort.events}</strong></td>)}
-            </tr>
-            <tr>
-              <th scope="row">Events per published release (sensitivity)</th>
-              {primaryMatureCohorts.map((cohort) => (
-                <td>{formatRate(cohort.releaseRate, cohort.releaseInterval)}</td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">Events per 100 non-dependency merges (sensitivity)</th>
-              {primaryMatureCohorts.map((cohort) => (
-                <td>{formatRate(cohort.prRate, cohort.prInterval, 100)}</td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">Kaplan–Meier median time to corrected release</th>
-              {primaryMatureCohorts.map((cohort) => (
-                <td>{cohort.response.medianDays === null ? "Not estimable" : `${cohort.response.medianDays} ${cohort.response.medianDays === 1 ? "day" : "days"}`}</td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">Non-dependency merged pull requests</th>
-              {primaryMatureCohorts.map((cohort) => <td>{cohort.nonDependencyMergedPullRequests}</td>)}
-            </tr>
-            <tr>
-              <th scope="row">Published releases</th>
-              {primaryMatureCohorts.map((cohort) => <td>{cohort.publishedReleases}</td>)}
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="figure-note">
-        The 2022 startup cohort had no release or non-dependency merge before the
-        mature intake cutoff, so it is retained as a non-estimable sensitivity
-        rather than pooled into the primary 2023–2025 history. Exact Poisson
-        intervals show sampling uncertainty; they do not address reporting bias
-        or unequal release risk.
-      </p>
-    </section>
-
-    <div class="article-body quality-reading quality-prose">
-      <section aria-labelledby="reported-versus-introduced">
-        <h2 id="reported-versus-introduced">More reports, but none traced to the intervention period</h2>
-        <p>
-          External users reported seven confirmed product defects after adoption,
-          matching the highest count in the four 2022–2025 historical cohorts
-          (whose counts ranged from zero to seven). That increase from the
-          immediately preceding 2025 cohort is visible and should not be explained
-          away. Source history changes its interpretation, however: all seven
-          post-adoption reports concerned behavior already present before the first
-          agent-authored change reached <code>main</code>. Six were old edge cases.
-          The seventh belonged to an operation-ID feature first released on
-          February 26, twelve days before the intervention.
-        </p>
-        <p>
-          The finding is therefore not “fewer bugs.” It is that the observed
-          post-adoption reports did not identify a product defect introduced in
-          the post-adoption release cohort, despite a large increase in delivery.
-          This population cannot reveal defects that users did not encounter or
-          report.
-        </p>
-      </section>
-
-      <section aria-labelledby="response-result">
-        <h2 id="response-result">Corrections reached users faster</h2>
-        <p>
-          In the mature response cohorts, the Kaplan–Meier median time from report
-          to the first corrected release was one day after adoption and six days
-          in 2024. No 2023 report entered before the June 6 cutoff. The single 2025
-          report remained unresolved at ninety days and is censored rather than
-          discarded. All seven 2026 reports reached a corrected release within
-          five days. This measures release response, not diagnosis or review effort.
-        </p>
-      </section>
-    </div>
-
-    <figure class="article-figure quality-figure-wide" aria-labelledby="verification-heading">
-      <figcaption class="figure-heading">
-        <h2 id="verification-heading">Automated verification expanded</h2>
-        <p>
-          Table 2. Matched March–September verification snapshots for every
-          available cohort. The 2022 start snapshot is unavailable because the
-          repository’s reachable history begins after the March boundary.
-        </p>
-      </figcaption>
-      <div class="table-scroll compact-table">
-        <table class="research-table">
-          <thead>
-            <tr><th scope="col">Cohort</th><th scope="col">Test files, start → end</th><th scope="col">Declarations, start → end</th><th scope="col">Branch coverage, start → end</th></tr>
-          </thead>
-          <tbody>
-            {verificationCohorts.map((cohort) => (
-              <tr>
-                <th scope="row">
-                  {cohort.year}{cohort.year === 2026 && " AI cohort"}
-                  {cohort.note && <span class="cell-detail">{cohort.note}</span>}
-                  {cohort.firstReachableCommit && <span class="cell-detail">First main-reachable commit: <a href={`https://github.com/counterfact/api-simulator/commit/${cohort.firstReachableCommit}`}><code>{cohort.firstReachableCommit.slice(0, 8)}</code></a></span>}
-                </th>
-                <td>{cohort.testFiles}</td>
-                <td>{cohort.testDeclarations}</td>
-                <td>
-                  {cohort.coverageComparisonStatus === "not_comparable"
-                    ? <><a href={cohort.branchCoverageStart!.source}>{cohort.branchCoverageStart!.branchCoveragePercent.toFixed(3)}%</a> and <a href={cohort.branchCoverageEnd.source}>{cohort.branchCoverageEnd.branchCoveragePercent.toFixed(3)}%</a><span class="cell-detail">Not comparable: local recomputation and Coveralls observation.</span></>
-                    : <>{cohort.branchCoverageStart
-                      ? <><a href={cohort.branchCoverageStart.source}>{cohort.branchCoverageStart.branchCoveragePercent.toFixed(3)}%</a> → </>
-                      : "Not available → "}<a href={cohort.branchCoverageEnd.source}>{cohort.branchCoverageEnd.branchCoveragePercent.toFixed(3)}%</a></>}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p class="figure-note">
-        The 2025 start value was locally recomputed at the exact March commit,
-        while the end value is a Coveralls observation. The unchanged historical
-        suite had one failing response-builder assertion, so no coverage delta is
-        inferred from that pair.
-      </p>
-      <p class="figure-note">
-        The 2026 package reorganization changed the coverage denominator, so the
-        values are observations over changing source sets, not a fixed-codebase experiment.
-      </p>
-    </figure>
-
-    <div class="article-body quality-reading quality-prose">
-      <section aria-labelledby="historical-baseline-heading">
-        <h2 id="historical-baseline-heading">The 2026 result compared with retrospective pre-AI baselines</h2>
-        <p>
-          Across complete pre-AI cohorts, the median was{" "}
-          {historicalBaseline["Non-dependency merged PRs"].displayBenchmark}{" "}
-          non-dependency merges, {historicalBaseline["Published releases"].displayBenchmark}{" "}
-          releases, {historicalBaseline["Test files added"].displayBenchmark} added
-          test file, and {historicalBaseline["Test declarations added"].displayBenchmark}{" "}
-          added declarations. The observed 2026 values were{" "}
-          {historicalBaseline["Non-dependency merged PRs"].displayActual},{" "}
-          {historicalBaseline["Published releases"].displayActual},{" "}
-          {historicalBaseline["Test files added"].displayActual}, and{" "}
-          {historicalBaseline["Test declarations added"].displayActual}, respectively.
-        </p>
-        <p>
-          The pre-AI cohorts contain four observed defects whose first affected
-          release and external report both entered their matched windows, across
-          203 non-dependency merges. The post-adoption cohort contains zero across
-          281 merges under the same rule. Because pull requests are unequal risk
-          units and late-window releases have less time to produce a report, this
-          is descriptive context rather than a prediction, significance test, or
-          causal counterfactual. The supplementary data retains the arithmetic
-          exposure-scaling exercise and its assumptions.
-        </p>
-        <p>
-          Git activity supplies additional workload context: the 2023–2025 median
-          was {gitBaseline["First-parent commits"].displayBenchmark} first-parent
-          commits and {gitBaseline["Total textual churn"].displayBenchmark}; 2026
-          recorded {gitBaseline["First-parent commits"].displayActual} and{" "}
-          {gitBaseline["Total textual churn"].displayActual}. Churn is highly
-          sensitive to generated files, restructuring, and merge strategy, so it
-          is not used as the defect denominator. The{" "}
-          <a href="/quality/2026/context">supplementary data</a> shows every cohort,
-          historical range, churn category, coverage reference, and comparison
-          with the benchmark.
-        </p>
-      </section>
-
-      <section aria-labelledby="process-heading">
-        <h2 id="process-heading">One post-adoption process failure remains part of the result</h2>
-        <p>
-          Release 2.16.2 was authentic, but it appeared on npm without the normal
-          Git tag, GitHub release, or visible publishing provenance. An external
-          user reasonably questioned whether it was legitimate. The audit records
-          this as a process-quality incident rather than a product defect because
-          the published code was genuine. Excluding it from product percentages
-          does not remove it from the interpretation.
-        </p>
-      </section>
-
-      <section aria-labelledby="discussion-heading">
-        <h2 id="discussion-heading">Discussion</h2>
-        <p>
-          The observed combination is favorable but measure-specific. Delivery
-          and test inventory increased, public branch coverage remained
-          approximately stable, no mature post-adoption event was observed, and
-          observed corrections shipped faster. Test counts do
-          not establish test effectiveness, and the defect population does not
-          establish the absence of defects introduced late in the window.
-        </p>
-        <p>
-          It is not enough to identify the cause. Testing, explicit architecture,
-          tighter review gates, changes in contributors, the kinds of features
-          attempted, and ordinary learning by the maintainer all changed during
-          the same period. Agent-authored pull requests still depended on human
-          prompts, review, integration, and release decisions. A different project
-          or a less constrained workflow could produce a different result.
-        </p>
-      </section>
-
-      <section aria-labelledby="limitations-heading">
-        <h2 id="limitations-heading">Limitations</h2>
-        <ul>
-          <li>The sample contains fourteen product cases, and one reporter supplied six of the 2026 issue reports.</li>
-          <li>External reports omit internal findings, silently abandoned use, and unknown defects.</li>
-          <li>Pull requests and releases are unequal units of work and risk; their counts provide context, not a controlled exposure measure.</li>
-          <li>Historical baselines were constructed after the 2026 result was visible and use only three or four observations per measure; their ranges are not prediction intervals.</li>
-          <li>The pooled historical defect-rate benchmark rests on only four introduced reports, while commit and churn counts are strongly workflow-dependent.</li>
-          <li>Coverage increased across a codebase reorganized into multiple packages, so the before and after denominators are not identical.</li>
-          <li>The hypothesis was formulated retrospectively and the audit was performed by the project maintainer, who uses and benefits from agentic coding tools.</li>
-          <li>Zero observed post-adoption mature events is not proof that no such defect exists.</li>
-        </ul>
-      </section>
-
-      <section aria-labelledby="conclusion-heading">
-        <h2 id="conclusion-heading">Conclusion</h2>
-        <p>
-          Counterfact shipped substantially more non-dependency work, expanded
-          its test inventory, maintained approximately stable reported branch
-          coverage, and resolved the observed external reports faster. Under the
-          audit’s 90-day mature-cohort rule, no qualifying event was observed
-          after adoption. These observations do
-          not establish an overall quality increase, exclude late or unreported
-          defects, or identify AI as the cause.
-        </p>
-      </section>
-
-      <section aria-labelledby="data-heading">
-        <h2 id="data-heading">Data availability and peer review</h2>
-        <p>
-          The record-level 2025–2026 evidence is public. Readers can inspect every
-          candidate decision in that review, every included case, the source and
-          release chronology behind each classification, and the exact
-          machine-readable inputs used for the calculations. The 2022–2024
-          extension now includes every record-level disposition and authorship
-          association returned by the published census.
-        </p>
-        <ol class="reference-list">
-          <li><a href="/quality/2026/candidates">Candidate disposition ledger</a></li>
-          <li><a href="/quality/2026/historical-candidates">Historical disposition ledger</a></li>
-          <li><a href="/quality/2026/cases">Defect case appendix</a></li>
-          <li><a href="/quality/2026/methodology">Methods and reproducibility appendix</a></li>
-          <li><a href="/quality/2026/context">Supplementary delivery and product context</a></li>
-          <li><a href="/quality/2026/data.json">Download the published underlying dataset (JSON)</a></li>
-          <li><a href="/quality/2026/feedback">Feedback and review</a></li>
-        </ol>
-      </section>
-    </div>
-  </article>
+<QualityLayout title="Six months of agent-assisted development in Counterfact" description="A Codex-authored evaluation of whether agent assistance increased Counterfact delivery while keeping verification and repair effective. Evidence, methods, and reproducible checks." canonicalPath="/quality/2026" active="article">
+<article class="research-article">
+<header class="article-header quality-reading">
+<p class="eyebrow">An engineering field study</p>
+<h1>Six months of agent-assisted development in Counterfact</h1>
+<p class="article-byline">Codex · commissioned by Patrick McElhaney · March 10–September 3, 2026</p>
+<p class="article-lede">Since coding agents became part of Counterfact’s workflow, delivery has increased substantially. This evaluation asks whether the project’s ability to verify and repair the software is keeping up.</p>
+<p>Over roughly six months, the project merged {matched.nonDependencyPullRequests} non-dependency pull requests and published {matched.publishedReleases} releases. Every one of seven confirmed external defect reports reached a corrected release within five calendar days. These are encouraging signals. The evaluation looks behind them: what changed in the product, what the checks actually detect, and where the process still failed.</p>
+<aside class="authorship-aside" aria-labelledby="authorship-heading"><h2 id="authorship-heading">Authorship and scrutiny</h2><p>Patrick McElhaney commissioned Codex to evaluate Counterfact and chose to publish the result because the evidence and methods can be inspected publicly. Codex participated in the agent-assisted work it evaluated; that conflict is explicit. The report therefore grounds its claims in source-linked records, reproducible calculations, documented uncertainty, and a public path for correction. Readers are invited to challenge the interpretation, correct the record, and help the maintainer learn.</p></aside>
+</header>
+<div class="article-body quality-reading quality-prose">
+<section aria-labelledby="hypothesis"><h2 id="hypothesis">The hypothesis under evaluation</h2>
+<p><strong>Agent-assisted development can increase delivery while preserving a working verification and repair loop.</strong></p>
+<p>The evaluation makes that proposition concrete with three checks. The matched-window PR count should exceed the highest observed earlier count. Each confirmed external defect in the seven-case population should have a traceable public correction, with its report-to-corrected-publication time shown. Each associated check should fail on the faulty behavior and pass on the correction. Falling short on any check would count against that part of the hypothesis.</p>
+<p>This is a retrospective assessment of one project. It seeks evidence strong enough to inform the maintainer’s workflow and publishes the methods so other people can question the interpretation.</p>
+</section>
+<section><h2>Workflow changes under evaluation</h2>
+<p><a href="https://github.com/counterfact/api-simulator">Counterfact</a> turns an OpenAPI description into a stateful mock API. The maintainer began merging agent-authored product changes on <a href={auditEvidence.study.intervention.source}>March 10, 2026</a>. During the same period, the project invested in how changes would be checked.</p>
+<p>On <a href={study.delivery.workflowChanges[1].sourceUrl}>March 26</a>, the project’s black-box tests moved toward product-level journeys. On <a href={study.delivery.workflowChanges[0].sourceUrl}>March 27</a>, the maintainer added a required manual-acceptance checklist for qualifying changes. The journey tests were <a href={study.delivery.workflowChanges[2].sourceUrl}>reworked into feature files and bindings in August</a>. A <a href={study.delivery.workflowChanges[3].sourceUrl}>September repair</a> made the acceptance check work with the merge queue.</p>
+<p>These changes document the approach under evaluation: use agents to help produce changes, and invest in independent ways to check the resulting behavior. Adding a gate does not prove it was effective. That is why this study follows actual reports and exercises actual checks.</p>
+</section>
+<section><h2>1. Delivery moved substantially</h2>
+<p>The project merged {matched.nonDependencyPullRequests} non-dependency PRs during the study period—{(matched.nonDependencyPullRequests/historicalMaximum).toFixed(1)} times the highest observed count in the same calendar window of the previous four years.</p>
+</section></div>
+<section class="article-figure quality-figure-wide" aria-labelledby="delivery-heading">
+<div class="figure-heading"><h2 id="delivery-heading">Merged changes in comparable windows</h2><p>March 10 at 16:38:20 UTC through September 3, each year. Dependency-only changes are excluded.</p></div>
+<div class="case-response-chart">{deliveryRows.map(r=><div class="case-response-row"><strong>{r.year}{r.year==='2026'?' · agent-assisted period':''}</strong><span class="case-track"><span class="case-bar" style={`width:${r.count/matched.nonDependencyPullRequests*100}%`}></span><b>{r.count} PRs</b></span></div>)}</div>
+<p class="figure-note">2022 covers the available startup history from April 8. Each bar is a count of merged PRs, not hours saved or product value. PR size, release and documentation work, and the maintainer’s time devoted to the project can all affect this comparison. <a href="/quality/2026/context">Supporting comparisons</a> · <a href="/quality/2026/timeline">Monthly delivery and maintenance timeline</a>.</p>
+</section>
+<div class="article-body quality-reading quality-prose">
+<p>The releases give that activity concrete meaning. March brought an Admin API. April added request validation, reusable scenarios, and multiple APIs in one process. May added API versioning and broader OpenAPI support; August brought a shared store and modular packages. The <a href="/quality/2026/context#capabilities">release chronology</a> links those capabilities to their sources.</p>
+<p>The delivery expectation is supported: activity increased, and the release history shows what that work put into users’ hands.</p>
+<section><h2>Test declarations grew in every comparable cohort</h2>
+<p>The 2026 cohort added 634 explicit test declarations in the matched window. The earlier comparable cohorts added 10, 48, and 6. That is a large expansion in verification inventory alongside delivery, although a count does not show whether a check can detect an important failure.</p>
+</section>
+</div>
+<section class="article-figure quality-figure-wide" aria-labelledby="declarations-heading">
+<div class="figure-heading"><h2 id="declarations-heading">Explicit test declarations in comparable windows</h2><p>March 10 at 16:38:20 UTC through September 3, each year. Counts include JavaScript and TypeScript declarations in conventional test files.</p></div>
+<div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Cohort</th><th scope="col">Start</th><th scope="col">End</th><th scope="col">Net new</th></tr></thead><tbody>{verificationCohorts.map(cohort=><tr><th scope="row">{cohort.year}{cohort.year===2026 ? " · agent-assisted period" : ""}</th><td>{cohort.year===2022 ? "Not available" : cohort.testDeclarations.split(" → ")[0]}</td><td>{cohort.testDeclarations.split(" → ")[1]}</td><td>{declarationChange(cohort)}</td></tr>)}</tbody></table></div>
+<p class="figure-note">The repository’s reachable history begins after the 2022 start boundary, so that cohort has no comparable net change. These are inventory counts, not evidence that every test is useful; the seven paired experiments below address a narrower behavioral question.</p>
+</section>
+<div class="article-body quality-reading quality-prose">
+<section><h2>2. The external repair loop was working</h2>
+<p>Seven confirmed external defect reports arrived after adoption. All seven concerned behavior already present in releases before adoption. Five reached a corrected release on the next calendar date; all seven within five calendar days. The study counts a repair when it reaches a public release, not when an issue closes.</p>
+<p>There are only seven reports, and one person supplied six of them. They show that these observed failures were handled promptly. They do not measure everything users encountered, and they do not establish a lower defect rate.</p>
+</section></div>
+<section class="article-figure quality-figure-wide" aria-labelledby="response-heading">
+  <div class="figure-heading"><h2 id="response-heading">Seven reports, from report to corrected publication</h2><p>Elapsed days use the actual report and npm publication timestamps. “Next calendar day” can exceed twenty-four hours.</p></div>
+  <div class="case-response-chart">{reports.map(r=><div class="case-response-row"><a href={`/quality/2026/cases/${r.issue}`}>#{r.issue} {r.shortTitle}</a><span class="case-track"><span class="case-bar" style={`width:${days(r.reportedAt,pub.get(r.fixedRelease)!)/maxDays*100}%`}></span><b>{days(r.reportedAt,pub.get(r.fixedRelease)!).toFixed(2)} days</b></span></div>)}</div>
+  <details><summary>Report and publication timestamps</summary><div class="table-scroll"><table class="research-table"><thead><tr><th>Case</th><th>Report (UTC)</th><th>First corrected release</th><th>Publication (UTC)</th></tr></thead><tbody>{reports.map(r=><tr><th scope="row"><a href={r.sources[0]}>#{r.issue}</a></th><td>{r.reportedAt}</td><td>{r.fixedRelease}</td><td>{pub.get(r.fixedRelease)}</td></tr>)}</tbody></table></div></details>
+</section>
+<div class="article-body quality-reading quality-prose">
+<section><h2>3. The checks detect the behaviors they claim to test</h2>
+<p>Test declarations grew from 270 to 904, but a larger test inventory does not answer whether the tests are useful. Codex asked a more direct question: <strong>does the relevant check fail on the faulty implementation and pass on the correction?</strong></p>
+<p>Codex attempted that comparison for all seven external cases. Six use assertions added with the historical repairs, copied into affected environments where needed. The packaging case uses an audit-created check on published packages. These are later experiments; the study does not claim the tests caught these defects before users did.</p>
+<div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Reported behavior</th><th scope="col">Paired experiment</th></tr></thead><tbody>{experiments.map(r=><tr><th scope="row"><a href={`/quality/2026/experiments#issue-${r.id}`}>#{r.id} {reports.find(c=>String(c.issue)===r.id)?.shortTitle}</a></th><td>{outcomeLabel(r.outcome)}</td></tr>)}</tbody></table></div>
+<p><strong>{demonstrated} of {experiments.length} comparisons distinguished affected from corrected behavior.</strong> For example, the reserved-word check fails when generated TypeScript uses an invalid operation ID and passes when the identifier is escaped. The package check shows that an obsolete patch hook runs in 2.11.0 and is absent in 2.12.0; both installations succeed.</p>
+<p>This establishes something specific about these checks. It does not establish that the whole suite passed historically or that the suite covers every important failure. The <a href="/quality/2026/experiments">experiment records</a> contain the revisions, commands, adaptations, and output needed to challenge or repeat the result.</p>
+</section>
+<section><h2>The failures matter to the conclusion</h2>
+<p>The broader public record contains {periods.postAdoption.releasedIds.length} confirmed released defects reported after adoption, including the seven external reports. Discovery attribution is undocumented for the other {periods.postAdoption.releasedByChannel.unknown}. There are also {periods.postAdoption.preReleaseIds.length} findings corrected before release and {periods.postAdoption.unknownReleaseIds.length} confirmed behaviors whose release status remains unresolved. The <a href="/quality/2026/candidates#adjudicated-findings">case ledger</a> keeps those distinctions visible.</p>
+<p>One failure directly challenges any easy success story. A root-middleware repair shipped in 2.2.0 on March 19 and broke middleware behavior. A <a href="https://github.com/counterfact/api-simulator/pull/1567">follow-up repair</a> reached users in 2.3.0 on March 23. This was a new released regression during the agent-assisted period.</p>
+<p>Release provenance also failed. When 2.16.2 appeared without the usual Git tag, GitHub release, or visible publishing provenance, <a href="https://github.com/counterfact/api-simulator/issues/2348">a user asked whether it was legitimate</a>. Patrick McElhaney confirmed that he had published it from his machine. That explanation does not replace the public evidence a user should be able to inspect.</p>
+<p>These cases reinforce two requirements: verify the affected product journey, and make the path from reviewed source to published package visible. Faster change makes those responsibilities more consequential.</p>
+</section>
+<section><h2>Conclusion and continuing checks</h2>
+<p><strong>The evidence shows a meaningful increase in delivery, with concrete evidence that the repair loop and the fixed seven-case checks are working.</strong> Patrick McElhaney judged that result sufficient to continue this way of using AI. The evidence for increased delivery is stronger than the evidence about overall quality.</p>
+<p>Future scrutiny should test whether these results persist as the software and its users exercise more paths. The assessment should be revised if confirmed reports accumulate without public corrections, if the checks fail to detect the behaviors they were meant to cover, or if apparent delivery gains do not translate into useful capabilities. The middleware regression and provenance incident already identify work that needs continued attention.</p>
+<p>This is an engineering judgment supported by observable results, with the uncertainty left visible. Time spent, feature mix, architecture, and growing maintainer experience are not controlled here. Sparse public reports cannot establish unchanged reliability, and later releases have had less time to reveal problems.</p>
+</section>
+<section><h2>Check the study</h2>
+<p>The study covers delivery and public maintenance records from September 1, 2024 through September 3, 2026, with matched historical windows for context. It includes issue and PR screening decisions, sources for individual findings, release chronology, monthly calculations, and all seven experiment outcomes. Unknowns remain in the data.</p>
+<p><a href="/quality/2026/methodology">Read the methods</a> · <a href="/quality/2026/data.json">Download the data</a> · <a href="/quality/2026/candidates">Inspect the case records</a> · <a href="/quality/2026/experiments">Repeat the experiments</a> · <a href="/quality/2026/feedback">Challenge a claim or suggest a correction</a></p>
+</section></div>
+</article>
 </QualityLayout>

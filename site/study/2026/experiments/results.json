@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "protocol": "site/study/2026/protocol.md",
+  "executedAt": "2026-09-09",
+  "environment": {
+    "node": "v26.5.1",
+    "packageManager": "npm 11.17.0; historical dependencies restored with Yarn 1.22.22 from each immutable checkout's yarn.lock",
+    "testCommandShape": "NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js <test> --watchman=false --coverage=false --runInBand",
+    "interpretation": "Focused assertion output, not coverage thresholds, determines a behavioral result."
+  },
+  "attempts": [
+    {
+      "id": "issue-1617",
+      "issue": 1617,
+      "affectedRef": "8ff2046f6e7ddfd2f58d75c600de0fcc2053ab09 (v2.0.0)",
+      "correctedRef": "59f74e1cf2374290b0499567bbe5ff9107cd011b (PR #1622 merge; first public correction v2.5.0)",
+      "testProvenance": "Contemporaneous operation-type-coder reserved-word assertion from #1622; audit copy on affected state.",
+      "commands": [
+        "affected setup: copy archived environments/1617/{package.json,yarn.lock,.yarnrc.yml} into detached affected checkout; npx --yes @yarnpkg/cli-dist@4.18.0 install --immutable --mode=skip-build",
+        "corrected: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/typescript-generator/operation-type-coder.test.js --watchman=false --coverage=false --runInBand --testNamePattern='reserved word'",
+        "affected audit copy: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/typescript-generator/operation-type-coder.audit.test.js --watchman=false --coverage=false --runInBand --testNamePattern='reserved word'"
+      ],
+      "runtime": "Node v26.5.1; affected Jest 30.2.0; corrected Jest30.3.0. Affected dependencies installed with Yarn4.18.0, corrected with Yarn1.22.22.",
+      "logs": [
+        "logs/issue-1617-corrected.log: 3/3 reserved-word assertions passed.",
+        "logs/issue-1617-affected.log: 3/3 failed: delete_ expected/delete received; import_ expected/import received; delete_ expected/delete!! received."
+      ],
+      "outcome": "demonstrated_detection",
+      "observations": "The same reserved-word assertion distinguishes corrected and affected immutable states.",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/1617",
+        "https://github.com/counterfact/api-simulator/pull/1622"
+      ],
+      "compatibilityAdjustments": "Affected checkout lock migrated to Yarn4, equivalent package.json bin map normalized to string, node-modules linker used. Effective package.json and lockfile archived under environments/1617. Source implementation is unchanged. Corrected checkout uses its own historical lock."
+    },
+    {
+      "id": "issue-1618",
+      "issue": 1618,
+      "affectedRef": "1db0b22de2998f1abf84e536e74da624840ee0fc (v0.13.0)",
+      "correctedRef": "8587018a0daa9f93b934b6e0060023b954c4fb91 (PR #1621 merge; first public correction v2.5.0); corrected execution ref: 59f74e1cf2374290b0499567bbe5ff9107cd011b (first installed state containing the unchanged assertion)",
+      "testProvenance": "Contemporaneous no-schema response assertion from #1621; audit copy on affected state.",
+      "commands": [
+        "affected setup: copy archived environments/1618/{package.json,yarn.lock,.yarnrc.yml} into detached affected checkout; npx --yes @yarnpkg/cli-dist@4.18.0 install --immutable --mode=skip-build",
+        "corrected: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/typescript-generator/operation-type-coder.test.js --watchman=false --coverage=false --runInBand --testNamePattern='no schema'",
+        "affected audit copy: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/typescript-generator/operation-type-coder.audit.test.js --watchman=false --coverage=false --runInBand --testNamePattern='no schema'"
+      ],
+      "runtime": "Node v26.5.1; affected Jest 28.1.2; corrected Jest30.3.0. Affected dependencies installed with Yarn4.18.0, corrected with Yarn1.22.22.",
+      "logs": [
+        "logs/issue-1618-corrected-containing-release.log: 1/1 assertion passed.",
+        "logs/issue-1618-affected.log: TypeError reading isReference from an absent schema requirement."
+      ],
+      "outcome": "demonstrated_detection",
+      "observations": "The same no-schema assertion distinguishes corrected and affected immutable states.",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/1618",
+        "https://github.com/counterfact/api-simulator/pull/1621"
+      ],
+      "compatibilityAdjustments": "Affected checkout lock migrated to Yarn4, equivalent package.json bin map normalized to string, node-modules linker used. Effective package.json and lockfile archived under environments/1618. Source implementation is unchanged. Corrected checkout uses its own historical lock."
+    },
+    {
+      "id": "issue-1619",
+      "issue": 1619,
+      "affectedRef": "0c081caf351ad5c378b1da9a48a54130abf1fe62 (v1.4.5 earliest confirmed affected bound); paired immediate first parent: 241d6284ac1424669c179ca4538786b97aa11539 (v2.4.0)",
+      "correctedRef": "80dc0732ecb4e6e664dbedc29d1ceac7ce49a366 (PR #1620 merge; checkout package version v2.4.0; first public correction v2.5.0)",
+      "testProvenance": "Contemporaneous script.test.js assertion from #1620, copied unchanged to script.audit.test.js; SHA-256 da594a4b4cbb306882a8cec60cb2043a162f75de79288a6f2eae154a63981684.",
+      "commands": [
+        "corrected: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/typescript-generator/script.test.js --watchman=false --coverage=false --runInBand --testNamePattern='escapes colons in import paths'",
+        "affected audit copy: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/typescript-generator/script.audit.test.js --watchman=false --coverage=false --runInBand --testNamePattern='escapes colons in import paths'"
+      ],
+      "runtime": "Node v26.5.1; Jest 30.3.0 in both v2.4.0 checkouts.",
+      "logs": [
+        "logs/issue-1619-corrected.log: 1 passed, 9 skipped, exit 0.",
+        "logs/issue-1619-affected.log: 1 failed, 9 skipped, exit 1; expected Unicode ratio colon and received ASCII colon in import path."
+      ],
+      "outcome": "demonstrated_detection",
+      "observations": "The broad v1.4.5 bound is retained; the pair isolates the defect on the immediate pre-merge state.",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/1619",
+        "https://github.com/counterfact/api-simulator/pull/1620"
+      ]
+    },
+    {
+      "id": "issue-1842",
+      "issue": 1842,
+      "affectedRef": "f7b52edf77bfecc3b841f1fc33918fb29b483934 (v0.5.0 earliest confirmed affected bound); paired immediate first parent: 60a320e5c9673d5fc0cfd5ec351891869b6f1eb1 (v2.7.0)",
+      "correctedRef": "af406dd6a4709d00fbae8b757ff43eb10ddd4bab (PR #1843 merge; checkout package version v2.7.0; first public correction v2.8.1)",
+      "testProvenance": "Contemporaneous generate.test.ts assertion from #1843, copied unchanged to generate.audit.test.ts; SHA-256 6d3d2dc0d13dcc8cee023195a361796a5f1d982f51cb1bc3f2fc129e02e129e9.",
+      "commands": [
+        "corrected: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/typescript-generator/generate.test.ts --watchman=false --coverage=false --runInBand --testNamePattern='ignores summary and description'",
+        "affected audit copy: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/typescript-generator/generate.audit.test.ts --watchman=false --coverage=false --runInBand --testNamePattern='ignores summary and description'"
+      ],
+      "runtime": "Node v26.5.1; Jest 30.3.0 in both v2.7.0 checkouts.",
+      "logs": [
+        "logs/issue-1842-corrected.log: 1 passed, 6 skipped, exit 0.",
+        "logs/issue-1842-affected.log: 1 failed, 6 skipped, exit 1; TypeError: Cannot use 'in' operator to search for 'operationId' in Test Summary."
+      ],
+      "outcome": "demonstrated_detection",
+      "observations": "Path-item summary and description were treated as operations before the correction.",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/1842",
+        "https://github.com/counterfact/api-simulator/pull/1843"
+      ]
+    },
+    {
+      "id": "issue-1933",
+      "issue": 1933,
+      "affectedRef": "3ad1e91161dae681ac208b314a3756d33d555096 (v0.13.1 earliest confirmed affected bound); paired immediate first parent: a67ccaf1f3f2067210fe67c3d8ffd9876036300a (v2.9.0)",
+      "correctedRef": "2997e43c12df3d4214d2302183b618d772c452e3 (PR #1935 merge; checkout package version v2.9.0; first public correction v2.10.0)",
+      "testProvenance": "Contemporaneous dispatcher.test.ts assertions from #1935, copied unchanged to dispatcher.audit.test.ts; SHA-256 5820cff72e416f154303f1fe96880d547005a209517f427a93492a6de95f52e2.",
+      "commands": [
+        "corrected: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/server/dispatcher.test.ts --watchman=false --coverage=false --runInBand --testNamePattern='exploded object query parameters'",
+        "affected audit copy: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/server/dispatcher.audit.test.ts --watchman=false --coverage=false --runInBand --testNamePattern='exploded object query parameters'"
+      ],
+      "runtime": "Node v26.5.1; Jest 30.3.0 in both v2.9.0 checkouts.",
+      "logs": [
+        "logs/issue-1933-corrected.log: 4 passed, 49 skipped, exit 0.",
+        "logs/issue-1933-affected.log: 3 failed and 1 passed, 49 skipped, exit 1; exploded fields caused HTTP 400 and handlers did not receive pageable."
+      ],
+      "outcome": "demonstrated_detection",
+      "observations": "The pair shows both rejected exploded-object requests and absent reconstructed handler input.",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/1933",
+        "https://github.com/counterfact/api-simulator/pull/1935"
+      ]
+    },
+    {
+      "id": "issue-1971",
+      "issue": 1971,
+      "affectedRef": "f7b52edf77bfecc3b841f1fc33918fb29b483934 (v0.5.0 earliest confirmed affected bound); paired immediate first parent: fd9b7dcb179b45c465fc438244272953ba1d5c8b (v2.10.0)",
+      "correctedRef": "695c1ca39d90d8cc26a8e5448f3209e81ef08e41 (PR #1972 merge; checkout package version v2.10.0; first public correction v2.11.0)",
+      "testProvenance": "Contemporaneous dispatcher.test.ts assertions from #1972, copied unchanged to dispatcher.audit.test.ts; SHA-256 266ad9faed8cd7a2a45bb8cbafaf660421dd53c377f6743622638d506b47251c.",
+      "commands": [
+        "corrected: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/server/dispatcher.test.ts --watchman=false --coverage=false --runInBand --testNamePattern='converts path-level parameters to numbers when defined at path item level|merges path-item-level and operation-level parameters'",
+        "affected audit copy: NODE_OPTIONS=--experimental-vm-modules node ./node_modules/jest/bin/jest.js test/server/dispatcher.audit.test.ts --watchman=false --coverage=false --runInBand --testNamePattern='converts path-level parameters to numbers when defined at path item level|merges path-item-level and operation-level parameters'"
+      ],
+      "runtime": "Node v26.5.1; Jest 30.3.0 in both v2.10.0 checkouts.",
+      "logs": [
+        "logs/issue-1971-corrected.log: 2 passed, 59 skipped, exit 0.",
+        "logs/issue-1971-affected.log: 2 failed, 59 skipped, exit 1; intId and pathId remained strings rather than numbers."
+      ],
+      "outcome": "demonstrated_detection",
+      "observations": "The pair distinguishes missing path-item-level parameter merging from corrected conversion.",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/1971",
+        "https://github.com/counterfact/api-simulator/pull/1972"
+      ]
+    },
+    {
+      "id": "issue-2075",
+      "issue": 2075,
+      "affectedRef": "1320d69f8a6719ea9ebb81ffeed328376ce4443f (v0.39.0 earliest confirmed affected bound); paired published artifact: counterfact@2.11.0",
+      "correctedRef": "1cd24bdf1d965760b527f8b31f73523995126a8c (PR #2076 merge; checkout package version v2.11.0; first public correction v2.12.0); paired published artifact: counterfact@2.12.0",
+      "testProvenance": "Audit-created published-artifact lifecycle assertion: npm tarballs and separate clean consumer directories, because #2076 contains no contemporaneous packed-artifact test.",
+      "commands": [
+        "npm pack counterfact@2.11.0 --pack-destination /private/tmp/counterfact-exp-2075-packs",
+        "npm pack counterfact@2.12.0 --pack-destination /private/tmp/counterfact-exp-2075-packs",
+        "npm install --foreground-scripts --loglevel=notice --prefix <clean-2.11-dir> /private/tmp/counterfact-exp-2075-packs/counterfact-2.11.0.tgz",
+        "npm install --foreground-scripts --loglevel=notice --prefix <clean-2.12-dir> /private/tmp/counterfact-exp-2075-packs/counterfact-2.12.0.tgz",
+        "audit rerun: npm install --offline --foreground-scripts --loglevel=notice --prefix <new-clean-dir> <counterfact-2.11.0-or-2.12.0.tgz>; both exit0, actual outputs retained in logs/issue-2075-<version>-install.log"
+      ],
+      "runtime": "Node v26.5.1; npm 11.17.0. Tarball SHA-256: 2.11.0 432a6484fa46ec6a4c02da1c319935d63f9fa4c43e654fd1974c73a527514fe6; 2.12.0 426c40f1ebc9c19a7cf2f6d1ddc0febd71a26803220f08fa09ac5b1c09c25e12.",
+      "logs": [
+        "logs/issue-2075-2.11.0-package.json and logs/issue-2075-assertion.log: 2.11.0 declares postinstall: patch-package, depends on patch-package 8.0.1, and publishes no patch files.",
+        "logs/issue-2075-2.12.0-package.json and logs/issue-2075-assertion.log: 2.12.0 declares neither postinstall nor patch-package.",
+        "The separately observed clean installs ran the 2.11.0 hook and logged No patch files found; both npm installs exited 0. Both also emitted an unrelated optional fsevents node-gyp diagnostic under Node 26."
+      ],
+      "outcome": "demonstrated_detection",
+      "observations": "The observed artifact-level defect is the unnecessary patch lifecycle: the affected published package invokes it while publishing no patches; the corrected published package does not. This does not claim that 2.11.0 installation exited unsuccessfully.",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/2075",
+        "https://github.com/counterfact/api-simulator/pull/2076",
+        "https://www.npmjs.com/package/counterfact/v/2.11.0",
+        "https://www.npmjs.com/package/counterfact/v/2.12.0"
+      ]
+    }
+  ]
+}

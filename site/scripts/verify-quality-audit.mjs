@@ -8,6 +8,11 @@ import {
   summarizeCases,
   validateManifest,
 } from "./quality-audit-lib.mjs";
+import {
+  deriveMature,
+  deriveMonthly,
+  derivePeriods,
+} from "./quality-case-study-lib.mjs";
 
 const manifestPath = fileURLToPath(
   new URL("../src/data/quality-audit-evidence.json", import.meta.url),
@@ -24,7 +29,49 @@ const manifest = {
 const errors = validateManifest(manifest);
 
 function printDiagnostics(manifest) {
-  for (const [year, cohort] of Object.entries(manifest.matureAnalysis.cohorts)) {
+  if (manifest.schemaVersion === 4) {
+    const study = manifest.caseStudy;
+    const monthly = deriveMonthly(study);
+    const periods = derivePeriods(study);
+    const mature = deriveMature(
+      study.matureRecords,
+      study.delivery,
+      study.delivery.windows,
+    );
+    const sum = (field) =>
+      monthly.reduce((total, row) => total + row[field].length, 0);
+    const dispositions = Object.groupBy(
+      study.candidates,
+      (candidate) => candidate.disposition,
+    );
+    console.log(
+      `Expanded case study: ${study.defects.length} adjudicated records; ${study.candidates.length} screened candidates; ${monthly.length} monthly rows (${monthly.at(-1).month} partial).`,
+    );
+    console.log(
+      `Expanded delivery and outcomes: ${sum("nonDependencyMergedPullRequestIds")} non-dependency merges; ${sum("publishedReleaseIds")} published releases; ${sum("reportedReleasedIds")} released-defect reports; ${sum("correctedFirstPublishedIds")} first public corrections.`,
+    );
+    for (const [name, period] of Object.entries(periods)) {
+      console.log(
+        `${name}: ${period.eventIds.length} confirmed records (${period.releasedIds.length} released, ${period.preReleaseIds.length} pre-release, ${period.unknownReleaseIds.length} unknown release status).`,
+      );
+    }
+    for (const [name, cohort] of Object.entries(mature)) {
+      console.log(
+        `${name}: ${cohort.counters.eventRecords} release-cohort event(s), ${cohort.counters.deliveryReleaseCount} release(s), ${cohort.counters.deliveryNonDependencyPullRequestCount} non-dependency merge(s), ${cohort.counters.responseRecords} response record(s), ${cohort.counters.censored} censored response(s), ${cohort.unresolvedIds.length} unresolved origin boundary record(s).`,
+      );
+    }
+    console.log(
+      `Expanded candidate dispositions: ${Object.entries(dispositions)
+        .map(
+          ([disposition, candidates]) => `${candidates.length} ${disposition}`,
+        )
+        .join(", ")}.`,
+    );
+    return;
+  }
+  for (const [year, cohort] of Object.entries(
+    manifest.matureAnalysis.cohorts,
+  )) {
     console.log(
       `${year} mature cohort: ${cohort.events} event(s), ${cohort.publishedReleases} release(s), ${cohort.nonDependencyMergedPullRequests} non-dependency merge(s), ${cohort.responseObservations.length} response observation(s).`,
     );
@@ -41,9 +88,13 @@ function printDiagnostics(manifest) {
       year,
       primaryWindow,
     );
-    const responseMedian = median(primaryCases.map((item) => item.responseDays));
+    const responseMedian = median(
+      primaryCases.map((item) => item.responseDays),
+    );
     const nonDependencyMerges =
-      manifest.activity.primaryWindow.nonDependencyMergedPullRequests[String(year)];
+      manifest.activity.primaryWindow.nonDependencyMergedPullRequests[
+        String(year)
+      ];
     console.log(
       `${year} primary window: ${primaryCases.length} external product reports; ${introduced.length} cases had both the first affected release and report inside the window (${introduced.length === 0 ? "0" : ((introduced.length / nonDependencyMerges) * 100).toFixed(2)} per 100 non-dependency merges); median report-to-release time: ${responseMedian} ${responseMedian === 1 ? "day" : "days"}.`,
     );

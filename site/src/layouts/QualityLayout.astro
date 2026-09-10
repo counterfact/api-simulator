@@ -6,7 +6,7 @@ interface Props {
   title: string;
   description: string;
   canonicalPath: string;
-  active?: "article" | "cases" | "candidates" | "context" | "feedback" | "methodology";
+  active?: "article" | "cases" | "candidates" | "context" | "experiments" | "feedback" | "methodology";
 }
 
 const { title, description, canonicalPath, active } = Astro.props;
@@ -15,23 +15,28 @@ const navItems = [
   { key: "article", label: "Article", href: "/quality/2026" },
   {
     key: "methodology",
-    label: "Methods",
+    label: "Data and methods",
     href: "/quality/2026/methodology",
   },
   {
     key: "candidates",
-    label: "Candidate ledger",
+    label: "Public-record census",
     href: "/quality/2026/candidates",
   },
-  { key: "cases", label: "Defect cases", href: "/quality/2026/cases" },
+  { key: "cases", label: "Case records", href: "/quality/2026/cases" },
   {
     key: "context",
-    label: "Supplementary data",
+    label: "Supporting analyses",
     href: "/quality/2026/context",
   },
   {
+    key: "experiments",
+    label: "Experiments",
+    href: "/quality/2026/experiments",
+  },
+  {
     key: "feedback",
-    label: "Feedback and review",
+    label: "Review the study",
     href: "/quality/2026/feedback",
   },
 ] as const;
@@ -74,7 +79,7 @@ const navItems = [
       <div>
         <a href="/">Counterfact home</a>
         <a href="/docs/getting-started">Documentation</a>
-        <a href="/quality/2026/data.json">Underlying data</a>
+        <a href="/quality/2026/data.json">Download data</a>
         <a href="https://github.com/counterfact/api-simulator">GitHub</a>
       </div>
     </div>

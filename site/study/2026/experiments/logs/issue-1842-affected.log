@@ -1,0 +1,29 @@
+(node:64253) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64253) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+FAIL test/typescript-generator/generate.audit.test.ts
+  ● path item non-HTTP-verb fields › ignores summary and description at the path item level without throwing
+
+    expect(received).resolves.toBeUndefined()
+
+    Received promise rejected instead of resolved
+    Rejected to value: [TypeError: Cannot use 'in' operator to search for 'operationId' in Test Summary]
+
+      87 |       };
+      88 |
+    > 89 |       await expect(
+         |             ^
+      90 |         generate(
+      91 |           $.path("openapi.json"),
+      92 |           basePath,
+
+      at expect (node_modules/expect/build/index.js:2116:15)
+      at expect (test/typescript-generator/generate.audit.test.ts:89:13)
+      at usingTemporaryFiles (node_modules/using-temporary-files/dist/using-temporary-files.js:60:13)
+      at Object.<anonymous> (test/typescript-generator/generate.audit.test.ts:64:5)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 6 skipped, 7 total
+Snapshots:   0 total
+Time:        0.176 s, estimated 1 s
+Ran all test suites matching test/typescript-generator/generate.audit.test.ts with tests matching "ignores summary and description".

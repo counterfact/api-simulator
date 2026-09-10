@@ -1,0 +1,186 @@
+---
+import QualityLayout from "../../../layouts/QualityLayout.astro";
+import { auditEvidence } from "../../../data/quality-2026";
+import { deriveMonthly } from "../../../../scripts/quality-case-study-lib.mjs";
+
+const monthly = deriveMonthly(auditEvidence.caseStudy);
+const maxMerges = Math.max(
+  ...monthly.map((row) => row.nonDependencyMergedPullRequestIds.length),
+  1,
+);
+const maxCases = Math.max(
+  ...monthly.map((row) =>
+    Math.max(
+      row.reportedReleasedIds.length,
+      row.correctedFirstPublishedIds.length,
+    ),
+  ),
+  1,
+);
+---
+
+<QualityLayout
+  title="Maintenance timeline — Counterfact"
+  description="Monthly delivery, reported defects, corrections, and known backlog."
+  canonicalPath="/quality/2026/timeline"
+  active="context"
+>
+  <article class="appendix-page">
+    <header class="appendix-header quality-reading">
+      <p><a href="/quality/2026">Article</a> / Maintenance timeline</p>
+      <h1>Delivery and maintenance over two years</h1>
+      <p>
+        The complete monthly series puts delivery, defect reports, and
+        corrections on the same calendar. Separate scales and source-linked
+        records make the counts inspectable.
+      </p>
+    </header>
+
+    <section
+      class="article-figure quality-figure-wide"
+      aria-labelledby="history-heading"
+    >
+      <div class="figure-heading">
+        <h2 id="history-heading">Two years of delivery and reported problems</h2>
+        <p>
+          September 2024–September 3, 2026. Monthly delivery and known
+          released-defect cases are shown on separate scales. September 2026
+          contains only three days.
+        </p>
+      </div>
+      <div
+        class="case-monthly"
+        role="img"
+        aria-label="Monthly non-dependency merges, known released-defect reports, and first corrected releases. Exact values and unresolved records are in the table below."
+      >
+        <div class="case-month-heading">
+          <span>Month</span>
+          <span>Non-dependency PRs</span>
+          <span>Reported / corrected cases</span>
+        </div>
+        {
+          monthly.map((row) => (
+            <div
+              class:list={[
+                "case-month-row",
+                { "adoption-month": row.month === "2026-03" },
+              ]}
+            >
+              <span>
+                {row.month}
+                {row.partial ? "*" : ""}
+                {row.month === "2026-03" ? " †" : ""}
+              </span>
+              <span class="case-track">
+                <span
+                  class="case-bar"
+                  style={`width:${(row.nonDependencyMergedPullRequestIds.length / maxMerges) * 100}%`}
+                ></span>
+                <b>{row.nonDependencyMergedPullRequestIds.length}</b>
+              </span>
+              <span class="case-pair">
+                <span class="case-track">
+                  <span
+                    class="case-bar reported"
+                    style={`width:${(row.reportedReleasedIds.length / maxCases) * 100}%`}
+                  ></span>
+                  <b>{row.reportedReleasedIds.length}</b>
+                </span>
+                <span class="case-track">
+                  <span
+                    class="case-bar corrected"
+                    style={`width:${(row.correctedFirstPublishedIds.length / maxCases) * 100}%`}
+                  ></span>
+                  <b>{row.correctedFirstPublishedIds.length}</b>
+                </span>
+              </span>
+            </div>
+          ))
+        }
+      </div>
+      <p class="figure-note">
+        † Adoption occurred March 10 at 16:38:20 UTC; the March bar spans both
+        workflows. Pre/post summaries use that exact instant. Teal marks
+        reports; amber marks first corrected publications. These are known,
+        deduplicated cases with supported released status. Unknown release
+        status and unresolved candidates are excluded from those bars and
+        remain visible below. Two direct-mainline candidates have no
+        established discovery instant and cannot be assigned to a month; they
+        remain unresolved in the ledger.
+      </p>
+      <details>
+        <summary>Exact monthly values, discovery channels, and known backlog</summary>
+        <div
+          class="table-scroll"
+          tabindex="0"
+          role="region"
+          aria-label="Monthly observations"
+        >
+          <table class="research-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>PRs</th>
+                <th>Releases</th>
+                <th>External discovery</th>
+                <th>Internal human</th>
+                <th>Automated / agent</th>
+                <th>Unknown discovery</th>
+                <th>Corrected</th>
+                <th>Known backlog at start</th>
+                <th>Pre-release findings</th>
+                <th>Unknown release status</th>
+                <th>Unresolved candidates</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                monthly.map((row) => (
+                  <tr>
+                    <th scope="row">
+                      {row.month}
+                      {row.partial ? " (partial)" : ""}
+                    </th>
+                    <td>{row.nonDependencyMergedPullRequestIds.length}</td>
+                    <td>{row.publishedReleaseIds.length}</td>
+                    <td>
+                      {row.reportedReleasedByChannel["external-human"]}
+                    </td>
+                    <td>
+                      {row.reportedReleasedByChannel["internal-human"]}
+                    </td>
+                    <td>
+                      {row.reportedReleasedByChannel["automated-agent"]}
+                    </td>
+                    <td>{row.reportedReleasedByChannel.unknown}</td>
+                    <td>{row.correctedFirstPublishedIds.length}</td>
+                    <td>{row.carryInKnownBacklogIds.length}</td>
+                    <td>{row.reportedPreReleaseIds.length}</td>
+                    <td>{row.reportedUnknownReleaseIds.length}</td>
+                    <td>{row.unresolvedRecordIds.length}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </details>
+      <p class="figure-note">
+        “Known backlog” means identified public reports awaiting a corrected
+        public release, with supported released status. It excludes unknown and
+        undisclosed defects. A zero in a discovery-channel column is not
+        evidence that no one in that channel found defects: discovery
+        attribution is often unknown.{" "}
+        <a href="/quality/2026/candidates#census">
+          Inspect the public-record census.
+        </a>
+      </p>
+    </section>
+
+    <p class="quality-reading">
+      <a href="/quality/2026/candidates">Inspect the case records</a> ·{" "}
+      <a href="/quality/2026/data.json">Download data</a> ·{" "}
+      <a href="/quality/2026/methodology">Methods</a>
+    </p>
+  </article>
+</QualityLayout>

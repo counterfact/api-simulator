@@ -1,0 +1,15 @@
+---
+import QualityLayout from "../../../layouts/QualityLayout.astro";
+import evidence from "../../../data/quality-audit-evidence.json" with { type: "json" };
+
+const results = (evidence.caseStudy as any).experiments.fixed7.results as any[];
+const label = (outcome: string) => outcome.replaceAll("_", " ");
+---
+
+<QualityLayout title="Verification experiments — Counterfact quality study" description="Seven fixed, source-linked verification experiments from the Counterfact quality study." canonicalPath="/quality/2026/experiments" active="experiments">
+  <article class="appendix-page quality-reading quality-prose">
+    <header class="appendix-header"><p class="breadcrumbs"><a href="/quality/2026">Article</a> / Verification experiments</p><h1>Verification experiments</h1><p>These seven experiments compare the listed affected and corrected immutable states or published artifacts. Each result reports only its own observed outcome; it does not establish that an entire historical suite passed.</p></header>
+    <p>The experiment records are also available in the <a href="/quality/2026/data.json">machine-readable dataset</a>.</p>
+    {results.map((result) => <section aria-labelledby={`issue-${result.id}`}><h2 id={`issue-${result.id}`}>Issue <a href={result.sources[0]}>#{result.issue}</a>: {label(result.outcome)}</h2><p>{result.observations}</p><dl class="definition-list"><div><dt>Affected state</dt><dd style="overflow-wrap:anywhere">{result.affectedRef}</dd></div><div><dt>Corrected state</dt><dd style="overflow-wrap:anywhere">{result.correctedRef}</dd></div><div><dt>Test provenance</dt><dd>{result.testProvenance}</dd></div><div><dt>Runtime</dt><dd style="overflow-wrap:anywhere">{result.runtime}</dd></div></dl><h3>Commands</h3><ul>{result.commands.map((command: string) => <li><code style="overflow-wrap:anywhere">{command}</code></li>)}</ul><h3>Recorded observations</h3><ul>{result.logs.map((log: string) => <li>{log}</li>)}</ul><p>Sources: {result.sources.map((source: string, index: number) => <><a href={source}>source {index + 1}</a>{index + 1 < result.sources.length ? ", " : ""}</>)}</p></section>)}
+  </article>
+</QualityLayout>

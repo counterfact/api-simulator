@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "counterfact": "file:../counterfact-exp-2075-packs/counterfact-2.11.0.tgz"
+  }
+}

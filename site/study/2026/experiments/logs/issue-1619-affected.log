@@ -1,0 +1,31 @@
+(node:64251) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64251) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+FAIL test/typescript-generator/script.audit.test.js
+  ● a Script › escapes colons in import paths (routes with colons like /stuff:action)
+
+    expect(received).toStrictEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    -   "import type { stuffAction } from \"../types/paths/stuff∶action.types.js\";",
+    +   "import type { stuffAction } from \"../types/paths/stuff:action.types.js\";",
+      ]
+
+      123 |     script.importType(coder);
+      124 |
+    > 125 |     expect(script.importStatements()).toStrictEqual([
+          |                                       ^
+      126 |       'import type { stuffAction } from "../types/paths/stuff∶action.types.js";',
+      127 |     ]);
+      128 |   });
+
+      at Object.toStrictEqual (test/typescript-generator/script.audit.test.js:125:39)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 9 skipped, 10 total
+Snapshots:   0 total
+Time:        0.143 s, estimated 1 s
+Ran all test suites matching test/typescript-generator/script.audit.test.js with tests matching "escapes colons in import paths".

@@ -6,20 +6,15 @@ import {
 } from "../../scripts/quality-audit-lib.mjs";
 
 export type AuditCategory =
-  | "Same-year regression"
-  | "Defect in same-year feature"
-  | "Pre-existing";
+  "Same-year regression" | "Defect in same-year feature" | "Pre-existing";
 export type EvidencePrecision = "Exact origin" | "Confirmed affected by";
 export type ReportKind = "issue" | "pull request";
 export type CandidateDisposition =
-  | "product-defect"
-  | "excluded"
-  | "deduplicated"
-  | "process-incident";
+  "product-defect" | "excluded" | "deduplicated" | "process-incident";
 
 export interface AuditCase {
   id: string;
-  reportYear: 2025 | 2026;
+  reportYear: number;
   reportKind: ReportKind;
   issue: number;
   title: string;
@@ -52,7 +47,7 @@ export interface AuditCase {
 
 export interface AuditCandidate {
   id: string;
-  year: 2025 | 2026;
+  year: number;
   kind: ReportKind;
   number: number;
   title: string;
@@ -107,9 +102,12 @@ export const totalCases = auditCases.length;
 export const totalRecords = allProductCases.length + processIncidents.length;
 
 const windowFor = (
-  year: 2025 | 2026,
+  year: number,
   kind: "primaryWindows" | "supplementalWindows" = "primaryWindows",
-) => evidence.study[kind][String(year) as "2025" | "2026"];
+) =>
+  evidence.study[kind][
+    String(year) as keyof (typeof evidence.study)[typeof kind]
+  ];
 
 const isWithin = (timestamp: string, start: string, endExclusive: string) => {
   const value = Date.parse(timestamp);
@@ -301,7 +299,11 @@ const verificationCohort = (
   branchCoverageEnd: BranchCoverageSnapshot,
   note?: string,
   firstReachableCommit?: string,
-  coverageComparisonStatus: "comparable" | "not_estimable" | "not_comparable" | "changing_source_set" = "comparable",
+  coverageComparisonStatus:
+    | "comparable"
+    | "not_estimable"
+    | "not_comparable"
+    | "changing_source_set" = "comparable",
 ) => ({
   year,
   testFiles: start
@@ -416,8 +418,7 @@ export const historicDeliveryAndCoverage = [2022, 2023, 2024].map((year) => {
   }
   const change = Number(
     (
-      coverage.end.branchCoveragePercent -
-      coverage.start.branchCoveragePercent
+      coverage.end.branchCoveragePercent - coverage.start.branchCoveragePercent
     ).toFixed(3),
   );
   return {
@@ -430,33 +431,35 @@ export const historicDeliveryAndCoverage = [2022, 2023, 2024].map((year) => {
 
 const historicDefectCohorts = evidence.activity.historicDefectCohorts;
 
-export const matchedWindowCohorts = [2022, 2023, 2024].map((year) => {
-  const cohort = historicCohorts[String(year) as "2022" | "2023" | "2024"];
-  const defects =
-    historicDefectCohorts[String(year) as "2022" | "2023" | "2024"];
-  return {
-    year,
-    totalReports: defects.qualifyingExternalProductDefects,
-    introduced: defects.introducedWithinWindow,
-    medianResponseDays: defects.medianResponseDays,
-    allMergedPullRequests: cohort.mergedPullRequests,
-    nonDependencyMerges: cohort.nonDependencyMergedPullRequests,
-    releases: cohort.publishedReleases,
-  };
-}).concat(
-  primaryComparisonSummary.map((cohort) => ({
-    year: cohort.year,
-    totalReports: cohort.totalReports,
-    introduced: cohort.introduced,
-    medianResponseDays: cohort.medianResponseDays,
-    allMergedPullRequests:
-      evidence.activity.primaryWindow.mergedPullRequests[
-        String(cohort.year) as "2025" | "2026"
-      ],
-    nonDependencyMerges: cohort.nonDependencyMerges,
-    releases: cohort.releases,
-  })),
-);
+export const matchedWindowCohorts = [2022, 2023, 2024]
+  .map((year) => {
+    const cohort = historicCohorts[String(year) as "2022" | "2023" | "2024"];
+    const defects =
+      historicDefectCohorts[String(year) as "2022" | "2023" | "2024"];
+    return {
+      year,
+      totalReports: defects.qualifyingExternalProductDefects,
+      introduced: defects.introducedWithinWindow,
+      medianResponseDays: defects.medianResponseDays,
+      allMergedPullRequests: cohort.mergedPullRequests,
+      nonDependencyMerges: cohort.nonDependencyMergedPullRequests,
+      releases: cohort.publishedReleases,
+    };
+  })
+  .concat(
+    primaryComparisonSummary.map((cohort) => ({
+      year: cohort.year,
+      totalReports: cohort.totalReports,
+      introduced: cohort.introduced,
+      medianResponseDays: cohort.medianResponseDays,
+      allMergedPullRequests:
+        evidence.activity.primaryWindow.mergedPullRequests[
+          String(cohort.year) as "2025" | "2026"
+        ],
+      nonDependencyMerges: cohort.nonDependencyMerges,
+      releases: cohort.releases,
+    })),
+  );
 
 export const historicDefectSummaries = [2022, 2023, 2024].map((year) => {
   const cohort =
@@ -471,7 +474,9 @@ export const historicDefectSummaries = [2022, 2023, 2024].map((year) => {
     introducedDisplay:
       cohort.introducedReports.length === 0
         ? "None observed"
-        : cohort.introducedReports.map((report) => `#${report.number}`).join(", "),
+        : cohort.introducedReports
+            .map((report) => `#${report.number}`)
+            .join(", "),
   };
 });
 
@@ -481,7 +486,8 @@ const numberRange = (values: number[]) => ({
 });
 const displayNumber = (value: number, maximumFractionDigits = 2) =>
   value.toLocaleString("en-US", { maximumFractionDigits });
-const displayDays = (value: number) => `${value} ${value === 1 ? "day" : "days"}`;
+const displayDays = (value: number) =>
+  `${value} ${value === 1 ? "day" : "days"}`;
 const displayRange = (values: number[], suffix = "") => {
   const range = numberRange(values);
   return `${displayNumber(range.minimum)}–${displayNumber(range.maximum)}${suffix}`;
@@ -626,14 +632,18 @@ export const retrospectiveBaselineRows = [
     difference: actual2026.introduced - exposureScaledIntroducedBenchmark,
     displayBenchmark: exposureScaledIntroducedBenchmark.toFixed(2),
     displayActual: String(actual2026.introduced),
-    displayDifference: (actual2026.introduced - exposureScaledIntroducedBenchmark).toFixed(2),
+    displayDifference: (
+      actual2026.introduced - exposureScaledIntroducedBenchmark
+    ).toFixed(2),
     note: `Expected-value benchmark after scaling the pooled historical rate to ${actual2026.nonDependencyMerges} observed 2026 non-dependency PRs.`,
   },
 ];
 
 const completeHistoricalCoverageChanges = ["2023", "2024"].map((year) => {
   const coverage = historicCohorts[year as "2023" | "2024"].coverage;
-  return coverage.end.branchCoveragePercent - coverage.start.branchCoveragePercent;
+  return (
+    coverage.end.branchCoveragePercent - coverage.start.branchCoveragePercent
+  );
 });
 const coverageReferenceMidpoint = median(completeHistoricalCoverageChanges);
 const actualCoverageChange =
@@ -653,7 +663,9 @@ export const coverageReference = {
 const cohortGitMetrics = evidence.activity.cohortGitMetrics.cohorts;
 export const gitCohortMetrics = [2022, 2023, 2024, 2025, 2026].map((year) => ({
   year,
-  ...cohortGitMetrics[String(year) as "2022" | "2023" | "2024" | "2025" | "2026"],
+  ...cohortGitMetrics[
+    String(year) as "2022" | "2023" | "2024" | "2025" | "2026"
+  ],
 }));
 
 const completePreAiGitCohorts = [
@@ -685,9 +697,7 @@ export const gitHistoricalBaselineRows = [
   baselineRow(
     "Docs/site churn",
     "2023–2025",
-    completePreAiGitCohorts.map(
-      (cohort) => cohort.categoryChurn.documentation,
-    ),
+    completePreAiGitCohorts.map((cohort) => cohort.categoryChurn.documentation),
     cohortGitMetrics["2026"].categoryChurn.documentation,
     " lines",
   ),
@@ -703,9 +713,7 @@ export const gitHistoricalBaselineRows = [
   baselineRow(
     "Source/other churn",
     "2023–2025",
-    completePreAiGitCohorts.map(
-      (cohort) => cohort.categoryChurn.sourceOrOther,
-    ),
+    completePreAiGitCohorts.map((cohort) => cohort.categoryChurn.sourceOrOther),
     cohortGitMetrics["2026"].categoryChurn.sourceOrOther,
     " lines",
   ),
@@ -742,7 +750,7 @@ export const deliveryMetrics = [
   },
 ] as const;
 
-export const categoryLabel = (category: AuditCategory, year: 2025 | 2026) => {
+export const categoryLabel = (category: AuditCategory, year: number) => {
   if (category === "Same-year regression") return `${year} regression`;
   if (category === "Defect in same-year feature") {
     return `Defect in a ${year} feature`;

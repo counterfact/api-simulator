@@ -128,6 +128,33 @@ body {
   margin-top: 2rem;
 }
 
+.authorship-aside,
+.authorship-disclosure {
+  background: #f1f5f6;
+  border-left: 4px solid var(--study-after);
+  color: #273646;
+  margin-top: 1.75rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.authorship-aside h2,
+.authorship-disclosure h2 {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.55rem;
+}
+
+.authorship-aside p,
+.authorship-disclosure p {
+  line-height: 1.65;
+  margin: 0;
+}
+
+.authorship-disclosure p + p {
+  margin-top: 0.85rem;
+}
+
 .abstract {
   border-block: 1px solid var(--study-rule);
   margin-top: 2.5rem;
@@ -736,3 +763,33 @@ body {
     color: inherit;
   }
 }
+
+/* Version 4: aligned static charts retain table equivalents without client JS. */
+.case-monthly { display: grid; gap: .5rem; padding: 1rem 0; }
+.case-month-heading, .case-month-row { display: grid; grid-template-columns: 7rem 1fr 1fr; gap: 1.25rem; align-items: center; }
+.case-month-heading { font-weight: 650; margin-bottom: .5rem; }
+.case-month-row { min-height: 2rem; font-variant-numeric: tabular-nums; }
+.case-month-row.adoption-month { border-top: 2px solid currentColor; padding-top: .65rem; margin-top: .3rem; }
+.case-track { position: relative; display: flex; align-items: center; min-height: 1.7rem; background: color-mix(in srgb, currentColor 5%, transparent); border-radius: .2rem; }
+.case-track b { position: relative; z-index: 1; font-size: .82rem; padding: .2rem .5rem; background: transparent; color: #172d3b; border-radius: .15rem; margin-left: .2rem; white-space: nowrap; }
+.case-bar { position: absolute; height: 100%; left: 0; border-radius: .2rem; background: #a0b2ce; }
+.case-bar.reported { background: #8dc8c2; }
+.case-bar.corrected { background: #dec183; }
+.case-pair { display: grid; gap: .12rem; }
+.case-pair .case-track { min-height: 1.15rem; }
+.case-pair .case-track b { font-size: .7rem; padding: 0 .35rem; }
+.case-response-chart { display: grid; gap: .8rem; }
+.case-response-row { display: grid; grid-template-columns: 1.2fr 1fr; gap: 1rem; align-items: center; }
+.case-response-row a { font-size: .95rem; }
+@media (max-width: 640px) {
+ .case-month-heading, .case-month-row { grid-template-columns: 5.3rem 1fr 1fr; gap: .5rem; font-size: .8rem; }
+ .case-month-heading { font-size: .7rem; }
+ .case-response-row { grid-template-columns: 1fr; gap: .3rem; }
+}
+
+.article-header .article-lede + p { margin-top: 1rem; }
+.quality-prose code { overflow-wrap: anywhere; }
+
+@media (max-width: 640px) { .table-scroll .research-table { min-width: 680px; } }
+
+.quality-prose summary { overflow-wrap: anywhere; }

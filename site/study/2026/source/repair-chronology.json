@@ -1,0 +1,768 @@
+{
+  "method": "Exact pre-fix file blob equality with a published tag. Requires semantic adjudication: matching an unrelated file does not demonstrate the reported fault. First corrected candidate uses Git ancestry plus npm publication; unproven remains null.",
+  "records": [
+    {
+      "id": "pr-2365",
+      "number": 2365,
+      "reportedAt": "2026-08-29T12:33:19Z",
+      "title": "Fix OpenAPI watch input classification and overlay hot reload",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [],
+      "fixedRelease": null,
+      "fixedPublishedAt": null,
+      "fixCommit": "5f5ef56b999f9f28b6da99e4852e0cb2ce9c9b2b"
+    },
+    {
+      "id": "pr-2266",
+      "number": 2266,
+      "reportedAt": "2026-08-01T20:22:52Z",
+      "title": "Fix wide route random response typing",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/counterfact-types/wide-operation-argument.ts",
+          "blob": "ed5029f32f7dc1e4673d8d860236659b1f7dcc78",
+          "release": "2.14.2",
+          "publishedAt": "2026-08-01T11:52:37.799Z",
+          "tagCommit": "8b638419059965eed8515098cb78c6d9b24bfa10",
+          "comparisonBase": "16aba8ad55b522e6a878f7057390114ced6675ff"
+        },
+        {
+          "path": "src/counterfact-types/wide-response-builder.ts",
+          "blob": "a90c9aa35fc1876f4806305e9471d01edf72e519",
+          "release": "2.14.2",
+          "publishedAt": "2026-08-01T11:52:37.799Z",
+          "tagCommit": "8b638419059965eed8515098cb78c6d9b24bfa10",
+          "comparisonBase": "16aba8ad55b522e6a878f7057390114ced6675ff"
+        }
+      ],
+      "fixedRelease": "2.15.0",
+      "fixedPublishedAt": "2026-08-01T20:57:29.110Z",
+      "fixCommit": "dce5372daff3b86939a961eba38d91b73e50835c"
+    },
+    {
+      "id": "pr-2263",
+      "number": 2263,
+      "reportedAt": "2026-08-01T20:03:54Z",
+      "title": "Fix syntax error in src/app.ts: missing closing brace for startRepl property",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [],
+      "fixedRelease": "2.15.0",
+      "fixedPublishedAt": "2026-08-01T20:57:29.110Z",
+      "fixCommit": "31833fb46b704554bc587f0825029caacd1b1862"
+    },
+    {
+      "id": "pr-1972",
+      "number": 1972,
+      "reportedAt": "2026-04-30T14:41:14Z",
+      "title": "fix: include path-item-level parameters in generated TypeScript types and server runtime",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/typescript-generator/requirement.ts",
+          "blob": "95e2201fa1aec97aeabaef65173b7b2207d8df32",
+          "release": "2.10.0",
+          "publishedAt": "2026-04-25T02:27:39.025Z",
+          "tagCommit": "9db4e22d2976bd7152751018017fc0fdbb8144b1",
+          "comparisonBase": "fd9b7dcb179b45c465fc438244272953ba1d5c8b"
+        }
+      ],
+      "fixedRelease": "2.11.0",
+      "fixedPublishedAt": "2026-05-05T00:10:50.946Z",
+      "fixCommit": "695c1ca39d90d8cc26a8e5448f3209e81ef08e41"
+    },
+    {
+      "id": "pr-1970",
+      "number": 1970,
+      "reportedAt": "2026-04-28T00:52:13Z",
+      "title": "fix: cast OAS3 schema-typed parameters at runtime",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [],
+      "fixedRelease": "2.11.0",
+      "fixedPublishedAt": "2026-05-05T00:10:50.946Z",
+      "fixCommit": "69ca5201ec2785a5e49b9f418fb83a4c4c9210e9"
+    },
+    {
+      "id": "pr-1935",
+      "number": 1935,
+      "reportedAt": "2026-04-25T00:41:00Z",
+      "title": "Fix: Query params of type object are now exploded correctly (OpenAPI default)",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/counterfact-types/open-api-parameters.ts",
+          "blob": "13d637a767973b6b21ba61f737d1a85519404457",
+          "release": "2.9.0",
+          "publishedAt": "2026-04-17T12:56:20.556Z",
+          "tagCommit": "dc68f604f0de5120839e6ac7e28010b67fc1a1ff",
+          "comparisonBase": "a67ccaf1f3f2067210fe67c3d8ffd9876036300a"
+        },
+        {
+          "path": "src/server/dispatcher.ts",
+          "blob": "ebcd5429e809b9cc27257c415ffc37c4d2dc101a",
+          "release": "2.9.0",
+          "publishedAt": "2026-04-17T12:56:20.556Z",
+          "tagCommit": "dc68f604f0de5120839e6ac7e28010b67fc1a1ff",
+          "comparisonBase": "a67ccaf1f3f2067210fe67c3d8ffd9876036300a"
+        },
+        {
+          "path": "src/server/request-validator.ts",
+          "blob": "cac213deb2c5973bdd2807af5f52f9065062aec5",
+          "release": "2.9.0",
+          "publishedAt": "2026-04-17T12:56:20.556Z",
+          "tagCommit": "dc68f604f0de5120839e6ac7e28010b67fc1a1ff",
+          "comparisonBase": "a67ccaf1f3f2067210fe67c3d8ffd9876036300a"
+        }
+      ],
+      "fixedRelease": "2.10.0",
+      "fixedPublishedAt": "2026-04-25T02:27:39.025Z",
+      "fixCommit": "2997e43c12df3d4214d2302183b618d772c452e3"
+    },
+    {
+      "id": "pr-1920",
+      "number": 1920,
+      "reportedAt": "2026-04-16T16:55:36Z",
+      "title": "Handle `_.context` syntax/import failures without crashing startup",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [],
+      "fixedRelease": "2.9.0",
+      "fixedPublishedAt": "2026-04-17T12:56:20.556Z",
+      "fixCommit": "2f996fed5e708d8c2e478e522490dda680f02a2f"
+    },
+    {
+      "id": "pr-1795",
+      "number": 1795,
+      "reportedAt": "2026-04-09T01:29:14Z",
+      "title": "fix: type error when returning a response with no body",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/counterfact-types/index.ts",
+          "blob": "7795def6ce74ed62744233a3bc1bea47054fe3c6",
+          "release": "2.6.0",
+          "publishedAt": "2026-04-06T21:38:58.831Z",
+          "tagCommit": "ce489dfce40b65d9b05409984887373885c2eebc",
+          "comparisonBase": "294de96a1b0da36b4237fc5ae174d95960d6af9f"
+        }
+      ],
+      "fixedRelease": "2.7.0",
+      "fixedPublishedAt": "2026-04-10T21:25:04.525Z",
+      "fixCommit": "4d64c2eaa1d10f1d0598c3a34ef01530e444143a"
+    },
+    {
+      "id": "pr-1740",
+      "number": 1740,
+      "reportedAt": "2026-04-08T18:12:57Z",
+      "title": "fix: escape XML special characters in jsonToXml text content",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/json-to-xml.ts",
+          "blob": "5b6e86d5b7fe4e10d22f2a59160df9d77af91a4d",
+          "release": "2.6.0",
+          "publishedAt": "2026-04-06T21:38:58.831Z",
+          "tagCommit": "ce489dfce40b65d9b05409984887373885c2eebc",
+          "comparisonBase": "9c0bee2136d857011ee86650fd559422cc1cdea2"
+        }
+      ],
+      "fixedRelease": "2.7.0",
+      "fixedPublishedAt": "2026-04-10T21:25:04.525Z",
+      "fixCommit": "4a94e4ebdec2f3de33dee3cf6be6b069bcd63de7"
+    },
+    {
+      "id": "pr-1684",
+      "number": 1684,
+      "reportedAt": "2026-04-06T22:21:16Z",
+      "title": "Fix Tools.accepts() failing when Accept header has spaces after commas",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/tools.ts",
+          "blob": "c0f46a7aebe0d12d693bbf1e1be86c66947b5862",
+          "release": "2.6.0",
+          "publishedAt": "2026-04-06T21:38:58.831Z",
+          "tagCommit": "ce489dfce40b65d9b05409984887373885c2eebc",
+          "comparisonBase": "ce489dfce40b65d9b05409984887373885c2eebc"
+        }
+      ],
+      "fixedRelease": "2.7.0",
+      "fixedPublishedAt": "2026-04-10T21:25:04.525Z",
+      "fixCommit": "ce3da8468e957899cfc436c33dcb391512460f0d"
+    },
+    {
+      "id": "pr-1683",
+      "number": 1683,
+      "reportedAt": "2026-04-06T22:21:04Z",
+      "title": "fix: Tools.accepts() case-insensitive accept header lookup",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [],
+      "fixedRelease": "2.7.0",
+      "fixedPublishedAt": "2026-04-10T21:25:04.525Z",
+      "fixCommit": "4757c4500f56df552aa0cdf53b011c0310ff4694"
+    },
+    {
+      "id": "pr-1682",
+      "number": 1682,
+      "reportedAt": "2026-04-06T22:20:52Z",
+      "title": "Fix: Dispatcher proxy() always throws when request body is present",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/dispatcher.ts",
+          "blob": "88837f3982380c5db3c7ac6d9f5783c4b9818f38",
+          "release": "2.6.0",
+          "publishedAt": "2026-04-06T21:38:58.831Z",
+          "tagCommit": "ce489dfce40b65d9b05409984887373885c2eebc",
+          "comparisonBase": "ce3da8468e957899cfc436c33dcb391512460f0d"
+        },
+        {
+          "path": "src/server/koa-middleware.ts",
+          "blob": "39618e1c2a4b826d3154592f40f8e93dfe830ad1",
+          "release": "2.6.0",
+          "publishedAt": "2026-04-06T21:38:58.831Z",
+          "tagCommit": "ce489dfce40b65d9b05409984887373885c2eebc",
+          "comparisonBase": "ce3da8468e957899cfc436c33dcb391512460f0d"
+        }
+      ],
+      "fixedRelease": "2.7.0",
+      "fixedPublishedAt": "2026-04-10T21:25:04.525Z",
+      "fixCommit": "fe38756485ce5650d895012e992b28d22f289f9a"
+    },
+    {
+      "id": "pr-1624",
+      "number": 1624,
+      "reportedAt": "2026-04-02T22:35:27Z",
+      "title": "Fix: syntax error in a route file no longer crashes the server",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/uncached-require.cjs",
+          "blob": "e7314a2bbbfcb3454aecba823debb39c4565962c",
+          "release": "2.4.0",
+          "publishedAt": "2026-03-30T22:55:09.435Z",
+          "tagCommit": "7951e71d284dd56e09c9254dd3fc83684c54e2fb",
+          "comparisonBase": "b750019c246859f608a6ebebe87d2d197162b269"
+        }
+      ],
+      "fixedRelease": "2.5.0",
+      "fixedPublishedAt": "2026-04-03T17:57:55.215Z",
+      "fixCommit": "4769e51c03f72986d72682222c64890a70d61063"
+    },
+    {
+      "id": "pr-1622",
+      "number": 1622,
+      "reportedAt": "2026-04-02T22:28:11Z",
+      "title": "Fix reserved keyword operationId causing TypeScript syntax errors",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [],
+      "fixedRelease": "2.5.0",
+      "fixedPublishedAt": "2026-04-03T17:57:55.215Z",
+      "fixCommit": "59f74e1cf2374290b0499567bbe5ff9107cd011b"
+    },
+    {
+      "id": "pr-1621",
+      "number": 1621,
+      "reportedAt": "2026-04-02T22:14:42Z",
+      "title": "Fix TypeError when response content has no schema",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/typescript-generator/operation-type-coder.js",
+          "blob": "9e6b0d83dbfdb364b3b808509d9016beb57f465b",
+          "release": "2.4.0",
+          "publishedAt": "2026-03-30T22:55:09.435Z",
+          "tagCommit": "7951e71d284dd56e09c9254dd3fc83684c54e2fb",
+          "comparisonBase": "80dc0732ecb4e6e664dbedc29d1ceac7ce49a366"
+        },
+        {
+          "path": "src/typescript-generator/response-type-coder.js",
+          "blob": "5be545a21c44ac0271e2f8dfe90ed96570a35f19",
+          "release": "2.4.0",
+          "publishedAt": "2026-03-30T22:55:09.435Z",
+          "tagCommit": "7951e71d284dd56e09c9254dd3fc83684c54e2fb",
+          "comparisonBase": "80dc0732ecb4e6e664dbedc29d1ceac7ce49a366"
+        }
+      ],
+      "fixedRelease": "2.5.0",
+      "fixedPublishedAt": "2026-04-03T17:57:55.215Z",
+      "fixCommit": "8587018a0daa9f93b934b6e0060023b954c4fb91"
+    },
+    {
+      "id": "pr-1620",
+      "number": 1620,
+      "reportedAt": "2026-04-02T22:13:56Z",
+      "title": "Fix import path for routes containing colons (e.g. `/stuff:action`)",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/typescript-generator/script.js",
+          "blob": "61e4e9e45ad8f7375f78987e414b9cab39c2db2b",
+          "release": "2.4.0",
+          "publishedAt": "2026-03-30T22:55:09.435Z",
+          "tagCommit": "7951e71d284dd56e09c9254dd3fc83684c54e2fb",
+          "comparisonBase": "241d6284ac1424669c179ca4538786b97aa11539"
+        }
+      ],
+      "fixedRelease": "2.5.0",
+      "fixedPublishedAt": "2026-04-03T17:57:55.215Z",
+      "fixCommit": "80dc0732ecb4e6e664dbedc29d1ceac7ce49a366"
+    },
+    {
+      "id": "pr-1614",
+      "number": 1614,
+      "reportedAt": "2026-04-01T21:23:41Z",
+      "title": "Fix crash when a route file is deleted",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/module-loader.ts",
+          "blob": "f467e968113495af9da018be4628460712454473",
+          "release": "2.4.0",
+          "publishedAt": "2026-03-30T22:55:09.435Z",
+          "tagCommit": "7951e71d284dd56e09c9254dd3fc83684c54e2fb",
+          "comparisonBase": "bce1c600ae90b939b1588244439b0e3b9751f65f"
+        }
+      ],
+      "fixedRelease": "2.5.0",
+      "fixedPublishedAt": "2026-04-03T17:57:55.215Z",
+      "fixCommit": "22a2226fd8dd231bc9bb14fabd312467b8eeb118"
+    },
+    {
+      "id": "pr-1612",
+      "number": 1612,
+      "reportedAt": "2026-04-01T21:07:56Z",
+      "title": "Fix Access-Control-Allow-Methods to reflect actual route handler methods",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/koa-middleware.ts",
+          "blob": "4daa7ddfdb97df41ee1fd88a464b481e324042b4",
+          "release": "2.4.0",
+          "publishedAt": "2026-03-30T22:55:09.435Z",
+          "tagCommit": "7951e71d284dd56e09c9254dd3fc83684c54e2fb",
+          "comparisonBase": "37dec24356b516844ac87f8deadd1b9451cea7d0"
+        }
+      ],
+      "fixedRelease": "2.5.0",
+      "fixedPublishedAt": "2026-04-03T17:57:55.215Z",
+      "fixCommit": "830480d1651803c3b6fba9445f05ec8fdb364491"
+    },
+    {
+      "id": "pr-1609",
+      "number": 1609,
+      "reportedAt": "2026-04-01T20:31:36Z",
+      "title": "fix: set Content-Type: application/json in RawHttpClient when body is an object",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/repl/RawHttpClient.ts",
+          "blob": "37db3ff0a1608ea7eaf9b3954580652dd113a90e",
+          "release": "2.4.0",
+          "publishedAt": "2026-03-30T22:55:09.435Z",
+          "tagCommit": "7951e71d284dd56e09c9254dd3fc83684c54e2fb",
+          "comparisonBase": "22a2226fd8dd231bc9bb14fabd312467b8eeb118"
+        }
+      ],
+      "fixedRelease": "2.5.0",
+      "fixedPublishedAt": "2026-04-03T17:57:55.215Z",
+      "fixCommit": "241d6284ac1424669c179ca4538786b97aa11539"
+    },
+    {
+      "id": "pr-1591",
+      "number": 1591,
+      "reportedAt": "2026-03-27T19:04:40Z",
+      "title": "Fix REPL tab completion broken by custom completer overriding Node's built-in",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [],
+      "fixedRelease": "2.4.0",
+      "fixedPublishedAt": "2026-03-30T22:55:09.435Z",
+      "fixCommit": "cf1ae286e62296f1d883759bfef8036588d43a96"
+    },
+    {
+      "id": "pr-1569",
+      "number": 1569,
+      "reportedAt": "2026-03-25T01:47:53Z",
+      "title": "Fix IfHasKey to use substring matching for content type keys",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [],
+      "fixedRelease": "2.4.0",
+      "fixedPublishedAt": "2026-03-30T22:55:09.435Z",
+      "fixCommit": "7913a9c4587419ed4fe2f6140d8ea4f30aed0ccc"
+    },
+    {
+      "id": "pr-1567",
+      "number": 1567,
+      "reportedAt": "2026-03-23T20:27:33Z",
+      "title": "Fix broken middlware",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/registry.ts",
+          "blob": "1b397b809ed52274b48f4983357809a7f8019afa",
+          "release": "2.2.1",
+          "publishedAt": "2026-03-20T12:26:53.109Z",
+          "tagCommit": "bf994d4f662b6865f362ff60133b81818d8af21d",
+          "comparisonBase": "08c0d8bdad6f56589cfd52b9aaf4f7e2361aad88"
+        }
+      ],
+      "fixedRelease": "2.3.0",
+      "fixedPublishedAt": "2026-03-23T20:49:36.734Z",
+      "fixCommit": "f5c6cdc510bba23abcaf1d0a5591643694bd14ad"
+    },
+    {
+      "id": "pr-1540",
+      "number": 1540,
+      "reportedAt": "2026-03-18T18:24:03Z",
+      "title": "Return HTTP 405 when path exists but method is not registered",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/dispatcher.ts",
+          "blob": "46336a83d0bdd6715d4fac1d8a67bf10f282d78f",
+          "release": "2.1.0",
+          "publishedAt": "2026-03-10T15:36:15.671Z",
+          "tagCommit": "55b171e6e72f4c858b220f1872abf9847c751ff1",
+          "comparisonBase": "0900cfadadaf34891ea609257957dc88b8ac2eaa"
+        }
+      ],
+      "fixedRelease": "2.2.0",
+      "fixedPublishedAt": "2026-03-19T15:24:20.542Z",
+      "fixCommit": "297f6bee5d0767192780a81889d3a0665f407643"
+    },
+    {
+      "id": "pr-1524",
+      "number": 1524,
+      "reportedAt": "2026-03-10T01:24:04Z",
+      "title": "Fix root middleware not executed for any routes",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/registry.ts",
+          "blob": "a888b8fb6b7cde0a8b40a473f3c29b84c3d648a1",
+          "release": "2.0.1",
+          "publishedAt": "2026-03-02T18:20:23.946Z",
+          "tagCommit": "dbea0a4a886784ae28da44e5d93bdea13b215f10",
+          "comparisonBase": "d244e0140aa4d1e315aeec2369e00b16c8ff7a49"
+        }
+      ],
+      "fixedRelease": "2.2.0",
+      "fixedPublishedAt": "2026-03-19T15:24:20.542Z",
+      "fixCommit": "a987fde68aa5d07f0695f99bc70a734cd6ca629e"
+    },
+    {
+      "id": "pr-1516",
+      "number": 1516,
+      "reportedAt": "2026-03-02T16:41:12Z",
+      "title": "fix(operation-type-coder): sanitize operation ID before generating type",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/typescript-generator/operation-type-coder.js",
+          "blob": "6db013eb9888d95224ea0319500edc7c13fb4b6f",
+          "release": "2.0.0",
+          "publishedAt": "2026-02-26T20:50:41.958Z",
+          "tagCommit": "8ff2046f6e7ddfd2f58d75c600de0fcc2053ab09",
+          "comparisonBase": "8a1fe397aa858dc5aed27c0aa6453828dedbba8d"
+        }
+      ],
+      "fixedRelease": "2.0.1",
+      "fixedPublishedAt": "2026-03-02T18:20:23.946Z",
+      "fixCommit": "9a6af7a75daacf1283bab4a55f3024e706426d59"
+    },
+    {
+      "id": "pr-1507",
+      "number": 1507,
+      "reportedAt": "2026-02-25T17:30:35Z",
+      "title": "fix(schema-type-coder): fix incorrect required property type generation",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/typescript-generator/schema-type-coder.js",
+          "blob": "8c94fe7861ab865292d9d1f680f727b1b98e3559",
+          "release": "1.6.0",
+          "publishedAt": "2026-02-25T12:53:33.280Z",
+          "tagCommit": "2709daede27a3152027e002b744c186fe20c94cb",
+          "comparisonBase": "564dee6615a2fd39de442ada8c13009b1d2c839c"
+        }
+      ],
+      "fixedRelease": "2.0.0",
+      "fixedPublishedAt": "2026-02-26T20:50:41.958Z",
+      "fixCommit": "7017a918b1f31353abe53f21a95e3959db8aa190"
+    },
+    {
+      "id": "pr-1395",
+      "number": 1395,
+      "reportedAt": "2025-09-11T00:09:16Z",
+      "title": "fix an issue with proxy where headers are mangled",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/koa-middleware.ts",
+          "blob": "0bf0a9277df860f8f6e22fa39c1fa704211cfa69",
+          "release": "1.4.5",
+          "publishedAt": "2025-09-05T00:17:55.340Z",
+          "tagCommit": "0c081caf351ad5c378b1da9a48a54130abf1fe62",
+          "comparisonBase": "2cf2666e59f9ed6599b37bad2845a33b03189cfc"
+        }
+      ],
+      "fixedRelease": "1.4.6",
+      "fixedPublishedAt": "2025-09-11T00:39:19.629Z",
+      "fixCommit": "1ebeb61a9fcd2658cbb2c9b224285eebada29020"
+    },
+    {
+      "id": "pr-1389",
+      "number": 1389,
+      "reportedAt": "2025-09-04T21:35:25Z",
+      "title": "Fix an issue where proxying to SSL does not work",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/dispatcher.ts",
+          "blob": "0221e560393e496515429226a4a2257d5e135226",
+          "release": "1.4.3",
+          "publishedAt": "2025-09-03T18:18:54.139Z",
+          "tagCommit": "939d149f753edcc0c2de10db1afb60c335840231",
+          "comparisonBase": "b9eb5b1a393b37c7d994256672895f90279f08e9"
+        }
+      ],
+      "fixedRelease": "1.4.4",
+      "fixedPublishedAt": "2025-09-04T21:50:17.191Z",
+      "fixCommit": "a2b0774235bb3404e4543925451e2163a2a2e4e8"
+    },
+    {
+      "id": "pr-1386",
+      "number": 1386,
+      "reportedAt": "2025-09-03T22:51:27Z",
+      "title": "windows fix for a path that contains a colon (resolves #1381)",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/module-loader.ts",
+          "blob": "46b7a05909bc2a8b01b4c4a3c454c268d3bde40b",
+          "release": "1.4.3",
+          "publishedAt": "2025-09-03T18:18:54.139Z",
+          "tagCommit": "939d149f753edcc0c2de10db1afb60c335840231",
+          "comparisonBase": "ef323ac278f03178831ebe41f408f242e1ded20a"
+        },
+        {
+          "path": "src/server/registry.ts",
+          "blob": "4874c939155d0cd8f874cf8c69e6750bfb971d15",
+          "release": "1.4.3",
+          "publishedAt": "2025-09-03T18:18:54.139Z",
+          "tagCommit": "939d149f753edcc0c2de10db1afb60c335840231",
+          "comparisonBase": "ef323ac278f03178831ebe41f408f242e1ded20a"
+        },
+        {
+          "path": "src/typescript-generator/repository.js",
+          "blob": "34cedeaefc1fb398859e0255fe5eed2de500f57d",
+          "release": "1.4.3",
+          "publishedAt": "2025-09-03T18:18:54.139Z",
+          "tagCommit": "939d149f753edcc0c2de10db1afb60c335840231",
+          "comparisonBase": "ef323ac278f03178831ebe41f408f242e1ded20a"
+        }
+      ],
+      "fixedRelease": "1.4.5",
+      "fixedPublishedAt": "2025-09-05T00:17:55.340Z",
+      "fixCommit": "f2117da199ce4589da6f9c5babc86bc0b2bed282"
+    },
+    {
+      "id": "pr-1384",
+      "number": 1384,
+      "reportedAt": "2025-09-03T18:06:57Z",
+      "title": "Fix an error with $.proxy() and GET requests",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/dispatcher.ts",
+          "blob": "6debb262e28d26fa3e35622b35df1bcb5d8a22b0",
+          "release": "1.4.2",
+          "publishedAt": "2025-08-20T23:14:45.823Z",
+          "tagCommit": "1c9e0a080fc2ceeb90a17ec908cb5961c79f7bb2",
+          "comparisonBase": "02ab5da0aee75cbc44fe303ceb691d50ce9ac5d1"
+        },
+        {
+          "path": "src/server/koa-middleware.ts",
+          "blob": "1a633adb7f099bbe36a8c4cc7d6fa7c11ca4427f",
+          "release": "1.4.2",
+          "publishedAt": "2025-08-20T23:14:45.823Z",
+          "tagCommit": "1c9e0a080fc2ceeb90a17ec908cb5961c79f7bb2",
+          "comparisonBase": "02ab5da0aee75cbc44fe303ceb691d50ce9ac5d1"
+        },
+        {
+          "path": "src/server/registry.ts",
+          "blob": "95a5503810b8c3cb3af9f3e5874834b42f762481",
+          "release": "1.4.2",
+          "publishedAt": "2025-08-20T23:14:45.823Z",
+          "tagCommit": "1c9e0a080fc2ceeb90a17ec908cb5961c79f7bb2",
+          "comparisonBase": "02ab5da0aee75cbc44fe303ceb691d50ce9ac5d1"
+        }
+      ],
+      "fixedRelease": "1.4.3",
+      "fixedPublishedAt": "2025-09-03T18:18:54.139Z",
+      "fixCommit": "1865cfc6e5dcf51298db2d9729c848ed374545d2"
+    },
+    {
+      "id": "pr-1161",
+      "number": 1161,
+      "reportedAt": "2025-01-16T23:11:35Z",
+      "title": "type fix: header should be headers (#1160)",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/types.ts",
+          "blob": "066ec3442ebea210c47295654464130b33d18e5f",
+          "release": "1.1.5",
+          "publishedAt": "2025-01-02T17:58:56.945Z",
+          "tagCommit": "fcd2a7a22c6593b8300b331098c306bb74c59d9e",
+          "comparisonBase": "b4185baed8cb0edee50c3f2efb5e8bfc5c2949f2"
+        },
+        {
+          "path": "src/typescript-generator/operation-type-coder.js",
+          "blob": "ffe581ac73fc9320d7eecb77721c0e31a5aad122",
+          "release": "1.1.5",
+          "publishedAt": "2025-01-02T17:58:56.945Z",
+          "tagCommit": "fcd2a7a22c6593b8300b331098c306bb74c59d9e",
+          "comparisonBase": "b4185baed8cb0edee50c3f2efb5e8bfc5c2949f2"
+        }
+      ],
+      "fixedRelease": "1.1.6",
+      "fixedPublishedAt": "2025-01-18T03:22:02.708Z",
+      "fixCommit": "edf757d166b470dd0d08aebaab4c278d1680c9f1"
+    },
+    {
+      "id": "pr-1099",
+      "number": 1099,
+      "reportedAt": "2024-11-02T15:29:15Z",
+      "title": "fixes to make sure $ref is followed",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/typescript-generator/generate.js",
+          "blob": "77ebd20bf6ccd3b06fa4860027b30bd92b0df26f",
+          "release": "1.1.3",
+          "publishedAt": "2024-10-17T16:23:51.456Z",
+          "tagCommit": "37c07a6912dc8e1165a9eac0a3248bc68d426306",
+          "comparisonBase": "791dbaccba1da00fc36c94b97825c2b42df03805"
+        },
+        {
+          "path": "src/typescript-generator/operation-type-coder.js",
+          "blob": "ffe581ac73fc9320d7eecb77721c0e31a5aad122",
+          "release": "1.1.3",
+          "publishedAt": "2024-10-17T16:23:51.456Z",
+          "tagCommit": "37c07a6912dc8e1165a9eac0a3248bc68d426306",
+          "comparisonBase": "791dbaccba1da00fc36c94b97825c2b42df03805"
+        },
+        {
+          "path": "src/typescript-generator/requirement.js",
+          "blob": "98b7b3dcc6169dd73d34056b74cf54571a1aa5a2",
+          "release": "1.1.3",
+          "publishedAt": "2024-10-17T16:23:51.456Z",
+          "tagCommit": "37c07a6912dc8e1165a9eac0a3248bc68d426306",
+          "comparisonBase": "791dbaccba1da00fc36c94b97825c2b42df03805"
+        },
+        {
+          "path": "src/typescript-generator/specification.js",
+          "blob": "054092b9109ebec43134bbeab209701ba72885ef",
+          "release": "1.1.3",
+          "publishedAt": "2024-10-17T16:23:51.456Z",
+          "tagCommit": "37c07a6912dc8e1165a9eac0a3248bc68d426306",
+          "comparisonBase": "791dbaccba1da00fc36c94b97825c2b42df03805"
+        }
+      ],
+      "fixedRelease": "1.1.4",
+      "fixedPublishedAt": "2024-11-23T00:15:51.415Z",
+      "fixCommit": "aa4dec60c1a316c68ba886b63227274d1331ecda"
+    },
+    {
+      "id": "pr-1074",
+      "number": 1074,
+      "reportedAt": "2024-10-09T16:44:35Z",
+      "title": "fix(server): Add support for directories with multiple wildcard children",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/dispatcher.ts",
+          "blob": "b4196de6bb92cea3481d6e1d11907e7b46ea33fe",
+          "release": "1.1.0",
+          "publishedAt": "2024-10-03T01:15:53.274Z",
+          "tagCommit": "e15e8fe58f847e389a8c7cbe97f51da62b0d3693",
+          "comparisonBase": "6ac12b2ad56c759c11c311dcb0b27b0a48e2b857"
+        },
+        {
+          "path": "src/server/module-tree.ts",
+          "blob": "47ec110feb2e4437c4af218da6b0258125bab5b5",
+          "release": "1.1.0",
+          "publishedAt": "2024-10-03T01:15:53.274Z",
+          "tagCommit": "e15e8fe58f847e389a8c7cbe97f51da62b0d3693",
+          "comparisonBase": "6ac12b2ad56c759c11c311dcb0b27b0a48e2b857"
+        },
+        {
+          "path": "src/server/registry.ts",
+          "blob": "78e2bb17f986cbcf502f2e108aece73667671750",
+          "release": "1.1.0",
+          "publishedAt": "2024-10-03T01:15:53.274Z",
+          "tagCommit": "e15e8fe58f847e389a8c7cbe97f51da62b0d3693",
+          "comparisonBase": "6ac12b2ad56c759c11c311dcb0b27b0a48e2b857"
+        }
+      ],
+      "fixedRelease": "1.1.1",
+      "fixedPublishedAt": "2024-10-10T19:24:37.149Z",
+      "fixCommit": "6cd61a645b409b44b67d9e5b53e8d7c6d5f36966"
+    },
+    {
+      "id": "pr-1062",
+      "number": 1062,
+      "reportedAt": "2024-10-02T21:10:36Z",
+      "title": "map index.ts to / -- fixes #1056",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [
+        {
+          "path": "src/server/module-loader.ts",
+          "blob": "f10da42fd7e095c22af18c26afa7b3a65b7c5f4c",
+          "release": "1.0.2",
+          "publishedAt": "2024-10-02T18:10:53.202Z",
+          "tagCommit": "e8450b629e519a16ff4ea99e5e1abef6e9dc200c",
+          "comparisonBase": "e8450b629e519a16ff4ea99e5e1abef6e9dc200c"
+        },
+        {
+          "path": "src/typescript-generator/generate.js",
+          "blob": "497d20df0a5582bb9d0e674b1fb9d0d20fc294f1",
+          "release": "1.0.2",
+          "publishedAt": "2024-10-02T18:10:53.202Z",
+          "tagCommit": "e8450b629e519a16ff4ea99e5e1abef6e9dc200c",
+          "comparisonBase": "e8450b629e519a16ff4ea99e5e1abef6e9dc200c"
+        },
+        {
+          "path": "src/typescript-generator/operation-coder.js",
+          "blob": "8638ee26775b4bc0ba498f6878f7e07abd09a696",
+          "release": "1.0.2",
+          "publishedAt": "2024-10-02T18:10:53.202Z",
+          "tagCommit": "e8450b629e519a16ff4ea99e5e1abef6e9dc200c",
+          "comparisonBase": "e8450b629e519a16ff4ea99e5e1abef6e9dc200c"
+        },
+        {
+          "path": "src/typescript-generator/operation-type-coder.js",
+          "blob": "d93424cd35376eab3fab1375393325cd59a7047e",
+          "release": "1.0.2",
+          "publishedAt": "2024-10-02T18:10:53.202Z",
+          "tagCommit": "e8450b629e519a16ff4ea99e5e1abef6e9dc200c",
+          "comparisonBase": "e8450b629e519a16ff4ea99e5e1abef6e9dc200c"
+        }
+      ],
+      "fixedRelease": "1.1.0",
+      "fixedPublishedAt": "2024-10-03T01:15:53.274Z",
+      "fixCommit": "a61d17f60a276e3bab9fa5af884e2333e9df8880"
+    },
+    {
+      "id": "pr-1060",
+      "number": 1060,
+      "reportedAt": "2024-10-02T17:42:53Z",
+      "title": "fix an issue where request body type is not found when consumes is in the root",
+      "discoveryChannel": "unknown",
+      "affectedFileEvidence": [],
+      "fixedRelease": "1.0.2",
+      "fixedPublishedAt": "2024-10-02T18:10:53.202Z",
+      "fixCommit": "a1623d631a7d5892d1eb477a5e8b7562d2e175d6"
+    }
+  ]
+}

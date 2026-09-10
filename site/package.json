@@ -8,7 +8,8 @@
     "build": "astro build",
     "snapshot:audit": "node scripts/quality-snapshot.mjs",
     "snapshot:churn": "node scripts/quality-churn.mjs",
-    "test:audit": "node --test scripts/quality-audit.test.mjs",
+    "build:case-study": "node scripts/build-quality-case-study.mjs",
+    "test:audit": "node --test scripts/quality-audit.test.mjs scripts/quality-case-study.test.mjs",
     "verify:audit": "node scripts/verify-quality-audit.mjs",
     "preview": "astro preview",
     "check-links": "astro preview --host 127.0.0.1 --port 4399 & SERVER_PID=$!; sleep 5 && linkinator http://127.0.0.1:4399 --recurse --skip 'https://|http://(?!127.0.0.1)' --verbosity error; EXIT=$?; kill $SERVER_PID 2>/dev/null; exit $EXIT"

@@ -1,0 +1,207 @@
+{
+  "reviewedBy": "coordinator; independently reviewed by separate Sol agent before delivery",
+  "reviewedOn": "2026-09-09",
+  "method": "Original external cases retain identities. Accepted PR repairs require semantic source review and a matching affected file in a published tag before report to classify released-at-discovery. A matching file is a bound, not an exact origin.",
+  "repairs": {
+    "pr-1567": {
+      "fields": {
+        "originStatus": "introduced-after-adoption",
+        "firstAffectedRelease": "2.2.0",
+        "firstAffectedPublishedAt": "2026-03-19T15:24:20.542Z",
+        "firstAffectedPrecision": "exact",
+        "classificationNote": "The PR explicitly reports the earlier root-middleware fix broke behavior. The faulty slash-root recursion was added by PR1524, present in v2.2.0/v2.2.1, and corrected by PR1567 in v2.3.0. This is a released post-adoption regression; discovery channel is not established by authorship."
+      },
+      "sources": [
+        "https://github.com/counterfact/api-simulator/commit/a987fde68aa5d07f0695f99bc70a734cd6ca629e",
+        "https://github.com/counterfact/api-simulator/pull/1567"
+      ]
+    },
+    "pr-2263": {
+      "fields": {
+        "releaseStatus": "pre-release",
+        "discoveryChannel": "automated-agent",
+        "originStatus": "introduced-after-adoption",
+        "classificationNote": "Original prompt links a CI failure. The missing closing brace was repaired on the durable-context branch before it reached main in PR2262 and before npm2.15.0. It is a pre-release finding, not an escaped product defect."
+      },
+      "sources": [
+        "https://github.com/counterfact/api-simulator/pull/2262",
+        "https://github.com/counterfact/api-simulator/actions/runs/30706039092/job/91385553095",
+        "https://github.com/counterfact/api-simulator/commit/973b198e4f7c4deca99719f763bc4b51b78e53ca"
+      ]
+    },
+    "pr-1591": {
+      "fields": {
+        "releaseStatus": "pre-release",
+        "originStatus": "introduced-after-adoption",
+        "classificationNote": "Custom completion override introduced in commit861c4dbb on March27 and fixed by578faab7 the same day. No npm publication falls between these changes; both precede2.4.0. It is a pre-release finding; discovery attribution remains unknown."
+      },
+      "sources": [
+        "https://github.com/counterfact/api-simulator/commit/861c4dbb348fd45f47de104f7f0f3f5354dce2bf",
+        "https://github.com/counterfact/api-simulator/commit/578faab7721445884834a8103aa4a1c079fa4100"
+      ]
+    },
+    "pr-1540": {
+      "exclude": true,
+      "reason": "Source issue718 predates interval and requests desired405behavior; no demonstrated violation of existing product contract. Excluded enhancement, not a new March2026 defect report.",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/718",
+        "https://github.com/counterfact/api-simulator/commit/297f6bee5d0767192780a81889d3a0665f407643"
+      ]
+    },
+    "pr-1569": {
+      "fields": {
+        "reportedAt": "2026-01-14T21:35:48Z",
+        "firstAffectedRelease": "1.4.9",
+        "firstAffectedPublishedAt": "2026-01-14T21:40:37.731Z",
+        "firstAffectedPrecision": "exact",
+        "originStatus": "pre-existing",
+        "releaseStatus": "pre-release",
+        "discoveryChannel": "internal-human",
+        "reintroducedBy": "89acaa14b34c65b40060c2cce35f27f8ae9b92d9",
+        "classificationNote": "Separate recurrence after original1370correction. Maintainer explicitly reports reopening after revert. Under npm boundary report precedes1.4.9 by4m49s although comment says latest release. The fault nevertheless shipped and remained until2.4.0; pre-release discovery does not imply prevention."
+      },
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/1370#issuecomment-3751824219",
+        "https://github.com/counterfact/api-simulator/commit/89acaa14b34c65b40060c2cce35f27f8ae9b92d9",
+        "https://github.com/counterfact/api-simulator/commit/7913a9c4587419ed4fe2f6140d8ea4f30aed0ccc"
+      ]
+    },
+    "pr-1684": {
+      "fields": {
+        "firstAffectedRelease": "2.5.1",
+        "firstAffectedPublishedAt": "2026-04-03T18:18:59.849Z",
+        "firstAffectedPrecision": "bound",
+        "classificationNote": "The faulty Accept parser splits untrimmed header values. tools.ts is byte-identical in2.5.1 and2.6.0; the earlier published bound precedes issue1678. The initial automated2.6bound followed the earlier issue report and was insufficient alone. Discovery remains unknown; this is not an exact introduction date."
+      },
+      "sources": [
+        "https://github.com/counterfact/api-simulator/blob/fe5280874065ce7a88545af7d09ffd85fb47c6e2/src/server/tools.ts"
+      ]
+    },
+    "pr-1682": {
+      "fields": {
+        "firstAffectedRelease": "2.5.1",
+        "firstAffectedPublishedAt": "2026-04-03T18:18:59.849Z",
+        "firstAffectedPrecision": "bound",
+        "classificationNote": "The faulty proxy checks headers.contentType despite HTTP header naming and throws on bodies. This proxy block and koa body handling are unchanged between2.5.1 and2.6.0; intervening changes concern validation and parameter maps. The earlier published bound precedes issue1676. Discovery remains unknown; this is not an exact introduction date."
+      },
+      "sources": [
+        "https://github.com/counterfact/api-simulator/blob/fe5280874065ce7a88545af7d09ffd85fb47c6e2/src/server/dispatcher.ts"
+      ]
+    }
+  },
+  "cases": {
+    "issue-1056": {
+      "fields": {
+        "firstAffectedRelease": "1.0.1",
+        "firstAffectedPublishedAt": "2024-08-03T18:18:17.727Z",
+        "firstAffectedPrecision": "bound",
+        "releaseStatus": "released",
+        "originStatus": "pre-existing",
+        "classificationNote": "The report names published v1.0.1. Inspection of its module loader confirms /index is registered without an alias for /; PR1062 adds that alias. This source-supported affected bound predates the report, unlike the initial v1.0.2 bound."
+      },
+      "sources": [
+        "https://github.com/counterfact/api-simulator/blob/431baf14aa7244394e11f908ee9bacee7d9d811c/src/server/module-loader.ts",
+        "https://github.com/counterfact/api-simulator/pull/1062"
+      ]
+    },
+    "issue-1105": {
+      "fields": {
+        "releaseStatus": "released",
+        "firstAffectedRelease": "1.1.3",
+        "firstAffectedPublishedAt": "2024-10-17T16:23:51.456Z",
+        "firstAffectedPrecision": "bound",
+        "fixedRelease": "1.1.7",
+        "fixedPublishedAt": "2025-01-18T21:28:35.322Z",
+        "originStatus": "pre-existing",
+        "classificationNote": "Operation-level parameter references were not dereferenced. The affected file is identical in1.1.3\u20131.1.6; PR1165 follows references and first ships in1.1.7. Distinct from path-item inline parameters in1971."
+      },
+      "sources": [
+        "https://github.com/counterfact/api-simulator/pull/1165",
+        "https://github.com/counterfact/api-simulator/commit/3b0bab4442db668db1a8d940720476f05954531b",
+        "https://github.com/counterfact/api-simulator/blob/37c07a6912dc8e1165a9eac0a3248bc68d426306/src/typescript-generator/parameters-type-coder.js",
+        "https://github.com/counterfact/api-simulator/commit/278dcbd48c310666c6a80982c829202bf9efb4a9"
+      ]
+    }
+  },
+  "sourceCorrections": [
+    {
+      "id": "issue-1105",
+      "decision": "distinct-from-issue-1971",
+      "reason": "The concrete input uses an operation-level $ref parameter; issue1971 concerns inline path-item parameters. A shared path:never symptom does not establish a shared root cause."
+    },
+    {
+      "id": "issue-1706",
+      "decision": "excluded-maintenance",
+      "reason": "The body states parseInt coercion currently returns the correct major version; no demonstrated faulty behavior."
+    },
+    {
+      "id": "issue-1704",
+      "decision": "excluded-maintenance",
+      "reason": "Deprecation and possible future removal do not demonstrate a current defect."
+    },
+    {
+      "id": "issue-1803",
+      "decision": "excluded-feature",
+      "reason": "Body requests optional runtime response validation; it does not report a faulty existing behavior."
+    }
+  ],
+  "internalIssueLinks": {
+    "1919": "pr-1920",
+    "1623": "pr-1624",
+    "1613": "pr-1614",
+    "1608": "pr-1609",
+    "1590": "pr-1591",
+    "1678": "pr-1684",
+    "1677": "pr-1683",
+    "1676": "pr-1682",
+    "1699": "pr-1740",
+    "1753": "pr-1684",
+    "1752": "pr-1683",
+    "1750": "pr-1682",
+    "1754": "pr-1740",
+    "1739": "pr-1740",
+    "1089": "pr-1099"
+  },
+  "candidateOverrides": {
+    "pr-1165": {
+      "disposition": "deduplicated-repair",
+      "reason": "Repair for separately counted issue1105, established by changeset and source; supersedes rule-screen false negative.",
+      "duplicateOf": "issue-1105"
+    },
+    "pr-1540": {
+      "disposition": "excluded-feature",
+      "reason": "Source issue718 predates interval and requests desired405behavior; no demonstrated violation of existing product contract. Excluded enhancement, not a new March2026 defect report."
+    },
+    "issue-1089": {
+      "disposition": "deduplicated-report",
+      "reason": "Earliest report for pr-1099; one underlying defect.",
+      "duplicateOf": "pr-1099"
+    },
+    "issue-1105": {
+      "disposition": "confirmed-product-defect",
+      "reason": "Operation-level parameter references were not dereferenced. The affected file is identical in1.1.3\u20131.1.6; PR1165 follows references and first ships in1.1.7. Distinct from path-item inline parameters in1971."
+    }
+  },
+  "directMainlineReview": [
+    {
+      "id": "commit-17635fe6b5a55b8381f83eb4f81583d930ae02e3",
+      "reportedAt": null,
+      "authoredAt": "2024-09-16T11:44:32-04:00",
+      "committedAt": "2024-10-02T23:19:26Z",
+      "reason": "Diff replaces unsupported Chokidar4 globs with directory watch. Parent upgrades dependency; both are committedOct2, despite older authored date. No independently documented discovery instant or affected-public-release established; remains unresolved and cannot be placed at an invented report time.",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/commit/17635fe6b5a55b8381f83eb4f81583d930ae02e3"
+      ]
+    },
+    {
+      "id": "commit-8a0483ecfd624227d19781a6005fab121de1f4b1",
+      "reportedAt": null,
+      "authoredAt": "2024-10-02T18:47:00-04:00",
+      "committedAt": "2024-10-02T23:19:26Z",
+      "reason": "Diff restores extension guard disabled by preceding watch repair. No observed failure report or independently affected release established. Retained unresolved with both author and committer times; no invented discovery timestamp.",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/commit/8a0483ecfd624227d19781a6005fab121de1f4b1"
+      ]
+    }
+  ]
+}
