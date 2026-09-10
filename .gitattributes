@@ -1,3 +1,4 @@
-# Preserve raw public-record snapshots and terminal captures exactly as collected.
-site/study/2026/source/** -whitespace
+# Preserve verbatim source captures and terminal logs exactly as collected.
+site/study/2026/source/external-raw/** -whitespace
+site/study/2026/source/internal-tools/keyword-pr-candidates.tsv -whitespace
 site/study/2026/experiments/logs/** -whitespace

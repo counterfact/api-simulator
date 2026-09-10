@@ -27,7 +27,6 @@ const manifest = {
 
 const v4Manifest = () => {
   const copy = structuredClone(manifest);
-  const study = copy.caseStudy;
   return copy;
 };
 
