@@ -63,7 +63,7 @@
     "js-yaml": "^4.1.0",
     "json-schema-faker": "^0.5.0-rcv.44",
     "json-schema-ref-parser": "^9.0.9",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "koa": "^2.13.4",
     "koa-bodyparser": "^4.3.0",
     "koa2-swagger-ui": "^5.6.0",
