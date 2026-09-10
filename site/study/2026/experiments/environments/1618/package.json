@@ -50,7 +50,7 @@
     "eslint-plugin-no-explicit-type-exports": "^0.12.1",
     "husky": "8.0.1",
     "jest": "28.1.2",
-    "nodemon": "2.0.20",
+    "nodemon": "2.0.22",
     "stryker-cli": "1.0.2",
     "supertest": "6.3.0"
   },
