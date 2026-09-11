@@ -52,7 +52,7 @@
     "jest": "28.1.2",
     "nodemon": "2.0.22",
     "stryker-cli": "1.0.2",
-    "supertest": "6.3.0"
+    "supertest": "6.3.4"
   },
   "dependencies": {
     "@hapi/accept": "^6.0.0",
