@@ -111,7 +111,7 @@
     "husky": "9.1.7",
     "jest": "30.5.1",
     "jest-retries": "1.0.1",
-    "node-mocks-http": "1.17.2",
+    "node-mocks-http": "1.18.1",
     "rimraf": "6.1.3",
     "stryker-cli": "1.1.0",
     "supertest": "7.2.2",
