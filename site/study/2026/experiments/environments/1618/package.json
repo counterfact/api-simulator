@@ -57,7 +57,7 @@
   "dependencies": {
     "@hapi/accept": "^6.0.0",
     "@types/json-schema": "^7.0.11",
-    "chokidar": "^3.5.3",
+    "chokidar": "^3.6.0",
     "commander": "^9.4.0",
     "fs-extra": "^10.1.0",
     "js-yaml": "^4.1.0",
