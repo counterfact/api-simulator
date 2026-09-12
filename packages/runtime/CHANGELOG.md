@@ -1,5 +1,17 @@
 # @counterfact/runtime
 
+## 0.1.5
+
+### Patch Changes
+
+- 1714e9a: Classify OpenAPI sources consistently and hot-reload local base documents and overlays without mistaking local `http`-prefixed paths for remote URLs.
+- 25215f4: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.1`.
+- Updated dependencies [1714e9a]
+- Updated dependencies [25215f4]
+  - @counterfact/openapi@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes

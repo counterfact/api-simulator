@@ -1,5 +1,17 @@
 # @counterfact/repl
 
+## 0.1.5
+
+### Patch Changes
+
+- 04d67bb: Validate and send required OpenAPI cookie, body, and form inputs through the immutable route builder, including REPL completions for the new methods.
+- Updated dependencies [04d67bb]
+- Updated dependencies [13155b0]
+- Updated dependencies [1714e9a]
+- Updated dependencies [25215f4]
+  - @counterfact/client@0.2.0
+  - @counterfact/runtime@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes

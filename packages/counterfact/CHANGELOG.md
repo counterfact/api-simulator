@@ -1,5 +1,27 @@
 # counterfact
 
+## 2.16.6
+
+### Patch Changes
+
+- cb11739: Updated dependency `posthog-node` in `counterfact` to `5.51.8`.
+- 0d2b3be: Updated dependency `posthog-node` in `counterfact` to `5.51.4`.
+- 25215f4: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.1`.
+- b253e37: Updated dependency `posthog-node` in `counterfact` to `5.51.7`.
+- ca2112f: Updated dependency `posthog-node` in `counterfact` to `5.51.3`.
+- 81b825a: Updated dependency `posthog-node` in `counterfact` to `5.51.6`.
+- Updated dependencies [04d67bb]
+- Updated dependencies [13155b0]
+- Updated dependencies [1714e9a]
+- Updated dependencies [25215f4]
+  - @counterfact/client@0.2.0
+  - @counterfact/repl@0.1.5
+  - @counterfact/openapi@0.1.5
+  - @counterfact/generator@0.1.5
+  - @counterfact/runtime@0.1.5
+
 ## 2.16.5
 
 ### Patch Changes

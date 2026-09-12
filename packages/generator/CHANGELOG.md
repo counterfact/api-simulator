@@ -1,5 +1,14 @@
 # @counterfact/generator
 
+## 0.1.5
+
+### Patch Changes
+
+- 1714e9a: Classify OpenAPI sources consistently and hot-reload local base documents and overlays without mistaking local `http`-prefixed paths for remote URLs.
+- Updated dependencies [1714e9a]
+- Updated dependencies [25215f4]
+  - @counterfact/openapi@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes
