@@ -1,5 +1,16 @@
 # @counterfact/client
 
+## 0.2.0
+
+### Minor Changes
+
+- 13155b0: Display complete multipart request bodies in the REPL client output, and write
+  route help directly to the console.
+
+### Patch Changes
+
+- 04d67bb: Validate and send required OpenAPI cookie, body, and form inputs through the immutable route builder, including REPL completions for the new methods.
+
 ## 0.1.1
 
 ### Patch Changes
