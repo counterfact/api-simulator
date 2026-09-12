@@ -39,7 +39,7 @@
     "@stryker-mutator/jest-runner": "6.2.3",
     "@types/koa": "2.15.2",
     "@types/koa-static": "^4.0.2",
-    "eslint": "8.25.0",
+    "eslint": "8.57.1",
     "eslint-config-hardcore": "25.2.0",
     "eslint-formatter-github-annotations": "0.1.0",
     "eslint-import-resolver-typescript": "^3.5.1",
