@@ -594,7 +594,7 @@
     human-id "^4.1.1"
     prettier "^2.7.1"
 
-"@dependents/detective-less@^5.0.1":
+"@dependents/detective-less@^5.0.1", "@dependents/detective-less@^5.0.3":
   version "5.0.3"
   resolved "https://registry.yarnpkg.com/@dependents/detective-less/-/detective-less-5.0.3.tgz#5c6a5849eacac27cf0a657a65c1d94fcd1e6843b"
   integrity sha512-v6oD9Ukp+N7V4n6p5I/+mM5fIohSfkrDSGlFm5w/pYmchvbk+sMIHsLxrFJ5Lnujewj1BzWL0K84d88lwZAMQA==
@@ -3121,7 +3121,7 @@ detect-newline@^3.1.0:
   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-3.1.0.tgz#576f5dfc63ae1a192ff192d8ad3af6308991b651"
   integrity sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==
 
-detective-amd@^6.0.1:
+detective-amd@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/detective-amd/-/detective-amd-6.1.0.tgz#7ac35f55325af5df974bb0fe4fdcac032719dc31"
   integrity sha512-fmI6LGMvotqd49QaA3ZYw+q0aGp2yXmMjzIuY6fH9j9YFIXY/73yDhMwhX9cPbhWd+AH06NH1Di/LKOuCH0Ubg==
@@ -3131,7 +3131,7 @@ detective-amd@^6.0.1:
     get-amd-module-type "^6.0.2"
     node-source-walk "^7.0.1"
 
-detective-cjs@^6.0.1:
+detective-cjs@^6.1.1:
   version "6.1.1"
   resolved "https://registry.yarnpkg.com/detective-cjs/-/detective-cjs-6.1.1.tgz#b7c78b649dbdfa0bba228ab28c9707f4a04d5fd7"
   integrity sha512-pSh7mkCKEtLlmANqLu3KDFS3NV8Hx41jy/JF1/gAWOgU+Uo5QTkeI1tWNP4dWGo4L0E9j18Ez9EPsTleautKqA==
@@ -3139,22 +3139,22 @@ detective-cjs@^6.0.1:
     ast-module-types "^6.0.1"
     node-source-walk "^7.0.1"
 
-detective-es6@^5.0.1:
+detective-es6@^5.0.1, detective-es6@^5.0.2:
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/detective-es6/-/detective-es6-5.0.2.tgz#afca245be54cbb8bb316591b182cbf9bc8243dc0"
   integrity sha512-+qHHGYhjupiVs4rnIpI9nZ5B130A4AmE35ZX1w33hb46vcZ7T3jfDbvmPw0FhWtMHn5BS5HHu7ZtnZ53bMcXZA==
   dependencies:
     node-source-walk "^7.0.1"
 
-detective-postcss@^7.0.1:
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/detective-postcss/-/detective-postcss-7.0.1.tgz#f5822d8988339fb56851fcdb079d51fbcff114db"
-  integrity sha512-bEOVpHU9picRZux5XnwGsmCN4+8oZo7vSW0O0/Enq/TO5R2pIAP2279NsszpJR7ocnQt4WXU0+nnh/0JuK4KHQ==
+detective-postcss@^8.0.3:
+  version "8.0.4"
+  resolved "https://registry.yarnpkg.com/detective-postcss/-/detective-postcss-8.0.4.tgz#d739483c30dfbbf61940d1fdb05d250663507189"
+  integrity sha512-DZ7M/hWPZyr17ZUdoQ+TVXaPj70mYr4XXrAE+GeJbca44haCvZgb191L/jLJmFYewhxRJuBd4lUtNSu986TXag==
   dependencies:
-    is-url "^1.2.4"
+    is-url-superb "^4.0.0"
     postcss-values-parser "^6.0.2"
 
-detective-sass@^6.0.1:
+detective-sass@^6.0.1, detective-sass@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/detective-sass/-/detective-sass-6.0.2.tgz#3f3a4791884aba353fc26de9090bc8df32dfd0c4"
   integrity sha512-i3xpXHDKS0qI2aFW4asQ7fqlPK00ndOVZELvQapFJCaF0VxYmsNWtd0AmvXbTLMk7bfO5VdIeorhY9KfmHVoVA==
@@ -3162,7 +3162,7 @@ detective-sass@^6.0.1:
     gonzales-pe "^4.3.0"
     node-source-walk "^7.0.1"
 
-detective-scss@^5.0.1:
+detective-scss@^5.0.1, detective-scss@^5.0.2:
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/detective-scss/-/detective-scss-5.0.2.tgz#19c02ee085e1c994cc2bd409f6d5f7d36b15220a"
   integrity sha512-9JOEMZ8pDh3ShXmftq7hoQqqJsClaGgxo1hghfCeFlmKf5TC/Twtwb0PAaK8dXwpg9Z0uCmEYSrCxO+kel2eEg==
@@ -3175,7 +3175,7 @@ detective-stylus@^5.0.1:
   resolved "https://registry.yarnpkg.com/detective-stylus/-/detective-stylus-5.0.1.tgz#57d54a0b405305ee16655e42008b38a827a9f179"
   integrity sha512-Dgn0bUqdGbE3oZJ+WCKf8Dmu7VWLcmRJGc6RCzBgG31DLIyai9WAoEhYRgIHpt/BCRMrnXLbGWGPQuBUrnF0TA==
 
-detective-typescript@^14.0.0, detective-typescript@^14.1.0:
+detective-typescript@^14.1.0, detective-typescript@^14.1.2:
   version "14.1.2"
   resolved "https://registry.yarnpkg.com/detective-typescript/-/detective-typescript-14.1.2.tgz#130208ab8d0d219931ae73947ce56814a462b6d3"
   integrity sha512-bIeEn0eVi/JRsE1YizBR2ilnMlWRAIBJJ6kXCKNFxEEWhUcEY3R6I3KYIAy48ieURbD1hcb3Ebvl8AqeoPMSzg==
@@ -3184,7 +3184,7 @@ detective-typescript@^14.0.0, detective-typescript@^14.1.0:
     ast-module-types "^6.0.1"
     node-source-walk "^7.0.1"
 
-detective-vue2@^2.2.0:
+detective-vue2@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/detective-vue2/-/detective-vue2-2.3.0.tgz#8e2029a96ef5dcfb57c5d9fe05ba2308d6ea2b8e"
   integrity sha512-3gwbZPqVTm9sL9XdZsgEJ7x4x99O853VVZHapQAiEkGuMJMpFPjHDrecSgfqnS5JW3FJfYXesLZGvUOibjn49g==
@@ -4891,11 +4891,6 @@ is-url-superb@^4.0.0:
   resolved "https://registry.yarnpkg.com/is-url-superb/-/is-url-superb-4.0.0.tgz#b54d1d2499bb16792748ac967aa3ecb41a33a8c2"
   integrity sha512-GI+WjezhPPcbM+tqE9LnmsY5qqjwHzTvjJ36wxYX5ujNXefSUJ/T17r5bqDV8yLhcgB59KTPNOc9O9cmHTPWsA==
 
-is-url@^1.2.4:
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/is-url/-/is-url-1.2.4.tgz#04a4df46d28c4cff3d73d01ff06abeb318a1aa52"
-  integrity sha512-ITvGim8FhRiYe4IQ5uHSkj7pVaPDrCTkNd3yq3cV7iZAcJdHTUMPMEHcqSOy9xZ9qFenQCvi+2wjH9a1nXqHww==
-
 is-weakmap@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/is-weakmap/-/is-weakmap-2.0.2.tgz#bf72615d649dfe5f699079c54b83e47d1ae19cfd"
@@ -5919,7 +5914,7 @@ mkdirp@^1.0.4:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
 
-module-definition@^6.0.1:
+module-definition@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/module-definition/-/module-definition-6.0.2.tgz#d72a3613dbf6fe7247ebef64f11fddc2cd18b83b"
   integrity sha512-SvAU3lB0+Yjbq55yHY3wkRZBOh+fhU1SnIF3IFbTewv6mtAh7yUT8ACHAJ2mGIJ7tCes2QuCL/cl6m0JSZ/ArA==
@@ -6058,7 +6053,7 @@ node-releases@^2.0.54:
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.55.tgz#c52faedb68001dcfe77495b5ed1ac5827a1788fc"
   integrity sha512-mIrE/Cw9y+9Au6dS5vDKDhQza9YvG6w+ZrS6X+ZzA7yFW/soAeaups4Qzn1bL6g5FVy8WtP79+0j82oPIbqRjQ==
 
-node-source-walk@^7.0.1:
+node-source-walk@^7.0.1, node-source-walk@^7.0.2:
   version "7.0.2"
   resolved "https://registry.yarnpkg.com/node-source-walk/-/node-source-walk-7.0.2.tgz#b075259cb40c3158570447be7bd4decffd207694"
   integrity sha512-71kFFjYaSshDTA8/a2HiTYPLdASWjLJxUyJxGE+ffxU+KhxSBtM9kiLUX+R2yooFdSFKMFpi4n3PFtDy6qXv8A==
@@ -6491,7 +6486,7 @@ postcss-values-parser@^6.0.2:
     is-url-superb "^4.0.0"
     quote-unquote "^1.0.0"
 
-postcss@^8.5.1, postcss@^8.5.19:
+postcss@^8.5.14, postcss@^8.5.19:
   version "8.5.28"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.28.tgz#da4563a99a06e62d6c1cd1acae363224bcaed6e9"
   integrity sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==
@@ -6505,26 +6500,26 @@ powershell-utils@^0.1.0:
   resolved "https://registry.yarnpkg.com/powershell-utils/-/powershell-utils-0.1.0.tgz#5a42c9a824fb4f2f251ccb41aaae73314f5d6ac2"
   integrity sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==
 
-precinct@12.2.0:
-  version "12.2.0"
-  resolved "https://registry.yarnpkg.com/precinct/-/precinct-12.2.0.tgz#6ab18f48034cc534f2c8fedb318f19a11bcd171b"
-  integrity sha512-NFBMuwIfaJ4SocE9YXPU/n4AcNSoFMVFjP72nvl3cx69j/ke61/hPOWFREVxLkFhhEGnA8ZuVfTqJBa+PK3b5w==
+precinct@12.3.2:
+  version "12.3.2"
+  resolved "https://registry.yarnpkg.com/precinct/-/precinct-12.3.2.tgz#0d6a15d2e9951744a24f5de6ab27c9b269365119"
+  integrity sha512-JbJevI1K80z8e/WIyDt/4vUN/4qcfBSKKqOjJA4mosPPPb7zODKRJQV7YN7apVWN3k58nZYm/vEsLgEGYmnxwg==
   dependencies:
-    "@dependents/detective-less" "^5.0.1"
+    "@dependents/detective-less" "^5.0.3"
     commander "^12.1.0"
-    detective-amd "^6.0.1"
-    detective-cjs "^6.0.1"
-    detective-es6 "^5.0.1"
-    detective-postcss "^7.0.1"
-    detective-sass "^6.0.1"
-    detective-scss "^5.0.1"
+    detective-amd "^6.1.0"
+    detective-cjs "^6.1.1"
+    detective-es6 "^5.0.2"
+    detective-postcss "^8.0.3"
+    detective-sass "^6.0.2"
+    detective-scss "^5.0.2"
     detective-stylus "^5.0.1"
-    detective-typescript "^14.0.0"
-    detective-vue2 "^2.2.0"
-    module-definition "^6.0.1"
-    node-source-walk "^7.0.1"
-    postcss "^8.5.1"
-    typescript "^5.7.3"
+    detective-typescript "^14.1.2"
+    detective-vue2 "^2.3.0"
+    module-definition "^6.0.2"
+    node-source-walk "^7.0.2"
+    postcss "^8.5.14"
+    typescript "^5.9.3"
 
 prelude-ls@^1.2.1:
   version "1.2.1"
@@ -7670,7 +7665,7 @@ typed-rest-client@~2.3.0:
     tunnel "0.0.6"
     underscore "^1.13.8"
 
-typescript@5.9.3, typescript@^5.7.3:
+typescript@5.9.3, typescript@^5.9.3:
   version "5.9.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.9.3.tgz#5b4f59e15310ab17a216f5d6cf53ee476ede670f"
   integrity sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==
