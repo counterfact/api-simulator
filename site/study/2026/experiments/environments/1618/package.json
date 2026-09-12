@@ -61,7 +61,7 @@
     "commander": "^9.5.0",
     "fs-extra": "^10.1.0",
     "js-yaml": "^4.1.0",
-    "json-schema-faker": "^0.5.0-rcv.44",
+    "json-schema-faker": "^0.6.0",
     "json-schema-ref-parser": "^9.0.9",
     "jsonwebtoken": "^9.0.0",
     "koa": "^2.13.4",
