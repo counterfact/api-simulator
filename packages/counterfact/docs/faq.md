@@ -203,7 +203,7 @@ Yes, for required query, header, and cookie parameters and supported JSON/form r
 
 ## Does it validate outgoing responses?
 
-Yes, by default. Response headers are validated against the schema defined in the spec. Any validation errors (missing required headers or type mismatches) are reported as `response-type-error` HTTP response headers — one header per error; multiple headers with the same name are allowed. The response body is still returned normally — the errors are advisory only. Disable this with `--no-validate-response` if you need looser behavior.
+Yes, by default. Response headers are validated against the schema defined in the spec. When a handler omits `status`, Counterfact validates it against the `200` response definition, matching the status sent over HTTP. Any validation errors (missing required headers or type mismatches) are reported as `response-type-error` HTTP response headers — one header per error; multiple headers with the same name are allowed. The response body is still returned normally — the errors are advisory only. Disable this with `--no-validate-response` if you need looser behavior.
 
 ---
 
