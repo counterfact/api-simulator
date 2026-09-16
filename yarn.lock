@@ -2686,19 +2686,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@posthog/core@npm:^1.51.1":
-  version: 1.53.2
-  resolution: "@posthog/core@npm:1.53.2"
+"@posthog/core@npm:^1.53.1":
+  version: 1.54.2
+  resolution: "@posthog/core@npm:1.54.2"
   dependencies:
-    "@posthog/types": "npm:^1.411.1"
-  checksum: 10c0/63248d839b140887dd7d4af81096909f9920a566f09bec945806c3ece7a8d047c3644569cee8962f100decf6b60a42188016319dd11ec87458eddbf7bcb5fd3a
+    "@posthog/types": "npm:^1.412.0"
+  checksum: 10c0/d57dc0ac41b13ffe285322469af14f71e61d7b817b3b588c22c7c0411600935f9014062e3c8afa7caeaee7b03b2d00d0accce185842b3f56b66ecccbc6ad84a8
   languageName: node
   linkType: hard
 
-"@posthog/types@npm:^1.411.1":
-  version: 1.411.1
-  resolution: "@posthog/types@npm:1.411.1"
-  checksum: 10c0/fd4cf6bd38abea89ff37fc2af8f329373ba6da8bfc99a1743f69f665428d43bcf6be5c3ef01196292e7b14f928df0b0de64ec3e401576ca15632c21b3b1b1703
+"@posthog/types@npm:^1.412.0":
+  version: 1.412.1
+  resolution: "@posthog/types@npm:1.412.1"
+  checksum: 10c0/3ceaf1741f5168e894548c125c4ab3a351a1e9336eececad8e3c04e19efd3e2992ff844522f633204946a9d196e9bc10c4bd0a079e19559045af4624ae2967b4
   languageName: node
   linkType: hard
 
@@ -5158,7 +5158,7 @@ __metadata:
     http-terminator: "npm:3.2.0"
     js-yaml: "npm:5.4.1"
     open: "npm:11.0.1"
-    posthog-node: "npm:5.51.8"
+    posthog-node: "npm:5.52.1"
   bin:
     counterfact: bin/counterfact.js
   languageName: unknown
@@ -10174,17 +10174,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-node@npm:5.51.8":
-  version: 5.51.8
-  resolution: "posthog-node@npm:5.51.8"
+"posthog-node@npm:5.52.1":
+  version: 5.52.1
+  resolution: "posthog-node@npm:5.52.1"
   dependencies:
-    "@posthog/core": "npm:^1.51.1"
+    "@posthog/core": "npm:^1.53.1"
   peerDependencies:
     rxjs: ^7.0.0
   peerDependenciesMeta:
     rxjs:
       optional: true
-  checksum: 10c0/7eed71beeb84a5113f62d32765c58f3baed059c149e73de26323d39e8184eb0b34b19eed0e3d782b3baba073646e4b92ddad0c26a161a08a9818c20c5754525b
+  checksum: 10c0/dfb7f71792156a817aaddf478e844f6d91f3f53c1f91f8aa496a1a4f30b414dfee40baec3cad35570ca383ef6e0a5ec316e59f687fa303960dedd2aeb2d09218
   languageName: node
   linkType: hard
 
