@@ -129,6 +129,24 @@ OPENAPI_DOCUMENT = {
                 }
             }
         },
+        "/implicit-status": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "implicit success",
+                        "headers": {
+                            "X-Required-Response": {
+                                "required": True,
+                                "schema": {"type": "string"},
+                            }
+                        },
+                        "content": {
+                            "text/plain": {"schema": {"type": "string"}}
+                        },
+                    }
+                }
+            }
+        },
     },
 }
 
@@ -136,6 +154,13 @@ OPENAPI_DOCUMENT = {
 BINARY_HANDLER = """\
 export const GET = ($) => {
   return $.response[200].binary("aGVsbG8gYmluYXJ5");
+};
+"""
+
+
+IMPLICIT_STATUS_HANDLER = """\
+export const GET = () => {
+  return { body: "implicit success", contentType: "text/plain", headers: {} };
 };
 """
 
@@ -261,6 +286,27 @@ def request_bodies_are_validated(journey):
     assert invalid.status_code == 400
     assert "body must have required property 'name'" in invalid.text
     assert (valid.status_code, valid.text) == (200, "accepted")
+
+
+@when("I customize a handler that relies on the implicit success status")
+def customize_implicit_status_handler(journey):
+    (journey.output / "routes" / "implicit-status.ts").write_text(
+        IMPLICIT_STATUS_HANDLER, encoding="utf-8"
+    )
+
+
+@then("its implicit 200 response is still validated")
+def implicit_success_response_is_validated(journey):
+    response = journey.wait_for_http(
+        f"{journey.prefix}/implicit-status",
+        lambda candidate: (
+            candidate.status_code == 200
+            and candidate.text == "implicit success"
+            and "X-Required-Response"
+            in candidate.headers.get("response-type-error", "")
+        ),
+    )
+    assert "X-Required-Response" in response.headers["response-type-error"]
 
 
 @when("I customize the generated binary handler")
