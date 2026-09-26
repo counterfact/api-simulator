@@ -33,6 +33,7 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 ## Existing conventions to follow
 
 - Use `usingTemporaryFiles()` for filesystem-heavy tests.
+- In file-watching tests, register the expected event listener before writing the file, then await the saved promise. Close watchers in test teardown so Jest timeouts cannot skip cleanup; restore any changed working directory there as well.
 - For source or tsconfig analysis in repository tooling, use the existing
   TypeScript parser instead of custom tokenizers or JSONC stripping. Preserve
   the source filename so TypeScript and TSX syntax are parsed correctly.
