@@ -15,15 +15,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apidevtools/json-schema-ref-parser@npm:16.0.1":
-  version: 16.0.1
-  resolution: "@apidevtools/json-schema-ref-parser@npm:16.0.1"
+"@apidevtools/json-schema-ref-parser@npm:16.0.2":
+  version: 16.0.2
+  resolution: "@apidevtools/json-schema-ref-parser@npm:16.0.2"
   dependencies:
-    js-yaml: "npm:^5.2.3"
-    undici: "npm:^8.10.0"
+    js-yaml: "npm:^5.4.1"
+    undici: "npm:^8.10.2"
   peerDependencies:
     "@types/json-schema": ^7.0.15
-  checksum: 10c0/6698985256fc42fbec54783237f0ae5162a06752aa7180b07ab8f50b18555a4605545d009842913813d6308418b2e78753c5022a2375297b2603e1a217712caa
+  checksum: 10c0/7c8aff95410a78fcdfdd722b6b449a566489c9b12c6a98422fe27f2bb38afdb49c3a2caca6c5a8887b0fa66aa0f3643858331ea87c3dbde12d5760d399e0f002
   languageName: node
   linkType: hard
 
@@ -1389,7 +1389,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@counterfact/openapi@workspace:packages/openapi"
   dependencies:
-    "@apidevtools/json-schema-ref-parser": "npm:16.0.1"
+    "@apidevtools/json-schema-ref-parser": "npm:16.0.2"
     "@types/json-schema": "npm:7.0.15"
     js-yaml: "npm:5.4.1"
     jsonpath-plus: "npm:10.4.0"
@@ -8779,14 +8779,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:^5.2.3":
-  version: 5.3.0
-  resolution: "js-yaml@npm:5.3.0"
+"js-yaml@npm:^5.4.1":
+  version: 5.4.2
+  resolution: "js-yaml@npm:5.4.2"
   dependencies:
     argparse: "npm:^2.0.1"
   bin:
     js-yaml: bin/js-yaml.mjs
-  checksum: 10c0/c67383a74026f3b550fe1131c6f0f56df11e227fc9b8b8c1c85154f106831a95a944f2dd4f505498d537790483aec7cd5e3d5e9913fe28fa2d131eeb894a0fd9
+  checksum: 10c0/ba7e0f72c93c7a84eca2c3de45d2a9188b16a20e83f036df723a3ac29e841496382d0b0849592f63028d1c640bcc5b65f88800da342f47469b5b99bda5c75bfc
   languageName: node
   linkType: hard
 
@@ -11875,7 +11875,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^8.10.0, undici@npm:^8.4.1":
+"undici@npm:^8.10.2":
+  version: 8.10.2
+  resolution: "undici@npm:8.10.2"
+  checksum: 10c0/66d7fc69149207cab570d6abbc9e965b6afe1ae889a7d46945b431165c973d6a56f3dd8b70a856e7ae1e550b6366a1cde6f06e68640587f0dadca38de72995ee
+  languageName: node
+  linkType: hard
+
+"undici@npm:^8.4.1":
   version: 8.10.0
   resolution: "undici@npm:8.10.0"
   checksum: 10c0/37ae2b1db8f65c3a003504e2040e96887b99f9db16ba07dcf49c37ed8b7f8c72f4452f2d46f52f7c9e49518fe8325e3b5e7e02ac3a2424886bd67d4b62a0ecab

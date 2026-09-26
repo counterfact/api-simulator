@@ -119,7 +119,7 @@
     "using-temporary-files": "2.2.1"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "13.0.5",
+    "@apidevtools/json-schema-ref-parser": "16.0.2",
     "@hapi/accept": "6.0.3",
     "@types/json-schema": "7.0.15",
     "chokidar": "5.0.0",
