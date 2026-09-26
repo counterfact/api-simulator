@@ -1391,7 +1391,7 @@ __metadata:
   dependencies:
     "@apidevtools/json-schema-ref-parser": "npm:16.0.1"
     "@types/json-schema": "npm:7.0.15"
-    js-yaml: "npm:5.4.1"
+    js-yaml: "npm:5.4.2"
     jsonpath-plus: "npm:10.4.0"
     node-fetch: "npm:3.3.2"
   languageName: unknown
@@ -1419,7 +1419,7 @@ __metadata:
     ajv: "npm:8.20.0"
     chokidar: "npm:5.0.0"
     debug: "npm:4.4.3"
-    js-yaml: "npm:5.4.1"
+    js-yaml: "npm:5.4.2"
     json-schema-faker: "npm:0.6.3"
     koa: "npm:3.2.1"
     koa-bodyparser: "npm:4.4.1"
@@ -5156,7 +5156,7 @@ __metadata:
     commander: "npm:15.0.0"
     debug: "npm:4.4.3"
     http-terminator: "npm:3.2.0"
-    js-yaml: "npm:5.4.1"
+    js-yaml: "npm:5.4.2"
     open: "npm:11.0.1"
     posthog-node: "npm:5.52.5"
   bin:
@@ -8756,14 +8756,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:5.4.1":
-  version: 5.4.1
-  resolution: "js-yaml@npm:5.4.1"
+"js-yaml@npm:5.4.2":
+  version: 5.4.2
+  resolution: "js-yaml@npm:5.4.2"
   dependencies:
     argparse: "npm:^2.0.1"
   bin:
     js-yaml: bin/js-yaml.mjs
-  checksum: 10c0/efe9dfaf222809694d375ad5ecca825561d2432eb55bc0f628911c0dfa4dbce98a71dcbc3252f630208bbdf5f4e9ac363847e4a7f49845b577ae2548b8fcf147
+  checksum: 10c0/ba7e0f72c93c7a84eca2c3de45d2a9188b16a20e83f036df723a3ac29e841496382d0b0849592f63028d1c640bcc5b65f88800da342f47469b5b99bda5c75bfc
   languageName: node
   linkType: hard
 
