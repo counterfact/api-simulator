@@ -56,6 +56,6 @@
     "@counterfact/types": "0.1.0",
     "chokidar": "5.0.0",
     "debug": "4.4.3",
-    "prettier": "3.9.6"
+    "prettier": "3.9.9"
   }
 }
