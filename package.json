@@ -93,7 +93,7 @@
     "typescript": "6.0.3",
     "using-temporary-files": "2.2.1"
   },
-  "packageManager": "yarn@4.18.0",
+  "packageManager": "yarn@4.18.1",
   "resolutions": {
     "@typescript-eslint/utils": "^8.58.0"
   }
