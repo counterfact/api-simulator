@@ -5115,7 +5115,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:8.70.1"
     "@typescript-eslint/parser": "npm:8.70.1"
     copyfiles: "npm:2.4.1"
-    eslint: "npm:10.10.0"
+    eslint: "npm:10.11.0"
     eslint-formatter-github-annotations: "npm:0.1.0"
     eslint-import-resolver-typescript: "npm:4.4.5"
     eslint-plugin-etc: "npm:2.0.3"
@@ -6435,9 +6435,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:10.10.0":
-  version: 10.10.0
-  resolution: "eslint@npm:10.10.0"
+"eslint@npm:10.11.0":
+  version: 10.11.0
+  resolution: "eslint@npm:10.11.0"
   dependencies:
     "@eslint-community/eslint-utils": "npm:^4.8.0"
     "@eslint-community/regexpp": "npm:^4.12.2"
@@ -6476,7 +6476,7 @@ __metadata:
       optional: true
   bin:
     eslint: bin/eslint.js
-  checksum: 10c0/ba583145305f088585f91c5dab6825492ec657614558e4610cffc94174cf800f456e39ec3cafd3eed73e04bd9a05794067ae33b553f1323e3e7c1157242409d2
+  checksum: 10c0/c767f45f21d1921b41d70e30b1c8fa7ec4e65c0f43a8d80cc4990ca3d923127fa7b9b3416b8f5be6e877d9286f97d3c51a04ed341bc6aa73c0dba0f463e1f861
   languageName: node
   linkType: hard
 
