@@ -1,5 +1,17 @@
 # @counterfact/generator
 
+## 0.1.5
+
+### Patch Changes
+
+- 1714e9a: Classify OpenAPI sources consistently and hot-reload local base documents and overlays without mistaking local `http`-prefixed paths for remote URLs.
+- 1145bb3: Updated dependency `prettier` in `@counterfact/generator` to `3.9.9`.
+- Updated dependencies [1714e9a]
+- Updated dependencies [25215f4]
+- Updated dependencies [15b30fb]
+- Updated dependencies [cfcedc9]
+  - @counterfact/openapi@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes
