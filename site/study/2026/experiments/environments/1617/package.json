@@ -109,7 +109,7 @@
     "eslint-plugin-security": "^4.0.0",
     "eslint-plugin-unused-imports": "4.4.1",
     "husky": "9.1.7",
-    "jest": "30.5.1",
+    "jest": "30.5.2",
     "jest-retries": "1.0.1",
     "node-mocks-http": "1.18.1",
     "rimraf": "6.1.3",
