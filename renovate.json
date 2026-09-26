@@ -1,5 +1,16 @@
 {
   "extends": ["config:recommended"],
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/test/**",
+    "**/tests/**",
+    "**/__fixtures__/**",
+    "site/study/2026/experiments/environments/**"
+  ],
   "rangeStrategy": "update-lockfile",
   "enabledManagers": ["npm", "github-actions"],
   "gitIgnoredAuthors": ["github+renovate@scharley.me"],
