@@ -52,7 +52,7 @@
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "16.0.1",
     "@types/json-schema": "7.0.15",
-    "js-yaml": "5.4.1",
+    "js-yaml": "5.4.2",
     "jsonpath-plus": "10.4.0",
     "node-fetch": "3.3.2"
   }
