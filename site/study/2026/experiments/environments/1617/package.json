@@ -123,7 +123,7 @@
     "@hapi/accept": "6.0.3",
     "@types/json-schema": "7.0.15",
     "chokidar": "5.0.0",
-    "commander": "14.0.3",
+    "commander": "15.0.0",
     "debug": "4.4.3",
     "fetch": "1.1.0",
     "fs-extra": "11.3.3",
