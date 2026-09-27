@@ -34,6 +34,19 @@ const OPENAPI = {
 };
 
 describe("OpenApiDocument", () => {
+  const watchedDocuments: OpenApiDocument[] = [];
+  const originalWorkingDirectory = process.cwd();
+
+  afterEach(async () => {
+    try {
+      await Promise.all(
+        watchedDocuments.splice(0).map((doc) => doc.stopWatching()),
+      );
+    } finally {
+      process.chdir(originalWorkingDirectory);
+    }
+  });
+
   if (process.platform === "win32") {
     it("skips these tests because Windows", () => {
       expect("windows-is-dumb").toEqual("windows-is-dumb");
@@ -95,15 +108,17 @@ describe("OpenApiDocument", () => {
       const doc = new OpenApiDocument($.path("openapi.json"));
 
       await doc.load();
+      watchedDocuments.push(doc);
       await doc.watch();
 
       const changed = {
         ...OPENAPI,
         info: { title: "Updated", version: "2.0.0" },
       };
+      const reloaded = waitForEvent(doc, "reload");
       await $.add("openapi.json", JSON.stringify(changed));
 
-      await waitForEvent(doc, "reload");
+      await reloaded;
 
       await doc.stopWatching();
 
@@ -118,6 +133,7 @@ describe("OpenApiDocument", () => {
       const doc = new OpenApiDocument($.path("openapi.json"));
 
       await doc.load();
+      watchedDocuments.push(doc);
       await doc.watch();
 
       const updated = {
@@ -130,9 +146,10 @@ describe("OpenApiDocument", () => {
           },
         },
       };
+      const reloaded = waitForEvent(doc, "reload");
       await $.add("openapi.json", JSON.stringify(updated));
 
-      await waitForEvent(doc, "reload");
+      await reloaded;
 
       await doc.stopWatching();
 
@@ -162,8 +179,10 @@ describe("OpenApiDocument", () => {
       ]);
 
       await doc.load();
+      watchedDocuments.push(doc);
       await doc.watch();
 
+      const reloaded = waitForEvent(doc, "reload");
       await $.add(
         "overlay.json",
         JSON.stringify({
@@ -177,7 +196,7 @@ describe("OpenApiDocument", () => {
         }),
       );
 
-      await waitForEvent(doc, "reload");
+      await reloaded;
       await doc.stopWatching();
 
       expect(doc.paths["/example"]?.get?.responses?.["200"]?.description).toBe(
@@ -195,8 +214,10 @@ describe("OpenApiDocument", () => {
       try {
         const doc = new OpenApiDocument("httpspec.json");
         await doc.load();
+        watchedDocuments.push(doc);
         await doc.watch();
 
+        const reloaded = waitForEvent(doc, "reload");
         await $.add(
           "httpspec.json",
           JSON.stringify({
@@ -209,7 +230,7 @@ describe("OpenApiDocument", () => {
           }),
         );
 
-        await waitForEvent(doc, "reload");
+        await reloaded;
         await doc.stopWatching();
 
         expect(Object.keys(doc.paths)).toStrictEqual(["/http-prefix-reloaded"]);

@@ -1381,7 +1381,7 @@ __metadata:
     "@counterfact/types": "npm:0.1.0"
     chokidar: "npm:5.0.0"
     debug: "npm:4.4.3"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.9"
   languageName: unknown
   linkType: soft
 
@@ -1391,7 +1391,7 @@ __metadata:
   dependencies:
     "@apidevtools/json-schema-ref-parser": "npm:16.0.1"
     "@types/json-schema": "npm:7.0.15"
-    js-yaml: "npm:5.4.1"
+    js-yaml: "npm:5.4.2"
     jsonpath-plus: "npm:10.4.0"
     node-fetch: "npm:3.3.2"
   languageName: unknown
@@ -1419,7 +1419,7 @@ __metadata:
     ajv: "npm:8.20.0"
     chokidar: "npm:5.0.0"
     debug: "npm:4.4.3"
-    js-yaml: "npm:5.4.1"
+    js-yaml: "npm:5.4.2"
     json-schema-faker: "npm:0.6.3"
     koa: "npm:3.2.1"
     koa-bodyparser: "npm:4.4.1"
@@ -2686,19 +2686,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@posthog/core@npm:^1.54.2":
-  version: 1.55.0
-  resolution: "@posthog/core@npm:1.55.0"
+"@posthog/core@npm:^1.55.2":
+  version: 1.55.2
+  resolution: "@posthog/core@npm:1.55.2"
   dependencies:
-    "@posthog/types": "npm:^1.412.2"
-  checksum: 10c0/50c62277da7c3d2da02499d7620c6bb691beed31246f7358836df513ef6b045edf0caca3720362997a1d2dbbc02e91113d0a2f3c8db834a482e5a698bc0f1aee
+    "@posthog/types": "npm:^1.412.4"
+  checksum: 10c0/2f8c3ccd06abd8aff0cbf810b25339af035a4cc40593f23021e73401695170c34bcd98554509202aafe7d7e71c2bc5bd6cd2fd51a3de603033d4bf2d085a3af7
   languageName: node
   linkType: hard
 
-"@posthog/types@npm:^1.412.2":
-  version: 1.412.2
-  resolution: "@posthog/types@npm:1.412.2"
-  checksum: 10c0/3db64739afc34a14bdea0c5858810a889a3db3c36d1a27e012406688c3a4313ee6d492fe4f88ff3803e3ee7cf7dc8a9b9cf0130e82b98504400892bd866ce3ee
+"@posthog/types@npm:^1.412.4":
+  version: 1.412.4
+  resolution: "@posthog/types@npm:1.412.4"
+  checksum: 10c0/06479892bee8b0509a3e45af60944bbc7d2d949160f675250e9fe7232378f98bb08ab5388361581e20e33344d905451928e7ee3677b564b795c78b7de78d1032
   languageName: node
   linkType: hard
 
@@ -5115,7 +5115,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:8.70.1"
     "@typescript-eslint/parser": "npm:8.70.1"
     copyfiles: "npm:2.4.1"
-    eslint: "npm:10.10.0"
+    eslint: "npm:10.11.0"
     eslint-formatter-github-annotations: "npm:0.1.0"
     eslint-import-resolver-typescript: "npm:4.4.5"
     eslint-plugin-etc: "npm:2.0.3"
@@ -5130,12 +5130,12 @@ __metadata:
     eslint-plugin-regexp: "npm:3.3.1"
     eslint-plugin-security: "npm:4.0.1"
     eslint-plugin-unused-imports: "npm:4.4.1"
-    fs-extra: "npm:11.4.0"
+    fs-extra: "npm:11.4.1"
     husky: "npm:9.1.7"
     jest: "npm:30.5.2"
     jest-retries: "npm:1.0.1"
     node-mocks-http: "npm:1.18.1"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.9"
     rimraf: "npm:6.1.3"
     supertest: "npm:7.3.0"
     tsd: "npm:0.33.0"
@@ -5156,9 +5156,9 @@ __metadata:
     commander: "npm:15.0.0"
     debug: "npm:4.4.3"
     http-terminator: "npm:3.2.0"
-    js-yaml: "npm:5.4.1"
+    js-yaml: "npm:5.4.2"
     open: "npm:11.0.1"
-    posthog-node: "npm:5.52.4"
+    posthog-node: "npm:5.53.0"
   bin:
     counterfact: bin/counterfact.js
   languageName: unknown
@@ -6435,9 +6435,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:10.10.0":
-  version: 10.10.0
-  resolution: "eslint@npm:10.10.0"
+"eslint@npm:10.11.0":
+  version: 10.11.0
+  resolution: "eslint@npm:10.11.0"
   dependencies:
     "@eslint-community/eslint-utils": "npm:^4.8.0"
     "@eslint-community/regexpp": "npm:^4.12.2"
@@ -6476,7 +6476,7 @@ __metadata:
       optional: true
   bin:
     eslint: bin/eslint.js
-  checksum: 10c0/ba583145305f088585f91c5dab6825492ec657614558e4610cffc94174cf800f456e39ec3cafd3eed73e04bd9a05794067ae33b553f1323e3e7c1157242409d2
+  checksum: 10c0/c767f45f21d1921b41d70e30b1c8fa7ec4e65c0f43a8d80cc4990ca3d923127fa7b9b3416b8f5be6e877d9286f97d3c51a04ed341bc6aa73c0dba0f463e1f861
   languageName: node
   linkType: hard
 
@@ -6926,14 +6926,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:11.4.0":
-  version: 11.4.0
-  resolution: "fs-extra@npm:11.4.0"
+"fs-extra@npm:11.4.1":
+  version: 11.4.1
+  resolution: "fs-extra@npm:11.4.1"
   dependencies:
     graceful-fs: "npm:^4.2.0"
     jsonfile: "npm:^6.0.1"
     universalify: "npm:^2.0.0"
-  checksum: 10c0/1e311eca820a12d3d795f2043dcd5628d017f4d21e634f3f9ef314ae68bee9979758262fb9cb35ffa6f26454c3fffe8b15558733e91e8fc729b07b10bb98d8b6
+  checksum: 10c0/15fafc34e0b6c1b59f0f92aae90b5fab44129ad7ebc1362cc593f2dec1d8a765b7b70b40e2bc779ee146f6ff13a736a065ddb991e5b597e294919ccb0c8ff834
   languageName: node
   linkType: hard
 
@@ -8756,14 +8756,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:5.4.1":
-  version: 5.4.1
-  resolution: "js-yaml@npm:5.4.1"
+"js-yaml@npm:5.4.2":
+  version: 5.4.2
+  resolution: "js-yaml@npm:5.4.2"
   dependencies:
     argparse: "npm:^2.0.1"
   bin:
     js-yaml: bin/js-yaml.mjs
-  checksum: 10c0/efe9dfaf222809694d375ad5ecca825561d2432eb55bc0f628911c0dfa4dbce98a71dcbc3252f630208bbdf5f4e9ac363847e4a7f49845b577ae2548b8fcf147
+  checksum: 10c0/ba7e0f72c93c7a84eca2c3de45d2a9188b16a20e83f036df723a3ac29e841496382d0b0849592f63028d1c640bcc5b65f88800da342f47469b5b99bda5c75bfc
   languageName: node
   linkType: hard
 
@@ -10182,17 +10182,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-node@npm:5.52.4":
-  version: 5.52.4
-  resolution: "posthog-node@npm:5.52.4"
+"posthog-node@npm:5.53.0":
+  version: 5.53.0
+  resolution: "posthog-node@npm:5.53.0"
   dependencies:
-    "@posthog/core": "npm:^1.54.2"
+    "@posthog/core": "npm:^1.55.2"
   peerDependencies:
     rxjs: ^7.0.0
   peerDependenciesMeta:
     rxjs:
       optional: true
-  checksum: 10c0/1dbb4c5c730aa9a0806a244759b7a2b1320dd4c08bda48fb1de8dcdab242e049587f0c26d257704e4501939af7e5cc2b48838eb9d9e5dfc3f947ff8f1f7c8be7
+  checksum: 10c0/622fce7b4022ce59a038385757f00b65200d4740f26b0ede132a7cc5cbc31ac18285b4d2e3b6aca7911618aa726723a44012defe6b4f93dd0131ec93c83b2bcf
   languageName: node
   linkType: hard
 
@@ -10251,12 +10251,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.9.6":
-  version: 3.9.6
-  resolution: "prettier@npm:3.9.6"
+"prettier@npm:3.9.9":
+  version: 3.9.9
+  resolution: "prettier@npm:3.9.9"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/9f7ddae234035868f3daab3dc34e6de7e54622185afb017378029f0c09a9c023248ccf6f34def0b17a0538e18c47aa1b3188bab72965d1bf735919baa0747e99
+  checksum: 10c0/d50ea2537b2ff7dbd5088a214f4d936484e55c665cea2185b477a55b0770be55f3b156a71f63a9a639def6b334667bb327139dc85f2a1041c0a34752cdc74647
   languageName: node
   linkType: hard
 
