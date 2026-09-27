@@ -32,7 +32,16 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 
 ## Existing conventions to follow
 
+- Keep historical study environments under `site/study/2026/experiments/environments/` excluded from Renovate; their manifests and lockfiles are reproducibility evidence, not maintained application dependencies. When changing `ignorePaths`, preserve the exclusions inherited from `config:recommended` because the array replaces inherited values.
+
 - Use `usingTemporaryFiles()` for filesystem-heavy tests.
+- In file-watching tests, register the expected event listener before writing the file, then await the saved promise. Close watchers in test teardown so Jest timeouts cannot skip cleanup; restore any changed working directory there as well.
+- For source or tsconfig analysis in repository tooling, use the existing
+  TypeScript parser instead of custom tokenizers or JSONC stripping. Preserve
+  the source filename so TypeScript and TSX syntax are parsed correctly.
+- Package-boundary export checks validate public subpaths across conditions;
+  they do not replace installed-consumer tests for runtime resolution. Keep
+  regression coverage for null exclusions and overlapping export patterns.
 - Keep tests focused by subsystem (`packages/counterfact/test/cli`, `packages/counterfact/test/server`, `packages/counterfact/test/typescript-generator`, `packages/counterfact/test/util`).
 - Preserve documented behavior promises (e.g., regen preserves route edits; types are regenerated).
 - When terminal output displays an HTTP message, split its head and body at the first `\r\n\r\n` separator only: multipart bodies contain additional separators that must remain visible.

@@ -16,18 +16,22 @@ Do not use it as a review checklist.
 
 ## Agent-owned PR sections
 
-`## Manual acceptance tests` and `## Repository learning check` are responsibilities of the agent that creates the PR, not of a reviewing agent.
+Writing `## Manual acceptance tests` and `## Repository learning check` is the responsibility of the agent that creates the PR, not of a reviewing agent. Completing manual acceptance and checking its boxes is the human reviewer's responsibility.
 A reviewing agent must not look for either section or treat its absence as a PR deficiency.
 Their absence most likely means the PR was not opened by an agent.
 
 ## Manual acceptance tests
 
 Every agent-created PR description must include a section titled exactly `## Manual acceptance tests` with 3–6 checklist items that start unchecked.
-Each checklist item must describe an observable behavior, not an implementation detail; complete the items before merge.
+Each checklist item must describe an observable behavior, not an implementation detail. A human performs manual acceptance and checks the boxes before merge.
+
+- Agents create the boxes and leave them unchecked. Never check manual acceptance boxes yourself, including after running tests or exercising the behavior yourself.
+- Report agent-run verification separately from human manual acceptance. Passing automated checks or agent-run verification does not establish human acceptance.
+- When editing an existing PR description, preserve boxes checked by a human; do not infer human acceptance from test results or change unchecked boxes to checked.
 
 - Cover the main success path, at least one edge case, and one regression check where applicable.
 - A PR that only adds files under `.github/issue-proposals/` may omit this section.
-- The repository workflow validates this section for applicable PRs; complete the checklist before merge.
+- The repository workflow validates this section for applicable PRs. A failing check while human acceptance is pending is expected; report it as awaiting human acceptance instead of checking boxes to make the workflow pass.
 
 ## Repository learning check
 
