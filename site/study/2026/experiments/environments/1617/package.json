@@ -101,7 +101,7 @@
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-jest": "29.15.0",
     "eslint-plugin-jest-dom": "5.10.1",
-    "eslint-plugin-n": "^17.24.0",
+    "eslint-plugin-n": "^18.0.0",
     "eslint-plugin-no-explicit-type-exports": "0.12.1",
     "eslint-plugin-prettier": "5.5.6",
     "eslint-plugin-promise": "^7.2.1",
@@ -119,7 +119,7 @@
     "using-temporary-files": "2.2.1"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "16.0.2",
+    "@apidevtools/json-schema-ref-parser": "13.0.5",
     "@hapi/accept": "6.0.3",
     "@types/json-schema": "7.0.15",
     "chokidar": "5.0.0",
