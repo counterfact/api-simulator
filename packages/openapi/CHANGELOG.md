@@ -1,5 +1,23 @@
 # @counterfact/openapi
 
+## 0.1.5
+
+### Patch Changes
+
+- 1714e9a: Classify OpenAPI sources consistently and hot-reload local base documents and overlays without mistaking local `http`-prefixed paths for remote URLs.
+- dfe2472: Updated dependency `jsonpath-plus` in `@counterfact/openapi` to `11.0.0`.
+- 25215f4: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.1`.
+- 2e0cadd: Updated dependency `@apidevtools/json-schema-ref-parser` in `@counterfact/openapi` to `16.0.3`.
+- 15b30fb: Updated dependency `js-yaml` in `counterfact` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.2`.
+- cfcedc9: Updated dependency `@apidevtools/json-schema-ref-parser` in `@counterfact/openapi` to `16.0.1`.
+- e5105a0: Updated dependency `@apidevtools/json-schema-ref-parser` in `@counterfact/openapi` to `16.0.2`.
+- 2707325: Updated dependency `jsonpath-plus` in `@counterfact/openapi` to `11.1.0`.
+- 66ab7eb: Updated dependency `jsonpath-plus` in `@counterfact/openapi` to `11.0.1`.
+
 ## 0.1.4
 
 ### Patch Changes

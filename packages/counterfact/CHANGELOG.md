@@ -1,5 +1,46 @@
 # counterfact
 
+## 2.16.6
+
+### Patch Changes
+
+- f30856d: Updated dependency `posthog-node` in `counterfact` to `5.52.1`.
+- bd1491f: Updated dependency `posthog-node` in `counterfact` to `5.52.4`.
+- 9e039eb: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `posthog-node` in `counterfact` to `5.53.0`.
+- b56b1c7: Updated dependency `posthog-node` in `counterfact` to `5.54.1`.
+- cb11739: Updated dependency `posthog-node` in `counterfact` to `5.51.8`.
+- 0d2b3be: Updated dependency `posthog-node` in `counterfact` to `5.51.4`.
+- 25215f4: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.1`.
+- 15b30fb: Updated dependency `js-yaml` in `counterfact` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.2`.
+- 75b575b: Updated dependency `posthog-node` in `counterfact` to `5.55.0`.
+- 3fceab1: Updated dependency `open` in `counterfact` to `11.0.4`.
+- b253e37: Updated dependency `posthog-node` in `counterfact` to `5.51.7`.
+- ca2112f: Updated dependency `posthog-node` in `counterfact` to `5.51.3`.
+- 267818b: Updated dependency `posthog-node` in `counterfact` to `5.52.5`.
+- 81b825a: Updated dependency `posthog-node` in `counterfact` to `5.51.6`.
+- Updated dependencies [04d67bb]
+- Updated dependencies [13155b0]
+- Updated dependencies [1714e9a]
+- Updated dependencies [1145bb3]
+- Updated dependencies [dfe2472]
+- Updated dependencies [25215f4]
+- Updated dependencies [2e0cadd]
+- Updated dependencies [15b30fb]
+- Updated dependencies [cfcedc9]
+- Updated dependencies [e5105a0]
+- Updated dependencies [2707325]
+- Updated dependencies [66ab7eb]
+  - @counterfact/client@0.2.0
+  - @counterfact/repl@0.1.5
+  - @counterfact/openapi@0.1.5
+  - @counterfact/generator@0.1.5
+  - @counterfact/runtime@0.1.5
+
 ## 2.16.5
 
 ### Patch Changes
