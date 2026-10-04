@@ -96,6 +96,6 @@
     "http-terminator": "3.2.0",
     "js-yaml": "5.4.2",
     "open": "11.0.4",
-    "posthog-node": "5.54.1"
+    "posthog-node": "5.55.0"
   }
 }
