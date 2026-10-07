@@ -8,13 +8,15 @@ const diagrams = [
   {
     name: "waiting",
     heading: "The backend isn’t ready",
-    caption: "Web and mobile clients wait for an unavailable backend.",
+    caption:
+      "Frontend work shouldn’t have to wait for the backend. When an API is unavailable or a feature hasn’t been built yet, developers still need a way to build and test the clients that depend on it.",
     alt: "Web and mobile clients send API requests to an unavailable backend and wait for responses.",
   },
   {
     name: "simulation",
     heading: "Counterfact implements the contract",
-    caption: "People and agents build and test without the live backend.",
+    caption:
+      "Give Counterfact an OpenAPI contract, and it provides a working API for your web and mobile clients. Develop against that contract, simulate new functionality, and test errors and edge cases without waiting for the live backend.",
     alt: "Web and mobile clients build and test against Counterfact’s simulated responses. An OpenAPI contract specifies the interface; the backend remains unavailable.",
   },
   {
@@ -76,9 +78,12 @@ const diagrams = [
           diagrams.map((diagram, index) => (
             <li>
               <figure>
-                <h2>
-                  {index + 1}. {diagram.heading}
-                </h2>
+                <figcaption>
+                  <h2>
+                    {index + 1}. {diagram.heading}
+                  </h2>
+                  <p>{diagram.caption}</p>
+                </figcaption>
                 <picture>
                   <source
                     media="(max-width: 480px)"
@@ -95,7 +100,6 @@ const diagrams = [
                     decoding="async"
                   />
                 </picture>
-                <figcaption>{diagram.caption}</figcaption>
               </figure>
             </li>
           ))
@@ -129,7 +133,7 @@ const diagrams = [
         starts a local API at <code>http://localhost:3100</code>.
       </p>
       <p class="supporting-text">
-        Try <code>http://localhost:3100/pet/1</code> or open
+        Try <code>http://localhost:3100/pet/1</code> or open{" "}
         <a href="http://localhost:3100/counterfact/swagger/">Swagger UI</a>.
         Generated sample responses are a starting point; customize the behavior
         your frontend needs.
@@ -139,7 +143,7 @@ const diagrams = [
         repeatable project or CI workflow, <a
           href="/docs/first-10-minutes#install-a-pinned-version"
           >install a pinned version</a
-        >
+        >{" "}
         and commit the lockfile.
       </p>
     </section>
@@ -214,7 +218,7 @@ const diagrams = [
   }
   figcaption {
     color: var(--muted);
-    margin-top: 0.75rem;
+    margin-bottom: 1rem;
   }
   @media (max-width: 480px) {
     .story-section {
