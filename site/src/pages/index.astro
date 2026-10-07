@@ -126,7 +126,12 @@ const diagrams = [
     >
       <h2 id="command-heading">Try it with an example API</h2>
       <div class="command-panel">
-        <code id="install-cmd">{exampleCommand}</code>
+        <code
+          id="install-cmd"
+          tabindex="0"
+          role="region"
+          aria-label="Example API command">{exampleCommand}</code
+        >
         <button
           id="copy-btn"
           class="copy-button"
@@ -194,6 +199,9 @@ const diagrams = [
 </MainLayout>
 
 <style>
+  .page-shell {
+    width: min(100% - 2rem, 820px);
+  }
   .story-section {
     border-top: 1px solid var(--rule);
     padding-block: 3.5rem;
