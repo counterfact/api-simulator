@@ -29,6 +29,8 @@ Use this skill for CLI flags, option precedence, config file loading, startup di
 
 - Keep `packages/counterfact/bin/counterfact.js` minimal: version gate + runtime capability probe + delegate to `runCli`.
 - Keep CLI precedence explicit: CLI flags override config file values (`program.getOptionValueSource`).
+- First-run prompts require no CLI arguments, an absent default config file (an empty file still counts as configured), interactive stdin and stdout, and a non-CI environment. Resolve config errors before offering the intro, and defer startup side effects until a spec is selected.
+- Discover local specs by bounded parsing without dereferencing `$ref` or fetching URLs; keep discovery inside the starting directory and skip symlinks, hidden, dependency, and build directories. Test terminal prompts/cancellation through the shipped CLI on a real PTY, alongside noninteractive and configured startup regressions.
 - Treat sensitive values carefully in logs/telemetry (hash file locations, avoid raw secrets/paths).
 - Preserve existing defaults where no action flags are passed (serve/repl/watch/generate/buildCache behavior).
 - Keep startup status truthful and compact: report only work that has actually completed, do not expose local input/output paths in normal status lines, and use ANSI colour only for an interactive stdout that has not opted out through `NO_COLOR`.

@@ -11,6 +11,24 @@ Use Node.js 22 or newer. Counterfact supports Swagger 2.0 and OpenAPI 3.0,
 
 ## Run one command
 
+For an interactive introduction, run:
+
+```sh
+npx counterfact@latest
+```
+
+With no arguments and no `counterfact.yaml` in the current directory, the intro
+offers documentation, a short guided tour, local OpenAPI documents from this
+directory and its subdirectories, and Swagger Petstore as the default. Press
+Enter to choose Petstore, then choose an output directory (default: `api/`)
+and server port (default: `3100`).
+Use `q`, Ctrl+C, or Ctrl+D to cancel before generating files.
+
+If you already have a config file or pass any arguments, Counterfact uses its
+usual startup behavior. In CI or without an interactive input and output
+terminal, an unconfigured no-argument run prints guidance and exits. Pass a
+spec explicitly for scripts, or `_` to start without OpenAPI.
+
 Give Counterfact an OpenAPI document and an output directory:
 
 ```sh
