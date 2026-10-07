@@ -5,12 +5,14 @@ on:
     paths:
       - "packages/counterfact/docs/**"
       - "site/**"
+      - ".github/workflows/check-site-links.yaml"
   push:
     branches:
       - main
     paths:
       - "packages/counterfact/docs/**"
       - "site/**"
+      - ".github/workflows/check-site-links.yaml"
   workflow_dispatch:
 
 jobs:
@@ -44,3 +46,7 @@ jobs:
       - name: Check links
         working-directory: site
         run: npm run check-links
+
+      - name: Check inline whitespace
+        working-directory: site
+        run: npm run test:whitespace
