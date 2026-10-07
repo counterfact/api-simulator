@@ -1,6 +1,4 @@
-# Counterfact
-
-<img src="./site/public/counterfact.svg" alt="Counterfact logo" width="320" height="54">
+<h1><img src="./site/public/counterfact.svg" alt="Counterfact" width="320" height="54"></h1>
 
 ## Build the frontend. Don’t wait for the backend.
 
