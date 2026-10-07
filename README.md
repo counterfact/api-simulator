@@ -7,7 +7,6 @@ People and agents can build and test against an API contract instead of a live
 API, simulating new functionality, error responses, and edge cases. Selectively
 proxy requests to real services when they are useful.
 
-Each diagram links to a full-size view.
 
 ### The backend isn’t ready
 
