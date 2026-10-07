@@ -22,7 +22,7 @@
       markerHeight="6"
       orient="auto-start-reverse"
     >
-      <path d="M0 0 10 5 0 10z" fill="#0869a6" />
+      <path d="M0 0 10 5 0 10z" fill="#0071b5" />
     </marker>
     <marker
       id="grey"
@@ -44,15 +44,15 @@
       width="132"
       height="72"
       rx="10"
-      fill="#edf6fc"
-      stroke="#0869a6"
+      fill="#ffffff"
+      stroke="#0071b5"
       stroke-width="2.5"
     />
     <text
       x="86.0"
       y="188.0"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="24"
       font-weight="650"
     >
@@ -64,15 +64,15 @@
       width="132"
       height="72"
       rx="10"
-      fill="#edf6fc"
-      stroke="#0869a6"
+      fill="#ffffff"
+      stroke="#0071b5"
       stroke-width="2.5"
     />
     <text
       x="86.0"
       y="288.0"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="24"
       font-weight="650"
     >
@@ -85,14 +85,14 @@
       height="74"
       rx="4"
       fill="#fff"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2.5"
     />
     <text
       x="320.0"
       y="49"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="24"
       font-weight="650"
     >
@@ -102,7 +102,7 @@
       x="320.0"
       y="77"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="24"
       font-weight="500"
     >
@@ -111,7 +111,7 @@
     <path
       d="M320 94 V144"
       fill="none"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2.5"
       stroke-dasharray="6 7"
     />
@@ -119,7 +119,7 @@
       x="377"
       y="125"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="21"
       font-weight="500"
     >
@@ -131,15 +131,16 @@
       width="168"
       height="145"
       rx="10"
-      fill="#edf6fc"
-      stroke="#0869a6"
+      fill="#ffffff"
+      stroke="#0071b5"
       stroke-width="2.5"
     />
+    <rect x="250" y="169" width="28" height="5" rx="2" fill="#f58e00" />
     <text
       x="320.0"
       y="197"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="26"
       font-weight="700"
     >
@@ -149,7 +150,7 @@
       x="320.0"
       y="231"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="23"
       font-weight="500"
     >
@@ -159,7 +160,7 @@
       x="320.0"
       y="259"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="23"
       font-weight="500"
     >
@@ -168,28 +169,28 @@
     <path
       d="M160 180 H228"
       fill="none"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2.5"
       marker-end="url(#blue)"
     />
     <path
       d="M160 280 H184 V210 H228"
       fill="none"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2.5"
       marker-end="url(#blue)"
     />
     <path
       d="M228 260 H194 V302 H160"
       fill="none"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2.5"
       marker-end="url(#blue)"
     />
     <path
       d="M228 232 H194 V202 H160"
       fill="none"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2.5"
       marker-end="url(#blue)"
     />
@@ -197,7 +198,7 @@
       x="92"
       y="365"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="24"
       font-weight="650"
     >
@@ -209,8 +210,8 @@
       width="140"
       height="145"
       rx="10"
-      fill="#edf6fc"
-      stroke="#0869a6"
+      fill="#ffffff"
+      stroke="#0071b5"
       stroke-width="2.5"
     />
     <rect
@@ -220,7 +221,7 @@
       height="10"
       rx="3"
       fill="none"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2"
     />
     <rect
@@ -230,7 +231,7 @@
       height="10"
       rx="3"
       fill="none"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2"
     />
     <rect
@@ -240,14 +241,14 @@
       height="10"
       rx="3"
       fill="none"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2"
     />
     <text
       x="550.0"
       y="284"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="24"
       font-weight="650"
     >
@@ -257,7 +258,7 @@
       x="548"
       y="130"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="23"
       font-weight="500"
     >
@@ -266,14 +267,14 @@
     <path
       d="M412 193 H472"
       fill="none"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2.5"
       marker-end="url(#blue)"
     />
     <path
       d="M472 262 H412"
       fill="none"
-      stroke="#0869a6"
+      stroke="#0071b5"
       stroke-width="2.5"
       marker-end="url(#blue)"
     />
@@ -281,7 +282,7 @@
       x="478"
       y="337"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="22"
       font-weight="500"
     >
@@ -291,7 +292,7 @@
       x="320"
       y="365"
       text-anchor="middle"
-      fill="#0869a6"
+      fill="#0071b5"
       font-size="24"
       font-weight="500"
     >

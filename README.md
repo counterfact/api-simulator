@@ -1,5 +1,7 @@
 # Counterfact
 
+<img src="./site/public/counterfact.svg" alt="Counterfact logo" width="320" height="54">
+
 ## Build the frontend. Don’t wait for the backend.
 
 Counterfact lets frontend developers work independently of the backend.
@@ -9,12 +11,16 @@ proxy requests to real services when they are useful.
 
 ### 1. The backend isn’t ready
 
+Frontend work shouldn’t have to wait for the backend. When an API is unavailable or a feature hasn’t been built yet, developers still need a way to build and test the clients that depend on it.
+
 <picture>
   <source media="(max-width: 480px)" srcset="./docs/images/counterfact-waiting-mobile.svg">
   <img src="./docs/images/counterfact-waiting.svg" alt="Web and mobile clients send API requests to an unavailable backend and wait for responses." width="640">
 </picture>
 
 ### 2. Counterfact implements the contract
+
+Give Counterfact an OpenAPI contract, and it provides a working API for your web and mobile clients. Develop against that contract, simulate new functionality, and test errors and edge cases without waiting for the live backend.
 
 <picture>
   <source media="(max-width: 480px)" srcset="./docs/images/counterfact-simulation-mobile.svg">
