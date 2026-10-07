@@ -91,6 +91,9 @@ function rehypeStripMdLinks() {
 export default defineConfig({
   site: "https://counterfact.dev",
   output: "static",
+  // Astro 7 defaults to JSX whitespace rules, which join prose across
+  // line breaks beside inline elements. Keep HTML's whitespace semantics.
+  compressHTML: true,
   markdown: {
     syntaxHighlight: "shiki",
     shikiConfig: {

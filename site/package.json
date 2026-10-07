@@ -10,6 +10,7 @@
     "snapshot:churn": "node scripts/quality-churn.mjs",
     "build:case-study": "node scripts/build-quality-case-study.mjs",
     "test:audit": "node --test scripts/quality-audit.test.mjs scripts/quality-case-study.test.mjs",
+    "test:whitespace": "node --test scripts/inline-whitespace.test.mjs",
     "verify:audit": "node scripts/verify-quality-audit.mjs",
     "preview": "astro preview",
     "check-links": "astro preview --host 127.0.0.1 --port 4399 & SERVER_PID=$!; sleep 5 && linkinator http://127.0.0.1:4399 --recurse --skip 'https://|http://(?!127.0.0.1)' --verbosity error; EXIT=$?; kill $SERVER_PID 2>/dev/null; exit $EXIT"
@@ -19,7 +20,9 @@
     "astro": "7.3.5"
   },
   "devDependencies": {
-    "linkinator": "8.1.0"
+    "linkinator": "8.1.0",
+    "parse5": "7.3.0",
+    "using-temporary-files": "2.2.1"
   },
   "overrides": {
     "satteri": "0.10.5"
