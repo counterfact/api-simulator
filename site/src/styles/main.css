@@ -53,7 +53,8 @@ p { margin: 0; }
 
 .command-section, .quick-start, .more-section { border-top: 1px solid var(--rule); padding-block: 3.5rem; }
 .command-panel { align-items: center; background: var(--code); border: 1px solid var(--rule); display: flex; gap: 0.75rem; justify-content: space-between; padding: 0.85rem; }
-.command-panel code { color: var(--ink); font-size: clamp(0.7rem, 2.5vw, 0.92rem); overflow-wrap: anywhere; }
+.command-panel code { color: var(--ink); flex: 1 1 auto; font-size: clamp(0.7rem, 2.5vw, 0.92rem); min-width: 0; overflow-x: auto; overscroll-behavior-inline: contain; white-space: nowrap; }
+.command-panel code:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
 .copy-button { background: var(--surface); border: 1px solid #aab5be; border-radius: 3px; color: var(--ink); cursor: pointer; flex: 0 0 auto; font: 700 0.8rem var(--font-sans); padding: 0.4rem 0.55rem; }
 .copy-button:hover { border-color: var(--blue); color: var(--blue-dark); }
 .code-copy-button { position: absolute; right: 0.7rem; top: 0.7rem; }

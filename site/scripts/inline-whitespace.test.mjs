@@ -3,6 +3,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { build } from "astro";
 import { parse } from "parse5";
+import { parse as parseCSS } from "postcss";
 import { usingTemporaryFiles } from "using-temporary-files";
 
 const siteRoot = new URL("../", import.meta.url);
@@ -97,6 +98,78 @@ test("the site build preserves authored inline whitespace", async (t) => {
       cacheDir: $.path("site-cache"),
       logLevel: "silent",
     });
+
+    await t.test(
+      "the command stays intact in a keyboard-accessible scroll region",
+      async () => {
+        const homepage = parse(await $.read("site/index.html"));
+        const byId = (id) =>
+          elements(homepage, (node) =>
+            node.attrs?.some((attr) => attr.name === "id" && attr.value === id),
+          )[0];
+        const command = byId("install-cmd");
+        const copy = byId("copy-btn");
+        assert.equal(
+          textContent(command),
+          "npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api",
+        );
+        assert.equal(
+          command.attrs.find((attr) => attr.name === "tabindex")?.value,
+          "0",
+        );
+        assert.equal(
+          command.attrs.find((attr) => attr.name === "role")?.value,
+          "region",
+        );
+        assert.ok(
+          command.attrs.find((attr) => attr.name === "aria-label")?.value,
+        );
+        assert.equal(
+          command.parentNode,
+          copy.parentNode,
+          "Copy stays outside the scrolling code",
+        );
+        assert.equal(copy.tagName, "button");
+
+        const stylesheets = elements(
+          homepage,
+          (node) =>
+            node.tagName === "link" &&
+            node.attrs?.some(
+              (attr) => attr.name === "rel" && attr.value === "stylesheet",
+            ),
+        );
+        const css = [];
+        for (const link of stylesheets) {
+          const href = link.attrs.find((attr) => attr.name === "href")?.value;
+          assert.ok(href?.startsWith("/_astro/"));
+          css.push(await $.read(`site${href}`));
+        }
+        const stylesheet = parseCSS(css.join("\n"));
+        const declarations = (selector) => {
+          const result = {};
+          stylesheet.walkRules(selector, (rule) => {
+            rule.walkDecls((decl) => {
+              result[decl.prop] = decl.value;
+            });
+          });
+          return result;
+        };
+        // This verifies the emitted CSS contract, not browser-computed geometry.
+        // min-width: 0 lets the flex item shrink instead of widening the page.
+        const code = declarations(".command-panel code");
+        assert.equal(code["white-space"], "nowrap");
+        assert.equal(code["overflow-x"], "auto");
+        assert.equal(code["min-width"], "0");
+        assert.ok(
+          ["none", "0 0 auto"].includes(declarations(".copy-button").flex),
+        );
+        const focus = declarations(".command-panel code:focus-visible");
+        assert.ok(focus.outline);
+        assert.notEqual(focus.outline, "none");
+        assert.ok(focus["outline-offset"]);
+      },
+    );
 
     await t.test(
       "the homepage preserves inline links in the quick start",
