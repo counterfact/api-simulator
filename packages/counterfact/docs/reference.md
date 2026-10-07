@@ -539,11 +539,13 @@ Hidden files/directories, symlinks, dependency directories (`node_modules`,
 `bower_components`, `vendor`), and build/cache directories (`dist`, `build`,
 `out`, `coverage`, `target`, `__pycache__`) are skipped. The search is limited to
 8 directory levels, 10,000 entries, 1,000 candidate documents, 100 specs, and
-2 MiB per document, with a 15-second overall timeout. Directory identities are
-checked in an isolated discovery process, so pathname replacement cannot redirect
-the search outside its starting directory. Unreadable locations are skipped with
-a compact warning;
-search limits are reported. Pass a spec explicitly to use a skipped document.
+2 MiB per document. It checks a 15-second time budget and cancellation between
+filesystem operations and file reads; an active filesystem call or synchronous
+JSON/YAML parse must finish before scanning can stop. Discovery runs in the CLI
+process and checks paths against its starting directory. These checks are not a
+filesystem sandbox and cannot prevent concurrent directory-replacement races.
+Unreadable locations are skipped with a compact warning; search limits are
+reported. Pass a spec explicitly to use a skipped document.
 Normal startup reports loading errors for a selected spec or its references.
 
 Enter accepts defaults. Use `q`, Ctrl+C, or Ctrl+D to cancel. The intro requires

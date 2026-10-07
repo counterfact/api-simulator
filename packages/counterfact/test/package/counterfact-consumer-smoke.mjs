@@ -262,7 +262,6 @@ try {
 
   for (const requiredPath of [
     "README.md",
-    "dist/cli/discover-openapi-worker.js",
     "llms.txt",
     "docs/features/route-builder.md",
     "docs/patterns/scenario-scripts.md",
