@@ -7,6 +7,7 @@ const exampleCommand =
 const diagrams = [
   {
     name: "waiting",
+    height: 342,
     heading: "The backend isn’t ready",
     caption:
       "Frontend work shouldn’t have to wait for the backend. When an API is unavailable or a feature hasn’t been built yet, developers still need a way to build and test the clients that depend on it.",
@@ -14,6 +15,7 @@ const diagrams = [
   },
   {
     name: "simulation",
+    height: 390,
     heading: "Counterfact implements the contract",
     caption:
       "Give Counterfact an OpenAPI contract, and it provides a working API for your web and mobile clients. Develop against that contract, simulate new functionality, and test errors and edge cases without waiting for the live backend.",
@@ -21,6 +23,7 @@ const diagrams = [
   },
   {
     name: "proxy",
+    height: 389,
     heading: "Mix simulated and real responses",
     caption:
       "Simulate new functionality, errors, and edge cases. Use real services when useful.",
@@ -75,31 +78,35 @@ const diagrams = [
     >
       <ol class="diagram-story">
         {
-          diagrams.map((diagram, index) => (
+          diagrams.map((diagram) => (
             <li>
               <figure>
                 <figcaption>
-                  <h2>
-                    {index + 1}. {diagram.heading}
-                  </h2>
+                  <h2>{diagram.heading}</h2>
                   <p>{diagram.caption}</p>
                 </figcaption>
-                <picture>
-                  <source
-                    media="(max-width: 480px)"
-                    srcset={`/diagrams/counterfact-${diagram.name}-mobile.svg`}
-                    width="320"
-                    height="560"
-                  />
+                <div
+                  class="diagram-scroll"
+                  role="region"
+                  aria-label={`${diagram.heading} diagram`}
+                  aria-describedby={`${diagram.name}-diagram-help`}
+                  tabindex="0"
+                >
                   <img
-                    src={`/diagrams/counterfact-${diagram.name}.svg`}
+                    src={`/diagrams/counterfact-${diagram.name}.png`}
                     alt={diagram.alt}
-                    width="640"
-                    height="400"
+                    width="1000"
+                    height={diagram.height}
                     loading="lazy"
                     decoding="async"
                   />
-                </picture>
+                </div>
+                <p id={`${diagram.name}-diagram-help`} class="diagram-help">
+                  <span>Scroll horizontally on small screens. </span>
+                  <a href={`/diagrams/counterfact-${diagram.name}.png`}>
+                    Open the full-size diagram
+                  </a>
+                </p>
               </figure>
             </li>
           ))
@@ -205,22 +212,42 @@ const diagrams = [
   figure h2 {
     font-size: clamp(1.35rem, 3.5vw, 1.75rem);
   }
-  picture {
-    display: block;
-  }
-  picture img {
+  .diagram-scroll {
     background: #fff;
     border: 1px solid var(--rule);
     border-radius: 6px;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+  .diagram-scroll:focus-visible {
+    outline: 3px solid var(--orange);
+    outline-offset: 3px;
+  }
+  .diagram-scroll img {
     display: block;
     height: auto;
     width: 100%;
+  }
+  .diagram-help {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+  .diagram-help span {
+    display: none;
   }
   figcaption {
     color: var(--muted);
     margin-bottom: 1rem;
   }
   @media (max-width: 480px) {
+    .diagram-scroll img {
+      min-width: 1000px;
+    }
+    .diagram-help span {
+      display: inline;
+    }
     .story-section {
       padding-block: 2.5rem;
     }
