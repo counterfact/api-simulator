@@ -10,6 +10,7 @@ applyTo:
   - "packages/counterfact/docs/**/*.md"
   - "test-black-box/**/*.py"
   - "docs/**/*.md"
+  - "site/**"
   - ".changeset/*.md"
   - ".github/workflows/**/*.yaml"
   - ".github/workflows/**/*.yml"
