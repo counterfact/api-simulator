@@ -1,10 +1,35 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
+
+const exampleCommand =
+  "npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api";
+
+const diagrams = [
+  {
+    name: "waiting",
+    heading: "The backend isn’t ready",
+    caption: "Web and mobile clients wait for an unavailable backend.",
+    alt: "Web and mobile clients send API requests to an unavailable backend and wait for responses.",
+  },
+  {
+    name: "simulation",
+    heading: "Counterfact implements the contract",
+    caption: "People and agents build and test without the live backend.",
+    alt: "Web and mobile clients build and test against Counterfact’s simulated responses. An OpenAPI contract specifies the interface; the backend remains unavailable.",
+  },
+  {
+    name: "proxy",
+    heading: "Mix simulated and real responses",
+    caption:
+      "Simulate new functionality, errors, and edge cases. Use real services when useful.",
+    alt: "Web and mobile clients use the same Counterfact interface. Counterfact simulates responses and proxies selected requests to available real services. The OpenAPI contract specifies the interface.",
+  },
+];
 ---
 
 <MainLayout
   title="Counterfact — Build the frontend. Don’t wait for the backend."
-  description="Turn an OpenAPI document into a useful local API in one command, then add custom behavior only when your frontend needs it."
+  description="Build and test against an API contract with Counterfact. Simulate new functionality, errors, and edge cases, and selectively proxy to real services."
   canonicalPath="/"
 >
   <header class="site-header">
@@ -13,9 +38,12 @@ import MainLayout from "../layouts/MainLayout.astro";
         <img src="/counterfact.svg" alt="" width="180" height="31" />
       </a>
       <nav aria-label="Primary navigation">
-        <a href="#quick-start">Quick start</a>
+        <a href="#quick-start">Try it</a>
         <a href="/docs/getting-started">Docs</a>
-        <a href="/quality/2026">Quality study</a>
+        <a
+          href="https://github.com/counterfact/api-simulator/blob/main/CONTRIBUTING.md"
+          >Contribute</a
+        >
         <a href="https://github.com/counterfact/api-simulator">GitHub</a>
       </nav>
     </div>
@@ -23,74 +51,107 @@ import MainLayout from "../layouts/MainLayout.astro";
 
   <main>
     <section class="hero page-shell" aria-labelledby="page-title">
-      <p class="eyebrow">Local APIs from OpenAPI</p>
+      <p class="eyebrow">Local API simulator</p>
       <h1 id="page-title">Build the frontend. Don’t wait for the backend.</h1>
       <p class="lede">
-        Counterfact turns an OpenAPI document into a useful local API in one command.
-        Point your frontend at localhost and start building against generated responses
-        before the real backend is ready.
+        Counterfact lets frontend developers work independently of the backend.
+        People and agents can build and test against an API contract instead of
+        a live API, simulating new functionality, error responses, and edge
+        cases. Selectively proxy requests to real services when they are useful.
       </p>
       <div class="actions">
         <a class="button button-primary" href="#quick-start">Try it now</a>
-        <a class="button button-secondary" href="/docs/getting-started">Read the docs</a>
+        <a class="button button-secondary" href="/docs/getting-started"
+          >Read the docs</a
+        >
       </div>
     </section>
 
-    <section class="page-shell command-section" aria-labelledby="command-heading">
-      <h2 id="command-heading">Start with your OpenAPI document</h2>
+    <section
+      class="page-shell story-section"
+      aria-label="How Counterfact works"
+    >
+      <ol class="diagram-story">
+        {
+          diagrams.map((diagram, index) => (
+            <li>
+              <figure>
+                <h2>
+                  {index + 1}. {diagram.heading}
+                </h2>
+                <picture>
+                  <source
+                    media="(max-width: 480px)"
+                    srcset={`/diagrams/counterfact-${diagram.name}-mobile.svg`}
+                    width="320"
+                    height="560"
+                  />
+                  <img
+                    src={`/diagrams/counterfact-${diagram.name}.svg`}
+                    alt={diagram.alt}
+                    width="640"
+                    height="400"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </picture>
+                <figcaption>{diagram.caption}</figcaption>
+              </figure>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="supporting-text">
+        The OpenAPI document describes the interface. Counterfact handles
+        requests and returns simulated responses or forwards selected requests
+        to a real service.
+      </p>
+    </section>
+
+    <section
+      id="quick-start"
+      class="page-shell command-section"
+      aria-labelledby="command-heading"
+    >
+      <h2 id="command-heading">Try it with an example API</h2>
       <div class="command-panel">
-        <code id="install-cmd">npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api</code>
-        <button id="copy-btn" class="copy-button" type="button" aria-label="Copy command">Copy</button>
+        <code id="install-cmd">{exampleCommand}</code>
+        <button
+          id="copy-btn"
+          class="copy-button"
+          type="button"
+          aria-label="Copy command">Copy</button
+        >
       </div>
       <p class="supporting-text">
-        Requires Node.js 22+. For a repeatable project or CI workflow,
-        <a href="/docs/first-10-minutes#install-a-pinned-version">install a pinned version</a>
+        Requires Node.js 22 or newer. Run in a new directory. Counterfact
+        creates editable routes and generated types in <code>api/</code>, then
+        starts a local API at <code>http://localhost:3100</code>.
+      </p>
+      <p class="supporting-text">
+        Try <code>http://localhost:3100/pet/1</code> or open
+        <a href="http://localhost:3100/counterfact/swagger/">Swagger UI</a>.
+        Generated sample responses are a starting point; customize the behavior
+        your frontend needs.
+      </p>
+      <p class="supporting-text">
+        Use your own OpenAPI document in place of the example URL. For a
+        repeatable project or CI workflow, <a
+          href="/docs/first-10-minutes#install-a-pinned-version"
+          >install a pinned version</a
+        >
         and commit the lockfile.
       </p>
     </section>
 
-    <section id="quick-start" class="page-shell quick-start" aria-labelledby="quick-start-heading">
-      <p class="eyebrow">Quick start</p>
-      <h2 id="quick-start-heading">A useful API before you write a handler</h2>
-      <ol class="steps">
-        <li>
-          <h3>Run the command</h3>
-          <p>Counterfact reads the document, writes editable routes and generated types, then starts a server.</p>
-        </li>
-        <li>
-          <h3>Point the frontend at localhost</h3>
-          <p>The base URL is <code>http://localhost:3100</code>. A browser app can make an ordinary request:</p>
-          <pre><code>const response = await fetch("http://localhost:3100/pet/1");
-const pet = await response.json();</code></pre>
-        </li>
-        <li>
-          <h3>Get a generated response</h3>
-          <p>Supported operations return schema-derived sample data immediately. For example:</p>
-          <pre><code>&#123;
-  "id": 1,
-  "name": "string",
-  "status": "available"
-&#125;</code></pre>
-        </li>
-      </ol>
-      <p class="supporting-text">
-        The defaults are a useful starting point for frontend work and exploration—not a claim that your backend behavior is complete.
-      </p>
-    </section>
-
     <section class="page-shell more-section" aria-labelledby="more-heading">
-      <h2 id="more-heading">When your frontend needs more</h2>
-      <p>
-        Replace a generated response with a custom handler when a screen needs a specific case.
-        Add only the state, failures, latency, proxying, or tests that the workflow needs.
-      </p>
-      <div class="link-list" aria-label="Advanced Counterfact guides">
+      <h2 id="more-heading">Keep going</h2>
+      <div class="link-list" aria-label="Counterfact guides">
+        <a href="/docs/usage">Guides by task</a>
+        <a href="/docs/reference">CLI and API reference</a>
         <a href="/docs/features/routes">Custom responses</a>
-        <a href="/docs/features/state">State</a>
-        <a href="/docs/patterns/simulate-failures">Failures and latency</a>
-        <a href="/docs/features/proxy">Proxying</a>
-        <a href="/docs/patterns/automated-integration-tests">Tests</a>
-        <a href="/docs/features/repl">REPL</a>
+        <a href="/docs/patterns/simulate-failures">Errors and edge cases</a>
+        <a href="/docs/features/proxy">Selective proxying</a>
       </div>
     </section>
   </main>
@@ -98,9 +159,69 @@ const pet = await response.json();</code></pre>
   <footer class="site-footer">
     <div class="page-shell footer-content">
       <span>Counterfact</span>
-      <a href="/docs/getting-started">Getting started</a>
+      <a
+        href="https://github.com/counterfact/api-simulator/blob/main/CONTRIBUTING.md"
+        >Contributing</a
+      >
+      <a href="https://github.com/counterfact/api-simulator/issues">Issues</a>
+      <a
+        href="https://github.com/counterfact/api-simulator/blob/main/SECURITY.md"
+        >Security</a
+      >
+      <a href="https://www.npmjs.com/package/counterfact">npm</a>
+      <a
+        href="https://github.com/counterfact/api-simulator/blob/main/packages/counterfact/CHANGELOG.md"
+        >Changelog</a
+      >
       <a href="/quality/2026">2026 quality study</a>
-      <a href="https://github.com/counterfact/api-simulator">GitHub</a>
+      <a
+        href="https://github.com/counterfact/api-simulator/blob/main/License.md"
+        >MIT · Patrick McElhaney</a
+      >
     </div>
   </footer>
 </MainLayout>
+
+<style>
+  .story-section {
+    border-top: 1px solid var(--rule);
+    padding-block: 3.5rem;
+  }
+  .diagram-story {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .diagram-story li + li {
+    margin-top: 3rem;
+  }
+  figure {
+    margin: 0;
+  }
+  figure h2 {
+    font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+  }
+  picture {
+    display: block;
+  }
+  picture img {
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    display: block;
+    height: auto;
+    width: 100%;
+  }
+  figcaption {
+    color: var(--muted);
+    margin-top: 0.75rem;
+  }
+  @media (max-width: 480px) {
+    .story-section {
+      padding-block: 2.5rem;
+    }
+    nav {
+      flex-wrap: wrap;
+    }
+  }
+</style>

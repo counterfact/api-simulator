@@ -1,0 +1,190 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="640"
+  height="400"
+  viewBox="0 0 640 400"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">The backend is not ready</title>
+  <desc id="desc">
+    Web and mobile clients send API requests to an unavailable backend and wait
+    for responses.
+  </desc>
+  <defs>
+    <marker
+      id="blue"
+      viewBox="0 0 10 10"
+      refX="9"
+      refY="5"
+      markerWidth="6"
+      markerHeight="6"
+      orient="auto-start-reverse"
+    >
+      <path d="M0 0 10 5 0 10z" fill="#0869a6" />
+    </marker>
+    <marker
+      id="grey"
+      viewBox="0 0 10 10"
+      refX="9"
+      refY="5"
+      markerWidth="6"
+      markerHeight="6"
+      orient="auto-start-reverse"
+    >
+      <path d="M0 0 10 5 0 10z" fill="#66727e" />
+    </marker>
+  </defs>
+  <rect width="640" height="400" fill="#fff" />
+  <g font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+    <rect
+      x="20"
+      y="144"
+      width="132"
+      height="72"
+      rx="10"
+      fill="#edf6fc"
+      stroke="#0869a6"
+      stroke-width="2.5"
+    />
+    <text
+      x="86.0"
+      y="188.0"
+      text-anchor="middle"
+      fill="#0869a6"
+      font-size="24"
+      font-weight="650"
+    >
+      Web
+    </text>
+    <rect
+      x="20"
+      y="244"
+      width="132"
+      height="72"
+      rx="10"
+      fill="#edf6fc"
+      stroke="#0869a6"
+      stroke-width="2.5"
+    />
+    <text
+      x="86.0"
+      y="288.0"
+      text-anchor="middle"
+      fill="#0869a6"
+      font-size="24"
+      font-weight="650"
+    >
+      Mobile
+    </text>
+    <path
+      d="M160 180 H472"
+      fill="none"
+      stroke="#66727e"
+      stroke-width="2.5"
+      marker-end="url(#grey)"
+    />
+    <path
+      d="M160 280 H430 V232 H472"
+      fill="none"
+      stroke="#66727e"
+      stroke-width="2.5"
+      marker-end="url(#grey)"
+    />
+    <text
+      x="316"
+      y="142"
+      text-anchor="middle"
+      fill="#66727e"
+      font-size="24"
+      font-weight="500"
+    >
+      API requests
+    </text>
+    <circle
+      cx="310"
+      cy="232"
+      r="23"
+      fill="none"
+      stroke="#dce2e8"
+      stroke-width="5"
+    />
+    <path
+      d="M310 209 A23 23 0 0 1 333 232"
+      fill="none"
+      stroke="#66727e"
+      stroke-width="5"
+      stroke-linecap="round"
+    />
+    <rect
+      x="480"
+      y="157"
+      width="140"
+      height="145"
+      rx="10"
+      fill="#f1f3f5"
+      stroke="#66727e"
+      stroke-width="2.5"
+    />
+    <rect
+      x="498"
+      y="173"
+      width="104"
+      height="10"
+      rx="3"
+      fill="none"
+      stroke="#66727e"
+      stroke-width="2"
+    />
+    <rect
+      x="498"
+      y="189"
+      width="104"
+      height="10"
+      rx="3"
+      fill="none"
+      stroke="#66727e"
+      stroke-width="2"
+    />
+    <rect
+      x="498"
+      y="205"
+      width="104"
+      height="10"
+      rx="3"
+      fill="none"
+      stroke="#66727e"
+      stroke-width="2"
+    />
+    <text
+      x="550.0"
+      y="284"
+      text-anchor="middle"
+      fill="#66727e"
+      font-size="24"
+      font-weight="650"
+    >
+      Backend
+    </text>
+    <text
+      x="550"
+      y="130"
+      text-anchor="middle"
+      fill="#66727e"
+      font-size="23"
+      font-weight="500"
+    >
+      Unavailable
+    </text>
+    <text
+      x="320"
+      y="363"
+      text-anchor="middle"
+      fill="#66727e"
+      font-size="26"
+      font-weight="650"
+    >
+      Frontend work waits
+    </text>
+  </g>
+</svg>
