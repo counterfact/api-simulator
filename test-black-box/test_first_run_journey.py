@@ -65,6 +65,12 @@ def test_explicit_startup():
     """Explicit positional and action-only commands bypass onboarding."""
 
 
+@TERMINAL_ONLY
+@scenario("features/first_run.feature", "Select and watch a local spec whose filename looks like a URL")
+def test_local_scheme_filename():
+    """A scheme-like local filename still loads and reloads as a file."""
+
+
 def contract():
     return {
         "openapi": "3.0.3",
@@ -171,6 +177,12 @@ def explicit_contract(journey):
     journey.write_json("contracts/nested/service.json", contract())
 
 
+@given("a first-run contract named http:spec.json")
+def scheme_filename(journey):
+    empty_directory(journey)
+    journey.write_json("http:spec.json", contract())
+
+
 @when("I run Counterfact without arguments in a terminal")
 def start_intro(journey):
     journey.start_cli(terminal=True)
@@ -228,6 +240,32 @@ def choose_nested_contract(journey):
     type_and_wait(journey, b"invalid\r", "Choose a port between")
     journey.output = journey.project / "api"
     os.write(journey.terminal.terminal, f"{journey.allocate_port()}\r".encode())
+
+
+@when("I select the contract whose filename looks like a URL")
+def choose_scheme_filename(journey):
+    match = re.search(r"(\d+)\) http:spec\.json", journey.transcript())
+    assert match is not None, journey.logs()
+    type_and_wait(journey, f"{match.group(1)}\r".encode(), "Output directory [api]: ")
+    type_and_wait(journey, b"\r", "Server port [3100]: ")
+    journey.output = journey.project / "api"
+    os.write(journey.terminal.terminal, f"{journey.allocate_port()}\r".encode())
+
+
+@when("I change the selected contract's response example")
+def change_scheme_contract(journey):
+    document = contract()
+    examples = document["paths"]["/hello"]["get"]["responses"]["200"]["content"]["text/plain"]["examples"]
+    examples["default"]["value"] = "reloaded from a local file"
+    journey.write_json("http:spec.json", document)
+
+
+@then("the running API reloads the local contract change")
+def local_contract_reloads(journey):
+    journey.wait_for_http(
+        "/hello",
+        lambda response: response.status_code == 200 and response.text == "reloaded from a local file",
+    )
 
 
 @then("the generated API and Swagger UI work and the REPL accepts requests")

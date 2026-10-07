@@ -170,6 +170,19 @@ describe("discoverOpenApiSpecs", () => {
     });
   });
 
+  it("does not report truncation when exactly 100 specs exhaust the search", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await Promise.all(
+        Array.from({ length: 100 }, (_, index) =>
+          $.add(`api-${index}.json`, JSON.stringify(document)),
+        ),
+      );
+      const result = await discoverOpenApiSpecs($.path("."));
+      expect(result.specs).toHaveLength(100);
+      expect(result.limited).toBe(false);
+    });
+  });
+
   it("reports an unreadable root without failing the intro", async () => {
     await usingTemporaryFiles(async ($) => {
       expect(await discoverOpenApiSpecs($.path("missing"))).toEqual({

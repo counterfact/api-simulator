@@ -131,7 +131,7 @@ export async function runIntro(): Promise<
         write("Choose one of the listed numbers, or q to quit.");
         continue;
       }
-      const source = choice === 1 ? PETSTORE_URL : localSpec!;
+      const source = choice === 1 ? PETSTORE_URL : `./${localSpec!}`;
       write(
         "Generated files will go in the output directory; existing route edits are preserved.",
       );

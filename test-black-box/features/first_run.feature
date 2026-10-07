@@ -64,3 +64,11 @@ Feature: Find a useful starting point on the first run
     Given an empty first-run directory with a local contract
     When I explicitly generate from the contract and then without OpenAPI
     Then explicit positional and action-only commands generate without an intro
+
+  Scenario: Select and watch a local spec whose filename looks like a URL
+    Given a first-run contract named http:spec.json
+    When I run Counterfact without arguments in a terminal
+    And I select the contract whose filename looks like a URL
+    Then the generated API and Swagger UI work and the REPL accepts requests
+    When I change the selected contract's response example
+    Then the running API reloads the local contract change

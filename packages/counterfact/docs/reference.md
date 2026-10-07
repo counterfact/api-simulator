@@ -539,7 +539,10 @@ Hidden files/directories, symlinks, dependency directories (`node_modules`,
 `bower_components`, `vendor`), and build/cache directories (`dist`, `build`,
 `out`, `coverage`, `target`, `__pycache__`) are skipped. The search is limited to
 8 directory levels, 10,000 entries, 1,000 candidate documents, 100 specs, and
-2 MiB per document. Unreadable locations are skipped with a compact warning;
+2 MiB per document, with a 15-second overall timeout. Directory identities are
+checked in an isolated discovery process, so pathname replacement cannot redirect
+the search outside its starting directory. Unreadable locations are skipped with
+a compact warning;
 search limits are reported. Pass a spec explicitly to use a skipped document.
 Normal startup reports loading errors for a selected spec or its references.
 
