@@ -9,30 +9,29 @@ People and agents can build and test against an API contract instead of a live
 API, simulating new functionality, error responses, and edge cases. Selectively
 proxy requests to real services when they are useful.
 
-### 1. The backend isn’t ready
+Each diagram links to a full-size view.
+
+### The backend isn’t ready
 
 Frontend work shouldn’t have to wait for the backend. When an API is unavailable or a feature hasn’t been built yet, developers still need a way to build and test the clients that depend on it.
 
-<picture>
-  <source media="(max-width: 480px)" srcset="./docs/images/counterfact-waiting-mobile.svg">
-  <img src="./docs/images/counterfact-waiting.svg" alt="Web and mobile clients send API requests to an unavailable backend and wait for responses." width="640">
-</picture>
+<a href="./docs/images/counterfact-waiting.png">
+  <img src="./docs/images/counterfact-waiting.png" alt="Web and mobile clients send API requests to an unavailable backend and wait for responses." width="1000" height="342">
+</a>
 
-### 2. Counterfact implements the contract
+### Counterfact implements the contract
 
 Give Counterfact an OpenAPI contract, and it provides a working API for your web and mobile clients. Develop against that contract, simulate new functionality, and test errors and edge cases without waiting for the live backend.
 
-<picture>
-  <source media="(max-width: 480px)" srcset="./docs/images/counterfact-simulation-mobile.svg">
-  <img src="./docs/images/counterfact-simulation.svg" alt="Web and mobile clients build and test against Counterfact’s simulated responses. An OpenAPI contract specifies the interface; the backend remains unavailable." width="640">
-</picture>
+<a href="./docs/images/counterfact-simulation.png">
+  <img src="./docs/images/counterfact-simulation.png" alt="Web and mobile clients build and test against Counterfact’s simulated responses. An OpenAPI contract specifies the interface; the backend remains unavailable." width="1000" height="390">
+</a>
 
-### 3. Mix simulated and real responses
+### Mix simulated and real responses
 
-<picture>
-  <source media="(max-width: 480px)" srcset="./docs/images/counterfact-proxy-mobile.svg">
-  <img src="./docs/images/counterfact-proxy.svg" alt="Web and mobile clients use the same Counterfact interface. Counterfact simulates responses and proxies selected requests to available real services. The OpenAPI contract specifies the interface." width="640">
-</picture>
+<a href="./docs/images/counterfact-proxy.png">
+  <img src="./docs/images/counterfact-proxy.png" alt="Web and mobile clients use the same Counterfact interface. Counterfact simulates responses and proxies selected requests to available real services. The OpenAPI contract specifies the interface." width="1000" height="389">
+</a>
 
 The OpenAPI document describes the interface. Counterfact handles requests and
 returns simulated responses or forwards selected requests to a real service.
