@@ -1391,7 +1391,7 @@ __metadata:
   dependencies:
     "@apidevtools/json-schema-ref-parser": "npm:16.0.3"
     "@types/json-schema": "npm:7.0.15"
-    js-yaml: "npm:5.4.2"
+    js-yaml: "npm:5.4.3"
     jsonpath-plus: "npm:11.1.1"
     node-fetch: "npm:3.3.2"
   languageName: unknown
@@ -1419,7 +1419,7 @@ __metadata:
     ajv: "npm:8.20.0"
     chokidar: "npm:5.0.0"
     debug: "npm:4.4.3"
-    js-yaml: "npm:5.4.2"
+    js-yaml: "npm:5.4.3"
     json-schema-faker: "npm:0.6.3"
     koa: "npm:3.2.1"
     koa-bodyparser: "npm:4.4.1"
@@ -5156,7 +5156,7 @@ __metadata:
     commander: "npm:15.0.0"
     debug: "npm:4.4.3"
     http-terminator: "npm:3.2.0"
-    js-yaml: "npm:5.4.2"
+    js-yaml: "npm:5.4.3"
     open: "npm:11.0.4"
     posthog-node: "npm:5.55.0"
   bin:
@@ -8757,14 +8757,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:5.4.2, js-yaml@npm:^5.4.1, js-yaml@npm:^5.4.2":
-  version: 5.4.2
-  resolution: "js-yaml@npm:5.4.2"
+"js-yaml@npm:5.4.3":
+  version: 5.4.3
+  resolution: "js-yaml@npm:5.4.3"
   dependencies:
     argparse: "npm:^2.0.1"
   bin:
     js-yaml: bin/js-yaml.mjs
-  checksum: 10c0/ba7e0f72c93c7a84eca2c3de45d2a9188b16a20e83f036df723a3ac29e841496382d0b0849592f63028d1c640bcc5b65f88800da342f47469b5b99bda5c75bfc
+  checksum: 10c0/7180bf35feef9815a06cb2f8845c1196f1e4264430a04623884d87c3d21475de7d46a86c9c5142dcc1646c788bc0e676eb09ba817810707e0b4e984f7cf93a5f
   languageName: node
   linkType: hard
 
@@ -8777,6 +8777,17 @@ __metadata:
   bin:
     js-yaml: bin/js-yaml.js
   checksum: 10c0/3261f25912f5dd76605e5993d0a126c2b6c346311885d3c483706cd722efe34f697ea0331f654ce27c00a42b426e524518ec89d65ed02ea47df8ad26dcc8ce69
+  languageName: node
+  linkType: hard
+
+"js-yaml@npm:^5.4.1, js-yaml@npm:^5.4.2":
+  version: 5.4.2
+  resolution: "js-yaml@npm:5.4.2"
+  dependencies:
+    argparse: "npm:^2.0.1"
+  bin:
+    js-yaml: bin/js-yaml.mjs
+  checksum: 10c0/ba7e0f72c93c7a84eca2c3de45d2a9188b16a20e83f036df723a3ac29e841496382d0b0849592f63028d1c640bcc5b65f88800da342f47469b5b99bda5c75bfc
   languageName: node
   linkType: hard
 
