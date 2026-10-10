@@ -13,6 +13,7 @@ import { updateRouteTypes } from "../migrate/update-route-types.js";
 import { pathResolve } from "../util/forward-slash-path.js";
 import { loadConfigFile } from "../util/load-config-file.js";
 import { checkForUpdates } from "./check-for-updates.js";
+import { runIntro } from "./intro.js";
 import {
   createGeneratedArtifactsSummary,
   createRuntimeProgressMessage,
@@ -157,7 +158,7 @@ export function buildStartupTelemetryProperties(
  *
  * @param version - Package version string shown in `--version` output.
  */
-function buildProgram(version: string): Command {
+function buildProgram(version: string, noArguments: boolean): Command {
   const program = new Command();
 
   async function main(source: string, destination: string): Promise<void> {
@@ -189,11 +190,6 @@ function buildProgram(version: string): Command {
       watchTypes?: boolean;
     }>();
 
-    const updateCheckPromise =
-      options.updateCheck === false
-        ? Promise.resolve()
-        : checkForUpdates(version);
-
     // Load the config file (counterfact.yaml by default, or --config <path>).
     // CLI options always take precedence over config file settings.
     const configFilePath = resolve(options.config ?? "counterfact.yaml");
@@ -202,6 +198,20 @@ function buildProgram(version: string): Command {
       options.config !== undefined,
     );
     debug("fileConfig: %o", fileConfig);
+    // Even an empty config file signals an existing project. Only a truly
+    // argument-free, unconfigured invocation enters the first-run flow.
+    if (noArguments && !fs.existsSync(configFilePath)) {
+      const selection = await runIntro();
+      if (selection === undefined) return;
+      ({ source, destination } = selection);
+      options.port = selection.port;
+    }
+
+    const updateCheckPromise =
+      options.updateCheck === false
+        ? Promise.resolve()
+        : checkForUpdates(version);
+
     const knownOptionKeys = new Set(
       program.options.map((option) => option.attributeName()),
     );
@@ -615,6 +625,6 @@ export async function runCli(argv: string[]): Promise<void> {
 
   debug("running counterfact CLI v%s", version);
 
-  const program = buildProgram(version);
+  const program = buildProgram(version, argv.length === 2);
   await program.parseAsync(argv);
 }

@@ -522,6 +522,38 @@ npx counterfact@latest [spec] [output] [options]
 
 Run `npx counterfact@latest --help` for the full list.
 
+### First-run intro
+
+Running with no arguments and no `counterfact.yaml` starts an interactive intro.
+Even an empty config file bypasses the intro, as does any explicit CLI argument.
+The menu offers Swagger Petstore (the default), documentation, a guided tour,
+and recursively discovered local specs. Selecting a spec asks for an output
+directory (default: `api/`) and port (default: `3100`), then uses the usual
+generation, server, watching, and REPL startup. Documentation and cancellation
+exit without generating files.
+
+Discovery recognizes YAML/JSON root documents for Swagger 2.0 and OpenAPI 3.0,
+3.1, and 3.2; it ignores malformed files, ordinary config, and schema fragments.
+It does not resolve references or make network requests until a spec is selected.
+Hidden files/directories, symlinks, dependency directories (`node_modules`,
+`bower_components`, `vendor`), and build/cache directories (`dist`, `build`,
+`out`, `coverage`, `target`, `__pycache__`) are skipped. The search is limited to
+8 directory levels, 10,000 entries, 1,000 candidate documents, 100 specs, and
+2 MiB per document. It checks a 15-second time budget and cancellation between
+filesystem operations and file reads; an active filesystem call or synchronous
+JSON/YAML parse must finish before scanning can stop. Discovery runs in the CLI
+process and checks paths against its starting directory. These checks are not a
+filesystem sandbox and cannot prevent concurrent directory-replacement races.
+Unreadable locations are skipped with a compact warning; search limits are
+reported. Pass a spec explicitly to use a skipped document.
+Normal startup reports loading errors for a selected spec or its references.
+
+Enter accepts defaults. Use `q`, Ctrl+C, or Ctrl+D to cancel. The intro requires
+TTY input and output and is disabled by `CI` (except `CI=false` or `CI=0`).
+An unconfigured no-argument run in those environments prints documentation and
+explicit-start examples, then exits successfully without starting a server,
+REPL, watcher, or generation. Use `npx counterfact _` to start a spec-free mock.
+
 ### Startup output
 
 On startup, Counterfact reports the real work it is doing: loading an OpenAPI
