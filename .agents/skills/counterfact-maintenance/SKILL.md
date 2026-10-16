@@ -53,6 +53,7 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
   and use the official review command for verified moved documents. Remove only
   their obsolete state keys; a rename alone does not establish a new review.
 
+- Run package packing/prepack checks separately from unit and product suites that consume workspace `dist` output. Prepack rebuilds can remove those files while another suite is loading them, causing false missing-module failures. Finish the package check before starting those suites.
 - Use `usingTemporaryFiles()` for filesystem-heavy tests.
 - The Astro site uses `compressHTML: true` to preserve HTML whitespace around inline prose across source line breaks. Keep that setting explicit when upgrading Astro, and run `cd site && npm run test:whitespace` for rendering or formatting changes. Check generated text before applying CSS spacing: punctuation and intentional in-word links must remain adjacent.
 - Keep single-line command snippets in a focusable horizontal scroll region, with copy controls outside that region. A scrolling flex item needs `min-width: 0` so long text cannot widen the whole page. Emitted CSS/HTML checks establish this contract; they do not replace browser checks of scrolling, keyboard access, or viewport overflow.
@@ -136,6 +137,8 @@ Before adding or approving a black-box test:
    rg -n '_run_node_script|consume\.mjs|--eval|input-type=module|packages/.+/(src|dist)/' test-black-box
    rg -n '@counterfact/|import .*counterfact|from .*counterfact' test-black-box
    ```
+
+For pseudo-terminal teardown, close the master before waiting for child exit so unread output cannot block terminal draining. Bound every wait, including after SIGTERM, and escalate to SIGKILL rather than using an unbounded waitpid. Avoid parent HTTP-server threads before forkpty on macOS; keep HTTP fixtures in separate processes.
 
 For interactive CLI behavior, use a real pseudo-terminal and send the literal keystrokes a user would type.
 If the required terminal facility is unavailable on an operating system, skip explicitly and ensure another CI operating system executes the test; do not replace the test with a direct function call.

@@ -522,6 +522,89 @@ npx counterfact@latest [spec] [output] [options]
 
 Run `npx counterfact@latest --help` for the full list.
 
+### First-run intro
+
+Running with no arguments and no `counterfact.yaml` starts an interactive intro.
+Even an empty config file bypasses the intro, as does any explicit CLI argument.
+The opening menu offers a guided example (the default), your own OpenAPI
+document, and documentation. Local discovery starts only when you choose your
+own document; you can also enter a path or HTTP(S) URL. Setup asks for an output
+directory (default: `api/`) and an available port (default: `3100`).
+
+The guided example opens a bundled coffee shop at `/walkthrough`, with
+instructions on the left and an interactive storefront on the right, in
+equal-width columns. It uses a
+desktop layout at least 1100px wide, with a three-column product catalog. The
+browser requests real `/products` and `/orders` routes from the generated
+project. It needs no external contract download or update check. Setup shows
+an unused `counterfact-demo/` directory and an available port before creating
+files; existing files, directories, and symlinks are preserved.
+
+Enter starts the example, `p` changes its port, `b` goes back, and `q` quits.
+Port checks are advisory; another process can claim a port before startup.
+If browser launch fails, the terminal prints the walkthrough URL for manual use.
+
+The user completes a purchase, changes Decaf stock in the product handler,
+exercises order failure and retry, adds a successful-order mutation to
+`$.context.inventory`, and restocks through `context.inventory` in the REPL.
+Eight screens group related edits and purchases. Instructions advance automatically
+within each concept, while Continue moves to the next concept. Back and Skip
+operate on whole concepts, and existing session progress retains its current phase.
+Each lesson bolds the next action; exact edits
+remain available under **Show code hint**. Saved lesson files trigger checks of their handler functions with separate test
+inventory; failed checks show the expected and observed behavior and rerun on
+the next save. Test orders leave the running shop, and cart unchanged.
+REPL commands are shown directly, and the observed restock advances the
+instructions without confirmation buttons.
+
+Product cards show shopper-facing availability and sold-out messages. The left
+panel focuses on instructions, saved-file checks, and the controls for advancing
+through the lesson. The browser checks the products API every second while
+visible, before ordering, and after each order; it serializes refreshes with
+purchases. The shop refreshes automatically. There is no live API activity feed or clock; transient
+lesson feedback has a small Update label and a subtle left rule.
+
+Invalid or unavailable product responses show unavailable stock on product cards. Buying pauses until a fresh response
+arrives. Stock rejections explain the requested and
+available quantities returned by the order API. An unavailable or invalid order
+confirmation is unknown, not proof that the request was rejected. Failed requests
+keep the cart. Requests time out after four seconds and live product checks retry
+automatically. Session-scoped progress and the cart survive a reload;
+a new API session starts a new lesson. Completion keeps the shop and ordinary
+REPL running, retains the files, and prints a restart command.
+
+Unchanged object and array initializers preserve scenario, request, and REPL
+state when the context file reloads; deliberately changed initializers replace
+that property. The product handler reads the same inventory that orders and
+the REPL update.
+
+File names in lesson text, code hints, and restart examples link directly to
+their generated files through VSCode’s `vscode://` URL scheme. **Open in VSCode** and **Copy file path** appear beside each edit instruction,
+so another editor can be used without expanding the code hint. The
+app uses no external images, fonts, payment services, or frontend build dependencies.
+
+Discovery recognizes YAML/JSON root documents for Swagger 2.0 and OpenAPI 3.0,
+3.1, and 3.2; it ignores malformed files, ordinary config, and schema fragments.
+It does not resolve references or make network requests until a spec is selected.
+Hidden files/directories, symlinks, dependency directories (`node_modules`,
+`bower_components`, `vendor`), and build/cache directories (`dist`, `build`,
+`out`, `coverage`, `target`, `__pycache__`) are skipped. The search is limited to
+8 directory levels, 10,000 entries, 1,000 candidate documents, 100 specs, and
+2 MiB per document. It checks a 15-second time budget and cancellation between
+filesystem operations and file reads; an active filesystem call or synchronous
+JSON/YAML parse must finish before scanning can stop. Discovery runs in the CLI
+process and checks paths against its starting directory. These checks are not a
+filesystem sandbox and cannot prevent concurrent directory-replacement races.
+Unreadable locations are skipped with a compact warning; search limits are
+reported. Pass a spec explicitly to use a skipped document.
+Normal startup reports loading errors for a selected spec or its references.
+
+Enter accepts defaults. Use `q`, Ctrl+C, or Ctrl+D to cancel. The intro requires
+TTY input and output and is disabled by `CI` (except `CI=false` or `CI=0`).
+An unconfigured no-argument run in those environments prints documentation and
+explicit-start examples, then exits successfully without starting a server,
+REPL, watcher, or generation. Use `npx counterfact _` to start a spec-free mock.
+
 ### Startup output
 
 Counterfact prints its version and a random tagline from its bundled collection.

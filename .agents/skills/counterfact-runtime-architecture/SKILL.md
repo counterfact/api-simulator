@@ -34,7 +34,7 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 - Keep orchestration in `app.ts` / `ApiRunner`; avoid leaking server details into generator modules.
 - Keep subsystems separated (`registry`, `context-registry`, `module-loader`, `dispatcher`) and connected through explicit constructor interfaces.
-- Preserve hot-reload expectations: route/module changes should apply without restart and context should survive reloads.
+- Preserve hot-reload expectations: route/module changes should apply without restart and context should survive reloads. Compare reloaded object/array initializers structurally against the cached declaration, not by identity or against live state; otherwise an unchanged initializer can erase scenario seeds, request mutations, or REPL edits. Test both preserved live state and intentional initializer changes.
 - Prefer graceful degradation with actionable errors (see `docs/development/design-principles.md`).
 
 ## Common mistakes to avoid
