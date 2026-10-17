@@ -1,5 +1,12 @@
 # @counterfact/openapi
 
+## 0.1.6
+
+### Patch Changes
+
+- 865750a: Updated dependency `@apidevtools/json-schema-ref-parser` in `@counterfact/openapi` to `16.0.5`.
+- 91428ea: Updated dependency `jsonpath-plus` in `@counterfact/openapi` to `11.2.1`.
+
 ## 0.1.5
 
 ### Patch Changes
