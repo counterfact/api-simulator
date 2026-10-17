@@ -1,5 +1,18 @@
 # counterfact
 
+## 2.16.7
+
+### Patch Changes
+
+- 1666014: Updated dependency `posthog-node` in `counterfact` to `5.56.0`.
+- 6b90551: Updated dependency `posthog-node` in `counterfact` to `5.55.3`.
+- Updated dependencies [865750a]
+- Updated dependencies [91428ea]
+  - @counterfact/openapi@0.1.6
+  - @counterfact/generator@0.1.6
+  - @counterfact/runtime@0.1.6
+  - @counterfact/repl@0.1.6
+
 ## 2.16.6
 
 ### Patch Changes
