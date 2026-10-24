@@ -2,6 +2,10 @@
 
 Save the REPL setups you use more than once: seed data, configure state, and build reusable request sequences that run on demand. Seed context state at startup.
 
+Use the pet `Context` from the [state guide](../features/state.md), with authored `reset()` and `add()` methods. Counterfact generates `Scenario` and `Scenario$` in `types/_.context.ts` when type generation is enabled. Put `scenarios/` alongside `routes/` under the API output directory.
+
+The [REPL](../features/repl.md) is the terminal’s live JavaScript prompt; the [route builder](../features/route-builder.md) prepares HTTP requests. A scenario receives setup helpers, rather than the handler request object; see [function arguments](../manual/concepts.md#function-arguments).
+
 ## Why teams use this
 
 The REPL is powerful for ad-hoc exploration, but many setup tasks are predictable: seed a set of pets before a demo, reset state to a known baseline for a test, or configure a reusable route builder for a common request. Retyping these commands every time the server restarts is tedious and error-prone.
@@ -20,9 +24,9 @@ import type { Scenario } from "../types/_.context.js";
 
 export const soldPets: Scenario = ($) => {
   // Mutate context directly — the same object route handlers see as $.context
-  $.context.petService.reset();
-  $.context.petService.addPet({ id: 1, status: "sold" });
-  $.context.petService.addPet({ id: 2, status: "available" });
+  $.context.reset();
+  $.context.add({ name: "Fluffy", photoUrls: [], status: "sold" });
+  $.context.add({ name: "Rex", photoUrls: [], status: "available" });
 };
 ```
 
@@ -69,14 +73,16 @@ Export a function named `startup` from `scenarios/index.ts` and Counterfact call
 import type { Scenario } from "../types/_.context.js";
 
 export const startup: Scenario = ($) => {
-  $.context.addPet({ name: "Fluffy", status: "available", photoUrls: [] });
-  $.context.addPet({ name: "Rex", status: "sold", photoUrls: [] });
+  $.context.add({ name: "Fluffy", status: "available", photoUrls: [] });
+  $.context.add({ name: "Rex", status: "sold", photoUrls: [] });
 };
 ```
 
 If `startup` is not exported, the server starts normally with no error. Startup is awaited once per API group. Seed context directly there; requests to this same server cannot complete before it starts listening. Startup receives the API group’s shared `routes` collection. Named builders saved there are available in the later REPL and on-demand scenarios. Reset replaces the collection, then reruns startup so it can recreate those builders; reacquire references after reset. Builders created before an ephemeral port is bound resolve the actual port when sent. Construct builders during startup, but do not send requests to this server until startup completes and the listener is ready. The generated scenario types expose builders as `unknown`; narrow them explicitly when using their methods.
 
 ### Delegating to helpers with extra arguments
+
+The next example additionally assumes your context implements `addOrder(order)` and your contract defines those order fields. `addOrder` is application code, not a Counterfact helper.
 
 Split large scenarios into focused helper functions in separate files and pass `$` (and any extra arguments) through. This keeps each file small and lets you call the same helpers from both `startup` and the REPL with different parameters:
 
@@ -98,7 +104,7 @@ import type { Scenario$ } from "../types/_.context.js";
 
 export function addPets($: Scenario$, count: number, species: string) {
   for (let i = 0; i < count; i++) {
-    $.context.addPet({
+    $.context.add({
       name: `${species} ${i + 1}`,
       status: "available",
       photoUrls: [],

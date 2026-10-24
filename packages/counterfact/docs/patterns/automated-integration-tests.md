@@ -1,5 +1,7 @@
 # Automated Integration Tests
 
+This guide assumes [generated route files](../features/generated-code.md) and authored behavior for the operations you test. A [context](../features/state.md) holds live state; a [scenario](./scenario-scripts.md) applies named setup changes. Random generation alone does not establish create/read or not-found behavior.
+
 Run integration tests against a real local HTTP server that your test suite can start, shape, and tear down on demand.
 
 ## Why teams use this

@@ -1,5 +1,7 @@
 # Proxying and hybrid simulation
 
+Enter the REPL commands on this page at the `⬣>` JavaScript prompt in the terminal running Counterfact. See [starting and using the REPL](./repl.md).
+
 You can mix real backend calls with mocks — useful when some endpoints are not finished or you need to test edge cases like 500 errors.
 
 To proxy a single endpoint from within a route file:

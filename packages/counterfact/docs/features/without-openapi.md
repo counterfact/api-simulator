@@ -29,6 +29,8 @@ export function GET() {
 
 If part of the path is variable, name the file or directory where the variable part is `{variableName}`. Here's a more advanced version of "hello world" where both the greeting and the subject are variable.
 
+Counterfact passes a request object named `$` to the handler. Its `path` member contains the variables from the file path:
+
 ```js
 //{greeting}/{subject}.js
 export function GET($) {

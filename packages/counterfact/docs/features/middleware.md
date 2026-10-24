@@ -2,6 +2,8 @@
 
 Place a `_.middleware.ts` file in any `routes/` subdirectory to intercept requests and responses for that subtree. Middleware applies from the root down — a `_.middleware.ts` at the root runs for every request.
 
+The `$` argument contains typed request data and the nearest authored context, as in a route handler. In this example, implement `isAuthorized(apiKey)` on that context; Counterfact supplies the parsed `$.auth` credentials. `respondTo($)` is the separate callback that continues request handling. See [function arguments](../manual/concepts.md#function-arguments).
+
 ```ts
 // routes/_.middleware.ts
 import type { Middleware } from "../types/_.middleware.js";

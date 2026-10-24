@@ -4,6 +4,8 @@ Counterfact starts with an OpenAPI document, a local URL, and generated
 responses. Choose the next guide by the job your frontend, team, or test suite
 needs—not by a feature checklist.
 
+New to the terminology? Read [How Counterfact fits together](./manual/concepts.md), including what an [API group](./manual/concepts.md#api-groups-versions-and-url-prefixes) shares.
+
 For feature explanations, use the [user manual](./manual.md). For exact options and signatures, use the [API reference](./api.md).
 
 ## Frontend workflows

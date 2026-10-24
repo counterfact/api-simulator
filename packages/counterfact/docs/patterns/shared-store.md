@@ -1,6 +1,8 @@
 # Share State Across API Groups
 
-Model one product across several OpenAPI groups without coupling one group's
+An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) is a named collection of specs that share generated routes and context state. `basePath` is the output directory containing the group subdirectories.
+
+Model one product across several API groups without coupling one group's
 routes to another group's context tree.
 
 ## Why teams use this
@@ -17,6 +19,20 @@ contexts. Keep that model smaller than the real product domain: include only
 facts and transitions that a supported client workflow observes.
 
 ## How it works
+
+First configure the groups using your local `customers.yaml` and `orders.yaml` contracts:
+
+```yaml
+# counterfact.yaml
+destination: api
+spec:
+  - source: ./customers.yaml
+    group: customers
+  - source: ./orders.yaml
+    group: orders
+```
+
+Run `npx counterfact --config counterfact.yaml` to generate both groups. The contracts must declare the operations, bodies, and responses used below, including the orders POST's 201 JSON response. The group names select directories, not URL prefixes; see [multiple APIs](../manual/multiple-apis.md).
 
 Add one user-authored `_.store.ts` at the root of `basePath`:
 
@@ -131,7 +147,10 @@ want typed access from a test or setup script:
 import { counterfact } from "counterfact";
 import type { Store } from "./api/_.store.js";
 
-const simulator = await counterfact<Store>(config, specs);
+const simulator = await counterfact<Store>({ basePath: "api" }, [
+  { source: "./customers.yaml", group: "customers" },
+  { source: "./orders.yaml", group: "orders" },
+]);
 
 if (simulator.store === undefined) {
   throw new Error("Expected api/_.store.ts");

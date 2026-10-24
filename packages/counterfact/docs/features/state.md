@@ -2,36 +2,53 @@
 
 The `$.context` object is how routes share in-memory state. It's an instance of the `Context` class exported from `_.context.ts` in the same directory (or the nearest parent directory that has one).
 
+These examples extend the [first-ten-minutes pet workflow](../first-10-minutes.md). `add`, `get`, and the other context methods below are authored application methods; Counterfact supplies `$.context`. Keep the generated handler-type imports in your route files.
+
 ```ts
 // routes/pet.ts
 export const POST: HTTP_POST = function ($) {
-  return $.response.status(200).json($.context.addPet($.body));
+  return $.response.status(200).json($.context.add($.body));
 };
 
 // routes/pet/{petId}.ts
 export const GET: HTTP_GET = function ($) {
-  const pet = $.context.getPetById($.path.petId);
-  if (pet === undefined)
-    return $.response.status(404).text(`Pet ${$.path.petId} not found.`);
+  const pet = $.context.get($.path.petId);
+  if (pet === undefined) return $.response.status(404).empty();
   return $.response.status(200).json(pet);
 };
 ```
 
-Customize `_.context.ts` to hold whatever state and business logic your mock needs:
+Customize `_.context.ts` to hold whatever state and business logic your mock needs. The `reset()` method below clears this pet collection; it is your method, separate from the simulator-wide `api.reset()` lifecycle operation:
 
 ```ts
-// routes/_.context.ts
-export class Context {
-  pets: Pet[] = [];
+// api/routes/_.context.ts
+import type { Pet } from "../types/components/schemas/Pet.js";
 
-  addPet(pet: Pet) {
-    const id = this.pets.length;
-    this.pets.push({ ...pet, id });
-    return this.pets[id];
+export class Context {
+  private pets = new Map<number, Pet>();
+  private nextId = 1;
+
+  add(pet: Omit<Pet, "id">): Pet {
+    const created = { ...pet, id: this.nextId++ };
+    this.pets.set(created.id, created);
+    return created;
   }
 
-  getPetById(id: number) {
-    return this.pets[id];
+  get(id: number) {
+    return this.pets.get(id);
+  }
+
+  list(): Pet[] {
+    return [...this.pets.values()];
+  }
+
+  remove(id: number): void {
+    this.pets.delete(id);
+  }
+
+  reset(): void {
+    this.pets.clear();
+    this.nextId = 1;
   }
 }
 ```
@@ -51,17 +68,9 @@ export class Context {
 
 ## Nested contexts
 
-For large APIs you can nest context objects. Any subdirectory can have its own `_.context.ts`. One context can access another via the `loadContext` function passed to its constructor:
+A nested context replaces the parent for its route subtree; it does not inherit or merge the parent’s fields. Counterfact passes a separate helper object to context constructors, distinct from a handler’s `$`. Its generated type is `Context$`; see the complete typed example in [nested contexts](../manual/nested-contexts.md).
 
-```ts
-// routes/users/_.context.ts
-export class Context {
-  constructor({ loadContext }) {
-    this.rootContext = loadContext("/");
-    this.petsContext = loadContext("/pets");
-  }
-}
-```
+Use the constructor’s `loadContext(path)` to connect contexts within the same group. A context registry is the collection of live contexts indexed by route path; looking up `/pets` selects the nearest context for that path.
 
 ## Loading JSON data with `readJson`
 
@@ -84,7 +93,7 @@ export class Context {
 
 ## Sharing state across API groups
 
-Context registries are isolated between API groups. When several groups model
+An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) collects specs that share routes and context state. Separate groups have separate context registries. `basePath` is the output directory containing their group subdirectories. When several groups model
 one product and need shared domain data, add a user-authored `_.store.ts` at the
 root of `basePath`:
 

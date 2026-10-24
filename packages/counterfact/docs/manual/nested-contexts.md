@@ -84,6 +84,6 @@ The helper returns the live context nearest to the requested path. It is availab
 
 ## Choose a shared store for API groups
 
-Contexts in separate API groups have separate registries. Use the [shared application store](../patterns/shared-store.md) when those groups represent one product and need the same domain data.
+An [API group](./concepts.md#api-groups-versions-and-url-prefixes) is a configured collection of specs sharing code and state. A nested route directory remains inside its existing group. Contexts in separate groups have separate registries (collections of live contexts indexed by path). Use the [shared application store](../patterns/shared-store.md) when those groups represent one product and need the same domain data.
 
 Context references survive ordinary hot reload. After an explicit simulator reset, reacquire them with `api.loadContext()`; previously held references belong to the old state. See [stateful contexts](../features/state.md) and [lifecycle reference](../api/simulator.md).

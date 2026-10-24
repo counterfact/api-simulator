@@ -27,7 +27,7 @@ The delay is in milliseconds. Supply two numbers for a random duration within th
 
 ## Switch failures at runtime
 
-Define failure flags in the context:
+A [context](../features/state.md) is an authored class shared by routes in its directory and below. Define failure flags in that class:
 
 ```ts
 // api/routes/_.context.ts
@@ -45,13 +45,15 @@ Read those flags in the route handler. The OpenAPI operation must declare the sh
 import type { HTTP_GET } from "../../types/paths/payments/{paymentId}.types.js";
 
 export const GET: HTTP_GET = function ($) {
-  if ($.context.isRateLimited) return $.response.status(429).text("Too Many Requests");
-  if ($.context.isBroken) return $.response.status(500).text("Internal Server Error");
+  if ($.context.isRateLimited)
+    return $.response.status(429).text("Too Many Requests");
+  if ($.context.isBroken)
+    return $.response.status(500).text("Internal Server Error");
   return $.response.status(200).json({ id: $.path.paymentId, amount: 42.0 });
 };
 ```
 
-Toggle failures from the REPL or from a test without restarting the server. This abbreviated `client` output omits request logs, headers, and colors; the client returns a promise of raw HTTP text, not a `{ status, body }` object:
+The [REPL](../features/repl.md) is the JavaScript prompt in the terminal running Counterfact. Toggle failures from that prompt or from a test without restarting the server. This abbreviated `client` output omits request logs, headers, and colors; the client returns a promise of raw HTTP text, not a `{ status, body }` object:
 
 ```
 ⬣> context.isRateLimited = true
@@ -95,6 +97,8 @@ Flag-based failures are repeatable when setup is controlled. Reset counters befo
 
 ## Configure latency at runtime
 
+Extend the pet context from the [state guide](../features/state.md) with `latencyMs = 0`; retain its `get(id)` method. The following context snippet shows only the added field, not a replacement class. The GET operation must declare the shown JSON 200 and text 404 responses.
+
 ```ts
 // api/routes/_.context.ts
 export class Context {
@@ -107,7 +111,9 @@ export class Context {
 export const GET: HTTP_GET = async function ($) {
   await $.delay($.context.latencyMs);
   const pet = $.context.get($.path.petId);
-  return pet ? $.response.status(200).json(pet) : $.response.status(404).text("Not found");
+  return pet
+    ? $.response.status(200).json(pet)
+    : $.response.status(404).text("Not found");
 };
 ```
 

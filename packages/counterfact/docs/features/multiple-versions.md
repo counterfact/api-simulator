@@ -17,10 +17,13 @@ Counterfact can serve several versions of the same API simultaneously from a sin
 
 ## YAML config syntax
 
+An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) collects specs that share route files and context state. `basePath` names the library’s output directory (`destination` in the CLI YAML config); a named group lives in a subdirectory of it. A `version` labels a contract within that group; only `prefix` changes URLs.
+
 Declare multiple specs in `counterfact.yaml` using the `spec` array. Give them the same `group` and different `version` labels:
 
 ```yaml
 # counterfact.yaml
+destination: api
 spec:
   - source: ./openapi-v1.yaml
     group: catalog
@@ -123,6 +126,8 @@ A handler file lives under `routes/` and is shared by all versions. Counterfact 
 Both properties are only present when `version` is set in the config. For a single unversioned spec they are absent.
 
 ### Example
+
+This handler assumes an authored catalog context with `findById(id)`, returning items with `id`, `name`, and `category`. Declare the shown response shapes and text 404 in each version’s contract. See [stateful contexts](./state.md) for how to author that class.
 
 ```ts
 // catalog/routes/items/{itemId}.ts

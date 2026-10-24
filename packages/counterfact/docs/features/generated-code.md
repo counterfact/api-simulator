@@ -11,6 +11,8 @@ No OpenAPI document? See [using Counterfact without OpenAPI](./without-openapi.m
 
 ## Generated file structure
 
+The output directory is called `basePath` in library options and `destination` in the CLI YAML config. The optional context and store files below are user-authored: a context shares behavior within a route subtree; a [store](../patterns/shared-store.md) shares state across separately configured [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes).
+
 ```
 <output-directory>/
 ├── _.store.ts                 # application-level state shared across API groups (optional)
@@ -50,6 +52,8 @@ For a concrete change, expected diagnostic, and CI command, follow [Catch a cont
 Run `npx counterfact@latest openapi.yaml api --watch --serve` while editing a local contract. New required fields appear in generated sample responses; optional fields may be omitted unless `--always-fake-optionals` is enabled. Update fixed handlers and run an explicit TypeScript check after regeneration. The server continuing to run does not establish that authored handlers still match the contract.
 
 ## Multi-version APIs
+
+First [configure versions in the same API group](./multiple-versions.md). Handlers import a shared operation type; it describes the possible request/response contracts and lets `$.minVersion()` select the applicable versions. The generated type below illustrates how that works; you do not need to author it.
 
 When two or more versioned specs share the same operation path (e.g. `GET /pets`), Counterfact emits a **version-mapped handler type** in the shared `types/paths/` file instead of a flat type.
 

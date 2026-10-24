@@ -4,6 +4,8 @@ Counterfact turns an OpenAPI document into a useful local API in one command.
 Use it when your frontend is ready but the backend is incomplete, unavailable,
 unstable, or owned by another team.
 
+An OpenAPI document is a YAML or JSON description of an API’s paths, inputs, and responses. Ask the API owner for yours, or use the public Petstore URL below. See [how the pieces fit together](./manual/concepts.md).
+
 ## Prerequisite
 
 Use Node.js 22 or newer. Counterfact supports Swagger 2.0 and OpenAPI 3.0,
@@ -70,7 +72,7 @@ server is running.
 ## Make one response explicit (optional)
 
 When a screen needs a specific case, replace the generated response in the
-corresponding handler:
+corresponding handler. Counterfact supplies `$`: `$.path` contains URL parameters and `$.response` builds the HTTP response. The imported `HTTP_GET` type comes from the generated contract:
 
 ```ts
 // api/routes/pet/{petId}.ts

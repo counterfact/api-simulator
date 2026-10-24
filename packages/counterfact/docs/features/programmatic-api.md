@@ -105,6 +105,8 @@ it does not probe application routes or upstream services.
 
 ## Accessing an application-level store
 
+A [shared store](../patterns/shared-store.md) holds data needed by several [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes). Each group owns its route files and contexts. This example assumes `api/_.store.ts` exports a `Store` with a user-authored `seed()` method.
+
 If `<basePath>/_.store.ts` exists, `counterfact()` constructs one shared store
 for the simulator and exposes it through the optional `store` property. Supply
 the user-authored store type as the generic argument when you want typed access:
@@ -113,7 +115,7 @@ the user-authored store type as the generic argument when you want typed access:
 import { counterfact } from "counterfact";
 import type { Store } from "./api/_.store.js";
 
-const simulator = await counterfact<Store>(config, specs);
+const simulator = await counterfact<Store>({ basePath: "api" });
 
 if (simulator.store === undefined) {
   throw new Error("Expected api/_.store.ts to be loaded");
@@ -234,7 +236,7 @@ const pets = simulator.loadContext("/", "pets");
 ```
 
 When several versions belong to one group, scenario execution uses that group's
-first declared runner, as startup does, with its route catalog. `route()` retains
+first declared specification, as startup does, with its route catalog. A route catalog is the list of operations and inputs read from that specification. `route()` retains
 the REPL's URL behavior: supply the effective request path, including any prefix.
 
 For worker-scoped Playwright startup, automatic per-test reset, optional scenario
@@ -256,7 +258,7 @@ Pass a `specs` array as the second argument to `counterfact()` to host several A
 ### Groups and URL prefixes
 
 `group` controls where code is generated under `config.basePath` and which
-runners share state. It never changes a path declared by the OpenAPI document.
+specifications share context and scenario state. It never changes a path declared by the OpenAPI document.
 Only `prefix` affects the effective URL:
 
 | Declared OpenAPI path | `prefix`        | Effective URL       |
@@ -266,7 +268,7 @@ Only `prefix` affects the effective URL:
 | `/customers`          | `/api/v1`       | `/api/v1/customers` |
 
 Several specs may use the same prefix, including the root. Counterfact tries
-matching runners in declaration order, so grouped specs with distinct paths
+matching specifications in declaration order, so grouped specs with distinct paths
 can preserve their canonical URLs:
 
 ```ts

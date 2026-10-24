@@ -2,11 +2,14 @@
 
 Serve related specifications together when a frontend calls several APIs. Each specification keeps its own generated code group, while all APIs use one HTTP listener.
 
+An **API group** collects specifications that share route files, contexts, and scenarios. Set `group` on each spec entry. Independent APIs use distinct names; versions of one API use the same name. `basePath` is the output directory containing those group subdirectories. See [groups, versions, and prefixes](./concepts.md#api-groups-versions-and-url-prefixes).
+
 ## Configure specifications
 
-Create `counterfact.yaml`:
+Create `counterfact.yaml`. These examples assume local `customers.yaml` and `products.yaml` documents declaring `/customers` and `/products`:
 
 ```yaml
+destination: api
 spec:
   - source: ./customers.yaml
     group: customers
@@ -18,7 +21,7 @@ Run `npx counterfact --config counterfact.yaml`. If the specifications declare `
 
 ## Add a prefix deliberately
 
-Set `prefix: /api` on a specification entry to serve its paths beneath `/api`. Several specifications can share a prefix; matching runners are tried in declaration order. Avoid overlapping operations unless that precedence is intentional.
+Set `prefix: /api` on a specification entry to serve its paths beneath `/api`. Several specifications can share a prefix; matching specifications are tried in declaration order. Avoid overlapping operations unless that precedence is intentional.
 
 ## Coordinate state
 
