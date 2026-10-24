@@ -29,6 +29,10 @@ The [code generator](./packages/generator/README.md) and [server runtime](./pack
 
 ### Try the guided tour from a checkout
 
+After pulling changes that add or update workspace packages, refresh the
+dependency links with `yarn install --immutable`. Building compiles the packages;
+installation makes them available to Node.
+
 From the repository root, run:
 
 ```sh
