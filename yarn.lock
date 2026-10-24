@@ -2693,12 +2693,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@posthog/core@npm:^1.59.1":
-  version: 1.59.1
-  resolution: "@posthog/core@npm:1.59.1"
+"@posthog/core@npm:^1.59.3":
+  version: 1.60.1
+  resolution: "@posthog/core@npm:1.60.1"
   dependencies:
     "@posthog/types": "npm:^1.416.0"
-  checksum: 10c0/4211baa00c9e06fea5c555a12a3d28c29d62933aa8575b625e3ecafd27e9b142b267c82a423ce7b306577e82350704e3d3b6ef658f970b8de449aab20f09272b
+  checksum: 10c0/77d10aee5d94e34fe2b5152274a995c9851155b83e5fd165dcd1fec5f51f64ea43f0e78bc606d270ee4871807b2c7cf47f7d03137cb62d04fc1093053cf58500
   languageName: node
   linkType: hard
 
@@ -5184,7 +5184,7 @@ __metadata:
     http-terminator: "npm:3.2.0"
     js-yaml: "npm:5.5.0"
     open: "npm:11.0.4"
-    posthog-node: "npm:5.56.2"
+    posthog-node: "npm:5.56.4"
     typescript: "npm:6.0.3"
   bin:
     counterfact: bin/counterfact.js
@@ -10210,11 +10210,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-node@npm:5.56.2":
-  version: 5.56.2
-  resolution: "posthog-node@npm:5.56.2"
+"posthog-node@npm:5.56.4":
+  version: 5.56.4
+  resolution: "posthog-node@npm:5.56.4"
   dependencies:
-    "@posthog/core": "npm:^1.59.1"
+    "@posthog/core": "npm:^1.59.3"
   peerDependencies:
     "@opentelemetry/api": ^1.2.0
     rxjs: ^7.0.0
@@ -10223,7 +10223,7 @@ __metadata:
       optional: true
     rxjs:
       optional: true
-  checksum: 10c0/bdd5633cf5fccf762d154da79c1f7ed451fe034691d4e03bf70e2a2f5fe80467148a8f7eb976ac763a06a546bb45328d5ee471b02211aa318114288ea43c2f93
+  checksum: 10c0/7a36977da6bc37ca87db971deb3b5144eb776e17b05f912d9bd36aebf098ea9e7706378e6a8490a0da5396bfcf40e0b2f72ea8f2f5b23f41b5cb07134625989b
   languageName: node
   linkType: hard
 

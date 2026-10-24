@@ -89,7 +89,7 @@
     "http-terminator": "3.2.0",
     "js-yaml": "5.5.0",
     "open": "11.0.4",
-    "posthog-node": "5.56.2",
+    "posthog-node": "5.56.4",
     "typescript": "6.0.3"
   }
 }
