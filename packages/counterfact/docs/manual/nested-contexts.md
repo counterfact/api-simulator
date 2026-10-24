@@ -1,5 +1,7 @@
 # Nested and connected contexts
 
+The examples on this page follow the current source. Use the [pinned source setup](../patterns/lifecycle-setup.md#run-examples-from-the-current-source) to run them with matching generated types and runtime APIs.
+
 Use nested contexts when separate route areas need their own state or behavior. A route uses the nearest `_.context.ts` in its directory or a parent directory.
 
 ## Divide state by route subtree
@@ -8,11 +10,13 @@ For example, put pet behavior in `routes/pets/_.context.ts` and user behavior in
 
 ## Connect contexts explicitly
 
+This example assumes your OpenAPI document defines `components/schemas/User` with a numeric `id`, and `components/schemas/Payment` with a string `id` and numeric `userId`. The operations reference those schemas so Counterfact generates the imported types. The payment GET operation also declares the enriched JSON response and a text `404` response.
+
 Give each domain its own context:
 
 ```ts
 // api/routes/users/_.context.ts
-import type { User } from "../../types/components/user.types.js";
+import type { User } from "../../types/components/schemas/User.js";
 
 export class Context {
   private users = new Map<number, User>();
@@ -35,7 +39,7 @@ export class Context {
 
 ```ts
 // api/routes/payments/_.context.ts
-import type { Payment } from "../../types/components/payment.types.js";
+import type { Payment } from "../../types/components/schemas/Payment.js";
 import type { Context$ } from "../../types/_.context.js";
 
 export class Context {
@@ -78,7 +82,7 @@ export const GET: HTTP_GET = function ($) {
 };
 ```
 
-This example assumes `Payment` has string `id` and numeric `userId`, and the GET operation declares the enriched JSON response and a text `404` response. Regenerate types after adding the context files so `Context$` has a typed `loadContext("/users")` overload.
+Regenerate types after adding the context files so `Context$` has a typed `loadContext("/users")` overload.
 
 The helper returns the live context nearest to the requested path. It is available to context constructors and scenarios; the REPL exposes it as `loadContext(path)`. Handler arguments do not expose `loadContext`, so cross-domain logic belongs in a context method you write. The two contexts remain independent classes.
 

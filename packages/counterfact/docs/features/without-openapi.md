@@ -4,11 +4,13 @@
 
 If you don't have an [OpenAPI document](https://swagger.io/specification/), you can still use Counterfact. You won't have the benefit of code generation and autocomplete in your IDE, but you can still use the API to write JavaScript code that is terse and intuitive.
 
-If you run Counterfact without any arguments, it will run in "OpenAPI-free" mode. (Technically, under the covers, it uses an empty OpenAPI document.)
+Pass `_` in place of an OpenAPI path to start without a specification. Counterfact uses an empty OpenAPI document internally:
 
 ```sh
-npx counterfact@latest
+npx counterfact@latest _
 ```
+
+With no arguments and no config file, Counterfact opens the [first-run intro](../api/cli.md#first-run-intro) instead. In a noninteractive environment, that invocation prints guidance and exits without starting a server.
 
 If you want to specify the path where code is generated, enter "\_" in place of the path or URL to the OpenAPI document. For example, to put the code in an `api` directory under the working directory:
 

@@ -34,6 +34,28 @@ The action flags above default to false individually. When no action flag is sup
 
 Run `npx counterfact@latest --help` for the full list.
 
+## YAML configuration
+
+Save `counterfact.yaml` in the directory where you run the CLI, or select another file with `--config <path>`. For example:
+
+```yaml
+spec: ./openapi.yaml
+destination: ./api
+port: 3100
+validate-request: false
+validate-response: true
+update-check: false
+```
+
+This assumes `openapi.yaml` exists beside the config. Run `npx counterfact@latest` from that directory to generate, watch, and serve it with the REPL. To run only selected actions, set their keys explicitly, such as `generate: true` for a generation-only run.
+
+- Use long option names without `--`. Both kebab-case and camelCase keys work: `validate-request` and `validateRequest` are equivalent.
+- For a negative flag, use the positive key with `false`: `--no-validate-request` becomes `validate-request: false`, and `--no-update-check` becomes `update-check: false`.
+- `destination` supplies the positional output directory. Relative paths are resolved from the working directory where the CLI runs, including when `--config` points elsewhere.
+- Explicit CLI options override config values. An explicit positional output directory overrides `destination`. Unknown option keys are ignored; check spelling if a setting has no effect.
+
+For multiple specifications, `spec` can be a list of entries; see [multiple APIs](../manual/multiple-apis.md).
+
 ## First-run intro
 
 Running with no arguments and no `counterfact.yaml` starts an interactive intro.

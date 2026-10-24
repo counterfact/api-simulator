@@ -1,5 +1,7 @@
 # Routes
 
+The examples on this page follow the current source. Use the [pinned source setup](../patterns/lifecycle-setup.md#run-examples-from-the-current-source) to run them with matching generated types and runtime APIs.
+
 Each file in `routes/` corresponds to an API path. For example, `/users/{userId}` maps to `routes/users/{userId}.ts`. The root path `/` maps to `routes/index.ts`.
 
 Use typed function expressions for route handlers. This example assumes your spec declares GET and POST on `/pets` with 200 responses; retain the imports generated for your own path:
@@ -114,10 +116,15 @@ The request is exposed through four typed properties:
 | `$.path`    | Path parameters (e.g. `$.path.userId` for `/users/{userId}`) |
 | `$.query`   | Query string parameters                                      |
 | `$.headers` | Request headers                                              |
-| `$.body`    | Request body                                                 |
+| `$.body`    | Parsed request body; `undefined` for GET and HEAD             |
+
+This example assumes a generated `POST /groups/{groupName}/search` operation with a required string path parameter `groupName`, required string query parameter `keyword`, a string `x-token` header, and a required JSON body containing a required `tags` array of strings. Its 200 and 401 responses both declare `text/plain`.
 
 ```ts
-export const GET: HTTP_GET = function ($) {
+// api/routes/groups/{groupName}/search.ts
+import type { HTTP_POST } from "../../../types/paths/groups/{groupName}/search.types.js";
+
+export const POST: HTTP_POST = function ($) {
   if ($.headers["x-token"] !== "super-secret") {
     return $.response.status(401).text("Unauthorized");
   }
@@ -130,7 +137,7 @@ export const GET: HTTP_GET = function ($) {
 };
 ```
 
-All four objects are typed from your OpenAPI spec, so autocomplete works for parameter names and values.
+All four properties are typed from your OpenAPI spec, so autocomplete works for parameter names and values. GET and HEAD handlers receive no body; put their inputs in path, query, or header parameters.
 
 ### Object query parameters (exploded form style)
 
