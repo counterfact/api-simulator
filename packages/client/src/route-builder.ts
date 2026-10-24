@@ -28,7 +28,7 @@ export interface RouteBuilderOptions {
   host?: string;
   method?: string;
   pathParams?: RouteParams;
-  port: number;
+  port: number | (() => number);
   queryParams?: RouteParams;
   routeCatalog?: RouteCatalog;
 }
@@ -144,7 +144,7 @@ export class RouteBuilder {
 
   private readonly _pathParams: RouteParams;
 
-  private readonly _port: number;
+  private readonly _port: number | (() => number);
 
   private readonly _queryParams: RouteParams;
 
@@ -634,7 +634,8 @@ export class RouteBuilder {
       url = `${url}?${qs}`;
     }
 
-    const client = new RawHttpClient(this._host, this._port);
+    const port = typeof this._port === "function" ? this._port() : this._port;
+    const client = new RawHttpClient(this._host, port);
     const headers = Object.fromEntries(
       Object.entries(this._headerParams).map(([k, v]) => [k, String(v)]),
     );
@@ -824,13 +825,13 @@ export class RouteBuilder {
  * given route path, pre-configured with the server's host, port, and OpenAPI
  * route catalog.
  *
- * @param port - The port the Counterfact server is listening on.
+ * @param port - The listening port, or a getter resolved when sending a request.
  * @param host - The server hostname (default `"localhost"`).
  * @param routeCatalog - Optional route catalog for parameter introspection.
  * @returns A function `(routePath: string) => RouteBuilder`.
  */
 export function createRouteFunction(
-  port: number,
+  port: number | (() => number),
   host?: string,
   routeCatalog?: RouteCatalog,
 ) {

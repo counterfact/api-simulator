@@ -1,3 +1,4 @@
+import { printNode } from "../src/ast.js";
 import { describe, expect, it } from "@jest/globals";
 import { format as formatCode } from "prettier";
 
@@ -35,7 +36,9 @@ describe("an OperationCoder", () => {
       },
     };
 
-    expect(coder.typeDeclaration(undefined, script)).toBe("HTTP_GET");
+    expect(printNode(coder.typeDeclaration(undefined, script))).toBe(
+      "HTTP_GET",
+    );
   });
 
   it("passes version through to nested coders", () => {
@@ -124,15 +127,17 @@ describe("an OperationCoder", () => {
 
     await expect(
       format(
-        coder.write({
-          import() {
-            return "schema";
-          },
+        printNode(
+          coder.write({
+            import() {
+              return "schema";
+            },
 
-          importType() {
-            return "Type";
-          },
-        }),
+            importType() {
+              return "Type";
+            },
+          }),
+        ),
       ),
     ).resolves.toMatchSnapshot();
   });
@@ -157,15 +162,17 @@ describe("an OperationCoder", () => {
 
     await expect(
       format(
-        coder.write({
-          import() {
-            return "schema";
-          },
+        printNode(
+          coder.write({
+            import() {
+              return "schema";
+            },
 
-          importType() {
-            return "Type";
-          },
-        }),
+            importType() {
+              return "Type";
+            },
+          }),
+        ),
       ),
     ).resolves.toMatchSnapshot();
   });
@@ -184,15 +191,17 @@ describe("an OperationCoder", () => {
 
     await expect(
       format(
-        coder.write({
-          import() {
-            return "schema";
-          },
+        printNode(
+          coder.write({
+            import() {
+              return "schema";
+            },
 
-          importType() {
-            return "Type";
-          },
-        }),
+            importType() {
+              return "Type";
+            },
+          }),
+        ),
       ),
     ).resolves.toMatchSnapshot();
   });

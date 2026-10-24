@@ -1,9 +1,17 @@
 import { STREAMING_CONTENT_TYPES } from "@counterfact/types/streaming-content-types";
+import ts from "typescript";
 
-import { pathJoin } from "./forward-slash-path.js";
-import { printObject } from "./printers.js";
-import { SchemaTypeCoder } from "./schema-type-coder.js";
+import {
+  neverType,
+  typeLiteral,
+  typeProperty,
+  typeReference,
+  unionType,
+  unknownType,
+} from "./ast.js";
 import { TypeCoder } from "./type-coder.js";
+import { pathJoin } from "./forward-slash-path.js";
+import { SchemaTypeCoder } from "./schema-type-coder.js";
 import type { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
 
@@ -16,7 +24,6 @@ export class ResponseTypeCoder extends TypeCoder {
     openApi2MediaTypes: string[] = [],
   ) {
     super(requirement, version);
-
     this.openApi2MediaTypes = openApi2MediaTypes;
   }
 
@@ -27,113 +34,116 @@ export class ResponseTypeCoder extends TypeCoder {
   public buildContentObjectType(
     script: Script,
     response: Requirement,
-  ): [string, string][] {
+  ): [string, ts.TypeNode][] {
     if (response.has("content")) {
       return response
         .get("content")!
-        .map((content, mediaType): [string, string] => {
-          let schemaType: string;
-
+        .map((content, mediaType): [string, ts.TypeNode] => {
+          let schemaType: ts.TypeNode;
           if (
             content.has("itemSchema") &&
             STREAMING_CONTENT_TYPES.has(mediaType)
           ) {
-            schemaType = `AsyncIterable<${new SchemaTypeCoder(
-              content.get("itemSchema")!,
-              this.version,
-            ).write(script)}>`;
+            schemaType = typeReference("AsyncIterable", [
+              new SchemaTypeCoder(
+                content.get("itemSchema")!,
+                this.version,
+              ).write(script),
+            ]);
           } else {
             schemaType = content.has("schema")
               ? new SchemaTypeCoder(content.get("schema")!, this.version).write(
                   script,
                 )
-              : "unknown";
+              : unknownType();
           }
-
           return [
             mediaType,
-            `{ 
-            schema:  ${schemaType}
-         }`,
+            typeLiteral([typeProperty("schema", schemaType)], true),
           ];
         });
     }
 
-    return this.openApi2MediaTypes.map((mediaType): [string, string] => [
+    return this.openApi2MediaTypes.map((mediaType): [string, ts.TypeNode] => [
       mediaType,
-      `{
-            schema: ${new SchemaTypeCoder(response.get("schema")!, this.version).write(script)}
-         }`,
+      typeLiteral(
+        [
+          typeProperty(
+            "schema",
+            new SchemaTypeCoder(response.get("schema")!, this.version).write(
+              script,
+            ),
+          ),
+        ],
+        true,
+      ),
     ]);
   }
 
-  public printContentObjectType(script: Script, response: Requirement): string {
-    if (response.has("content") || response.has("schema")) {
-      return printObject(this.buildContentObjectType(script, response));
-    }
-
-    return "never";
+  public contentType(script: Script, response: Requirement): ts.TypeNode {
+    return response.has("content") || response.has("schema")
+      ? typeLiteral(
+          this.buildContentObjectType(script, response).map(([name, type]) =>
+            typeProperty(name, type),
+          ),
+          true,
+        )
+      : neverType();
   }
 
-  public buildHeaders(
-    script: Script,
-    response: Requirement,
-  ): [string, string][] {
-    return response
-      .get("headers")!
-      .map((value, name): [string, string] => [
-        name,
-        `{ schema: ${new SchemaTypeCoder(
-          value.get("schema") ?? value,
-          this.version,
-        ).write(script)}}`,
-      ]);
-  }
-
-  public printHeaders(script: Script, response: Requirement): string {
+  public headersType(script: Script, response: Requirement): ts.TypeNode {
     if (!response.has("headers")) {
-      return "never";
+      return neverType();
     }
 
-    return printObject(this.buildHeaders(script, response));
+    return typeLiteral(
+      response
+        .get("headers")!
+        .map((value, name) =>
+          typeProperty(
+            name,
+            typeLiteral([
+              typeProperty(
+                "schema",
+                new SchemaTypeCoder(
+                  value.get("schema") ?? value,
+                  this.version,
+                ).write(script),
+              ),
+            ]),
+          ),
+        ),
+      true,
+    );
   }
 
-  public printRequiredHeaders(response: Requirement): string {
-    const requiredHeaders = (
+  public requiredHeadersType(response: Requirement): ts.TypeNode {
+    const headers =
       response.get("headers")?.map((value, name) => ({
         name,
         required: (value.data as { required?: boolean }).required,
-      })) ?? []
-    )
-      .filter(({ required }) => required)
-      .map(({ name }) => `"${name}"`);
+      })) ?? [];
 
-    return requiredHeaders.length === 0 ? "never" : requiredHeaders.join(" | ");
+    return unionType(
+      headers
+        .filter(({ required }) => required)
+        .map(({ name }) =>
+          ts.factory.createLiteralTypeNode(
+            ts.factory.createStringLiteral(name),
+          ),
+        ),
+    );
   }
 
-  public buildExamplesObjectType(response: Requirement): string {
-    if (!response.has("content")) {
-      return "{}";
-    }
-
-    const exampleNames: string[] = [];
-
-    response.get("content")!.forEach((content) => {
-      if (content.has("examples")) {
-        content.get("examples")!.forEach((_, name) => {
-          if (!exampleNames.includes(name)) {
-            exampleNames.push(name);
-          }
-        });
-      }
+  public buildExamplesObjectType(response: Requirement): ts.TypeLiteralNode {
+    const names = new Set<string>();
+    response.get("content")?.forEach((content) => {
+      content.get("examples")?.forEach((_, name) => names.add(name));
     });
 
-    if (exampleNames.length === 0) {
-      return "{}";
-    }
-
-    return printObject(
-      exampleNames.map((name): [string, string] => [name, "unknown"]),
+    return typeLiteral(
+      [...names].map((name) => typeProperty(name, unknownType())),
+      names.size > 0,
     );
   }
 
@@ -141,12 +151,21 @@ export class ResponseTypeCoder extends TypeCoder {
     return pathJoin("types", this.version, this.requirement.refUrl! + ".ts");
   }
 
-  public override writeCode(script: Script): string {
-    return `{
-          headers: ${this.printHeaders(script, this.requirement)};
-          requiredHeaders: ${this.printRequiredHeaders(this.requirement)};
-          content: ${this.printContentObjectType(script, this.requirement)};
-          examples: ${this.buildExamplesObjectType(this.requirement)};
-        }`;
+  public override writeCode(script: Script): ts.TypeNode {
+    return typeLiteral(
+      [
+        typeProperty("headers", this.headersType(script, this.requirement)),
+        typeProperty(
+          "requiredHeaders",
+          this.requiredHeadersType(this.requirement),
+        ),
+        typeProperty("content", this.contentType(script, this.requirement)),
+        typeProperty(
+          "examples",
+          this.buildExamplesObjectType(this.requirement),
+        ),
+      ],
+      true,
+    );
   }
 }

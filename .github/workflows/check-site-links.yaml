@@ -49,4 +49,8 @@ jobs:
 
       - name: Check inline whitespace
         working-directory: site
+        env:
+          # Astro moves staged assets with rename; keep fixture output on the
+          # checkout's filesystem and beneath its node_modules for resolution.
+          USING_TEMPORARY_FILES_DEBUG: "1"
         run: npm run test:whitespace

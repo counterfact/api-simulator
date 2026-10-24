@@ -8,46 +8,59 @@ Unit tests that mock HTTP calls at the library boundary (using `jest.mock()`, `v
 
 ## How it works
 
-Use Counterfact's programmatic API to embed the mock server directly in your test suite. Start it in a `beforeAll` hook, run every test against it, and stop it in `afterAll`. The server is entirely local, so tests are fast and deterministic. Handler files control exactly what the mock returns for each test scenario.
+Use Counterfact's programmatic API to embed the mock server directly in your test suite. Start it in a `beforeAll` hook, run every test against it, and stop it in `afterAll`. Local execution removes dependence on a remote environment. Repeatable tests additionally need fixed responses or named examples, controlled delays, isolated simulator instances, and awaited reset/scenario setup. Generated `.random()` responses can still vary after reset. See [sample responses](../manual/sample-responses.md) and [edge cases](../manual/edge-cases.md).
 
-## Example
+Follow the [project installation setup](./lifecycle-setup.md), install Counterfact as an exact development dependency, and commit the lockfile. Keep the contract, handlers, and test files in that project.
 
-Install Counterfact as a dev dependency and generate route files from your spec:
+Supplying `openApiPath` generates routes and types at startup, then watches the
+spec for changes. Missing API directories are created automatically. To use
+existing routes without regeneration, set both `generate` and `watch` to
+`{ routes: false, types: false }`.
 
-```sh
-npm install --save-dev counterfact
-npx counterfact openapi.yaml api --generate
-```
+## Playwright: one simulator per worker
 
-Start and stop the server around your test suite:
+Use a worker-scoped fixture to start Counterfact once, and an automatic test
+fixture to await `simulator.reset()` before each test. An optional test option
+can select a scenario after reset:
 
 ```ts
-import path from "node:path";
+// Inside your automatic test fixture:
+await workerSimulator.reset();
+if (scenarioName) await workerSimulator.scenario(scenarioName);
+await use(workerSimulator);
+```
+
+The complete [runnable Playwright example](https://github.com/counterfact/api-simulator/blob/0e4f31b8ccb827036085b452d8e18a76236a029a/examples/playwright-reset/README.md)
+includes configuration, routes, startup, fixture teardown, a per-test scenario
+option, and assertions that deleted baseline data returns before the next test.
+It uses Playwright's HTTP request fixture, so no browser installation is required.
+
+Each worker needs its own simulator and port. Tests on one worker share a
+listener but reset before every test. Await outstanding requests before reset;
+requests arriving while reset runs receive 503. A failed reset keeps HTTP
+unavailable until a later reset succeeds. Discard saved contexts and stores,
+and reacquire them with `simulator.loadContext()` and `simulator.store` after
+reset. See [Programmatic API](../features/programmatic-api.md) for full lifecycle
+and failure semantics.
+
+## Other test runners
+
+The same lifecycle works with suite hooks:
+
+```ts
 import { counterfact } from "counterfact";
 
-const port = 4001;
-let stop: () => Promise<void>;
-
-const config = {
-  alwaysFakeOptionals: false,
-  openApiPath: path.resolve("openapi.yaml"),
-  basePath: path.resolve("api"),
-  buildCache: false,
-  port,
-  prefix: "",
-  proxyPaths: new Map(),
-  proxyUrl: "",
-  startRepl: false,
-  startServer: true,
-  validateRequests: true,
-  validateResponses: true,
-  generate: { routes: false, types: false },
-  watch: { routes: false, types: false },
-};
+const config = { basePath: "api", openApiPath: "openapi.yaml", port: 4001 };
+let simulator;
+let stop;
 
 beforeAll(async () => {
-  const app = await counterfact(config);
-  ({ stop } = await app.start(config));
+  simulator = await counterfact(config);
+  ({ stop } = await simulator.start());
+});
+
+beforeEach(async () => {
+  await simulator.reset();
 });
 
 afterAll(async () => {
@@ -55,100 +68,14 @@ afterAll(async () => {
 });
 ```
 
-Write tests that send real HTTP requests to the running server:
+See the [configuration options](../features/programmatic-api.md), apply named
+scenarios with `await simulator.scenario(name)`, then send HTTP requests to the
+configured port. Keep independently running tests on separate simulators.
 
-```ts
-it("returns 200 and a pet when the pet exists", async () => {
-  const response = await fetch(`http://localhost:${port}/pet/1`);
-  expect(response.status).toBe(200);
-  const body = await response.json();
-  expect(body).toHaveProperty("id");
-});
-
-it("returns 404 when the pet does not exist", async () => {
-  const response = await fetch(`http://localhost:${port}/pet/99999`);
-  expect(response.status).toBe(404);
-});
-```
-
-To control exactly what a handler returns for a specific test, use a context flag:
-
-```ts
-// api/routes/_.context.ts
-export class Context {
-  simulatePetNotFound = false;
-}
-```
-
-```ts
-// api/routes/pet/{petId}.ts
-export const GET: HTTP_GET = ($) => {
-  if ($.context.simulatePetNotFound) {
-    return $.response[404].text("Not found");
-  }
-  return $.response[200].json({
-    id: $.path.petId,
-    name: "Fluffy",
-    status: "available",
-  });
-};
-```
-
-Reach into the live context via the `contextRegistry` returned by `counterfact()` to toggle behavior per test:
-
-```ts
-import path from "node:path";
-import { counterfact } from "counterfact";
-
-const port = 4001;
-let contextRegistry: Awaited<ReturnType<typeof counterfact>>["contextRegistry"];
-let stop: () => Promise<void>;
-
-const config = {
-  alwaysFakeOptionals: false,
-  openApiPath: path.resolve("openapi.yaml"),
-  basePath: path.resolve("api"),
-  buildCache: false,
-  port,
-  prefix: "",
-  proxyPaths: new Map(),
-  proxyUrl: "",
-  startRepl: false,
-  startServer: true,
-  validateRequests: true,
-  validateResponses: true,
-  generate: { routes: false, types: false },
-  watch: { routes: false, types: false },
-};
-
-beforeAll(async () => {
-  const app = await counterfact(config);
-  contextRegistry = app.contextRegistry;
-  ({ stop } = await app.start(config));
-});
-
-afterAll(async () => {
-  await stop();
-});
-
-it("returns 404 when the flag is set", async () => {
-  contextRegistry.find("/").simulatePetNotFound = true;
-  const response = await fetch(`http://localhost:${port}/pet/1`);
-  expect(response.status).toBe(404);
-  contextRegistry.find("/").simulatePetNotFound = false;
-});
-```
-
-## What you get
-
-- Tests send real HTTP requests, so they exercise routing, middleware, headers, and content negotiation — not just handler logic.
-- The server starts and stops once per suite, keeping test overhead low even with many test cases.
-- Context flags make it easy to test error branches without writing a separate handler file per scenario.
-- Handler files remain the single source of truth for mock behavior; the test suite does not need to duplicate response logic.
+Follow [the complete payment test](./payment-retry.md) to connect lifecycle setup to an empty account, decline, successful retry, permission outcome, and restored baseline.
 
 ## Keep exploring
 
-- [Share State Across API Groups](./shared-store.md) — exercise product-wide workflows backed by one shared store
-- [Simulate Failures and Edge Cases](./simulate-failures.md) — the context-flag technique for toggling error conditions
-- [Test the Context, Not the Handlers](./test-context-not-handlers.md) — unit-test context logic independently of the HTTP layer
-- [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — shape the responses the integration tests assert against
+- [Scenario Scripts](./scenario-scripts.md) — reusable state transformations
+- [Share State Across API Groups](./shared-store.md) — one application store
+- [Programmatic API](../features/programmatic-api.md) — lifecycle and reference rules

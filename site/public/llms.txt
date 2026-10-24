@@ -13,7 +13,10 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 
 ## Start here
 
+- [User manual](https://counterfact.dev/docs/manual) — canonical feature explanations.
+
 - [Getting Started](https://counterfact.dev/docs/getting-started) — prerequisite, one command, localhost browser request, generated files, and one optional custom response.
+- [Guided coffee shop](https://counterfact.dev/docs/manual/guided-example) — bundled hands-on walkthrough; no document required.
 - [First 10 minutes](https://counterfact.dev/docs/first-10-minutes) — add a small stateful create/read workflow and one frontend-relevant failure.
 - [Usage](https://counterfact.dev/docs/usage) — guides grouped by frontend work, team/test work, advanced control, and troubleshooting.
 
@@ -21,13 +24,13 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 
 - [Custom responses](https://counterfact.dev/docs/features/routes)
 - [State](https://counterfact.dev/docs/features/state)
-- [Failures](https://counterfact.dev/docs/patterns/simulate-failures) and [latency](https://counterfact.dev/docs/patterns/simulate-latency)
+- [Failures and latency](https://counterfact.dev/docs/manual/edge-cases)
 - [Proxying](https://counterfact.dev/docs/features/proxy)
 - [Tests](https://counterfact.dev/docs/patterns/automated-integration-tests) and [REPL](https://counterfact.dev/docs/features/repl)
 
 ## Reference
 
-- [Reference](https://counterfact.dev/docs/reference)
+- [API reference](https://counterfact.dev/docs/api)
 - [FAQ](https://counterfact.dev/docs/faq)
 - [Without OpenAPI](https://counterfact.dev/docs/features/without-openapi) — use this alternative only when no OpenAPI document exists.
 - [GitHub repository](https://github.com/counterfact/api-simulator)

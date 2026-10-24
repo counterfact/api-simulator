@@ -205,4 +205,4 @@ Use `client` for quick one-off requests. Use `route()` when you want to inspect,
 ## See also
 
 - [REPL](./repl.md)
-- [Usage](../usage.md)
+- [Find your workflow](../usage.md)

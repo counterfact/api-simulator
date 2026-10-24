@@ -28,7 +28,8 @@ Counterfact is a contract-driven mock API server that:
 - Supports context objects for storing mock state
 - Enables proxy mode to route requests to real APIs selectively
 
-The REPL lets developers manipulate mock state in real-time using JavaScript. This skill exposes the same capabilities via HTTP API.
+The REPL lets developers manipulate mock state in real-time using JavaScript. This skill exposes state inspection and JSON updates via HTTP API; it does
+not evaluate arbitrary REPL code or invoke context methods.
 
 ## When to Use This Skill
 
@@ -49,15 +50,21 @@ Invoke this skill when the user:
 
 ## Detecting Counterfact
 
-To determine if Counterfact is running, check in this order:
+First inspect project scripts/configuration to discover the port, selected API
+group, and whether the Admin API is enabled. It is opt-in: start with
+`npx counterfact openapi.yaml --admin-api`, set `admin-api: true` in
+`counterfact.yaml`, or use `startAdminApi: true` with the programmatic API.
+Then check these indicators:
 
-1. **Check for health endpoint** (most reliable):
+1. **Check the enabled Admin API health endpoint**:
 
    ```http
    GET http://localhost:3100/_counterfact/api/health
    ```
 
-   If successful, Counterfact is running on port 3100.
+   This example assumes the default port and ungrouped API. A successful
+   response confirms the Admin API is accessible; a 404 can mean it is disabled
+   or you selected the wrong group prefix, even when the mock server is healthy.
 
 2. **Look for package.json**:
    - Check if `counterfact` is in dependencies or devDependencies
@@ -78,7 +85,17 @@ To determine if Counterfact is running, check in this order:
 
 ## Admin API Endpoints
 
-All Admin API endpoints are prefixed with `/_counterfact/api/`
+The Admin API base URL is `http://localhost:<port>/_counterfact/api` followed
+by the selected runner's group subdirectory (for example `/pets` for group
+`pets`). Every endpoint below uses the ungrouped base URL; substitute the
+configured port and group subdirectory in every request. The served-route
+`prefix` is separate from this Admin API prefix.
+
+If an admin token is configured using `--admin-api-token` or
+`COUNTERFACT_ADMIN_API_TOKEN`, add `Authorization: Bearer <TOKEN_VALUE>` to
+every request, including health checks. A missing/invalid token returns 401.
+Without a token, middleware checks the request IP and rejects nonloopback
+requests with 403. Disabled Admin API endpoints normally return 404.
 
 ### Health Check
 
@@ -100,7 +117,9 @@ GET /_counterfact/api/health
 }
 ```
 
-**Use when:** Checking if server is running, getting server info.
+**Use when:** Checking Admin API access and getting server info. `prefix` in
+the response is the served-route prefix (`config.prefix`), not the Admin API
+mount path.
 
 ---
 
@@ -211,7 +230,14 @@ Content-Type: application/json
 
 **Use when:** Adding data, modifying state, simulating conditions.
 
-**Important:** The update uses smart diffing - only changed properties are updated, preserving methods and other properties.
+**Important:** JSON updates do not preserve class prototype methods. The
+registry adopts the posted object's prototype, so methods on class contexts
+can be lost. Use scenario/context methods through the interactive REPL for
+domain changes where method integrity matters. The first update to an unseen
+registry path adds/replaces its context rather than merging. Later updates
+compare values with the cached previous input, not current live state: posting
+a scalar equal to that cache can leave an intervening route mutation intact.
+Read back the context and test the affected endpoint after every update.
 
 ---
 
@@ -317,6 +343,9 @@ Content-Type: application/json
 - `proxyPaths` is an array of `[path, enabled]` tuples
 - Path of `""` or `"/"` enables proxy globally
 - Setting path `true` routes to real API, `false` uses mock
+- Exact entries take precedence; otherwise the closest configured ancestor
+  applies to descendants. Matching is case-sensitive.
+- PATCH merges supplied proxy path entries; omitted entries remain configured.
 
 ---
 
@@ -468,7 +497,7 @@ Currently in the pet store:
 4. POST /_counterfact/api/contexts/products
    Body: { "products": [...testProducts] }
 
-5. Confirm setup complete
+5. Read back each context and test the affected endpoints before confirming setup
 ```
 
 ---
@@ -477,12 +506,18 @@ Currently in the pet store:
 
 ### Server Not Running
 
-If health check fails:
+A connection failure can mean the server is absent or the port is wrong.
+Inspect the process and configured port before restarting. Start with
+`npx counterfact openapi.yaml --admin-api` when Admin API access is needed.
+An HTTP error alone does not establish that the mock server is stopped.
 
-```
-❌ Error: Counterfact server not running
-Suggestion: Start the server with: npx counterfact openapi.yaml
-```
+### Admin API Access Errors
+
+- **404:** Check `--admin-api`, YAML `admin-api`, or programmatic `startAdminApi`,
+  plus the port and selected group
+  subdirectory. An enabled server can still have a disabled Admin API.
+- **401:** Send the configured bearer token; do not display its value.
+- **403:** Without a token, access is restricted by request IP to loopback.
 
 ### Context Not Found
 
@@ -535,15 +570,21 @@ Then `GET /_counterfact/api/contexts/api/users/123` returns the `/api/users` con
 
 ### Smart Diffing
 
-Context updates use smart diffing:
+After a path has been registered through `update`, later updates use cached
+input diffing. For a plain JSON context, an omitted scalar can remain present:
 
 ```javascript
 // Old context: { users: [...], count: 5 }
 
 POST { users: [...newUsers] }
 // Result: { users: [...newUsers], count: 5 }
-//         count is preserved
+//         count can remain present on a previously seen path
 ```
+
+This is not a general preservation guarantee. First updates can replace
+contexts; JSON changes can remove prototype methods; equal cached scalar
+values can leave live mutations intact. Verify the result through both the
+context endpoint and the route that consumes it.
 
 ### Testing Proxied Requests
 
@@ -565,7 +606,8 @@ After setting proxy:
 
 1. **In-memory state**: Changes reset on server restart
 2. **No TypeScript validation**: Context can accept any JSON object
-3. **No authentication**: Admin API is unauthenticated (local development tool)
+3. **Access controls**: Optional bearer-token authentication; without a token,
+   only loopback request IPs are allowed
 4. **No versioning**: API is v1, may evolve
 5. **Context discovery**: Must know or discover paths, no automatic schema
 
@@ -584,7 +626,9 @@ After setting proxy:
 
 **Current access controls:**
 
-- By default, the Admin API only listens on the loopback interface (localhost)
+- The Admin API is disabled unless explicitly enabled
+- Without a token, middleware restricts request IPs to loopback; this does not
+  mean the server listener binds only to the loopback interface
 - You can require a bearer token for all Admin API requests:
   - CLI flag: `--admin-api-token <TOKEN_VALUE>`
   - Environment variable: `COUNTERFACT_ADMIN_API_TOKEN=<TOKEN_VALUE>`
@@ -617,7 +661,9 @@ Example:
 
 **Issue:** Health check returns 404
 
-**Solution:** Server may not have Admin API. Update to latest Counterfact version.
+**Solution:** Check that Admin API access is enabled and that the URL includes
+the configured port and selected group subdirectory. A 404 does not by itself
+mean the server is old or absent.
 
 ---
 
@@ -628,8 +674,8 @@ Example:
 Example route handler:
 
 ```typescript
-export const GET: HTTP_GET = ($) => {
-  return $.response[200].json($.context.pets);
+export const GET: HTTP_GET = function ($) {
+  return $.response.status(200).json($.context.pets);
 };
 ```
 
@@ -641,7 +687,8 @@ export const GET: HTTP_GET = ($) => {
 
 - Verify proxyUrl is set: `GET /_counterfact/api/config/proxy`
 - Check path is enabled: `proxyPaths` array
-- Ensure path matches exactly (case-sensitive)
+- Check the exact path and its ancestors (case-sensitive); a more specific
+  `false` entry can override an ancestor enabled for proxying
 
 ---
 

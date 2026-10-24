@@ -36,7 +36,7 @@ export function GET($) {
 }
 ```
 
-For more information on the `$` object, see the [reference guide](../reference.md).
+For more information on the `$` object, see the [reference guide](../api.md).
 
 ## Now that you know how to work without an OpenAPI doc, here's why you should have one anyway
 
@@ -47,5 +47,5 @@ Not many people love writing documentation. Fewer people still love working on A
 ## See also
 
 - [Getting started](../getting-started.md) — start with an OpenAPI spec for type-safe, auto-generated routes
-- [Usage](../usage.md) — full documentation for routes, context, REPL, and more
+- [Find your workflow](../usage.md) — full documentation for routes, context, REPL, and more
 - [FAQ](../faq.md) — common questions about state, types, and regeneration

@@ -1,5 +1,5 @@
 /** Rebuild the version-4 view from archived v3 inputs and source-linked adjudications. */
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { deriveMonthly, derivePeriods, deriveMature } from './quality-case-study-lib.mjs';
 const root = new URL('../../', import.meta.url);
@@ -88,11 +88,9 @@ for(const record of candidates) { const override=adjudications.candidateOverride
 const rawExperiments=read('site/study/2026/experiments/results.json');
 const results=Array.isArray(rawExperiments)?rawExperiments:rawExperiments.results ?? rawExperiments.cases ?? rawExperiments.experiments ?? rawExperiments.attempts;
 if(!Array.isArray(results)) throw new Error('Experiment artifact must contain results, cases, or experiments array');
-const experimentRoot = new URL('site/study/2026/experiments/',root);
-const artifactFiles = (url,prefix='')=>readdirSync(url,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?artifactFiles(new URL(entry.name+'/',url),prefix+entry.name+'/'):entry.isFile()&&entry.name!=='artifact-manifest.json'?[prefix+entry.name]:[]);
-const artifacts = artifactFiles(experimentRoot).sort().map(file=>({path:'site/study/2026/experiments/'+file,sha256:createHash('sha256').update(readFileSync(new URL(file,experimentRoot))).digest('hex')}));
-writeFileSync(new URL('artifact-manifest.json',experimentRoot),JSON.stringify({artifacts},null,2)+'\n');
-const experiments={fixed7:{artifacts,results:results.map(r=>({...r,id:String(r.issue ?? r.issueNumber ?? r.id).replace(/^issue-/, '')}))}};
+const archive = read('site/study/2026/experiments/archive.json');
+const {artifacts} = read('site/study/2026/experiments/artifact-manifest.json');
+const experiments={fixed7:{archive,artifacts,results:results.map(r=>({...r,id:String(r.issue ?? r.issueNumber ?? r.id).replace(/^issue-/, '')}))}};
 const matureRecords=[...legacy.productCases.map(c=>({id:c.id,reportedAt:c.reportedAt,firstAffectedPublishedAt:c.firstAffectedPublishedAt,firstAffectedPrecision:c.evidencePrecision==='Exact origin'?'exact':'bound',fixedPublishedAt:npm.time[c.fixedRelease]??null,sources:c.sources})),...read(source+'historical-dated-records.json').records.map(r=>({...r,firstAffectedPrecision:r.firstAffectedPrecision??(r.originPrecision==='original-audit-origin'?'exact':'unknown')}))];
 const caseStudy={
  researchQuestion:'Can agent-assisted development increase delivery while keeping verification and repair effective?',

@@ -4,16 +4,16 @@ The `$.context` object is how routes share in-memory state. It's an instance of 
 
 ```ts
 // routes/pet.ts
-export const POST: HTTP_POST = ($) => {
-  return $.response[200].json($.context.addPet($.body));
+export const POST: HTTP_POST = function ($) {
+  return $.response.status(200).json($.context.addPet($.body));
 };
 
 // routes/pet/{petId}.ts
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   const pet = $.context.getPetById($.path.petId);
   if (pet === undefined)
-    return $.response[404].text(`Pet ${$.path.petId} not found.`);
-  return $.response[200].json(pet);
+    return $.response.status(404).text(`Pet ${$.path.petId} not found.`);
+  return $.response.status(200).json(pet);
 };
 ```
 
@@ -126,8 +126,8 @@ a complete multi-group example and reload guidance.
 
 - [Hot reload](./hot-reload.md) — state is preserved across hot reloads
 - [REPL](./repl.md) — inspect and mutate state interactively at runtime
-- [Patterns: Federated Context Files](../patterns/federated-context.md) — managing state across multiple context files
+- [Patterns: Federated Context Files](../manual/nested-contexts.md) — managing state across multiple context files
 - [Patterns: Model the Workflow, Not the Backend](../patterns/model-the-workflow.md) — deciding how much state to simulate
 - [Patterns: Share State Across API Groups](../patterns/shared-store.md) — sharing domain state between independently generated groups
 - [Patterns: Test the Context, Not the Handlers](../patterns/test-context-not-handlers.md) — unit-testing context logic
-- [Usage](../usage.md)
+- [Find your workflow](../usage.md)

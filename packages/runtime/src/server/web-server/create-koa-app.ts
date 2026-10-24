@@ -1,4 +1,4 @@
-import { Readable } from "node:stream";
+import { finished, Readable } from "node:stream";
 
 import createDebug from "debug";
 import Koa from "koa";
@@ -52,12 +52,59 @@ export function createKoaApp({
   runners,
   config,
   adminApi,
+  lifecycle,
 }: {
   runners: RuntimeRunner[];
   config: KoaRuntimeConfig;
   adminApi?: AdminApiAdapter;
+  lifecycle?: {
+    enter(): boolean;
+    leave(): void;
+  };
 }) {
   const app = new Koa();
+
+  if (lifecycle) {
+    app.use(async (ctx, next) => {
+      if (!lifecycle.enter()) {
+        ctx.status = 503;
+        ctx.body =
+          "Counterfact is unavailable during reset or after a lifecycle failure";
+        return;
+      }
+      let left = false;
+      let responseDone = false;
+      let handlerDone = false;
+      let bodyDone = true;
+      const leave = () => {
+        if (left || !responseDone || !handlerDone || !bodyDone) return;
+        left = true;
+        lifecycle.leave();
+      };
+      const responseFinished = () => {
+        responseDone = true;
+        leave();
+      };
+      ctx.res.once("finish", responseFinished);
+      ctx.res.once("close", responseFinished);
+      try {
+        await next();
+      } finally {
+        handlerDone = true;
+        if (ctx.body instanceof Readable) {
+          bodyDone = false;
+          // Readable.from waits for iterator.return()/finally during destruction.
+          // Response close alone does not mean the producer has finished cleanup.
+          const cleanup = finished(ctx.body, () => {
+            cleanup();
+            bodyDone = true;
+            leave();
+          });
+        }
+        leave();
+      }
+    });
+  }
 
   for (const runner of runners) {
     app.use(

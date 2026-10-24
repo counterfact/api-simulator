@@ -1,0 +1,14 @@
+{
+  "reference": "/docs/api",
+  "patterns": "/docs/usage",
+  "patterns/explore-new-api": "/docs/getting-started",
+  "patterns/executable-spec": "/docs/features/generated-code",
+  "patterns/mock-with-dummy-data": "/docs/manual/sample-responses",
+  "patterns/custom-middleware": "/docs/features/middleware",
+  "patterns/federated-context": "/docs/manual/nested-contexts",
+  "patterns/repl-inspection": "/docs/features/repl",
+  "patterns/multiple-versions": "/docs/features/multiple-versions",
+  "patterns/reference-implementation": "/docs/patterns/model-the-workflow",
+  "patterns/simulate-failures": "/docs/manual/edge-cases",
+  "patterns/simulate-latency": "/docs/manual/edge-cases"
+}

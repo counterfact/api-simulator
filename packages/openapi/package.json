@@ -1,6 +1,6 @@
 {
   "name": "@counterfact/openapi",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "description": "Load, bundle, dereference, and overlay OpenAPI documents without starting Counterfact.",
   "type": "module",
   "main": "./dist/index.js",
@@ -50,10 +50,10 @@
     "prepack": "yarn build"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "16.0.3",
+    "@apidevtools/json-schema-ref-parser": "16.0.5",
     "@types/json-schema": "7.0.15",
-    "js-yaml": "5.4.3",
-    "jsonpath-plus": "11.2.0",
+    "js-yaml": "5.5.0",
+    "jsonpath-plus": "11.2.1",
     "node-fetch": "3.3.2"
   }
 }

@@ -2,17 +2,21 @@
 
 Each file in `routes/` corresponds to an API path. For example, `/users/{userId}` maps to `routes/users/{userId}.ts`. The root path `/` maps to `routes/index.ts`.
 
-A freshly generated route file looks like this:
+Use typed function expressions for route handlers:
 
 ```ts
-export const GET: HTTP_GET = ($) => {
-  return $.response[200].random();
+export const GET: HTTP_GET = function ($) {
+  return $.response.status(200).random();
 };
 
-export const POST: HTTP_POST = ($) => {
-  return $.response[200].random();
+export const POST: HTTP_POST = function ($) {
+  return $.response.status(200).random();
 };
 ```
+
+Prefer function expressions with a block body and an explicit `return` in route files. You can add logging, local variables, or other statements without restructuring the handler. Convert generated arrow-function handlers to this form when editing them.
+
+The generated handler type on the exported constant (for example, `GET: HTTP_GET`) gives `$` its request type automatically. Leave `$` unannotated, and use `async function ($)` when you need `await`.
 
 Each exported function handles one HTTP method. The single argument `$` gives you everything you need: request data, response builders, server state, and utilities.
 
@@ -35,7 +39,7 @@ Each exported function handles one HTTP method. The single argument `$` gives yo
 | `.header(name, value)`         | Adds a response header                                                                  |
 
 ```ts
-return $.response[200].header("x-request-id", "abc123").json({ ok: true });
+return $.response.status(200).header("x-request-id", "abc123").json({ ok: true });
 ```
 
 ### Setting cookies
@@ -43,7 +47,7 @@ return $.response[200].header("x-request-id", "abc123").json({ ok: true });
 Use `.cookie(name, value, options?)` to set one or more cookies. Each call appends a new `Set-Cookie` header and returns the builder for chaining.
 
 ```ts
-return $.response[200]
+return $.response.status(200)
   .cookie("sessionId", "abc123", {
     httpOnly: true,
     secure: true,
@@ -57,7 +61,7 @@ return $.response[200]
 Multiple cookies:
 
 ```ts
-return $.response[200]
+return $.response.status(200)
   .cookie("sessionId", "abc123")
   .cookie("theme", "dark")
   .json({ ok: true });
@@ -81,10 +85,10 @@ If your OpenAPI spec defines named examples for a response, you can return a spe
 
 ```ts
 // Return a specific named example
-return $.response[200].example("successResponse");
+return $.response.status(200).example("successResponse");
 
 // Chain additional decorations after selecting an example
-return $.response[200]
+return $.response.status(200)
   .example("successResponse")
   .header("x-request-id", "abc123");
 ```
@@ -104,16 +108,16 @@ The request is exposed through four typed properties:
 | `$.body`    | Request body                                                 |
 
 ```ts
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   if ($.headers["x-token"] !== "super-secret") {
-    return $.response[401].text("Unauthorized");
+    return $.response.status(401).text("Unauthorized");
   }
 
   const content =
     `Results for "${$.query.keyword}" in ${$.path.groupName}` +
     ` with tags: ${$.body.tags.join(", ")}`;
 
-  return $.response[200].text(content);
+  return $.response.status(200).text(content);
 };
 ```
 
@@ -132,7 +136,7 @@ GET /items?page=0&size=100&sort=name
 Counterfact automatically assembles these individual query parameters back into the object, so you can access them as:
 
 ```ts
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   const { page, size, sort } = $.query.pageable;
   // page = "0", size = "100", sort = "name"
   // ...
@@ -168,14 +172,14 @@ Counterfact translates your OpenAPI spec into strict TypeScript types. If your s
 `$.x` is an alias for `$` with all types widened to `any`, giving you an escape hatch:
 
 ```ts
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   // header not defined in OpenAPI spec
   $.headers["my-undocumented-header"]; // TypeScript error
   $.x.headers["my-undocumented-header"]; // ok
 
   // status code not defined in OpenAPI spec
-  return $.response[500].text("Error!"); // TypeScript error
-  return $.x.response[500].text("Error!"); // ok
+  return $.response.status(500).text("Error!"); // TypeScript error
+  return $.x.response.status(500).text("Error!"); // ok
 };
 ```
 
@@ -183,11 +187,11 @@ export const GET: HTTP_GET = ($) => {
 
 Counterfact supports OpenAPI 3.2 sequential media types. When your spec uses `itemSchema` on a `text/event-stream`, `application/jsonl`, or `application/json-seq` content type, the generated handler type expresses the body as `AsyncIterable<T>`.
 
-Use `$.response[<status>].stream(iterable)` to return a stream from any route handler. The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).
+Use `$.response.status(<status>).stream(iterable)` to return a stream from any route handler. The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).
 
 ```ts
-export const GET: HTTP_GET = ($) => {
-  return $.response[200].stream(events());
+export const GET: HTTP_GET = function ($) {
+  return $.response.status(200).stream(events());
 };
 
 async function* events() {
@@ -211,5 +215,5 @@ For `text/event-stream` responses, Counterfact also sets `Cache-Control: no-cach
 
 - [State](./state.md) — sharing state across routes with context objects
 - [Middleware](./middleware.md) — cross-cutting request/response logic
-- [Reference](../reference.md) — complete `$` parameter and response builder API reference
-- [Usage](../usage.md)
+- [Reference](../api.md) — complete `$` parameter and response builder API reference
+- [Find your workflow](../usage.md)

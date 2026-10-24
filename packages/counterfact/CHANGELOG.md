@@ -1,5 +1,89 @@
 # counterfact
 
+## 2.17.0
+
+### Minor Changes
+
+- 96b565d: Add simulator.reset() to reconstruct stores, dependent contexts, source routes and startup state without restarting HTTP, and simulator.scenario(path, group?) to await named scenarios with the REPL arguments. Document request gating, reset failure recovery, reference lifetimes, and worker-scoped Playwright integration.
+- 665d281: Simplify programmatic startup: `counterfact({ basePath: "api" })` now supplies defaults for all other runtime options, and `api.start()` reuses that configuration. Serve routes on port 8100 without a REPL by default. Enable generation, watching, and cache building by default; supplying a spec generates routes and types and watches for changes. Explicit opt-outs remain supported. Full configurations and explicit startup options remain supported. Update the embedding and integration-test guides to show the minimal setup.
+
+  Create missing API directories during initialization. Expose `api.status()` to report the resolved configuration (excluding the Admin API token), absolute API directory, HTTP listener, and actual bound port; await listener readiness and reject startup on bind errors.
+
+  Support partial startup overrides such as `api.start({ port: 8111 })` while preserving configured defaults and reporting the effective port.
+
+### Patch Changes
+
+- 376ec98: Updated dependency `js-yaml` in `counterfact` to `5.5.0`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.5.0`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.5.0`.
+- c6e74bc: Updated dependency `posthog-node` in `counterfact` to `5.56.1`.
+- 1666014: Updated dependency `posthog-node` in `counterfact` to `5.56.0`.
+- 6b90551: Updated dependency `posthog-node` in `counterfact` to `5.55.3`.
+- 1a3b612: Updated dependency `posthog-node` in `counterfact` to `5.56.2`.
+- Updated dependencies [96b565d]
+- Updated dependencies [ce0bb3a]
+- Updated dependencies [865750a]
+- Updated dependencies [376ec98]
+- Updated dependencies [91428ea]
+  - @counterfact/runtime@0.2.0
+  - @counterfact/repl@0.1.6
+  - @counterfact/client@0.2.1
+  - @counterfact/generator@0.1.6
+  - @counterfact/openapi@0.1.6
+
+## 2.16.6
+
+### Patch Changes
+
+- 27533e7: Show an animated spinner for active startup steps in interactive terminals, clearing progress when each step completes or fails. Keep redirected startup output plain and restore the random startup tagline.
+- f30856d: Updated dependency `posthog-node` in `counterfact` to `5.52.1`.
+- bd1491f: Updated dependency `posthog-node` in `counterfact` to `5.52.4`.
+- c3db7ef: Updated dependency `posthog-node` in `counterfact` to `5.55.1`.
+- 9e039eb: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `posthog-node` in `counterfact` to `5.53.0`.
+- b56b1c7: Updated dependency `posthog-node` in `counterfact` to `5.54.1`.
+- cb11739: Updated dependency `posthog-node` in `counterfact` to `5.51.8`.
+- 0d2b3be: Updated dependency `posthog-node` in `counterfact` to `5.51.4`.
+- 25215f4: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.1`.
+- befb686: Updated dependency `js-yaml` in `counterfact` to `5.4.3`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.3`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.3`.
+- 15b30fb: Updated dependency `js-yaml` in `counterfact` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.2`.
+- 75b575b: Updated dependency `posthog-node` in `counterfact` to `5.55.0`.
+- 3fceab1: Updated dependency `open` in `counterfact` to `11.0.4`.
+- b253e37: Updated dependency `posthog-node` in `counterfact` to `5.51.7`.
+- ca2112f: Updated dependency `posthog-node` in `counterfact` to `5.51.3`.
+- 267818b: Updated dependency `posthog-node` in `counterfact` to `5.52.5`.
+- 81b825a: Updated dependency `posthog-node` in `counterfact` to `5.51.6`.
+- 9207642: Updated dependency `posthog-node` in `counterfact` to `5.55.2`.
+- Updated dependencies [04d67bb]
+- Updated dependencies [13155b0]
+- Updated dependencies [1714e9a]
+- Updated dependencies [02d013a]
+- Updated dependencies [a2ee147]
+- Updated dependencies [1145bb3]
+- Updated dependencies [dfe2472]
+- Updated dependencies [25215f4]
+- Updated dependencies [befb686]
+- Updated dependencies [2e0cadd]
+- Updated dependencies [15b30fb]
+- Updated dependencies [cfcedc9]
+- Updated dependencies [6d4af72]
+- Updated dependencies [e5105a0]
+- Updated dependencies [ba93689]
+- Updated dependencies [2707325]
+- Updated dependencies [66ab7eb]
+- Updated dependencies [d175f35]
+  - @counterfact/client@0.2.0
+  - @counterfact/repl@0.1.5
+  - @counterfact/openapi@0.1.5
+  - @counterfact/generator@0.1.5
+  - @counterfact/runtime@0.1.5
+
 ## 2.16.5
 
 ### Patch Changes

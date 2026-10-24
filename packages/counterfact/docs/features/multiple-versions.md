@@ -128,18 +128,18 @@ Both properties are only present when `version` is set in the config. For a sing
 // catalog/routes/items/{itemId}.ts
 import type { HTTP_GET } from "../../types/paths/items/{itemId}.types.js";
 
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   const item = $.context.findById($.path.itemId);
-  if (!item) return $.response[404].text("Item not found");
+  if (!item) return $.response.status(404).text("Item not found");
 
   // v1: return only id and name
   if (!$.minVersion("v2")) {
-    return $.response[200].json({ id: item.id, name: item.name });
+    return $.response.status(200).json({ id: item.id, name: item.name });
   }
 
   // v2: also include the category field
   if (!$.minVersion("v3")) {
-    return $.response[200].json({
+    return $.response.status(200).json({
       id: item.id,
       name: item.name,
       category: item.category,
@@ -147,7 +147,7 @@ export const GET: HTTP_GET = ($) => {
   }
 
   // v3+: return the full object
-  return $.response[200].json(item);
+  return $.response.status(200).json(item);
 };
 ```
 
@@ -181,17 +181,17 @@ route.catalog("/items/{itemId}");
 `$.minVersion()` is a TypeScript type predicate. After a successful check, TypeScript narrows `$` to the intersection of only the versions that satisfy the minimum:
 
 ```ts
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   if ($.minVersion("v2")) {
     // $ is typed as the v2 (and later) $ arg — v2-only fields are available here
-    return $.response[200].json({
+    return $.response.status(200).json({
       id: $.path.itemId,
       category: $.body.category,
     });
   }
 
   // $ is typed as the v1 $ arg here — only v1 fields are available
-  return $.response[200].json({ id: $.path.itemId });
+  return $.response.status(200).json({ id: $.path.itemId });
 };
 ```
 
@@ -216,8 +216,7 @@ It exposes:
 
 ## See also
 
-- [Patterns: Multiple API Versions](../patterns/multiple-versions.md) — cookbook pattern with a worked example
-- [Reference: `version` field and `Versioned` type](../reference.md#multiple-api-versions)
+- [Reference: `version` field and `Versioned` type](../api.md)
 - [REPL](./repl.md) — interactive terminal for runtime inspection
 - [Generated code](./generated-code.md) — how code generation works
-- [Usage](../usage.md)
+- [Find your workflow](../usage.md)

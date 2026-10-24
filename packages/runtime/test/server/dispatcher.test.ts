@@ -17,6 +17,34 @@ function acceptsBody(acceptsHtml: boolean): string {
 }
 
 describe("a dispatcher", () => {
+  it("dispatches a response with headers and cookies before status selection", async () => {
+    const registry = new Registry();
+    registry.add("/created", {
+      GET({ response }) {
+        return response
+          .header("x-request-id", "123")
+          .cookie("session", "abc")
+          .status(201)
+          .json({ ok: true });
+      },
+    });
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const response = await dispatcher.request({
+      body: "",
+      headers: { accept: "application/json" },
+      method: "GET",
+      path: "/created",
+      query: {},
+      req: { path: "/created" },
+    });
+    expect(response.status).toBe(201);
+    expect(response.headers).toMatchObject({
+      "x-request-id": "123",
+      "set-cookie": ["session=abc"],
+    });
+    expect(response.body).toStrictEqual({ ok: true });
+  });
+
   it("dispatches a get request to a server and returns the response", async () => {
     const registry = new Registry();
 
@@ -2122,12 +2150,17 @@ describe("given a request that contains the differently cased path", () => {
     function makeResponseDispatcher(
       validateResponses: boolean,
       handlerHeaders: Record<string, string> = {},
+      includeStatus = true,
     ) {
       const registry = new Registry();
 
       registry.add("/widgets", {
         GET() {
-          return { body: "ok", headers: handlerHeaders, status: 200 };
+          return {
+            body: "ok",
+            headers: handlerHeaders,
+            ...(includeStatus ? { status: 200 } : {}),
+          };
         },
       });
 
@@ -2168,6 +2201,25 @@ describe("given a request that contains the differently cased path", () => {
         .map(([, value]) => value);
 
       expect(errorValues?.[0]).toContain("x-required-header");
+    });
+
+    it("validates an implicit 200 response against the 200 response spec", async () => {
+      const dispatcher = makeResponseDispatcher(true, {}, false);
+
+      const response = await dispatcher.request({
+        body: "",
+        headers: {},
+        method: "GET",
+        path: "/widgets",
+        query: {},
+        req: { path: "/widgets" },
+      });
+
+      expect(response.status).toBeUndefined();
+      expect(response.appendedHeaders).toContainEqual([
+        "response-type-error",
+        "response header 'x-required-header' is required",
+      ]);
     });
 
     it("adds response-type-error headers when a response header has the wrong type", async () => {

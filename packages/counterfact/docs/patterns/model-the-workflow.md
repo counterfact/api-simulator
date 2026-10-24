@@ -32,6 +32,10 @@ tables, queues, caches, jobs, or internal service boundaries. Prefer an explicit
 flag or a short collection over infrastructure that reproduces how production
 arrives at the same response.
 
+## Use the simulation as an executable reference
+
+Commit the contract, authored handlers, scenarios, and assertions together. They document selected client-visible behavior for service implementers and consumers. Regenerate types and run explicit compiler and HTTP checks when the contract changes; synchronization is not automatic. The simulation is an in-memory reference for supported workflows, not a production twin or replacement for real-backend verification.
+
 ## Example
 
 A payment workflow may need only an outcome flag and a small set of placed
@@ -74,10 +78,11 @@ import type { Scenario } from "../types/_.context.js";
 export const startup: Scenario = ($) => $.context.reset();
 
 export const declinedPayment: Scenario = ($) => {
-  $.context.reset();
   $.context.paymentOutcome = "declined";
 };
 ```
+
+`declinedPayment` changes only the payment outcome; it preserves orders and unrelated state. Use `await simulator.reset()` explicitly when a fresh baseline is required. The [complete payment retry recipe](./payment-retry.md) connects this model to HTTP handlers and an automated decline, recovery, permission, and reset check.
 
 During development, the same state is available as a direct control surface:
 
@@ -88,7 +93,7 @@ During development, the same state is available as a direct control surface:
 
 ## What you get
 
-- Deterministic behavior by default, with state only where continuity matters.
+- Predictable behavior when handlers use fixed values or deterministic functions, with controlled state and delays. Local execution or reset alone does not make random responses deterministic.
 - A small model that is easy to understand, reset, and commit with the client.
 - Named scenarios that reproduce relevant API worlds without production data.
 - Clear reasons to keep targeted tests against the real backend: the simulator
@@ -102,10 +107,10 @@ same client-visible behavior.
 
 ## Keep exploring
 
-- [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — begin with fixed and
+- [Mock APIs with Dummy Data](../manual/sample-responses.md) — begin with fixed and
   deterministic responses
 - [Scenario Scripts](./scenario-scripts.md) — save repeatable starting states
-- [Live Server Inspection with the REPL](./repl-inspection.md) — inspect and
+- [Live Server Inspection with the REPL](../features/repl.md) — inspect and
   steer the current state
 - [Share State Across API Groups](./shared-store.md) — introduce application-level
   state when a workflow crosses API groups

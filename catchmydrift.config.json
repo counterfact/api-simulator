@@ -1,0 +1,1119 @@
+{
+  "$schema": "./node_modules/catchmydrift/catchmydrift.schema.json",
+  "threshold": 20,
+  "groups": {
+    "counterfact": {
+      "include": [
+        "packages/counterfact/bin/**",
+        "packages/counterfact/package.json",
+        "packages/counterfact/src/**",
+        "packages/counterfact/test/**",
+        "packages/counterfact/tsconfig.json"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "client": {
+      "include": [
+        "packages/client/package.json",
+        "packages/client/src/**",
+        "packages/client/test/**",
+        "packages/client/tsconfig.json"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "generator": {
+      "include": [
+        "packages/generator/package.json",
+        "packages/generator/src/**",
+        "packages/generator/test/**",
+        "packages/generator/tsconfig.json"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "openapi": {
+      "include": [
+        "packages/openapi/package.json",
+        "packages/openapi/src/**",
+        "packages/openapi/test/**",
+        "packages/openapi/tsconfig.json"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "repl": {
+      "include": [
+        "packages/repl/package.json",
+        "packages/repl/src/**",
+        "packages/repl/test/**",
+        "packages/repl/tsconfig.json"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "runtime": {
+      "include": [
+        "packages/runtime/package.json",
+        "packages/runtime/src/**",
+        "packages/runtime/test/**",
+        "packages/runtime/tsconfig.json"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "types": {
+      "include": [
+        "packages/types/package.json",
+        "packages/types/src/**",
+        "packages/types/test/**",
+        "packages/types/tsconfig.json"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "application": {
+      "include": [
+        "packages/counterfact/package.json",
+        "packages/counterfact/src/api-runner.ts",
+        "packages/counterfact/src/app.ts",
+        "packages/counterfact/src/config.ts",
+        "packages/counterfact/test/api-runner.test.ts",
+        "packages/counterfact/test/app-types.test.ts",
+        "packages/counterfact/test/app.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "cli": {
+      "include": [
+        "packages/counterfact/bin/counterfact.js",
+        "packages/counterfact/package.json",
+        "packages/counterfact/src/cli/check-for-updates.ts",
+        "packages/counterfact/src/cli/run.ts",
+        "packages/counterfact/src/cli/startup-output.ts",
+        "packages/counterfact/src/config.ts",
+        "packages/counterfact/src/util/load-config-file.ts",
+        "packages/counterfact/test/cli/check-for-updates.test.ts",
+        "packages/counterfact/test/cli/run.test.ts",
+        "packages/counterfact/test/cli/startup-output.test.ts",
+        "packages/counterfact/test/util/load-config-file.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "telemetry": {
+      "include": [
+        "packages/counterfact/src/api-runner.ts",
+        "packages/counterfact/src/cli/run.ts",
+        "packages/counterfact/src/cli/telemetry.ts",
+        "packages/counterfact/test/api-runner.test.ts",
+        "packages/counterfact/test/cli/run.test.ts",
+        "packages/counterfact/test/cli/telemetry.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "migration": {
+      "include": [
+        "packages/counterfact/src/cli/run.ts",
+        "packages/counterfact/src/migrate/paths-to-routes.ts",
+        "packages/counterfact/src/migrate/update-route-types.ts",
+        "packages/counterfact/test/cli/run.test.ts",
+        "packages/counterfact/test/migrate/paths-to-routes.test.ts",
+        "packages/counterfact/test/migrate/update-route-types.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "utilities": {
+      "include": [
+        "packages/counterfact/src/util/ensure-directory-exists.ts",
+        "packages/counterfact/src/util/forward-slash-path.ts",
+        "packages/counterfact/src/util/load-config-file.ts",
+        "packages/counterfact/test/util/forward-slash-path.test.ts",
+        "packages/counterfact/test/util/load-config-file.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "dispatch": {
+      "include": [
+        "packages/runtime/src/runtime-config.ts",
+        "packages/runtime/src/server/dispatcher.ts",
+        "packages/runtime/src/server/openapi-document.ts",
+        "packages/runtime/src/server/registry.ts",
+        "packages/runtime/src/server/request-validator.ts",
+        "packages/runtime/src/server/response-validator.ts",
+        "packages/runtime/src/server/tools.ts",
+        "packages/runtime/test/server/dispatcher.proxy.test.ts",
+        "packages/runtime/test/server/dispatcher.test.ts",
+        "packages/runtime/test/server/openapi-document.test.ts",
+        "packages/runtime/test/server/registry.test.ts",
+        "packages/runtime/test/server/response-validator.test.ts",
+        "packages/runtime/test/server/tools.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "responses": {
+      "include": [
+        "packages/runtime/src/server/json-to-xml.ts",
+        "packages/runtime/src/server/response-builder.ts",
+        "packages/runtime/src/server/response-validator.ts",
+        "packages/runtime/test/server/json-to-xml.test.ts",
+        "packages/runtime/test/server/response-builder.test.ts",
+        "packages/runtime/test/server/response-validator.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "contexts": {
+      "include": [
+        "packages/counterfact/src/api-runner.ts",
+        "packages/counterfact/test/api-runner.test.ts",
+        "packages/generator/src/code-generator.ts",
+        "packages/generator/src/context-file-token.ts",
+        "packages/generator/src/scenario-file-generator.ts",
+        "packages/generator/test/code-generator.test.ts",
+        "packages/generator/test/generate.test.ts",
+        "packages/runtime/src/server/context-registry.ts",
+        "packages/runtime/src/server/module-loader.ts",
+        "packages/runtime/src/server/module-tree.ts",
+        "packages/runtime/src/server/tools.ts",
+        "packages/runtime/test/server/context-registry.test.ts",
+        "packages/runtime/test/server/module-loader.test.ts",
+        "packages/runtime/test/server/module-tree.test.ts",
+        "packages/runtime/test/server/tools.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "store": {
+      "include": [
+        "packages/counterfact/src/api-runner.ts",
+        "packages/counterfact/src/app.ts",
+        "packages/counterfact/test/api-runner.test.ts",
+        "packages/counterfact/test/app-types.test.ts",
+        "packages/counterfact/test/app.test.ts",
+        "packages/generator/src/code-generator.ts",
+        "packages/generator/src/scenario-file-generator.ts",
+        "packages/generator/test/code-generator.test.ts",
+        "packages/generator/test/generate.test.ts",
+        "packages/runtime/src/server/context-registry.ts",
+        "packages/runtime/src/server/store-loader.ts",
+        "packages/runtime/test/server/context-registry.test.ts",
+        "packages/runtime/test/server/store-loader.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "hot-reload": {
+      "include": [
+        "packages/counterfact/src/api-runner.ts",
+        "packages/counterfact/src/app.ts",
+        "packages/counterfact/test/api-runner.test.ts",
+        "packages/counterfact/test/app.test.ts",
+        "packages/generator/src/code-generator.ts",
+        "packages/generator/src/scenario-file-generator.ts",
+        "packages/generator/src/watch-options.ts",
+        "packages/generator/test/code-generator.test.ts",
+        "packages/generator/test/generate.test.ts",
+        "packages/runtime/src/server/context-registry.ts",
+        "packages/runtime/src/server/file-discovery.ts",
+        "packages/runtime/src/server/module-dependency-graph.ts",
+        "packages/runtime/src/server/module-loader.ts",
+        "packages/runtime/src/server/openapi-watcher.ts",
+        "packages/runtime/src/server/store-loader.ts",
+        "packages/runtime/src/server/transpiler.ts",
+        "packages/runtime/src/server/uncached-import.ts",
+        "packages/runtime/src/server/uncached-require.cjs",
+        "packages/runtime/test/server/context-registry.test.ts",
+        "packages/runtime/test/server/file-discovery.test.ts",
+        "packages/runtime/test/server/module-dependency-graph.test.ts",
+        "packages/runtime/test/server/module-loader.test.ts",
+        "packages/runtime/test/server/store-loader.test.ts",
+        "packages/runtime/test/server/transpiler.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "proxy": {
+      "include": [
+        "packages/runtime/src/runtime-config.ts",
+        "packages/runtime/src/server/dispatcher.ts",
+        "packages/runtime/src/server/is-proxy-enabled-for-path.ts",
+        "packages/runtime/src/server/web-server/routes-middleware.ts",
+        "packages/runtime/test/server/dispatcher.proxy.test.ts",
+        "packages/runtime/test/server/dispatcher.test.ts",
+        "packages/runtime/test/server/is-proxy-enabled-for-path.test.ts",
+        "packages/runtime/test/server/web-server/multi-routes-middleware.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "middleware": {
+      "include": [
+        "packages/generator/src/code-generator.ts",
+        "packages/generator/src/scenario-file-generator.ts",
+        "packages/generator/test/code-generator.test.ts",
+        "packages/generator/test/generate.test.ts",
+        "packages/runtime/src/server/dispatcher.ts",
+        "packages/runtime/src/server/middleware-detector.ts",
+        "packages/runtime/src/server/module-loader.ts",
+        "packages/runtime/src/server/web-server/create-koa-app.ts",
+        "packages/runtime/src/server/web-server/routes-middleware.ts",
+        "packages/runtime/test/server/create-koa-app.test.ts",
+        "packages/runtime/test/server/dispatcher.test.ts",
+        "packages/runtime/test/server/middleware-detector.test.ts",
+        "packages/runtime/test/server/module-loader.test.ts",
+        "packages/runtime/test/server/web-server/koa-middleware.test.ts",
+        "packages/types/src/middleware.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "web-server": {
+      "include": [
+        "packages/runtime/package.json",
+        "packages/runtime/src/koa.ts",
+        "packages/runtime/src/msw.ts",
+        "packages/runtime/src/server/web-server/create-koa-app.ts",
+        "packages/runtime/src/server/web-server/openapi-middleware.ts",
+        "packages/runtime/src/server/web-server/routes-middleware.ts",
+        "packages/runtime/test/msw.test.ts",
+        "packages/runtime/test/server/create-koa-app.test.ts",
+        "packages/runtime/test/server/web-server/koa-middleware.test.ts",
+        "packages/runtime/test/server/web-server/multi-routes-middleware.test.ts",
+        "packages/runtime/test/server/web-server/openapi-middleware.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "admin-api": {
+      "include": [
+        "packages/counterfact/src/cli/run.ts",
+        "packages/counterfact/src/config.ts",
+        "packages/counterfact/test/cli/run.test.ts",
+        "packages/runtime/src/runtime-config.ts",
+        "packages/runtime/src/server/context-registry.ts",
+        "packages/runtime/src/server/is-proxy-enabled-for-path.ts",
+        "packages/runtime/src/server/registry.ts",
+        "packages/runtime/src/server/web-server/admin-api-middleware.ts",
+        "packages/runtime/src/server/web-server/create-koa-app.ts",
+        "packages/runtime/test/server/context-registry.test.ts",
+        "packages/runtime/test/server/create-koa-app.test.ts",
+        "packages/runtime/test/server/is-proxy-enabled-for-path.test.ts",
+        "packages/runtime/test/server/registry.test.ts",
+        "packages/runtime/test/server/web-server/admin-api-middleware.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "request-builder": {
+      "include": [
+        "packages/client/package.json",
+        "packages/client/src/index.ts",
+        "packages/client/src/raw-http-client.ts",
+        "packages/client/src/route-builder.ts",
+        "packages/client/src/route-catalog.ts",
+        "packages/client/test/raw-http-client.test.ts",
+        "packages/client/test/route-builder.integration.test.ts",
+        "packages/client/test/route-builder.test.ts",
+        "packages/client/test/route-catalog.test.ts",
+        "packages/repl/src/repl.ts",
+        "packages/repl/test/repl.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "scenarios": {
+      "include": [
+        "packages/counterfact/src/api-runner.ts",
+        "packages/counterfact/src/app.ts",
+        "packages/counterfact/test/api-runner.test.ts",
+        "packages/counterfact/test/app.test.ts",
+        "packages/generator/src/code-generator.ts",
+        "packages/generator/src/scenario-file-generator.ts",
+        "packages/generator/test/code-generator.test.ts",
+        "packages/generator/test/generate.test.ts",
+        "packages/repl/src/repl.ts",
+        "packages/repl/test/repl.test.ts",
+        "packages/runtime/src/server/module-loader.ts",
+        "packages/runtime/src/server/scenario-registry.ts",
+        "packages/runtime/test/server/module-loader.test.ts",
+        "packages/runtime/test/server/scenario-registry.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "versions": {
+      "include": [
+        "packages/counterfact/src/api-runner.ts",
+        "packages/counterfact/src/app.ts",
+        "packages/counterfact/src/config.ts",
+        "packages/counterfact/src/util/load-config-file.ts",
+        "packages/counterfact/test/api-runner.test.ts",
+        "packages/counterfact/test/app.test.ts",
+        "packages/counterfact/test/util/load-config-file.test.ts",
+        "packages/generator/src/operation-coder.ts",
+        "packages/generator/src/operation-type-coder.ts",
+        "packages/generator/src/operation-type-name-mapping.ts",
+        "packages/generator/src/repository.ts",
+        "packages/generator/src/versions-ts-generator.ts",
+        "packages/generator/test/operation-coder.test.ts",
+        "packages/generator/test/operation-type-coder.test.ts",
+        "packages/generator/test/repository.test.ts",
+        "packages/generator/test/versions-ts-generator.test.ts",
+        "packages/repl/src/repl.ts",
+        "packages/repl/test/repl.test.ts",
+        "packages/runtime/src/server/dispatcher.ts",
+        "packages/runtime/src/server/web-server/routes-middleware.ts",
+        "packages/runtime/test/server/dispatcher.test.ts",
+        "packages/runtime/test/server/web-server/multi-routes-middleware.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "native-typescript": {
+      "include": [
+        "packages/counterfact/bin/counterfact.js",
+        "packages/counterfact/bin/register-ts-loader.mjs",
+        "packages/counterfact/bin/ts-loader.mjs",
+        "packages/counterfact/src/api-runner.ts",
+        "packages/counterfact/src/cli/run.ts",
+        "packages/counterfact/test/api-runner.test.ts",
+        "packages/counterfact/test/cli/run.test.ts",
+        "packages/runtime/src/runtime-can-execute-erasable-ts.ts",
+        "packages/runtime/src/server/module-loader.ts",
+        "packages/runtime/src/server/transpiler.ts",
+        "packages/runtime/src/server/uncached-import.ts",
+        "packages/runtime/src/server/uncached-require.cjs",
+        "packages/runtime/test/runtime-can-execute-erasable-ts.test.ts",
+        "packages/runtime/test/server/module-loader.test.ts",
+        "packages/runtime/test/server/transpiler.test.ts"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "package-contracts": {
+      "include": [
+        "packages/*/package.json",
+        "packages/*/src/index.ts",
+        "packages/counterfact/bin/**",
+        "packages/counterfact/src/api-runner.ts",
+        "packages/counterfact/src/app.ts",
+        "packages/counterfact/test/package/**",
+        "packages/generator/src/code-generator.ts",
+        "packages/generator/src/script.ts",
+        "packages/types/src/**",
+        "packages/{client,generator,repl}/test/package/**",
+        "scripts/check-package-boundaries*.mjs",
+        "scripts/check-publishable.mjs",
+        "scripts/test-package-closures.mjs"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "release": {
+      "include": [
+        ".changeset/config.json",
+        ".github/workflows/release.yaml",
+        "package.json",
+        "packages/*/package.json",
+        "scripts/check-package-boundaries*.mjs",
+        "scripts/check-publishable.mjs",
+        "scripts/release-preflight.mjs",
+        "scripts/test-package-closures.mjs"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "contributor-tooling": {
+      "include": [
+        ".devcontainer/**",
+        ".github/instructions/**",
+        ".github/pull_request_template.md",
+        ".github/workflows/**",
+        ".yarnrc.yml",
+        "catchmydrift.config.json",
+        "eslint.config.js",
+        "jest*.js",
+        "package.json",
+        "packages/*/package.json",
+        "renovate.json",
+        "scripts/**",
+        "stryker.config.mjs",
+        "test-black-box/**",
+        "tsconfig*.json"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "lint-policy": {
+      "include": [
+        "eslint.config.js",
+        "package.json",
+        "packages/*/src/**",
+        "packages/*/test/**",
+        "scripts/**"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "site-maintenance": {
+      "include": [
+        "site/astro.config.mjs",
+        "site/package.json",
+        "site/scripts/**",
+        "site/src/**"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml",
+        "site/study/**"
+      ]
+    },
+    "first-run-example": {
+      "include": [
+        ".github/workflows/first-10-minutes.yml",
+        "examples/first-10-minutes/api/**",
+        "examples/first-10-minutes/client/**",
+        "examples/first-10-minutes/openapi.yaml",
+        "examples/first-10-minutes/package.json",
+        "examples/first-10-minutes/test/**",
+        "examples/first-10-minutes/tsconfig.counterfact.json"
+      ],
+      "exclude": [
+        "**/*.md",
+        "**/fixtures/**",
+        "**/__snapshots__/**",
+        "**/*.snap",
+        "**/test/**/*.yaml"
+      ]
+    },
+    "guide-index": {
+      "include": [
+        "packages/counterfact/docs/*.md",
+        "packages/counterfact/docs/features/*.md",
+        "packages/counterfact/docs/patterns/*.md"
+      ]
+    },
+    "pattern-index": {
+      "include": ["packages/counterfact/docs/patterns/*.md"]
+    },
+    "agent-guidance": {
+      "include": [".agents/skills/**", ".github/instructions/**"]
+    },
+    "test-conventions": {
+      "include": [
+        "packages/*/test/**/*.ts",
+        "test-black-box/**",
+        "scripts/*.test.mjs"
+      ],
+      "exclude": ["**/fixtures/**", "**/__snapshots__/**", "**/*.snap"]
+    },
+    "pull-request-process": {
+      "include": [
+        ".github/workflows/manual-acceptance-tests.yaml",
+        ".github/pull_request_template.md",
+        ".agents/skills/**"
+      ]
+    },
+    "tutorials": {
+      "include": [
+        "packages/tutorials/package.json",
+        "packages/tutorials/src/**",
+        "packages/tutorials/test/**",
+        "packages/tutorials/examples/**",
+        "packages/tutorials/tsconfig.json"
+      ]
+    }
+  },
+  "watch": [
+    {
+      "include": [".agents/skills/counterfact-cli-runtime/SKILL.md"],
+      "groups": ["cli", "telemetry", "application", "tutorials"]
+    },
+    {
+      "include": [".agents/skills/counterfact-generator-internals/SKILL.md"],
+      "groups": ["generator", "openapi", "types"]
+    },
+    {
+      "include": [".agents/skills/counterfact-maintenance/SKILL.md"],
+      "groups": [
+        "counterfact",
+        "client",
+        "generator",
+        "openapi",
+        "repl",
+        "runtime",
+        "types",
+        "contributor-tooling",
+        "release",
+        "site-maintenance"
+      ]
+    },
+    {
+      "include": [".agents/skills/counterfact-pr-creation/SKILL.md"],
+      "groups": ["pull-request-process"]
+    },
+    {
+      "include": [".agents/skills/counterfact-repo-basics/SKILL.md"],
+      "groups": [
+        "counterfact",
+        "client",
+        "generator",
+        "openapi",
+        "repl",
+        "runtime",
+        "types",
+        "contributor-tooling"
+      ]
+    },
+    {
+      "include": [".agents/skills/counterfact-runtime-architecture/SKILL.md"],
+      "groups": ["application", "runtime", "repl"]
+    },
+    {
+      "include": ["AGENTS.md"],
+      "groups": ["agent-guidance", "test-conventions", "contributor-tooling"]
+    },
+    {
+      "include": ["CONTRIBUTING.md"],
+      "groups": ["contributor-tooling", "release", "generator"]
+    },
+    {
+      "include": ["README.md"],
+      "groups": [
+        "counterfact",
+        "client",
+        "generator",
+        "openapi",
+        "repl",
+        "runtime",
+        "types"
+      ]
+    },
+    {
+      "include": ["docs/development/ai-assisted-monorepo-migration.md"],
+      "groups": [
+        "counterfact",
+        "client",
+        "generator",
+        "openapi",
+        "repl",
+        "runtime",
+        "types",
+        "package-contracts",
+        "release",
+        "contributor-tooling"
+      ]
+    },
+    {
+      "include": ["docs/development/design-principles.md"],
+      "groups": [
+        "counterfact",
+        "client",
+        "generator",
+        "openapi",
+        "repl",
+        "runtime",
+        "types"
+      ]
+    },
+    {
+      "include": ["docs/development/lint-warning-recommendations.md"],
+      "groups": ["lint-policy"]
+    },
+    {
+      "include": ["docs/development/public-package-contract.md"],
+      "groups": ["package-contracts"]
+    },
+    {
+      "include": ["docs/development/release-bootstrap.md"],
+      "groups": ["release"]
+    },
+    {
+      "include": ["packages/client/README.md"],
+      "groups": ["client"]
+    },
+    {
+      "include": ["packages/counterfact/README.md"],
+      "groups": [
+        "counterfact",
+        "client",
+        "generator",
+        "openapi",
+        "repl",
+        "runtime",
+        "types"
+      ]
+    },
+    {
+      "include": ["packages/counterfact/bin/README.md"],
+      "groups": ["cli", "native-typescript", "telemetry"]
+    },
+    {
+      "include": ["packages/counterfact/docs/comparison.md"],
+      "groups": [
+        "counterfact",
+        "client",
+        "generator",
+        "openapi",
+        "repl",
+        "runtime",
+        "types"
+      ]
+    },
+    {
+      "include": ["packages/counterfact/docs/faq.md"],
+      "groups": [
+        "counterfact",
+        "client",
+        "generator",
+        "openapi",
+        "repl",
+        "runtime",
+        "types"
+      ]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/generated-code.md"],
+      "groups": ["generator", "types", "openapi", "hot-reload"]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/hot-reload.md"],
+      "groups": ["hot-reload"]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/middleware.md"],
+      "groups": ["middleware", "types"]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/multiple-versions.md"],
+      "groups": ["versions", "cli", "types", "contexts"]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/programmatic-api.md"],
+      "groups": ["application", "contexts", "store", "web-server"]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/proxy.md"],
+      "groups": ["proxy", "cli", "repl", "types"]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/repl.md"],
+      "groups": [
+        "repl",
+        "request-builder",
+        "contexts",
+        "scenarios",
+        "proxy",
+        "store",
+        "cli"
+      ]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/route-builder.md"],
+      "groups": ["request-builder"]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/routes.md"],
+      "groups": ["dispatch", "responses", "types", "generator"]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/state.md"],
+      "groups": ["contexts", "store", "repl"]
+    },
+    {
+      "include": [
+        "packages/counterfact/docs/features/typescript-native-mode.md"
+      ],
+      "groups": ["native-typescript"]
+    },
+    {
+      "include": ["packages/counterfact/docs/features/without-openapi.md"],
+      "groups": ["cli", "application", "dispatch", "responses", "types"]
+    },
+    {
+      "include": ["packages/counterfact/docs/first-10-minutes.md"],
+      "groups": [
+        "cli",
+        "application",
+        "generator",
+        "openapi",
+        "dispatch",
+        "responses",
+        "types",
+        "contexts",
+        "first-run-example"
+      ]
+    },
+    {
+      "include": ["packages/counterfact/docs/getting-started.md"],
+      "groups": [
+        "cli",
+        "application",
+        "generator",
+        "openapi",
+        "dispatch",
+        "responses",
+        "types",
+        "web-server",
+        "repl"
+      ]
+    },
+    {
+      "include": ["packages/counterfact/docs/patterns/agentic-sandbox.md"],
+      "groups": [
+        "cli",
+        "generator",
+        "dispatch",
+        "responses",
+        "contexts",
+        "repl",
+        "types"
+      ]
+    },
+    {
+      "include": [
+        "packages/counterfact/docs/patterns/ai-assisted-implementation.md"
+      ],
+      "groups": ["generator", "dispatch", "responses", "contexts", "types"]
+    },
+    {
+      "include": [
+        "packages/counterfact/docs/patterns/automated-integration-tests.md"
+      ],
+      "groups": [
+        "application",
+        "web-server",
+        "contexts",
+        "dispatch",
+        "responses"
+      ]
+    },
+    {
+      "include": ["packages/counterfact/docs/manual/nested-contexts.md"],
+      "groups": ["contexts", "dispatch", "types"]
+    },
+    {
+      "include": ["packages/counterfact/docs/patterns/hybrid-proxy.md"],
+      "groups": ["proxy", "cli", "repl"]
+    },
+    {
+      "include": ["packages/counterfact/docs/usage.md"],
+      "groups": ["pattern-index", "guide-index", "telemetry"]
+    },
+    {
+      "include": ["packages/counterfact/docs/manual/sample-responses.md"],
+      "groups": ["responses", "generator", "types"]
+    },
+    {
+      "include": ["packages/counterfact/docs/patterns/model-the-workflow.md"],
+      "groups": [
+        "contexts",
+        "store",
+        "scenarios",
+        "dispatch",
+        "responses",
+        "first-run-example",
+        "generator",
+        "types",
+        "middleware"
+      ]
+    },
+    {
+      "include": ["packages/counterfact/docs/patterns/scenario-scripts.md"],
+      "groups": ["scenarios", "request-builder", "contexts"]
+    },
+    {
+      "include": ["packages/counterfact/docs/patterns/shared-store.md"],
+      "groups": ["store", "contexts", "repl"]
+    },
+    {
+      "include": ["packages/counterfact/docs/manual/edge-cases.md"],
+      "groups": ["dispatch", "responses", "contexts", "repl"]
+    },
+    {
+      "include": [
+        "packages/counterfact/docs/patterns/test-context-not-handlers.md"
+      ],
+      "groups": ["contexts", "first-run-example"]
+    },
+    {
+      "include": ["packages/counterfact/docs/api/*.md"],
+      "groups": [
+        "counterfact",
+        "client",
+        "generator",
+        "openapi",
+        "repl",
+        "runtime",
+        "types"
+      ]
+    },
+    {
+      "include": ["packages/counterfact/src/README.md"],
+      "groups": [
+        "counterfact",
+        "client",
+        "generator",
+        "openapi",
+        "repl",
+        "runtime",
+        "types"
+      ]
+    },
+    {
+      "include": ["packages/counterfact/src/cli/README.md"],
+      "groups": ["cli", "telemetry", "migration", "application"]
+    },
+    {
+      "include": ["packages/counterfact/src/migrate/README.md"],
+      "groups": ["migration", "generator"]
+    },
+    {
+      "include": ["packages/counterfact/src/util/README.md"],
+      "groups": ["utilities"]
+    },
+    {
+      "include": ["packages/generator/README.md"],
+      "groups": ["generator"]
+    },
+    {
+      "include": ["packages/generator/src/README.md"],
+      "groups": ["generator"]
+    },
+    {
+      "include": ["packages/openapi/README.md"],
+      "groups": ["openapi"]
+    },
+    {
+      "include": ["packages/repl/README.md"],
+      "groups": ["repl"]
+    },
+    {
+      "include": ["packages/runtime/README.md"],
+      "groups": ["runtime"]
+    },
+    {
+      "include": ["packages/runtime/src/server/README.md"],
+      "groups": ["runtime"]
+    },
+    {
+      "include": ["packages/types/README.md"],
+      "groups": ["types"]
+    },
+    {
+      "include": [".agents/skills/build-simulation/SKILL.md"],
+      "groups": [
+        "cli",
+        "generator",
+        "contexts",
+        "scenarios",
+        "dispatch",
+        "responses",
+        "types",
+        "first-run-example"
+      ]
+    },
+    {
+      "include": [".agents/skills/context/SKILL.md"],
+      "groups": ["contexts", "scenarios", "first-run-example"]
+    },
+    {
+      "include": [".agents/skills/counterfact-repl/SKILL.md"],
+      "groups": ["admin-api", "dispatch", "responses"]
+    },
+    {
+      "include": [".agents/skills/counterfact-repl/examples.md"],
+      "groups": ["admin-api", "dispatch", "responses"]
+    },
+    {
+      "include": [".agents/skills/counterfact/SKILL.md"],
+      "groups": [
+        "generator",
+        "openapi",
+        "dispatch",
+        "contexts",
+        "hot-reload",
+        "scenarios",
+        "repl",
+        "types"
+      ]
+    },
+    {
+      "include": [".agents/skills/route/SKILL.md"],
+      "groups": [
+        "dispatch",
+        "responses",
+        "contexts",
+        "types",
+        "first-run-example"
+      ]
+    },
+    {
+      "include": [".agents/skills/scenario/SKILL.md"],
+      "groups": ["scenarios", "request-builder", "contexts"]
+    },
+    {
+      "include": ["packages/tutorials/README.md"],
+      "groups": ["tutorials"]
+    },
+    {
+      "include": ["packages/counterfact/docs/manual/guided-example.md"],
+      "groups": ["tutorials", "cli", "application"]
+    }
+  ]
+}

@@ -12,7 +12,7 @@ const ansi = {
 
 export type StartupOutput = {
   error: (message: string) => string;
-  progress: (message: string) => string;
+  progress: (message: string, frame?: string) => string;
   success: (label: string, value?: string) => string;
   title: (version: string) => string;
   warning: (message: string) => string;
@@ -75,8 +75,8 @@ export function createStartupOutput(useColor: boolean): StartupOutput {
     title(version) {
       return `${color(ansi.bold, "Counterfact")} ${color(ansi.dim, `v${version}`)}`;
     },
-    progress(message) {
-      return `${color(ansi.cyan, "→")} ${color(ansi.dim, message)}`;
+    progress(message, frame = "→") {
+      return `${color(ansi.cyan, frame)} ${color(ansi.dim, message)}`;
     },
     success(label, value) {
       const detail =
@@ -88,6 +88,90 @@ export function createStartupOutput(useColor: boolean): StartupOutput {
     },
     error(message) {
       return color(ansi.red, message);
+    },
+  };
+}
+
+type StartupStream = {
+  isTTY?: boolean;
+  columns?: number;
+  write: (text: string) => unknown;
+};
+
+/** Owns transient progress and defers other startup writes until it clears. */
+export function createStartupReporter(
+  output: StartupOutput,
+  stream: StartupStream,
+  diagnosticStream?: StartupStream,
+) {
+  const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+  return {
+    async step<T>(message: string, operation: () => Promise<T>): Promise<T> {
+      const write = stream.write.bind(stream);
+      let timer: ReturnType<typeof setInterval> | undefined;
+      let displayedLength = 0;
+      const deferredWrites: Array<() => unknown> = [];
+      const restoreWrites: Array<() => void> = [];
+      const clear = (nextLine = "") => {
+        // A resize can reflow the previously displayed line onto several rows.
+        const columns = Math.max(1, stream.columns || 80);
+        const rows = Math.max(1, Math.ceil(displayedLength / columns));
+        write(
+          `\r\u001B[2K${"\u001B[1A\r\u001B[2K".repeat(rows - 1)}${nextLine}`,
+        );
+        displayedLength = 0;
+      };
+
+      if (stream.isTTY === true) {
+        for (const target of new Set([stream, diagnosticStream])) {
+          if (target === undefined) continue;
+          const originalWrite = target.write;
+          target.write = (...args: Parameters<StartupStream["write"]>) => {
+            deferredWrites.push(() => originalWrite.apply(target, args));
+            return true;
+          };
+          restoreWrites.push(() => {
+            target.write = originalWrite;
+          });
+        }
+        let frame = 0;
+        const render = () => {
+          // Startup labels use single-cell characters. Leave the last column
+          // empty to avoid automatic wrapping at the terminal margin.
+          const available = Math.max(0, (stream.columns || 80) - 3);
+          const label =
+            message.length > available
+              ? `${message.slice(0, Math.max(0, available - 1))}…`.slice(
+                  0,
+                  available,
+                )
+              : message;
+          if (available > 0) {
+            clear(output.progress(label, frames.at(frame)));
+            displayedLength = label.length + 2;
+          } else {
+            clear();
+          }
+          frame = (frame + 1) % frames.length;
+        };
+        render();
+        timer = setInterval(render, 80);
+        timer.unref();
+      } else {
+        write(`${output.progress(message)}\n`);
+      }
+
+      try {
+        return await operation();
+      } finally {
+        if (timer !== undefined) {
+          clearInterval(timer);
+          clear();
+        }
+        for (const restore of restoreWrites) restore();
+        for (const flush of deferredWrites) flush();
+      }
     },
   };
 }

@@ -5,6 +5,40 @@ import { createResponseBuilder } from "../../src/server/response-builder.js";
 import retry from "jest-retries";
 
 describe("a response builder", () => {
+  it("selects a status with the same behavior as indexed access", () => {
+    const factory = createResponseBuilder({
+      responses: { 200: { content: {} } },
+    });
+    const indexed = factory[200]?.header("x-id", "123").json({ ok: true });
+    const selected = factory
+      .status(200)
+      .header("x-id", "123")
+      .json({ ok: true });
+    expect(selected.status).toBe(indexed?.status);
+    expect(selected.headers).toStrictEqual(indexed?.headers);
+    expect(selected.content).toStrictEqual(indexed?.content);
+    expect(factory.status("404 NOT FOUND").status).toBe(404);
+  });
+
+  it("preserves headers and cookies before status selection without sharing state", () => {
+    const factory = createResponseBuilder({ responses: {} });
+    const prepared = factory.header("x-id", "123").cookie("session", "abc");
+    const selected = prepared
+      .status(201)
+      .cookie("other", "def")
+      .text("created");
+    expect(selected.status).toBe(201);
+    expect(selected.headers).toStrictEqual({
+      "x-id": "123",
+      "set-cookie": ["session=abc", "other=def"],
+    });
+    expect(prepared[202]?.headers).toStrictEqual({
+      "x-id": "123",
+      "set-cookie": ["session=abc"],
+    });
+    expect(factory.status(200).headers).toStrictEqual({});
+  });
+
   it("starts building a response object when the status is selected", () => {
     const response = createResponseBuilder({
       responses: { 200: { content: {} } },

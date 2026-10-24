@@ -1,4 +1,7 @@
+import { once } from "node:events";
 import fs from "node:fs/promises";
+import type { Server } from "node:http";
+import type { AddressInfo } from "node:net";
 import nodePath from "node:path";
 
 import { createHttpTerminator, type HttpTerminator } from "http-terminator";
@@ -12,6 +15,7 @@ import {
   ContextRegistry,
   ScenarioRegistry,
   StoreLoader,
+  resolveScenario,
 } from "@counterfact/runtime";
 import { createKoaApp } from "@counterfact/runtime/koa";
 import { startRepl as startReplServer } from "@counterfact/repl";
@@ -77,6 +81,24 @@ export interface SpecConfig {
   overlays?: string[];
 }
 
+/** Options for embedding an existing API in a test or another Node.js process. */
+export type CounterfactOptions = Pick<Config, "basePath"> &
+  Partial<Omit<Config, "basePath">>;
+
+/** Overrides applied when starting a configured simulator. */
+export type CounterfactStartOptions = Partial<
+  Pick<Config, "port" | "startServer" | "buildCache">
+> & {
+  generate?: Partial<Config["generate"]>;
+  watch?: Partial<Config["watch"]>;
+};
+
+/** Snapshot of the simulator's API directory and current HTTP listener. */
+export interface CounterfactStatus extends Omit<Config, "adminApiToken"> {
+  listening: boolean;
+  address: AddressInfo | null;
+}
+
 type Scenario$ = {
   context: Record<string, unknown>;
   loadContext: (path: string) => Record<string, unknown>;
@@ -89,6 +111,7 @@ export async function runStartupScenario(
   contextRegistry: ContextRegistry,
   config: Pick<Config, "port">,
   openApiDocument?: OpenApiRouteDocument,
+  routes: Record<string, unknown> = {},
 ): Promise<void> {
   const indexModule = scenarioRegistry.getModule("index");
 
@@ -101,11 +124,11 @@ export async function runStartupScenario(
     loadContext: (path: string) =>
       contextRegistry.find(path) as Record<string, unknown>,
     route: createRouteFunction(
-      config.port,
+      () => config.port,
       "localhost",
       openApiDocument ? createOpenApiRouteCatalog(openApiDocument) : undefined,
     ),
-    routes: {},
+    routes,
   };
 
   await (indexModule["startup"] as (ctx: Scenario$) => Promise<void> | void)(
@@ -121,6 +144,7 @@ export async function runStartupScenario(
 async function runGroupStartupScenarios(
   runners: readonly ApiRunner[],
   config: Pick<Config, "port">,
+  routesByGroup?: Map<string, Record<string, unknown>>,
 ): Promise<void> {
   const startedGroups = new Set<string>();
 
@@ -136,6 +160,7 @@ async function runGroupStartupScenarios(
         runner.contextRegistry,
         config,
         runner.openApiDocument,
+        routesByGroup?.get(runner.group),
       );
     } catch (error) {
       const groupLabel = runner.group
@@ -233,20 +258,41 @@ function validateSpecGroups(
  * The returned object exposes handles for starting the server, stopping it,
  * and launching the interactive REPL.
  *
- * @param config - Runtime configuration (port, paths, feature flags, etc.).
+ * @param options - API directory and optional runtime overrides. Defaults to serving
+ *   routes on port 8100 with generation, watching, and cache building enabled;
+ *   spec loading and a REPL remain optional.
  * @param specs - Optional array of spec entries. Omit to use a single spec
  *   derived from `config.openApiPath` and `config.prefix`.
  * @returns An object containing the configured sub-systems and two entry-point
  *   functions:
- *   - `start(options)` — generates/watches code and optionally starts the HTTP
+ *   - `start(options?)` — reuses the initial configuration unless options are
+ *     supplied; generates/watches code and optionally starts the HTTP
  *     server; returns a `stop()` handle.
  *   - `startRepl()` — launches the interactive Node.js REPL connected to the
  *     live server state.
  */
 export async function counterfact<TStore = unknown>(
-  config: Config,
+  options: CounterfactOptions,
   specs?: SpecConfig[],
 ) {
+  const config: Config = {
+    alwaysFakeOptionals: false,
+    buildCache: true,
+    generate: { routes: true, types: true },
+    openApiPath: "_",
+    port: 8100,
+    prefix: "",
+    proxyPaths: new Map(),
+    proxyUrl: "",
+    startAdminApi: false,
+    startRepl: false,
+    startServer: true,
+    validateRequests: true,
+    validateResponses: true,
+    watch: { routes: true, types: true },
+    ...options,
+    basePath: nodePath.resolve(options.basePath),
+  };
   const normalizedSpecs = normalizeSpecs(
     { openApiPath: config.openApiPath, prefix: config.prefix },
     specs,
@@ -255,15 +301,12 @@ export async function counterfact<TStore = unknown>(
 
   let runners: ApiRunner[] = [];
   let hasStore = false;
-  const simulatorRef: { current?: { store?: TStore } } = {};
   const replServers = new Set<ReturnType<typeof startReplServer>>();
   const storeLoader = new StoreLoader(config.basePath, {
     async onStoreChange(store) {
       const isActivation = !hasStore;
       hasStore = true;
-      if (simulatorRef.current !== undefined) {
-        simulatorRef.current.store = store as TStore;
-      }
+      exposeStore();
       for (const replServer of replServers) {
         replServer.context.store = store;
       }
@@ -335,7 +378,31 @@ export async function counterfact<TStore = unknown>(
     ),
   );
 
+  let phase:
+    "idle" | "running" | "resetting" | "failed" | "stopping" | "stopped" =
+    "idle";
+  let listeningPort = config.port;
+  let stateUnavailable = false;
+  let activeRequests = 0;
+  let drained: (() => void) | undefined;
+  let resetPromise: Promise<void> | undefined;
+  let scenarioPromise: Promise<void> | undefined;
+  const routesByGroup = new Map<string, Record<string, unknown>>(
+    [...stateByGroup.keys()].map((group) => [group, {}]),
+  );
+
   const koaApp = createKoaApp({
+    lifecycle: {
+      enter() {
+        if (phase !== "running") return false;
+        activeRequests += 1;
+        return true;
+      },
+      leave() {
+        activeRequests -= 1;
+        if (activeRequests === 0) drained?.();
+      },
+    },
     runners,
     config,
     adminApi: {
@@ -369,9 +436,46 @@ export async function counterfact<TStore = unknown>(
   // The REPL is configured using the first runner.
   const primaryRunner = runners[0]!;
 
-  async function start(
-    options: Pick<Config, "generate" | "startServer" | "watch" | "buildCache">,
-  ) {
+  let httpServer: Server | undefined;
+  let startupOptions: Pick<
+    Config,
+    "port" | "generate" | "startServer" | "watch" | "buildCache"
+  > = config;
+
+  function status(): CounterfactStatus {
+    const address = httpServer?.address();
+    const snapshot = {
+      ...config,
+      port: startupOptions.port,
+      generate: startupOptions.generate,
+      startServer: startupOptions.startServer,
+      watch: startupOptions.watch,
+      buildCache: startupOptions.buildCache,
+    };
+    delete snapshot.adminApiToken;
+    return {
+      ...structuredClone(snapshot),
+      listening: httpServer?.listening ?? false,
+      address:
+        address !== undefined && address !== null && typeof address !== "string"
+          ? { ...address }
+          : null,
+    };
+  }
+
+  async function start(overrides: CounterfactStartOptions = {}) {
+    const options = {
+      ...config,
+      ...overrides,
+      generate: { ...config.generate, ...overrides.generate },
+      watch: { ...config.watch, ...overrides.watch },
+    };
+    startupOptions = options;
+    listeningPort = options.port;
+    for (const runner of runners) {
+      runner.configureStartup(options);
+    }
+
     async function completeStage(operations: Array<Promise<unknown>>) {
       const results = await Promise.allSettled(operations);
       const failure = results.find(
@@ -450,6 +554,9 @@ export async function counterfact<TStore = unknown>(
     let httpTerminator: HttpTerminator | undefined;
 
     async function stopResources(): Promise<void> {
+      phase = "stopping";
+      await Promise.allSettled([resetPromise, scenarioPromise]);
+      phase = "stopped";
       const results = await Promise.allSettled([
         ...runners.map((runner) => runner.stopWatching()),
         storeLoader.stopWatching(),
@@ -479,16 +586,31 @@ export async function counterfact<TStore = unknown>(
         return { stop: stopResources };
       }
 
-      await runGroupStartupScenarios(runners, { port: config.port });
+      await runGroupStartupScenarios(
+        runners,
+        {
+          get port() {
+            return listeningPort;
+          },
+        },
+        routesByGroup,
+      );
 
+      stateUnavailable = false;
+      phase = "running";
       const server = koaApp.listen({
-        port: config.port,
+        port: options.port,
       });
 
+      httpServer = server;
       httpTerminator = createHttpTerminator({
         server,
       });
+      if (!server.listening) await once(server, "listening");
+      const address = server.address();
+      if (address && typeof address !== "string") listeningPort = address.port;
     } catch (error) {
+      phase = "failed";
       await stopResources().catch(() => undefined);
       throw error;
     }
@@ -498,7 +620,152 @@ export async function counterfact<TStore = unknown>(
     };
   }
 
+  /** Rebuilds state without replacing the listener. Concurrent resets share one operation. */
+  function reset(): Promise<void> {
+    if (resetPromise) return resetPromise;
+    if (phase !== "running" && phase !== "failed") {
+      return Promise.reject(new Error("reset() requires a started simulator"));
+    }
+    if (scenarioPromise)
+      return Promise.reject(
+        new Error("Cannot reset while a scenario is running"),
+      );
+    phase = "resetting";
+    stateUnavailable = true;
+    const resumeUpdates: Array<() => void> = [];
+    resetPromise = Promise.resolve()
+      .then(async () => {
+        try {
+          resumeUpdates.push(await storeLoader.pauseUpdates());
+          for (const runner of runners)
+            resumeUpdates.push(await runner.moduleLoader.pauseUpdates());
+          if (activeRequests > 0)
+            await new Promise<void>((resolve) => {
+              drained = resolve;
+            });
+          drained = undefined;
+          storeLoader.reset();
+          const seen = new Set<string>();
+          for (const runner of runners) {
+            runner.moduleLoader.resetRoutes();
+            if (!seen.has(runner.group)) {
+              seen.add(runner.group);
+              runner.moduleLoader.resetContexts();
+            }
+          }
+          for (const group of routesByGroup.keys())
+            routesByGroup.set(group, {});
+          await runGroupStartupScenarios(
+            runners,
+            {
+              get port() {
+                return listeningPort;
+              },
+            },
+            routesByGroup,
+          );
+          refreshReplReferences();
+          stateUnavailable = false;
+          if (phase === "resetting") phase = "running";
+          return undefined;
+        } catch (error) {
+          if (phase === "resetting") phase = "failed";
+          throw new Error(
+            `Simulator reset failed: ${error instanceof Error ? error.message : String(error)}`,
+            { cause: error },
+          );
+        }
+      })
+      .finally(() => {
+        for (const resume of resumeUpdates) resume();
+        resetPromise = undefined;
+      });
+    return resetPromise;
+  }
+
+  /** Invokes a named export with the REPL scenario argument; select a group explicitly for multiple APIs. */
+  function scenario(path: string, group?: string): Promise<void> {
+    if (phase !== "running")
+      return Promise.reject(
+        new Error(
+          "scenario() requires a running simulator; await reset() first",
+        ),
+      );
+    if (scenarioPromise)
+      return Promise.reject(new Error("Another scenario is already running"));
+    const selectedGroup =
+      group ?? (stateByGroup.size === 1 ? primaryRunner.group : undefined);
+    const runner = runners.find(
+      (candidate) => candidate.group === selectedGroup,
+    );
+    if (!runner)
+      return Promise.reject(
+        new Error(
+          `Select an API group. Available groups: ${[...stateByGroup.keys()].join(", ")}`,
+        ),
+      );
+    scenarioPromise = Promise.resolve()
+      .then(async () => {
+        const fn = resolveScenario(runner.scenarioRegistry, path);
+        await fn({
+          context: runner.contextRegistry.find("/"),
+          loadContext: (contextPath) =>
+            runner.contextRegistry.find(contextPath),
+          route: createRouteFunction(
+            listeningPort,
+            "localhost",
+            runner.openApiDocument
+              ? createOpenApiRouteCatalog(runner.openApiDocument)
+              : undefined,
+          ),
+          routes: routesByGroup.get(runner.group)!,
+        });
+        return undefined;
+      })
+      .finally(() => {
+        scenarioPromise = undefined;
+      });
+    return scenarioPromise;
+  }
+
+  function refreshReplReferences(): void {
+    for (const replServer of replServers) {
+      replServer.context.store = storeLoader.store;
+      replServer.context.context =
+        runners.length > 1
+          ? Object.fromEntries(
+              runners.map((runner) => [
+                runner.group,
+                runner.contextRegistry.find("/"),
+              ]),
+            )
+          : primaryRunner.contextRegistry.find("/");
+      replServer.context.routes =
+        runners.length > 1
+          ? Object.fromEntries(routesByGroup)
+          : routesByGroup.get(primaryRunner.group);
+    }
+  }
+
   const baseSimulator = {
+    status,
+    reset,
+    scenario,
+    /** Reacquire live contexts after reset; group is required with multiple groups. */
+    loadContext(path = "/", group?: string) {
+      if (stateUnavailable)
+        throw new Error(
+          "Context unavailable; await a successful reset() first",
+        );
+      const selectedGroup =
+        group ?? (stateByGroup.size === 1 ? primaryRunner.group : undefined);
+      const state =
+        selectedGroup === undefined
+          ? undefined
+          : stateByGroup.get(selectedGroup);
+      if (!state) throw new Error("Select an API group when loading a context");
+      return state.contextRegistry.find(path);
+    },
     contextRegistry: primaryRunner.contextRegistry,
     koaApp,
     registry: primaryRunner.registry,
@@ -516,7 +783,7 @@ export async function counterfact<TStore = unknown>(
         primaryRunner.contextRegistry,
         primaryRunner.registry,
         {
-          port: config.port,
+          port: listeningPort,
           proxyPaths: config.proxyPaths,
           proxyUrl: config.proxyUrl,
         },
@@ -536,15 +803,31 @@ export async function counterfact<TStore = unknown>(
         },
       );
       replServers.add(replServer);
+      refreshReplReferences();
       return replServer;
     },
   };
-  const result: typeof baseSimulator & { store?: TStore } = baseSimulator;
-  simulatorRef.current = result;
-
-  if (initialStore !== undefined) {
-    result.store = initialStore as TStore;
+  const result: typeof baseSimulator & { readonly store?: TStore } =
+    baseSimulator;
+  function exposeStore(): void {
+    if (Object.hasOwn(result, "store")) return;
+    Object.defineProperty(result, "store", {
+      enumerable: true,
+      get(): TStore | undefined {
+        if (stateUnavailable)
+          throw new Error(
+            "Store unavailable; await a successful reset() first",
+          );
+        return storeLoader.store as TStore | undefined;
+      },
+    });
   }
-
+  if (initialStore !== undefined) exposeStore();
   return result;
 }
+
+/** Public simulator handle returned by counterfact(). */
+export type Simulator<TStore = unknown> = Awaited<
+  ReturnType<typeof counterfact<TStore>>
+>;
+export type { Config } from "./config.js";

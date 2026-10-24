@@ -4,9 +4,9 @@ This directory contains all the business logic for the `counterfact` command-lin
 
 ## Modules
 
-| File                   | Exported symbols                                         | Description                                         |
-| ---------------------- | -------------------------------------------------------- | --------------------------------------------------- |
-| `run.ts`               | `runCli(argv)`                                           | Commander program setup and main CLI action handler |
-| `banner.ts`            | `padTagLine`, `createWatchMessage`, `createIntroduction` | Startup banner utilities                            |
-| `check-for-updates.ts` | `isOutdated`, `checkForUpdates`                          | npm version check                                   |
-| `telemetry.ts`         | `isTelemetryEnabled`, `sendTelemetry`                    | PostHog telemetry (fire-and-forget)                 |
+| File                   | Exported symbols                                                                                                                                      | Description                                         |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `run.ts`               | `runCli(argv)`                                                                                                                                        | Commander program setup and main CLI action handler |
+| `startup-output.ts`    | `createStartupOutput`, `shouldUseColor`, `createRuntimeProgressMessage`, `createGeneratedArtifactsSummary`, `createWatchSummary`, `createSwaggerUrls` | Semantic startup output and lifecycle summaries     |
+| `check-for-updates.ts` | `isOutdated`, `checkForUpdates`                                                                                                                       | npm version check                                   |
+| `telemetry.ts`         | `isTelemetryEnabled`, `sendTelemetry`                                                                                                                 | PostHog telemetry (fire-and-forget)                 |

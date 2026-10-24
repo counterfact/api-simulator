@@ -334,14 +334,15 @@ def repl_and_swagger_are_ready(journey):
     assert b"\x1b[" in journey.terminal.output
     assert displayed_url in transcript, transcript
     assert transcript.index("Counterfact v") < transcript.index(
-        "→ Reading OpenAPI document…"
+        "⠋ Reading OpenAPI document…"
     ) < transcript.index("✓ OpenAPI document ready") < transcript.index(
-        "→ Generating routes and types…"
+        "⠋ Generating routes and types…"
     ) < transcript.index("✓ Generated routes and types") < transcript.index(
         f"✓ Mock server → {displayed_url}"
     ) < transcript.index("✓ Swagger UI →") < transcript.index(
         "✓ Watching routes and types"
     ) < transcript.index("⬣> ")
+    assert b"\r\x1b[2K" in journey.terminal.output
     journey.response = journey.wait_for_http(
         "/counterfact/swagger",
         lambda response: response.status_code == 200,

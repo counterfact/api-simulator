@@ -1,4 +1,4 @@
-# Hot Reload 🔥
+# Hot reload
 
 Save a file — any route or context file — and the running server picks it up immediately. No restart needed, and in-memory state is preserved across reloads.
 
@@ -24,4 +24,4 @@ for the supported store-authoring model.
 - [State](./state.md) — in-memory state that survives reloads
 - [Patterns: Share State Across API Groups](../patterns/shared-store.md) — store-specific reload behavior across API groups
 - [REPL](./repl.md) — make changes without touching files at all
-- [Usage](../usage.md)
+- [Find your workflow](../usage.md)

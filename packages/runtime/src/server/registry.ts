@@ -167,12 +167,21 @@ function castParameters(
  * middleware functions that wrap every route handler execution.
  */
 export class Registry {
-  private readonly moduleTree = new ModuleTree();
+  private moduleTree = new ModuleTree();
 
   private middlewares: Map<string, MiddlewareFunction> = new Map();
   private readonly methodNames: Set<string> = new Set(DEFAULT_HTTP_METHODS);
 
   public constructor() {
+    this.middlewares.set("", ($, respondTo) => respondTo($));
+  }
+
+  /** Discards runtime routes and middleware before restoring source definitions. */
+  public clear(): void {
+    this.moduleTree = new ModuleTree();
+    this.middlewares.clear();
+    this.methodNames.clear();
+    for (const method of DEFAULT_HTTP_METHODS) this.methodNames.add(method);
     this.middlewares.set("", ($, respondTo) => respondTo($));
   }
 

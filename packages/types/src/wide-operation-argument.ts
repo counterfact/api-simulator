@@ -1,3 +1,4 @@
+import type { CookieOptions } from "./cookie-options.js";
 import type { HttpStatusCode } from "./http-status-code.js";
 import type { WideResponseBuilder } from "./wide-response-builder.js";
 
@@ -14,7 +15,18 @@ export interface WideOperationArgument {
   path: { [key: string]: string };
   proxy: (url: string) => { proxyUrl: string };
   query: { [key: string]: string };
-  response: { [StatusCode in HttpStatusCode]: WideResponseBuilder } & {
+  response: {
+    /** @deprecated Use response.status(statusCode) instead. */
+    [StatusCode in HttpStatusCode]: WideResponseBuilder;
+  } & {
+    /** @deprecated Use response.status(statusCode) instead. */
     [key: number]: WideResponseBuilder;
+    status: (statusCode: number | `${number} ${string}`) => WideResponseBuilder;
+    header: (name: string, value: string) => WideOperationArgument["response"];
+    cookie: (
+      name: string,
+      value: string,
+      options?: CookieOptions,
+    ) => WideOperationArgument["response"];
   };
 }

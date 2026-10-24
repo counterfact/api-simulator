@@ -42,3 +42,21 @@ Unknown release states, unresolved candidates, incomplete public-record backlog 
 ## Hypothesis and reader-facing assessment
 
 The article now states a retrospective working hypothesis with explicit delivery, traceable-public-correction, and fixed-case behavioral-check criteria. The historical ninety-day window is documented as a follow-up and censoring rule, not a repair criterion or MTTR. See `hypothesis.md` and `editorial-hypothesis-review.md`. Observations and classifications are unchanged. The article presents the five-year delivery comparison; the complete monthly series is at `/quality/2026/timeline`. Draft-history discussion is absent from the current reader path. Audit tests (39), offline verification, build (99 pages), and whitespace checks pass after this editorial work.
+
+
+## October 22, 2026 archive extraction
+
+The historical verification report above describes its original local layout.
+Experiment environments, reproducers, assertion script, and logs now live in
+`counterfact/historical-experiments` at the commit in `experiments/archive.json`.
+The local result snapshot and extraction manifest support offline site builds.
+`npm run verify:audit` validates local sources, results, and pin consistency;
+`npm run verify:experiment-archive -- /path/to/archive` validates all archived
+bytes against the pin without installing or executing historical code.
+
+All 37 original files were copied byte for byte from main commit
+`34e790156210474adc741a3eb97652aedc07099e`. Four environment files already differed
+from the original manifest; that manifest is preserved unchanged in the archive,
+with discrepancies recorded in `MIGRATION.md`. This extraction does not claim
+that the historical experiments were rerun. Study outcomes and derived totals
+are unchanged.

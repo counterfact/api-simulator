@@ -1,5 +1,7 @@
+import { valueExpression, printNode } from "../src/ast.js";
 import { describe, expect, it } from "@jest/globals";
 import { format as formatCode } from "prettier";
+import { runInNewContext } from "node:vm";
 
 import { Requirement } from "../src/requirement.js";
 import { SchemaCoder } from "../src/schema-coder.js";
@@ -9,6 +11,31 @@ function format(code) {
 }
 
 describe("a SchemaCoder", () => {
+  it("preserves escaped schema keys and own __proto__ properties", () => {
+    const properties = JSON.parse(
+      '{"slash/name":{"type":"string"},"__proto__":{"type":"number"}}',
+    );
+    const node = new SchemaCoder(
+      new Requirement({ type: "object", properties }),
+    ).writeCode(undefined);
+    const result = runInNewContext("(" + printNode(node) + ")");
+    expect(Object.hasOwn(result.properties, "__proto__")).toBe(true);
+    expect(JSON.stringify(result)).toBe(
+      JSON.stringify({ type: "object", required: [], properties }),
+    );
+  });
+
+  it("retains JSON serialization of dates and undefined values", () => {
+    const data = {
+      type: "string",
+      default: new Date("2026-10-14T00:00:00.000Z"),
+      omitted: undefined,
+    };
+    const node = new SchemaCoder(new Requirement(data)).writeCode(undefined);
+    expect(JSON.stringify(runInNewContext("(" + printNode(node) + ")"))).toBe(
+      JSON.stringify(data),
+    );
+  });
   it("generates a list of potential names", () => {
     const coder = new SchemaCoder(
       new Requirement({ $ref: "/components/schemas/Example" }),
@@ -36,7 +63,7 @@ describe("a SchemaCoder", () => {
       },
     };
 
-    const result = coder.write(script);
+    const result = printNode(coder.write(script));
 
     expect(script.importedCoder).toBe(coder);
     expect(result).toBe("aVariable");
@@ -51,9 +78,9 @@ describe("a SchemaCoder", () => {
     const coder = new SchemaCoder(
       new Requirement({ type, xml: "should be ignored" }),
     );
-    const result = coder.write({});
+    const result = printNode(coder.write({}));
 
-    expect(result).toBe(output);
+    expect(result).toBe(printNode(valueExpression(JSON.parse(output))));
   });
 
   it("generates a type declaration for an object", async () => {
@@ -77,9 +104,9 @@ describe("a SchemaCoder", () => {
       properties: { "@needsQuotes": { type: "string"}, "age": {"type":"integer"}, "name": {"type":"string"}  }
     }`);
 
-    await expect(format(`const x = ${coder.write()}`)).resolves.toStrictEqual(
-      expected,
-    );
+    await expect(
+      format(`const x = ${printNode(coder.write())}`),
+    ).resolves.toStrictEqual(expected);
   });
 
   it("generates a type declaration for an array", async () => {
@@ -98,9 +125,9 @@ describe("a SchemaCoder", () => {
       };`,
     );
 
-    await expect(format(`const x = ${coder.write()}`)).resolves.toStrictEqual(
-      expected,
-    );
+    await expect(
+      format(`const x = ${printNode(coder.write())}`),
+    ).resolves.toStrictEqual(expected);
   });
 
   it("has type JSONSchema6", () => {
@@ -120,7 +147,9 @@ describe("a SchemaCoder", () => {
       },
     };
 
-    expect(coder.typeDeclaration(undefined, script)).toBe("JSONSchema6");
+    expect(printNode(coder.typeDeclaration(undefined, script))).toBe(
+      "JSONSchema6",
+    );
 
     expect(script.imported).toStrictEqual({
       name: "JSONSchema6",

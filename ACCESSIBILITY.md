@@ -9,7 +9,7 @@ It does not assess applications built against a simulated API, user-supplied Ope
 
 - The [getting-started guide](packages/counterfact/docs/getting-started.md) provides written commands and request examples.
   The local API can be called by an HTTP client without operating Swagger UI.
-- The [command-line reference](packages/counterfact/docs/reference.md#cli-reference) documents command-line options and the optional REPL.
+- The [command-line reference](packages/counterfact/docs/api.md) documents command-line options and the optional REPL.
   The REPL accepts typed commands for inspecting and changing simulator state.
 - The documentation site's source uses headings, a main content landmark, named navigation, and visible focus styles for links and buttons.
   The quality-study pages also include a skip link and labeled, keyboard-focusable regions around wide tables.

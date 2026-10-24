@@ -47581,10 +47581,21 @@
     ],
     "experiments": {
       "fixed7": {
+        "archive": {
+          "repository": "https://github.com/counterfact/historical-experiments",
+          "commit": "0d54a52543098ae6570eed78929f2108419d6d69",
+          "sourceCommit": "34e790156210474adc741a3eb97652aedc07099e",
+          "manifestSha256": "08b148da4b46f9ac44f30ce058f9f0c96bb31633dfd49743254f75035d15f81c",
+          "manifestPath": "evidence-manifest.json"
+        },
         "artifacts": [
           {
             "path": "site/study/2026/experiments/README.md",
             "sha256": "c3df5070d4606fdafe71928344befd5b82c59b2d43c970eb2887be18ff287166"
+          },
+          {
+            "path": "site/study/2026/experiments/artifact-manifest.json",
+            "sha256": "f7f79b895acf685892692557779640518fbf9d88774eb0b7843195d2f038a8f2"
           },
           {
             "path": "site/study/2026/experiments/assert-packaging-lifecycle.mjs",
@@ -47596,11 +47607,11 @@
           },
           {
             "path": "site/study/2026/experiments/environments/1617/package.json",
-            "sha256": "fbf0baee39699830ecc10d4846d52c7b5e479a5b393f66a349a244fdb7f94f45"
+            "sha256": "7990fb5ebb8682d70421a2f76192393f44c0c134ceee6013d4b39e0335a9c67e"
           },
           {
             "path": "site/study/2026/experiments/environments/1617/yarn.lock",
-            "sha256": "f0eda2dc793bd981633d1b135d2f1d25155a29ab727d1775ce65077384ea04ca"
+            "sha256": "f346fd077f07ac252cc2b0d7dc3d9fa06b3571ca8c018def8eb03591aed03a4c"
           },
           {
             "path": "site/study/2026/experiments/environments/1618/.yarnrc.yml",
@@ -47608,11 +47619,11 @@
           },
           {
             "path": "site/study/2026/experiments/environments/1618/package.json",
-            "sha256": "7604c8eb15d195bbc4e03b74010c8407a07a97f772be0033921c97cce8ff034c"
+            "sha256": "8a5521f0660b641f2ad9359306ded6a3a4c31fb1bda3761f49b8dace7c5ce97a"
           },
           {
             "path": "site/study/2026/experiments/environments/1618/yarn.lock",
-            "sha256": "328f121450c3b47817c577eac3cad5fdc46ca64a510d39b77fc6e73507135d94"
+            "sha256": "61d4904801bee1fe58a2b7e8cf6a1348149081b879af26f33d8021d05fd82c94"
           },
           {
             "path": "site/study/2026/experiments/environments/2075-2.11.0/package-lock.json",

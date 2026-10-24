@@ -1,5 +1,7 @@
 import repl from "node:repl";
 
+import { resolveScenario } from "@counterfact/runtime";
+
 import {
   RawHttpClient,
   createRouteFunction,
@@ -568,40 +570,14 @@ export function startRepl(
         return;
       }
 
-      const parts = scenarioPath.split("/").filter(Boolean);
-
-      if (parts.length === 0) {
-        print(usage);
-        this.clearBufferedCommand();
-        this.displayPrompt();
-        return;
-      }
-
-      if (parts.some((part) => part === ".." || part === ".")) {
-        print("Error: Path must not contain '.' or '..' segments");
-        this.clearBufferedCommand();
-        this.displayPrompt();
-        return;
-      }
-
-      const functionName = parts[parts.length - 1] ?? "";
-      const fileKey =
-        parts.length === 1 ? "index" : parts.slice(0, -1).join("/");
-
-      const module = selectedBinding.scenarioRegistry?.getModule(fileKey);
-
-      if (module === undefined) {
-        print(`Error: Could not find scenario file "${fileKey}"`);
-        this.clearBufferedCommand();
-        this.displayPrompt();
-        return;
-      }
-
-      const fn = module[functionName];
-
-      if (typeof fn !== "function") {
+      let fn: ReturnType<typeof resolveScenario>;
+      try {
+        fn = resolveScenario(selectedBinding.scenarioRegistry, scenarioPath);
+      } catch (error) {
         print(
-          `Error: "${functionName}" is not a function exported from "${fileKey}"`,
+          scenarioPath.split("/").filter(Boolean).length === 0
+            ? usage
+            : `Error: ${error instanceof Error ? error.message : String(error)}`,
         );
         this.clearBufferedCommand();
         this.displayPrompt();

@@ -1,5 +1,51 @@
 # @counterfact/runtime
 
+## 0.2.0
+
+### Minor Changes
+
+- 96b565d: Add simulator.reset() to reconstruct stores, dependent contexts, source routes and startup state without restarting HTTP, and simulator.scenario(path, group?) to await named scenarios with the REPL arguments. Document request gating, reset failure recovery, reference lifetimes, and worker-scoped Playwright integration.
+
+### Patch Changes
+
+- 376ec98: Updated dependency `js-yaml` in `counterfact` to `5.5.0`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.5.0`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.5.0`.
+- Updated dependencies [865750a]
+- Updated dependencies [376ec98]
+- Updated dependencies [91428ea]
+  - @counterfact/openapi@0.1.6
+
+## 0.1.5
+
+### Patch Changes
+
+- 1714e9a: Classify OpenAPI sources consistently and hot-reload local base documents and overlays without mistaking local `http`-prefixed paths for remote URLs.
+- 02d013a: Validate responses that omit an explicit status against the OpenAPI `200` response definition.
+- 25215f4: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.1`.
+- befb686: Updated dependency `js-yaml` in `counterfact` to `5.4.3`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.3`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.3`.
+- 15b30fb: Updated dependency `js-yaml` in `counterfact` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.2`.
+- ba93689: Updated dependency `koa-proxies` in `@counterfact/runtime` to `0.12.6`.
+- Updated dependencies [1714e9a]
+- Updated dependencies [a2ee147]
+- Updated dependencies [dfe2472]
+- Updated dependencies [25215f4]
+- Updated dependencies [befb686]
+- Updated dependencies [2e0cadd]
+- Updated dependencies [15b30fb]
+- Updated dependencies [cfcedc9]
+- Updated dependencies [e5105a0]
+- Updated dependencies [2707325]
+- Updated dependencies [66ab7eb]
+- Updated dependencies [d175f35]
+  - @counterfact/openapi@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes

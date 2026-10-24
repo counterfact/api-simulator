@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { describe, it, expect } from "@jest/globals";
+import { relative } from "node:path";
+
 import { jest } from "@jest/globals";
 import request from "supertest";
 import { usingTemporaryFiles } from "using-temporary-files";
@@ -38,6 +40,346 @@ async function waitUntil(predicate: () => boolean): Promise<void> {
 }
 
 describe("counterfact", () => {
+  it("merges a startup port override with configured defaults and reports the listening port", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const first = await app.counterfact({
+        basePath: $.path("first"),
+        port: 0,
+      });
+      const firstHandle = await first.start();
+      try {
+        const occupiedPort = first.status().address!.port;
+        await $.add(
+          "second/routes/ping.ts",
+          'export function GET() { return { body: "pong" }; }',
+        );
+        const second = await app.counterfact({
+          basePath: $.path("second"),
+          port: occupiedPort,
+        });
+        const { stop } = await second.start({ port: 0 });
+        try {
+          const status = second.status();
+          expect(status).toMatchObject({
+            port: 0,
+            startServer: true,
+            listening: true,
+          });
+          expect(status.address!.port).not.toBe(occupiedPort);
+          const response = await fetch(
+            `http://localhost:${status.address!.port}/ping`,
+          );
+          expect(await response.text()).toBe("pong");
+        } finally {
+          await stop();
+        }
+        expect(second.status()).toMatchObject({
+          port: 0,
+          listening: false,
+          address: null,
+        });
+      } finally {
+        await firstHandle.stop();
+      }
+    });
+  });
+
+  it("generates and watches a supplied spec with default options", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const operation = {
+        get: {
+          responses: {
+            "200": {
+              description: "OK",
+              content: {
+                "application/json": {
+                  schema: { type: "string", enum: ["hello"] },
+                },
+              },
+            },
+          },
+        },
+      };
+      const spec = {
+        openapi: "3.0.3",
+        info: { title: "Programmatic defaults", version: "1.0.0" },
+        paths: { "/hello": operation },
+      };
+      await $.add("openapi.json", JSON.stringify(spec));
+      const simulator = await app.counterfact({
+        basePath: $.path("api"),
+        openApiPath: $.path("openapi.json"),
+        port: 0,
+      });
+      const { stop } = await simulator.start();
+      try {
+        expect(simulator.status()).toMatchObject({
+          generate: { routes: true, types: true },
+          watch: { routes: true, types: true },
+          buildCache: true,
+        });
+        await expect($.read("api/routes/hello.ts")).resolves.toContain(
+          "export const GET",
+        );
+        await expect(
+          $.read("api/types/paths/hello.types.ts"),
+        ).resolves.toContain("GET");
+        const url = `http://localhost:${simulator.status().address!.port}`;
+        expect((await fetch(`${url}/hello`)).status).toBe(200);
+        await $.add(
+          "openapi.json",
+          JSON.stringify({
+            ...spec,
+            paths: { ...spec.paths, "/added": operation },
+          }),
+        );
+        await waitUntil(() => simulator.registry.exists("GET", "/added"));
+        expect((await fetch(`${url}/added`)).status).toBe(200);
+      } finally {
+        await stop();
+      }
+    });
+  });
+
+  it.each(["configuration", "startup"])(
+    "honors generation, watching, and cache opt-outs at %s",
+    async (overrideAt) => {
+      await usingTemporaryFiles(async ($) => {
+        await $.add(
+          "openapi.json",
+          JSON.stringify({
+            openapi: "3.0.3",
+            info: { title: "Explicit options", version: "1.0.0" },
+            paths: {
+              "/hello": {
+                get: { responses: { "200": { description: "OK" } } },
+              },
+            },
+          }),
+        );
+        const disabled = {
+          generate: { routes: false, types: false },
+          watch: { routes: false, types: false },
+          buildCache: false,
+        };
+        const simulator = await app.counterfact({
+          basePath: $.path("api"),
+          openApiPath: $.path("openapi.json"),
+          ...(overrideAt === "configuration" ? disabled : {}),
+          startServer: false,
+        });
+        const { stop } = await simulator.start(
+          overrideAt === "startup" ? disabled : {},
+        );
+        try {
+          expect(simulator.status()).toMatchObject({
+            generate: { routes: false, types: false },
+            watch: { routes: false, types: false },
+            buildCache: false,
+          });
+          await expect($.read("api/routes/hello.ts")).rejects.toThrow();
+        } finally {
+          await stop();
+        }
+      });
+    },
+  );
+
+  it("reports resolved options without exposing credentials or mutable configuration", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const simulator = await app.counterfact({
+        basePath: $.path("api"),
+        port: 0,
+        prefix: "/v1",
+        adminApiToken: "private-token",
+        proxyPaths: new Map([["/pets", true]]),
+        overlays: ["overlay.yaml"],
+      });
+      const status = simulator.status();
+      expect(status).toMatchObject({
+        basePath: $.path("api"),
+        port: 0,
+        prefix: "/v1",
+        openApiPath: "_",
+        startServer: true,
+        startAdminApi: false,
+        startRepl: false,
+        validateRequests: true,
+        validateResponses: true,
+        generate: { routes: true, types: true },
+        watch: { routes: true, types: true },
+        buildCache: true,
+      });
+      expect(status).not.toHaveProperty("adminApiToken");
+      status.generate.routes = false;
+      status.watch.types = false;
+      status.proxyPaths.clear();
+      (status.overlays as string[]).push("other.yaml");
+      expect(simulator.status()).toMatchObject({
+        generate: { routes: true, types: true },
+        watch: { routes: true, types: true },
+        proxyPaths: new Map([["/pets", true]]),
+        overlays: ["overlay.yaml"],
+      });
+      const { stop } = await simulator.start({
+        startServer: false,
+        generate: { routes: false, types: false },
+        watch: { routes: false, types: false },
+        buildCache: false,
+      });
+      try {
+        expect(simulator.status()).toMatchObject({
+          startServer: false,
+          listening: false,
+        });
+      } finally {
+        await stop();
+      }
+    });
+  });
+
+  it("reports the absolute API directory and live listener throughout its lifecycle", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const simulator = await app.counterfact({
+        basePath: relative(process.cwd(), $.path("api")),
+        port: 0,
+      });
+      expect(simulator.status()).toMatchObject({
+        basePath: $.path("api"),
+        listening: false,
+        address: null,
+      });
+      const { stop } = await simulator.start();
+      try {
+        const status = simulator.status();
+        expect(status.basePath).toBe($.path("api"));
+        expect(status.listening).toBe(true);
+        expect(status.address?.port).toBeGreaterThan(0);
+        const response = await fetch(
+          `http://localhost:${status.address!.port}/missing`,
+        );
+        expect(response.status).toBe(404);
+      } finally {
+        await stop();
+      }
+      expect(simulator.status()).toMatchObject({
+        basePath: $.path("api"),
+        listening: false,
+        address: null,
+      });
+    });
+  });
+
+  it("rejects startup when the requested port is already occupied", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const first = await app.counterfact({
+        basePath: $.path("first"),
+        port: 0,
+      });
+      const { stop } = await first.start();
+      try {
+        const second = await app.counterfact({
+          basePath: $.path("second"),
+          port: first.status().address!.port,
+        });
+        await expect(second.start()).rejects.toMatchObject({
+          code: "EADDRINUSE",
+        });
+        expect(second.status()).toMatchObject({
+          basePath: $.path("second"),
+          listening: false,
+          address: null,
+        });
+      } finally {
+        await stop();
+      }
+    });
+  });
+
+  it.each(["missing", "empty"])(
+    "starts and stops with a %s API directory",
+    async (directoryState) => {
+      await usingTemporaryFiles(async ($) => {
+        if (directoryState === "empty") {
+          await $.addDirectory("api");
+        }
+        const simulator = await app.counterfact({
+          basePath: $.path("api"),
+          port: 0,
+        });
+        const listen = jest.spyOn(simulator.koaApp, "listen");
+        try {
+          const { stop } = await simulator.start();
+          const server = listen.mock.results[0]!.value;
+          try {
+            expect((await request(server).get("/missing")).status).toBe(404);
+          } finally {
+            await stop();
+          }
+          expect(server.listening).toBe(false);
+        } finally {
+          listen.mockRestore();
+        }
+      });
+    },
+  );
+
+  it("serves existing routes with minimal options and exposes their live context", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const handler =
+        "export function GET($) { return { body: { message: $.context.message } }; }";
+      await $.add("routes/hello.js", handler);
+      await $.add(
+        "routes/_.context.js",
+        'export class Context { message = "hello"; }',
+      );
+      const simulator = await app.counterfact({
+        basePath: relative(process.cwd(), $.path(".")),
+        port: 0,
+      });
+      const listen = jest.spyOn(simulator.koaApp, "listen");
+      const { stop } = await simulator.start();
+      const server = listen.mock.results[0]!.value;
+
+      try {
+        expect((await request(server).get("/hello")).body).toEqual({
+          message: "hello",
+        });
+        simulator.contextRegistry.find("/").message = "changed by the test";
+        expect((await request(server).get("/hello")).body).toEqual({
+          message: "changed by the test",
+        });
+        expect(await $.read("routes/hello.js")).toBe(handler);
+      } finally {
+        await stop();
+        listen.mockRestore();
+      }
+      expect(server.listening).toBe(false);
+    });
+  });
+
+  it("reuses an explicit startServer override when start has no arguments", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const simulator = await app.counterfact({
+        basePath: $.path("."),
+        startServer: false,
+      });
+      const listen = jest.spyOn(simulator.koaApp, "listen");
+      try {
+        const { stop } = await simulator.start();
+        await stop();
+        expect(listen).not.toHaveBeenCalled();
+        expect(simulator.status()).toMatchObject({
+          basePath: $.path("."),
+          listening: false,
+          address: null,
+        });
+      } finally {
+        listen.mockRestore();
+      }
+    });
+  });
+
   it("shares store mutations across API groups through real HTTP requests", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(

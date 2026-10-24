@@ -8,6 +8,23 @@ import { usingTemporaryFiles } from "using-temporary-files";
 
 const siteRoot = new URL("../", import.meta.url);
 
+async function usingSiteTemporaryFiles(callback) {
+  // Astro stages static assets under cwd when outDir is outside it, then
+  // renames them into outDir. Keep both paths on the checkout's filesystem.
+  const variable = process.platform === "win32" ? "TEMP" : "TMPDIR";
+  const previous = process.env[variable];
+  process.env[variable] = fileURLToPath(siteRoot);
+  try {
+    await usingTemporaryFiles(callback);
+  } finally {
+    if (previous === undefined) {
+      delete process.env[variable];
+    } else {
+      process.env[variable] = previous;
+    }
+  }
+}
+
 function elements(node, predicate) {
   return [
     ...(predicate(node) ? [node] : []),
@@ -32,7 +49,7 @@ function paragraphs(html) {
 }
 
 test("the site build preserves authored inline whitespace", async (t) => {
-  await usingTemporaryFiles(async ($) => {
+  await usingSiteTemporaryFiles(async ($) => {
     // Build fixtures with the site's actual config and compiler, without
     // publishing test routes or overriding the whitespace setting under test.
     await build({
@@ -246,17 +263,17 @@ test("the site build preserves authored inline whitespace", async (t) => {
     );
 
     await t.test(
-      "the homepage preserves inline links in the quick start",
+      "the homepage preserves inline code and installation links",
       async () => {
         const text = paragraphs(await $.read("site/index.html"));
         assert.ok(
           text.includes(
-            "Try http://localhost:3100/pet/1 or open Swagger UI. Generated sample responses are a starting point; customize the behavior your frontend needs.",
+            "Counterfact creates editable routes and generated types, then starts an HTTP server. Connect your client to localhost:3100.",
           ),
         );
         assert.ok(
           text.includes(
-            "Use your own OpenAPI document in place of the example URL. For a repeatable project or CI workflow, install a pinned version and commit the lockfile.",
+            "Node.js 22+. Swagger 2.0 and OpenAPI 3.0–3.2. Install a pinned version for a repeatable project, and commit the lockfile.",
           ),
         );
       },
@@ -277,6 +294,37 @@ test("the site build preserves authored inline whitespace", async (t) => {
         );
       }
     });
+    await t.test(
+      "retired documentation URLs lead to canonical chapters",
+      async () => {
+        for (const [slug, destination] of [
+          ["reference", "/docs/api"],
+          ["reference.md", "/docs/api"],
+          ["patterns/simulate-failures", "/docs/manual/edge-cases"],
+          ["patterns", "/docs/usage"],
+        ]) {
+          const document = parse(await $.read(`site/docs/${slug}/index.html`));
+          const redirect = elements(
+            document,
+            (node) =>
+              node.tagName === "meta" &&
+              node.attrs?.some(
+                (attr) =>
+                  attr.name === "http-equiv" &&
+                  attr.value.toLowerCase() === "refresh",
+              ),
+          );
+          assert.equal(redirect.length, 1);
+          const content = redirect[0].attrs.find(
+            (attr) => attr.name === "content",
+          ).value;
+          assert.ok(
+            content.endsWith(`url=${destination}`),
+            `${slug}: ${content}`,
+          );
+        }
+      },
+    );
     await t.test(
       "canonical Markdown docs keep inline code separated",
       async () => {

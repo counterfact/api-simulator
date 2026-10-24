@@ -102,10 +102,10 @@ route is just a function, so it can return a deterministic response or use a
 small shared context:
 
 ```ts
-export const POST: HTTP_POST = ($) => {
-  if (!$.body.name) return $.response[400].text("name is required");
+export const POST: HTTP_POST = function ($) {
+  if (!$.body.name) return $.response.status(400).text("name is required");
   const pet = $.context.add($.body);
-  return $.response[200].json(pet);
+  return $.response.status(200).json(pet);
 };
 ```
 
@@ -182,14 +182,16 @@ You can toggle individual paths from the REPL at runtime:
 ```
 ⬣> .proxy on /payments      # forward /payments/* to the real API
 ⬣> .proxy off /payments     # mock /payments/* again
-⬣> .proxy off               # mock everything
+⬣> .proxy off               # disable the root proxy default
 ```
+
+The root `.proxy off` command leaves explicit path overrides in place. Disable any remaining path-specific `on` settings separately. For a setup that survives restarts, use the [checked-in hybrid recipe](./patterns/hybrid-proxy.md#check-in-a-hybrid-setup).
 
 ---
 
 ## How does type safety work?
 
-Every route handler type is generated from the spec. When you call `.json(...)` on a response builder, TypeScript checks that the object you pass matches the schema defined in the spec. When the spec changes and you regenerate, TypeScript surfaces every handler that no longer matches — before any request fails.
+Every route handler type is generated from the spec. When you call `.json(...)` on a response builder, TypeScript checks that the object you pass matches the schema defined in the spec. When the spec changes and you regenerate, an editor or explicit TypeScript check can report mismatches in checked, typed handlers. Serving and hot-reloading TypeScript does not itself run a full project typecheck; untyped code and `$.x` can bypass these authoring checks. See the [contract-change check](./patterns/contract-change.md).
 
 OpenAPI descriptions are preserved as JSDoc comments on the generated types, so they appear inline in your editor as you type.
 
@@ -203,7 +205,7 @@ Yes, for required query, header, and cookie parameters and supported JSON/form r
 
 ## Does it validate outgoing responses?
 
-Yes, by default. Response headers are validated against the schema defined in the spec. Any validation errors (missing required headers or type mismatches) are reported as `response-type-error` HTTP response headers — one header per error; multiple headers with the same name are allowed. The response body is still returned normally — the errors are advisory only. Disable this with `--no-validate-response` if you need looser behavior.
+Yes, by default. Response headers are validated against the schema defined in the spec. When a handler omits `status`, Counterfact validates it against the `200` response definition, matching the status sent over HTTP. Any validation errors (missing required headers or type mismatches) are reported as `response-type-error` HTTP response headers — one header per error; multiple headers with the same name are allowed. The response body is still returned normally — the errors are advisory only. Disable this with `--no-validate-response` if you need looser behavior.
 
 ---
 
@@ -229,62 +231,26 @@ No. Counterfact never overwrites an existing route file. Your custom route logic
 
 If you add a new HTTP method to an existing path in your spec (for example adding `POST` to a route that already has `GET`), Counterfact **appends** the new handler stub to the bottom of the existing file and inserts its `import type` statement after the existing imports. All pre-existing code in the file is left untouched.
 
+Existing handlers declared as functions or exported through aliases are also
+recognized. Type-only exports do not count as runtime handlers and do not prevent
+new handler generation. Multiline imports and their comments remain intact, and a new
+handler's type import receives an alias if its name is already in use.
+
 ---
 
 ## Can I use it programmatically (not via the CLI)?
 
-Yes. Import `counterfact` and pass a `Config` object:
+Yes. Import `counterfact` to start a local API from your application or test runner, control its state, and await shutdown when the work finishes.
 
-```ts
-import { counterfact } from "counterfact";
-
-const { start } = await counterfact({
-  openApiPath: "openapi.yaml",
-  basePath: "api",
-  port: 4000,
-  startServer: true,
-  startRepl: false,
-  generate: { routes: false, types: false },
-  watch: { routes: false, types: false },
-  alwaysFakeOptionals: false,
-  buildCache: false,
-  proxyPaths: new Map(),
-  proxyUrl: "",
-  prefix: "",
-  validateRequests: true,
-  validateResponses: true,
-});
-
-const { stop } = await start({
-  startServer: true,
-  generate: { routes: false, types: false },
-  watch: { routes: false, types: false },
-  buildCache: false,
-});
-```
-
-This makes Counterfact easy to embed in test setups — start a server in `beforeAll`, stop it in `afterAll`, and run real HTTP requests against it in your tests. See the [Programmatic API guide](./features/programmatic-api.md) for a complete example.
+Follow the [Programmatic API guide](./features/programmatic-api.md) for startup examples, defaults, reset behavior, and teardown. Use the [simulator lifecycle reference](./api/simulator.md) for exact options and methods, or [automated integration tests](./patterns/automated-integration-tests.md) for test-runner integration.
 
 ---
 
 ## Can I add custom middleware?
 
-Yes. Drop a `_.middleware.ts` file anywhere in the routes tree. It receives a standard Koa middleware function and applies to all routes in that subtree:
+Yes. Export a named `middleware` function from a route subtree's `_.middleware.ts`. It receives Counterfact's typed request argument and a `respondTo($)` callback. Use the generated middleware type for that directory.
 
-```ts
-// routes/_.middleware.ts
-import type { Middleware } from "koa";
-
-const middleware: Middleware = async (ctx, next) => {
-  if (!ctx.headers.authorization) {
-    ctx.status = 401;
-    return;
-  }
-  await next();
-};
-
-export default middleware;
-```
+See [middleware](./features/middleware.md) for authentication, response headers, logging, and directory scoping.
 
 ---
 
@@ -327,7 +293,6 @@ Wherever you tell it. The second argument to the CLI is the output directory. Us
 ## See also
 
 - [Getting started](./getting-started.md)
-- [Patterns](./patterns/index.md)
-- [Reference](./reference.md)
+- [API reference](./api.md)
 - [How it compares](./comparison.md)
-- [Usage](./usage.md)
+- [Find your workflow](./usage.md)

@@ -2,6 +2,29 @@
 
 This document provides concrete examples of how AI agents use the Counterfact Admin API through the `counterfact-repl` skill.
 
+## Preconditions for all examples
+
+Start Counterfact with `npx counterfact openapi.yaml --admin-api`, set
+`admin-api: true` in `counterfact.yaml`, or use `startAdminApi: true` in the
+programmatic API configuration. Admin API access is disabled by default. These examples
+use the ungrouped API at port 3100. For a grouped runner, append its group
+subdirectory to `/_counterfact/api` in every Admin API URL; also substitute the
+actual port. The served-route `prefix` is independent of that Admin API base.
+
+If `--admin-api-token` or `COUNTERFACT_ADMIN_API_TOKEN` is configured, send
+`Authorization: Bearer <TOKEN_VALUE>` in every request, including health.
+Missing/invalid tokens return 401. Without a token, middleware restricts
+request IPs to loopback (403 otherwise); it does not guarantee a loopback-only
+listener. A 404 can indicate a disabled Admin API or wrong group URL even
+when the mock server is running.
+
+JSON context updates can remove class prototype methods. An unseen path's
+first update adds/replaces its context rather than merging; subsequent updates
+compare against cached input, so a scalar equal to the cached value can leave
+live route mutations intact. Prefer scenarios/context methods in the REPL
+when preserving domain methods matters. Before confirming any setup or reset,
+read back the affected contexts and test the routes that consume them.
+
 ## Example 1: Discovering and Inspecting State
 
 **User:** "What data is currently in the pet store mock?"
@@ -18,7 +41,7 @@ GET http://localhost:3100/_counterfact/api/health
   "status": "ok",
   "port": 3100,
   "basePath": "/",
-  "prefix": "/_counterfact/api",
+  "prefix": "",
   "uptime": 456.78
 }
 ```
@@ -167,14 +190,14 @@ Here's an example of how your route handler should be updated:
 
 ```typescript
 // routes/pets.ts
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   if (!$.context.serviceAvailable) {
-    return $.response[503].json({
+    return $.response.status(503).json({
       error: $.context.errorMessage || "Service unavailable"
     });
   }
 
-  return $.response[200].json($.context.pets);
+  return $.response.status(200).json($.context.pets);
 };
 ````
 
@@ -250,7 +273,8 @@ Routing configuration:
 - /pets → MOCK (local mock data)
 
 Now:
-- Requests to http://localhost:3100/users will be forwarded to production
+- Requests to http://localhost:3100/users and its descendants inherit proxy
+  routing unless a more specific entry overrides it
 - Requests to http://localhost:3100/pets will use your mock data
 
 To revert /users back to mock mode:
@@ -426,13 +450,13 @@ Your pagination endpoints can use these to return:
 
 Example route handler:
 ```typescript
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   const page = parseInt($.query.page) || 1;
   const size = $.context.pageSize || 10;
   const start = (page - 1) * size;
   const end = start + size;
 
-  return $.response[200].json({
+  return $.response.status(200).json({
     users: $.context.users.slice(start, end),
     total: $.context.totalCount,
     page,
@@ -454,10 +478,10 @@ export const GET: HTTP_GET = ($) => {
 ```http
 # 1. Get all contexts
 GET http://localhost:3100/_counterfact/api/contexts
-````
+```
 
 ```http
-# 2. Clear each context
+# 2. Clear the listed arrays (a partial reset)
 POST http://localhost:3100/_counterfact/api/contexts/users
 Content-Type: application/json
 
@@ -487,14 +511,16 @@ Content-Type: application/json
 **Agent Response:**
 
 ```
-✓ All contexts have been reset to empty state.
+After reading back the contexts and testing the affected routes:
+✓ The users, products and pets arrays are empty. Other properties and
+contexts have not been reset.
 
 - Users: 0
 - Products: 0
 - Pets: 0
 
-Note: A full server restart would also reset all state, as Counterfact
-stores everything in memory.
+Note: A server restart recreates in-memory contexts and can run startup
+scenarios; it does not guarantee an empty initial state.
 ```
 
 ---
@@ -548,9 +574,11 @@ GET http://localhost:3100/_counterfact/api/contexts/pets
 **Agent Response:**
 
 ````
+
 Found the issue! The /pets context has incorrect data types:
 
 Problems:
+
 1. id is a string ("1") instead of number
 2. name is a number (123) instead of string
 3. status is null instead of a string
@@ -564,7 +592,7 @@ POST /_counterfact/api/contexts/pets
     { "id": 1, "name": "Pet Name", "status": "available" }
   ]
 }
-````
+```
 
 The endpoint should now return properly typed data.
 
@@ -690,7 +718,8 @@ Access via: $.context.sessions[sessionId]
 GET /_counterfact/api/health
 ```
 
-Ensures server is running before attempting other operations.
+Confirms access to the enabled Admin API for the selected group. The health
+response's `prefix` is the served-route prefix, not its Admin API mount.
 
 ### 2. Inspect Before Modifying
 
@@ -700,15 +729,19 @@ GET /_counterfact/api/contexts/path
 
 See current state before making changes to avoid overwriting data.
 
-### 3. Use Smart Diffing
+### 3. Account for JSON Update Limitations
 
-Only send properties you want to change:
+For a previously seen plain-object context, send properties you intend to
+change and verify the result:
 
 ```json
 { "newProperty": "value" }
 ```
 
-Existing properties are preserved.
+Omitted properties can remain after subsequent updates, but the first update
+can replace the context. JSON updates adopt the posted prototype and can
+remove class methods. Cached equal scalars can preserve intervening live
+mutations. Use REPL context/scenario methods when these limitations matter.
 
 ### 4. Verify Changes
 

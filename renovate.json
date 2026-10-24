@@ -4,16 +4,17 @@
     "**/node_modules/**",
     "**/bower_components/**",
     "**/vendor/**",
-    "**/examples/**",
     "**/__tests__/**",
     "**/test/**",
     "**/tests/**",
-    "**/__fixtures__/**",
-    "site/study/2026/experiments/environments/**"
+    "**/__fixtures__/**"
   ],
   "rangeStrategy": "update-lockfile",
   "enabledManagers": ["npm", "github-actions"],
-  "gitIgnoredAuthors": ["github+renovate@scharley.me"],
+  "gitIgnoredAuthors": [
+    "github+renovate@scharley.me",
+    "github-actions[bot]@users.noreply.github.com"
+  ],
   "automerge": true,
   "automergeType": "pr",
   "platformAutomerge": true,
@@ -44,5 +45,14 @@
       "description": "Do not automatically update @types/node; its major version should match the engines field in package.json",
       "enabled": false
     }
-  ]
+  ],
+  "timezone": "America/New_York",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "addLabels": ["security"]
+  }
 }

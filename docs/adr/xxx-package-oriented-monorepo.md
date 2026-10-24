@@ -149,6 +149,10 @@ It depends on `@counterfact/client` and narrow public runtime contracts. Events
 such as command usage are reported through an injected callback; this package
 does not import CLI telemetry.
 
+#### `@counterfact/tutorials`
+
+Guided learning experiences, including the bundled coffee shop and future chapter tours. It owns exercise files, browser presentation, progression, saved-handler checks, and project preparation. It depends only on public runtime exports for compilation of saved exercise snapshots. The CLI retains first-run menus, port selection, simulator startup, and browser launch, consuming the tutorial package's public preparation API. Generated lesson-check routes resolve helpers within the installed tutorials package, never within CLI internals.
+
 #### `counterfact`
 
 The existing package name remains the user-facing facade. It owns the binary,
@@ -170,6 +174,7 @@ reason to create a generic `core` package.
 | `@counterfact/runtime`   | `types`, `openapi`                        |
 | `@counterfact/client`    | `openapi`                                 |
 | `@counterfact/repl`      | `client`, narrow contracts from `runtime` |
+| `@counterfact/tutorials` | narrow public exports from `runtime`      |
 | `counterfact`            | all focused packages                      |
 
 The important rules are that leaf packages do not import orchestration

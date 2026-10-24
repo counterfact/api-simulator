@@ -19,6 +19,7 @@ import { ModuleDependencyGraph } from "./module-dependency-graph.js";
 import type { Module, Registry } from "./registry.js";
 import { ScenarioRegistry } from "./scenario-registry.js";
 import { uncachedImport } from "./uncached-import.js";
+import { UpdateQueue } from "./update-queue.js";
 import type { RuntimeEventReporter } from "../runtime-config.js";
 import {
   toForwardSlashPath,
@@ -60,6 +61,77 @@ export class ModuleLoader extends EventTarget {
   private readonly scenarioRegistry: ScenarioRegistry | undefined;
 
   private readonly getStore: (() => object | undefined) | undefined;
+
+  private readonly contextFactories = new Map<
+    string,
+    (
+      loadContext: (path: string) => ReturnType<ContextRegistry["find"]>,
+    ) => ReturnType<ContextRegistry["find"]>
+  >();
+
+  private readonly sourceRoutes = new Map<string, Module>();
+
+  private readonly sourceMiddlewares = new Map<
+    string,
+    Parameters<Registry["addMiddleware"]>[1]
+  >();
+
+  /** Rebuilds contexts from loaded constructors, resolving dependencies on demand. */
+  public resetContexts(): void {
+    this.contextRegistry.clear();
+    const built = new Set<string>();
+    const building = new Set<string>();
+    let rebuilding = true;
+    const loadContext = (path: string): ReturnType<ContextRegistry["find"]> =>
+      rebuilding ? build(path) : this.contextRegistry.find(path);
+    const build = (path: string): ReturnType<ContextRegistry["find"]> => {
+      let key = path.replace(/\/$/u, "") || "/";
+      while (
+        ![...this.contextFactories.keys()].some(
+          (entry) => entry.toLowerCase() === key.toLowerCase(),
+        )
+      ) {
+        if (key === "/") return this.contextRegistry.find("/");
+        key = key.slice(0, key.lastIndexOf("/")) || "/";
+      }
+      key = [...this.contextFactories.keys()].find(
+        (entry) => entry.toLowerCase() === key.toLowerCase(),
+      )!;
+      if (building.has(key))
+        throw new Error(`Circular context dependency at "${key}"`);
+      if (!built.has(key)) {
+        building.add(key);
+        const context = this.contextFactories.get(key)!(loadContext);
+        this.contextRegistry.update(key, context);
+        building.delete(key);
+        built.add(key);
+      }
+      return this.contextRegistry.find(key);
+    };
+    try {
+      for (const path of this.contextFactories.keys()) build(path);
+    } finally {
+      rebuilding = false;
+    }
+  }
+
+  /** Removes runtime overrides and reinstalls the currently loaded source routes. */
+  public resetRoutes(): void {
+    this.registry.clear();
+    for (const [path, module] of this.sourceRoutes)
+      this.registry.add(path, { ...module });
+    for (const [path, middleware] of this.sourceMiddlewares)
+      this.registry.addMiddleware(path, middleware);
+  }
+
+  private readonly updates = new UpdateQueue();
+
+  private loaded = false;
+
+  /** Holds file events while an explicit reset reconstructs the state graph. */
+  public pauseUpdates(): Promise<() => void> {
+    return this.updates.pause();
+  }
 
   private readonly dependencyGraph = new ModuleDependencyGraph();
 
@@ -136,36 +208,55 @@ export class ModuleLoader extends EventTarget {
           return;
         }
 
-        const parts = nodePath.parse(pathName.replace(this.basePath, ""));
-        this.reportEvent("file_change_detected", {
-          changeType: eventName,
-          fileType: this.isContextFile(pathName) ? "context" : "route",
-        });
-        const url = unescapePathForWindows(
-          toForwardSlashPath(`/${parts.dir}/${parts.name}`).replaceAll(
-            /\/+/gu,
-            "/",
-          ),
-        );
-
-        if (eventName === "unlink") {
-          this.registry.remove(url);
-          this.dispatchEvent(new Event("remove"));
-          if (this.isContextFile(pathName)) {
-            this.contextRegistry.remove(
-              unescapePathForWindows(toForwardSlashPath(parts.dir)) || "/",
+        void this.updates
+          .run(async () => {
+            const parts = nodePath.parse(pathName.replace(this.basePath, ""));
+            this.reportEvent("file_change_detected", {
+              changeType: eventName,
+              fileType: this.isContextFile(pathName) ? "context" : "route",
+            });
+            const url = unescapePathForWindows(
+              toForwardSlashPath(`/${parts.dir}/${parts.name}`).replaceAll(
+                /\/+/gu,
+                "/",
+              ),
             );
-          }
-          return;
-        }
 
-        const dependencies = this.dependencyGraph.dependentsOf(pathName);
+            if (eventName === "unlink") {
+              this.registry.remove(url);
+              this.sourceRoutes.delete(url);
+              if (basename(pathName).startsWith("_.middleware.")) {
+                this.sourceMiddlewares.delete(
+                  url.slice(0, url.lastIndexOf("/")) || "/",
+                );
+              }
+              if (url === "/index") {
+                this.sourceRoutes.delete("/");
+                this.registry.remove("/");
+              }
+              this.dispatchEvent(new Event("remove"));
+              if (this.isContextFile(pathName)) {
+                this.contextFactories.delete(
+                  unescapePathForWindows(toForwardSlashPath(parts.dir)) || "/",
+                );
+                this.contextRegistry.remove(
+                  unescapePathForWindows(toForwardSlashPath(parts.dir)) || "/",
+                );
+              }
+              return;
+            }
 
-        void this.loadEndpoint(pathName);
+            const dependencies = this.dependencyGraph.dependentsOf(pathName);
 
-        for (const dependency of dependencies) {
-          void this.loadEndpoint(dependency);
-        }
+            await this.loadEndpoint(pathName);
+
+            for (const dependency of dependencies) {
+              await this.loadEndpoint(dependency);
+            }
+          })
+          .catch((error: unknown) =>
+            process.stderr.write(`Module reload failed: ${String(error)}\n`),
+          );
       },
     );
     await once(this.watcher, "ready");
@@ -186,13 +277,21 @@ export class ModuleLoader extends EventTarget {
 
           const pathName = toForwardSlashPath(pathNameOriginal);
 
-          if (eventName === "unlink") {
-            const fileKey = this.scenarioFileKey(pathName);
-            this.scenarioRegistry?.remove(fileKey);
-            return;
-          }
+          void this.updates
+            .run(async () => {
+              if (eventName === "unlink") {
+                const fileKey = this.scenarioFileKey(pathName);
+                this.scenarioRegistry?.remove(fileKey);
+                return;
+              }
 
-          void this.loadScenarioFile(pathName);
+              await this.loadScenarioFile(pathName);
+            })
+            .catch((error: unknown) =>
+              process.stderr.write(
+                `Scenario reload failed: ${String(error)}\n`,
+              ),
+            );
         },
       );
       await once(this.scenariosWatcher, "ready");
@@ -203,6 +302,7 @@ export class ModuleLoader extends EventTarget {
   public async stopWatching(): Promise<void> {
     await this.watcher?.close();
     await this.scenariosWatcher?.close();
+    await this.updates.run(async () => {});
   }
 
   private isContextFile(pathName: string): boolean {
@@ -217,8 +317,12 @@ export class ModuleLoader extends EventTarget {
    */
   public async load(directory = ""): Promise<void> {
     const files = await this.fileDiscovery.findFiles(directory);
-    await Promise.all(files.map((file) => this.loadEndpoint(file)));
+    await Promise.all(
+      files.map((file) => this.loadEndpoint(file, !this.loaded)),
+    );
+    if (!this.loaded && this.contextFactories.size > 0) this.resetContexts();
     await this.loadScenarios();
+    this.loaded = true;
   }
 
   /** Reloads every context module without disturbing preserved live state. */
@@ -294,7 +398,7 @@ export class ModuleLoader extends EventTarget {
     }
   }
 
-  private async loadEndpoint(pathName: string) {
+  private async loadEndpoint(pathName: string, deferContext = false) {
     debug("importing module: %s", pathName);
 
     const directory = pathDirname(pathName.slice(this.basePath.length));
@@ -350,7 +454,7 @@ export class ModuleLoader extends EventTarget {
           status: 500,
         });
 
-        this.registry.add(url, {
+        const errorModule = {
           DELETE: errorResponse,
           GET: errorResponse,
           HEAD: errorResponse,
@@ -359,7 +463,13 @@ export class ModuleLoader extends EventTarget {
           POST: errorResponse,
           PUT: errorResponse,
           TRACE: errorResponse,
-        });
+        };
+        this.sourceRoutes.set(url, { ...errorModule });
+        this.registry.add(url, errorModule);
+        if (url === "/index") {
+          this.sourceRoutes.set("/", { ...errorModule });
+          this.registry.add("/", errorModule);
+        }
 
         this.dispatchEvent(new Event("add"));
 
@@ -374,7 +484,6 @@ export class ModuleLoader extends EventTarget {
 
       if (this.isContextFile(pathName) && isContextModule(endpoint)) {
         const loadContext = (path: string) => this.contextRegistry.find(path);
-        const store = this.getStore?.();
 
         const contextDir = nodePath.dirname(unescapePathForWindows(pathName));
         const readJson = async (relativePath: string): Promise<unknown> => {
@@ -396,17 +505,22 @@ export class ModuleLoader extends EventTarget {
           }
         };
 
-        this.contextRegistry.update(
-          directory,
-
-          // @ts-expect-error TS says Context has no constructable signatures but that's not true?
-
-          new endpoint.Context({
-            loadContext,
+        const createContext = (lookup: typeof loadContext) => {
+          const currentStore = this.getStore?.();
+          // @ts-expect-error ContextModule describes instances; the export is a constructor.
+          return new endpoint.Context({
+            loadContext: lookup,
             readJson,
-            ...(store === undefined ? {} : { store }),
-          }),
-        );
+            ...(currentStore === undefined ? {} : { store: currentStore }),
+          }) as ReturnType<ContextRegistry["find"]>;
+        };
+        if (deferContext) {
+          this.contextFactories.set(directory || "/", createContext);
+          return;
+        }
+        const context = createContext(loadContext);
+        this.contextFactories.set(directory || "/", createContext);
+        this.contextRegistry.update(directory, context);
         return;
       }
 
@@ -414,13 +528,16 @@ export class ModuleLoader extends EventTarget {
         basename(pathName).startsWith("_.middleware.") &&
         isMiddlewareModule(endpoint)
       ) {
-        this.registry.addMiddleware(
-          url.slice(0, url.lastIndexOf("/")) || "/",
-          endpoint.middleware,
-        );
+        const path = url.slice(0, url.lastIndexOf("/")) || "/";
+        this.sourceMiddlewares.set(path, endpoint.middleware);
+        this.registry.addMiddleware(path, endpoint.middleware);
       }
 
-      if (url === "/index") this.registry.add("/", endpoint as Module);
+      if (url === "/index") {
+        this.sourceRoutes.set("/", { ...endpoint } as Module);
+        this.registry.add("/", endpoint as Module);
+      }
+      this.sourceRoutes.set(url, { ...endpoint } as Module);
 
       debug(`adding "${url}" to registry`);
       this.registry.add(url, endpoint as Module);

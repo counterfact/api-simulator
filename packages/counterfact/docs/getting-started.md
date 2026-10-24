@@ -23,7 +23,7 @@ Counterfact writes editable route files and generated TypeScript types to
 For a project or CI workflow, install a pinned version and commit the lockfile:
 
 ```sh
-npm install --save-dev counterfact@2.16.3
+npm install --save-dev --save-exact counterfact
 npx counterfact ./openapi.yaml api
 ```
 
@@ -44,6 +44,7 @@ edit a handler. A response might look like this:
 {
   "id": 1,
   "name": "string",
+  "photoUrls": [],
   "status": "available"
 }
 ```
@@ -75,19 +76,22 @@ corresponding handler:
 // api/routes/pet/{petId}.ts
 import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
 
-export const GET: HTTP_GET = ($) =>
-  $.response[200].json({
+export const GET: HTTP_GET = function ($) {
+  return $.response.status(200).json({
     id: $.path.petId,
     name: "Fluffy",
+    photoUrls: [],
     status: "available",
   });
+};
 ```
 
 Save the file and refresh the frontend—no server restart is needed.
 
 ## Next steps
 
+- [Try the guided coffee shop](./manual/guided-example.md) — learn by changing real handlers beside a working storefront; no document required.
 - [First 10 minutes](./first-10-minutes.md) — add a small create/read workflow and one frontend-relevant failure.
-- [Usage](./usage.md) — find guides by job: frontend, testing, advanced control, or troubleshooting.
-- [Custom responses](./features/routes.md), [state](./features/state.md), [failures](./patterns/simulate-failures.md), and [proxying](./features/proxy.md) — add capabilities only when the workflow needs them.
+- [Find your workflow](./usage.md) — find guides by job: frontend, testing, advanced control, or troubleshooting.
+- [Custom responses](./features/routes.md), [state](./features/state.md), [failures](manual/edge-cases.md), and [proxying](./features/proxy.md) — add capabilities only when the workflow needs them.
 - [Without OpenAPI](./features/without-openapi.md) — use the deeper alternative when no OpenAPI document exists.

@@ -38,7 +38,7 @@ No remaining article or methodology claim requires a classification or chronolog
 | Repair chronology | `site/study/2026/source/repair-chronology.json`, SHA-256 `5b4d6861efe38b6006f6f9f4774bfa04948669881907f1d365393516e63767fd` | Fix commits, corrected npm publications, and conservative affected-file/tag bounds. |
 | Manual decisions | `site/study/2026/source/adjudications.json`, SHA-256 `eb2beeb1fe44e89cff68b9df606e345977c5bcad6fc08bac11f5b0d166dd010f` | Evidence-bound overrides for #1056, #1105, #1567, #1569, #1591, #1682, #1684, #2263, linked reports, excluded maintenance/features, and direct-mainline uncertainties. |
 | Mature records | `site/study/2026/source/historical-dated-records.json`, SHA-256 `dee165e7838eb21f77bca8a1c19dd79c117e9dfe3cf954cec4622096c09bd75e` plus the original 14 `productCases` | Individual event and response inputs for `deriveMature`. |
-| Experiments | `site/study/2026/experiments/results.json`, SHA-256 `2e90da71d55aa3948df0e121a64089d31df862edb3c2a5f34d89cea196b1ea9a`; generated `site/study/2026/experiments/artifact-manifest.json`; `caseStudy.experiments.fixed7.artifacts` | Fixed population, refs, commands, environments, named logs, outcomes, interpretation, and SHA-256 for every retained experiment artifact. The validator re-hashes each artifact and fails on drift or absence. |
+| Experiments | `site/study/2026/experiments/results.json`, SHA-256 `2e90da71d55aa3948df0e121a64089d31df862edb3c2a5f34d89cea196b1ea9a`; retained extraction `site/study/2026/experiments/artifact-manifest.json` and commit pin `archive.json`; `caseStudy.experiments.fixed7.artifacts` | Fixed population, refs, commands, environments, named logs, outcomes, interpretation, and SHA-256 for every retained experiment artifact. The offline validator checks the local result ledger and pinned extraction manifest. `verify:experiment-archive` checks all 37 preserved files in a checkout of the pinned archive commit and fails on drift or absence. |
 | Builder and derivations | `site/scripts/build-quality-case-study.mjs`; `site/scripts/quality-case-study-lib.mjs` | Builds schema 4, hashes source inputs, and computes monthly, exact pre/post, and mature outputs from individual records. |
 
 ## Article claim map
@@ -156,7 +156,7 @@ For practitioner clarity, “paired historical checks distinguish” is more pre
 | Known backlog is public-record backlog | `deriveMonthly.publiclyAffectedBy` and `carryInKnownBacklogIds`; unknown release states remain separate. | Supported within the public-record boundary. It is not all outstanding product debt. |
 | Mature event and response cohorts have distinct rules | `deriveMature`; `caseStudy.matureRecords`; `delivery.windows["mature-intake-YYYY"]`; stored `supportingMature`. Events require exact first-affected publication in intake and report within that release's 90-day follow-up. Responses enter by report time and use individual deadlines. | Supported. The 2023 event analysis remains explicitly incomplete through unresolved IDs `issue-453`, `issue-487`, and `issue-530`; it must not be read as a known zero. |
 | Fixed seven-case population and outcome rules | `protocol.md`; `experiments/results.json`; `validateCaseStudy` requires the exact IDs 1617, 1618, 1619, 1842, 1933, 1971, 2075 and a valid outcome enum. | Supported. Outcome semantics remain focused-pair semantics. |
-| Pages and verifier share derivations; commands check analytical boundaries and source integrity | Article imports `deriveMonthly`/`derivePeriods`; builder and validator import the same library; `test:audit`, `verify:audit`, and build scripts provide the named gates. The builder enumerates every experiment artifact except the generated artifact manifest itself, writes SHA-256 values into both the manifest and `caseStudy.experiments.fixed7.artifacts`, and the validator re-hashes each file. | Supported for normalized source files, result ledger, raw logs, reproducers, assertion script, README, package evidence, and effective archived environments. |
+| Pages and verifier share derivations; commands check analytical boundaries and source integrity | Article imports `deriveMonthly`/`derivePeriods`; builder and validator import the same library; `test:audit`, `verify:audit`, and build scripts provide the named gates. The builder retains the pinned extraction manifest in `caseStudy.experiments.fixed7.artifacts`. The offline validator checks local sources, results, and archive metadata; `verify:experiment-archive` re-hashes the external files. | Supported for local normalized sources and results through `verify:audit`, and external logs, reproducers, scripts, package evidence, and environments through the explicit archive verification command. |
 | No causal model, combined score, defect/download rate, or prevented-defect estimate is published | Article limitations, protocol, and methods. | Supported. Interpretive prose stays qualitative and names confounders. |
 
 ## Practitioner-facing prose recommendations
@@ -178,3 +178,13 @@ The completed final mechanical pass rebuilt schema 4, ran the audit and offline 
 4. Released-status records cannot place their confirmed affected publication after the report; delivery counts are recomputed for every stored window.
 
 The remaining publication requirement is to freeze the reviewed protocol, normalized sources, adjudications, builder, manifest, pages, and experiment archive in the final repository commit.
+
+
+## Archive extraction
+
+The complete experiment tree is preserved in `counterfact/historical-experiments`
+at the commit pinned in `experiments/archive.json`. The local extraction manifest
+records source bytes at migration time. The original historical manifest remains
+unchanged in the archive; its four pre-existing environment hash discrepancies
+are documented in the archive's `MIGRATION.md`. Extraction does not rerun or
+revalidate the historical behavioral outcomes.

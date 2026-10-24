@@ -624,15 +624,42 @@ export function validateCaseStudy(caseStudy) {
       }
     }
   }
-  const artifacts = caseStudy.experiments?.fixed7?.artifacts;
+  const experiment = caseStudy.experiments?.fixed7;
+  const archive = experiment?.archive;
+  const artifacts = experiment?.artifacts;
+  if (
+    archive?.repository !== "https://github.com/counterfact/historical-experiments" ||
+    archive?.manifestPath !== "evidence-manifest.json" ||
+    !/^[a-f0-9]{40}$/.test(archive?.commit ?? "") ||
+    !/^[a-f0-9]{40}$/.test(archive?.sourceCommit ?? "") ||
+    !/^[a-f0-9]{64}$/.test(archive?.manifestSha256 ?? "")
+  ) errors.push("invalid experiment archive pin");
+  try {
+    const pin = JSON.parse(readFileSync(new URL("../study/2026/experiments/archive.json", import.meta.url), "utf8"));
+    if (!same(archive, pin)) errors.push("experiment archive pin differs from local metadata");
+    const manifestBytes = readFileSync(new URL("../study/2026/experiments/artifact-manifest.json", import.meta.url));
+    if (createHash("sha256").update(manifestBytes).digest("hex") !== archive?.manifestSha256)
+      errors.push("experiment archive manifest hash mismatch");
+    if (!same(artifacts, JSON.parse(manifestBytes).artifacts))
+      errors.push("experiment artifact hash mismatch: archived manifest differs");
+  } catch { errors.push("experiment archive metadata unavailable"); }
   if (!Array.isArray(artifacts) || artifacts.length === 0) errors.push("missing experiment artifact hashes");
-  for(const artifact of artifacts ?? []) {
-    if(typeof artifact.path !== "string" || !/^site\/study\/2026\/experiments\/[A-Za-z0-9._/-]+$/.test(artifact.path) || artifact.path.includes("..") || !/^[a-f0-9]{64}$/.test(artifact.sha256 ?? "")) {errors.push("invalid experiment artifact metadata");continue;}
-    try {
-      const actual=createHash("sha256").update(readFileSync(new URL(`../../${artifact.path}`,import.meta.url))).digest("hex");
-      if(actual!==artifact.sha256)errors.push(`experiment artifact hash mismatch: ${artifact.path}`);
-    } catch {errors.push(`experiment artifact unavailable: ${artifact.path}`);}
+  const artifactPaths = new Set();
+  for (const artifact of artifacts ?? []) {
+    if (typeof artifact.path !== "string" || !/^site\/study\/2026\/experiments\/[A-Za-z0-9._/-]+$/.test(artifact.path) || artifact.path.includes("..") || !/^[a-f0-9]{64}$/.test(artifact.sha256 ?? "") || artifactPaths.has(artifact.path)) {
+      errors.push("invalid experiment artifact metadata");
+      continue;
+    }
+    artifactPaths.add(artifact.path);
+    // Only the result ledger is retained locally; archive bytes have a separate verifier.
+    if (artifact.path === "site/study/2026/experiments/results.json") {
+      try {
+        const actual = createHash("sha256").update(readFileSync(new URL(`../../${artifact.path}`, import.meta.url))).digest("hex");
+        if (actual !== artifact.sha256) errors.push(`experiment artifact hash mismatch: ${artifact.path}`);
+      } catch { errors.push(`experiment artifact unavailable: ${artifact.path}`); }
+    }
   }
+  if (!artifactPaths.has("site/study/2026/experiments/results.json")) errors.push("missing archived experiment results hash");
   const fixed = caseStudy.experiments?.fixed7?.results;
   const expected = ["1617", "1618", "1619", "1842", "1933", "1971", "2075"];
   if (

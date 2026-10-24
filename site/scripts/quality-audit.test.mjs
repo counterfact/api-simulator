@@ -658,7 +658,7 @@ test("validateManifest reports structurally incomplete manifests", () => {
 });
 
 
-test("experiment output and environment hashes detect artifact drift", () => {
+test("experiment output and environment hashes stay bound to the archived manifest", () => {
   const changed=structuredClone(baseManifest);
   changed.caseStudy.experiments.fixed7.artifacts[0].sha256="0".repeat(64);
   assert.ok(validateManifest(changed).some(error=>error.includes("experiment artifact hash mismatch")));
@@ -671,4 +671,16 @@ test("matched and continuous stored delivery totals are checked as well as matur
     changed.caseStudy.delivery.counts[name].publishedReleases += 1;
     assert.ok(validateManifest(changed).some(error=>error.includes(`delivery count mismatch for ${name}`)));
   }
+});
+
+
+test("experiment archive pin and manifest hash cannot drift from retained metadata", () => {
+  for (const field of ["commit", "sourceCommit", "manifestSha256"]) {
+    const changed = structuredClone(baseManifest);
+    changed.caseStudy.experiments.fixed7.archive[field] = "0".repeat(field === "manifestSha256" ? 64 : 40);
+    assert.ok(validateManifest(changed).some(error => error.includes("experiment archive")));
+  }
+  const changed = structuredClone(baseManifest);
+  delete changed.caseStudy.experiments.fixed7.archive;
+  assert.ok(validateManifest(changed).some(error => error.includes("invalid experiment archive pin")));
 });

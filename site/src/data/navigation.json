@@ -1,0 +1,211 @@
+{
+  "manual": [
+    {
+      "title": "Start a working API",
+      "pages": [
+        {
+          "title": "Generate an API from OpenAPI",
+          "path": "/docs/getting-started",
+          "description": "Start a local HTTP API from a specification."
+        },
+        {
+          "title": "Guided coffee shop",
+          "path": "/docs/manual/guided-example",
+          "description": "Learn by editing a running API beside a working storefront."
+        },
+        {
+          "title": "Automatic sample responses",
+          "path": "/docs/manual/sample-responses",
+          "description": "Get schema-derived responses and select named examples."
+        },
+        {
+          "title": "Build without OpenAPI",
+          "path": "/docs/features/without-openapi",
+          "description": "Write routes before a specification exists."
+        },
+        {
+          "title": "Swagger UI",
+          "path": "/docs/manual/swagger-ui",
+          "description": "Browse operations and send requests in the browser."
+        }
+      ]
+    },
+    {
+      "title": "Define request and response behavior",
+      "pages": [
+        {
+          "title": "Custom route handlers",
+          "path": "/docs/features/routes",
+          "description": "Read typed request data and implement HTTP operations."
+        },
+        {
+          "title": "Response building",
+          "path": "/docs/manual/responses",
+          "description": "Choose status codes, bodies, headers, cookies, and media types."
+        },
+        {
+          "title": "Streaming responses",
+          "path": "/docs/manual/streaming",
+          "description": "Return incremental events and records."
+        },
+        {
+          "title": "Failures, latency, and edge cases",
+          "path": "/docs/manual/edge-cases",
+          "description": "Exercise loading, error, retry, and empty states."
+        },
+        {
+          "title": "Request and response validation",
+          "path": "/docs/manual/validation",
+          "description": "Understand which contract mismatches are checked."
+        },
+        {
+          "title": "Middleware",
+          "path": "/docs/features/middleware",
+          "description": "Apply behavior across a route subtree."
+        }
+      ]
+    },
+    {
+      "title": "Model state and workflows",
+      "pages": [
+        {
+          "title": "Stateful contexts",
+          "path": "/docs/features/state",
+          "description": "Let later requests observe earlier actions."
+        },
+        {
+          "title": "Nested and connected contexts",
+          "path": "/docs/manual/nested-contexts",
+          "description": "Divide state by route subtree and connect contexts."
+        },
+        {
+          "title": "Shared application store",
+          "path": "/docs/patterns/shared-store",
+          "description": "Share domain data across API groups."
+        },
+        {
+          "title": "Scenario scripts",
+          "path": "/docs/patterns/scenario-scripts",
+          "description": "Apply reusable state changes and startup setup."
+        }
+      ]
+    },
+    {
+      "title": "Explore a running simulation",
+      "pages": [
+        {
+          "title": "Hot reload",
+          "path": "/docs/features/hot-reload",
+          "description": "Change behavior while preserving live state."
+        },
+        {
+          "title": "Interactive REPL",
+          "path": "/docs/features/repl",
+          "description": "Inspect and steer the running API from a terminal."
+        },
+        {
+          "title": "Request builder",
+          "path": "/docs/features/route-builder",
+          "description": "Construct, inspect, reuse, and send API requests."
+        }
+      ]
+    },
+    {
+      "title": "Work with evolving APIs",
+      "pages": [
+        {
+          "title": "Proxying and hybrid simulation",
+          "path": "/docs/features/proxy",
+          "description": "Combine local handlers with upstream services."
+        },
+        {
+          "title": "Multiple APIs",
+          "path": "/docs/manual/multiple-apis",
+          "description": "Serve several specifications on one listener."
+        },
+        {
+          "title": "API versioning",
+          "path": "/docs/features/multiple-versions",
+          "description": "Serve versions side by side with version-aware types."
+        },
+        {
+          "title": "OpenAPI overlays",
+          "path": "/docs/manual/overlays",
+          "description": "Adapt a specification without editing its source."
+        },
+        {
+          "title": "Regeneration and generated code",
+          "path": "/docs/features/generated-code",
+          "description": "Refresh contracts while preserving editable routes."
+        }
+      ]
+    },
+    {
+      "title": "Integrate with development tools",
+      "pages": [
+        {
+          "title": "Programmatic use and tests",
+          "path": "/docs/features/programmatic-api",
+          "description": "Start, inspect, reset, seed, and stop a simulator from code."
+        },
+        {
+          "title": "HTTP Admin API",
+          "path": "/docs/manual/admin-api",
+          "description": "Inspect contexts, routes, and proxy settings over HTTP."
+        }
+      ]
+    }
+  ],
+  "reference": [
+    {
+      "title": "CLI and configuration",
+      "path": "/docs/api/cli"
+    },
+    {
+      "title": "Handler arguments",
+      "path": "/docs/api/handlers"
+    },
+    {
+      "title": "Response builders",
+      "path": "/docs/api/responses"
+    },
+    {
+      "title": "Contexts, stores, and scenarios",
+      "path": "/docs/api/state"
+    },
+    {
+      "title": "Simulator lifecycle",
+      "path": "/docs/api/simulator"
+    },
+    {
+      "title": "REPL and HTTP client",
+      "path": "/docs/api/repl"
+    },
+    {
+      "title": "HTTP Admin API",
+      "path": "/docs/api/admin-api"
+    },
+    {
+      "title": "Public packages",
+      "path": "/docs/api/packages"
+    }
+  ],
+  "recipes": [
+    {
+      "title": "Payment retry and reset",
+      "path": "/docs/patterns/payment-retry"
+    },
+    {
+      "title": "Contract-change check",
+      "path": "/docs/patterns/contract-change"
+    },
+    {
+      "title": "Reproducible hybrid proxy",
+      "path": "/docs/patterns/hybrid-proxy"
+    },
+    {
+      "title": "AI-assisted workflows",
+      "path": "/docs/patterns/agentic-sandbox"
+    }
+  ]
+}

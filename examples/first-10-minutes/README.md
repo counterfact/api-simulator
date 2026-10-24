@@ -45,7 +45,7 @@ npm run typecheck
 
 TypeScript names `client/pets.ts` as incompatible with the regenerated contract. Restore the spec change and the same command passes. This is earlier compile-time contract feedback; it does not claim that either implementation has correct production business behavior.
 
-For spec watch and regeneration details, continue with [Executable Spec](../../packages/counterfact/docs/patterns/executable-spec.md).
+For spec watch and regeneration details, continue with [Executable Spec](../../packages/counterfact/docs/features/generated-code.md).
 
 ## Hybrid path ownership
 

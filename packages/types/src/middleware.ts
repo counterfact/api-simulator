@@ -1,3 +1,4 @@
+import type { CookieOptions } from "./cookie-options.js";
 import type { COUNTERFACT_RESPONSE } from "./counterfact-response.js";
 import type { HttpStatusCode } from "./http-status-code.js";
 import type { MaybePromise } from "./maybe-promise.js";
@@ -26,8 +27,20 @@ export interface MiddlewareTools {
 
 /** A response-builder factory with every standard status code available. */
 export type MiddlewareResponseBuilderFactory = {
+  /** @deprecated Use response.status(statusCode) instead. */
   [StatusCode in HttpStatusCode]: ResponseBuilder;
-} & { [key: number | `${number} ${string}`]: ResponseBuilder };
+} & {
+  /** @deprecated Use response.status(statusCode) instead. */
+  [key: number | `${number} ${string}`]: ResponseBuilder;
+} & {
+  status: (statusCode: number | `${number} ${string}`) => ResponseBuilder;
+  header: (name: string, value: string) => MiddlewareResponseBuilderFactory;
+  cookie: (
+    name: string,
+    value: string,
+    options?: CookieOptions,
+  ) => MiddlewareResponseBuilderFactory;
+};
 
 /**
  * The request argument passed to a custom middleware function.
@@ -74,7 +87,7 @@ export type RespondTo<Context = unknown> = (
  *
  * export const middleware: Middleware<Context> = async ($, respondTo) => {
  *   if (!$.context.isAuthorized($.auth?.apiKey)) {
- *     return $.response[401].json({ error: "Unauthorized" });
+ *     return $.response.status(401).json({ error: "Unauthorized" });
  *   }
  *
  *   return respondTo($);

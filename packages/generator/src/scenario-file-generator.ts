@@ -5,6 +5,24 @@ import nodePath from "node:path";
 
 import { type FSWatcher, watch } from "chokidar";
 
+import ts from "typescript";
+import {
+  exportedConst,
+  formatStatements,
+  functionType,
+  importDeclaration,
+  literalType,
+  parameter,
+  readonlyProperty,
+  stringType,
+  typeAlias,
+  typeReference,
+  unionType,
+  unknownType,
+  valueExpression,
+  withJsDoc,
+} from "./ast.js";
+
 import { pathRelative } from "./forward-slash-path.js";
 import { waitForEvent } from "./wait-for-event.js";
 import { CHOKIDAR_OPTIONS } from "./watch-options.js";
@@ -36,6 +54,17 @@ async function collectContextFiles(
 
   await walkForContextFiles(routesDir, routesDir, results);
   results.sort((a, b) => b.depth - a.depth);
+  const names = new Set<string>();
+  for (const context of results) {
+    const base = /^\d/u.test(context.alias)
+      ? "_" + context.alias
+      : context.alias;
+    let name = base;
+    let suffix = 2;
+    while (names.has(name)) name = base + suffix++;
+    context.alias = name;
+    names.add(name);
+  }
 
   return results;
 }
@@ -149,130 +178,239 @@ function routePathToAlias(routePath: string): string {
 
 const PARAM_SEGMENT_REGEX = /^\{.+\}$/u;
 
-function buildLoadContextOverload(routePath: string, alias: string): string {
-  if (routePath === "/") {
-    return '  loadContext(path: "/" | `/${string}`): ' + alias + ";";
+function pathTemplate(parts: readonly string[]): ts.TemplateLiteralTypeNode {
+  const fragments = [""];
+  const placeholders: ts.TypeNode[] = [];
+  for (const part of parts) {
+    fragments[fragments.length - 1] += "/";
+    if (PARAM_SEGMENT_REGEX.test(part)) {
+      placeholders.push(stringType());
+      fragments.push("");
+    } else {
+      fragments[fragments.length - 1] += part;
+    }
   }
-
-  const segments = routePath.split("/").filter(Boolean);
-  const hasParam = segments.some((seg) => PARAM_SEGMENT_REGEX.test(seg));
-
-  if (!hasParam) {
-    return `  loadContext(path: "${routePath}" | \`${routePath}/\${string}\`): ${alias};`;
-  }
-
-  const templatePath = `/${segments
-    .map((seg) => (PARAM_SEGMENT_REGEX.test(seg) ? "${string}" : seg))
-    .join("/")}`;
-
-  return `  loadContext(path: \`${templatePath}\`): ${alias};`;
+  return ts.factory.createTemplateLiteralType(
+    ts.factory.createTemplateHead(fragments[0]!),
+    placeholders.map((type, index) =>
+      ts.factory.createTemplateLiteralTypeSpan(
+        type,
+        index === placeholders.length - 1
+          ? ts.factory.createTemplateTail(fragments[index + 1]!)
+          : ts.factory.createTemplateMiddle(fragments[index + 1]!),
+      ),
+    ),
+  );
 }
 
-function buildScenarioContextContent(
+function buildLoadContextOverload(
+  routePath: string,
+  alias: string,
+): ts.MethodSignature {
+  const segments = routePath.split("/").filter(Boolean);
+  const path = segments.some((segment) => PARAM_SEGMENT_REGEX.test(segment))
+    ? pathTemplate(segments)
+    : unionType([
+        literalType(routePath),
+        ts.factory.createTemplateLiteralType(
+          ts.factory.createTemplateHead(
+            routePath === "/" ? "/" : routePath + "/",
+          ),
+          [
+            ts.factory.createTemplateLiteralTypeSpan(
+              stringType(),
+              ts.factory.createTemplateTail(""),
+            ),
+          ],
+        ),
+      ]);
+  return ts.factory.createMethodSignature(
+    undefined,
+    "loadContext",
+    undefined,
+    undefined,
+    [parameter("path", path)],
+    typeReference(alias),
+  );
+}
+
+function recordType(): ts.TypeNode {
+  return typeReference("Record", [stringType(), unknownType()]);
+}
+
+function interfaceDeclaration(
+  name: string,
+  members: readonly ts.TypeElement[],
+  exported: boolean,
+): ts.InterfaceDeclaration {
+  return ts.factory.createInterfaceDeclaration(
+    exported
+      ? [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)]
+      : undefined,
+    name,
+    undefined,
+    undefined,
+    members,
+  );
+}
+
+async function buildScenarioContextContent(
   contextFiles: ContextFileInfo[],
   storeImportPath?: string,
-): string {
-  const rootContext = contextFiles.find((f) => f.routePath === "/");
-  const contextType = rootContext
-    ? rootContext.alias
-    : "Record<string, unknown>";
-
-  const importLines = contextFiles.map(({ importPath, alias }) =>
-    alias === "Context"
-      ? `import type { Context } from "${importPath}";`
-      : `import type { Context as ${alias} } from "${importPath}";`,
+): Promise<string> {
+  const rootContext = contextFiles.find((file) => file.routePath === "/");
+  const imports = contextFiles.map(({ importPath, alias }) =>
+    importDeclaration(alias, importPath, true, false, "Context"),
   );
-  if (storeImportPath !== undefined) {
-    importLines.push(`import type { Store } from "${storeImportPath}";`);
-  }
-
-  const overloadLines = contextFiles.map(({ alias, routePath }) =>
+  if (storeImportPath !== undefined)
+    imports.push(importDeclaration("Store", storeImportPath, true));
+  const loadContext = () =>
+    ts.factory.createIndexedAccessTypeNode(
+      typeReference("LoadContextDefinitions"),
+      literalType("loadContext"),
+    );
+  const voidType = () =>
+    ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
+  const overloads = contextFiles.map(({ alias, routePath }) =>
     buildLoadContextOverload(routePath, alias),
   );
-
-  const parts = [
-    GENERATED_FILE_COMMENT,
-    ...importLines,
-    "",
-    "interface LoadContextDefinitions {",
-    "  /* code generator adds additional signatures here */",
-    ...overloadLines,
-    "  loadContext(path: string): Record<string, unknown>;",
-    "}",
-    "",
-    "export interface Scenario$ {",
-    '  /** Root context, same as loadContext("/") */',
-    `  readonly context: ${contextType};`,
-    '  readonly loadContext: LoadContextDefinitions["loadContext"];',
-    "  /** Named route builders stored in the REPL execution context */",
-    "  readonly routes: Record<string, unknown>;",
-    "  /** Create a new route builder for a given path */",
-    "  readonly route: (path: string) => unknown;",
-    "}",
-    "",
-    "/** A scenario function that receives the live REPL environment */",
-    "export type Scenario = ($: Scenario$) => Promise<void> | void;",
-    "",
-    "/** Interface for Context objects defined in _.context.ts files */",
-    "export interface Context$ {",
-    ...(storeImportPath === undefined
-      ? []
-      : [
-          "  /** Application-level store shared by every API group */",
-          "  readonly store: Store;",
-        ]),
-    "  /** Load a context object for a specific path */",
-    '  readonly loadContext: LoadContextDefinitions["loadContext"];',
-    "  /** Load a JSON file relative to this file's path */",
-    "  readonly readJson: (relativePath: string) => Promise<unknown>;",
-    "}",
-    "",
-  ];
-
-  return parts.join("\n");
+  const fallback = ts.factory.createMethodSignature(
+    undefined,
+    "loadContext",
+    undefined,
+    undefined,
+    [parameter("path", stringType())],
+    recordType(),
+  );
+  return formatStatements(
+    [
+      ...imports,
+      interfaceDeclaration(
+        "LoadContextDefinitions",
+        [...overloads, fallback],
+        false,
+      ),
+      interfaceDeclaration(
+        "Scenario$",
+        [
+          readonlyProperty(
+            "context",
+            rootContext ? typeReference(rootContext.alias) : recordType(),
+            'Root context, same as loadContext("/")',
+          ),
+          readonlyProperty(
+            "loadContext",
+            loadContext(),
+            "Load a context object for a specific path",
+          ),
+          readonlyProperty(
+            "routes",
+            recordType(),
+            "Named route builders stored in the REPL execution context",
+          ),
+          readonlyProperty(
+            "route",
+            functionType([parameter("path", stringType())], unknownType()),
+            "Create a new route builder for a given path",
+          ),
+        ],
+        true,
+      ),
+      withJsDoc(
+        typeAlias(
+          "Scenario",
+          functionType(
+            [parameter("$", typeReference("Scenario$"))],
+            unionType([typeReference("Promise", [voidType()]), voidType()]),
+          ),
+        ),
+        {
+          description:
+            "A scenario function that receives the live REPL environment",
+        },
+      ),
+      withJsDoc(
+        interfaceDeclaration(
+          "Context$",
+          [
+            ...(storeImportPath === undefined
+              ? []
+              : [
+                  readonlyProperty(
+                    "store",
+                    typeReference("Store"),
+                    "Application-level store shared by every API group",
+                  ),
+                ]),
+            readonlyProperty(
+              "loadContext",
+              loadContext(),
+              "Load a context object for a specific path",
+            ),
+            readonlyProperty(
+              "readJson",
+              functionType(
+                [parameter("relativePath", stringType())],
+                typeReference("Promise", [unknownType()]),
+              ),
+              "Load a JSON file relative to this file's path",
+            ),
+          ],
+          true,
+        ),
+        {
+          description:
+            "Interface for Context objects defined in _.context.ts files",
+        },
+      ),
+    ],
+    [GENERATED_FILE_COMMENT.slice(3)],
+  );
 }
 
 function ensureRelativeImportPath(path: string): string {
-  return path.startsWith(".") ? path : `./${path}`;
+  return path.startsWith(".") ? path : "./" + path;
 }
 
-function buildMiddlewareTypeContent(
+async function buildMiddlewareTypeContent(
   destination: string,
   routeDirectory: RouteDirectoryInfo,
-): string {
-  const typesDirectory = nodePath.join(
+): Promise<string> {
+  const directory = nodePath.join(
     destination,
     "types",
     routeDirectory.relativePath,
   );
-  const sharedTypePath = ensureRelativeImportPath(
+  const sharedPath = ensureRelativeImportPath(
     pathRelative(
-      typesDirectory,
+      directory,
       nodePath.join(destination, "counterfact-types", "index.js"),
     ),
   );
-  const lines = [
-    GENERATED_FILE_COMMENT,
-    `import type { Middleware as MiddlewareFunction } from "${sharedTypePath}";`,
+  const statements: ts.Statement[] = [
+    importDeclaration(
+      "MiddlewareFunction",
+      sharedPath,
+      true,
+      false,
+      "Middleware",
+    ),
   ];
-
-  if (routeDirectory.contextFile === undefined) {
-    lines.push("", "export type Middleware = MiddlewareFunction;");
-  } else {
-    const contextImportPath = ensureRelativeImportPath(
-      pathRelative(typesDirectory, routeDirectory.contextFile).replace(
+  const arguments_: ts.TypeNode[] = [];
+  if (routeDirectory.contextFile !== undefined) {
+    const contextPath = ensureRelativeImportPath(
+      pathRelative(directory, routeDirectory.contextFile).replace(
         /\.ts$/u,
         ".js",
       ),
     );
-    lines.push(
-      `import type { Context } from "${contextImportPath}";`,
-      "",
-      "export type Middleware = MiddlewareFunction<Context>;",
-    );
+    statements.push(importDeclaration("Context", contextPath, true));
+    arguments_.push(typeReference("Context"));
   }
-
-  return `${lines.join("\n")}\n`;
+  statements.push(
+    typeAlias("Middleware", typeReference("MiddlewareFunction", arguments_)),
+  );
+  return formatStatements(statements, [GENERATED_FILE_COMMENT.slice(3)]);
 }
 
 async function collectGeneratedMiddlewareTypeFiles(
@@ -320,7 +458,7 @@ async function writeMiddlewareTypes(destination: string): Promise<void> {
     await fs.mkdir(nodePath.dirname(filePath), { recursive: true });
     await fs.writeFile(
       filePath,
-      buildMiddlewareTypeContent(destination, routeDirectory),
+      await buildMiddlewareTypeContent(destination, routeDirectory),
       "utf8",
     );
   }
@@ -360,67 +498,100 @@ async function writeScenarioContextType(
   const storeImportPath = existsSync(storePath)
     ? `${relativeStorePath.startsWith(".") ? "" : "./"}${relativeStorePath.replace(/\.ts$/u, ".js")}`
     : undefined;
-  const content = buildScenarioContextContent(contextFiles, storeImportPath);
+  const content = await buildScenarioContextContent(
+    contextFiles,
+    storeImportPath,
+  );
 
   await fs.mkdir(typesDir, { recursive: true });
   await fs.writeFile(filePath, content, "utf8");
 }
 
-const DEFAULT_SCENARIOS_INDEX = `import type { Scenario } from "../types/_.context.js";
-
-/**
- * Scenario scripts are plain TypeScript functions that receive the live REPL
- * environment and can read or mutate server state. Run them from the REPL with:
- *   .scenario <functionName>
- */
-
-/**
- * Read or mutate the root context (same object routes see as $.context):
- *   $.context.<property> = <value>;
- *
- * Load a context for a specific path:
- *   const petsCtx = $.loadContext("/pets");
- *
- * Store a pre-configured route builder for later use in the REPL:
- *   $.routes.myRequest = $.route("/pets").method("get");
- */
-
-/**
- * startup() runs automatically when the server initializes, right before the
- * REPL starts. Use it to seed dummy data so the server is ready to use
- * immediately. It receives the same $ argument as all other scenario functions.
- *
- * Tip: delegate to other scenario functions and pass $ along so each function
- * stays focused on a single concern. You can also pass additional arguments to
- * configure them, e.g. addPets($, 20, "dog").
- *
- * If you don't need a startup scenario, delete this function or leave it empty.
- */
-export const startup: Scenario = ($) => {
-  void $;
-};
-
-/**
- * An example scenario. To use it in the REPL, type:
- *   .scenario help
- */
-export const help: Scenario = ($) => {
-  void $;
-
-  console.log(
-    [
-      "Scenarios are functions that populate the context object",
-      "and / or the REPL environment. They are intended to",
-      "populate your environment with specific data and",
-      "configurations for testing purposes.",
-    ].join("\\n"),
+async function defaultScenariosContent(): Promise<string> {
+  const arrow = (statements: readonly ts.Statement[]) =>
+    ts.factory.createArrowFunction(
+      undefined,
+      undefined,
+      [parameter("$")],
+      undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ts.factory.createBlock(statements, true),
+    );
+  const ignoreArgument = () =>
+    ts.factory.createExpressionStatement(
+      ts.factory.createVoidExpression(ts.factory.createIdentifier("$")),
+    );
+  const log = (expression: ts.Expression) =>
+    ts.factory.createExpressionStatement(
+      ts.factory.createCallExpression(
+        ts.factory.createPropertyAccessExpression(
+          ts.factory.createIdentifier("console"),
+          "log",
+        ),
+        undefined,
+        [expression],
+      ),
+    );
+  const lines = valueExpression([
+    "Scenarios are functions that populate the context object",
+    "and / or the REPL environment. They are intended to",
+    "populate your environment with specific data and",
+    "configurations for testing purposes.",
+  ]);
+  const joinedLines = ts.factory.createCallExpression(
+    ts.factory.createPropertyAccessExpression(lines, "join"),
+    undefined,
+    [valueExpression("\n")],
   );
-
-  console.log(
-    "\\nScenarios (including this one) are defined in the ./scenarios directory.",
-  );
-};
-`;
+  return formatStatements([
+    importDeclaration("Scenario", "../types/_.context.js", true),
+    withJsDoc(
+      exportedConst(
+        "startup",
+        arrow([ignoreArgument()]),
+        typeReference("Scenario"),
+      ),
+      {
+        description:
+          "Scenario scripts are plain TypeScript functions that receive the live REPL\n" +
+          "environment and can read or mutate server state. Run them from the REPL with:\n" +
+          "  .scenario <functionName>\n\n" +
+          "Read or mutate the root context (same object routes see as $.context):\n" +
+          "  $.context.<property> = <value>;\n\n" +
+          "Load a context for a specific path:\n" +
+          '  const petsCtx = $.loadContext("/pets");\n\n' +
+          "Store a pre-configured route builder for later use in the REPL:\n" +
+          '  $.routes.myRequest = $.route("/pets").method("get");\n\n' +
+          "startup() runs automatically when the server initializes, right before the\n" +
+          "REPL starts. Use it to seed dummy data so the server is ready to use\n" +
+          "immediately. It receives the same $ argument as all other scenario functions.\n\n" +
+          "Tip: delegate to other scenario functions and pass $ along so each function\n" +
+          "stays focused on a single concern. You can also pass additional arguments to\n" +
+          'configure them, e.g. addPets($, 20, "dog").\n\n' +
+          "If you don't need a startup scenario, delete this function or leave it empty.",
+      },
+    ),
+    withJsDoc(
+      exportedConst(
+        "help",
+        arrow([
+          ignoreArgument(),
+          log(joinedLines),
+          log(
+            valueExpression(
+              "\nScenarios (including this one) are defined in the ./scenarios directory.",
+            ),
+          ),
+        ]),
+        typeReference("Scenario"),
+      ),
+      {
+        description:
+          "An example scenario. To use it in the REPL, type:\n  .scenario help",
+      },
+    ),
+  ]);
+}
 
 async function writeDefaultScenariosIndex(destination: string): Promise<void> {
   const scenariosDir = nodePath.join(destination, "scenarios");
@@ -431,7 +602,7 @@ async function writeDefaultScenariosIndex(destination: string): Promise<void> {
   }
 
   await fs.mkdir(scenariosDir, { recursive: true });
-  await fs.writeFile(filePath, DEFAULT_SCENARIOS_INDEX, "utf8");
+  await fs.writeFile(filePath, await defaultScenariosContent(), "utf8");
 }
 
 /**
