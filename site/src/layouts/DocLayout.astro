@@ -193,6 +193,37 @@ const toc = headings.filter((heading) => heading.depth === 2);
     margin: 1rem 0;
     padding: 0.5rem 1rem;
   }
+  .doc-content :global(.markdown-alert) {
+    --alert-color: #0969da;
+    background: #edf6fb;
+    border-left: 3px solid var(--alert-color);
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+  }
+  .doc-content :global(.markdown-alert-tip) {
+    --alert-color: #1a7f37;
+    background: #effaf2;
+  }
+  .doc-content :global(.markdown-alert-important) {
+    --alert-color: #8250df;
+    background: #f6f0ff;
+  }
+  .doc-content :global(.markdown-alert-warning) {
+    --alert-color: #9a6700;
+    background: #fff8e5;
+  }
+  .doc-content :global(.markdown-alert-caution) {
+    --alert-color: #cf222e;
+    background: #fff1f1;
+  }
+  .doc-content :global(.markdown-alert-title) {
+    color: var(--alert-color);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .doc-content :global(.markdown-alert > :last-child) {
+    margin-bottom: 0;
+  }
   .doc-content :global(table) {
     border-collapse: collapse;
     display: block;
