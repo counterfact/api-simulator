@@ -1670,7 +1670,7 @@ export type HTTP_GET = (
       200: {
         headers: {
           "x-total-count": { schema: number };
-          "x-next-page": { schema: string };
+          "x-next-page": { schema: string | null };
         };
         requiredHeaders: never;
         content: {
@@ -1987,7 +1987,11 @@ export type HTTP_POST = (
     path: never;
     headers: HTTP_POST_Headers;
     cookie: never;
-    body: ClickEvent | PurchaseEvent | SignUpEvent | BaseEvent;
+    body:
+      | (ClickEvent & { type: "click" })
+      | (PurchaseEvent & { type: "purchase" })
+      | (SignUpEvent & { type: "signup" })
+      | BaseEvent;
     context: Context;
     response: ResponseBuilderFactory<{
       202: {
@@ -3104,7 +3108,7 @@ exports[`end-to-end test generates the same code for the example that it did on 
    * @default "viewer"
    */
   role?: "admin" | "editor" | "viewer";
-  metadata?: { [key: string]: string };
+  metadata?: { [key: string]: string } | null;
 };
 "
 `;
@@ -3132,11 +3136,11 @@ exports[`end-to-end test generates the same code for the example that it did on 
   /**
    * @format date-time
    */
-  updatedAt?: string;
+  updatedAt?: string | null;
   /**
    * Arbitrary key/value pairs attached to the user
    */
-  metadata?: { [key: string]: string };
+  metadata?: { [key: string]: string } | null;
 };
 "
 `;
@@ -3183,14 +3187,14 @@ exports[`end-to-end test generates the same code for the example that it did on 
  *
  */
 export type PatchUserRequest = {
-  name?: string;
+  name?: string | null;
   /**
    * @format email
    */
-  email?: string;
+  email?: string | null;
   role?: "admin" | "editor" | "viewer";
-  active?: boolean;
-  metadata?: { [key: string]: string };
+  active?: boolean | null;
+  metadata?: { [key: string]: string } | null;
 };
 "
 `;
@@ -3238,7 +3242,7 @@ export type SignUpEvent = BaseEvent & {
    * @format email
    */
   email: string;
-  referralCode?: string;
+  referralCode?: string | null;
 };
 "
 `;
@@ -3253,7 +3257,7 @@ exports[`end-to-end test generates the same code for the example that it did on 
    * @format date-time
    */
   occurredAt: string;
-  sessionId?: string;
+  sessionId?: string | null;
 };
 "
 `;
@@ -3265,7 +3269,7 @@ exports[`end-to-end test generates the same code for the example that it did on 
    */
   id: number;
   name: string;
-  description?: string;
+  description?: string | null;
   status: "available" | "out_of_stock" | "discontinued";
   /**
    * @format double
@@ -3274,7 +3278,7 @@ exports[`end-to-end test generates the same code for the example that it did on 
   /**
    * @format double
    */
-  discountedPrice?: number;
+  discountedPrice?: number | null;
   /**
    * @default []
    */
@@ -3287,7 +3291,7 @@ exports[`end-to-end test generates the same code for the example that it did on 
    * Demonstrates anyOf: each attribute value is either a string, a number, or a boolean.
    *
    */
-  attributes?: { [key: string]: unknown };
+  attributes?: { [key: string]: string | number | boolean };
 };
 "
 `;

@@ -35,6 +35,17 @@ No OpenAPI document? See [using Counterfact without OpenAPI](./without-openapi.m
 
 Generated types preserve literal names and enum values, including escaped characters. Nested `allOf`, `anyOf`, and `oneOf` schemas retain their grouping. Unsupported schema type strings produce `unknown`; use standard OpenAPI types and `$ref` references for named schemas.
 
+Schema types also preserve:
+
+- OpenAPI 3.0 `nullable: true` on declared types and OpenAPI 3.1 type unions containing `null`. A required nullable property must still be present. Explicit `enum` and `const` constraints continue to restrict the allowed values.
+- Primitive `const` values, such as `const: cat`, as literal types.
+- Object properties when `type: object` is omitted, and typed dictionary values declared with `additionalProperties`, including `$ref` values. Unrestricted dictionary values remain `unknown`.
+- Properties alongside composition keywords and required fields declared by a containing schema. Requiring a referenced model's field in one composed type does not change the shared model.
+- Explicit discriminator mappings on referenced `oneOf` and `anyOf` branches, so checking the discriminator narrows the generated union. Multiple mapping values may select the same branch. OpenAPI 3.2 `defaultMapping` remains a fallback branch.
+- Tuple positions declared with OpenAPI 3.1 `prefixItems` (or an array-valued `items`). `minItems` determines which prefix positions are required, `items: false` closes the tuple, and a schema-valued `items` types its remaining elements. Length constraints beyond the declared prefix are not encoded in the TypeScript type.
+
+Generation does not replace runtime validation. TypeScript cannot express every JSON Schema constraint. In particular, `oneOf` is represented as a union rather than a guarantee that exactly one branch validates.
+
 ## Update a specification
 
 With specification watching enabled, save the OpenAPI document to regenerate the enabled artifacts. Types reflect the updated contract; existing route implementations retain your edits. Use your editor or TypeScript checks to find handlers whose assumptions no longer match the specification.
