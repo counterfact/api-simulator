@@ -665,7 +665,7 @@ def retry_orders(journey):
 @when("I add the inventory mutation to the successful order handler")
 def update_order_context(journey):
     path = journey.output / "routes/orders.ts"
-    path.write_text(path.read_text().replace("// INVENTORY LESSON: subtract each purchased quantity here.", "for (const item of items) {\n    $.context.inventory[item.productId] -= item.quantity;\n  }"))
+    path.write_text(path.read_text().replace("// TODO: decrease the quantity of each item in $.context.inventory.", "$.context.inventory[item.productId] -= item.quantity;"))
 
 
 @then("buying coffee reduces the inventory returned by the products API")

@@ -208,7 +208,9 @@ export const POST: HTTP_POST = ($) => {
     return $.response[409].json({ error: "There isn't enough stock for this order.", shortages });
   }
 
-  // INVENTORY LESSON: subtract each purchased quantity here.
+  for (const item of items) {
+    // TODO: decrease the quantity of each item in $.context.inventory.
+  }
 
   return $.response[201].json({ orderId: $.context.nextOrderId++, items });
 };

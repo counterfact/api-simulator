@@ -42,8 +42,8 @@ it("checks saved functions using separate inventory and fresh modules after each
     await $.add(
       "routes/orders.ts",
       SHOP_ORDERS.replace(
-        "// INVENTORY LESSON:",
-        "for (const item of items) $.context.inventory[item.productId] -= item.quantity;\n  // INVENTORY LESSON:",
+        "// TODO: decrease the quantity of each item in $.context.inventory.",
+        "$.context.inventory[item.productId] -= item.quantity;",
       ),
     );
     expect((await checkShopSave(root, 7)).ok).toBe(true);
@@ -59,8 +59,8 @@ it("reports broken handlers, wrong arithmetic, missing files, and thrown errors"
     await $.add(
       "routes/orders.ts",
       SHOP_ORDERS.replace(
-        "// INVENTORY LESSON:",
-        "for (const item of items) $.context.inventory[item.productId] -= 1;\n  // INVENTORY LESSON:",
+        "// TODO: decrease the quantity of each item in $.context.inventory.",
+        "$.context.inventory[item.productId] -= 1;",
       ),
     );
     expect((await checkShopSave($.path("."), 7)).message).toContain(

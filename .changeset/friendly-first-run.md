@@ -27,3 +27,5 @@ Use the existing Update message to compare real API stock before and after an ac
 Accept positive stock variations and verify purchases by their actual quantity rather than requiring exactly five bags to become four.
 
 Expose editor handoff and path copying beside the current edit instruction, and remove obsolete refresh instructions from the generated handler.
+
+Give the inventory exercise a starter loop with a TODO in the order handler, so the edit is clear without opening the optional code hint.

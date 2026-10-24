@@ -21,7 +21,7 @@ export function coffeeShopAction({
     2: "Change its starting stock from 0 to 5, save",
     4: "change ordersAvailable to false, and save",
     5: "restore ordersAvailable to true and save",
-    7: "Add these lines at the INVENTORY LESSON comment, save",
+    7: "Complete the inventory TODO in routes/orders.ts, then save",
   };
   if (step === 9) return { text: "Restock it with the second command" };
   if (step === 4 && !Object.keys(cart).length)
