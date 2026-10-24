@@ -139,6 +139,20 @@ const lessons = [
   ['Restock through the REPL and buy a bag','Add one Dark Roast to your cart, place an order, then watch the inventory. One bag is the guided example; you may buy another quantity. Compare the restocked inventory with the quantity purchased to verify the REPL and order handler share the same object.'],
   ['You changed a shopping workflow','You made a product available, tested failure and recovery, updated context in a handler, and restocked it through the REPL. The app and Counterfact are still running. You can use the same workflow with your own API: locate a handler, change its response or shared context, exercise the client, and verify the result.'],
 ];
+const explanations = [
+  "The shop makes real HTTP requests to your local API. You will change that API to explore the same success, failure, and state changes that a frontend needs from a backend.",
+  "First, see the app work before changing anything. The products request supplies the catalog, and the order request lets the shopper complete a purchase.",
+  "The shop decides what can be bought from the product response. Changing the stock in the API lets you try a different customer experience without changing the frontend.",
+  "An updated product card is only part of the result. Buying Decaf checks that the app can use the changed response to complete the shopping workflow.",
+  "A frontend needs to handle a backend that is temporarily unavailable. Making that failure repeatable lets you inspect the error message and cart behavior whenever you need to.",
+  "Retrying the same order shows whether the shopper can recover without rebuilding their cart. Keeping the order unchanged isolates the effect of restoring the API.",
+  "An API can confirm an order without changing any data. Counterfact runs the behavior you model; this purchase lets you see whether the current handler actually changes stock.",
+  "Context is shared state that survives between requests. When the order handler subtracts inventory and the product handler reads it, later requests can reflect an earlier purchase.",
+  "Zero stock is a boundary your frontend needs to handle. Selling out checks whether the same inventory behavior produces a useful sold-out state, rather than just a smaller number.",
+  "The REPL lets you inspect and change the running API’s state without editing a handler or restarting. Use it to put your frontend into a specific situation, such as stock becoming available again.",
+  "Buying from the replenished stock checks that the REPL and HTTP handlers use the same running inventory. The purchase should reduce the quantity you just set.",
+  "On your own API, model only the behavior needed for the client workflow you want to explore. Responses, shared context, and the REPL give you control over its inputs, consequences, and edge cases.",
+];
 const successes = {
   1:'The order succeeded, but the starter API has not reduced stock. We’ll add that behavior shortly.',
   2:'Decaf is available. Your saved change reached the API without a restart.',
@@ -191,7 +205,7 @@ function showLesson(){
   const recovery=currentRecovery();displayedRecovery=recovery?.id;
   if(recovery){lesson[1]=recovery.name+' has '+recovery.stock+' bags in your running shop. Back keeps your files and inventory. Restock '+recovery.name+' through Counterfact’s REPL, then continue this exercise.';lesson[2]='';lesson[3]='';lesson[4]='';}
 
-  if(!recovery&&progress.step===7&&progress.inventoryUpdated&&!progress.done){lesson[1]='Your order handler already updates inventory. You do not need to change it again. Add one Dark Roast to your cart, place an order, and watch the inventory to verify the shared state.';lesson[2]='';lesson[3]='';}$('lesson').replaceChildren(element('div','Step '+(progress.lessonIndex+1)+' of 8','eyebrow'),fileText('h2',lesson[0]),instructionParagraph(lesson[1]));
+  if(!recovery&&progress.step===7&&progress.inventoryUpdated&&!progress.done){lesson[1]='Your order handler already updates inventory. You do not need to change it again. Add one Dark Roast to your cart, place an order, and watch the inventory to verify the shared state.';lesson[2]='';lesson[3]='';}$('lesson').replaceChildren(element('div','Step '+(progress.lessonIndex+1)+' of 8','eyebrow'),fileText('h2',lesson[0]),element('p',recovery?'Returning to a lesson keeps the API state you have already changed. Restocking gives this exercise usable inventory without undoing your handler edits.':explanations[progress.step],'lesson-explanation'),instructionParagraph(lesson[1]));
   if(lesson[4]){const actions=element('div','','file-actions');actions.append(fileLink(lesson[4],'Open in VSCode'));const copy=element('button','Copy file path','secondary');copy.onclick=()=>copyPath(projectPath+'/'+lesson[4],copy);actions.append(copy);$('lesson').append(actions);}
   if(recovery)$('lesson').append(element('pre',recovery.command));
   if(lesson[4]||lesson[2]||lesson[3]){

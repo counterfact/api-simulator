@@ -41,6 +41,9 @@ The walkthrough starts with a normal purchase, then guides you through:
 
 6. Making another purchase and seeing five bags become four.
 
+Each lesson briefly explains why the experiment matters and how the behavior
+relates to your own frontend and API.
+
 The walkthrough has eight screens. Related phases share one lesson: making
 Decaf available and buying it; failing and retrying an order; observing unchanged
 stock and adding inventory subtraction; restocking through the REPL and buying
