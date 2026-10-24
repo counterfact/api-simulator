@@ -127,7 +127,7 @@ Both properties are only present when `version` is set in the config. For a sing
 
 ### Example
 
-This handler assumes an authored catalog context with `findById(id)`, returning items with `id`, `name`, and `category`. Declare the shown response shapes and text 404 in each version’s contract. See [stateful contexts](./state.md) for how to author that class.
+This handler assumes a catalog context you write with `findById(id)`, returning items with `id`, `name`, and `category`. Declare the shown response shapes and text 404 in each version’s contract. See [stateful contexts](./state.md) for how to author that class.
 
 ```ts
 // catalog/routes/items/{itemId}.ts

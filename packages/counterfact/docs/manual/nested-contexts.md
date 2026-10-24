@@ -80,7 +80,7 @@ export const GET: HTTP_GET = function ($) {
 
 This example assumes `Payment` has string `id` and numeric `userId`, and the GET operation declares the enriched JSON response and a text `404` response. Regenerate types after adding the context files so `Context$` has a typed `loadContext("/users")` overload.
 
-The helper returns the live context nearest to the requested path. It is available to context constructors and scenarios; the REPL exposes it as `loadContext(path)`. Handler arguments do not expose `loadContext`, so cross-domain logic belongs in an authored context method. The two contexts remain independent classes.
+The helper returns the live context nearest to the requested path. It is available to context constructors and scenarios; the REPL exposes it as `loadContext(path)`. Handler arguments do not expose `loadContext`, so cross-domain logic belongs in a context method you write. The two contexts remain independent classes.
 
 ## Choose a shared store for API groups
 

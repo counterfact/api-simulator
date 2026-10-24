@@ -33,6 +33,8 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 
 ## Existing conventions to follow
 
+- Write user docs as direct instructions with concrete examples. Introduce OpenAPI with a brief mention of its former name, Swagger, then use “spec” naturally. Prefer “your code” or “a class you write” over “authored behavior.” Explain limitations where they affect the task; avoid repeated disclaimers, abstract process language, and unsupported marketing claims. Choose headings for the subject rather than repeating a fixed template on every guide.
+
 - When spawning Yarn from a package script, use the Yarn command on PATH with Windows command-shim handling. Yarn 4 can set `npm_execpath` to a shell wrapper; passing that path to Node treats shell code as JavaScript. Validate the runner with `yarn test:build` on both CI operating systems.
 - Keep the root development build stages aligned with `packages/counterfact/package.json` build order and commands. Preserve the self-contained workspace build for packaging; repository-only progress scripts must not become required files in published packages.
 

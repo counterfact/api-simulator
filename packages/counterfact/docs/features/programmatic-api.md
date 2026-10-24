@@ -105,11 +105,11 @@ it does not probe application routes or upstream services.
 
 ## Accessing an application-level store
 
-A [shared store](../patterns/shared-store.md) holds data needed by several [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes). Each group owns its route files and contexts. This example assumes `api/_.store.ts` exports a `Store` with a user-authored `seed()` method.
+A [shared store](../patterns/shared-store.md) holds data needed by several [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes). Each group owns its route files and contexts. This example assumes `api/_.store.ts` exports a `Store` with a custom `seed()` method.
 
 If `<basePath>/_.store.ts` exists, `counterfact()` constructs one shared store
 for the simulator and exposes it through the optional `store` property. Supply
-the user-authored store type as the generic argument when you want typed access:
+the custom store type as the generic argument when you want typed access:
 
 ```ts
 import { counterfact } from "counterfact";

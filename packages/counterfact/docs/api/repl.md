@@ -1,6 +1,6 @@
 # REPL and HTTP client
 
-An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) is the configured name of specs sharing code and state. Grouped bindings below use that name; API keys are authentication credentials.
+An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) is the configured name of specs sharing code and state. The grouped bindings below use that name.
 
 The terminal REPL evaluates JavaScript against the running simulator. Start it from the CLI or call `api.startRepl()`.
 

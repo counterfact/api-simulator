@@ -14,7 +14,7 @@ Counterfact v<version>
 ⬣>
 ```
 
-The `context` binding is your authored `Context` instance. The following examples use the pet context from the [state guide](./state.md), with `add`, `get`, and `list` methods; generation alone does not create those methods.
+The `context` binding is your custom `Context` instance. The following examples use the pet context from the [state guide](./state.md), with `add`, `get`, and `list` methods; generation alone does not create those methods.
 
 At the prompt you can interact with the live context:
 

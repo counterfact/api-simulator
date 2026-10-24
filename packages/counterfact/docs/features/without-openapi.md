@@ -40,11 +40,13 @@ export function GET($) {
 
 For more information on the `$` object, see the [reference guide](../api.md).
 
-## Now that you know how to work without an OpenAPI doc, here's why you should have one anyway
+<span id="now-that-you-know-how-to-work-without-an-openapi-doc-heres-why-you-should-have-one-anyway"></span>
 
-OpenAPI is the de-facto standard for documenting REST APIs. Counterfact is just one of [hundreds of tools](https://openapi.tools/) that use it. And if you pass Counterfact an OpenAPI doc, it will save you a lot of time by automatically generating default type-safe implementations of each API, with powerful context-sensitive autocomplete when you want to make changes.
+## What an OpenAPI spec adds
 
-Not many people love writing documentation. Fewer people still love working on APIs that are not documented. Counterfact makes documentation useful, with immediate ROI, so that maintaining the docs is just as rewarding as writing code.
+Give Counterfact an OpenAPI spec and it generates starter handlers and TypeScript types for your API. Your editor can then suggest the parameters, status codes, and response shapes each handler accepts.
+
+Not many people love writing documentation. Fewer people still love working on APIs that are not documented. With Counterfact, that documentation also generates your mock API and TypeScript types.
 
 ## See also
 

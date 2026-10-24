@@ -4,7 +4,7 @@ Counterfact turns an OpenAPI document into a useful local API in one command.
 Use it when your frontend is ready but the backend is incomplete, unavailable,
 unstable, or owned by another team.
 
-An OpenAPI document is a YAML or JSON description of an API’s paths, inputs, and responses. Ask the API owner for yours, or use the public Petstore URL below. See [how the pieces fit together](./manual/concepts.md).
+OpenAPI, formerly Swagger, describes an API’s endpoints, parameters, and responses in YAML or JSON. Use your own spec or try the public Petstore URL below. See [how the pieces fit together](./manual/concepts.md).
 
 ## Prerequisite
 
@@ -51,13 +51,12 @@ edit a handler. A response might look like this:
 }
 ```
 
-The generated response is a useful contract-shaped starting point for frontend
-work and exploration. It is not a substitute for the business behavior you
-choose to model.
+The sample data matches the response schema. Edit the handler when you need
+specific values or behavior.
 
 ## Know what was generated
 
-The output directory contains files you can own:
+Counterfact creates two directories:
 
 ```text
 api/
@@ -69,7 +68,9 @@ Do not edit `types/`; regenerate them when the OpenAPI document changes. Edit
 handlers under `routes/`. Counterfact hot-reloads route changes while the
 server is running.
 
-## Make one response explicit (optional)
+<span id="make-one-response-explicit-optional"></span>
+
+## Customize a response
 
 When a screen needs a specific case, replace the generated response in the
 corresponding handler. Counterfact supplies `$`: `$.path` contains URL parameters and `$.response` builds the HTTP response. The imported `HTTP_GET` type comes from the generated contract:
@@ -93,7 +94,7 @@ Save the file and refresh the frontend—no server restart is needed.
 ## Next steps
 
 - [Try the guided coffee shop](./manual/guided-example.md) — learn by changing real handlers beside a working storefront; no document required.
-- [First 10 minutes](./first-10-minutes.md) — add a small create/read workflow and one frontend-relevant failure.
-- [Find your workflow](./usage.md) — find guides by job: frontend, testing, advanced control, or troubleshooting.
+- [First 10 minutes](./first-10-minutes.md) — create a pet, fetch it, and test an error response.
+- [Find your workflow](./usage.md) — find a guide for what you’re working on.
 - [Custom responses](./features/routes.md), [state](./features/state.md), [failures](manual/edge-cases.md), and [proxying](./features/proxy.md) — add capabilities only when the workflow needs them.
-- [Without OpenAPI](./features/without-openapi.md) — use the deeper alternative when no OpenAPI document exists.
+- [Without OpenAPI](./features/without-openapi.md) — write routes without an OpenAPI spec.
