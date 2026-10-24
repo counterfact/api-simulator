@@ -92,9 +92,9 @@ import type { HTTP_POST } from "../types/paths/orders.types.js";
 
 export const POST: HTTP_POST = function ($) {
   const outcome = $.context.placeOrder($.body.id);
-  if (outcome === "forbidden") return $.response[403].empty();
-  if (outcome === "declined") return $.response[402].empty();
-  return $.response[201].json({ id: $.body.id });
+  if (outcome === "forbidden") return $.response.status(403).empty();
+  if (outcome === "declined") return $.response.status(402).empty();
+  return $.response.status(201).json({ id: $.body.id });
 };
 ```
 
@@ -104,8 +104,8 @@ import type { HTTP_GET } from "../../types/paths/orders/{orderId}.types.js";
 
 export const GET: HTTP_GET = function ($) {
   return $.context.hasOrder($.path.orderId)
-    ? $.response[200].json({ id: $.path.orderId })
-    : $.response[404].empty();
+    ? $.response.status(200).json({ id: $.path.orderId })
+    : $.response.status(404).empty();
 };
 ```
 

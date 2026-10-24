@@ -8,7 +8,7 @@ Change the relevant handler to return a deterministic body. For a collection ope
 
 ```ts
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].json([]);
+  return $.response.status(200).json([]);
 };
 ```
 
@@ -19,7 +19,7 @@ Choose a body that matches your operation's schema. For an error, choose a statu
 ```ts
 export const GET: HTTP_GET = async function ($) {
   await $.delay(1500);
-  return $.response[200].random();
+  return $.response.status(200).random();
 };
 ```
 
@@ -45,9 +45,9 @@ Read those flags in the route handler. The OpenAPI operation must declare the sh
 import type { HTTP_GET } from "../../types/paths/payments/{paymentId}.types.js";
 
 export const GET: HTTP_GET = function ($) {
-  if ($.context.isRateLimited) return $.response[429].text("Too Many Requests");
-  if ($.context.isBroken) return $.response[500].text("Internal Server Error");
-  return $.response[200].json({ id: $.path.paymentId, amount: 42.0 });
+  if ($.context.isRateLimited) return $.response.status(429).text("Too Many Requests");
+  if ($.context.isBroken) return $.response.status(500).text("Internal Server Error");
+  return $.response.status(200).json({ id: $.path.paymentId, amount: 42.0 });
 };
 ```
 
@@ -74,9 +74,9 @@ To simulate intermittent failures, use a counter or a random function:
 export const GET: HTTP_GET = function ($) {
   $.context.callCount += 1;
   if ($.context.callCount % 3 === 0) {
-    return $.response[503].text("Flaky error");
+    return $.response.status(503).text("Flaky error");
   }
-  return $.response[200].json({ id: $.path.paymentId });
+  return $.response.status(200).json({ id: $.path.paymentId });
 };
 ```
 
@@ -85,9 +85,9 @@ Or vary the response probabilistically:
 ```ts
 export const GET: HTTP_GET = function ($) {
   if (Math.random() < 0.2) {
-    return $.response[503].text("Flaky error");
+    return $.response.status(503).text("Flaky error");
   }
-  return $.response[200].json({ id: $.path.paymentId });
+  return $.response.status(200).json({ id: $.path.paymentId });
 };
 ```
 
@@ -107,7 +107,7 @@ export class Context {
 export const GET: HTTP_GET = async function ($) {
   await $.delay($.context.latencyMs);
   const pet = $.context.get($.path.petId);
-  return pet ? $.response[200].json(pet) : $.response[404].text("Not found");
+  return pet ? $.response.status(200).json(pet) : $.response.status(404).text("Not found");
 };
 ```
 

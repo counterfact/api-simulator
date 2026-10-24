@@ -8,7 +8,7 @@ Start Counterfact with your specification and inspect an operation's route file:
 
 ```ts
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].random();
+  return $.response.status(200).random();
 };
 ```
 
@@ -20,7 +20,7 @@ For a predictable screen state, define a named example on the response media typ
 
 ```ts
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].example("successResponse");
+  return $.response.status(200).example("successResponse");
 };
 ```
 

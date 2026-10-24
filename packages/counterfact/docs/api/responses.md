@@ -1,8 +1,23 @@
 # Response builders
 
-Start with `$.response[status]`, using an HTTP status declared for the operation. Chain body and header methods and return the result from the handler.
+Start with `$.response.status(status)`, using an HTTP status declared for the operation. It narrows the available body methods, schemas, examples, and required headers to the selected response. Chain body and header methods and return the result from the handler.
 
-`$.response[N]` (where N is the HTTP status code) returns a fluent builder. Chain one or more of these methods:
+Bracket-based status selection, `$.response[statusCode]`, is deprecated. Replace it with `$.response.status(statusCode)`; for example, `$.response[200].json(body)` becomes `$.response.status(200).json(body)`. Existing handlers using brackets remain supported.
+
+## Headers and cookies before status selection
+
+You can supply `.header(name, value)` and `.cookie(name, value, options?)` before selecting a status. In generated handlers, each header narrows the valid status codes to responses that declare that header and accept its value. It also satisfies that header's requirement. Cookies preserve the available status choices.
+
+```ts
+return $.response
+  .header("x-request-id", "abc123")
+  .status(200)
+  .json({ ok: true });
+```
+
+The example requires a response declaring `x-request-id`. If only the 200 response declares it, `.status(404)` after that header is a type error. With an OpenAPI `default` response, other status codes use the default response's schema.
+
+## Methods after status selection
 
 | Method                           | Description                                                                     |
 | -------------------------------- | ------------------------------------------------------------------------------- |
@@ -18,7 +33,8 @@ Start with `$.response[status]`, using an HTTP status declared for the operation
 | `.cookie(name, value, options?)` | Adds a `Set-Cookie` header                                                      |
 
 ```ts
-return $.response[200]
+return $.response
+  .status(200)
   .header("x-request-id", "abc123")
   .cookie("session", "xyz", { httpOnly: true })
   .json({ ok: true });

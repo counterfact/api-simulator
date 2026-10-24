@@ -41,7 +41,7 @@ Implement or update route behavior in generated route files.
 1. Open the target file under `routes/` (e.g. `routes/pet/{petId}.ts`).
 2. Read input using `$` (`$.path`, `$.query`, `$.body`).
 3. Call a context method for logic/state changes.
-4. Return a response using `$.response[status]`.
+4. Return a response using `$.response.status(status)`.
 5. If needed, add new context methods instead of embedding logic in the route.
 
 ## Pattern
@@ -49,7 +49,7 @@ Implement or update route behavior in generated route files.
 ```ts
 export const POST: HTTP_POST = function ($) {
   const created = $.context.createThing($.body);
-  return $.response[201].json(created);
+  return $.response.status(201).json(created);
 };
 ```
 

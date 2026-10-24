@@ -4,11 +4,11 @@ Use a stream when the client needs to render events or records as they arrive. T
 
 Counterfact supports OpenAPI 3.2 sequential media types. When your spec uses `itemSchema` on a `text/event-stream`, `application/jsonl`, or `application/json-seq` content type, the generated handler type expresses the body as `AsyncIterable<T>`.
 
-Use `$.response[<status>].stream(iterable)` to return a stream from any route handler. The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).
+Use `$.response.status(<status>).stream(iterable)` to return a stream from any route handler. The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).
 
 ```ts
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].stream(events());
+  return $.response.status(200).stream(events());
 };
 
 async function* events() {

@@ -40,7 +40,7 @@ Generation, watching, and cache building are enabled by default, with or without
 a spec. Supplying `openApiPath` generates routes and types at startup, watches
 for spec changes, and enables spec-backed validation. Without a spec, there
 are no spec-driven routes or types to generate. Generated handlers that use
-`$.response[status].random()` or `.example(name)` require a supplied spec;
+`$.response.status(status).random()` or `.example(name)` require a supplied spec;
 without it, the response definition is unavailable. To opt out, pass
 `generate: { routes: false, types: false }`,
 `watch: { routes: false, types: false }`, or `buildCache: false`.

@@ -54,7 +54,7 @@ Then use it in the generated `POST /pet` and `GET /pet/{petId}` handlers:
 import type { HTTP_POST } from "../types/paths/pet.types.js";
 
 export const POST: HTTP_POST = function ($) {
-  return $.response[200].json($.context.add($.body));
+  return $.response.status(200).json($.context.add($.body));
 };
 ```
 
@@ -64,7 +64,7 @@ import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
 
 export const GET: HTTP_GET = function ($) {
   const pet = $.context.get($.path.petId);
-  return pet ? $.response[200].json(pet) : $.response[404].empty();
+  return pet ? $.response.status(200).json(pet) : $.response.status(404).empty();
 };
 ```
 
@@ -98,7 +98,7 @@ The missing-record branch above returns `404`. To exercise an unavailable state 
 
 ```ts
 if ($.context.unavailable) {
-  return $.x.response[503].text("Try again shortly");
+  return $.x.response.status(503).text("Try again shortly");
 }
 ```
 

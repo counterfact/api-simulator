@@ -76,11 +76,11 @@ import type { HTTP_GET } from "../../../types/paths/v1/customers/{customerId}.ty
 
 export const GET: HTTP_GET = function ($) {
   if ($.context.rateLimited) {
-    return $.response[429].json({
+    return $.response.status(429).json({
       error: { type: "rate_limit_error", message: "Try again shortly" },
     });
   }
-  return $.response[200].json({
+  return $.response.status(200).json({
     id: $.path.customerId,
     object: "customer",
     email: "juniper@example.test",

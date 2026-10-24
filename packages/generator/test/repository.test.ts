@@ -181,8 +181,8 @@ describe("a Repository", () => {
         await $.add(
           "routes/pet.ts",
           original.replace(
-            "$.response[200]",
-            "/* user edit */ $.response[200]",
+            "$.response.status(200)",
+            "/* user edit */ $.response.status(200)",
           ),
         );
 

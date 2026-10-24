@@ -8,7 +8,7 @@ import type { Middleware } from "../types/_.middleware.js";
 
 export const middleware: Middleware = async ($, respondTo) => {
   if (!$.context.isAuthorized($.auth?.apiKey)) {
-    return $.response[401].json({ error: "Unauthorized" });
+    return $.response.status(401).json({ error: "Unauthorized" });
   }
 
   return respondTo($);
@@ -75,7 +75,7 @@ import type { Middleware } from "../../types/admin/_.middleware.js";
 export const middleware: Middleware = async ($, respondTo) => {
   const token = $.headers["x-admin-token"];
   if (token !== "super-secret") {
-    return $.response[403].text("Forbidden");
+    return $.response.status(403).text("Forbidden");
   }
   return respondTo($);
 };

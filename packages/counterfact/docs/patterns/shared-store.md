@@ -111,7 +111,7 @@ Handlers stay small and do not receive the store directly:
 ```ts
 // api/orders/routes/orders.ts
 export const POST: HTTP_POST = function ($) {
-  return $.response[201].json($.context.createOrder($.body));
+  return $.response.status(201).json($.context.createOrder($.body));
 };
 ```
 
