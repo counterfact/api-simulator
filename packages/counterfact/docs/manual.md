@@ -9,6 +9,7 @@ Choose guides by task in [Find your workflow](./usage.md). Additional resources:
 ## Start a working API
 
 - [Generate an API from OpenAPI](./getting-started.md) — Start a local HTTP API from a specification.
+- [Guided coffee shop](./manual/guided-example.md) — Learn by editing a running API beside a working storefront.
 - [Automatic sample responses](./manual/sample-responses.md) — Get schema-derived responses and select named examples.
 - [Build without OpenAPI](./features/without-openapi.md) — Write routes before a specification exists.
 - [Swagger UI](./manual/swagger-ui.md) — Browse operations and send requests in the browser.

@@ -19,6 +19,7 @@ const packageRoot = path.resolve(testDirectory, "../..");
 const clientPackageRoot = path.resolve(packageRoot, "../client");
 const generatorPackageRoot = path.resolve(packageRoot, "../generator");
 const openApiPackageRoot = path.resolve(packageRoot, "../openapi");
+const tutorialsPackageRoot = path.resolve(packageRoot, "../tutorials");
 const replPackageRoot = path.resolve(packageRoot, "../repl");
 const runtimePackageRoot = path.resolve(packageRoot, "../runtime");
 const typesPackageRoot = path.resolve(packageRoot, "../types");
@@ -195,6 +196,28 @@ try {
     cacheDirectory,
   );
   const replTarballPath = path.join(tarballDirectory, replPack.filename);
+  const tutorialsPack = await packPackage(
+    tutorialsPackageRoot,
+    tarballDirectory,
+    cacheDirectory,
+  );
+  const tutorialsTarballPath = path.join(
+    tarballDirectory,
+    tutorialsPack.filename,
+  );
+  for (const required of [
+    "dist/index.js",
+    "dist/prepare-tour.js",
+    "dist/coffee-shop/coffee-shop-page.js",
+    "dist/coffee-shop/coffee-shop-validation.js",
+  ]) {
+    assert(
+      tutorialsPack.files.some(
+        ({ path: packedPath }) => packedPath === required,
+      ),
+      `Missing tutorial file: ${required}`,
+    );
+  }
   const runtimePack = await packPackage(
     runtimePackageRoot,
     tarballDirectory,
@@ -230,6 +253,7 @@ try {
       generatorTarballPath,
       openApiTarballPath,
       replTarballPath,
+      tutorialsTarballPath,
       runtimeTarballPath,
       typesTarballPath,
       tarballPath,
@@ -296,6 +320,7 @@ try {
     `import assert from "node:assert/strict";
 import path from "node:path";
 import * as counterfactPackage from "counterfact";
+import { prepareTour } from "@counterfact/tutorials";
 
 assert.deepEqual(Object.keys(counterfactPackage).sort(), ${JSON.stringify(expectedManifest.runtimeExports)});
 await assert.rejects(import("counterfact/dist/app.js"), { code: "ERR_PACKAGE_PATH_NOT_EXPORTED" });
@@ -319,6 +344,24 @@ const config = {
 const simulator = await counterfactPackage.counterfact(config);
 const running = await simulator.start(config);
 await running.stop();
+
+const prepared = await prepareTour(process.cwd(), "tour");
+const tour = await counterfactPackage.counterfact({ basePath: prepared.destination, port: 0, startRepl: false, openApiPath: prepared.source });
+const runningTour = await tour.start();
+try {
+  const origin = "http://127.0.0.1:" + tour.status().address.port;
+  const page = await fetch(origin + prepared.walkthroughPath);
+  assert.equal(page.status, 200);
+  assert.match(await page.text(), /Counterfact Coffee/);
+  const info = await (await fetch(origin + "/tutorial-info")).json();
+  assert.match(info.revision, /^[a-f0-9]{64}$/);
+  const check = await (await fetch(origin + "/tutorial-check", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ step: 5 }),
+  })).json();
+  assert.equal(check.ok, true, check.message);
+} finally {
+  await runningTour.stop();
+}
 `,
   );
   await run(process.execPath, [runtimeCheckPath], {

@@ -8,6 +8,7 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 
 ## Frontend workflows
 
+- [Guided coffee shop](./manual/guided-example.md) — learn by editing a running API beside a working shop; no OpenAPI document required.
 - [Getting started](./getting-started.md) — run a local API and make a browser request.
 - [Routes and custom responses](./features/routes.md) — shape the response a screen needs.
 - [State](./features/state.md) — share small in-memory state across routes.

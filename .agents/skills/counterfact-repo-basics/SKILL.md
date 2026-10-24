@@ -37,6 +37,7 @@ packages/
     test/                     # Jest unit tests
     templates/                # Generator scaffold templates
     docs/                     # Canonical user documentation
+  tutorials/                  # Guided tours, exercise preparation, and lesson checks
   types/src/                  # Shared types copied into generated projects
 test-black-box/               # Gherkin journeys with Python harness and step glue
 examples/                     # Checked consumer examples

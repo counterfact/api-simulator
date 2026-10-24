@@ -24,7 +24,8 @@
       "@counterfact/types": ["./packages/types/src/index.ts"],
       "@counterfact/types/streaming-content-types": [
         "./packages/types/src/streaming-content-types.ts"
-      ]
+      ],
+      "@counterfact/tutorials": ["./packages/tutorials/src/index.ts"]
     }
   }
 }

@@ -9,6 +9,11 @@
           "description": "Start a local HTTP API from a specification."
         },
         {
+          "title": "Guided coffee shop",
+          "path": "/docs/manual/guided-example",
+          "description": "Learn by editing a running API beside a working storefront."
+        },
+        {
           "title": "Automatic sample responses",
           "path": "/docs/manual/sample-responses",
           "description": "Get schema-derived responses and select named examples."

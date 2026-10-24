@@ -1431,6 +1431,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@counterfact/tutorials@npm:0.1.0, @counterfact/tutorials@workspace:packages/tutorials":
+  version: 0.0.0-use.local
+  resolution: "@counterfact/tutorials@workspace:packages/tutorials"
+  dependencies:
+    "@counterfact/runtime": "npm:0.2.0"
+    prettier: "npm:3.9.10"
+  languageName: unknown
+  linkType: soft
+
 "@counterfact/types@npm:0.1.0, @counterfact/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@counterfact/types@workspace:packages/types"
@@ -5152,6 +5161,7 @@ __metadata:
     "@counterfact/openapi": "npm:0.1.6"
     "@counterfact/repl": "npm:0.1.6"
     "@counterfact/runtime": "npm:0.2.0"
+    "@counterfact/tutorials": "npm:0.1.0"
     commander: "npm:15.0.0"
     debug: "npm:4.4.3"
     http-terminator: "npm:3.2.0"

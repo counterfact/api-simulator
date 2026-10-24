@@ -53,6 +53,7 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
   and use the official review command for verified moved documents. Remove only
   their obsolete state keys; a rename alone does not establish a new review.
 
+- Run package packing/prepack checks separately from unit and product suites that consume workspace `dist` output. Prepack rebuilds can remove those files while another suite is loading them, causing false missing-module failures. Finish the package check before starting those suites.
 - `catchmydrift@0.1.0` review state is an unversioned map of watched paths to reachable full commit SHAs. When migrating legacy snapshot records, recover the historical commit that established each record and verify its recorded related-file blobs before retaining that baseline. Do not substitute tokens, blob hashes, or the current HEAD for an unverified review. Run the checker after migration and report outstanding drift separately from state/configuration failures.
 
 - Quote glob arguments in package scripts when the receiving tool accepts the pattern.
@@ -60,6 +61,7 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
   multiple files can turn an extra path into tsd's positional working directory.
 - Execute substantial documentation recipes against the exact published version or commit they instruct readers to use. A source package version can match npm while exposing unreleased APIs; verify public method availability and mark source-only recipes with a reproducible checkout setup. Verify externally linked contracts at their pinned URL, and exercise both the failing and repaired steps of typecheck examples.
 - User documentation ships in the npm package as well as the site. Keep the package `files` allowlist and `test/package/fixtures/pack-files.json` aligned with new pages; inspect inventory changes and run the packed-consumer check after adding documentation paths.
+- Keep introductory walkthroughs in a linked manual chapter, with setup and discovery rules in `docs/api/cli.md`; preserve the direct OpenAPI quick start when integrating older onboarding changes.
 - The documentation has a feature-based manual and a separate API reference. Keep `site/src/data/navigation.json`, the Markdown manual/reference indexes, and the home-page feature count aligned when adding chapters. Reuse canonical Markdown pages rather than duplicating existing guides, preserve published documentation URLs through the site redirect map when retiring redundant Markdown sources, and check rendered anchors as well as page destinations after restructuring.
 - When rebuilding documentation navigation, compare removed content with the previous site as well as checking URLs. Preserve privacy disclosures, project resources, task indexes, and externally configured client examples; verify retained guides have incoming links from the new navigation. A successful link check cannot detect removed information or orphaned pages.
 - Documentation is also rendered as site pages. Link repository-only examples
@@ -159,6 +161,8 @@ Before adding or approving a black-box test:
    rg -n '_run_node_script|consume\.mjs|--eval|input-type=module|packages/.+/(src|dist)/' test-black-box
    rg -n '@counterfact/|import .*counterfact|from .*counterfact' test-black-box
    ```
+
+For pseudo-terminal teardown, close the master before waiting for child exit so unread output cannot block terminal draining. Bound every wait, including after SIGTERM, and escalate to SIGKILL rather than using an unbounded waitpid. Avoid parent HTTP-server threads before forkpty on macOS; keep HTTP fixtures in separate processes.
 
 For interactive CLI behavior, use a real pseudo-terminal and send the literal keystrokes a user would type.
 If the required terminal facility is unavailable on an operating system, skip explicitly and ensure another CI operating system executes the test; do not replace the test with a direct function call.

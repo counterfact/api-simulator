@@ -25,7 +25,32 @@ yarn lint
 yarn test
 ```
 
-The [code generator](./packages/generator/README.md) and [server runtime](./packages/runtime/README.md) are separate workspace packages. The `counterfact` package composes them with the CLI, client, and REPL. Root scripts coordinate builds and checks, so contributors do not need to change directories for the standard workflow.
+The [code generator](./packages/generator/README.md) and [server runtime](./packages/runtime/README.md) are separate workspace packages. The `counterfact` package composes them with the CLI, client, and REPL. Guided tours live in [`packages/tutorials`](./packages/tutorials/README.md); add future chapter tours there. Root scripts coordinate builds and checks, so contributors do not need to change directories for the standard workflow.
+
+### Try the guided tour from a checkout
+
+After pulling changes that add or update workspace packages, refresh the
+dependency links with `yarn install --immutable`. Building compiles the packages;
+installation makes them available to Node.
+
+From the repository root, run:
+
+```sh
+yarn go:first-run
+```
+
+Like the other `go:*` launchers, this builds the current checkout and runs its
+CLI from the repository root. It passes no arguments, reproducing
+`npx counterfact@latest` with this branch's code as the installed version.
+Normal configuration detection applies: a `counterfact.yaml` bypasses the
+intro. Use an interactive terminal with `CI` unset to see the menu when no
+config exists. Generated tutorial files stay in the repository directory.
+
+Choose **Try a guided example**. Running the built CLI exercises this checkout;
+`npx counterfact@latest` uses the published release. Keep the checkout available
+because generated lesson checks load its tutorial helpers. The [guided-example
+chapter](./packages/counterfact/docs/manual/guided-example.md) describes the
+exercise, restart behavior, and follow-up guides.
 
 ### Build feedback
 

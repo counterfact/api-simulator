@@ -90,6 +90,7 @@ Save the file and refresh the frontend—no server restart is needed.
 
 ## Next steps
 
+- [Try the guided coffee shop](./manual/guided-example.md) — learn by changing real handlers beside a working storefront; no document required.
 - [First 10 minutes](./first-10-minutes.md) — add a small create/read workflow and one frontend-relevant failure.
 - [Find your workflow](./usage.md) — find guides by job: frontend, testing, advanced control, or troubleshooting.
 - [Custom responses](./features/routes.md), [state](./features/state.md), [failures](manual/edge-cases.md), and [proxying](./features/proxy.md) — add capabilities only when the workflow needs them.

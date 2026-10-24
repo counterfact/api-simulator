@@ -30,6 +30,7 @@
   "docs/manual.md",
   "docs/manual/admin-api.md",
   "docs/manual/edge-cases.md",
+  "docs/manual/guided-example.md",
   "docs/manual/multiple-apis.md",
   "docs/manual/nested-contexts.md",
   "docs/manual/overlays.md",
