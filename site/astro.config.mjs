@@ -1,4 +1,5 @@
 import { defineConfig } from "astro/config";
+import remarkGithubAlerts from "./plugins/remark-github-alerts.mjs";
 import { visit } from "unist-util-visit";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -99,6 +100,7 @@ export default defineConfig({
     shikiConfig: {
       theme: "github-light",
     },
+    remarkPlugins: [remarkGithubAlerts],
     rehypePlugins: [rehypeStripMdLinks],
   },
 });
