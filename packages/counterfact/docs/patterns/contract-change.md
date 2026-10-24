@@ -1,6 +1,6 @@
 # Catch a contract change with TypeScript
 
-Use generated handler types to surface changed assumptions before clients and services meet in a shared environment. Counterfact regenerates contracts; your editor or an explicit `tsc` invocation performs the type check. Serving and hot reload transpile routes without running a full project typecheck.
+When your API spec changes, regenerate the handler types and run `tsc` to find code that needs updating. Your editor can also show type errors. The server and hot reload do not run a full project typecheck.
 
 ## Generate a small typed operation
 
@@ -84,7 +84,7 @@ export const GET: HTTP_GET = function ($) {
 };
 ```
 
-Run the same typecheck again; it should pass. In CI, run generation and this explicit check with pinned dependencies before the client tests. Commit the specification and authored changes together; generated types are derived artifacts, so follow your project's source-control convention for them.
+Run the same typecheck again; it should pass. In CI, run generation and this explicit check with pinned dependencies before the client tests. Commit the specification and your changes together; follow your project’s convention for committing generated types.
 
 ## Understand the boundary
 

@@ -45,7 +45,7 @@ Counterfact is a tool that turns an OpenAPI spec into a live, editable, stateful
 
 **QA engineers** who need to reproduce specific edge cases and error states on demand.
 
-**Developers writing automated tests** — Counterfact runs a real HTTP server, so it works seamlessly in integration and end-to-end test suites. Start it in a `beforeAll`, run your tests, tear it down in `afterAll`.
+**Developers writing automated tests** — Counterfact runs a real HTTP server that your integration and end-to-end tests can call. Start it in a `beforeAll`, run your tests, tear it down in `afterAll`.
 
 **AI agents** that make calls to third-party APIs — running against a local mock avoids rate limits, costs, and network flakiness.
 
@@ -142,7 +142,7 @@ export class Context {
 }
 ```
 
-State is in-memory, which means it's lightning-fast, it resets to a known clean state every restart, and scalability isn't something you need to worry about because you're the only one using it.
+State stays in memory. Restarting creates fresh contexts and runs your startup scenarios again.
 
 ---
 

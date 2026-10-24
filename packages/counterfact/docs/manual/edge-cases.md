@@ -27,7 +27,7 @@ The delay is in milliseconds. Supply two numbers for a random duration within th
 
 ## Switch failures at runtime
 
-A [context](../features/state.md) is an authored class shared by routes in its directory and below. Define failure flags in that class:
+A [context](../features/state.md) is a class you write shared by routes in its directory and below. Define failure flags in that class:
 
 ```ts
 // api/routes/_.context.ts

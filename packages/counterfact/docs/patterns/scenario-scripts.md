@@ -2,13 +2,13 @@
 
 Save the REPL setups you use more than once: seed data, configure state, and build reusable request sequences that run on demand. Seed context state at startup.
 
-Use the pet `Context` from the [state guide](../features/state.md), with authored `reset()` and `add()` methods. Counterfact generates `Scenario` and `Scenario$` in `types/_.context.ts` when type generation is enabled. Put `scenarios/` alongside `routes/` under the API output directory.
+Use the pet `Context` from the [state guide](../features/state.md), with custom `reset()` and `add()` methods. Counterfact generates `Scenario` and `Scenario$` in `types/_.context.ts` when type generation is enabled. Put `scenarios/` alongside `routes/` under the API output directory.
 
 The [REPL](../features/repl.md) is the terminal’s live JavaScript prompt; the [route builder](../features/route-builder.md) prepares HTTP requests. A scenario receives setup helpers, rather than the handler request object; see [function arguments](../manual/concepts.md#function-arguments).
 
 ## Why teams use this
 
-The REPL is powerful for ad-hoc exploration, but many setup tasks are predictable: seed a set of pets before a demo, reset state to a known baseline for a test, or configure a reusable route builder for a common request. Retyping these commands every time the server restarts is tedious and error-prone.
+Use the REPL to try things out. When you find yourself entering the same setup commands repeatedly, save them as a scenario. A scenario can seed pets before a demo or reset part of the state for a test.
 
 ## How it works
 
@@ -47,7 +47,7 @@ Applied soldPets
 
 For multiple API groups, select the group explicitly, for example `.scenario pets soldPets`.
 
-Generated `Scenario$` currently types `route(...)` and entries in `routes` as `unknown`, so the fluent builder API is not type-checked through that surface. Build a reusable request separately at the untyped REPL prompt after running the state scenario:
+Generated `Scenario$` currently types `route(...)` and entries in `routes` as `unknown`, so calls to the fluent builder API are not type-checked there. Build a reusable request separately at the untyped REPL prompt after running the state scenario:
 
 ```js
 ⬣> routes.findSold = route("/pet/findByStatus").method("get").query({ status: "sold" })
@@ -141,7 +141,7 @@ export const addThreeDogs: Scenario = ($) => addPets($, 3, "dog");
 
 - Scenario functions are plain TypeScript — no special framework, fully type-checked, easy to test in isolation.
 - `.scenario` provides on-demand state changes without editing handler files or restarting the server.
-- `startup` applies your authored initialization on every restart. Fixed seed data and controlled inputs make that initial state repeatable; the hook does not make random or time-dependent initialization deterministic.
+- `startup` applies your initialization code on every restart. Fixed seed data and controlled inputs make that initial state repeatable; the hook does not make random or time-dependent initialization deterministic.
 - Helper functions accepting extra arguments let the same logic create a repeatable baseline at startup and smaller targeted variants during debugging.
 - Scenarios live alongside your handler code, making them easy to discover and keep in sync with the API.
 

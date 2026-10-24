@@ -1,6 +1,6 @@
 # Install Counterfact for automated workflows
 
-Use Node.js 22 or newer. Install Counterfact in the project that owns the contract, authored handlers, and tests:
+Use Node.js 22 or newer. Install Counterfact in the project that owns the contract, custom handlers, and tests:
 
 ```sh
 npm init -y

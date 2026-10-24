@@ -4,7 +4,7 @@ This recipe gives a test runner a complete local workflow: an empty order collec
 
 ## Install and generate
 
-Follow the [project installation setup](./lifecycle-setup.md), then keep the contract, authored code, and verification script together in that project for review.
+Follow the [project installation setup](./lifecycle-setup.md), then keep the contract, your code, and verification script together in that project for review.
 
 Save this as `orders.yaml`:
 

@@ -29,7 +29,7 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 - [Contract-change check](./patterns/contract-change.md) — regenerate, observe a type error, and repair a handler.
 - [Shared store](./patterns/shared-store.md) — coordinate state across API groups.
 - [Third-party SDK against a local API](./patterns/agentic-sandbox.md#point-a-third-party-sdk-at-a-local-api) — redirect the Stripe Node SDK, exercise a rate limit, and recover.
-- [AI-assisted implementation](./patterns/ai-assisted-implementation.md) and [agentic sandbox](./patterns/agentic-sandbox.md) — give coding agents a bounded, verifiable API task.
+- [AI-assisted implementation](./patterns/ai-assisted-implementation.md) and [agentic sandbox](./patterns/agentic-sandbox.md) — give coding agents a specific task and tests you can run yourself.
 
 ## Advanced control
 

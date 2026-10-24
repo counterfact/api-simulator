@@ -1,8 +1,8 @@
 # Your first 10 minutes with Counterfact
 
 Start with [Getting Started](./getting-started.md) to run the API and make a
-browser request. This follow-on adds only enough authored behavior for a
-visible frontend workflow: create a pet, read it back, and show one failure.
+browser request. Next, make the API remember a pet you create, return it when
+requested, and simulate a failure.
 
 ## Install a pinned version
 
@@ -96,7 +96,9 @@ console.log(found); // the same pet you just created, with its assigned id
 
 The GET returns the pet created by POST, rather than an unrelated generated sample. The small in-memory map is sufficient for this client-visible workflow.
 
-## Add one frontend-relevant failure
+<span id="add-one-frontend-relevant-failure"></span>
+
+## Test an error response
 
 The missing-record branch above returns `404`. To exercise an unavailable state for the same pet, add this branch at the beginning of the GET handler:
 
@@ -122,5 +124,5 @@ behavior needs a delay.
 - [Generated code](./features/generated-code.md) explains regeneration and the boundary between `routes/` and `types/`.
 - The [verified first-10-minutes example](https://github.com/counterfact/api-simulator/tree/main/examples/first-10-minutes) is a checked-in, CI-verified variant with a minimal contract.
 
-For a complete map of the deeper documentation, see [Find your workflow](./usage.md) and
+For more guides, see [Find your workflow](./usage.md) and
 [Reference](./api.md).

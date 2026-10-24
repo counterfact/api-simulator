@@ -36,7 +36,7 @@ arrives at the same response.
 
 ## Use the simulation as an executable reference
 
-Commit the contract, authored handlers, scenarios, and assertions together. They document selected client-visible behavior for service implementers and consumers. Regenerate types and run explicit compiler and HTTP checks when the contract changes; synchronization is not automatic. The simulation is an in-memory reference for supported workflows, not a production twin or replacement for real-backend verification.
+Commit the spec, handlers, scenarios, and tests together so other developers can see which behavior the simulation covers. When the spec changes, regenerate the types, run the TypeScript compiler, and run the HTTP tests. Keep tests against the real backend for behavior the simulation leaves out.
 
 ## Example
 
@@ -86,7 +86,7 @@ export const declinedPayment: Scenario = ($) => {
 
 `declinedPayment` changes only the payment outcome; it preserves orders and unrelated state. Use `await simulator.reset()` explicitly when a fresh baseline is required. The [complete payment retry recipe](./payment-retry.md) connects this model to HTTP handlers and an automated decline, recovery, permission, and reset check.
 
-During development, the same state is available as a direct control surface:
+You can also change that state from the REPL:
 
 ```text
 ⬣> .scenario declinedPayment
@@ -97,7 +97,7 @@ During development, the same state is available as a direct control surface:
 
 - Predictable behavior when handlers use fixed values or deterministic functions, with controlled state and delays. Local execution or reset alone does not make random responses deterministic.
 - A small model that is easy to understand, reset, and commit with the client.
-- Named scenarios that reproduce relevant API worlds without production data.
+- Named scenarios that set up test cases without production data.
 - Clear reasons to keep targeted tests against the real backend: the simulator
   intentionally does not prove unmodeled behavior.
 

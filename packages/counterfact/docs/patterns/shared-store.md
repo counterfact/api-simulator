@@ -34,7 +34,7 @@ spec:
 
 Run `npx counterfact --config counterfact.yaml` to generate both groups. The contracts must declare the operations, bodies, and responses used below, including the orders POST's 201 JSON response. The group names select directories, not URL prefixes; see [multiple APIs](../manual/multiple-apis.md).
 
-Add one user-authored `_.store.ts` at the root of `basePath`:
+Add one custom `_.store.ts` at the root of `basePath`:
 
 ```text
 api/

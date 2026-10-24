@@ -58,7 +58,7 @@ Use Counterfact when: you have an OpenAPI document and want a local server with 
 
 WireMock supports [scenario state machines](https://wiremock.org/docs/stateful-behaviour/)
 that transition after requests and can be inspected or reset. This differs from
-Counterfact's shared user-authored context objects.
+Counterfact's shared custom context objects.
 
 **WireMock** is battle-tested and runs on the JVM. It excels at stubbing precise request/response pairs and is widely used in Java/Spring ecosystems.
 

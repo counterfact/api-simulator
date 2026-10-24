@@ -2,7 +2,7 @@
 
 The `$.context` object is how routes share in-memory state. It's an instance of the `Context` class exported from `_.context.ts` in the same directory (or the nearest parent directory that has one).
 
-These examples extend the [first-ten-minutes pet workflow](../first-10-minutes.md). `add`, `get`, and the other context methods below are authored application methods; Counterfact supplies `$.context`. Keep the generated handler-type imports in your route files.
+These examples extend the [first-ten-minutes pet workflow](../first-10-minutes.md). `add`, `get`, and the other context methods below are methods you write; Counterfact supplies `$.context`. Keep the generated handler-type imports in your route files.
 
 ```ts
 // routes/pet.ts
@@ -94,7 +94,7 @@ export class Context {
 ## Sharing state across API groups
 
 An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) collects specs that share routes and context state. Separate groups have separate context registries. `basePath` is the output directory containing their group subdirectories. When several groups model
-one product and need shared domain data, add a user-authored `_.store.ts` at the
+one product and need shared domain data, add a custom `_.store.ts` at the
 root of `basePath`:
 
 ```ts

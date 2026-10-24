@@ -4,7 +4,7 @@ Start with a specification and a running API. Add state, scenarios, or multiple 
 
 ## Specification, route, and handler
 
-An **OpenAPI document**, also called a specification or spec, is a YAML or JSON description of an HTTP API's paths, operations, inputs, and response shapes. Ask the API owner for the document or its URL. The [quick start](../getting-started.md) uses a public Petstore document so you can try Counterfact without supplying your own.
+**OpenAPI**, formerly Swagger, describes an API’s endpoints, parameters, and responses in YAML or JSON. Give Counterfact that file or its URL to generate a working mock API. The [quick start](../getting-started.md) uses a public Petstore document so you can try Counterfact without supplying your own.
 
 A **route** maps a URL path to a file. An **operation** is an HTTP method on that path. A **handler** is the function that implements an operation. For example, `GET /pet/{petId}` uses the `GET` export in `routes/pet/{petId}.ts`.
 
@@ -26,7 +26,7 @@ api/                         # basePath / output directory
     index.ts
 ```
 
-Counterfact generates starter handlers and request/response types from the spec. It preserves authored handler logic on regeneration. A generated handler initially returns sample data; it does not implement create/read relationships automatically. See [generated code](../features/generated-code.md) and [sample responses](./sample-responses.md).
+Counterfact generates starter handlers and request/response types from the spec. Regenerating keeps your changes to the handlers. A generated handler initially returns sample data; it does not implement create/read relationships automatically. See [generated code](../features/generated-code.md) and [sample responses](./sample-responses.md).
 
 ## The handler argument `$`
 
@@ -60,7 +60,7 @@ A **context registry** is Counterfact's collection of these live objects, looked
 
 A **scenario** is a named function you author under `scenarios/` to change live state: seed pets, enable a failure, or restore part of a workflow. Export `startup` from `scenarios/index.ts` for initialization. Other exports run on demand. A scenario transforms the current state; a full simulator `reset()` reconstructs the baseline and awaits startup again.
 
-The **REPL** (read–eval–print loop) is the JavaScript prompt in the terminal where Counterfact is running. At the `⬣>` prompt, `context` exposes your root context, `client` sends HTTP requests, and `route(path)` builds an inspectable, reusable request. `routes` is a collection in which you can save named request builders. Enter `.scenario soldPets` to run an authored scenario. See [scenario scripts](../patterns/scenario-scripts.md) and [the REPL](../features/repl.md).
+The **REPL** (read–eval–print loop) is the JavaScript prompt in the terminal where Counterfact is running. At the `⬣>` prompt, `context` exposes your root context, `client` sends HTTP requests, and `route(path)` builds an inspectable, reusable request. `routes` is a collection in which you can save named request builders. Enter `.scenario soldPets` to run a scenario. See [scenario scripts](../patterns/scenario-scripts.md) and [the REPL](../features/repl.md).
 
 ### Function arguments
 
@@ -73,7 +73,7 @@ The same parameter name appears in several kinds of function, but their capabili
 | Scenario            | `context`, `loadContext`, `route`, and `routes`                                 | `Scenario` / `Scenario$`      |
 | Route middleware    | Typed request data and nearest context, plus a separate `respondTo($)` callback | `Middleware`                  |
 
-Import these types from the matching files under `types/`. Only the context constructor receives `store` directly. Handlers and middleware delegate shared behavior to context methods. The scenario's `routes` collection is also available as `routes` in the REPL. See the [state reference](../api/state.md) for the exact boundaries.
+Import these types from the matching files under `types/`. Only the context constructor receives `store` directly. Handlers and middleware delegate shared behavior to context methods. The scenario's `routes` collection is also available as `routes` in the REPL. See the [state reference](../api/state.md) for the arguments each function receives.
 
 ## API groups, versions, and URL prefixes
 
@@ -106,7 +106,7 @@ Run `npx counterfact --config counterfact.yaml`. Both versions use handler files
 
 To serve independent APIs, use distinct groups such as `customers` and `orders`. They have separate context registries, even if they declare the same route path. A directory such as `routes/admin/` is a route subtree within a group, not a separate API group. A single-spec quick-start project uses the flat `api/routes/` layout and needs no named group configuration.
 
-In a multi-API REPL, bindings use configured group names: `context.catalog`, `loadContext.catalog("/items")`, and `route.catalog("/api/v1/items")`. “API group” names identify simulation state; an authentication **API key** is a separate credential. See [multiple APIs](./multiple-apis.md) and [API versions](../features/multiple-versions.md).
+In a multi-API REPL, bindings use configured group names: `context.catalog`, `loadContext.catalog("/items")`, and `route.catalog("/api/v1/items")`. See [multiple APIs](./multiple-apis.md) and [API versions](../features/multiple-versions.md).
 
 ## Store: state shared across groups
 

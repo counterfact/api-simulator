@@ -25,6 +25,8 @@ curl -X POST http://localhost:3100/_counterfact/api/contexts/pets \
 
 The update goes through the context registry, Counterfact’s collection of live contexts looked up by route path. Define the `unavailable` field and the handler behavior in your [context class](../features/state.md) before trying this request. Read the context back and send an ordinary API request to observe the behavior. The bare `/contexts` endpoint lists contexts; it does not update the root context.
 
-## Choose the right control surface
+<span id="choose-the-right-control-surface"></span>
+
+## Use the REPL or library for other tasks
 
 Use the REPL for interactive access to context methods. Use the library for awaited reset and scenario operations in a test suite; the Admin API does not expose those lifecycle methods. For endpoint schemas, response envelopes, and authentication errors, see the [HTTP Admin API reference](../api/admin-api.md).
