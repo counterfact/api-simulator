@@ -542,3 +542,44 @@ it("keeps usable stock on Back and offers REPL recovery only for depleted invent
     "Add House Blend to your cart",
   );
 });
+
+it("recovers the original retry cart after a different successful purchase and reload", async () => {
+  const storage = new Map<string, string>();
+  const app = await browser(storage);
+  app.read("progress.step=4;showLesson()");
+  app.add();
+  app.server.orderMode = "unavailable";
+  await app.order();
+  expect(app.read("progress.step")).toBe(5);
+  app.add();
+  expect(app.root("retry-recovery").textContent).toContain("House Blend × 1");
+  app.server.orderMode = "accepted";
+  await app.order();
+  expect(app.read("progress.done")).toBe(false);
+  expect(app.root("cart").textContent).toContain("empty");
+  expect(app.root("retry-recovery").textContent).toContain(
+    "Restore original cart",
+  );
+  const restored = await browser(storage);
+  expect(restored.root("retry-recovery").textContent).toContain(
+    "House Blend × 1",
+  );
+  find(restored.root("retry-recovery"), (node) => node.tag === "button")!
+    .onclick!();
+  expect(restored.root("cart").textContent).toContain("House Blend × 1");
+  expect(restored.root("retry-recovery").textContent).toBe("");
+  await restored.order();
+  expect(restored.read("progress.done")).toBe(true);
+  expect(restored.root("step-completion").textContent).toBe("✓ Step complete");
+});
+
+it("names the restart directory and fresh session behavior at the handoff", async () => {
+  const app = await browser();
+  app.read("progress.step=11;showLesson()");
+  expect(app.root("lesson").textContent).toContain("run this from /tmp:");
+  expect(app.root("lesson").textContent).toContain("--port 3100");
+  expect(app.root("lesson").textContent).toContain("keeps your handler edits");
+  expect(app.root("lesson").textContent).toContain(
+    "fresh inventory, lesson progress, and cart",
+  );
+});

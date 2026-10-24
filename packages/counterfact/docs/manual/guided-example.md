@@ -70,7 +70,9 @@ Product cards use shopper-facing messages such as **4 bags available** or
 immediately; reducing a quantity or removing an item restores availability.
 Only the API reports inventory changes after purchases or context updates.
 If the products response fails or contains invalid stock, cards show **Availability temporarily unavailable** and buying pauses until a fresh response arrives. Stock rejections
-show the requested and available quantities reported by the order API. Missing
+show the requested and available quantities reported by the order API. If you change
+the cart during the retry lesson, **Restore original cart** brings back the
+original failed order so you can complete that experiment. Missing
 order confirmations are labeled unknown rather than rejected; the cart is kept.
 
 The shop checks the products API automatically while visible and after each
@@ -99,8 +101,8 @@ then restore it without a hint. The same workflow applies to your own API.
 The shop and REPL remain running after completion, and your files remain after
 quitting. If a browser cannot be opened, use the walkthrough URL printed in the
 terminal. The final panel prints the command to restart the project; run it from
-the directory where you started the intro. Add `--port <number>` if you need a
-port other than the default `3100`.
+the directory named above the command. The command includes the current server
+port; change `--port <number>` if you need a different one.
 
 Restarting keeps your handler edits but starts a new in-memory session. The
 startup scenario seeds the inventory again, and the browser starts a new lesson

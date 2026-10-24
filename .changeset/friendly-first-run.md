@@ -31,3 +31,5 @@ Expose editor handoff and path copying beside the current edit instruction, and 
 Give the inventory exercise a starter loop with a TODO in the order handler, so the edit is clear without opening the optional code hint.
 
 Mark completed tutorial steps with a visible check mark and Step complete message beside the Continue action.
+
+Offer original-cart recovery when a learner changes an order during the retry lesson, and make the restart handoff explicit about its working directory, port, and fresh session state.
