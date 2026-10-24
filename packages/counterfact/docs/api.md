@@ -1,5 +1,7 @@
 # API reference
 
+For definitions and relationships between these terms, see [How Counterfact fits together](./manual/concepts.md).
+
 Look up options, arguments, methods, and lifecycle contracts. For explanations and task-oriented examples, use the [user manual](./manual.md).
 
 - [CLI and configuration](./api/cli.md)

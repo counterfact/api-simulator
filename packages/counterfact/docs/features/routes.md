@@ -2,9 +2,12 @@
 
 Each file in `routes/` corresponds to an API path. For example, `/users/{userId}` maps to `routes/users/{userId}.ts`. The root path `/` maps to `routes/index.ts`.
 
-Use typed function expressions for route handlers:
+Use typed function expressions for route handlers. This example assumes your spec declares GET and POST on `/pets` with 200 responses; retain the imports generated for your own path:
 
 ```ts
+// routes/pets.ts — keep the imports generated for your operation
+import type { HTTP_GET, HTTP_POST } from "../types/paths/pets.types.js";
+
 export const GET: HTTP_GET = function ($) {
   return $.response.status(200).random();
 };
@@ -39,7 +42,10 @@ Each exported function handles one HTTP method. The single argument `$` gives yo
 | `.header(name, value)`         | Adds a response header                                                                  |
 
 ```ts
-return $.response.status(200).header("x-request-id", "abc123").json({ ok: true });
+return $.response
+  .status(200)
+  .header("x-request-id", "abc123")
+  .json({ ok: true });
 ```
 
 ### Setting cookies
@@ -47,7 +53,8 @@ return $.response.status(200).header("x-request-id", "abc123").json({ ok: true }
 Use `.cookie(name, value, options?)` to set one or more cookies. Each call appends a new `Set-Cookie` header and returns the builder for chaining.
 
 ```ts
-return $.response.status(200)
+return $.response
+  .status(200)
   .cookie("sessionId", "abc123", {
     httpOnly: true,
     secure: true,
@@ -61,7 +68,8 @@ return $.response.status(200)
 Multiple cookies:
 
 ```ts
-return $.response.status(200)
+return $.response
+  .status(200)
   .cookie("sessionId", "abc123")
   .cookie("theme", "dark")
   .json({ ok: true });
@@ -88,7 +96,8 @@ If your OpenAPI spec defines named examples for a response, you can return a spe
 return $.response.status(200).example("successResponse");
 
 // Chain additional decorations after selecting an example
-return $.response.status(200)
+return $.response
+  .status(200)
   .example("successResponse")
   .header("x-request-id", "abc123");
 ```

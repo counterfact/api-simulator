@@ -1,5 +1,7 @@
 # Hybrid Proxy
 
+The [REPL](../features/repl.md) is the live JavaScript prompt in the terminal running Counterfact. Enter the `.proxy` commands below there.
+
 Keep stable endpoints live while you build or replace the rest. Counterfact can serve local handlers for selected paths and forward everything else to the real backend.
 
 ## Why teams use this

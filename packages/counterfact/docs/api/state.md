@@ -1,5 +1,7 @@
 # Contexts, stores, and scenarios
 
+For definitions of contexts, scenarios, and API groups, read [how state fits together](../manual/concepts.md#context-state-shared-by-nearby-routes). `basePath` is the output directory. The constructor, scenario, and middleware arguments below have [different capabilities](../manual/concepts.md#function-arguments).
+
 ## Context modules
 
 Export `class Context` from `routes/_.context.ts` or a nested `_.context.ts`. Routes use the nearest context as `$.context`. Constructors receive helpers; import the generated `Context$` type from the corresponding `types/_.context.js` file.

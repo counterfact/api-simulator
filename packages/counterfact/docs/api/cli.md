@@ -142,12 +142,12 @@ polled or watched.
 
 ### Programmatic usage
 
-Pass `overlays` on each `SpecConfig` entry:
+Pass `overlays` on each specification entry (`SpecConfig`) in the second argument to `counterfact()`. `basePath` is the output directory; an empty group uses the single-API flat layout. See [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes).
 
 ```ts
 import { counterfact } from "counterfact";
 
-await counterfact(config, [
+await counterfact({ basePath: "api" }, [
   {
     source: "openapi.yaml",
     group: "",

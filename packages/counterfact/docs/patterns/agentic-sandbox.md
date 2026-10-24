@@ -1,5 +1,7 @@
 # AI-assisted workflows
 
+The [REPL](../features/repl.md) is Counterfact’s live terminal prompt. A [context](../features/state.md) is your authored state class; a context at `routes/_.context.ts` serves nested routes until a nearer context replaces it.
+
 Give a coding agent a bounded local API and a reproducible verification task. Pin the API world and make the expected behavior explicit so the agent and a human reviewer can run the same checks.
 
 ## Point a third-party SDK at a local API

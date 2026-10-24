@@ -12,7 +12,7 @@ Find the file corresponding to the route, change behavior by editing the TypeScr
 
 Depending on the scenario, you may want to commit your changes to source control or throw them away.
 
-When `<basePath>/_.store.ts` exists, it is hot-reloaded separately from route
+A [shared application store](../patterns/shared-store.md) is an optional class for data used across API groups. `basePath` is the API output directory. When `<basePath>/_.store.ts` exists, it is hot-reloaded separately from route
 contexts. Counterfact preserves the live store object's identity and existing
 fields, updates prototype methods, and adds newly declared enumerable fields.
 An invalid edit or deletion keeps the last successfully loaded store active and

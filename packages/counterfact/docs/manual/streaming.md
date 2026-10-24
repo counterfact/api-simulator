@@ -2,6 +2,8 @@
 
 Use a stream when the client needs to render events or records as they arrive. This lets you test progressive updates and disconnect handling.
 
+Server-sent events (**SSE**) use `text/event-stream`; **JSONL** (newline-delimited JSON) sends one JSON value per line; **JSON-seq** separates JSON records with a record-separator character. An `AsyncIterable<T>` produces items over time, as the async generator below does with `yield`. OpenAPI’s `itemSchema` describes each item rather than the complete response body.
+
 Counterfact supports OpenAPI 3.2 sequential media types. When your spec uses `itemSchema` on a `text/event-stream`, `application/jsonl`, or `application/json-seq` content type, the generated handler type expresses the body as `AsyncIterable<T>`.
 
 Use `$.response.status(<status>).stream(iterable)` to return a stream from any route handler. The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).

@@ -18,6 +18,8 @@ simulator becomes a second backend that the team must maintain.
 
 ## How it works
 
+A [context](../features/state.md) holds state for nearby routes. A [group](../manual/concepts.md#api-groups-versions-and-url-prefixes) shares contexts across specs of one API; a [store](./shared-store.md) shares facts across groups. [Scenarios](./scenario-scripts.md) are named setup functions, and the [REPL](../features/repl.md) is the live terminal prompt.
+
 Model the smallest observable state machine that supports the client workflow:
 
 1. Start with a fixed response or a deterministic function of the request.
@@ -69,7 +71,7 @@ payment ledger, asynchronous settlement, inventory reservations, or the real
 service's retry rules unless a client workflow specifically depends on one of
 those behaviors.
 
-Make important starting states explicit with scenarios:
+Make important starting states explicit with [scenarios](./scenario-scripts.md): named setup functions under `api/scenarios/`. Counterfact generates the `Scenario` type and invokes an export named `startup` during initialization. Enter `.scenario declinedPayment` at the terminal’s REPL prompt to apply the other export:
 
 ```ts
 // api/scenarios/index.ts

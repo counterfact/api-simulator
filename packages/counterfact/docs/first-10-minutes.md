@@ -23,6 +23,8 @@ make the create/read path predictable for your app.
 
 ## Add the smallest useful state
 
+Counterfact supplies the handler argument `$`; its `context` member is an instance of the class you author below. Methods such as `add` and `get` are your application code. See [handler and constructor arguments](./manual/concepts.md#function-arguments).
+
 Create `api/routes/_.context.ts`. Context is shared by nearby routes and stays
 available when those routes hot-reload.
 
@@ -64,7 +66,9 @@ import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
 
 export const GET: HTTP_GET = function ($) {
   const pet = $.context.get($.path.petId);
-  return pet ? $.response.status(200).json(pet) : $.response.status(404).empty();
+  return pet
+    ? $.response.status(200).json(pet)
+    : $.response.status(404).empty();
 };
 ```
 

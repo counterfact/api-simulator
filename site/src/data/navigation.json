@@ -9,6 +9,11 @@
           "description": "Start a local HTTP API from a specification."
         },
         {
+          "title": "How Counterfact fits together",
+          "path": "/docs/manual/concepts",
+          "description": "Understand handlers, contexts, scenarios, API groups, and shared stores."
+        },
+        {
           "title": "Guided coffee shop",
           "path": "/docs/manual/guided-example",
           "description": "Learn by editing a running API beside a working storefront."

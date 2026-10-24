@@ -29,6 +29,7 @@
   "docs/getting-started.md",
   "docs/manual.md",
   "docs/manual/admin-api.md",
+  "docs/manual/concepts.md",
   "docs/manual/edge-cases.md",
   "docs/manual/guided-example.md",
   "docs/manual/multiple-apis.md",

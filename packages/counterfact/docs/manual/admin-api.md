@@ -23,7 +23,7 @@ curl -X POST http://localhost:3100/_counterfact/api/contexts/pets \
   -d '{"unavailable": true}'
 ```
 
-The update goes through the context registry. Read the context back and send an ordinary API request to observe the behavior. The bare `/contexts` endpoint lists contexts; it does not update the root context.
+The update goes through the context registry, Counterfact’s collection of live contexts looked up by route path. Define the `unavailable` field and the handler behavior in your [context class](../features/state.md) before trying this request. Read the context back and send an ordinary API request to observe the behavior. The bare `/contexts` endpoint lists contexts; it does not update the root context.
 
 ## Choose the right control surface
 

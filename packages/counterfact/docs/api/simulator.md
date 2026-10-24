@@ -17,6 +17,8 @@ try {
 
 `counterfact<TStore>(options, specs?)` resolves to a simulator. `basePath` is required; other `Config` fields are optional. The default port is 8100, `openApiPath` is `_`, server startup is enabled, and the REPL and Admin API are disabled. Generation, specification watching, cache building, and request/response validation default to enabled. Without a specification, there is no contract to generate or validate against.
 
+An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) collects specs sharing route files and context/scenario state. `specs` is an array of specification entries, also called `SpecConfig` objects.
+
 Each specification entry accepts `source`, `group`, optional `version`, optional `prefix`, and optional `overlays`. Only `prefix` changes request URLs. Groups select generated directories and state; versions in a group share contexts and scenarios.
 
 ## Simulator members

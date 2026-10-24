@@ -2,6 +2,8 @@
 
 There are several tools in the API mocking space. Here's an honest look at how Counterfact fits in.
 
+The table uses [context](./manual/concepts.md#context-state-shared-by-nearby-routes) for shared in-memory behavior, [REPL](./features/repl.md) for the live JavaScript prompt, and [hybrid proxy](./features/proxy.md) for forwarding some requests to a real backend while handling others locally.
+
 ## Quick comparison
 
 |                            | Counterfact         | [json-server](#counterfact-vs-json-server) | [WireMock](#counterfact-vs-wiremock) | [Prism](#counterfact-vs-prism) | [Microcks](#counterfact-vs-microcks) |

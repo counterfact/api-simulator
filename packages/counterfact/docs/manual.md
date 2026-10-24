@@ -1,5 +1,7 @@
 # User manual
 
+Read [How Counterfact fits together](./manual/concepts.md) for specifications, handlers, contexts, scenarios, API groups, and shared stores.
+
 Build a useful local API, then add the behavior your client needs. Each chapter explains a feature, how to use it, and the boundaries to keep in mind.
 
 New to Counterfact? Start with [Generate an API from OpenAPI](./getting-started.md), then follow the [first ten minutes](./first-10-minutes.md). For exact signatures and options, use the [API reference](./api.md).

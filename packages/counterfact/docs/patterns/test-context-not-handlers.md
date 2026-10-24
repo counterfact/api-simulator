@@ -12,11 +12,11 @@ Write unit tests for the context class. Test its methods directly, without start
 
 ## Example
 
-Given a context class:
+This example uses the same `add`, `get`, `list`, and `remove` methods as the [pet context in the state guide](../features/state.md), with generated types from the first-ten-minutes Petstore contract. Given that context class:
 
 ```ts
 // api/routes/_.context.ts
-import type { Pet } from "../types/components/pet.types.js";
+import type { Pet } from "../types/components/schemas/Pet.js";
 
 export class Context {
   private pets = new Map<number, Pet>();

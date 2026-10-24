@@ -1,6 +1,6 @@
 # HTTP Admin API
 
-Enable with `--admin-api`. The base path is `/_counterfact/api`. For grouped runners, the API is mounted beneath that runner's subdirectory; use the matching group endpoint.
+Enable with `--admin-api`. The base path is `/_counterfact/api`. For [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes), the Admin API is mounted beneath each group’s subdirectory; use the matching group endpoint.
 
 ## Authentication
 
