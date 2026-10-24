@@ -45,7 +45,8 @@ The walkthrough has eight screens. Related phases share one lesson: making
 Decaf available and buying it; failing and retrying an order; observing unchanged
 stock and adding inventory subtraction; restocking through the REPL and buying
 from that inventory. Instructions advance automatically within each lesson;
-**Continue** moves between concepts. The displayed quantities are guided examples:
+A green **✓ Step complete** message confirms success before **Continue** moves
+between concepts. The displayed quantities are guided examples:
 other positive whole-number stock values and fulfilled purchase quantities also
 work. Inventory lessons verify that the purchased quantity is subtracted.
 

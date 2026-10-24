@@ -439,13 +439,17 @@ it("completes all eight lessons with automatic transitions inside each concept",
     await app.poll();
   };
   await advance();
+  expect(app.root("lesson").textContent).not.toContain("✓ Step complete");
   app.add();
   await app.order();
+  expect(app.root("step-completion").textContent).toBe("✓ Step complete");
+  expect(app.root("continue").hidden).toBe(false);
   expect(app.root("guide-status").textContent).toContain(
     "has not reduced stock",
   );
   await advance();
   expect(app.root("shop-notice").textContent).toBe("");
+  expect(app.root("lesson").textContent).not.toContain("✓ Step complete");
   app.stocks.decaf = 5;
   app.server.revision = "decaf";
   app.server.checkOk = true;
@@ -453,9 +457,11 @@ it("completes all eight lessons with automatic transitions inside each concept",
   expect(app.read("progress.step")).toBe(3);
   expect(app.root("lesson").textContent).toContain("Step 3 of 8");
   expect(app.root("continue").hidden).toBe(true);
+  expect(app.root("lesson").textContent).not.toContain("✓ Step complete");
   expect(app.root("save-check").textContent).toBe("");
   app.add("decaf");
   await app.order();
+  expect(app.root("step-completion").textContent).toBe("✓ Step complete");
   await advance();
   app.add("dark-roast");
   app.server.orderMode = "unavailable";
