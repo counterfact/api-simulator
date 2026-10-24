@@ -1,4 +1,5 @@
 import { expect, it } from "@jest/globals";
+import { check } from "prettier";
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { findTourDirectory, prepareTour } from "../src/index.js";
@@ -27,6 +28,21 @@ it("creates a restartable offline shop without touching an existing project", as
     expect(await $.read(`${directory}/routes/walkthrough.ts`)).toContain(
       "Counterfact Coffee",
     );
+    for (const file of [
+      "routes/products.ts",
+      "routes/orders.ts",
+      "routes/_.context.ts",
+      "routes/tutorial-info.ts",
+      "routes/tutorial-check.ts",
+      "routes/walkthrough.ts",
+      "scenarios/index.ts",
+    ]) {
+      expect(
+        await check(await $.read(`${directory}/${file}`), {
+          parser: "typescript",
+        }),
+      ).toBe(true);
+    }
     await expect(prepareTour($.path("."), directory)).rejects.toMatchObject({
       code: "EEXIST",
     });

@@ -2,6 +2,8 @@
 import fs from "node:fs/promises";
 import { join, resolve } from "node:path";
 
+import { format } from "prettier";
+
 import { coffeeShopFiles, SHOP_DOCUMENT } from "./coffee-shop/coffee-shop.js";
 
 export async function findTourDirectory(root: string): Promise<string> {
@@ -32,7 +34,10 @@ export async function prepareTour(
   );
   for (const [file, contents] of Object.entries(coffeeShopFiles(destination))) {
     await fs.mkdir(join(destination, file, ".."), { recursive: true });
-    await fs.writeFile(join(destination, file), contents);
+    await fs.writeFile(
+      join(destination, file),
+      await format(contents, { parser: "typescript" }),
+    );
   }
   return {
     source: join(destination, "openapi.json"),

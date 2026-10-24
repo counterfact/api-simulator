@@ -84,6 +84,8 @@ instructions show the REPL command to restore it without resetting your files.
 
 ## Work in your editor
 
+The generated TypeScript files are formatted with Prettier before you open them.
+
 Use the instructional file links to open files in VSCode through the `vscode://`
 URL scheme, or **Copy file path** beside the edit instruction to find a file in another editor.
 The adjacent **Open in VSCode** link names its destination explicitly; code hints
