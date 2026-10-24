@@ -112,7 +112,7 @@ describe("AST route regeneration", () => {
         const content = await $.read("routes/thing.ts");
         for (const line of original.trim().split("\n"))
           expect(content).toContain(line);
-        expect(content).toContain("export const POST: createThing");
+        expect(content).toContain("export const POST: HTTP_POST");
         await generator.generate();
         expect(await $.read("routes/thing.ts")).toBe(content);
       });
@@ -135,7 +135,7 @@ describe("AST route regeneration", () => {
           types: true,
         }).generate();
         expect(await $.read("routes/thing.ts")).toContain(
-          "export const POST: createThing",
+          "export const POST: HTTP_POST",
         );
       });
     },
@@ -205,9 +205,9 @@ describe("AST route regeneration", () => {
   it("inserts after complete multiline imports and comments, and aliases a conflicting type", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("openapi.json", JSON.stringify(specification));
-      await $.add("routes/other.ts", "export type createThing = string;");
+      await $.add("routes/other.ts", "export type HTTP_POST = string;");
       const original =
-        'import type {\n  createThing,\n} from "./other.js"; /* first line\nsecond line */\n' +
+        'import type {\n  HTTP_POST,\n} from "./other.js"; /* first line\nsecond line */\n' +
         'export function GET() { return { nested: { text: "};" } }; }\n';
       await $.add("routes/thing.ts", original);
       const generator = new CodeGenerator($.path("openapi.json"), $.path(""), {
@@ -217,9 +217,9 @@ describe("AST route regeneration", () => {
       await generator.generate();
       const content = await $.read("routes/thing.ts");
       expect(content).toContain(
-        "second line */\nimport type { createThing as createThing2 }",
+        "second line */\nimport type { HTTP_POST as HTTP_POST2 }",
       );
-      expect(content).toContain("export const POST: createThing2");
+      expect(content).toContain("export const POST: HTTP_POST2");
       expect(content).toContain(
         'export function GET() { return { nested: { text: "};" } }; }',
       );

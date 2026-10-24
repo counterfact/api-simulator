@@ -24,7 +24,6 @@ info: { title: Local customer lookup, version: 1.0.0 }
 paths:
   /v1/customers/{customerId}:
     get:
-      operationId: getCustomer
       parameters:
         - name: customerId
           in: path
@@ -73,9 +72,9 @@ export class Context {
 
 ```ts
 // api/routes/v1/customers/{customerId}.ts
-import type { getCustomer } from "../../../types/paths/v1/customers/{customerId}.types.js";
+import type { HTTP_GET } from "../../../types/paths/v1/customers/{customerId}.types.js";
 
-export const GET: getCustomer = function ($) {
+export const GET: HTTP_GET = function ($) {
   if ($.context.rateLimited) {
     return $.response.status(429).json({
       error: { type: "rate_limit_error", message: "Try again shortly" },

@@ -1,3 +1,5 @@
+import { normalizeOpenApiPath } from "./openapi-path.js";
+import { sanitizeIdentifier } from "./sanitize-identifier.js";
 import createDebug from "debug";
 
 import {
@@ -18,12 +20,13 @@ const HTTP_METHODS = new Set([
   "PATCH",
   "HEAD",
   "OPTIONS",
-  "QUERY",
+  "TRACE",
 ]);
 
 export type OperationTypeNameMapping = Map<string, Map<string, string>>;
 
 function openApiPathToFilePath(openApiPath: string): string {
+  openApiPath = normalizeOpenApiPath(openApiPath);
   if (openApiPath === "/") {
     return "index";
   }
@@ -34,11 +37,13 @@ function openApiPathToFilePath(openApiPath: string): string {
 /**
  * Resolves the generated operation type name for each route and HTTP method.
  * This is the migration-facing API; concrete coder and specification classes
- * remain internal implementation details.
+ * remain internal implementation details. Set legacyNames only when migrating
+ * operationId-based imports from older generated projects.
  */
 export async function buildOperationTypeNameMapping(
   source: string,
   overlays: readonly string[] = [],
+  legacyNames = false,
 ): Promise<OperationTypeNameMapping> {
   debug("building operation type name mapping from %s", source);
 
@@ -60,24 +65,34 @@ export async function buildOperationTypeNameMapping(
   paths.forEach((pathDefinition, openApiPath: string) => {
     const methodMap = new Map<string, string>();
 
-    pathDefinition.forEach((operation, requestMethod: string) => {
-      const method = requestMethod.toUpperCase();
-
-      if (!HTTP_METHODS.has(method)) {
-        return;
+    const operations = pathDefinition.flatMap((operation, method) => {
+      if (method === "additionalOperations") {
+        return operation.map((additionalOperation, additionalMethod) => ({
+          operation: additionalOperation,
+          method: additionalMethod.toUpperCase(),
+        }));
       }
-
+      return HTTP_METHODS.has(method.toUpperCase())
+        ? [{ operation, method: method.toUpperCase() }]
+        : [];
+    });
+    for (const { operation, method } of operations) {
       const typeName = new OperationTypeCoder(
         operation,
         "",
-        requestMethod,
+        method.toLowerCase(),
         securitySchemes,
       )
         .names()
         .next().value as string;
 
-      methodMap.set(method, typeName);
-    });
+      const operationId = operation.get("operationId")?.data as
+        string | undefined;
+      methodMap.set(
+        method,
+        legacyNames && operationId ? sanitizeIdentifier(operationId) : typeName,
+      );
+    }
 
     if (methodMap.size > 0) {
       mapping.set(openApiPathToFilePath(openApiPath), methodMap);

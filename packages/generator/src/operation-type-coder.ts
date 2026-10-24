@@ -1,5 +1,6 @@
 import { STREAMING_CONTENT_TYPES } from "@counterfact/types/streaming-content-types";
 
+import { sanitizeIdentifier } from "./sanitize-identifier.js";
 import { pathJoin } from "./forward-slash-path.js";
 import ts from "typescript";
 import {
@@ -20,7 +21,6 @@ import { buildJsDoc } from "./jsdoc.js";
 import { ParameterExportTypeCoder } from "./parameter-export-type-coder.js";
 import { ParametersTypeCoder } from "./parameters-type-coder.js";
 import { READ_ONLY_COMMENTS } from "./read-only-comments.js";
-import { RESERVED_WORDS } from "./reserved-words.js";
 import { ResponsesTypeCoder } from "./responses-type-coder.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
 import { TypeCoder } from "./type-coder.js";
@@ -28,30 +28,6 @@ import { normalizeOpenApiPath } from "./openapi-path.js";
 import { Requirement } from "./requirement.js";
 import type { RequirementData } from "./requirement.js";
 import type { Script } from "./script.js";
-
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words
-
-function sanitizeIdentifier(value: string): string {
-  // Treat any run of non-identifier characters as a camelCase separator
-  let result = value.replaceAll(/[^\w$]+(?<next>.)/gu, (_, char: string) =>
-    char.toUpperCase(),
-  );
-
-  // Strip any trailing non-identifier characters (no following char to capitalize)
-  result = result.replaceAll(/[^\w$]/gu, "");
-
-  // If the identifier starts with a digit, prefix with an underscore
-  if (/^\d/u.test(result)) {
-    result = `_${result}`;
-  }
-
-  // If the identifier is a reserved word, append an underscore
-  if (RESERVED_WORDS.has(result)) {
-    result = `${result}_`;
-  }
-
-  return result || "_";
-}
 
 export interface SecurityScheme {
   in?: "cookie" | "header" | "query";
@@ -93,17 +69,9 @@ export class OperationTypeCoder extends TypeCoder {
     this.securitySchemes = securitySchemes;
   }
 
-  /**
-   * Returns the base identifier for this operation, derived from its
-   * `operationId` (sanitised) or falling back to `HTTP_<METHOD>`.
-   */
+  /** Returns the stable HTTP-method identifier, independent of operationId. */
   public getOperationBaseName(): string {
-    const operationId = this.requirement.get("operationId")?.data as
-      string | undefined;
-
-    return operationId
-      ? sanitizeIdentifier(operationId)
-      : `HTTP_${this.requestMethod.toUpperCase()}`;
+    return `HTTP_${this.requestMethod.toUpperCase()}`;
   }
 
   public override jsdoc(): string {
@@ -121,7 +89,7 @@ export class OperationTypeCoder extends TypeCoder {
   }
 
   /**
-   * Generates and exports a named parameter type (e.g. `ListPets_Query`) from
+   * Generates and exports a named parameter type (e.g. `HTTP_GET_Query`) from
    * `modulePath` and returns the exported type name.
    *
    * Returns `"never"` without creating an export when `inlineType` is

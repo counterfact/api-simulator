@@ -14,7 +14,6 @@ info: { title: Order workflow, version: 1.0.0 }
 paths:
   /orders:
     post:
-      operationId: placeOrder
       requestBody:
         required: true
         content:
@@ -38,7 +37,6 @@ paths:
         "403": { description: Permission denied }
   /orders/{orderId}:
     get:
-      operationId: getOrder
       parameters:
         - name: orderId
           in: path
@@ -90,9 +88,9 @@ Replace the generated handlers:
 
 ```ts
 // api/routes/orders.ts
-import type { placeOrder } from "../types/paths/orders.types.js";
+import type { HTTP_POST } from "../types/paths/orders.types.js";
 
-export const POST: placeOrder = function ($) {
+export const POST: HTTP_POST = function ($) {
   const outcome = $.context.placeOrder($.body.id);
   if (outcome === "forbidden") return $.response.status(403).empty();
   if (outcome === "declined") return $.response.status(402).empty();
@@ -102,9 +100,9 @@ export const POST: placeOrder = function ($) {
 
 ```ts
 // api/routes/orders/{orderId}.ts
-import type { getOrder } from "../../types/paths/orders/{orderId}.types.js";
+import type { HTTP_GET } from "../../types/paths/orders/{orderId}.types.js";
 
-export const GET: getOrder = function ($) {
+export const GET: HTTP_GET = function ($) {
   return $.context.hasOrder($.path.orderId)
     ? $.response.status(200).json({ id: $.path.orderId })
     : $.response.status(404).empty();

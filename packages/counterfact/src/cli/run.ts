@@ -416,10 +416,17 @@ function buildProgram(version: string, tagline: string): Command {
 
     // Migrate route type imports if needed.
     debug("checking if route type migration is needed");
-    const didMigrateRouteTypes = await updateRouteTypes(
-      config.basePath,
-      config.openApiPath,
-    );
+    let didMigrateRouteTypes = false;
+    for (const spec of specs ?? [
+      { source: config.openApiPath, group: "", overlays: config.overlays },
+    ]) {
+      const migrated = await updateRouteTypes(
+        join(config.basePath, spec.group),
+        spec.source,
+        spec.overlays,
+      );
+      didMigrateRouteTypes = migrated || didMigrateRouteTypes;
+    }
     debug("route type migration check complete: %s", didMigrateRouteTypes);
     if (didMigrateRouteTypes) {
       writeStartupLine(startupOutput.success("Route type imports updated"));
@@ -505,14 +512,12 @@ function buildProgram(version: string, tagline: string): Command {
       process.stdout.write("\n\n\n*******************************\n");
       process.stdout.write("MIGRATING ROUTE TYPE IMPORTS\n\n");
       process.stdout.write(
-        "Operation types now use operationId from your OpenAPI spec when available.\n",
+        "Operation types now use stable HTTP_<METHOD> names.\n",
       );
       process.stdout.write(
         "Your route files have been automatically updated to use the new type names.\n",
       );
-      process.stdout.write(
-        "Example: 'HTTP_GET' may now be 'getPetById' if operationId is defined.\n",
-      );
+      process.stdout.write("Example: 'getPetById' is now 'HTTP_GET'.\n");
       process.stdout.write(
         "Please review the changes and report any issues to:\n",
       );

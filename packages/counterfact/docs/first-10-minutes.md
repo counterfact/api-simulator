@@ -51,18 +51,18 @@ Then use it in the generated `POST /pet` and `GET /pet/{petId}` handlers:
 
 ```ts
 // api/routes/pet.ts
-import type { addPet } from "../types/paths/pet.types.js";
+import type { HTTP_POST } from "../types/paths/pet.types.js";
 
-export const POST: addPet = function ($) {
+export const POST: HTTP_POST = function ($) {
   return $.response.status(200).json($.context.add($.body));
 };
 ```
 
 ```ts
 // api/routes/pet/{petId}.ts
-import type { getPetById } from "../../types/paths/pet/{petId}.types.js";
+import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
 
-export const GET: getPetById = function ($) {
+export const GET: HTTP_GET = function ($) {
   const pet = $.context.get($.path.petId);
   return pet ? $.response.status(200).json(pet) : $.response.status(404).empty();
 };

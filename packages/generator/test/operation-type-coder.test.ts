@@ -82,129 +82,17 @@ describe("an OperationTypeCoder", () => {
     ]);
   });
 
-  describe("getOperationBaseName", () => {
-    it("falls back to HTTP method when operationId is absent", () => {
+  it.each(["getUser", "get-user", "delete", "123", "!!!"])(
+    "ignores operationId %s for type names",
+    (operationId) => {
       const coder = new OperationTypeCoder(
-        new Requirement({}, "#/paths/hello/get"),
+        new Requirement({ operationId }, "#/paths/hello/get"),
         "",
         "get",
       );
-
       expect(coder.getOperationBaseName()).toBe("HTTP_GET");
-    });
-
-    it("returns a plain operationId unchanged", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "getUser" }, "#/paths/hello/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("getUser");
-    });
-
-    it("converts hyphenated operationId to camelCase", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement(
-          { operationId: "get-user-profile" },
-          "#/paths/hello/get",
-        ),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("getUserProfile");
-    });
-
-    it("converts dot-separated operationId to camelCase", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "user.get" }, "#/paths/hello/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("userGet");
-    });
-
-    it("converts space-separated operationId to camelCase", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "get user" }, "#/paths/hello/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("getUser");
-    });
-
-    it("camelCases across non-identifier characters", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "get@user!" }, "#/paths/hello/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("getUser");
-    });
-
-    it("prefixes with underscore when operationId starts with a digit", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "123getUser" }, "#/paths/hello/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("_123getUser");
-    });
-
-    it("appends underscore when operationId is a reserved word", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "delete" }, "#/paths/stuff/delete"),
-        "",
-        "delete",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("delete_");
-    });
-
-    it("appends underscore when operationId is another reserved word", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "import" }, "#/paths/stuff/post"),
-        "",
-        "post",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("import_");
-    });
-
-    it("appends underscore when operationId is await", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "await" }, "#/paths/stuff/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("await_");
-    });
-    it("appends underscore when operationId becomes a reserved word after stripping trailing non-identifier chars", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "delete!!" }, "#/paths/stuff/delete"),
-        "",
-        "delete",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("delete_");
-    });
-
-    it("does not append underscore when operationId already has a suffix making it non-reserved", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "deleteItem" }, "#/paths/stuff/delete"),
-        "",
-        "delete",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("deleteItem");
-    });
-  });
+    },
+  );
 
   it("creates a type declaration", () => {
     const coder = new OperationTypeCoder(
@@ -616,7 +504,7 @@ describe("an OperationTypeCoder", () => {
     );
   });
 
-  it("uses operationId for type names when available", () => {
+  it("uses HTTP method type names even when operationId is available", () => {
     const coder = new OperationTypeCoder(
       new Requirement({ operationId: "addPet" }, "#/paths/pet/post"),
       "",
@@ -625,7 +513,11 @@ describe("an OperationTypeCoder", () => {
 
     const [one, two, three] = coder.names();
 
-    expect([one, two, three]).toStrictEqual(["addPet", "addPet2", "addPet3"]);
+    expect([one, two, three]).toStrictEqual([
+      "HTTP_POST",
+      "HTTP_POST2",
+      "HTTP_POST3",
+    ]);
   });
 
   it("falls back to HTTP_METHOD when operationId is not available", () => {
@@ -673,20 +565,16 @@ describe("an OperationTypeCoder", () => {
     const result = printNode(coder.write(scriptWithExportTracking));
 
     // Verify that parameter types are exported
-    expect(scriptWithExportTracking.exports).toHaveProperty("searchPets_Query");
-    expect(scriptWithExportTracking.exports).toHaveProperty("searchPets_Path");
-    expect(scriptWithExportTracking.exports).toHaveProperty(
-      "searchPets_Headers",
-    );
-    expect(scriptWithExportTracking.exports).toHaveProperty(
-      "searchPets_Cookie",
-    );
+    expect(scriptWithExportTracking.exports).toHaveProperty("HTTP_GET_Query");
+    expect(scriptWithExportTracking.exports).toHaveProperty("HTTP_GET_Path");
+    expect(scriptWithExportTracking.exports).toHaveProperty("HTTP_GET_Headers");
+    expect(scriptWithExportTracking.exports).toHaveProperty("HTTP_GET_Cookie");
 
     // Verify that the main type references the exported parameter types
-    expect(result).toContain("query: searchPets_Query");
-    expect(result).toContain("path: searchPets_Path");
-    expect(result).toContain("headers: searchPets_Headers");
-    expect(result).toContain("cookie: searchPets_Cookie");
+    expect(result).toContain("query: HTTP_GET_Query");
+    expect(result).toContain("path: HTTP_GET_Path");
+    expect(result).toContain("headers: HTTP_GET_Headers");
+    expect(result).toContain("cookie: HTTP_GET_Cookie");
   });
 
   it("does not export parameter types when they are 'never'", async () => {
@@ -712,13 +600,17 @@ describe("an OperationTypeCoder", () => {
     const result = printNode(coder.write(scriptWithExportTracking));
 
     // Verify that parameter types are NOT exported when they are 'never'
-    expect(scriptWithExportTracking.exports).not.toHaveProperty("getPet_Query");
-    expect(scriptWithExportTracking.exports).not.toHaveProperty("getPet_Path");
     expect(scriptWithExportTracking.exports).not.toHaveProperty(
-      "getPet_Headers",
+      "HTTP_GET_Query",
     );
     expect(scriptWithExportTracking.exports).not.toHaveProperty(
-      "getPet_Cookie",
+      "HTTP_GET_Path",
+    );
+    expect(scriptWithExportTracking.exports).not.toHaveProperty(
+      "HTTP_GET_Headers",
+    );
+    expect(scriptWithExportTracking.exports).not.toHaveProperty(
+      "HTTP_GET_Cookie",
     );
 
     // Verify that the main type uses 'never' directly
@@ -754,10 +646,8 @@ describe("an OperationTypeCoder", () => {
     const coder = new OperationTypeCoder(requirement, "", "get");
     const result = printNode(coder.write(scriptWithExportTracking));
 
-    expect(scriptWithExportTracking.exports).toHaveProperty(
-      "getSession_Cookie",
-    );
-    expect(result).toContain("cookie: getSession_Cookie");
+    expect(scriptWithExportTracking.exports).toHaveProperty("HTTP_GET_Cookie");
+    expect(result).toContain("cookie: HTTP_GET_Cookie");
     expect(result).not.toContain("cookie: never");
   });
 
@@ -881,9 +771,9 @@ describe("an OperationTypeCoder", () => {
     const result = printNode(coder.write(scriptWithExportTracking));
 
     expect(scriptWithExportTracking.exports).toHaveProperty(
-      "searchItems_Querystring",
+      "HTTP_GET_Querystring",
     );
-    expect(result).toContain("querystring: searchItems_Querystring");
+    expect(result).toContain("querystring: HTTP_GET_Querystring");
     expect(result).not.toContain("querystring: never");
   });
 

@@ -18,7 +18,6 @@ info: { title: Status API, version: 1.0.0 }
 paths:
   /status:
     get:
-      operationId: getStatus
       responses:
         "200":
           description: Service status
@@ -39,8 +38,8 @@ npx counterfact status.yaml api --generate --no-update-check
 
 ```ts
 // api/routes/status.ts
-import type { getStatus } from "../types/paths/status.types.js";
-export const GET: getStatus = function ($) {
+import type { HTTP_GET } from "../types/paths/status.types.js";
+export const GET: HTTP_GET = function ($) {
   return $.response.status(200).json({ status: "ready" });
 };
 ```
@@ -77,8 +76,11 @@ The edited handler stays intact while its generated type changes. TypeScript sho
 Update the handler:
 
 ```ts
-export const GET: getStatus = function ($) {
-  return $.response.status(200).json({ status: "ready", message: "Accepting requests" });
+export const GET: HTTP_GET = function ($) {
+  return $.response.status(200).json({
+    status: "ready",
+    message: "Accepting requests",
+  });
 };
 ```
 
