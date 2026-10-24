@@ -35,11 +35,12 @@ From the repository root, run:
 yarn go:first-run
 ```
 
-The command builds this checkout and launches its CLI with no arguments in a
-new empty temporary directory. It prints the directory and keeps any generated
-tutorial files after you quit. Each run starts with a fresh directory so a
-previous config or example cannot bypass the intro. Use an interactive terminal
-with `CI` unset to see the menu.
+Like the other `go:*` launchers, this builds the current checkout and runs its
+CLI from the repository root. It passes no arguments, reproducing
+`npx counterfact@latest` with this branch's code as the installed version.
+Normal configuration detection applies: a `counterfact.yaml` bypasses the
+intro. Use an interactive terminal with `CI` unset to see the menu when no
+config exists. Generated tutorial files stay in the repository directory.
 
 Choose **Try a guided example**. Running the built CLI exercises this checkout;
 `npx counterfact@latest` uses the published release. Keep the checkout available
