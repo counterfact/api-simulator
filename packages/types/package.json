@@ -1,6 +1,6 @@
 {
   "name": "@counterfact/types",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared TypeScript contracts for Counterfact generators, runtimes, middleware, and generated handlers.",
   "type": "module",
   "main": "./dist/index.js",
