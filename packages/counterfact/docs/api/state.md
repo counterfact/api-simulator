@@ -12,6 +12,18 @@ Export `class Context` from `routes/_.context.ts` or a nested `_.context.ts`. Ro
 | `readJson(path)`    | Asynchronously load JSON relative to the context module. |
 | `store`             | Access the optional application-level store.             |
 
+### `loadContext(path: string)`
+
+Returns the live context nearest to the supplied route path, checking that path and then its parents. Lookup is case-insensitive and falls back to the root context at `/`; it does not return `undefined` merely because no exact context exists. Generated `Context$` overloads provide the types for known paths.
+
+Constructor lookup stays within the current API group. A URL prefix does not select another group. Use a [shared store](../patterns/shared-store.md) for data needed across groups. During reset, a constructor dependency cycle rejects reset. Prefer request-time lookup inside a method when connecting contexts, as in [nested and connected contexts](../manual/nested-contexts.md).
+
+### `readJson(relativePath: string): Promise<unknown>`
+
+Reads and parses a JSON file asynchronously. The path resolves relative to the source `_.context.ts` module, rather than the process working directory or compiled cache. The promise resolves to the parsed JSON value as `unknown`; validate or narrow it before using application-specific fields.
+
+The promise rejects if the file cannot be read or does not contain valid JSON. Errors identify the resolved file; read failures also identify the supplied path and context directory. See [loading JSON data](../features/state.md#loading-json-data-with-readjson) for an example that stores the helper for later calls.
+
 ## Store module
 
 Export `class Store` from `<basePath>/_.store.ts`. Counterfact creates one store per simulator and supplies it to contexts across API groups. Routes, middleware, and scenarios access shared behavior through contexts; their `$` argument has no direct `store` member.

@@ -24,11 +24,11 @@ import type { Scenario } from "../types/_.context.js";
 
 export const soldPets: Scenario = ($) => {
   // Mutate context directly — the same object route handlers see as $.context
-  $.context.reset();
   $.context.add({ name: "Fluffy", photoUrls: [], status: "sold" });
-  $.context.add({ name: "Rex", photoUrls: [], status: "available" });
 };
 ```
+
+`soldPets` adds one sold pet for a focused availability check. It preserves existing pets and other scenario changes. Running it again adds another pet. Use `await simulator.reset()` when you need a fresh baseline before applying scenarios; an authored `context.reset()` method clears only the state its implementation defines.
 
 ### Running scenarios from the REPL
 
