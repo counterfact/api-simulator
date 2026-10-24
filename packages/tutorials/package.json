@@ -1,6 +1,6 @@
 {
   "name": "@counterfact/tutorials",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Guided, hands-on tours for learning Counterfact.",
   "type": "module",
   "main": "./dist/index.js",
@@ -49,7 +49,7 @@
     "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/tutorials/test --coverage=false"
   },
   "dependencies": {
-    "@counterfact/runtime": "0.2.0",
+    "@counterfact/runtime": "0.3.0",
     "prettier": "3.9.10"
   }
 }
