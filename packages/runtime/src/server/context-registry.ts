@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from "node:util";
+
 /**
  * A context object that lives at a specific route path and is shared across
  * all requests to that path (and its descendants).
@@ -163,7 +165,12 @@ export class ContextRegistry extends EventTarget {
     const context = this.find(path);
 
     for (const property in updatedContext) {
-      if (updatedContext[property] !== this.cache.get(path)?.[property]) {
+      if (
+        !isDeepStrictEqual(
+          updatedContext[property],
+          this.cache.get(path)?.[property],
+        )
+      ) {
         context[property] = updatedContext[property];
       }
     }

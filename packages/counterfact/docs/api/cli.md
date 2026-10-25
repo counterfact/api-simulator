@@ -34,7 +34,65 @@ The action flags above default to false individually. When no action flag is sup
 
 Run `npx counterfact@latest --help` for the full list.
 
-### Startup output
+## YAML configuration
+
+Save `counterfact.yaml` in the directory where you run the CLI, or select another file with `--config <path>`. For example:
+
+```yaml
+spec: ./openapi.yaml
+destination: ./api
+port: 3100
+validate-request: false
+validate-response: true
+update-check: false
+```
+
+This assumes `openapi.yaml` exists beside the config. Run `npx counterfact@latest` from that directory to generate, watch, and serve it with the REPL. To run only selected actions, set their keys explicitly, such as `generate: true` for a generation-only run.
+
+- Use long option names without `--`. Both kebab-case and camelCase keys work: `validate-request` and `validateRequest` are equivalent.
+- For a negative flag, use the positive key with `false`: `--no-validate-request` becomes `validate-request: false`, and `--no-update-check` becomes `update-check: false`.
+- `destination` supplies the positional output directory. Relative paths are resolved from the working directory where the CLI runs, including when `--config` points elsewhere.
+- Explicit CLI options override config values. An explicit positional output directory overrides `destination`. Unknown option keys are ignored; check spelling if a setting has no effect.
+
+For multiple specifications, `spec` can be a list of entries; see [multiple APIs](../manual/multiple-apis.md).
+
+## First-run intro
+
+Running with no arguments and no `counterfact.yaml` starts an interactive intro.
+Even an empty config file bypasses the intro, as does any explicit CLI argument.
+The opening menu offers a guided example (the default), your own OpenAPI
+document, and documentation. Local discovery starts only when you choose your
+own document; you can also enter a path or HTTP(S) URL. Setup asks for an output
+directory (default: `api/`) and an available port (default: `3100`).
+
+For the bundled shop, editor controls, lesson progression, and recovery behavior,
+see [Try the guided coffee shop](../manual/guided-example.md). Setup preserves
+existing files, directories, and symlinks. Port availability checks are advisory;
+another process can claim the selected port before startup.
+
+Discovery recognizes YAML/JSON root documents for Swagger 2.0 and OpenAPI 3.0,
+3.1, and 3.2; it ignores malformed files, ordinary config, and schema fragments.
+It does not resolve references or make network requests until a spec is selected.
+Hidden files/directories, symlinks, dependency directories (`node_modules`,
+`bower_components`, `vendor`), and build/cache directories (`dist`, `build`,
+`out`, `coverage`, `target`, `__pycache__`) are skipped. The search is limited to
+8 directory levels, 10,000 entries, 1,000 candidate documents, 100 specs, and
+2 MiB per document. It checks a 15-second time budget and cancellation between
+filesystem operations and file reads; an active filesystem call or synchronous
+JSON/YAML parse must finish before scanning can stop. Discovery runs in the CLI
+process and checks paths against its starting directory. These checks are not a
+filesystem sandbox and cannot prevent concurrent directory-replacement races.
+Unreadable locations are skipped with a compact warning; search limits are
+reported. Pass a spec explicitly to use a skipped document.
+Normal startup reports loading errors for a selected spec or its references.
+
+Enter accepts defaults. Use `q`, Ctrl+C, or Ctrl+D to cancel. The intro requires
+TTY input and output and is disabled by `CI` (except `CI=false` or `CI=0`).
+An unconfigured no-argument run in those environments prints documentation and
+explicit-start examples, then exits successfully without starting a server,
+REPL, watcher, or generation. Use `npx counterfact _` to start a spec-free mock.
+
+## Startup output
 
 Counterfact prints its version and a random tagline from its bundled collection.
 
@@ -106,12 +164,12 @@ polled or watched.
 
 ### Programmatic usage
 
-Pass `overlays` on each `SpecConfig` entry:
+Pass `overlays` on each specification entry (`SpecConfig`) in the second argument to `counterfact()`. `basePath` is the output directory; an empty group uses the single-API flat layout. See [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes).
 
 ```ts
 import { counterfact } from "counterfact";
 
-await counterfact(config, [
+await counterfact({ basePath: "api" }, [
   {
     source: "openapi.yaml",
     group: "",

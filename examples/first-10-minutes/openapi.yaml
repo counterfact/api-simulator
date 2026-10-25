@@ -5,7 +5,6 @@ info:
 paths:
   /health:
     get:
-      operationId: getHealth
       responses:
         "200":
           description: Upstream health response
@@ -20,7 +19,6 @@ paths:
                     enum: [upstream]
   /pets:
     post:
-      operationId: createPet
       requestBody:
         required: true
         content:
@@ -36,7 +34,6 @@ paths:
                 $ref: "#/components/schemas/Pet"
   /pets/{petId}:
     get:
-      operationId: getPet
       parameters:
         - name: petId
           in: path

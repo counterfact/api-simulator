@@ -1,12 +1,15 @@
 # Automated Integration Tests
 
-Run integration tests against a real local HTTP server that your test suite can start, shape, and tear down on demand.
+Run Counterfact from your test suite to check how your client handles HTTP
+responses, including headers, status codes, and errors. Define the behavior
+you need in your [route handlers](../features/generated-code.md), and use
+[contexts](../features/state.md) and [scenarios](./scenario-scripts.md) to set
+up state for each test.
 
-## Why teams use this
+<span id="why-teams-use-this"></span>
+<span id="how-it-works"></span>
 
-Unit tests that mock HTTP calls at the library boundary (using `jest.mock()`, `vi.mock()`, or a fetch interceptor) do not exercise real HTTP behavior — headers, routing, content negotiation, middleware, or status code handling. Running tests against a real backend is slower, requires infrastructure, and produces non-deterministic results.
-
-## How it works
+## Start the server and reset between tests
 
 Use Counterfact's programmatic API to embed the mock server directly in your test suite. Start it in a `beforeAll` hook, run every test against it, and stop it in `afterAll`. Local execution removes dependence on a remote environment. Repeatable tests additionally need fixed responses or named examples, controlled delays, isolated simulator instances, and awaited reset/scenario setup. Generated `.random()` responses can still vary after reset. See [sample responses](../manual/sample-responses.md) and [edge cases](../manual/edge-cases.md).
 
@@ -74,7 +77,9 @@ configured port. Keep independently running tests on separate simulators.
 
 Follow [the complete payment test](./payment-retry.md) to connect lifecycle setup to an empty account, decline, successful retry, permission outcome, and restored baseline.
 
-## Keep exploring
+<span id="keep-exploring"></span>
+
+## Related guides
 
 - [Scenario Scripts](./scenario-scripts.md) — reusable state transformations
 - [Share State Across API Groups](./shared-store.md) — one application store

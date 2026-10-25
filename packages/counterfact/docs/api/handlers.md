@@ -2,6 +2,16 @@
 
 Export one function per HTTP method from a file under `routes/`. The generated `HTTP_GET`, `HTTP_POST`, and related types describe that operation. A handler receives one `$` argument.
 
+Operation and parameter types use stable HTTP method names: for example, `HTTP_GET`, `HTTP_POST`, and
+`HTTP_GET_Query`, `HTTP_GET_Path`, `HTTP_GET_Headers`, or `HTTP_GET_Cookie`
+when those parameters exist.
+
+On CLI startup, Counterfact automatically migrates route imports and references
+from the previous generated names to these method-based names. It
+preserves handler logic, comments, strings, and explicit import aliases. Imports
+outside the route's generated type module are left alone. If you reference the
+old generated names outside your routes, update those references manually.
+
 | Property        | Type               | Description                                                                             |
 | --------------- | ------------------ | --------------------------------------------------------------------------------------- |
 | `$.path`        | typed object       | Path parameters from the URL                                                            |
@@ -10,7 +20,7 @@ Export one function per HTTP method from a file under `routes/`. The generated `
 | `$.headers`     | typed object       | Request headers                                                                         |
 | `$.body`        | typed object       | Parsed request body                                                                     |
 | `$.context`     | `Context` instance | Shared state for this route subtree                                                     |
-| `$.response[N]` | response builder   | Fluent builder for HTTP status code N (e.g. `$.response[200]`, `$.response[404]`)       |
+| `$.response.status(N)` | response builder   | Fluent builder for HTTP status code N (e.g. `$.response.status(200)`, `$.response.status(404)`)       |
 
 | Member                | Contract                                                                                                                               |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |

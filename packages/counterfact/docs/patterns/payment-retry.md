@@ -4,7 +4,7 @@ This recipe gives a test runner a complete local workflow: an empty order collec
 
 ## Install and generate
 
-Follow the [project installation setup](./lifecycle-setup.md), then keep the contract, authored code, and verification script together in that project for review.
+Follow the [project installation setup](./lifecycle-setup.md), then keep the contract, your code, and verification script together in that project for review.
 
 Save this as `orders.yaml`:
 
@@ -14,7 +14,6 @@ info: { title: Order workflow, version: 1.0.0 }
 paths:
   /orders:
     post:
-      operationId: placeOrder
       requestBody:
         required: true
         content:
@@ -38,7 +37,6 @@ paths:
         "403": { description: Permission denied }
   /orders/{orderId}:
     get:
-      operationId: getOrder
       parameters:
         - name: orderId
           in: path
@@ -90,24 +88,24 @@ Replace the generated handlers:
 
 ```ts
 // api/routes/orders.ts
-import type { placeOrder } from "../types/paths/orders.types.js";
+import type { HTTP_POST } from "../types/paths/orders.types.js";
 
-export const POST: placeOrder = function ($) {
+export const POST: HTTP_POST = function ($) {
   const outcome = $.context.placeOrder($.body.id);
-  if (outcome === "forbidden") return $.response[403].empty();
-  if (outcome === "declined") return $.response[402].empty();
-  return $.response[201].json({ id: $.body.id });
+  if (outcome === "forbidden") return $.response.status(403).empty();
+  if (outcome === "declined") return $.response.status(402).empty();
+  return $.response.status(201).json({ id: $.body.id });
 };
 ```
 
 ```ts
 // api/routes/orders/{orderId}.ts
-import type { getOrder } from "../../types/paths/orders/{orderId}.types.js";
+import type { HTTP_GET } from "../../types/paths/orders/{orderId}.types.js";
 
-export const GET: getOrder = function ($) {
+export const GET: HTTP_GET = function ($) {
   return $.context.hasOrder($.path.orderId)
-    ? $.response[200].json({ id: $.path.orderId })
-    : $.response[404].empty();
+    ? $.response.status(200).json({ id: $.path.orderId })
+    : $.response.status(404).empty();
 };
 ```
 

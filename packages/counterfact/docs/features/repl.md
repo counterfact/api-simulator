@@ -14,18 +14,19 @@ Counterfact v<version>
 ⬣>
 ```
 
+The `context` binding is your custom `Context` instance. The following examples use the pet context from the [state guide](./state.md), with `add`, `get`, and `list` methods; generation alone does not create those methods.
+
 At the prompt you can interact with the live context:
 
 ```js
 // add a single pet
-context.addPet({ name: "Fluffy", photoUrls: [] });
+context.add({ name: "Fluffy", photoUrls: [] });
 
 // add 100 pets
-for (let i = 0; i < 100; i++)
-  context.addPet({ name: `Pet ${i}`, photoUrls: [] });
+for (let i = 0; i < 100; i++) context.add({ name: `Pet ${i}`, photoUrls: [] });
 
 // query state
-context.pets.filter((pet) => pet.name.startsWith("F"));
+context.list().filter((pet) => pet.name.startsWith("F"));
 ```
 
 To access context from a subdirectory:
@@ -34,7 +35,7 @@ To access context from a subdirectory:
 const petsContext = loadContext("/pets");
 ```
 
-When running multiple APIs in one process, REPL state is grouped by API key:
+An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) is a configured name for specs sharing code and context state. For entries with `group: billing` and `group: inventory` (see [configuration](../manual/multiple-apis.md)), REPL state is grouped by those names:
 
 ```js
 context.billing;
@@ -43,7 +44,7 @@ routes.billing;
 routes.inventory;
 ```
 
-In this mode, `loadContext` and `route` are also grouped by API key:
+In this mode, `loadContext` and `route` are also grouped by API group:
 
 ```js
 loadContext.billing("/pets");
@@ -54,7 +55,7 @@ When configuring multiple APIs, each spec must define a non-empty group and a
 unique group/version pair. Versions of the same API can share a group; distinct
 unversioned APIs need distinct groups.
 
-If `<basePath>/_.store.ts` exists, `store` is an unqualified REPL binding in
+A [shared store](../patterns/shared-store.md) holds data across groups. `basePath` is the configured output directory. If `<basePath>/_.store.ts` exists, `store` is an unqualified REPL binding in
 both single- and multi-API sessions. It is the same live application-level
 object received by every group's context constructors:
 
@@ -94,6 +95,8 @@ await req.send();
 See the [Route Builder guide](./route-builder.md) for full documentation.
 
 ## Inspect and steer a session
+
+These examples use the same pet context’s `add()` and `list()` methods. Start from the [first-ten-minutes handlers](../first-10-minutes.md) so HTTP requests read and write that context.
 
 Start the server with the REPL enabled (the default when running via `npx counterfact@latest`). The prompt `⬣>` indicates the REPL is ready.
 

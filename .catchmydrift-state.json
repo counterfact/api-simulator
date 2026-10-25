@@ -1,5 +1,6 @@
 {
   ".agents/skills/context/SKILL.md": "6e46b4f74d29edd397192035ac2d9cce06fbd97f",
+  ".agents/skills/counterfact-cli-runtime/SKILL.md": "f035672712167ad1ad98f00a8a863449c8831574",
   ".agents/skills/counterfact/SKILL.md": "b18dc09f45ee977baf05af90e628970073ab7761",
   ".agents/skills/scenario/SKILL.md": "6e46b4f74d29edd397192035ac2d9cce06fbd97f",
   "docs/development/ai-assisted-monorepo-migration.md": "fceb74aa009a944ca12d0d3ae2bae6533a2cf9d8",
@@ -13,6 +14,7 @@
   "packages/counterfact/docs/features/routes.md": "fceb74aa009a944ca12d0d3ae2bae6533a2cf9d8",
   "packages/counterfact/docs/features/state.md": "fceb74aa009a944ca12d0d3ae2bae6533a2cf9d8",
   "packages/counterfact/docs/features/without-openapi.md": "fceb74aa009a944ca12d0d3ae2bae6533a2cf9d8",
+  "packages/counterfact/docs/manual/guided-example.md": "f035672712167ad1ad98f00a8a863449c8831574",
   "packages/counterfact/docs/patterns/agentic-sandbox.md": "fceb74aa009a944ca12d0d3ae2bae6533a2cf9d8",
   "packages/counterfact/docs/patterns/ai-assisted-implementation.md": "fceb74aa009a944ca12d0d3ae2bae6533a2cf9d8",
   "packages/counterfact/docs/patterns/automated-integration-tests.md": "fceb74aa009a944ca12d0d3ae2bae6533a2cf9d8",
@@ -21,5 +23,6 @@
   "packages/counterfact/docs/patterns/shared-store.md": "fceb74aa009a944ca12d0d3ae2bae6533a2cf9d8",
   "packages/counterfact/docs/patterns/test-context-not-handlers.md": "fceb74aa009a944ca12d0d3ae2bae6533a2cf9d8",
   "packages/counterfact/src/migrate/README.md": "b18dc09f45ee977baf05af90e628970073ab7761",
-  "packages/generator/README.md": "b18dc09f45ee977baf05af90e628970073ab7761"
+  "packages/generator/README.md": "b18dc09f45ee977baf05af90e628970073ab7761",
+  "packages/tutorials/README.md": "f035672712167ad1ad98f00a8a863449c8831574"
 }

@@ -1,6 +1,8 @@
 # User manual
 
-Build a useful local API, then add the behavior your client needs. Each chapter explains a feature, how to use it, and the boundaries to keep in mind.
+Read [How Counterfact fits together](./manual/concepts.md) for specifications, handlers, contexts, scenarios, API groups, and shared stores.
+
+Build a useful local API, then add the behavior your client needs. Each chapter shows how to use a feature with examples.
 
 New to Counterfact? Start with [Generate an API from OpenAPI](./getting-started.md), then follow the [first ten minutes](./first-10-minutes.md). For exact signatures and options, use the [API reference](./api.md).
 
@@ -9,6 +11,7 @@ Choose guides by task in [Find your workflow](./usage.md). Additional resources:
 ## Start a working API
 
 - [Generate an API from OpenAPI](./getting-started.md) — Start a local HTTP API from a specification.
+- [Guided coffee shop](./manual/guided-example.md) — Learn by editing a running API beside a working storefront.
 - [Automatic sample responses](./manual/sample-responses.md) — Get schema-derived responses and select named examples.
 - [Build without OpenAPI](./features/without-openapi.md) — Write routes before a specification exists.
 - [Swagger UI](./manual/swagger-ui.md) — Browse operations and send requests in the browser.
@@ -53,4 +56,4 @@ Choose guides by task in [Find your workflow](./usage.md). Additional resources:
 - [Payment decline, retry, permissions, and reset](./patterns/payment-retry.md) — connect a small state model to real HTTP assertions.
 - [Contract-change check](./patterns/contract-change.md) — regenerate types, observe a compiler error, and fix the handler.
 - [Reproducible hybrid proxy](./patterns/hybrid-proxy.md#check-in-a-hybrid-setup) — check local/upstream selection into source control.
-- [AI-assisted workflows](./patterns/agentic-sandbox.md) — run a bounded noninteractive task and return evidence for human review.
+- [AI-assisted workflows](./patterns/agentic-sandbox.md) — give an agent a specific task and check its work.

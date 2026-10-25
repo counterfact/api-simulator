@@ -4,7 +4,7 @@ Use a custom response when a screen needs a specific body, status, header, or co
 
 ## Build a response
 
-`$.response` is a fluent builder for HTTP responses. Start by picking a status code, then chain one or more methods:
+`$.response` is a fluent builder for HTTP responses. Start by picking a status code with `.status(code)`, then chain one or more methods. You can also supply headers and cookies before selecting a status; headers narrow the available statuses and satisfy required headers. See the [response builder reference](../api/responses.md) for typing details and migration from deprecated bracket selection.
 
 | Method                         | Description                                                                             |
 | ------------------------------ | --------------------------------------------------------------------------------------- |
@@ -18,7 +18,10 @@ Use a custom response when a screen needs a specific body, status, header, or co
 | `.header(name, value)`         | Adds a response header                                                                  |
 
 ```ts
-return $.response[200].header("x-request-id", "abc123").json({ ok: true });
+return $.response
+  .status(200)
+  .header("x-request-id", "abc123")
+  .json({ ok: true });
 ```
 
 ### Setting cookies
@@ -26,7 +29,8 @@ return $.response[200].header("x-request-id", "abc123").json({ ok: true });
 Use `.cookie(name, value, options?)` to set one or more cookies. Each call appends a new `Set-Cookie` header and returns the builder for chaining.
 
 ```ts
-return $.response[200]
+return $.response
+  .status(200)
   .cookie("sessionId", "abc123", {
     httpOnly: true,
     secure: true,
@@ -40,7 +44,8 @@ return $.response[200]
 Multiple cookies:
 
 ```ts
-return $.response[200]
+return $.response
+  .status(200)
   .cookie("sessionId", "abc123")
   .cookie("theme", "dark")
   .json({ ok: true });
@@ -64,10 +69,11 @@ If your OpenAPI spec defines named examples for a response, you can return a spe
 
 ```ts
 // Return a specific named example
-return $.response[200].example("successResponse");
+return $.response.status(200).example("successResponse");
 
 // Chain additional decorations after selecting an example
-return $.response[200]
+return $.response
+  .status(200)
   .example("successResponse")
   .header("x-request-id", "abc123");
 ```

@@ -34,6 +34,7 @@ const examples = new Map([
   ["@counterfact/openapi", "examples/load-local-spec.mjs"],
   ["@counterfact/repl", "examples/complete-routes.mjs"],
   ["@counterfact/runtime", "examples/registries.mjs"],
+  ["@counterfact/tutorials", "examples/prepare-coffee-shop.mjs"],
   ["@counterfact/types", "examples/middleware.ts"],
 ]);
 

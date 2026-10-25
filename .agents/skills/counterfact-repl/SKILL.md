@@ -675,7 +675,7 @@ Example route handler:
 
 ```typescript
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].json($.context.pets);
+  return $.response.status(200).json($.context.pets);
 };
 ```
 

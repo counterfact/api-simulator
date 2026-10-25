@@ -181,8 +181,8 @@ describe("a Repository", () => {
         await $.add(
           "routes/pet.ts",
           original.replace(
-            "$.response[200]",
-            "/* user edit */ $.response[200]",
+            "$.response.status(200)",
+            "/* user edit */ $.response.status(200)",
           ),
         );
 
@@ -226,7 +226,7 @@ describe("a Repository", () => {
         }).generate();
 
         const finalContent = await $.read("routes/pet.ts");
-        expect(finalContent.startsWith("import type { addPet }")).toBe(true);
+        expect(finalContent.startsWith("import type { HTTP_POST }")).toBe(true);
         expect(finalContent).toContain("export const POST");
       });
     });

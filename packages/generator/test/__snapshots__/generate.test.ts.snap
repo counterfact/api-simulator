@@ -1,13 +1,13 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 1`] = `
-"routes/pet.ts:import type { addPet } from "../types/paths/pet.types.js";
-import type { updatePet } from "../types/paths/pet.types.js";
-export const POST: addPet = async ($) => {
-  return $.response[200].random();
+"routes/pet.ts:import type { HTTP_POST } from "../types/paths/pet.types.js";
+import type { HTTP_PUT } from "../types/paths/pet.types.js";
+export const POST: HTTP_POST = async ($) => {
+  return $.response.status(200).random();
 };
-export const PUT: updatePet = async ($) => {
-  return $.response[200].random();
+export const PUT: HTTP_PUT = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -26,12 +26,12 @@ import type { Pet } from "../components/schemas/Pet.js";
 /**
  * Add a new pet to the store
  */
-export type addPet = (
+export type HTTP_POST = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: addPet_Headers;
+    headers: HTTP_POST_Headers;
     cookie: never;
     body: Pet;
     context: Context;
@@ -67,12 +67,12 @@ export type addPet = (
 /**
  * Update an existing pet by Id
  */
-export type updatePet = (
+export type HTTP_PUT = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: updatePet_Headers;
+    headers: HTTP_PUT_Headers;
     cookie: never;
     body: Pet;
     context: Context;
@@ -117,15 +117,15 @@ export type updatePet = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type addPet_Headers = { api_key: string };
-export type updatePet_Headers = { api_key: string };
+export type HTTP_POST_Headers = { api_key: string };
+export type HTTP_PUT_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 3`] = `
-"routes/pet/findByStatus.ts:import type { findPetsByStatus } from "../../types/paths/pet/findByStatus.types.js";
-export const GET: findPetsByStatus = async ($) => {
-  return $.response[200].random();
+"routes/pet/findByStatus.ts:import type { HTTP_GET } from "../../types/paths/pet/findByStatus.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -144,12 +144,12 @@ import type { Pet } from "../../components/schemas/Pet.js";
 /**
  * Multiple status values can be provided with comma separated strings
  */
-export type findPetsByStatus = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
-    query: findPetsByStatus_Query;
+    query: HTTP_GET_Query;
     querystring: never;
     path: never;
-    headers: findPetsByStatus_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -182,20 +182,20 @@ export type findPetsByStatus = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type findPetsByStatus_Query = {
+export type HTTP_GET_Query = {
   /**
    * Status values that need to be considered for filter
    */
   status?: "available" | "pending" | "sold";
 };
-export type findPetsByStatus_Headers = { api_key: string };
+export type HTTP_GET_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 5`] = `
-"routes/pet/findByTags.ts:import type { findPetsByTags } from "../../types/paths/pet/findByTags.types.js";
-export const GET: findPetsByTags = async ($) => {
-  return $.response[200].random();
+"routes/pet/findByTags.ts:import type { HTTP_GET } from "../../types/paths/pet/findByTags.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -214,12 +214,12 @@ import type { Pet } from "../../components/schemas/Pet.js";
 /**
  * Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
  */
-export type findPetsByTags = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
-    query: findPetsByTags_Query;
+    query: HTTP_GET_Query;
     querystring: never;
     path: never;
-    headers: findPetsByTags_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -252,28 +252,28 @@ export type findPetsByTags = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type findPetsByTags_Query = {
+export type HTTP_GET_Query = {
   /**
    * Tags to filter by
    */
   tags?: Array<string>;
 };
-export type findPetsByTags_Headers = { api_key: string };
+export type HTTP_GET_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 7`] = `
-"routes/pet/{petId}.ts:import type { getPetById } from "../../types/paths/pet/{petId}.types.js";
-import type { updatePetWithForm } from "../../types/paths/pet/{petId}.types.js";
-import type { deletePet } from "../../types/paths/pet/{petId}.types.js";
-export const GET: getPetById = async ($) => {
-  return $.response[200].random();
+"routes/pet/{petId}.ts:import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
+import type { HTTP_POST } from "../../types/paths/pet/{petId}.types.js";
+import type { HTTP_DELETE } from "../../types/paths/pet/{petId}.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
-export const POST: updatePetWithForm = async ($) => {
-  return $.response[405].empty();
+export const POST: HTTP_POST = async ($) => {
+  return $.response.status(405).empty();
 };
-export const DELETE: deletePet = async ($) => {
-  return $.response[400].empty();
+export const DELETE: HTTP_DELETE = async ($) => {
+  return $.response.status(400).empty();
 };
 "
 `;
@@ -292,12 +292,12 @@ import type { Pet } from "../../components/schemas/Pet.js";
 /**
  * Returns a single pet
  */
-export type getPetById = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: getPetById_Path;
-    headers: getPetById_Headers;
+    path: HTTP_GET_Path;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -336,12 +336,12 @@ export type getPetById = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type updatePetWithForm = (
+export type HTTP_POST = (
   $: OmitValueWhenNever<{
-    query: updatePetWithForm_Query;
+    query: HTTP_POST_Query;
     querystring: never;
-    path: updatePetWithForm_Path;
-    headers: updatePetWithForm_Headers;
+    path: HTTP_POST_Path;
+    headers: HTTP_POST_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -361,12 +361,12 @@ export type updatePetWithForm = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type deletePet = (
+export type HTTP_DELETE = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: deletePet_Path;
-    headers: deletePet_Headers;
+    path: HTTP_DELETE_Path;
+    headers: HTTP_DELETE_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -386,14 +386,14 @@ export type deletePet = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getPetById_Path = {
+export type HTTP_GET_Path = {
   /**
    * ID of pet to return
    */
   petId: number;
 };
-export type getPetById_Headers = { api_key: string };
-export type updatePetWithForm_Query = {
+export type HTTP_GET_Headers = { api_key: string };
+export type HTTP_POST_Query = {
   /**
    * Name of pet that needs to be updated
    */
@@ -403,27 +403,27 @@ export type updatePetWithForm_Query = {
    */
   status?: string;
 };
-export type updatePetWithForm_Path = {
+export type HTTP_POST_Path = {
   /**
    * ID of pet that needs to be updated
    */
   petId: number;
 };
-export type updatePetWithForm_Headers = { api_key: string };
-export type deletePet_Path = {
+export type HTTP_POST_Headers = { api_key: string };
+export type HTTP_DELETE_Path = {
   /**
    * Pet id to delete
    */
   petId: number;
 };
-export type deletePet_Headers = { api_key: string };
+export type HTTP_DELETE_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 9`] = `
-"routes/pet/{petId}/uploadImage.ts:import type { uploadFile } from "../../../types/paths/pet/{petId}/uploadImage.types.js";
-export const POST: uploadFile = async ($) => {
-  return $.response[200].random();
+"routes/pet/{petId}/uploadImage.ts:import type { HTTP_POST } from "../../../types/paths/pet/{petId}/uploadImage.types.js";
+export const POST: HTTP_POST = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -439,12 +439,12 @@ import type { COUNTERFACT_RESPONSE } from "../../../../counterfact-types/index.t
 import type { Context } from "../../../../routes/_.context.ts";
 import type { ResponseBuilderFactory } from "../../../../counterfact-types/index.ts";
 import type { ApiResponse } from "../../../components/schemas/ApiResponse.js";
-export type uploadFile = (
+export type HTTP_POST = (
   $: OmitValueWhenNever<{
-    query: uploadFile_Query;
+    query: HTTP_POST_Query;
     querystring: never;
-    path: uploadFile_Path;
-    headers: uploadFile_Headers;
+    path: HTTP_POST_Path;
+    headers: HTTP_POST_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -468,26 +468,26 @@ export type uploadFile = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type uploadFile_Query = {
+export type HTTP_POST_Query = {
   /**
    * Additional Metadata
    */
   additionalMetadata?: string;
 };
-export type uploadFile_Path = {
+export type HTTP_POST_Path = {
   /**
    * ID of pet to update
    */
   petId: number;
 };
-export type uploadFile_Headers = { api_key: string };
+export type HTTP_POST_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 11`] = `
-"routes/store/inventory.ts:import type { getInventory } from "../../types/paths/store/inventory.types.js";
-export const GET: getInventory = async ($) => {
-  return $.response[200].random();
+"routes/store/inventory.ts:import type { HTTP_GET } from "../../types/paths/store/inventory.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -505,12 +505,12 @@ import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts
 /**
  * Returns a map of status codes to quantities
  */
-export type getInventory = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getInventory_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -534,14 +534,14 @@ export type getInventory = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getInventory_Headers = { api_key: string };
+export type HTTP_GET_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 13`] = `
-"routes/store/order.ts:import type { placeOrder } from "../../types/paths/store/order.types.js";
-export const POST: placeOrder = async ($) => {
-  return $.response[200].random();
+"routes/store/order.ts:import type { HTTP_POST } from "../../types/paths/store/order.types.js";
+export const POST: HTTP_POST = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -560,12 +560,12 @@ import type { Order } from "../../components/schemas/Order.js";
 /**
  * Place a new order in the store
  */
-export type placeOrder = (
+export type HTTP_POST = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: placeOrder_Headers;
+    headers: HTTP_POST_Headers;
     cookie: never;
     body: Order;
     context: Context;
@@ -595,18 +595,18 @@ export type placeOrder = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type placeOrder_Headers = { api_key: string };
+export type HTTP_POST_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 15`] = `
-"routes/store/order/{orderId}.ts:import type { getOrderById } from "../../../types/paths/store/order/{orderId}.types.js";
-import type { deleteOrder } from "../../../types/paths/store/order/{orderId}.types.js";
-export const GET: getOrderById = async ($) => {
-  return $.response[200].random();
+"routes/store/order/{orderId}.ts:import type { HTTP_GET } from "../../../types/paths/store/order/{orderId}.types.js";
+import type { HTTP_DELETE } from "../../../types/paths/store/order/{orderId}.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
-export const DELETE: deleteOrder = async ($) => {
-  return $.response[400].empty();
+export const DELETE: HTTP_DELETE = async ($) => {
+  return $.response.status(400).empty();
 };
 "
 `;
@@ -625,12 +625,12 @@ import type { Order } from "../../../components/schemas/Order.js";
 /**
  * For valid response try integer IDs with value <= 5 or > 10. Other values will generate exceptions.
  */
-export type getOrderById = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: getOrderById_Path;
-    headers: getOrderById_Headers;
+    path: HTTP_GET_Path;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -672,12 +672,12 @@ export type getOrderById = (
 /**
  * For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors
  */
-export type deleteOrder = (
+export type HTTP_DELETE = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: deleteOrder_Path;
-    headers: deleteOrder_Headers;
+    path: HTTP_DELETE_Path;
+    headers: HTTP_DELETE_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -703,27 +703,27 @@ export type deleteOrder = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getOrderById_Path = {
+export type HTTP_GET_Path = {
   /**
    * ID of order that needs to be fetched
    */
   orderId: number;
 };
-export type getOrderById_Headers = { api_key: string };
-export type deleteOrder_Path = {
+export type HTTP_GET_Headers = { api_key: string };
+export type HTTP_DELETE_Path = {
   /**
    * ID of the order that needs to be deleted
    */
   orderId: number;
 };
-export type deleteOrder_Headers = { api_key: string };
+export type HTTP_DELETE_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 17`] = `
-"routes/user.ts:import type { createUser } from "../types/paths/user.types.js";
-export const POST: createUser = async ($) => {
-  return $.response[200].random();
+"routes/user.ts:import type { HTTP_POST } from "../types/paths/user.types.js";
+export const POST: HTTP_POST = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -743,12 +743,12 @@ import type { User } from "../components/schemas/User.js";
 /**
  * This can only be done by the logged in user.
  */
-export type createUser = (
+export type HTTP_POST = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: createUser_Headers;
+    headers: HTTP_POST_Headers;
     cookie: never;
     body: User;
     context: Context;
@@ -775,14 +775,14 @@ export type createUser = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type createUser_Headers = { api_key: string };
+export type HTTP_POST_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 19`] = `
-"routes/user/createWithList.ts:import type { createUsersWithListInput } from "../../types/paths/user/createWithList.types.js";
-export const POST: createUsersWithListInput = async ($) => {
-  return $.response[200].random();
+"routes/user/createWithList.ts:import type { HTTP_POST } from "../../types/paths/user/createWithList.types.js";
+export const POST: HTTP_POST = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -802,12 +802,12 @@ import type { User } from "../../components/schemas/User.js";
 /**
  * Creates list of users with given input array
  */
-export type createUsersWithListInput = (
+export type HTTP_POST = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: createUsersWithListInput_Headers;
+    headers: HTTP_POST_Headers;
     cookie: never;
     body: Array<User>;
     context: Context;
@@ -843,14 +843,14 @@ export type createUsersWithListInput = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type createUsersWithListInput_Headers = { api_key: string };
+export type HTTP_POST_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 21`] = `
-"routes/user/login.ts:import type { loginUser } from "../../types/paths/user/login.types.js";
-export const GET: loginUser = async ($) => {
-  return $.response[200].random();
+"routes/user/login.ts:import type { HTTP_GET } from "../../types/paths/user/login.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -865,12 +865,12 @@ import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
 import type { Context } from "../../../routes/_.context.ts";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
-export type loginUser = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
-    query: loginUser_Query;
+    query: HTTP_GET_Query;
     querystring: never;
     path: never;
-    headers: loginUser_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -906,7 +906,7 @@ export type loginUser = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type loginUser_Query = {
+export type HTTP_GET_Query = {
   /**
    * The user name for login
    */
@@ -916,14 +916,14 @@ export type loginUser_Query = {
    */
   password?: string;
 };
-export type loginUser_Headers = { api_key: string };
+export type HTTP_GET_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 23`] = `
-"routes/user/logout.ts:import type { logoutUser } from "../../types/paths/user/logout.types.js";
-export const GET: logoutUser = async ($) => {
-  return $.response[200].empty();
+"routes/user/logout.ts:import type { HTTP_GET } from "../../types/paths/user/logout.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).empty();
 };
 "
 `;
@@ -939,12 +939,12 @@ import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
 import type { Context } from "../../../routes/_.context.ts";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
-export type logoutUser = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: logoutUser_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -964,22 +964,22 @@ export type logoutUser = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type logoutUser_Headers = { api_key: string };
+export type HTTP_GET_Headers = { api_key: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 25`] = `
-"routes/user/{username}.ts:import type { getUserByName } from "../../types/paths/user/{username}.types.js";
-import type { updateUser } from "../../types/paths/user/{username}.types.js";
-import type { deleteUser } from "../../types/paths/user/{username}.types.js";
-export const GET: getUserByName = async ($) => {
-  return $.response[200].random();
+"routes/user/{username}.ts:import type { HTTP_GET } from "../../types/paths/user/{username}.types.js";
+import type { HTTP_PUT } from "../../types/paths/user/{username}.types.js";
+import type { HTTP_DELETE } from "../../types/paths/user/{username}.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
-export const PUT: updateUser = async ($) => {
-  return $.response[200].empty();
+export const PUT: HTTP_PUT = async ($) => {
+  return $.response.status(200).empty();
 };
-export const DELETE: deleteUser = async ($) => {
-  return $.response[400].empty();
+export const DELETE: HTTP_DELETE = async ($) => {
+  return $.response.status(400).empty();
 };
 "
 `;
@@ -996,12 +996,12 @@ import type { Context } from "../../../routes/_.context.ts";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 import type { User } from "../../components/schemas/User.js";
-export type getUserByName = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: getUserByName_Path;
-    headers: getUserByName_Headers;
+    path: HTTP_GET_Path;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1043,12 +1043,12 @@ export type getUserByName = (
 /**
  * This can only be done by the logged in user.
  */
-export type updateUser = (
+export type HTTP_PUT = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: updateUser_Path;
-    headers: updateUser_Headers;
+    path: HTTP_PUT_Path;
+    headers: HTTP_PUT_Headers;
     cookie: never;
     body: User;
     context: Context;
@@ -1071,12 +1071,12 @@ export type updateUser = (
 /**
  * This can only be done by the logged in user.
  */
-export type deleteUser = (
+export type HTTP_DELETE = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: deleteUser_Path;
-    headers: deleteUser_Headers;
+    path: HTTP_DELETE_Path;
+    headers: HTTP_DELETE_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1102,27 +1102,27 @@ export type deleteUser = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getUserByName_Path = {
+export type HTTP_GET_Path = {
   /**
    * The name that needs to be fetched. Use user1 for testing.
    */
   username: string;
 };
-export type getUserByName_Headers = { api_key: string };
-export type updateUser_Path = {
+export type HTTP_GET_Headers = { api_key: string };
+export type HTTP_PUT_Path = {
   /**
    * name that need to be deleted
    */
   username: string;
 };
-export type updateUser_Headers = { api_key: string };
-export type deleteUser_Path = {
+export type HTTP_PUT_Headers = { api_key: string };
+export type HTTP_DELETE_Path = {
   /**
    * The name that needs to be deleted
    */
   username: string;
 };
-export type deleteUser_Headers = { api_key: string };
+export type HTTP_DELETE_Headers = { api_key: string };
 "
 `;
 
@@ -1271,9 +1271,9 @@ exports[`end-to-end test generates the same code for pet store that it did on th
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 1`] = `
-"routes/index.ts:import type { getRoot } from "../types/paths/index.types.js";
-export const GET: getRoot = async ($) => {
-  return $.response[200].random();
+"routes/index.ts:import type { HTTP_GET } from "../types/paths/index.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -1292,12 +1292,12 @@ import type { HttpStatusCode } from "../../counterfact-types/index.ts";
 /**
  * the root
  */
-export type getRoot = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getRoot_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1323,14 +1323,14 @@ export type getRoot = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getRoot_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 3`] = `
-"routes/count.ts:import type { getCount } from "../types/paths/count.types.js";
-export const GET: getCount = async ($) => {
-  return $.response[200].random();
+"routes/count.ts:import type { HTTP_GET } from "../types/paths/count.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -1349,12 +1349,12 @@ import type { InternalServerError } from "../#/components/responses/InternalServ
 /**
  * outputs the number of times each URL was visited
  */
-export type getCount = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getCount_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1379,14 +1379,14 @@ export type getCount = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getCount_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 5`] = `
-"routes/hello/kitty.ts:import type { helloKitty } from "../../types/paths/hello/kitty.types.js";
-export const GET: helloKitty = async ($) => {
-  return $.response[200].random();
+"routes/hello/kitty.ts:import type { HTTP_GET } from "../../types/paths/hello/kitty.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -1405,12 +1405,12 @@ import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 /**
  * HTML with a hello kitty image
  */
-export type helloKitty = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: helloKitty_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1436,14 +1436,14 @@ export type helloKitty = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type helloKitty_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 7`] = `
-"routes/hello/{name}.ts:import type { sayHello } from "../../types/paths/hello/{name}.types.js";
-export const GET: sayHello = async ($) => {
-  return $.response[200].random();
+"routes/hello/{name}.ts:import type { HTTP_GET } from "../../types/paths/hello/{name}.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -1462,12 +1462,12 @@ import type { BadRequest } from "../../#/components/responses/BadRequest.js";
 /**
  * says hello to someone
  */
-export type sayHello = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
-    query: sayHello_Query;
+    query: HTTP_GET_Query;
     querystring: never;
-    path: sayHello_Path;
-    headers: sayHello_Headers;
+    path: HTTP_GET_Path;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1498,19 +1498,19 @@ export type sayHello = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type sayHello_Query = {
+export type HTTP_GET_Query = {
   /**
    * language for the greeting
    */
   language?: "en" | "es" | "fr" | "de" | "ja";
 };
-export type sayHello_Path = {
+export type HTTP_GET_Path = {
   /**
    * the name to greet
    */
   name: string;
 };
-export type sayHello_Headers = {
+export type HTTP_GET_Headers = {
   /**
    * idempotency key
    */
@@ -1521,9 +1521,9 @@ export type sayHello_Headers = {
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 9`] = `
-"routes/path-one.ts:import type { getPathOne } from "../types/paths/path-one.types.js";
-export const GET: getPathOne = async ($) => {
-  return $.response[200].random();
+"routes/path-one.ts:import type { HTTP_GET } from "../types/paths/path-one.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -1540,12 +1540,12 @@ import type { Context } from "../../routes/_.context.ts";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { Recursive } from "../components/schemas/Recursive.js";
 import type { BadRequest } from "../#/components/responses/BadRequest.js";
-export type getPathOne = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getPathOne_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1570,14 +1570,14 @@ export type getPathOne = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getPathOne_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 11`] = `
-"routes/weird/path/with:colon.ts:import type { weirdColonPath } from "../../../types/paths/weird/path/with∶colon.types.js";
-export const GET: weirdColonPath = async ($) => {
-  return $.response[200].random();
+"routes/weird/path/with:colon.ts:import type { HTTP_GET } from "../../../types/paths/weird/path/with∶colon.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -1592,12 +1592,12 @@ import type { MaybePromise } from "../../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../../counterfact-types/index.ts";
 import type { Context } from "../../../../routes/_.context.ts";
 import type { ResponseBuilderFactory } from "../../../../counterfact-types/index.ts";
-export type weirdColonPath = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: weirdColonPath_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1621,18 +1621,18 @@ export type weirdColonPath = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type weirdColonPath_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 13`] = `
-"routes/users.ts:import type { listUsers } from "../types/paths/users.types.js";
-import type { createUser } from "../types/paths/users.types.js";
-export const GET: listUsers = async ($) => {
-  return $.response[200].random();
+"routes/users.ts:import type { HTTP_GET } from "../types/paths/users.types.js";
+import type { HTTP_POST } from "../types/paths/users.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
-export const POST: createUser = async ($) => {
-  return $.response[201].random();
+export const POST: HTTP_POST = async ($) => {
+  return $.response.status(201).random();
 };
 "
 `;
@@ -1657,12 +1657,12 @@ import type { Error } from "../components/schemas/Error.js";
 /**
  * List all users with optional filtering and pagination
  */
-export type listUsers = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
-    query: listUsers_Query;
+    query: HTTP_GET_Query;
     querystring: never;
     path: never;
-    headers: listUsers_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1698,12 +1698,12 @@ export type listUsers = (
 /**
  * Create a new user
  */
-export type createUser = (
+export type HTTP_POST = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: createUser_Headers;
+    headers: HTTP_POST_Headers;
     cookie: never;
     body: CreateUserRequest;
     context: Context;
@@ -1741,36 +1741,36 @@ export type createUser = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type listUsers_Query = {
+export type HTTP_GET_Query = {
   page?: number;
   pageSize?: number;
   active?: boolean;
   role?: "admin" | "editor" | "viewer";
 };
-export type listUsers_Headers = {
+export type HTTP_GET_Headers = {
   "x-correlation-id"?: string;
   "x-api-key": string;
 };
-export type createUser_Headers = { "x-api-key": string };
+export type HTTP_POST_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 15`] = `
-"routes/users/{userId}.ts:import type { getUser } from "../../types/paths/users/{userId}.types.js";
-import type { replaceUser } from "../../types/paths/users/{userId}.types.js";
-import type { patchUser } from "../../types/paths/users/{userId}.types.js";
-import type { deleteUser } from "../../types/paths/users/{userId}.types.js";
-export const GET: getUser = async ($) => {
-  return $.response[200].random();
+"routes/users/{userId}.ts:import type { HTTP_GET } from "../../types/paths/users/{userId}.types.js";
+import type { HTTP_PUT } from "../../types/paths/users/{userId}.types.js";
+import type { HTTP_PATCH } from "../../types/paths/users/{userId}.types.js";
+import type { HTTP_DELETE } from "../../types/paths/users/{userId}.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
-export const PUT: replaceUser = async ($) => {
-  return $.response[200].random();
+export const PUT: HTTP_PUT = async ($) => {
+  return $.response.status(200).random();
 };
-export const PATCH: patchUser = async ($) => {
-  return $.response[200].random();
+export const PATCH: HTTP_PATCH = async ($) => {
+  return $.response.status(200).random();
 };
-export const DELETE: deleteUser = async ($) => {
-  return $.response[204].empty();
+export const DELETE: HTTP_DELETE = async ($) => {
+  return $.response.status(204).empty();
 };
 "
 `;
@@ -1794,12 +1794,12 @@ import type { PatchUserRequest } from "../../components/schemas/PatchUserRequest
 /**
  * Fetch a single user by ID
  */
-export type getUser = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: getUser_Path;
-    headers: getUser_Headers;
+    path: HTTP_GET_Path;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1828,12 +1828,12 @@ export type getUser = (
 /**
  * Replace a user record entirely (idempotent)
  */
-export type replaceUser = (
+export type HTTP_PUT = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: replaceUser_Path;
-    headers: replaceUser_Headers;
+    path: HTTP_PUT_Path;
+    headers: HTTP_PUT_Headers;
     cookie: never;
     body: CreateUserRequest;
     context: Context;
@@ -1862,12 +1862,12 @@ export type replaceUser = (
 /**
  * Partially update a user record
  */
-export type patchUser = (
+export type HTTP_PATCH = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: patchUser_Path;
-    headers: patchUser_Headers;
+    path: HTTP_PATCH_Path;
+    headers: HTTP_PATCH_Headers;
     cookie: never;
     body: PatchUserRequest;
     context: Context;
@@ -1896,12 +1896,12 @@ export type patchUser = (
 /**
  * Delete a user (soft-delete)
  */
-export type deleteUser = (
+export type HTTP_DELETE = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: deleteUser_Path;
-    headers: deleteUser_Headers;
+    path: HTTP_DELETE_Path;
+    headers: HTTP_DELETE_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -1922,41 +1922,41 @@ export type deleteUser = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getUser_Path = {
+export type HTTP_GET_Path = {
   /**
    * Unique user identifier
    */
   userId: string;
 };
-export type getUser_Headers = { "x-api-key": string };
-export type replaceUser_Path = {
+export type HTTP_GET_Headers = { "x-api-key": string };
+export type HTTP_PUT_Path = {
   /**
    * Unique user identifier
    */
   userId: string;
 };
-export type replaceUser_Headers = { "x-api-key": string };
-export type patchUser_Path = {
+export type HTTP_PUT_Headers = { "x-api-key": string };
+export type HTTP_PATCH_Path = {
   /**
    * Unique user identifier
    */
   userId: string;
 };
-export type patchUser_Headers = { "x-api-key": string };
-export type deleteUser_Path = {
+export type HTTP_PATCH_Headers = { "x-api-key": string };
+export type HTTP_DELETE_Path = {
   /**
    * Unique user identifier
    */
   userId: string;
 };
-export type deleteUser_Headers = { "x-api-key": string };
+export type HTTP_DELETE_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 17`] = `
-"routes/events.ts:import type { createEvent } from "../types/paths/events.types.js";
-export const POST: createEvent = async ($) => {
-  return $.response[202].empty();
+"routes/events.ts:import type { HTTP_POST } from "../types/paths/events.types.js";
+export const POST: HTTP_POST = async ($) => {
+  return $.response.status(202).empty();
 };
 "
 `;
@@ -1980,12 +1980,12 @@ import type { BadRequest } from "../#/components/responses/BadRequest.js";
  * Accept a polymorphic event. The request body may be any one of the known event subtypes (oneOf), demonstrating discriminator support including the OpenAPI 3.2 defaultMapping field, which specifies the fallback schema when the discriminator value is absent or unrecognised.
  *
  */
-export type createEvent = (
+export type HTTP_POST = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: createEvent_Headers;
+    headers: HTTP_POST_Headers;
     cookie: never;
     body:
       | (ClickEvent & { type: "click" })
@@ -2010,14 +2010,14 @@ export type createEvent = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type createEvent_Headers = { "x-api-key": string };
+export type HTTP_POST_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 19`] = `
-"routes/products/{productId}.ts:import type { getProduct } from "../../types/paths/products/{productId}.types.js";
-export const GET: getProduct = async ($) => {
-  return $.response[200].random();
+"routes/products/{productId}.ts:import type { HTTP_GET } from "../../types/paths/products/{productId}.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2034,12 +2034,12 @@ import type { Context } from "../../../routes/_.context.ts";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Product } from "../../components/schemas/Product.js";
 import type { NotFound } from "../../#/components/responses/NotFound.js";
-export type getProduct = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: getProduct_Path;
-    headers: getProduct_Headers;
+    path: HTTP_GET_Path;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2064,15 +2064,15 @@ export type getProduct = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getProduct_Path = { productId: number };
-export type getProduct_Headers = { "x-api-key": string };
+export type HTTP_GET_Path = { productId: number };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 21`] = `
-"routes/uploads.ts:import type { uploadFile } from "../types/paths/uploads.types.js";
-export const POST: uploadFile = async ($) => {
-  return $.response[201].random();
+"routes/uploads.ts:import type { HTTP_POST } from "../types/paths/uploads.types.js";
+export const POST: HTTP_POST = async ($) => {
+  return $.response.status(201).random();
 };
 "
 `;
@@ -2091,12 +2091,12 @@ import type { Error } from "../components/schemas/Error.js";
 /**
  * Upload a binary file with metadata
  */
-export type uploadFile = (
+export type HTTP_POST = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: uploadFile_Headers;
+    headers: HTTP_POST_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2136,14 +2136,14 @@ export type uploadFile = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type uploadFile_Headers = { "x-api-key": string };
+export type HTTP_POST_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 23`] = `
-"routes/legacy/items.ts:import type { listItemsLegacy } from "../../types/paths/legacy/items.types.js";
-export const GET: listItemsLegacy = async ($) => {
-  return $.response[200].random();
+"routes/legacy/items.ts:import type { HTTP_GET } from "../../types/paths/legacy/items.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2162,13 +2162,13 @@ import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts
  * Deprecated – use /users instead
  * @deprecated
  */
-export type listItemsLegacy = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: listItemsLegacy_Headers;
-    cookie: listItemsLegacy_Cookie;
+    headers: HTTP_GET_Headers;
+    cookie: HTTP_GET_Cookie;
     body: never;
     context: Context;
     response: ResponseBuilderFactory<{
@@ -2191,15 +2191,15 @@ export type listItemsLegacy = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type listItemsLegacy_Headers = { "x-api-key": string };
-export type listItemsLegacy_Cookie = { session_id?: string };
+export type HTTP_GET_Headers = { "x-api-key": string };
+export type HTTP_GET_Cookie = { session_id?: string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 25`] = `
-"routes/reports/{reportId}.ts:import type { getReport } from "../../types/paths/reports/{reportId}.types.js";
-export const GET: getReport = async ($) => {
-  return $.response[200].random();
+"routes/reports/{reportId}.ts:import type { HTTP_GET } from "../../types/paths/reports/{reportId}.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2218,12 +2218,12 @@ import type { NotFound } from "../../#/components/responses/NotFound.js";
 /**
  * Download a report in the requested format
  */
-export type getReport = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: getReport_Path;
-    headers: getReport_Headers;
+    path: HTTP_GET_Path;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2254,8 +2254,8 @@ export type getReport = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getReport_Path = { reportId: string };
-export type getReport_Headers = {
+export type HTTP_GET_Path = { reportId: string };
+export type HTTP_GET_Headers = {
   Accept?: "application/json" | "text/csv" | "application/pdf";
   "x-api-key": string;
 };
@@ -2263,9 +2263,9 @@ export type getReport_Headers = {
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 27`] = `
-"routes/ping.ts:import type { ping } from "../types/paths/ping.types.js";
-export const GET: ping = async ($) => {
-  return $.response[204].empty();
+"routes/ping.ts:import type { HTTP_GET } from "../types/paths/ping.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(204).empty();
 };
 "
 `;
@@ -2283,12 +2283,12 @@ import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 /**
  * Health-check – returns 204 with no body
  */
-export type ping = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: ping_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2308,14 +2308,14 @@ export type ping = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type ping_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 29`] = `
-"routes/metadata.ts:import type { setMetadata } from "../types/paths/metadata.types.js";
-export const PUT: setMetadata = async ($) => {
-  return $.response[200].random();
+"routes/metadata.ts:import type { HTTP_PUT } from "../types/paths/metadata.types.js";
+export const PUT: HTTP_PUT = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2333,12 +2333,12 @@ import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 /**
  * Replace the free-form metadata store
  */
-export type setMetadata = (
+export type HTTP_PUT = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: setMetadata_Headers;
+    headers: HTTP_PUT_Headers;
     cookie: never;
     body: { [key: string]: unknown };
     context: Context;
@@ -2362,14 +2362,14 @@ export type setMetadata = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type setMetadata_Headers = { "x-api-key": string };
+export type HTTP_PUT_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 31`] = `
-"routes/xml/book.ts:import type { getXmlBook } from "../../types/paths/xml/book.types.js";
-export const GET: getXmlBook = async ($) => {
-  return $.response[200].random();
+"routes/xml/book.ts:import type { HTTP_GET } from "../../types/paths/xml/book.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2388,12 +2388,12 @@ import type { XmlBook } from "../../components/schemas/XmlBook.js";
 /**
  * Returns a book as XML; the id field uses nodeType attribute
  */
-export type getXmlBook = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getXmlBook_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2419,14 +2419,14 @@ export type getXmlBook = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getXmlBook_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 33`] = `
-"routes/xml/note.ts:import type { getXmlNote } from "../../types/paths/xml/note.types.js";
-export const GET: getXmlNote = async ($) => {
-  return $.response[200].random();
+"routes/xml/note.ts:import type { HTTP_GET } from "../../types/paths/xml/note.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2445,12 +2445,12 @@ import type { XmlNote } from "../../components/schemas/XmlNote.js";
 /**
  * Returns a note whose body is serialised as a text node
  */
-export type getXmlNote = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getXmlNote_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2476,14 +2476,14 @@ export type getXmlNote = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getXmlNote_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 35`] = `
-"routes/xml/snippet.ts:import type { getXmlSnippet } from "../../types/paths/xml/snippet.types.js";
-export const GET: getXmlSnippet = async ($) => {
-  return $.response[200].random();
+"routes/xml/snippet.ts:import type { HTTP_GET } from "../../types/paths/xml/snippet.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2502,12 +2502,12 @@ import type { XmlSnippet } from "../../components/schemas/XmlSnippet.js";
 /**
  * Returns a code snippet inside a CDATA section
  */
-export type getXmlSnippet = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getXmlSnippet_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2533,14 +2533,14 @@ export type getXmlSnippet = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getXmlSnippet_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 37`] = `
-"routes/xml/secret.ts:import type { getXmlSecret } from "../../types/paths/xml/secret.types.js";
-export const GET: getXmlSecret = async ($) => {
-  return $.response[200].random();
+"routes/xml/secret.ts:import type { HTTP_GET } from "../../types/paths/xml/secret.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2559,12 +2559,12 @@ import type { XmlSecret } from "../../components/schemas/XmlSecret.js";
 /**
  * Returns a record where the password field is omitted from XML
  */
-export type getXmlSecret = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getXmlSecret_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2590,14 +2590,14 @@ export type getXmlSecret = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getXmlSecret_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 39`] = `
-"routes/xml/playlist.ts:import type { getXmlPlaylist } from "../../types/paths/xml/playlist.types.js";
-export const GET: getXmlPlaylist = async ($) => {
-  return $.response[200].random();
+"routes/xml/playlist.ts:import type { HTTP_GET } from "../../types/paths/xml/playlist.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2616,12 +2616,12 @@ import type { XmlPlaylist } from "../../components/schemas/XmlPlaylist.js";
 /**
  * Returns a playlist whose tracks array is wrapped with nodeType element
  */
-export type getXmlPlaylist = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getXmlPlaylist_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2647,22 +2647,22 @@ export type getXmlPlaylist = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getXmlPlaylist_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 41`] = `
-"routes/relationships/{targetId}.ts:import type { getRelationship } from "../../types/paths/relationships/{targetId}.types.js";
-import type { linkRelationship } from "../../types/paths/additionalOperations.types.js";
-import type { unlinkRelationship } from "../../types/paths/additionalOperations.types.js";
-export const GET: getRelationship = async ($) => {
-  return $.response[200].random();
+"routes/relationships/{targetId}.ts:import type { HTTP_GET } from "../../types/paths/relationships/{targetId}.types.js";
+import type { HTTP_LINK } from "../../types/paths/additionalOperations.types.js";
+import type { HTTP_UNLINK } from "../../types/paths/additionalOperations.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
-export const LINK: linkRelationship = async ($) => {
-  return $.response[200].random();
+export const LINK: HTTP_LINK = async ($) => {
+  return $.response.status(200).random();
 };
-export const UNLINK: unlinkRelationship = async ($) => {
-  return $.response[200].random();
+export const UNLINK: HTTP_UNLINK = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2677,12 +2677,12 @@ import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
 import type { Context } from "../../../routes/_.context.ts";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
-export type getRelationship = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: getRelationship_Path;
-    headers: getRelationship_Headers;
+    path: HTTP_GET_Path;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2708,8 +2708,8 @@ export type getRelationship = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getRelationship_Path = { targetId: string };
-export type getRelationship_Headers = { "x-api-key": string };
+export type HTTP_GET_Path = { targetId: string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
@@ -2723,12 +2723,12 @@ import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
 import type { Context } from "../../routes/_.context.ts";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
-export type linkRelationship = (
+export type HTTP_LINK = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: linkRelationship_Path;
-    headers: linkRelationship_Headers;
+    path: HTTP_LINK_Path;
+    headers: HTTP_LINK_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2754,12 +2754,12 @@ export type linkRelationship = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type unlinkRelationship = (
+export type HTTP_UNLINK = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
-    path: unlinkRelationship_Path;
-    headers: unlinkRelationship_Headers;
+    path: HTTP_UNLINK_Path;
+    headers: HTTP_UNLINK_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2785,17 +2785,17 @@ export type unlinkRelationship = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type linkRelationship_Path = { targetId: string };
-export type linkRelationship_Headers = { "x-api-key": string };
-export type unlinkRelationship_Path = { targetId: string };
-export type unlinkRelationship_Headers = { "x-api-key": string };
+export type HTTP_LINK_Path = { targetId: string };
+export type HTTP_LINK_Headers = { "x-api-key": string };
+export type HTTP_UNLINK_Path = { targetId: string };
+export type HTTP_UNLINK_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 44`] = `
 "routes/explodable-parameters.ts:import type { HTTP_GET } from "../types/paths/explodable-parameters.types.js";
 export const GET: HTTP_GET = async ($) => {
-  return $.response[200].random();
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2852,12 +2852,12 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 46`] = `
-"routes/stream/events.ts:import type { streamEvents } from "../../types/paths/stream/events.types.js";
-export const GET: streamEvents = async ($) => {
+"routes/stream/events.ts:import type { HTTP_GET } from "../../types/paths/stream/events.types.js";
+export const GET: HTTP_GET = async ($) => {
   async function* items() {
     // yield items here
   }
-  return $.response[200].stream(items());
+  return $.response.status(200).stream(items());
 };
 "
 `;
@@ -2877,12 +2877,12 @@ import type { LogEntry } from "../../components/schemas/LogEntry.js";
  * Stream a series of server-sent events. Each event conforms to the LogEntry schema. Demonstrates OpenAPI 3.2 itemSchema support for sequential media types.
  *
  */
-export type streamEvents = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: streamEvents_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2906,14 +2906,14 @@ export type streamEvents = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type streamEvents_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 48`] = `
-"routes/search.ts:import type { search } from "../types/paths/search.types.js";
-export const GET: search = async ($) => {
-  return $.response[200].random();
+"routes/search.ts:import type { HTTP_GET } from "../types/paths/search.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -2932,12 +2932,12 @@ import type { BadRequest } from "../#/components/responses/BadRequest.js";
 /**
  * Search with the entire query string treated as a typed object (OpenAPI 3.2 querystring parameter)
  */
-export type search = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
-    querystring: search_Querystring;
+    querystring: HTTP_GET_Querystring;
     path: never;
-    headers: search_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -2964,8 +2964,8 @@ export type search = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type search_Headers = { "x-api-key": string };
-export type search_Querystring = {
+export type HTTP_GET_Headers = { "x-api-key": string };
+export type HTTP_GET_Querystring = {
   /**
    * The search term
    */
@@ -2980,9 +2980,9 @@ export type search_Querystring = {
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 50`] = `
-"routes/type-edge-cases.ts:import type { getTypeEdgeCases } from "../types/paths/type-edge-cases.types.js";
-export const GET: getTypeEdgeCases = async ($) => {
-  return $.response[200].random();
+"routes/type-edge-cases.ts:import type { HTTP_GET } from "../types/paths/type-edge-cases.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -3001,12 +3001,12 @@ import type { TypeEdgeCases } from "../components/schemas/TypeEdgeCases.js";
 /**
  * Demonstrates TypeScript literal escaping and composition grouping
  */
-export type getTypeEdgeCases = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getTypeEdgeCases_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -3032,7 +3032,7 @@ export type getTypeEdgeCases = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getTypeEdgeCases_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 

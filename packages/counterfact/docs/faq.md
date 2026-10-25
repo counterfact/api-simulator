@@ -1,6 +1,6 @@
 # FAQ
 
-Answers to the questions that come up when you take Counterfact from a quick try to a team workflow.
+Answers to the questions that come up when you take Counterfact from a quick try to a team workflow. For definitions of specifications, handlers, context, scenarios, groups, and stores, see [How Counterfact fits together](./manual/concepts.md).
 
 ---
 
@@ -45,7 +45,7 @@ Counterfact is a tool that turns an OpenAPI spec into a live, editable, stateful
 
 **QA engineers** who need to reproduce specific edge cases and error states on demand.
 
-**Developers writing automated tests** — Counterfact runs a real HTTP server, so it works seamlessly in integration and end-to-end test suites. Start it in a `beforeAll`, run your tests, tear it down in `afterAll`.
+**Developers writing automated tests** — Counterfact runs a real HTTP server that your integration and end-to-end tests can call. Start it in a `beforeAll`, run your tests, tear it down in `afterAll`.
 
 **AI agents** that make calls to third-party APIs — running against a local mock avoids rate limits, costs, and network flakiness.
 
@@ -103,9 +103,9 @@ small shared context:
 
 ```ts
 export const POST: HTTP_POST = function ($) {
-  if (!$.body.name) return $.response[400].text("name is required");
+  if (!$.body.name) return $.response.status(400).text("name is required");
   const pet = $.context.add($.body);
-  return $.response[200].json(pet);
+  return $.response.status(200).json(pet);
 };
 ```
 
@@ -142,7 +142,7 @@ export class Context {
 }
 ```
 
-State is in-memory, which means it's lightning-fast, it resets to a known clean state every restart, and scalability isn't something you need to worry about because you're the only one using it.
+State stays in memory. Restarting creates fresh contexts and runs your startup scenarios again.
 
 ---
 
@@ -269,7 +269,7 @@ No. Counterfact watches the routes directory and hot-reloads changed files immed
 ## When do I need to restart?
 
 Counterfact watches every local file that contributes to the OpenAPI document,
-including the base spec and ordered overlays. Editing any of those files
+including the base spec and ordered [overlays](./manual/overlays.md). An overlay applies selected changes to a spec without editing the original; the composed document is the result after applying those overlays in order. Editing any of those files
 reloads the complete composed document and regenerates enabled artifacts, so no
 restart is required. HTTP(S) inputs are loaded at startup but are not watched;
 restart to pick up a remote-only change. If a remote base uses a local overlay,

@@ -17,10 +17,13 @@ Counterfact can serve several versions of the same API simultaneously from a sin
 
 ## YAML config syntax
 
+An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) collects specs that share route files and context state. `basePath` names the library’s output directory (`destination` in the CLI YAML config); a named group lives in a subdirectory of it. A `version` labels a contract within that group; only `prefix` changes URLs.
+
 Declare multiple specs in `counterfact.yaml` using the `spec` array. Give them the same `group` and different `version` labels:
 
 ```yaml
 # counterfact.yaml
+destination: api
 spec:
   - source: ./openapi-v1.yaml
     group: catalog
@@ -124,22 +127,24 @@ Both properties are only present when `version` is set in the config. For a sing
 
 ### Example
 
+This handler assumes a catalog context you write with `findById(id)`, returning items with `id`, `name`, and `category`. Declare the shown response shapes and text 404 in each version’s contract. See [stateful contexts](./state.md) for how to author that class.
+
 ```ts
 // catalog/routes/items/{itemId}.ts
 import type { HTTP_GET } from "../../types/paths/items/{itemId}.types.js";
 
 export const GET: HTTP_GET = function ($) {
   const item = $.context.findById($.path.itemId);
-  if (!item) return $.response[404].text("Item not found");
+  if (!item) return $.response.status(404).text("Item not found");
 
   // v1: return only id and name
   if (!$.minVersion("v2")) {
-    return $.response[200].json({ id: item.id, name: item.name });
+    return $.response.status(200).json({ id: item.id, name: item.name });
   }
 
   // v2: also include the category field
   if (!$.minVersion("v3")) {
-    return $.response[200].json({
+    return $.response.status(200).json({
       id: item.id,
       name: item.name,
       category: item.category,
@@ -147,7 +152,7 @@ export const GET: HTTP_GET = function ($) {
   }
 
   // v3+: return the full object
-  return $.response[200].json(item);
+  return $.response.status(200).json(item);
 };
 ```
 
@@ -184,14 +189,14 @@ route.catalog("/items/{itemId}");
 export const GET: HTTP_GET = function ($) {
   if ($.minVersion("v2")) {
     // $ is typed as the v2 (and later) $ arg — v2-only fields are available here
-    return $.response[200].json({
+    return $.response.status(200).json({
       id: $.path.itemId,
       category: $.body.category,
     });
   }
 
   // $ is typed as the v1 $ arg here — only v1 fields are available
-  return $.response[200].json({ id: $.path.itemId });
+  return $.response.status(200).json({ id: $.path.itemId });
 };
 ```
 

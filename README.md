@@ -61,7 +61,8 @@ This is a Yarn workspace monorepo. The published application and canonical user
 docs live in [`packages/counterfact`](./packages/counterfact/README.md).
 Focused packages: [client](./packages/client/README.md),
 [generator](./packages/generator/README.md), [OpenAPI](./packages/openapi/README.md),
-[REPL](./packages/repl/README.md), [runtime](./packages/runtime/README.md), and
+[REPL](./packages/repl/README.md), [runtime](./packages/runtime/README.md),
+[tutorials](./packages/tutorials/README.md), and
 [types](./packages/types/README.md).
 
 [MIT license](./License.md) · Copyright Patrick McElhaney.

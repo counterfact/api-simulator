@@ -33,6 +33,8 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 
 ## Existing conventions to follow
 
+- Write user docs as direct instructions with concrete examples. Introduce OpenAPI with a brief mention of its former name, Swagger, then use “spec” naturally. Prefer “your code” or “a class you write” over “authored behavior.” Explain limitations where they affect the task; avoid repeated disclaimers, abstract process language, and unsupported marketing claims. Choose headings for the subject rather than repeating a fixed template on every guide.
+
 - When spawning Yarn from a package script, use the Yarn command on PATH with Windows command-shim handling. Yarn 4 can set `npm_execpath` to a shell wrapper; passing that path to Node treats shell code as JavaScript. Validate the runner with `yarn test:build` on both CI operating systems.
 - Keep the root development build stages aligned with `packages/counterfact/package.json` build order and commands. Preserve the self-contained workspace build for packaging; repository-only progress scripts must not become required files in published packages.
 
@@ -53,13 +55,16 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
   and use the official review command for verified moved documents. Remove only
   their obsolete state keys; a rename alone does not establish a new review.
 
+- Run package packing/prepack checks separately from unit and product suites that consume workspace `dist` output. Prepack rebuilds can remove those files while another suite is loading them, causing false missing-module failures. Finish the package check before starting those suites.
 - `catchmydrift@0.1.0` review state is an unversioned map of watched paths to reachable full commit SHAs. When migrating legacy snapshot records, recover the historical commit that established each record and verify its recorded related-file blobs before retaining that baseline. Do not substitute tokens, blob hashes, or the current HEAD for an unverified review. Run the checker after migration and report outstanding drift separately from state/configuration failures.
 
 - Quote glob arguments in package scripts when the receiving tool accepts the pattern.
   In particular, keep the `test:tsd` file pattern quoted: shell expansion of
   multiple files can turn an extra path into tsd's positional working directory.
 - Execute substantial documentation recipes against the exact published version or commit they instruct readers to use. A source package version can match npm while exposing unreleased APIs; verify public method availability and mark source-only recipes with a reproducible checkout setup. Verify externally linked contracts at their pinned URL, and exercise both the failing and repaired steps of typecheck examples.
+- Validate copyable handler examples against generated imports and the actual HTTP method's inputs, not only TypeScript syntax. For linked onboarding lessons, make the running-process, project-directory, and contract handoff explicit; an independently runnable command may still fail when followed immediately after the preceding lesson.
 - User documentation ships in the npm package as well as the site. Keep the package `files` allowlist and `test/package/fixtures/pack-files.json` aligned with new pages; inspect inventory changes and run the packed-consumer check after adding documentation paths.
+- Keep introductory walkthroughs in a linked manual chapter, with setup and discovery rules in `docs/api/cli.md`; preserve the direct OpenAPI quick start when integrating older onboarding changes.
 - The documentation has a feature-based manual and a separate API reference. Keep `site/src/data/navigation.json`, the Markdown manual/reference indexes, and the home-page feature count aligned when adding chapters. Reuse canonical Markdown pages rather than duplicating existing guides, preserve published documentation URLs through the site redirect map when retiring redundant Markdown sources, and check rendered anchors as well as page destinations after restructuring.
 - When rebuilding documentation navigation, compare removed content with the previous site as well as checking URLs. Preserve privacy disclosures, project resources, task indexes, and externally configured client examples; verify retained guides have incoming links from the new navigation. A successful link check cannot detect removed information or orphaned pages.
 - Documentation is also rendered as site pages. Link repository-only examples
@@ -71,6 +76,9 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 
 - Keep maintained examples eligible for Renovate updates; do not exclude `**/examples/**` in `ignorePaths`. Preserve the other dependency, vendor, test, and fixture exclusions when editing that array.
 - Validate `examples/first-10-minutes` with its own `npm ci` and `npm run verify`; its npm lockfile is independent of the root Yarn lockfile. Prefer a disposable copy for this check: generation writes routes, types, and caches into the example, and those outputs can cause unrelated root lint failures if left in the worktree.
+- Keep weekly Renovate lockfile maintenance enabled for the root, documentation site, and maintained tutorial. Direct dependency updates can preserve vulnerable transitive versions; each independent lockfile needs its own refresh and validation.
+- Keep Renovate `gitIgnoredAuthors` aligned with the author used by the Changesets workflow so automated release-metadata commits do not mark dependency PRs as manually edited.
+- Renovate security-fix ingestion also requires the installed GitHub app to have read access to Dependabot alerts; repository configuration alone does not establish that permission.
 - Use `usingTemporaryFiles()` for filesystem-heavy tests.
 - Astro static-build tests must keep temporary output on the checkout filesystem: Astro stages assets under the working directory and renames them into the output, so system temporary directories on a different volume cause `EXDEV`. Continue using `usingTemporaryFiles()` and restore any temporary-directory environment override in `finally`.
 - The Astro site uses `compressHTML: true` to preserve HTML whitespace around inline prose across source line breaks. Keep that setting explicit when upgrading Astro, and run `cd site && npm run test:whitespace` for rendering or formatting changes. Check generated text before applying CSS spacing: punctuation and intentional in-word links must remain adjacent.
@@ -85,7 +93,9 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - Keep tests focused by subsystem (`packages/counterfact/test/cli`, `packages/counterfact/test/server`, `packages/counterfact/test/typescript-generator`, `packages/counterfact/test/util`).
 - Preserve documented behavior promises (e.g., regen preserves route edits; types are regenerated).
 - When terminal output displays an HTTP message, split its head and body at the first `\r\n\r\n` separator only: multipart bodies contain additional separators that must remain visible.
+- Documentation pages can be direct entry points. Introduce Counterfact-specific terms before using them, linking to `packages/counterfact/docs/manual/concepts.md` for shared definitions. State example prerequisites before snippets, distinguish generated helpers from authored context methods, and explain group/version/prefix and handler/constructor/scenario argument boundaries consistently. Extend current canonical pages rather than restoring retired guides.
 - For user-facing behavior changes: add a changeset and update docs under `packages/counterfact/docs/`.
+- When reconciling changes across the documentation reorganization, keep the Manual/API chapter structure and retired-page redirects. Move API contracts and migration guidance into the matching `api/` chapter and practical examples into `manual/`; do not restore deleted reference or pattern pages to preserve an older edit.
 - After Changesets versions workspace packages, run `yarn install --mode skip-build --no-immutable` so `yarn.lock` can match the new internal versions before immutable installation; CI enables Yarn immutability by default, so the explicit override is required in `release:version`.
 - A push to `main` with no remaining changesets publishes the merged package versions automatically; a manual Release workflow dispatch is the retry and recovery path.
 - Keep the `npm-publish` environment name, OIDC permission, and provenance setting aligned with the npm trusted-publisher configuration.
@@ -155,6 +165,8 @@ Before adding or approving a black-box test:
    rg -n '_run_node_script|consume\.mjs|--eval|input-type=module|packages/.+/(src|dist)/' test-black-box
    rg -n '@counterfact/|import .*counterfact|from .*counterfact' test-black-box
    ```
+
+For pseudo-terminal teardown, close the master before waiting for child exit so unread output cannot block terminal draining. Bound every wait, including after SIGTERM, and escalate to SIGKILL rather than using an unbounded waitpid. Avoid parent HTTP-server threads before forkpty on macOS; keep HTTP fixtures in separate processes.
 
 For interactive CLI behavior, use a real pseudo-terminal and send the literal keystrokes a user would type.
 If the required terminal facility is unavailable on an operating system, skip explicitly and ensure another CI operating system executes the test; do not replace the test with a direct function call.

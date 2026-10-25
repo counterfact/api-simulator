@@ -124,11 +124,11 @@ Then wire the context into each handler:
 ```ts
 // api/routes/pet.ts
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].json($.context.list($.query.status));
+  return $.response.status(200).json($.context.list($.query.status));
 };
 
 export const POST: HTTP_POST = function ($) {
-  return $.response[200].json($.context.add($.body));
+  return $.response.status(200).json($.context.add($.body));
 };
 ```
 
@@ -137,13 +137,13 @@ export const POST: HTTP_POST = function ($) {
 export const GET: HTTP_GET = function ($) {
   const pet = $.context.get($.path.petId);
   return pet
-    ? $.response[200].json(pet)
-    : $.response[404].text(`Pet ${$.path.petId} not found`);
+    ? $.response.status(200).json(pet)
+    : $.response.status(404).text(`Pet ${$.path.petId} not found`);
 };
 
 export const DELETE: HTTP_DELETE = function ($) {
   $.context.remove($.path.petId);
-  return $.response[200];
+  return $.response.status(200);
 };
 ```
 
@@ -186,8 +186,8 @@ import type { HTTP_GET } from "../../types/paths/payments/{paymentId}.types.js";
 export const GET: HTTP_GET = function ($) {
   const payment = $.context.getWithUser($.path.paymentId);
   return payment
-    ? $.response[200].json(payment)
-    : $.response[404].text("Payment not found");
+    ? $.response.status(200).json(payment)
+    : $.response.status(404).text("Payment not found");
 };
 ```
 
@@ -358,10 +358,10 @@ export class Context {
 ```ts
 // api/routes/pet/{petId}.ts
 export const GET: HTTP_GET = function ($) {
-  if ($.context.isDown) return $.response[500].text("Service unavailable");
-  if ($.context.isRateLimited) return $.response[429].text("Too many requests");
+  if ($.context.isDown) return $.response.status(500).text("Service unavailable");
+  if ($.context.isRateLimited) return $.response.status(429).text("Too many requests");
   const pet = $.context.get($.path.petId);
-  return pet ? $.response[200].json(pet) : $.response[404].text("Not found");
+  return pet ? $.response.status(200).json(pet) : $.response.status(404).text("Not found");
 };
 ```
 

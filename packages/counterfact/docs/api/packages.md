@@ -12,6 +12,7 @@ Use declared package entry points. Each package's README contains public-import 
 | `@counterfact/runtime/koa` | Koa HTTP adapter.                                                                                            |
 | `@counterfact/runtime/msw` | MSW adapter interfaces.                                                                                      |
 | `@counterfact/repl`        | Embeddable REPL.                                                                                             |
+| `@counterfact/tutorials`   | Guided tours, editable exercise preparation, and lesson checks.                                              |
 | `@counterfact/types`       | Shared contracts for generated code and package integration.                                                 |
 
 ## Architecture overview

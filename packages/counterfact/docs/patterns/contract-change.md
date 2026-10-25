@@ -1,6 +1,6 @@
 # Catch a contract change with TypeScript
 
-Use generated handler types to surface changed assumptions before clients and services meet in a shared environment. Counterfact regenerates contracts; your editor or an explicit `tsc` invocation performs the type check. Serving and hot reload transpile routes without running a full project typecheck.
+When your API spec changes, regenerate the handler types and run `tsc` to find code that needs updating. Your editor can also show type errors. The server and hot reload do not run a full project typecheck.
 
 ## Generate a small typed operation
 
@@ -18,7 +18,6 @@ info: { title: Status API, version: 1.0.0 }
 paths:
   /status:
     get:
-      operationId: getStatus
       responses:
         "200":
           description: Service status
@@ -39,9 +38,9 @@ npx counterfact status.yaml api --generate --no-update-check
 
 ```ts
 // api/routes/status.ts
-import type { getStatus } from "../types/paths/status.types.js";
-export const GET: getStatus = function ($) {
-  return $.response[200].json({ status: "ready" });
+import type { HTTP_GET } from "../types/paths/status.types.js";
+export const GET: HTTP_GET = function ($) {
+  return $.response.status(200).json({ status: "ready" });
 };
 ```
 
@@ -77,12 +76,15 @@ The edited handler stays intact while its generated type changes. TypeScript sho
 Update the handler:
 
 ```ts
-export const GET: getStatus = function ($) {
-  return $.response[200].json({ status: "ready", message: "Accepting requests" });
+export const GET: HTTP_GET = function ($) {
+  return $.response.status(200).json({
+    status: "ready",
+    message: "Accepting requests",
+  });
 };
 ```
 
-Run the same typecheck again; it should pass. In CI, run generation and this explicit check with pinned dependencies before the client tests. Commit the specification and authored changes together; generated types are derived artifacts, so follow your project's source-control convention for them.
+Run the same typecheck again; it should pass. In CI, run generation and this explicit check with pinned dependencies before the client tests. Commit the specification and your changes together; follow your project’s convention for committing generated types.
 
 ## Understand the boundary
 

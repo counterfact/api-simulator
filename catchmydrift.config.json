@@ -668,12 +668,21 @@
         ".github/pull_request_template.md",
         ".agents/skills/**"
       ]
+    },
+    "tutorials": {
+      "include": [
+        "packages/tutorials/package.json",
+        "packages/tutorials/src/**",
+        "packages/tutorials/test/**",
+        "packages/tutorials/examples/**",
+        "packages/tutorials/tsconfig.json"
+      ]
     }
   },
   "watch": [
     {
       "include": [".agents/skills/counterfact-cli-runtime/SKILL.md"],
-      "groups": ["cli", "telemetry", "application"]
+      "groups": ["cli", "telemetry", "application", "tutorials"]
     },
     {
       "include": [".agents/skills/counterfact-generator-internals/SKILL.md"],
@@ -1097,6 +1106,14 @@
     {
       "include": [".agents/skills/scenario/SKILL.md"],
       "groups": ["scenarios", "request-builder", "contexts"]
+    },
+    {
+      "include": ["packages/tutorials/README.md"],
+      "groups": ["tutorials"]
+    },
+    {
+      "include": ["packages/counterfact/docs/manual/guided-example.md"],
+      "groups": ["tutorials", "cli", "application"]
     }
   ]
 }

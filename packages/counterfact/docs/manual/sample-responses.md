@@ -6,9 +6,11 @@ Counterfact generates handlers that return sample data from the response schema.
 
 Start Counterfact with your specification and inspect an operation's route file:
 
+Keep the generated `HTTP_GET` import in your route file. Counterfact supplies the handler’s `$` argument, including its response builder; see [handler arguments](../api/handlers.md).
+
 ```ts
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].random();
+  return $.response.status(200).random();
 };
 ```
 
@@ -16,11 +18,33 @@ Send a request to that operation. The response uses the selected status's OpenAP
 
 ## Select a named example
 
-For a predictable screen state, define a named example on the response media type in OpenAPI, regenerate the types, then select it:
+For a predictable screen state, define a named example on the response media type in OpenAPI. For example, add this response definition to a GET operation whose 200 JSON schema permits the shown pet:
+
+```yaml
+responses:
+  "200":
+    description: A pet
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [id, name, photoUrls]
+          properties:
+            id: { type: integer }
+            name: { type: string }
+            photoUrls:
+              type: array
+              items: { type: string }
+        examples:
+          successResponse:
+            value: { id: 1, name: Fluffy, photoUrls: [] }
+```
+
+This is an operation fragment, not a complete OpenAPI document. Regenerate types, then select the key under `examples` by name:
 
 ```ts
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].example("successResponse");
+  return $.response.status(200).example("successResponse");
 };
 ```
 

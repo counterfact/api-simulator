@@ -16,7 +16,7 @@ import type { Script } from "./script.js";
 /**
  * Generates the default route handler stub for a single OpenAPI operation.
  *
- * The generated stub calls `$.response[statusCode].random()` (or `.empty()`)
+ * The generated stub calls `$.response.status(statusCode).random()` (or `.empty()`)
  * for the first response defined in the spec.  It is only written when no
  * handler file exists yet — users are expected to replace it with real logic.
  *
@@ -100,16 +100,22 @@ export class OperationCoder extends Coder {
     }
     const result = ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
-        ts.factory.createElementAccessExpression(
+        ts.factory.createCallExpression(
           ts.factory.createPropertyAccessExpression(
-            ts.factory.createIdentifier("$"),
-            "response",
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createIdentifier("$"),
+              "response",
+            ),
+            "status",
           ),
-          /^\d+$/u.test(status ?? "")
-            ? ts.factory.createNumericLiteral(status!)
-            : status === "default"
-              ? ts.factory.createNumericLiteral(200)
-              : ts.factory.createStringLiteral(status ?? "200"),
+          undefined,
+          [
+            /^\d+$/u.test(status ?? "")
+              ? ts.factory.createNumericLiteral(status!)
+              : status === "default"
+                ? ts.factory.createNumericLiteral(200)
+                : ts.factory.createStringLiteral(status ?? "200"),
+          ],
         ),
         method,
       ),

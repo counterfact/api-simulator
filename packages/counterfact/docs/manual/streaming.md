@@ -2,13 +2,49 @@
 
 Use a stream when the client needs to render events or records as they arrive. This lets you test progressive updates and disconnect handling.
 
+Server-sent events (**SSE**) use `text/event-stream`; **JSONL** (newline-delimited JSON) sends one JSON value per line; **JSON-seq** separates JSON records with a record-separator character. An `AsyncIterable<T>` produces items over time, as the async generator below does with `yield`. OpenAPI’s `itemSchema` describes each item rather than the complete response body.
+
 Counterfact supports OpenAPI 3.2 sequential media types. When your spec uses `itemSchema` on a `text/event-stream`, `application/jsonl`, or `application/json-seq` content type, the generated handler type expresses the body as `AsyncIterable<T>`.
 
-Use `$.response[<status>].stream(iterable)` to return a stream from any route handler. The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).
+## Define and generate a streaming operation
+
+Complete the [pinned source setup](../patterns/lifecycle-setup.md#run-examples-from-the-current-source) first; the published 2.17.0 package does not support the response API below. In its `counterfact-exercise/` directory, save this complete operation as `openapi.yaml`. The streaming media type and `itemSchema` let generation produce the matching handler type:
+
+```yaml
+openapi: 3.2.0
+info:
+  title: Event stream
+  version: 1.0.0
+paths:
+  /events:
+    get:
+      responses:
+        "200":
+          description: Events as they arrive
+          content:
+            text/event-stream:
+              itemSchema:
+                type: object
+                required: [id, message]
+                properties:
+                  id:
+                    type: integer
+                  message:
+                    type: string
+```
+
+Run `npx --no-install counterfact ./openapi.yaml api` and keep it running. See [Getting Started](../getting-started.md) for Node.js requirements and [custom route handlers](../features/routes.md) for how generated imports and editable files fit together.
+
+## Return events
+
+Replace `api/routes/events.ts` with the handler below. Use `$.response.status(<status>).stream(iterable)` to return a stream. The content type is inferred from the OpenAPI spec (the first streaming media type defined for that response).
 
 ```ts
+// api/routes/events.ts
+import type { HTTP_GET } from "../types/paths/events.types.js";
+
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].stream(events());
+  return $.response.status(200).stream(events());
 };
 
 async function* events() {
@@ -30,6 +66,12 @@ For `text/event-stream` responses, Counterfact also sets `Cache-Control: no-cach
 
 ## Observe the stream
 
-Request the route with `curl -N http://localhost:3100/your-stream-path`, replacing the path with the operation in your specification. Each yielded item should arrive before the iterator finishes. Use the corresponding media type in your OpenAPI response; ordinary JSON bodies do not become incremental streams automatically.
+In another terminal, run:
+
+```sh
+curl -N http://localhost:3100/events
+```
+
+The response contains `data: {"id":1,"message":"hello"}` followed roughly half a second later by `data: {"id":2,"message":"world"}`, with a blank line after each event. `-N` disables curl's output buffering so you can observe the gap before the iterator finishes. For your own operation, change the path and declare the corresponding media type in OpenAPI; ordinary JSON bodies do not become incremental streams automatically.
 
 See the [response builder reference](../api/responses.md).

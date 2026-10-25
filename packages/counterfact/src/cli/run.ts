@@ -13,6 +13,7 @@ import { updateRouteTypes } from "../migrate/update-route-types.js";
 import { pathResolve } from "../util/forward-slash-path.js";
 import { loadConfigFile } from "../util/load-config-file.js";
 import { checkForUpdates } from "./check-for-updates.js";
+import { runIntro } from "./intro.js";
 import {
   createGeneratedArtifactsSummary,
   createRuntimeProgressMessage,
@@ -158,7 +159,11 @@ export function buildStartupTelemetryProperties(
  *
  * @param version - Package version string shown in `--version` output.
  */
-function buildProgram(version: string, tagline: string): Command {
+function buildProgram(
+  version: string,
+  tagline: string,
+  noArguments: boolean,
+): Command {
   const program = new Command();
 
   async function main(source: string, destination: string): Promise<void> {
@@ -190,10 +195,7 @@ function buildProgram(version: string, tagline: string): Command {
       watchTypes?: boolean;
     }>();
 
-    const updateCheckPromise =
-      options.updateCheck === false
-        ? Promise.resolve()
-        : checkForUpdates(version);
+    let walkthroughPath: string | undefined;
 
     // Load the config file (counterfact.yaml by default, or --config <path>).
     // CLI options always take precedence over config file settings.
@@ -203,6 +205,22 @@ function buildProgram(version: string, tagline: string): Command {
       options.config !== undefined,
     );
     debug("fileConfig: %o", fileConfig);
+    // Even an empty config file signals an existing project. Only a truly
+    // argument-free, unconfigured invocation enters the first-run flow.
+    if (noArguments && !fs.existsSync(configFilePath)) {
+      const selection = await runIntro();
+      if (selection === undefined) return;
+      ({ source, destination } = selection);
+      options.port = selection.port;
+      walkthroughPath = selection.walkthroughPath;
+      if (walkthroughPath) options.updateCheck = false;
+    }
+
+    const updateCheckPromise =
+      options.updateCheck === false
+        ? Promise.resolve()
+        : checkForUpdates(version);
+
     const knownOptionKeys = new Set(
       program.options.map((option) => option.attributeName()),
     );
@@ -416,10 +434,17 @@ function buildProgram(version: string, tagline: string): Command {
 
     // Migrate route type imports if needed.
     debug("checking if route type migration is needed");
-    const didMigrateRouteTypes = await updateRouteTypes(
-      config.basePath,
-      config.openApiPath,
-    );
+    let didMigrateRouteTypes = false;
+    for (const spec of specs ?? [
+      { source: config.openApiPath, group: "", overlays: config.overlays },
+    ]) {
+      const migrated = await updateRouteTypes(
+        join(config.basePath, spec.group),
+        spec.source,
+        spec.overlays,
+      );
+      didMigrateRouteTypes = migrated || didMigrateRouteTypes;
+    }
     debug("route type migration check complete: %s", didMigrateRouteTypes);
     if (didMigrateRouteTypes) {
       writeStartupLine(startupOutput.success("Route type imports updated"));
@@ -473,6 +498,17 @@ function buildProgram(version: string, tagline: string): Command {
     await updateCheckPromise;
 
     if (config.startRepl) {
+      if (walkthroughPath) {
+        const walkthroughUrl = `${origin}${walkthroughPath}`;
+        writeStartupLine(`Coffee shop walkthrough → ${walkthroughUrl}`);
+        try {
+          await open(walkthroughUrl);
+        } catch {
+          writeStartupLine(
+            "Could not open a browser. Open the walkthrough URL above.",
+          );
+        }
+      }
       startRepl();
     }
 
@@ -505,14 +541,12 @@ function buildProgram(version: string, tagline: string): Command {
       process.stdout.write("\n\n\n*******************************\n");
       process.stdout.write("MIGRATING ROUTE TYPE IMPORTS\n\n");
       process.stdout.write(
-        "Operation types now use operationId from your OpenAPI spec when available.\n",
+        "Operation types now use stable HTTP_<METHOD> names.\n",
       );
       process.stdout.write(
         "Your route files have been automatically updated to use the new type names.\n",
       );
-      process.stdout.write(
-        "Example: 'HTTP_GET' may now be 'getPetById' if operationId is defined.\n",
-      );
+      process.stdout.write("Example: 'getPetById' is now 'HTTP_GET'.\n");
       process.stdout.write(
         "Please review the changes and report any issues to:\n",
       );
@@ -639,6 +673,6 @@ export async function runCli(argv: string[]): Promise<void> {
 
   debug("running counterfact CLI v%s", version);
 
-  const program = buildProgram(version, tagline);
+  const program = buildProgram(version, tagline, argv.length === 2);
   await program.parseAsync(argv);
 }

@@ -4,6 +4,8 @@ Counterfact turns an OpenAPI document into a useful local API in one command.
 Use it when your frontend is ready but the backend is incomplete, unavailable,
 unstable, or owned by another team.
 
+OpenAPI, formerly Swagger, describes an API’s endpoints, parameters, and responses in YAML or JSON. Use your own spec or try the public Petstore URL below. See [how the pieces fit together](./manual/concepts.md).
+
 ## Prerequisite
 
 Use Node.js 22 or newer. Counterfact supports Swagger 2.0 and OpenAPI 3.0,
@@ -20,13 +22,6 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 Counterfact writes editable route files and generated TypeScript types to
 `api/`, then starts a local server at `http://localhost:3100`.
 
-For a project or CI workflow, install a pinned version and commit the lockfile:
-
-```sh
-npm install --save-dev --save-exact counterfact
-npx counterfact ./openapi.yaml api
-```
-
 ## Make a browser request
 
 Point your frontend at the local base URL. For the Petstore document above, a
@@ -34,11 +29,12 @@ minimal request looks like this:
 
 ```ts
 const response = await fetch("http://localhost:3100/pet/1");
+if (!response.ok) throw new Error(`Request failed: ${response.status}`);
 const pet = await response.json();
+console.log(pet);
 ```
 
-Supported operations return schema-derived sample data immediately—before you
-edit a handler. A response might look like this:
+A successful request that logs a JSON object confirms the local API is responding. Supported operations return schema-derived sample data before you edit a handler. The generated values can vary; a response might look like this:
 
 ```json
 {
@@ -49,13 +45,12 @@ edit a handler. A response might look like this:
 }
 ```
 
-The generated response is a useful contract-shaped starting point for frontend
-work and exploration. It is not a substitute for the business behavior you
-choose to model.
+The sample data matches the response schema. Edit the handler when you need
+specific values or behavior.
 
 ## Know what was generated
 
-The output directory contains files you can own:
+Counterfact creates two directories:
 
 ```text
 api/
@@ -67,17 +62,21 @@ Do not edit `types/`; regenerate them when the OpenAPI document changes. Edit
 handlers under `routes/`. Counterfact hot-reloads route changes while the
 server is running.
 
-## Make one response explicit (optional)
+<span id="make-one-response-explicit-optional"></span>
+
+## Customize a response
+
+The handler below uses the `response.status(...)` API from `main`, which is not in the published 2.17.0 package. Stop the trial server with Ctrl+C, complete the [pinned source setup](./patterns/lifecycle-setup.md#run-examples-from-the-current-source), and run `npx --no-install counterfact https://petstore3.swagger.io/api/v3/openapi.json api` from its exercise directory before editing.
 
 When a screen needs a specific case, replace the generated response in the
-corresponding handler:
+corresponding handler. Counterfact supplies `$`: `$.path` contains URL parameters and `$.response` builds the HTTP response. The imported `HTTP_GET` type comes from the generated contract:
 
 ```ts
 // api/routes/pet/{petId}.ts
-import type { getPetById } from "../../types/paths/pet/{petId}.types.js";
+import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
 
-export const GET: getPetById = function ($) {
-  return $.response[200].json({
+export const GET: HTTP_GET = function ($) {
+  return $.response.status(200).json({
     id: $.path.petId,
     name: "Fluffy",
     photoUrls: [],
@@ -86,11 +85,16 @@ export const GET: getPetById = function ($) {
 };
 ```
 
-Save the file and refresh the frontend—no server restart is needed.
+Save the file, then repeat the browser request above—no server restart is needed. The logged pet should now have `name: "Fluffy"`. If you pasted the request into a console, use a fresh scope or reload the page before declaring the same variables again.
+
+## Use a repeatable project
+
+For a project or CI workflow, install a pinned version and commit the lockfile. [First 10 minutes](./first-10-minutes.md#install-a-pinned-version) walks through stopping this trial, using a pinned implementation and contract in a separate project, and adding state. Use [project installation](./patterns/lifecycle-setup.md) for automated workflows.
 
 ## Next steps
 
-- [First 10 minutes](./first-10-minutes.md) — add a small create/read workflow and one frontend-relevant failure.
-- [Find your workflow](./usage.md) — find guides by job: frontend, testing, advanced control, or troubleshooting.
+- [Try the guided coffee shop](./manual/guided-example.md) — learn by changing real handlers beside a working storefront; no document required.
+- [First 10 minutes](./first-10-minutes.md) — create a pet, fetch it, and test an error response.
+- [Find your workflow](./usage.md) — find a guide for what you’re working on.
 - [Custom responses](./features/routes.md), [state](./features/state.md), [failures](manual/edge-cases.md), and [proxying](./features/proxy.md) — add capabilities only when the workflow needs them.
-- [Without OpenAPI](./features/without-openapi.md) — use the deeper alternative when no OpenAPI document exists.
+- [Without OpenAPI](./features/without-openapi.md) — write routes without an OpenAPI spec.

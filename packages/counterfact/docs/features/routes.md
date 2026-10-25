@@ -1,16 +1,21 @@
 # Routes
 
+The examples on this page follow the current source. Use the [pinned source setup](../patterns/lifecycle-setup.md#run-examples-from-the-current-source) to run them with matching generated types and runtime APIs.
+
 Each file in `routes/` corresponds to an API path. For example, `/users/{userId}` maps to `routes/users/{userId}.ts`. The root path `/` maps to `routes/index.ts`.
 
-Use typed function expressions for route handlers:
+Use typed function expressions for route handlers. This example assumes your spec declares GET and POST on `/pets` with 200 responses; retain the imports generated for your own path:
 
 ```ts
+// routes/pets.ts — keep the imports generated for your operation
+import type { HTTP_GET, HTTP_POST } from "../types/paths/pets.types.js";
+
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].random();
+  return $.response.status(200).random();
 };
 
 export const POST: HTTP_POST = function ($) {
-  return $.response[200].random();
+  return $.response.status(200).random();
 };
 ```
 
@@ -39,7 +44,10 @@ Each exported function handles one HTTP method. The single argument `$` gives yo
 | `.header(name, value)`         | Adds a response header                                                                  |
 
 ```ts
-return $.response[200].header("x-request-id", "abc123").json({ ok: true });
+return $.response
+  .status(200)
+  .header("x-request-id", "abc123")
+  .json({ ok: true });
 ```
 
 ### Setting cookies
@@ -47,7 +55,8 @@ return $.response[200].header("x-request-id", "abc123").json({ ok: true });
 Use `.cookie(name, value, options?)` to set one or more cookies. Each call appends a new `Set-Cookie` header and returns the builder for chaining.
 
 ```ts
-return $.response[200]
+return $.response
+  .status(200)
   .cookie("sessionId", "abc123", {
     httpOnly: true,
     secure: true,
@@ -61,7 +70,8 @@ return $.response[200]
 Multiple cookies:
 
 ```ts
-return $.response[200]
+return $.response
+  .status(200)
   .cookie("sessionId", "abc123")
   .cookie("theme", "dark")
   .json({ ok: true });
@@ -85,10 +95,11 @@ If your OpenAPI spec defines named examples for a response, you can return a spe
 
 ```ts
 // Return a specific named example
-return $.response[200].example("successResponse");
+return $.response.status(200).example("successResponse");
 
 // Chain additional decorations after selecting an example
-return $.response[200]
+return $.response
+  .status(200)
   .example("successResponse")
   .header("x-request-id", "abc123");
 ```
@@ -105,23 +116,28 @@ The request is exposed through four typed properties:
 | `$.path`    | Path parameters (e.g. `$.path.userId` for `/users/{userId}`) |
 | `$.query`   | Query string parameters                                      |
 | `$.headers` | Request headers                                              |
-| `$.body`    | Request body                                                 |
+| `$.body`    | Parsed request body; `undefined` for GET and HEAD             |
+
+This example assumes a generated `POST /groups/{groupName}/search` operation with a required string path parameter `groupName`, required string query parameter `keyword`, a string `x-token` header, and a required JSON body containing a required `tags` array of strings. Its 200 and 401 responses both declare `text/plain`.
 
 ```ts
-export const GET: HTTP_GET = function ($) {
+// api/routes/groups/{groupName}/search.ts
+import type { HTTP_POST } from "../../../types/paths/groups/{groupName}/search.types.js";
+
+export const POST: HTTP_POST = function ($) {
   if ($.headers["x-token"] !== "super-secret") {
-    return $.response[401].text("Unauthorized");
+    return $.response.status(401).text("Unauthorized");
   }
 
   const content =
     `Results for "${$.query.keyword}" in ${$.path.groupName}` +
     ` with tags: ${$.body.tags.join(", ")}`;
 
-  return $.response[200].text(content);
+  return $.response.status(200).text(content);
 };
 ```
 
-All four objects are typed from your OpenAPI spec, so autocomplete works for parameter names and values.
+All four properties are typed from your OpenAPI spec, so autocomplete works for parameter names and values. GET and HEAD handlers receive no body; put their inputs in path, query, or header parameters.
 
 ### Object query parameters (exploded form style)
 
@@ -178,8 +194,8 @@ export const GET: HTTP_GET = function ($) {
   $.x.headers["my-undocumented-header"]; // ok
 
   // status code not defined in OpenAPI spec
-  return $.response[500].text("Error!"); // TypeScript error
-  return $.x.response[500].text("Error!"); // ok
+  return $.response.status(500).text("Error!"); // TypeScript error
+  return $.x.response.status(500).text("Error!"); // ok
 };
 ```
 
@@ -187,11 +203,11 @@ export const GET: HTTP_GET = function ($) {
 
 Counterfact supports OpenAPI 3.2 sequential media types. When your spec uses `itemSchema` on a `text/event-stream`, `application/jsonl`, or `application/json-seq` content type, the generated handler type expresses the body as `AsyncIterable<T>`.
 
-Use `$.response[<status>].stream(iterable)` to return a stream from any route handler. The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).
+Use `$.response.status(<status>).stream(iterable)` to return a stream from any route handler. The content type is inferred automatically from the OpenAPI spec (the first streaming media type defined for that response).
 
 ```ts
 export const GET: HTTP_GET = function ($) {
-  return $.response[200].stream(events());
+  return $.response.status(200).stream(events());
 };
 
 async function* events() {

@@ -165,7 +165,7 @@ await new CodeGenerator(${JSON.stringify(openApiPath)}, ${JSON.stringify(outputP
       path.join(outputPath, "types", "paths", "health.types.ts"),
       "utf8",
     ),
-    /export type getHealth/u,
+    /export type HTTP_GET/u,
   );
   await access(path.join(outputPath, "counterfact-types", "index.ts"));
   await access(

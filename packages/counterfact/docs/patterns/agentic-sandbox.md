@@ -1,12 +1,14 @@
 # AI-assisted workflows
 
-Give a coding agent a bounded local API and a reproducible verification task. Pin the API world and make the expected behavior explicit so the agent and a human reviewer can run the same checks.
+The [REPL](../features/repl.md) is Counterfact’s live terminal prompt. A [context](../features/state.md) is your state class; a context at `routes/_.context.ts` serves nested routes until a nearer context replaces it.
+
+Point your coding agent at a local API with known responses. Give it a specific task and tests you can run yourself.
 
 ## Point a third-party SDK at a local API
 
 An SDK can keep its normal calls while its base URL points at Counterfact. This
 small example uses the **server-side Stripe Node SDK**. It models only a
-customer lookup and a rate-limit response. The contract is an authored subset,
+customer lookup and a rate-limit response. The contract is a small subset,
 not Stripe's complete schema, and the example does not prove Stripe compatibility.
 
 In a new directory, run:
@@ -24,7 +26,6 @@ info: { title: Local customer lookup, version: 1.0.0 }
 paths:
   /v1/customers/{customerId}:
     get:
-      operationId: getCustomer
       parameters:
         - name: customerId
           in: path
@@ -73,15 +74,15 @@ export class Context {
 
 ```ts
 // api/routes/v1/customers/{customerId}.ts
-import type { getCustomer } from "../../../types/paths/v1/customers/{customerId}.types.js";
+import type { HTTP_GET } from "../../../types/paths/v1/customers/{customerId}.types.js";
 
-export const GET: getCustomer = function ($) {
+export const GET: HTTP_GET = function ($) {
   if ($.context.rateLimited) {
-    return $.response[429].json({
+    return $.response.status(429).json({
       error: { type: "rate_limit_error", message: "Try again shortly" },
     });
   }
-  return $.response[200].json({
+  return $.response.status(200).json({
     id: $.path.customerId,
     object: "customer",
     email: "juniper@example.test",
@@ -122,7 +123,7 @@ if (process.argv.includes("--rate-limited")) {
     assert.equal(error.message, "Try again shortly");
     return true;
   });
-  console.log("SDK observed the authored rate limit");
+  console.log("SDK observed the simulated rate limit");
 } else {
   const customer = await stripe.customers.retrieve("cus_local");
   assert.equal(customer.id, "cus_local");
@@ -134,15 +135,17 @@ if (process.argv.includes("--rate-limited")) {
 In a second terminal, run `node sdk-client.mjs` and expect
 `SDK read the local customer`. At the Counterfact REPL, set
 `context.rateLimited = true`. Run `node sdk-client.mjs --rate-limited` and expect
-`SDK observed the authored rate limit`. Set `context.rateLimited = false` and
+`SDK observed the simulated rate limit`. Set `context.rateLimited = false` and
 rerun the first command to confirm recovery.
 
 These checks show SDK traffic reaching the local handler and the SDK surfacing
-an authored error. They do not validate production authentication, Stripe's full
+a simulated error. They do not validate production authentication, Stripe's full
 customer object, or SDK retry timing. Keep separate real-service checks for the
 parts of the integration your client relies on.
 
-## Prepare a repeatable API world
+<span id="prepare-a-repeatable-api-world"></span>
+
+## Set up the API for repeatable tests
 
 1. Follow the [project installation setup](./lifecycle-setup.md) and commit the dependency lockfile.
 2. Complete the [payment retry recipe](./payment-retry.md) in that setup. It supplies a checked-in contract, small context, typed HTTP handlers, named scenarios, and an executable verification script.
@@ -151,7 +154,9 @@ parts of the integration your client relies on.
 
 This example uses a deliberately small order/payment model. Adapt it to the client workflow; do not ask an agent to infer a production payment system from the contract.
 
-## Give the agent a bounded task
+<span id="give-the-agent-a-bounded-task"></span>
+
+## Give the agent a specific task
 
 For example:
 
@@ -165,7 +170,7 @@ Run verify-orders.mjs and the client tests. Report both the simulated evidence
 and assumptions that still require a real-backend test.
 ```
 
-Generated types constrain shapes in code that is actually typechecked. Explicit task boundaries and HTTP assertions establish the behavior being tested. Neither guarantees that the agent's implementation matches unmodeled backend behavior.
+Run the TypeScript compiler to check request and response types. Use HTTP tests to check the behavior you asked the agent to implement. Test against the real backend for behavior the simulation does not cover.
 
 ## Run without a REPL
 
@@ -231,13 +236,13 @@ Keep each parallel worker on its own simulator and address. Consume requests and
 
 Return:
 
-- The contract snapshot, implementation commit, dependency lockfile, authored handlers, and scenario names.
+- The contract snapshot, implementation commit, dependency lockfile, custom handlers, and scenario names.
 - The exact verification commands, exit statuses, HTTP assertions, and captured test output.
 - The actual local address and scenario used for that run; the address is diagnostic evidence, not a port to hard-code for the next run.
 - Client files changed and the expected visible outcomes.
 - Remaining assumptions and targeted tests against the real backend, including production authorization and payment semantics.
 
-Fixed API inputs and isolated setup make the simulation repeatable. They do not promise identical agent reasoning or prove a real service works. Review agent-authored behavior and retain a separate real-backend verification stage.
+Keep the API inputs and setup consistent so you can repeat the tests. Review the agent’s code and test the integration against the real service too.
 
 ## Keep exploring
 

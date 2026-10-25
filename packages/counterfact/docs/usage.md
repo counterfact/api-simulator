@@ -4,10 +4,13 @@ Counterfact starts with an OpenAPI document, a local URL, and generated
 responses. Choose the next guide by the job your frontend, team, or test suite
 needs—not by a feature checklist.
 
+New to the terminology? Read [How Counterfact fits together](./manual/concepts.md), including what an [API group](./manual/concepts.md#api-groups-versions-and-url-prefixes) shares.
+
 For feature explanations, use the [user manual](./manual.md). For exact options and signatures, use the [API reference](./api.md).
 
 ## Frontend workflows
 
+- [Guided coffee shop](./manual/guided-example.md) — learn by editing a running API beside a working shop; no OpenAPI document required.
 - [Getting started](./getting-started.md) — run a local API and make a browser request.
 - [Routes and custom responses](./features/routes.md) — shape the response a screen needs.
 - [State](./features/state.md) — share small in-memory state across routes.
@@ -26,7 +29,7 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 - [Contract-change check](./patterns/contract-change.md) — regenerate, observe a type error, and repair a handler.
 - [Shared store](./patterns/shared-store.md) — coordinate state across API groups.
 - [Third-party SDK against a local API](./patterns/agentic-sandbox.md#point-a-third-party-sdk-at-a-local-api) — redirect the Stripe Node SDK, exercise a rate limit, and recover.
-- [AI-assisted implementation](./patterns/ai-assisted-implementation.md) and [agentic sandbox](./patterns/agentic-sandbox.md) — give coding agents a bounded, verifiable API task.
+- [AI-assisted implementation](./patterns/ai-assisted-implementation.md) and [agentic sandbox](./patterns/agentic-sandbox.md) — give coding agents a specific task and tests you can run yourself.
 
 ## Advanced control
 

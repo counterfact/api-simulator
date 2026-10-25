@@ -30,7 +30,7 @@
     "test:package-closures": "node scripts/test-package-closures.mjs",
     "test:tsd": "tsd --typings ./packages/types/dist/index.d.ts --files \"./packages/types/test/**/*.test-d.ts\"",
     "build": "node scripts/build.mjs",
-    "typecheck": "tsc --noEmit --pretty false -p packages/types && tsc --noEmit --pretty false -p packages/openapi && tsc --noEmit --pretty false -p packages/runtime && tsc --noEmit --pretty false -p packages/client && tsc --noEmit --pretty false -p packages/generator && tsc --noEmit --pretty false -p packages/repl && tsc --noEmit --pretty false -p packages/counterfact",
+    "typecheck": "tsc --noEmit --pretty false -p packages/types && tsc --noEmit --pretty false -p packages/openapi && tsc --noEmit --pretty false -p packages/runtime && tsc --noEmit --pretty false -p packages/client && tsc --noEmit --pretty false -p packages/generator && tsc --noEmit --pretty false -p packages/repl && tsc --noEmit --pretty false -p packages/tutorials && tsc --noEmit --pretty false -p packages/counterfact",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release:version": "changeset version && yarn install --mode skip-build --no-immutable",
     "release": "changeset publish",
@@ -41,11 +41,13 @@
     "go:petstore": "yarn build && yarn counterfact https://petstore3.swagger.io/api/v3/openapi.json out",
     "go:petstore2": "yarn build && yarn counterfact https://petstore.swagger.io/v2/swagger.json out",
     "go:example": "yarn build && node ./packages/counterfact/bin/counterfact.js ./packages/counterfact/test/fixtures/openapi/example.yaml out",
+    "go:first-run": "yarn build && node ./packages/counterfact/bin/counterfact.js",
     "go:swagger2": "yarn build && node ./packages/counterfact/bin/counterfact.js ./packages/counterfact/test/fixtures/openapi/swagger2.yaml out",
     "go:multipart": "yarn build && node ./packages/counterfact/bin/counterfact.js ./packages/counterfact/test/fixtures/openapi/multipart.yaml out",
     "go:multiple-apis": "yarn build && node ./packages/counterfact/bin/counterfact.js --config ./packages/counterfact/test/fixtures/config/multiple-apis.yaml",
     "counterfact": "./packages/counterfact/bin/counterfact.js",
-    "check:drift": "catchmydrift"
+    "check:drift": "catchmydrift",
+    "test:tutorials": "yarn workspace @counterfact/tutorials test"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",
@@ -54,7 +56,7 @@
     "@stryker-mutator/core": "10.0.0",
     "@stryker-mutator/jest-runner": "10.0.0",
     "@stryker-mutator/typescript-checker": "10.0.0",
-    "@swc/core": "1.16.18",
+    "@swc/core": "1.16.20",
     "@swc/jest": "0.2.39",
     "@testing-library/dom": "10.4.2",
     "@types/debug": "4.1.13",
