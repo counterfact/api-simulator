@@ -14,5 +14,10 @@
   "devDependencies": {
     "counterfact": "2.16.6",
     "typescript": "6.0.3"
+  },
+  "overrides": {
+    "koa-proxies": {
+      "uuid": "11.1.1"
+    }
   }
 }
