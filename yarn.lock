@@ -1319,12 +1319,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@counterfact/generator@npm:0.1.6, @counterfact/generator@workspace:packages/generator":
+"@counterfact/generator@npm:1.0.0, @counterfact/generator@workspace:packages/generator":
   version: 0.0.0-use.local
   resolution: "@counterfact/generator@workspace:packages/generator"
   dependencies:
     "@counterfact/openapi": "npm:0.1.6"
-    "@counterfact/types": "npm:0.1.0"
+    "@counterfact/types": "npm:0.2.0"
     chokidar: "npm:5.0.0"
     debug: "npm:4.4.3"
     prettier: "npm:3.9.10"
@@ -1344,21 +1344,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@counterfact/repl@npm:0.1.6, @counterfact/repl@workspace:packages/repl":
+"@counterfact/repl@npm:0.1.7, @counterfact/repl@workspace:packages/repl":
   version: 0.0.0-use.local
   resolution: "@counterfact/repl@workspace:packages/repl"
   dependencies:
     "@counterfact/client": "npm:0.2.1"
-    "@counterfact/runtime": "npm:0.2.0"
+    "@counterfact/runtime": "npm:0.3.0"
   languageName: unknown
   linkType: soft
 
-"@counterfact/runtime@npm:0.2.0, @counterfact/runtime@workspace:packages/runtime":
+"@counterfact/runtime@npm:0.3.0, @counterfact/runtime@workspace:packages/runtime":
   version: 0.0.0-use.local
   resolution: "@counterfact/runtime@workspace:packages/runtime"
   dependencies:
     "@counterfact/openapi": "npm:0.1.6"
-    "@counterfact/types": "npm:0.1.0"
+    "@counterfact/types": "npm:0.2.0"
     "@hapi/accept": "npm:6.0.3"
     "@types/koa": "npm:3.0.3"
     "@types/koa-bodyparser": "npm:4.3.13"
@@ -1378,16 +1378,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@counterfact/tutorials@npm:0.1.0, @counterfact/tutorials@workspace:packages/tutorials":
+"@counterfact/tutorials@npm:0.2.0, @counterfact/tutorials@workspace:packages/tutorials":
   version: 0.0.0-use.local
   resolution: "@counterfact/tutorials@workspace:packages/tutorials"
   dependencies:
-    "@counterfact/runtime": "npm:0.2.0"
+    "@counterfact/runtime": "npm:0.3.0"
     prettier: "npm:3.9.10"
   languageName: unknown
   linkType: soft
 
-"@counterfact/types@npm:0.1.0, @counterfact/types@workspace:packages/types":
+"@counterfact/types@npm:0.2.0, @counterfact/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@counterfact/types@workspace:packages/types"
   languageName: unknown
@@ -5141,11 +5141,11 @@ __metadata:
   resolution: "counterfact@workspace:packages/counterfact"
   dependencies:
     "@counterfact/client": "npm:0.2.1"
-    "@counterfact/generator": "npm:0.1.6"
+    "@counterfact/generator": "npm:1.0.0"
     "@counterfact/openapi": "npm:0.1.6"
-    "@counterfact/repl": "npm:0.1.6"
-    "@counterfact/runtime": "npm:0.2.0"
-    "@counterfact/tutorials": "npm:0.1.0"
+    "@counterfact/repl": "npm:0.1.7"
+    "@counterfact/runtime": "npm:0.3.0"
+    "@counterfact/tutorials": "npm:0.2.0"
     commander: "npm:15.0.0"
     debug: "npm:4.4.3"
     http-terminator: "npm:3.2.0"

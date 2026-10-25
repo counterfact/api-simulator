@@ -1,5 +1,81 @@
 # counterfact
 
+## 3.0.0
+
+### Major Changes
+
+- 442afd2: Generate operation and parameter types with stable HTTP method names such as
+  `HTTP_GET` and `HTTP_GET_Query`, independent of OpenAPI operationId. On CLI
+  startup, automatically migrate legacy operationId-based route imports and their
+  references while preserving route logic, explicit aliases, comments, and strings.
+  References outside route files must be updated manually.
+
+### Minor Changes
+
+- f139586: Running Counterfact without arguments or a config file now opens a hands-on browser walkthrough with a coffee shop beside its instructions. Complete purchases, edit real product and order handlers, update shared context inventory, and restock through the REPL while seeing the app respond. The bundled example preserves existing projects, supports available ports and browser fallback, and keeps the ordinary API and REPL running after completion. Own-document setup supports local discovery, paths, and URLs; configured, explicit, and unattended invocations retain their behavior.
+
+  The walkthrough includes the Counterfact wordmark and a blue/orange palette aligned with the website. The shop uses customer-facing stock messages, updates automatically and keeps the left panel focused on instructions, optional code hints, and saved-file checks. Stale data, stock rejections, and missing order confirmations have explicit explanations and keep the cart available for recovery.
+
+  The instructions omit the project-folder footer and divider. Instructional file names and file paths link directly to the corresponding generated files using VSCode URLs.
+
+  Detect saved lesson files, run their handlers against separate test inventory, and explain unexpected behavior without consuming shop stock or requiring editor confirmation clicks.
+
+  Explain the starter API’s unchanged stock immediately after the first purchase.
+
+  Group related edits and purchases into eight screens, advance instructions automatically within a lesson, clear completed feedback, simplify saved-check success messages, and detect REPL restocking without confirmation buttons.
+
+  Remove the live API update feed and distinguish changing lesson feedback with a subtle Update label.
+
+  Remove the manual product-refresh button; product updates continue automatically.
+
+  Revisited exercises keep live state and offer a contextual REPL restock when their inventory is depleted.
+
+  State the API-editing promise at the start, explain the one-time Decaf setting, and finish with an optional independent challenge.
+
+  Use the existing Update message to compare real API stock before and after an accepted purchase, without a history or diagnostic panel.
+
+  Accept positive stock variations and verify purchases by their actual quantity rather than requiring exactly five bags to become four.
+
+  Expose editor handoff and path copying beside the current edit instruction, and remove obsolete refresh instructions from the generated handler.
+
+  Give the inventory exercise a starter loop with a TODO in the order handler, so the edit is clear without opening the optional code hint.
+
+  Mark completed tutorial steps with a visible check mark and Step complete message beside the Continue action.
+
+  Offer original-cart recovery when a learner changes an order during the retry lesson, and make the restart handoff explicit about its working directory, port, and fresh session state.
+
+  Explain the purpose of each walkthrough action, connecting response edits, repeatable failures, shared state, boundary cases, and REPL changes to frontend development.
+
+- b0d11b6: Add `response.status(code)` as a typed alternative to `response[code]`. Allow headers and cookies before status selection, narrowing generated status choices by header names and values while preserving required-header and body validation.
+
+  Deprecate bracket-based `response[statusCode]` selection in favor of `response.status(statusCode)`. Update documentation and generated route stubs to use the function-based selector; existing bracket-based handlers remain supported.
+
+### Patch Changes
+
+- f57ac24: Include the complete user manual, API reference, and verified workflow recipes in the published package.
+- 70cbe2e: Preserve live object and array context state when unchanged declarations reload. Scenario-seeded inventory, request updates, and REPL edits now survive context reloads; deliberately changed initializers still apply.
+- 1db6b5b: Updated dependency `posthog-node` in `counterfact` to `5.57.0`.
+- 7f715f3: Updated dependency `posthog-node` in `counterfact` to `5.56.4`.
+- 872e12f: Preserve nullable values, primitive constants, inferred object properties, referenced dictionary values, composition properties and required fields, explicit discriminator mappings, and tuple prefixes in generated TypeScript contracts. Keep unrestricted values typed as unknown and retain Counterfact's streaming and server-oriented binary types.
+
+  Regenerating contracts can expose existing handler type errors where required properties or literal constraints were previously lost.
+
+- eceb762: Report coffee-shop walkthrough milestones through the existing CLI telemetry, honoring CI and telemetry opt-out settings. Correlate events within a temporary simulator session, deduplicate reloads and revisits, and distinguish reaching the final screen from completing every exercise. Exclude paths, source code, cart contents, and error messages.
+- f035672: Extract guided learning experiences into `@counterfact/tutorials`, starting with the coffee-shop tour. Keep the existing offline first-run experience while moving tour content, presentation, progression, saved-handler checks, and project preparation out of the CLI package. Future tours share this package; the CLI retains startup and terminal interactions.
+
+  Format the walkthrough's generated TypeScript files with Prettier, including the editable product, order, context, and scenario files.
+
+- Updated dependencies [70cbe2e]
+- Updated dependencies [872e12f]
+- Updated dependencies [442afd2]
+- Updated dependencies [eceb762]
+- Updated dependencies [b0d11b6]
+- Updated dependencies [f035672]
+  - @counterfact/runtime@0.3.0
+  - @counterfact/generator@1.0.0
+  - @counterfact/tutorials@0.2.0
+  - @counterfact/repl@0.1.7
+
 ## 2.17.0
 
 ### Minor Changes
