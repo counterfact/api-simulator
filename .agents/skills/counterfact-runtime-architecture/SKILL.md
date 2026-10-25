@@ -39,6 +39,7 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Resolve HTTP startup only after the listener is ready and reject bind errors through the startup promise. Report listener status from the actual server, including the allocated port when configured with port 0.
 - Preserve hot-reload expectations: route/module changes should apply without restart and context should survive reloads.
 - Prefer graceful degradation with actionable errors (see `docs/development/design-principles.md`).
+- Versioned runners can share a group and documentation pathname. Select Swagger UI and OpenAPI middleware by version as well as group, preserve unqualified links to the first configured spec, and validate each served contract and Try it out server prefix.
 - Select Swagger UI's asset version explicitly: `koa2-swagger-ui` derives its default from its own development dependency, which can lag supported OpenAPI versions. Verify the selected CDN serves every referenced script and stylesheet, then verify actual browser rendering for current OpenAPI versions and legacy Swagger; HTTP 200 on the documentation page and a valid version field do not establish UI compatibility.
 
 ## Common mistakes to avoid

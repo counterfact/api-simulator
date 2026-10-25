@@ -262,6 +262,20 @@ describe("createSwaggerUrls", () => {
     ]);
   });
 
+  it("links each version in a shared group to its own documentation", () => {
+    expect(
+      createSwaggerUrls("http://localhost:3100", [
+        { source: "v1.yaml", group: "greetings", version: "v1" },
+        { source: "v2.yaml", group: "greetings", version: "v2" },
+        { source: "next.yaml", group: "", version: "next / beta" },
+      ]),
+    ).toEqual([
+      "http://localhost:3100/counterfact/swagger/greetings/?version=v1",
+      "http://localhost:3100/counterfact/swagger/greetings/?version=v2",
+      "http://localhost:3100/counterfact/swagger/?version=next%20%2F%20beta",
+    ]);
+  });
+
   it("omits Swagger UI for spec-free entries", () => {
     expect(
       createSwaggerUrls("http://localhost:3100", [{ source: "_", group: "" }]),

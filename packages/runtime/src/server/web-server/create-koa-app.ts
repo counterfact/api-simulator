@@ -30,6 +30,7 @@ export interface RuntimeRunner {
   prefix: string;
   registry: Registry;
   subdirectory: string;
+  version?: string;
 }
 
 /**
@@ -65,21 +66,32 @@ export function createKoaApp({
         path: runner.openApiPath,
         baseUrl: `//localhost:${config.port}${runner.prefix}`,
         overlays: runner.overlays,
+        version: runner.version,
       }),
     );
 
-    app.use(
-      koaSwagger({
-        // The wrapper's default predates OpenAPI 3.0.4 and 3.2 support.
-        swaggerCdnUrl: "https://cdn.jsdelivr.net/npm",
-        swaggerVersion: "swagger-ui-dist@5.32.0",
-        routePrefix: `/counterfact/swagger${runner.subdirectory}`,
+    const versionQuery = runner.version
+      ? `?version=${encodeURIComponent(runner.version)}`
+      : "";
+    const swaggerMiddleware = koaSwagger({
+      // The wrapper's default predates OpenAPI 3.0.4 and 3.2 support.
+      swaggerCdnUrl: "https://cdn.jsdelivr.net/npm",
+      swaggerVersion: "swagger-ui-dist@5.32.0",
+      routePrefix: `/counterfact/swagger${runner.subdirectory}`,
 
-        swaggerOptions: {
-          url: `/counterfact/openapi${runner.subdirectory}`,
-        },
-      }),
-    );
+      swaggerOptions: {
+        url: `/counterfact/openapi${runner.subdirectory}${versionQuery}`,
+      },
+    });
+    app.use(async (ctx, next) => {
+      if (
+        ctx.query.version !== undefined &&
+        ctx.query.version !== runner.version
+      ) {
+        return await next();
+      }
+      return await swaggerMiddleware(ctx, next);
+    });
 
     if (config.startAdminApi) {
       if (adminApi === undefined) {

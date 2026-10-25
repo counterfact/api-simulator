@@ -68,6 +68,70 @@ describe("createKoaApp", () => {
     },
   );
 
+  it.each(["/greetings", ""])(
+    "serves each version's document and server prefix in group '%s'",
+    async (subdirectory) => {
+      await usingTemporaryFiles(async ($) => {
+        for (const version of ["v1", "v2"]) {
+          await $.add(
+            `${version}.yaml`,
+            `openapi: 3.0.4\ninfo:\n  title: Greetings ${version}\n  version: ${version}\npaths: {}\n`,
+          );
+        }
+        const runners = ["v1", "v2"].map((version) => {
+          const contextRegistry = new ContextRegistry();
+          const registry = new Registry();
+          return {
+            contextRegistry,
+            dispatcher: new Dispatcher(registry, contextRegistry),
+            openApiPath: $.path(`${version}.yaml`),
+            overlays: [],
+            prefix: `/${version}`,
+            registry,
+            subdirectory,
+            version,
+          };
+        });
+        const app = createKoaApp({
+          runners,
+          config: {
+            basePath: $.path(""),
+            port: 3100,
+            proxyPaths: new Map(),
+            proxyUrl: "",
+            startAdminApi: false,
+          },
+        });
+        for (const version of ["v1", "v2"]) {
+          const documentUrl = `/counterfact/openapi${subdirectory}?version=${version}`;
+          const page = await request(app.callback()).get(
+            `/counterfact/swagger${subdirectory}/?version=${version}`,
+          );
+          expect(page.status).toBe(200);
+          expect(page.text).toContain(`"url":"${documentUrl}"`);
+          const response = await request(app.callback()).get(documentUrl);
+          expect(response.status).toBe(200);
+          expect(yamlLoad(response.text)).toMatchObject({
+            info: { title: `Greetings ${version}`, version },
+            servers: [{ url: `//localhost:3100/${version}` }],
+          });
+        }
+        const defaultDocument = await request(app.callback()).get(
+          `/counterfact/openapi${subdirectory}`,
+        );
+        expect(yamlLoad(defaultDocument.text)).toMatchObject({
+          info: { version: "v1" },
+        });
+        for (const path of ["openapi", "swagger"]) {
+          const response = await request(app.callback()).get(
+            `/counterfact/${path}${subdirectory}${path === "swagger" ? "/" : ""}?version=missing`,
+          );
+          expect(response.status).toBe(404);
+        }
+      });
+    },
+  );
+
   it("serves a runtime runner below its configured prefix", async () => {
     const contextRegistry = new ContextRegistry();
     const registry = new Registry();

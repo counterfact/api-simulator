@@ -217,12 +217,12 @@ export function createWatchSummary(
 /** Returns the Swagger UI links exposed by the resolved OpenAPI specs. */
 export function createSwaggerUrls(
   origin: string,
-  specs: ReadonlyArray<{ group: string; source: string }>,
+  specs: ReadonlyArray<{ group: string; source: string; version?: string }>,
 ): string[] {
   return specs
     .filter((spec) => spec.source !== "_")
     .map(
       (spec) =>
-        `${origin}/counterfact/swagger${spec.group ? `/${spec.group}` : ""}/`,
+        `${origin}/counterfact/swagger${spec.group ? `/${spec.group}` : ""}/${spec.version ? `?version=${encodeURIComponent(spec.version)}` : ""}`,
     );
 }
