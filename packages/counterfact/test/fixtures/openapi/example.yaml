@@ -876,6 +876,36 @@ paths:
                     'display "name"': 'say "hello"'
                     label: example
 
+  # Schema-accuracy acceptance cases: nullable required fields, composition
+  # siblings (#2560), referenced dictionaries, const, discriminator aliases,
+  # and closed/optional/open tuple prefixes. Regenerate this route alongside
+  # /stream/events, /uploads, and /reports/{reportId} (acceptance 6).
+  /schema-accuracy:
+    get:
+      operationId: getSchemaAccuracy
+      description: Demonstrates the schema-type-accuracy acceptance criteria
+      responses:
+        "200":
+          description: Values that retain their schema constraints in TypeScript
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchemaAccuracy"
+              examples:
+                valid:
+                  value:
+                    nullableName: null
+                    allOfSibling: { propA: inherited, propB: sibling }
+                    anyOfSibling: { propA: inherited, propB: sibling }
+                    oneOfSibling: { propA: inherited, propB: sibling }
+                    sharedBase: {}
+                    dictionary:
+                      first: { kind: entry, label: example }
+                    animal: { kind: kitten, meows: true }
+                    closedTuple: [1, example]
+                    optionalTuple: []
+                    openTuple: [1, true, false]
+
 components:
   # -----------------------------------------------------------------------
   # Reusable responses
@@ -910,6 +940,139 @@ components:
   # Schemas
   # -----------------------------------------------------------------------
   schemas:
+    # Acceptance 1: nullableName is required even though null is a valid value.
+    SchemaAccuracy:
+      type: object
+      required:
+        - nullableName
+        - allOfSibling
+        - anyOfSibling
+        - oneOfSibling
+        - sharedBase
+        - dictionary
+        - animal
+        - closedTuple
+        - optionalTuple
+        - openTuple
+      properties:
+        nullableName:
+          type: string
+          nullable: true
+        allOfSibling:
+          $ref: "#/components/schemas/SchemaAccuracyAllOf"
+        anyOfSibling:
+          $ref: "#/components/schemas/SchemaAccuracyAnyOf"
+        oneOfSibling:
+          $ref: "#/components/schemas/SchemaAccuracyOneOf"
+        sharedBase:
+          $ref: "#/components/schemas/SchemaAccuracyBase"
+        dictionary:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/SchemaAccuracyEntry"
+        animal:
+          $ref: "#/components/schemas/SchemaAccuracyAnimal"
+        # Acceptance 5: required/optional positions and closed/typed tails.
+        closedTuple:
+          type: array
+          prefixItems:
+            - type: number
+            - type: string
+          minItems: 2
+          maxItems: 2
+          items: false
+        optionalTuple:
+          type: array
+          prefixItems:
+            - type: number
+            - type: string
+          items: false
+        openTuple:
+          type: array
+          prefixItems:
+            - type: number
+          minItems: 1
+          items:
+            type: boolean
+
+    # Acceptance 2: containing required applies to referenced propA and sibling
+    # propB; SchemaAccuracyBase itself must retain its optional propA.
+    SchemaAccuracyBase:
+      type: object
+      properties:
+        propA:
+          type: string
+
+    SchemaAccuracyAllOf:
+      allOf:
+        - $ref: "#/components/schemas/SchemaAccuracyBase"
+      type: object
+      required: [propA, propB]
+      properties:
+        propB:
+          type: string
+
+    # The sibling-property regression also affects anyOf and oneOf.
+    SchemaAccuracyAnyOf:
+      anyOf:
+        - $ref: "#/components/schemas/SchemaAccuracyBase"
+      type: object
+      required: [propA, propB]
+      properties:
+        propB:
+          type: string
+
+    SchemaAccuracyOneOf:
+      oneOf:
+        - $ref: "#/components/schemas/SchemaAccuracyBase"
+      type: object
+      required: [propA, propB]
+      properties:
+        propB:
+          type: string
+
+    # Acceptance 3: dictionary values reference a model with a primitive const.
+    SchemaAccuracyEntry:
+      type: object
+      required: [kind, label]
+      properties:
+        kind:
+          type: string
+          const: entry
+        label:
+          type: string
+
+    # Acceptance 4: both cat and kitten select the same model, while dog must
+    # still narrow correctly after those two discriminator values are excluded.
+    SchemaAccuracyAnimal:
+      oneOf:
+        - $ref: "#/components/schemas/SchemaAccuracyCat"
+        - $ref: "#/components/schemas/SchemaAccuracyDog"
+      discriminator:
+        propertyName: kind
+        mapping:
+          cat: "#/components/schemas/SchemaAccuracyCat"
+          kitten: "#/components/schemas/SchemaAccuracyCat"
+          dog: "#/components/schemas/SchemaAccuracyDog"
+
+    SchemaAccuracyCat:
+      type: object
+      required: [kind, meows]
+      properties:
+        kind:
+          type: string
+        meows:
+          type: boolean
+
+    SchemaAccuracyDog:
+      type: object
+      required: [kind, barks]
+      properties:
+        kind:
+          type: string
+        barks:
+          type: boolean
+
     TypeEdgeCases:
       description: Both union branches require the quoted property from the intersection
       allOf:
