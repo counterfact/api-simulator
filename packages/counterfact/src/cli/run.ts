@@ -28,6 +28,7 @@ import {
   isTelemetryEnabled,
   sendTelemetry,
 } from "./telemetry.js";
+import { enableWalkthroughTelemetry } from "./walkthrough-telemetry.js";
 
 const debug = createDebug("counterfact:cli:run");
 
@@ -168,6 +169,7 @@ function buildProgram(
 
   async function main(source: string, destination: string): Promise<void> {
     debug("executing the main function");
+    enableWalkthroughTelemetry(version);
 
     const options = program.opts<{
       adminApi: boolean;

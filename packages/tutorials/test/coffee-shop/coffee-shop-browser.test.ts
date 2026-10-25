@@ -84,6 +84,7 @@ async function browser(
     checkOk: false,
   };
   const calls: string[] = [];
+  const milestones: { event: string; step: number }[] = [];
   let poll: (() => unknown) | undefined;
   const products = () => [
     {
@@ -134,7 +135,12 @@ async function browser(
       let result: unknown;
       if (path === "/tutorial-info")
         result = { sessionId: "same-api-session", revision: server.revision };
-      else if (path === "/tutorial-check")
+      else if (path === "/tutorial-event") {
+        if (server.productMode === "telemetry-offline")
+          throw Error("Reporting unavailable");
+        milestones.push(JSON.parse(options.body!));
+        result = { ok: true };
+      } else if (path === "/tutorial-check")
         result = {
           revision: server.revision,
           ok: server.checkOk,
@@ -186,6 +192,7 @@ async function browser(
     server,
     stocks,
     calls,
+    milestones,
     root,
     read,
     storage,
@@ -582,4 +589,51 @@ it("names the restart directory and fresh session behavior at the handoff", asyn
   expect(app.root("lesson").textContent).toContain(
     "fresh inventory, lesson progress, and cart",
   );
+});
+
+it("reports observed exercise completion once while polling and navigation stay usable", async () => {
+  const app = await browser();
+  expect(app.milestones).toEqual([{ event: "opened", step: 0 }]);
+  app.root("continue").onclick!();
+  app.add();
+  await app.order();
+  await app.poll();
+  app.read("checkProgress();checkProgress()");
+  expect(app.milestones).toEqual([
+    { event: "opened", step: 0 },
+    { event: "started", step: 0 },
+    { event: "phase_completed", step: 1 },
+  ]);
+  app.root("continue").onclick!();
+  app.root("skip").onclick!();
+  expect(app.milestones.at(-1)).toEqual({ event: "lesson_skipped", step: 2 });
+  expect(app.milestones).not.toContainEqual({
+    event: "phase_completed",
+    step: 2,
+  });
+  app.read("progress.step=11;showLesson();showLesson()");
+  expect(
+    app.milestones.filter((event) => event.event === "finished"),
+  ).toHaveLength(1);
+});
+
+it("reports automatic phase completion before moving to the next instruction", async () => {
+  const app = await browser();
+  app.read("progress.step=2;showLesson()");
+  app.stocks.decaf = 5;
+  app.server.checkOk = true;
+  app.server.revision = "decaf-change";
+  await app.poll();
+  expect(app.milestones).toContainEqual({ event: "phase_completed", step: 2 });
+  expect(app.read("progress.step")).toBe(3);
+});
+
+it("continues lessons when milestone reporting fails", async () => {
+  const app = await browser();
+  app.server.productMode = "telemetry-offline";
+  app.root("continue").onclick!();
+  app.add();
+  await app.order();
+  expect(app.read("progress.done")).toBe(true);
+  expect(app.root("step-completion").textContent).toContain("Step complete");
 });

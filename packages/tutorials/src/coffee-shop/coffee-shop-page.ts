@@ -44,6 +44,11 @@ async function requestJson(path,options={}){
   const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),4000);
   try{const response=await fetch(path,{...options,signal:controller.signal});const result=await response.json();return {response,result};}finally{clearTimeout(timeout);}
 }
+const reportedEvents = new Set();
+function reportEvent(event,step=progress.step){
+  const key=event+':'+step;if(reportedEvents.has(key))return;reportedEvents.add(key);
+  requestJson('/tutorial-event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event,step})}).catch(()=>{reportedEvents.delete(key);});
+}
 function validProducts(value){
   const ids=['house-blend','dark-roast','decaf'];return Array.isArray(value)&&value.length===3&&new Set(value.map(p=>p?.id)).size===3&&value.every(p=>p&&ids.includes(p.id)&&typeof p.name==='string'&&typeof p.description==='string'&&Number.isSafeInteger(p.price)&&p.price>=0&&Number.isSafeInteger(p.stock)&&p.stock>=0);
 }
@@ -196,6 +201,7 @@ function updateAction(){
 
 }
 function showLesson(){
+  if(progress.step===11)reportEvent('finished');
   if(displayedPhase!==progress.step&&!lastFailure)$('shop-notice').replaceChildren();
   displayedPhase=progress.step;
   if(checkedLesson!==progress.step){passedSaveCheck=false;$('save-check').replaceChildren();}
@@ -221,6 +227,7 @@ function showLesson(){
   $('continue').hidden=!(progress.done||progress.step===0);$('continue').textContent=progress.step===0?'Start shopping':'Continue';$('back').hidden=progress.step===0;$('skip').hidden=progress.step===11;updateAction();
 }
 function checkProgress(){
+  if(progress.done&&progress.step>0&&progress.step<11)reportEvent('phase_completed');
   if(progress.done&&[2,4,6,9].includes(progress.step)){
     const phase=progress.step;progress.next();showLesson();
     const transitions={2:'Decaf is available. Now buy a bag to try your change.',4:'The order failed and your cart is still here. Restore ordering, then retry.',6:progress.inventoryUpdated?'Your handler already reduces stock. Make one more purchase to verify it.':'The order succeeded, but stock stayed the same. Now add the inventory update.',9:'Dark Roast is available. Buy a bag to check the shared inventory.'};
@@ -240,7 +247,7 @@ function onOrder(success,items,status){
   if(success&&progress.step===4)$('guide-status').textContent='This order succeeded. Save ordersAvailable = false, add another coffee, and try again.';
 }
 $('checkout').onclick=placeOrder;
-$('continue').onclick=()=>{progress.next();showLesson();refreshProducts({source:'lesson'});};$('back').onclick=()=>{progress.back();showLesson();refreshProducts({source:'lesson'});};$('skip').onclick=()=>{progress.skip();showLesson();refreshProducts({source:'lesson'});};
+$('continue').onclick=()=>{if(progress.step===0)reportEvent('started',0);progress.next();showLesson();refreshProducts({source:'lesson'});};$('back').onclick=()=>{progress.back();showLesson();refreshProducts({source:'lesson'});};$('skip').onclick=()=>{reportEvent('lesson_skipped');progress.skip();showLesson();refreshProducts({source:'lesson'});};
 async function copyPath(path,button){try{await navigator.clipboard.writeText(path);button.textContent='Copied';}catch{$('guide-status').textContent='Select and copy the path shown in the instructions.';}}
 function saveProgress(){if(!sessionId)return;try{sessionStorage.setItem('counterfact-coffee',JSON.stringify({sessionId,progress,cart}));}catch{}}
 async function checkSavedFiles(){
@@ -285,7 +292,7 @@ async function startWalkthrough(){
       if(saved.cart&&typeof saved.cart==='object')cart=Object.fromEntries(Object.entries(saved.cart).filter(([id,quantity])=>['house-blend','dark-roast','decaf'].includes(id)&&Number.isSafeInteger(quantity)&&quantity>0));
     }
   }catch{ /* A missing or corrupt saved lesson starts a fresh browser lesson. */ }
-  showLesson();renderCart();await checkSavedFiles();await refreshProducts();if([1,3].includes(progress.step)&&Object.keys(cart).length)onCart();
+  reportEvent('opened',0);showLesson();renderCart();await checkSavedFiles();await refreshProducts();if([1,3].includes(progress.step)&&Object.keys(cart).length)onCart();
 }
 const walkthroughReady=startWalkthrough();
 setInterval(()=>pollWalkthrough(),1000);

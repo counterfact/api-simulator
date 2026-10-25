@@ -34,6 +34,7 @@ it("creates a restartable offline shop without touching an existing project", as
       "routes/_.context.ts",
       "routes/tutorial-info.ts",
       "routes/tutorial-check.ts",
+      "routes/tutorial-event.ts",
       "routes/walkthrough.ts",
       "scenarios/index.ts",
     ]) {

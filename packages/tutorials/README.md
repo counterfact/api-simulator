@@ -23,6 +23,37 @@ Start Counterfact with the returned document and project directory, then open th
 
 The generated project contains ordinary routes, context, and a startup scenario. Its lesson-check routes load helpers from this package's installed location. Keep that installation available when restarting the project; the generated exercise is editable but is not a standalone distribution of the tutorial system. Handler checks use separate temporary inventory and leave the running shop untouched.
 
+## Walkthrough milestones
+
+The generated `/tutorial-event` route accepts only milestone names and phase numbers.
+It publishes bounded events on Node's `counterfact:walkthrough` diagnostics channel.
+The CLI subscribes and applies its existing telemetry transport and opt-out settings;
+this package does not depend on an analytics SDK or send external requests.
+A temporary random session ID connects milestones, while server-side deduplication
+prevents browser reloads, polling, and lesson revisits from inflating counts.
+Reaching the last screen records completed phases separately from skipped lessons.
+`walkthrough_completed` fires once all ten phases have been completed, including
+when the learner returns to previously skipped lessons.
+
+The event schema is:
+
+| Event | Trigger |
+| --- | --- |
+| `walkthrough_opened` | Browser walkthrough initializes |
+| `walkthrough_started` | Learner clicks Start shopping |
+| `walkthrough_phase_completed` | Existing progress checks observe the required behavior |
+| `walkthrough_lesson_skipped` | Learner clicks Skip lesson |
+| `walkthrough_finished` | Final screen is first shown, with `completedPhases` and `allExercisesCompleted` |
+| `walkthrough_completed` | All ten exercise phases have been observed, regardless of navigation order |
+
+Events contain `tour: "coffee-shop"` and elapsed whole seconds since the first
+reported milestone. Browser milestones also contain `phase`: 0 is the introduction;
+1 is the first purchase; 2–3 edit and purchase Decaf; 4–5 disable ordering and retry;
+6 observes unchanged stock; 7 verifies inventory subtraction; 8 sells out;
+9–10 restock and purchase; 11 is the final screen. The CLI adds its version and
+standard platform properties. The temporary session ID is the PostHog distinct ID,
+so funnels can connect events within one run without a persistent user identity.
+
 ## Add another tour
 
 Keep tour-specific files under their own directory in `src/`, alongside `src/coffee-shop/`. Add preparation/selection in `src/prepare-tour.ts` and expose caller-facing capabilities through `src/index.ts`. Keep browser presentation, lesson progression, and checks in this package; use ordinary Counterfact routes and documented runtime exports for the exercises. Extend shared machinery when a second tour demonstrates the need.
