@@ -18,6 +18,8 @@ simulator becomes a second backend that the team must maintain.
 
 ## How it works
 
+A [context](../features/state.md) holds state for nearby routes. A [group](../manual/concepts.md#api-groups-versions-and-url-prefixes) shares contexts across specs of one API; a [store](./shared-store.md) shares facts across groups. [Scenarios](./scenario-scripts.md) are named setup functions, and the [REPL](../features/repl.md) is the live terminal prompt.
+
 Model the smallest observable state machine that supports the client workflow:
 
 1. Start with a fixed response or a deterministic function of the request.
@@ -31,6 +33,10 @@ The state represents facts the client needs to observe, not the backend's
 tables, queues, caches, jobs, or internal service boundaries. Prefer an explicit
 flag or a short collection over infrastructure that reproduces how production
 arrives at the same response.
+
+## Use the simulation as an executable reference
+
+Commit the spec, handlers, scenarios, and tests together so other developers can see which behavior the simulation covers. When the spec changes, regenerate the types, run the TypeScript compiler, and run the HTTP tests. Keep tests against the real backend for behavior the simulation leaves out.
 
 ## Example
 
@@ -65,7 +71,7 @@ payment ledger, asynchronous settlement, inventory reservations, or the real
 service's retry rules unless a client workflow specifically depends on one of
 those behaviors.
 
-Make important starting states explicit with scenarios:
+Make important starting states explicit with [scenarios](./scenario-scripts.md): named setup functions under `api/scenarios/`. Counterfact generates the `Scenario` type and invokes an export named `startup` during initialization. Enter `.scenario declinedPayment` at the terminal’s REPL prompt to apply the other export:
 
 ```ts
 // api/scenarios/index.ts
@@ -74,12 +80,13 @@ import type { Scenario } from "../types/_.context.js";
 export const startup: Scenario = ($) => $.context.reset();
 
 export const declinedPayment: Scenario = ($) => {
-  $.context.reset();
   $.context.paymentOutcome = "declined";
 };
 ```
 
-During development, the same state is available as a direct control surface:
+`declinedPayment` changes only the payment outcome; it preserves orders and unrelated state. Use `await simulator.reset()` explicitly when a fresh baseline is required. The [complete payment retry recipe](./payment-retry.md) connects this model to HTTP handlers and an automated decline, recovery, permission, and reset check.
+
+You can also change that state from the REPL:
 
 ```text
 ⬣> .scenario declinedPayment
@@ -88,9 +95,9 @@ During development, the same state is available as a direct control surface:
 
 ## What you get
 
-- Deterministic behavior by default, with state only where continuity matters.
+- Predictable behavior when handlers use fixed values or deterministic functions, with controlled state and delays. Local execution or reset alone does not make random responses deterministic.
 - A small model that is easy to understand, reset, and commit with the client.
-- Named scenarios that reproduce relevant API worlds without production data.
+- Named scenarios that set up test cases without production data.
 - Clear reasons to keep targeted tests against the real backend: the simulator
   intentionally does not prove unmodeled behavior.
 
@@ -102,10 +109,10 @@ same client-visible behavior.
 
 ## Keep exploring
 
-- [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — begin with fixed and
+- [Mock APIs with Dummy Data](../manual/sample-responses.md) — begin with fixed and
   deterministic responses
 - [Scenario Scripts](./scenario-scripts.md) — save repeatable starting states
-- [Live Server Inspection with the REPL](./repl-inspection.md) — inspect and
+- [Live Server Inspection with the REPL](../features/repl.md) — inspect and
   steer the current state
 - [Share State Across API Groups](./shared-store.md) — introduce application-level
   state when a workflow crosses API groups

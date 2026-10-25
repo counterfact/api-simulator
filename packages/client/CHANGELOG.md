@@ -1,5 +1,11 @@
 # @counterfact/client
 
+## 0.2.1
+
+### Patch Changes
+
+- 96b565d: Add simulator.reset() to reconstruct stores, dependent contexts, source routes and startup state without restarting HTTP, and simulator.scenario(path, group?) to await named scenarios with the REPL arguments. Document request gating, reset failure recovery, reference lifetimes, and worker-scoped Playwright integration.
+
 ## 0.2.0
 
 ### Minor Changes

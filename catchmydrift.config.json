@@ -668,12 +668,21 @@
         ".github/pull_request_template.md",
         ".agents/skills/**"
       ]
+    },
+    "tutorials": {
+      "include": [
+        "packages/tutorials/package.json",
+        "packages/tutorials/src/**",
+        "packages/tutorials/test/**",
+        "packages/tutorials/examples/**",
+        "packages/tutorials/tsconfig.json"
+      ]
     }
   },
   "watch": [
     {
       "include": [".agents/skills/counterfact-cli-runtime/SKILL.md"],
-      "groups": ["cli", "telemetry", "application"]
+      "groups": ["cli", "telemetry", "application", "tutorials"]
     },
     {
       "include": [".agents/skills/counterfact-generator-internals/SKILL.md"],
@@ -820,7 +829,7 @@
     },
     {
       "include": ["packages/counterfact/docs/features/generated-code.md"],
-      "groups": ["generator", "types"]
+      "groups": ["generator", "types", "openapi", "hot-reload"]
     },
     {
       "include": ["packages/counterfact/docs/features/hot-reload.md"],
@@ -832,7 +841,7 @@
     },
     {
       "include": ["packages/counterfact/docs/features/multiple-versions.md"],
-      "groups": ["versions", "cli", "types"]
+      "groups": ["versions", "cli", "types", "contexts"]
     },
     {
       "include": ["packages/counterfact/docs/features/programmatic-api.md"],
@@ -900,7 +909,8 @@
         "dispatch",
         "responses",
         "types",
-        "web-server"
+        "web-server",
+        "repl"
       ]
     },
     {
@@ -934,35 +944,7 @@
       ]
     },
     {
-      "include": ["packages/counterfact/docs/patterns/custom-middleware.md"],
-      "groups": ["middleware"]
-    },
-    {
-      "include": ["packages/counterfact/docs/patterns/executable-spec.md"],
-      "groups": [
-        "cli",
-        "generator",
-        "openapi",
-        "hot-reload",
-        "responses",
-        "repl",
-        "types"
-      ]
-    },
-    {
-      "include": ["packages/counterfact/docs/patterns/explore-new-api.md"],
-      "groups": [
-        "cli",
-        "generator",
-        "openapi",
-        "web-server",
-        "responses",
-        "repl",
-        "types"
-      ]
-    },
-    {
-      "include": ["packages/counterfact/docs/patterns/federated-context.md"],
+      "include": ["packages/counterfact/docs/manual/nested-contexts.md"],
       "groups": ["contexts", "dispatch", "types"]
     },
     {
@@ -970,12 +952,12 @@
       "groups": ["proxy", "cli", "repl"]
     },
     {
-      "include": ["packages/counterfact/docs/patterns/index.md"],
-      "groups": ["pattern-index"]
+      "include": ["packages/counterfact/docs/usage.md"],
+      "groups": ["pattern-index", "guide-index", "telemetry"]
     },
     {
-      "include": ["packages/counterfact/docs/patterns/mock-with-dummy-data.md"],
-      "groups": ["responses", "contexts", "dispatch", "types", "generator"]
+      "include": ["packages/counterfact/docs/manual/sample-responses.md"],
+      "groups": ["responses", "generator", "types"]
     },
     {
       "include": ["packages/counterfact/docs/patterns/model-the-workflow.md"],
@@ -985,29 +967,11 @@
         "scenarios",
         "dispatch",
         "responses",
-        "first-run-example"
-      ]
-    },
-    {
-      "include": ["packages/counterfact/docs/patterns/multiple-versions.md"],
-      "groups": ["versions", "cli", "types", "contexts"]
-    },
-    {
-      "include": [
-        "packages/counterfact/docs/patterns/reference-implementation.md"
-      ],
-      "groups": [
+        "first-run-example",
         "generator",
-        "dispatch",
-        "responses",
-        "contexts",
         "types",
         "middleware"
       ]
-    },
-    {
-      "include": ["packages/counterfact/docs/patterns/repl-inspection.md"],
-      "groups": ["repl", "request-builder", "contexts", "proxy", "scenarios"]
     },
     {
       "include": ["packages/counterfact/docs/patterns/scenario-scripts.md"],
@@ -1018,12 +982,8 @@
       "groups": ["store", "contexts", "repl"]
     },
     {
-      "include": ["packages/counterfact/docs/patterns/simulate-failures.md"],
+      "include": ["packages/counterfact/docs/manual/edge-cases.md"],
       "groups": ["dispatch", "responses", "contexts", "repl"]
-    },
-    {
-      "include": ["packages/counterfact/docs/patterns/simulate-latency.md"],
-      "groups": ["dispatch", "contexts", "repl"]
     },
     {
       "include": [
@@ -1032,7 +992,7 @@
       "groups": ["contexts", "first-run-example"]
     },
     {
-      "include": ["packages/counterfact/docs/reference.md"],
+      "include": ["packages/counterfact/docs/api/*.md"],
       "groups": [
         "counterfact",
         "client",
@@ -1042,10 +1002,6 @@
         "runtime",
         "types"
       ]
-    },
-    {
-      "include": ["packages/counterfact/docs/usage.md"],
-      "groups": ["guide-index", "telemetry"]
     },
     {
       "include": ["packages/counterfact/src/README.md"],
@@ -1150,6 +1106,14 @@
     {
       "include": [".agents/skills/scenario/SKILL.md"],
       "groups": ["scenarios", "request-builder", "contexts"]
+    },
+    {
+      "include": ["packages/tutorials/README.md"],
+      "groups": ["tutorials"]
+    },
+    {
+      "include": ["packages/counterfact/docs/manual/guided-example.md"],
+      "groups": ["tutorials", "cli", "application"]
     }
   ]
 }

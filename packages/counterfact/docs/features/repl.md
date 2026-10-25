@@ -1,4 +1,4 @@
-# REPL ⬣
+# Interactive REPL
 
 The REPL is a JavaScript prompt connected directly to the running server — like the browser DevTools console, but for your mock API. For a default OpenAPI-backed session, startup output includes:
 
@@ -14,18 +14,19 @@ Counterfact v<version>
 ⬣>
 ```
 
+The `context` binding is your custom `Context` instance. The following examples use the pet context from the [state guide](./state.md), with `add`, `get`, and `list` methods; generation alone does not create those methods.
+
 At the prompt you can interact with the live context:
 
 ```js
 // add a single pet
-context.addPet({ name: "Fluffy", photoUrls: [] });
+context.add({ name: "Fluffy", photoUrls: [] });
 
 // add 100 pets
-for (let i = 0; i < 100; i++)
-  context.addPet({ name: `Pet ${i}`, photoUrls: [] });
+for (let i = 0; i < 100; i++) context.add({ name: `Pet ${i}`, photoUrls: [] });
 
 // query state
-context.pets.filter((pet) => pet.name.startsWith("F"));
+context.list().filter((pet) => pet.name.startsWith("F"));
 ```
 
 To access context from a subdirectory:
@@ -34,7 +35,7 @@ To access context from a subdirectory:
 const petsContext = loadContext("/pets");
 ```
 
-When running multiple APIs in one process, REPL state is grouped by API key:
+An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) is a configured name for specs sharing code and context state. For entries with `group: billing` and `group: inventory` (see [configuration](../manual/multiple-apis.md)), REPL state is grouped by those names:
 
 ```js
 context.billing;
@@ -43,7 +44,7 @@ routes.billing;
 routes.inventory;
 ```
 
-In this mode, `loadContext` and `route` are also grouped by API key:
+In this mode, `loadContext` and `route` are also grouped by API group:
 
 ```js
 loadContext.billing("/pets");
@@ -54,7 +55,7 @@ When configuring multiple APIs, each spec must define a non-empty group and a
 unique group/version pair. Versions of the same API can share a group; distinct
 unversioned APIs need distinct groups.
 
-If `<basePath>/_.store.ts` exists, `store` is an unqualified REPL binding in
+A [shared store](../patterns/shared-store.md) holds data across groups. `basePath` is the configured output directory. If `<basePath>/_.store.ts` exists, `store` is an unqualified REPL binding in
 both single- and multi-API sessions. It is the same live application-level
 object received by every group's context constructors:
 
@@ -93,108 +94,94 @@ await req.send();
 
 See the [Route Builder guide](./route-builder.md) for full documentation.
 
-## Scenario scripts with `.scenario`
+## Inspect and steer a session
 
-For more complex setups you can automate REPL interactions by writing _scenario scripts_ — plain TypeScript files that export named functions. Run them with `.scenario`:
+These examples use the same pet context’s `add()` and `list()` methods. Start from the [first-ten-minutes handlers](../first-10-minutes.md) so HTTP requests read and write that context.
+
+Start the server with the REPL enabled (the default when running via `npx counterfact@latest`). The prompt `⬣>` indicates the REPL is ready.
+
+### Seed test data
 
 ```
-⬣> .scenario soldPets
+⬣> context.add({ name: "Fluffy", status: "available", photoUrls: [] })
+{ id: 1, name: 'Fluffy', status: 'available', photoUrls: [] }
+
+⬣> context.add({ name: "Rex", status: "pending", photoUrls: [] })
+{ id: 2, name: 'Rex', status: 'pending', photoUrls: [] }
 ```
 
-When running multiple APIs in one process, qualify the command with the API group:
+### Send real requests and inspect responses
 
-```bash
-⬣> .scenario billing soldPets
+`client` prints HTTP request/response text and returns a promise of the raw response string. The transcripts below show abbreviated response output: request logs, headers, and colors are omitted. `void` starts the request without also displaying the returned promise; use `await client.get(...)` when you need the raw string.
+
+```
+⬣> void client.get("/pet/1")
+HTTP/1.1 200 OK
+
+{"id":1,"name":"Fluffy","status":"available","photoUrls":[]}
+
+⬣> void client.post("/pet", { name: "Bella", status: "available", photoUrls: [] })
+HTTP/1.1 200 OK
+
+{"id":3,"name":"Bella","status":"available","photoUrls":[]}
 ```
 
-Tab completion supports both modes: in single-API sessions, `.scenario <Tab>` suggests scenario paths/functions; in multi-API sessions, `.scenario <Tab>` suggests API groups first, then `.scenario <group> <Tab>` suggests scenario paths/functions for that group.
+### Toggle failure modes without editing a file
 
-**Path resolution:** the argument to `.scenario` is a slash-separated path. The last segment is the function name; everything before it is the file path, resolved relative to `<basePath>/scenarios/` (with `index.ts` as the default file).
+If the context exposes a failure flag (see [Simulate Failures and Edge Cases](../manual/edge-cases.md)):
 
-| Command                         | File                       | Function   |
-| ------------------------------- | -------------------------- | ---------- |
-| `.scenario soldPets`            | `scenarios/index.ts`       | `soldPets` |
-| `.scenario pets/resetAll`       | `scenarios/pets.ts`        | `resetAll` |
-| `.scenario pets/orders/pending` | `scenarios/pets/orders.ts` | `pending`  |
+```
+⬣> context.isRateLimited = true
+⬣> void client.get("/pet/1")
+HTTP/1.1 429 Too Many Requests
 
-A scenario function receives a single argument with `{ context, loadContext, routes, route }`:
+Too Many Requests
 
-```ts
-// scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
+⬣> context.isRateLimited = false
+⬣> void client.get("/pet/1")
+HTTP/1.1 200 OK
 
-export const soldPets: Scenario = ($) => {
-  // Mutate context directly — same as typing in the REPL
-  $.context.petService.reset();
-  $.context.petService.addPet({ id: 1, status: "sold" });
-  $.context.petService.addPet({ id: 2, status: "available" });
-
-  // Store a pre-configured route builder for later use in the REPL
-  $.routes.findSold = $.route("/pet/findByStatus")
-    .method("get")
-    .query({ status: "sold" });
-};
+{"id":1,"name":"Fluffy","status":"available","photoUrls":[]}
 ```
 
-After the command runs you can immediately use anything stored in `$.routes`:
+### Inspect state mid-session
 
-```js
-⬣> routes.findSold.send()
+```
+⬣> context.list()
+[
+  { id: 1, name: 'Fluffy', status: 'available', photoUrls: [] },
+  { id: 2, name: 'Rex', status: 'pending', photoUrls: [] },
+  { id: 3, name: 'Bella', status: 'available', photoUrls: [] }
+]
+
+⬣> context.list().filter(p => p.status === "available").length
+2
 ```
 
-The `Scenario` type and `Scenario$` interface are generated automatically into `types/_.context.ts` when you run Counterfact with type generation enabled.
+### Control the proxy at runtime
 
-## Startup scenario
+```
+⬣> .proxy url https://api.example.com
+⬣> .proxy on /payments
+⬣> void client.get("/payments/42")
+HTTP/1.1 200 OK
 
-The `startup` export in `scenarios/index.ts` is special: it is awaited during server initialization, before the HTTP server starts
-listening and before the REPL opens. It also runs when the REPL is disabled. Use it to seed dummy data so the server is immediately useful without any manual REPL commands.
+... real response body ...
 
-```ts
-// scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
-
-export const startup: Scenario = ($) => {
-  $.context.addPet({ name: "Fluffy", status: "available", photoUrls: [] });
-  $.context.addPet({ name: "Rex", status: "sold", photoUrls: [] });
-};
+⬣> .proxy off /payments
 ```
 
-**Delegating to other scenario functions** keeps `startup` focused and readable. Pass `$` (and any extra arguments) to each helper:
+These commands enable and then disable the `/payments` proxy entry. More specific child entries can still override it; turning off the root alone does not clear a subtree override.
 
-```ts
-// scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
-import { addPets } from "./pets.js";
-import { addOrders } from "./orders.js";
+## Reusable scenarios
 
-export const startup: Scenario = ($) => {
-  addPets($, 20, "dog");
-  addOrders($, 5);
-};
-```
-
-```ts
-// scenarios/pets.ts
-import type { Scenario$ } from "../types/_.context.js";
-
-export function addPets($: Scenario$, count: number, species: string) {
-  for (let i = 0; i < count; i++) {
-    $.context.addPet({
-      name: `${species} ${i + 1}`,
-      status: "available",
-      photoUrls: [],
-    });
-  }
-}
-```
-
-If `startup` is not exported from `scenarios/index.ts`, it is silently skipped — no error is thrown.
+Use `.scenario name` (or `.scenario group name` for multiple API groups) to apply a named state transformation. For scenario files, path resolution, composition, and the awaited startup hook, see [scenario scripts](../patterns/scenario-scripts.md).
 
 ## See also
 
 - [Route Builder](./route-builder.md) — fluent request builder with OpenAPI introspection
 - [State](./state.md) — the context objects you interact with from the REPL
 - [Patterns: Scenario Scripts](../patterns/scenario-scripts.md)
-- [Patterns: Live Server Inspection with the REPL](../patterns/repl-inspection.md)
+- [Patterns: Live Server Inspection with the REPL](repl.md)
 - [Patterns: Share State Across API Groups](../patterns/shared-store.md)
-- [Usage](../usage.md)
+- [Find your workflow](../usage.md)

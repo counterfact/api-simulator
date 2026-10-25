@@ -858,6 +858,24 @@ paths:
         "400":
           $ref: "#/components/responses/BadRequest"
 
+  # Quoted names and enum literals, with a union nested in an intersection.
+  /type-edge-cases:
+    get:
+      operationId: getTypeEdgeCases
+      description: Demonstrates TypeScript literal escaping and composition grouping
+      responses:
+        "200":
+          description: An escaped literal and either a label or a count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TypeEdgeCases"
+              examples:
+                quoted:
+                  value:
+                    'display "name"': 'say "hello"'
+                    label: example
+
 components:
   # -----------------------------------------------------------------------
   # Reusable responses
@@ -892,6 +910,30 @@ components:
   # Schemas
   # -----------------------------------------------------------------------
   schemas:
+    TypeEdgeCases:
+      description: Both union branches require the quoted property from the intersection
+      allOf:
+        - type: object
+          required: ['display "name"']
+          properties:
+            'display "name"':
+              type: string
+              enum:
+                - 'say "hello"'
+                - 'C:\examples\sample'
+                - "line\nbreak"
+        - anyOf:
+            - type: object
+              required: [label]
+              properties:
+                label:
+                  type: string
+            - type: object
+              required: [count]
+              properties:
+                count:
+                  type: integer
+
     # Log entry emitted by the /stream/events SSE endpoint
     LogEntry:
       title: LogEntry

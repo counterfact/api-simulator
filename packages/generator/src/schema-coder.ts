@@ -1,78 +1,88 @@
+import ts from "typescript";
+
+import { objectExpression, typeReference, valueExpression } from "./ast.js";
 import { Coder } from "./coder.js";
 import type { Script } from "./script.js";
 
 function scrubSchema(schema: Record<string, unknown>): Record<string, unknown> {
-  // remove properties that are not valid in JSON Schema 6 and not useful anyway
-
   const cleaned = { ...schema };
-
   delete cleaned["example"];
   delete cleaned["xml"];
-
   return cleaned;
 }
 
 export class SchemaCoder extends Coder {
   public override names(): Generator<string> {
-    return super.names(
-      `${(this.requirement.refUrl as string).split("/").at(-1)}Schema`,
-    );
+    return super.names(`${this.requirement.refUrl!.split("/").at(-1)}Schema`);
   }
 
-  public objectSchema(script: Script): string {
+  public objectSchema(script: Script): ts.Expression {
     const { properties, required } = this.requirement.data as {
       properties?: Record<string, unknown>;
       required?: string[];
     };
-
-    const propertyLines = Object.keys(properties ?? {}).map((name) => {
-      const schemaCoder = new SchemaCoder(
-        this.requirement.select(`properties/${name}`)!,
-        this.version,
-      );
-
-      return `"${name}": ${schemaCoder.write(script)}`;
-    });
-
-    return `
-      {
-        type: "object",
-        required: ${JSON.stringify(required ?? [])},
-        properties: { ${propertyLines.join(", ")} }
-      }
-    `;
+    return objectExpression(
+      [
+        ["type", valueExpression("object")],
+        ["required", valueExpression(required ?? [])],
+        [
+          "properties",
+          objectExpression(
+            Object.keys(properties ?? {}).map((name) => [
+              name,
+              new SchemaCoder(
+                this.requirement.get("properties")!.get(name)!,
+                this.version,
+              ).write(script),
+            ]),
+          ),
+        ],
+      ],
+      true,
+    );
   }
 
-  public arraySchema(script: Script): string {
-    return `{
-        type: "array",     
-        items: ${new SchemaCoder(this.requirement.get("items")!, this.version).write(script)}
-      }`;
+  public arraySchema(script: Script): ts.Expression {
+    return objectExpression(
+      [
+        ["type", valueExpression("array")],
+        [
+          "items",
+          new SchemaCoder(this.requirement.get("items")!, this.version).write(
+            script,
+          ),
+        ],
+      ],
+      true,
+    );
   }
 
   public override typeDeclaration(
     _namespace: Map<string, unknown> | undefined,
     script: Script,
-  ): string {
-    return script.importExternalType("JSONSchema6", "json-schema");
+  ): ts.TypeNode {
+    return typeReference(
+      script.importExternalType("JSONSchema6", "json-schema"),
+    );
   }
 
   public override modulePath(): string {
-    return `types/${this.requirement.refUrl as string}.ts`;
+    return `types/${this.requirement.refUrl!}.ts`;
   }
 
-  public override writeCode(script: Script): string {
+  public override write(script: Script): ts.Expression {
+    if (this.requirement.isReference) {
+      // Runtime schemas refer to value exports, rather than type imports.
+      return ts.factory.createIdentifier(script.import(this));
+    }
+    return this.writeCode(script);
+  }
+
+  public override writeCode(script: Script): ts.Expression {
     const { type } = this.requirement.data as { type?: string };
-
-    if (type === "object") {
-      return this.objectSchema(script);
-    }
-
-    if (type === "array") {
-      return this.arraySchema(script);
-    }
-
-    return JSON.stringify(
+    if (type === "object") return this.objectSchema(script);
+    if (type === "array") return this.arraySchema(script);
+    return valueExpression(
       scrubSchema(this.requirement.data as Record<string, unknown>),
     );
   }

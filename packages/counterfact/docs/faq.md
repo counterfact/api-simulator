@@ -1,6 +1,6 @@
 # FAQ
 
-Answers to the questions that come up when you take Counterfact from a quick try to a team workflow.
+Answers to the questions that come up when you take Counterfact from a quick try to a team workflow. For definitions of specifications, handlers, context, scenarios, groups, and stores, see [How Counterfact fits together](./manual/concepts.md).
 
 ---
 
@@ -45,7 +45,7 @@ Counterfact is a tool that turns an OpenAPI spec into a live, editable, stateful
 
 **QA engineers** who need to reproduce specific edge cases and error states on demand.
 
-**Developers writing automated tests** — Counterfact runs a real HTTP server, so it works seamlessly in integration and end-to-end test suites. Start it in a `beforeAll`, run your tests, tear it down in `afterAll`.
+**Developers writing automated tests** — Counterfact runs a real HTTP server that your integration and end-to-end tests can call. Start it in a `beforeAll`, run your tests, tear it down in `afterAll`.
 
 **AI agents** that make calls to third-party APIs — running against a local mock avoids rate limits, costs, and network flakiness.
 
@@ -102,10 +102,10 @@ route is just a function, so it can return a deterministic response or use a
 small shared context:
 
 ```ts
-export const POST: HTTP_POST = ($) => {
-  if (!$.body.name) return $.response[400].text("name is required");
+export const POST: HTTP_POST = function ($) {
+  if (!$.body.name) return $.response.status(400).text("name is required");
   const pet = $.context.add($.body);
-  return $.response[200].json(pet);
+  return $.response.status(200).json(pet);
 };
 ```
 
@@ -142,7 +142,7 @@ export class Context {
 }
 ```
 
-State is in-memory, which means it's lightning-fast, it resets to a known clean state every restart, and scalability isn't something you need to worry about because you're the only one using it.
+State stays in memory. Restarting creates fresh contexts and runs your startup scenarios again.
 
 ---
 
@@ -182,14 +182,16 @@ You can toggle individual paths from the REPL at runtime:
 ```
 ⬣> .proxy on /payments      # forward /payments/* to the real API
 ⬣> .proxy off /payments     # mock /payments/* again
-⬣> .proxy off               # mock everything
+⬣> .proxy off               # disable the root proxy default
 ```
+
+The root `.proxy off` command leaves explicit path overrides in place. Disable any remaining path-specific `on` settings separately. For a setup that survives restarts, use the [checked-in hybrid recipe](./patterns/hybrid-proxy.md#check-in-a-hybrid-setup).
 
 ---
 
 ## How does type safety work?
 
-Every route handler type is generated from the spec. When you call `.json(...)` on a response builder, TypeScript checks that the object you pass matches the schema defined in the spec. When the spec changes and you regenerate, TypeScript surfaces every handler that no longer matches — before any request fails.
+Every route handler type is generated from the spec. When you call `.json(...)` on a response builder, TypeScript checks that the object you pass matches the schema defined in the spec. When the spec changes and you regenerate, an editor or explicit TypeScript check can report mismatches in checked, typed handlers. Serving and hot-reloading TypeScript does not itself run a full project typecheck; untyped code and `$.x` can bypass these authoring checks. See the [contract-change check](./patterns/contract-change.md).
 
 OpenAPI descriptions are preserved as JSDoc comments on the generated types, so they appear inline in your editor as you type.
 
@@ -229,54 +231,26 @@ No. Counterfact never overwrites an existing route file. Your custom route logic
 
 If you add a new HTTP method to an existing path in your spec (for example adding `POST` to a route that already has `GET`), Counterfact **appends** the new handler stub to the bottom of the existing file and inserts its `import type` statement after the existing imports. All pre-existing code in the file is left untouched.
 
+Existing handlers declared as functions or exported through aliases are also
+recognized. Type-only exports do not count as runtime handlers and do not prevent
+new handler generation. Multiline imports and their comments remain intact, and a new
+handler's type import receives an alias if its name is already in use.
+
 ---
 
 ## Can I use it programmatically (not via the CLI)?
 
-Yes. Point `counterfact` at your API directory:
+Yes. Import `counterfact` to start a local API from your application or test runner, control its state, and await shutdown when the work finishes.
 
-```ts
-import { counterfact } from "counterfact";
-
-const api = await counterfact({ basePath: "api" });
-const { stop } = await api.start();
-
-// When finished:
-await stop();
-```
-
-The server listens on port 8100 by default and creates missing API, route, and
-cache directories. An empty API returns 404. Add `openApiPath` to generate routes
-and types from a spec and watch for changes. Generation, watching, and cache
-building are enabled by default; you can explicitly disable them.
-
-Use `await api.start({ port: 8111 })` to override the port while preserving other
-options. Startup waits for the HTTP listener and rejects if binding fails.
-`api.status()` reports the absolute API directory, resolved configuration, and
-live listening address. After `stop()`, it reports `listening: false`.
-
-This makes Counterfact easy to embed in test setups — start a server in `beforeAll`, stop it in `afterAll`, and run real HTTP requests against it in your tests. See the [Programmatic API guide](./features/programmatic-api.md) for a complete example.
+Follow the [Programmatic API guide](./features/programmatic-api.md) for startup examples, defaults, reset behavior, and teardown. Use the [simulator lifecycle reference](./api/simulator.md) for exact options and methods, or [automated integration tests](./patterns/automated-integration-tests.md) for test-runner integration.
 
 ---
 
 ## Can I add custom middleware?
 
-Yes. Drop a `_.middleware.ts` file anywhere in the routes tree. It receives a standard Koa middleware function and applies to all routes in that subtree:
+Yes. Export a named `middleware` function from a route subtree's `_.middleware.ts`. It receives Counterfact's typed request argument and a `respondTo($)` callback. Use the generated middleware type for that directory.
 
-```ts
-// routes/_.middleware.ts
-import type { Middleware } from "koa";
-
-const middleware: Middleware = async (ctx, next) => {
-  if (!ctx.headers.authorization) {
-    ctx.status = 401;
-    return;
-  }
-  await next();
-};
-
-export default middleware;
-```
+See [middleware](./features/middleware.md) for authentication, response headers, logging, and directory scoping.
 
 ---
 
@@ -295,7 +269,7 @@ No. Counterfact watches the routes directory and hot-reloads changed files immed
 ## When do I need to restart?
 
 Counterfact watches every local file that contributes to the OpenAPI document,
-including the base spec and ordered overlays. Editing any of those files
+including the base spec and ordered [overlays](./manual/overlays.md). An overlay applies selected changes to a spec without editing the original; the composed document is the result after applying those overlays in order. Editing any of those files
 reloads the complete composed document and regenerates enabled artifacts, so no
 restart is required. HTTP(S) inputs are loaded at startup but are not watched;
 restart to pick up a remote-only change. If a remote base uses a local overlay,
@@ -319,7 +293,6 @@ Wherever you tell it. The second argument to the CLI is the output directory. Us
 ## See also
 
 - [Getting started](./getting-started.md)
-- [Patterns](./patterns/index.md)
-- [Reference](./reference.md)
+- [API reference](./api.md)
 - [How it compares](./comparison.md)
-- [Usage](./usage.md)
+- [Find your workflow](./usage.md)

@@ -140,3 +140,45 @@ describe("parentPath()", () => {
     expect(parentPath("/hello")).toBe("/");
   });
 });
+
+it("preserves seeded inventory and live nested state across unchanged context reloads", () => {
+  const registry = new ContextRegistry();
+  const initial = {
+    inventory: {},
+    orders: [] as string[],
+    settings: { nested: { enabled: true } },
+  };
+  registry.update("/", initial);
+  const inventory = { "house-blend": 5, "dark-roast": 3, decaf: 0 };
+  initial.inventory = inventory;
+  inventory["house-blend"] -= 1;
+  initial.orders.push("order-1");
+  initial.settings.nested.enabled = false;
+
+  for (let reload = 0; reload < 2; reload += 1) {
+    registry.update("/", {
+      inventory: {},
+      orders: [],
+      settings: { nested: { enabled: true } },
+    });
+    expect(registry.find("/").inventory).toBe(inventory);
+    expect(registry.find("/").inventory).toEqual({
+      "house-blend": 4,
+      "dark-roast": 3,
+      decaf: 0,
+    });
+    expect(registry.find("/").orders).toBe(initial.orders);
+    expect(registry.find("/").settings).toBe(initial.settings);
+  }
+});
+
+it("applies changed object initializers while preserving unrelated live state", () => {
+  const registry = new ContextRegistry();
+  registry.update("/", { inventory: {}, orders: [] });
+  const context = registry.find("/");
+  context.inventory = { "house-blend": 4 };
+  context.orders = ["order-1"];
+  registry.update("/", { inventory: { "house-blend": 10 }, orders: [] });
+  expect(context.inventory).toEqual({ "house-blend": 10 });
+  expect(context.orders).toEqual(["order-1"]);
+});

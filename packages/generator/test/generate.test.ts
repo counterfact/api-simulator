@@ -130,7 +130,7 @@ describe("end-to-end test", () => {
         "export const GET",
       );
       await expect($.read("out/types/paths/new.types.ts")).resolves.toContain(
-        "export type getNew",
+        "export type HTTP_GET",
       );
       await expect($.read("out/routes/old.ts")).rejects.toThrow();
     });
@@ -277,7 +277,7 @@ describe("OpenAPI paths with trailing slashes", () => {
 
       await generateTypes();
       await expect($.read("types/paths/accounts.types.ts")).resolves.toContain(
-        "listAccounts",
+        "HTTP_GET",
       );
       await expect($.read("types/paths/customers.types.ts")).rejects.toThrow();
       await expect($.read("types/paths/customers/.types.ts")).rejects.toThrow();
@@ -291,7 +291,7 @@ describe("OpenAPI paths with trailing slashes", () => {
 
       await expect(generateTypes()).resolves.toBeUndefined();
       await expect($.read("types/paths/accounts.types.ts")).resolves.toContain(
-        "listAccounts",
+        "HTTP_GET",
       );
     });
   });
@@ -330,10 +330,10 @@ describe("OpenAPI paths with trailing slashes", () => {
       ).generate(repository);
 
       await expect($.read("types/paths/customers.types.ts")).resolves.toContain(
-        "listCustomers",
+        "HTTP_GET",
       );
       await expect($.read("types/paths/orders.types.ts")).resolves.toContain(
-        "listOrders",
+        "HTTP_GET",
       );
       await expect($.read("types/versions.ts")).resolves.toBe(
         "// current version metadata",

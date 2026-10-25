@@ -1,22 +1,20 @@
 # Test the Context, Not the Handlers
 
-Keep the stateful logic in `_.context.ts` easy to exercise and dependable as the mock grows.
+Keep route handlers small: read the request, call a context method, and return
+a response. Put lookups, updates, and other shared logic in the context class,
+where you can test it without starting a server.
 
-## Why teams use this
+<span id="why-teams-use-this"></span>
+<span id="how-it-works"></span>
+<span id="example"></span>
 
-Handler files are intentionally thin — they read from context, return a response, and contain minimal business logic. The context class, on the other hand, accumulates meaningful logic: lookups, mutations, invariants, and derived data. As the context grows, bugs in it break every handler that depends on it, but nothing makes those bugs visible until a manual test fails.
+## Test context methods directly
 
-## How it works
-
-Write unit tests for the context class. Test its methods directly, without starting the server. Leave handler files untested: they are expected to be edited freely and contain no logic worth automating against.
-
-## Example
-
-Given a context class:
+This example uses the same `add`, `get`, `list`, and `remove` methods as the [pet context in the state guide](../features/state.md), with generated types from the first-ten-minutes Petstore contract. Given that context class:
 
 ```ts
 // api/routes/_.context.ts
-import type { Pet } from "../types/components/pet.types.js";
+import type { Pet } from "../types/components/schemas/Pet.js";
 
 export class Context {
   private pets = new Map<number, Pet>();
@@ -86,16 +84,21 @@ describe("Context", () => {
 
 The context class has no dependency on Counterfact internals — no server, no `$` object, no HTTP machinery — so the tests are fast, isolated, and easy to write.
 
-## What you get
+<span id="what-you-get"></span>
 
-- Context logic is covered by fast unit tests that catch regressions without starting a server.
-- Handlers stay thin and free of business logic; they are not tested and can be modified without worrying about breaking tests.
-- The split creates a clear seam: if a handler is doing anything complex, it is a signal to move that logic into the context.
-- Tests written against the context class remain valid after handler rewrites or spec changes that do not alter the context's interface.
+## Keep shared logic in the context
 
-## Keep exploring
+If a handler needs more than request parsing and response building, move that
+logic into a context method and test it there. Those tests can stay the same
+when you rewrite handlers or change parts of the spec that do not affect the
+context. Use [HTTP integration tests](./automated-integration-tests.md) to check
+the responses your client receives.
+
+<span id="keep-exploring"></span>
+
+## Related guides
 
 - [Share State Across API Groups](./shared-store.md) — apply the same testing boundary to context methods that wrap shared-store behavior
-- [Mock APIs with Dummy Data](./mock-with-dummy-data.md) — the context pattern the tests above are written for
+- [Mock APIs with Dummy Data](../manual/sample-responses.md) — the context pattern the tests above are written for
 - [AI-Assisted Implementation](./ai-assisted-implementation.md) — unit-test the context the agent generates to keep it reliable
-- [Reference Implementation](./reference-implementation.md) — a reference implementation accumulates significant context logic that benefits from test coverage
+- [Reference Implementation](model-the-workflow.md) — a reference implementation accumulates significant context logic that benefits from test coverage

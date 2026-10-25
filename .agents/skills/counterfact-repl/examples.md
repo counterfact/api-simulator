@@ -190,14 +190,14 @@ Here's an example of how your route handler should be updated:
 
 ```typescript
 // routes/pets.ts
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   if (!$.context.serviceAvailable) {
-    return $.response[503].json({
+    return $.response.status(503).json({
       error: $.context.errorMessage || "Service unavailable"
     });
   }
 
-  return $.response[200].json($.context.pets);
+  return $.response.status(200).json($.context.pets);
 };
 ````
 
@@ -450,13 +450,13 @@ Your pagination endpoints can use these to return:
 
 Example route handler:
 ```typescript
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   const page = parseInt($.query.page) || 1;
   const size = $.context.pageSize || 10;
   const start = (page - 1) * size;
   const end = start + size;
 
-  return $.response[200].json({
+  return $.response.status(200).json({
     users: $.context.users.slice(start, end),
     total: $.context.totalCount,
     page,

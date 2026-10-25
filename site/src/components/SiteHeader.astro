@@ -1,0 +1,31 @@
+---
+const { pathname } = Astro.url;
+const manual =
+  pathname.startsWith("/docs") && !pathname.startsWith("/docs/api");
+const reference = pathname.startsWith("/docs/api");
+---
+
+<a class="skip-link" href="#main-content">
+  Skip to content
+</a>
+<header class="site-header">
+  <div class="header-content wide-shell">
+    <a class="brand" href="/" aria-label="Counterfact home">
+      <img src="/counterfact.svg" alt="Counterfact" width="180" height="31" />
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="/" aria-current={pathname === "/" ? "page" : undefined}>
+        Home
+      </a>
+      <a href="/docs/manual" aria-current={manual ? "page" : undefined}>
+        Manual
+      </a>
+      <a href="/docs/api" aria-current={reference ? "page" : undefined}>
+        API reference
+      </a>
+      <a href="https://github.com/counterfact/api-simulator">
+        GitHub <span aria-hidden="true">↗</span>
+      </a>
+    </nav>
+  </div>
+</header>

@@ -1,6 +1,8 @@
 import { STREAMING_CONTENT_TYPES } from "@counterfact/types/streaming-content-types";
 
 import { pathJoin } from "./forward-slash-path.js";
+import ts from "typescript";
+import { parameter, typeReference } from "./ast.js";
 import { Coder } from "./coder.js";
 import { normalizeOpenApiPath } from "./openapi-path.js";
 import {
@@ -14,7 +16,7 @@ import type { Script } from "./script.js";
 /**
  * Generates the default route handler stub for a single OpenAPI operation.
  *
- * The generated stub calls `$.response[statusCode].random()` (or `.empty()`)
+ * The generated stub calls `$.response.status(statusCode).random()` (or `.empty()`)
  * for the first response defined in the spec.  It is only written when no
  * handler file exists yet — users are expected to replace it with real logic.
  *
@@ -41,64 +43,108 @@ export class OperationCoder extends Coder {
     this.securitySchemes = securitySchemes;
   }
 
+  public override get exportId(): string {
+    return this.version === ""
+      ? this.id
+      : `${this.constructor.name}@${this.modulePath()}:${this.requestMethod.toLowerCase()}`;
+  }
+
   public override names(): Generator<string> {
     return super.names(this.requestMethod.toUpperCase());
   }
 
-  public override write(): string {
+  public override write(): ts.Expression {
     const responses = this.requirement.get("responses")!;
-
-    const [firstStatusCode] = responses.map(
-      (_response, statusCode) => statusCode,
+    const [status] = responses.map((_response, code) => code);
+    const [response] = responses.map(
+      (item) => item.data as Record<string, unknown>,
     );
-    const [firstResponse] = responses.map(
-      (response) => response.data as Record<string, unknown>,
-    );
-
-    if (
-      firstResponse === undefined ||
-      !("content" in firstResponse || "schema" in firstResponse)
-    ) {
-      return `async ($) => {
-        return $.response[${
-          firstStatusCode === "default" ? 200 : firstStatusCode
-        }].empty();
-      }`;
-    }
-
-    // Detect streaming responses (OpenAPI 3.2 itemSchema)
-    const content = firstResponse.content as
+    const content = response?.content as
       Record<string, { itemSchema?: unknown }> | undefined;
-    const hasStreamingContent =
+    const streaming =
       content !== undefined &&
       Object.keys(content).some(
-        (ct) =>
-          STREAMING_CONTENT_TYPES.has(ct) &&
-          content[ct]?.itemSchema !== undefined,
+        (media) =>
+          STREAMING_CONTENT_TYPES.has(media) &&
+          content[media]?.itemSchema !== undefined,
       );
-
-    if (hasStreamingContent) {
-      return `async ($) => {
-        async function* items() {
-          // yield items here
-        }
-        return $.response[${
-          firstStatusCode === "default" ? 200 : firstStatusCode
-        }].stream(items());
-      }`;
+    const method = streaming
+      ? "stream"
+      : response !== undefined &&
+          ("content" in response || "schema" in response)
+        ? "random"
+        : "empty";
+    const statements: ts.Statement[] = [];
+    if (streaming) {
+      const placeholder = ts.factory.createNotEmittedStatement(
+        ts.factory.createIdentifier("items"),
+      );
+      ts.addSyntheticLeadingComment(
+        placeholder,
+        ts.SyntaxKind.SingleLineCommentTrivia,
+        " yield items here",
+        true,
+      );
+      const body = ts.factory.createBlock([placeholder], true);
+      statements.push(
+        ts.factory.createFunctionDeclaration(
+          [ts.factory.createModifier(ts.SyntaxKind.AsyncKeyword)],
+          ts.factory.createToken(ts.SyntaxKind.AsteriskToken),
+          "items",
+          undefined,
+          [],
+          undefined,
+          body,
+        ),
+      );
     }
-
-    return `async ($) => {
-      return $.response[${
-        firstStatusCode === "default" ? 200 : firstStatusCode
-      }].random();
-    }`;
+    const result = ts.factory.createCallExpression(
+      ts.factory.createPropertyAccessExpression(
+        ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createIdentifier("$"),
+              "response",
+            ),
+            "status",
+          ),
+          undefined,
+          [
+            /^\d+$/u.test(status ?? "")
+              ? ts.factory.createNumericLiteral(status!)
+              : status === "default"
+                ? ts.factory.createNumericLiteral(200)
+                : ts.factory.createStringLiteral(status ?? "200"),
+          ],
+        ),
+        method,
+      ),
+      undefined,
+      streaming
+        ? [
+            ts.factory.createCallExpression(
+              ts.factory.createIdentifier("items"),
+              undefined,
+              [],
+            ),
+          ]
+        : [],
+    );
+    statements.push(ts.factory.createReturnStatement(result));
+    return ts.factory.createArrowFunction(
+      [ts.factory.createModifier(ts.SyntaxKind.AsyncKeyword)],
+      undefined,
+      [parameter("$")],
+      undefined,
+      ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ts.factory.createBlock(statements, true),
+    );
   }
 
   public override typeDeclaration(
     _namespace: Map<string, unknown> | undefined,
     script: Script,
-  ): string {
+  ): ts.TypeNode {
     const operationTypeCoder = new OperationTypeCoder(
       this.requirement,
       this.version,
@@ -127,7 +173,7 @@ export class OperationCoder extends Coder {
       );
     }
 
-    return script.importType(operationTypeCoder);
+    return typeReference(script.importType(operationTypeCoder));
   }
 
   public override modulePath(): string {

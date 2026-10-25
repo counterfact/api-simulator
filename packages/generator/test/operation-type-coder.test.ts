@@ -1,3 +1,4 @@
+import { printStatements, typeReference, printNode } from "../src/ast.js";
 import { describe, expect, it } from "@jest/globals";
 import { format as formatCode } from "prettier";
 
@@ -81,129 +82,17 @@ describe("an OperationTypeCoder", () => {
     ]);
   });
 
-  describe("getOperationBaseName", () => {
-    it("falls back to HTTP method when operationId is absent", () => {
+  it.each(["getUser", "get-user", "delete", "123", "!!!"])(
+    "ignores operationId %s for type names",
+    (operationId) => {
       const coder = new OperationTypeCoder(
-        new Requirement({}, "#/paths/hello/get"),
+        new Requirement({ operationId }, "#/paths/hello/get"),
         "",
         "get",
       );
-
       expect(coder.getOperationBaseName()).toBe("HTTP_GET");
-    });
-
-    it("returns a plain operationId unchanged", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "getUser" }, "#/paths/hello/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("getUser");
-    });
-
-    it("converts hyphenated operationId to camelCase", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement(
-          { operationId: "get-user-profile" },
-          "#/paths/hello/get",
-        ),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("getUserProfile");
-    });
-
-    it("converts dot-separated operationId to camelCase", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "user.get" }, "#/paths/hello/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("userGet");
-    });
-
-    it("converts space-separated operationId to camelCase", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "get user" }, "#/paths/hello/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("getUser");
-    });
-
-    it("camelCases across non-identifier characters", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "get@user!" }, "#/paths/hello/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("getUser");
-    });
-
-    it("prefixes with underscore when operationId starts with a digit", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "123getUser" }, "#/paths/hello/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("_123getUser");
-    });
-
-    it("appends underscore when operationId is a reserved word", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "delete" }, "#/paths/stuff/delete"),
-        "",
-        "delete",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("delete_");
-    });
-
-    it("appends underscore when operationId is another reserved word", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "import" }, "#/paths/stuff/post"),
-        "",
-        "post",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("import_");
-    });
-
-    it("appends underscore when operationId is await", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "await" }, "#/paths/stuff/get"),
-        "",
-        "get",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("await_");
-    });
-    it("appends underscore when operationId becomes a reserved word after stripping trailing non-identifier chars", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "delete!!" }, "#/paths/stuff/delete"),
-        "",
-        "delete",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("delete_");
-    });
-
-    it("does not append underscore when operationId already has a suffix making it non-reserved", () => {
-      const coder = new OperationTypeCoder(
-        new Requirement({ operationId: "deleteItem" }, "#/paths/stuff/delete"),
-        "",
-        "delete",
-      );
-
-      expect(coder.getOperationBaseName()).toBe("deleteItem");
-    });
-  });
+    },
+  );
 
   it("creates a type declaration", () => {
     const coder = new OperationTypeCoder(
@@ -212,7 +101,7 @@ describe("an OperationTypeCoder", () => {
       "get",
     );
 
-    expect(coder.typeDeclaration(undefined, dummyScript)).toBe("");
+    expect(coder.typeDeclaration(undefined, dummyScript)).toBeUndefined();
   });
 
   it("returns the module path", () => {
@@ -294,7 +183,7 @@ describe("an OperationTypeCoder", () => {
     const coder = new OperationTypeCoder(requirement, "", "get");
 
     await expect(
-      format(`type TestType = ${coder.write(dummyScript)}`),
+      format(`type TestType = ${printNode(coder.write(dummyScript))}`),
     ).resolves.toMatchSnapshot();
   });
 
@@ -336,7 +225,7 @@ describe("an OperationTypeCoder", () => {
     const coder = new OperationTypeCoder(requirement, "", "get");
 
     await expect(
-      format(`type TestType = ${coder.write(dummyScript)}`),
+      format(`type TestType = ${printNode(coder.write(dummyScript))}`),
     ).resolves.toMatchSnapshot();
   });
 
@@ -382,7 +271,7 @@ describe("an OperationTypeCoder", () => {
     const coder = new OperationTypeCoder(requirement, "", "get");
 
     await expect(
-      format(`type TestType = ${coder.write(dummyScript)}`),
+      format(`type TestType = ${printNode(coder.write(dummyScript))}`),
     ).resolves.toMatchSnapshot();
   });
 
@@ -431,7 +320,7 @@ describe("an OperationTypeCoder", () => {
     const coder = new OperationTypeCoder(requirement, "", "get");
 
     await expect(
-      format(`type TestType = ${coder.write(dummyScript)}`),
+      format(`type TestType = ${printNode(coder.write(dummyScript))}`),
     ).resolves.toMatchSnapshot();
   });
 
@@ -454,7 +343,7 @@ describe("an OperationTypeCoder", () => {
     const coder = new OperationTypeCoder(requirement, "", "get");
 
     await expect(
-      format(`type TestType =${coder.write(dummyScript)}`),
+      format(`type TestType =${printNode(coder.write(dummyScript))}`),
     ).resolves.toMatchSnapshot();
   });
 
@@ -475,7 +364,7 @@ describe("an OperationTypeCoder", () => {
     const coder = new OperationTypeCoder(requirement, "", "get");
 
     await expect(
-      format(`type TestType =${coder.write(dummyScript)}`),
+      format(`type TestType =${printNode(coder.write(dummyScript))}`),
     ).resolves.toMatchSnapshot();
   });
 
@@ -496,7 +385,7 @@ describe("an OperationTypeCoder", () => {
     const coder = new OperationTypeCoder(requirement, "", "get");
 
     await expect(
-      format(`type TestType =${coder.write(dummyScript)}`),
+      format(`type TestType =${printNode(coder.write(dummyScript))}`),
     ).resolves.toMatchSnapshot();
   });
 
@@ -524,7 +413,7 @@ describe("an OperationTypeCoder", () => {
     ]);
 
     await expect(
-      format(`type TestType =${coder.write(dummyScript)}`),
+      format(`type TestType =${printNode(coder.write(dummyScript))}`),
     ).resolves.toMatchSnapshot();
   });
 
@@ -553,7 +442,7 @@ describe("an OperationTypeCoder", () => {
     ]);
 
     await expect(
-      format(`type TestType =${coder.write(dummyScript)}`),
+      format(`type TestType =${printNode(coder.write(dummyScript))}`),
     ).resolves.toMatchSnapshot();
   });
 
@@ -582,7 +471,7 @@ describe("an OperationTypeCoder", () => {
     ]);
 
     await expect(
-      format(`type TestType =${coder.write(dummyScript)}`),
+      format(`type TestType =${printNode(coder.write(dummyScript))}`),
     ).resolves.toMatchSnapshot();
   });
 
@@ -610,10 +499,12 @@ describe("an OperationTypeCoder", () => {
       },
     ]);
 
-    expect(coder.write(dummyScript)).toContain("auth: {apiKey: string}");
+    expect(printNode(coder.write(dummyScript))).toContain(
+      "auth: { apiKey: string; }",
+    );
   });
 
-  it("uses operationId for type names when available", () => {
+  it("uses HTTP method type names even when operationId is available", () => {
     const coder = new OperationTypeCoder(
       new Requirement({ operationId: "addPet" }, "#/paths/pet/post"),
       "",
@@ -622,7 +513,11 @@ describe("an OperationTypeCoder", () => {
 
     const [one, two, three] = coder.names();
 
-    expect([one, two, three]).toStrictEqual(["addPet", "addPet2", "addPet3"]);
+    expect([one, two, three]).toStrictEqual([
+      "HTTP_POST",
+      "HTTP_POST2",
+      "HTTP_POST3",
+    ]);
   });
 
   it("falls back to HTTP_METHOD when operationId is not available", () => {
@@ -667,23 +562,19 @@ describe("an OperationTypeCoder", () => {
     const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(requirement, "", "get");
-    const result = coder.write(scriptWithExportTracking);
+    const result = printNode(coder.write(scriptWithExportTracking));
 
     // Verify that parameter types are exported
-    expect(scriptWithExportTracking.exports).toHaveProperty("searchPets_Query");
-    expect(scriptWithExportTracking.exports).toHaveProperty("searchPets_Path");
-    expect(scriptWithExportTracking.exports).toHaveProperty(
-      "searchPets_Headers",
-    );
-    expect(scriptWithExportTracking.exports).toHaveProperty(
-      "searchPets_Cookie",
-    );
+    expect(scriptWithExportTracking.exports).toHaveProperty("HTTP_GET_Query");
+    expect(scriptWithExportTracking.exports).toHaveProperty("HTTP_GET_Path");
+    expect(scriptWithExportTracking.exports).toHaveProperty("HTTP_GET_Headers");
+    expect(scriptWithExportTracking.exports).toHaveProperty("HTTP_GET_Cookie");
 
     // Verify that the main type references the exported parameter types
-    expect(result).toContain("query: searchPets_Query");
-    expect(result).toContain("path: searchPets_Path");
-    expect(result).toContain("headers: searchPets_Headers");
-    expect(result).toContain("cookie: searchPets_Cookie");
+    expect(result).toContain("query: HTTP_GET_Query");
+    expect(result).toContain("path: HTTP_GET_Path");
+    expect(result).toContain("headers: HTTP_GET_Headers");
+    expect(result).toContain("cookie: HTTP_GET_Cookie");
   });
 
   it("does not export parameter types when they are 'never'", async () => {
@@ -706,16 +597,20 @@ describe("an OperationTypeCoder", () => {
     const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(requirement, "", "get");
-    const result = coder.write(scriptWithExportTracking);
+    const result = printNode(coder.write(scriptWithExportTracking));
 
     // Verify that parameter types are NOT exported when they are 'never'
-    expect(scriptWithExportTracking.exports).not.toHaveProperty("getPet_Query");
-    expect(scriptWithExportTracking.exports).not.toHaveProperty("getPet_Path");
     expect(scriptWithExportTracking.exports).not.toHaveProperty(
-      "getPet_Headers",
+      "HTTP_GET_Query",
     );
     expect(scriptWithExportTracking.exports).not.toHaveProperty(
-      "getPet_Cookie",
+      "HTTP_GET_Path",
+    );
+    expect(scriptWithExportTracking.exports).not.toHaveProperty(
+      "HTTP_GET_Headers",
+    );
+    expect(scriptWithExportTracking.exports).not.toHaveProperty(
+      "HTTP_GET_Cookie",
     );
 
     // Verify that the main type uses 'never' directly
@@ -749,12 +644,10 @@ describe("an OperationTypeCoder", () => {
     const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(requirement, "", "get");
-    const result = coder.write(scriptWithExportTracking);
+    const result = printNode(coder.write(scriptWithExportTracking));
 
-    expect(scriptWithExportTracking.exports).toHaveProperty(
-      "getSession_Cookie",
-    );
-    expect(result).toContain("cookie: getSession_Cookie");
+    expect(scriptWithExportTracking.exports).toHaveProperty("HTTP_GET_Cookie");
+    expect(result).toContain("cookie: HTTP_GET_Cookie");
     expect(result).not.toContain("cookie: never");
   });
 
@@ -789,8 +682,10 @@ describe("an OperationTypeCoder", () => {
 
     const coder = new OperationTypeCoder(requirement, "", "post");
 
-    expect(() => coder.responseTypes(dummyScript)).not.toThrow();
-    expect(coder.responseTypes(dummyScript)).toContain("body?: unknown");
+    expect(() => printNode(coder.responseTypes(dummyScript))).not.toThrow();
+    expect(printNode(coder.responseTypes(dummyScript))).toContain(
+      "body?: unknown",
+    );
   });
 
   // ---------------------------------------------------------------------------
@@ -832,7 +727,7 @@ describe("an OperationTypeCoder", () => {
     const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(operationReq, "", "get");
-    const result = coder.write(scriptWithExportTracking);
+    const result = printNode(coder.write(scriptWithExportTracking));
 
     // stuffId is defined at path level — it must NOT generate `path: never`
     expect(result).not.toContain("path: never");
@@ -873,12 +768,12 @@ describe("an OperationTypeCoder", () => {
     const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(requirement, "", "get");
-    const result = coder.write(scriptWithExportTracking);
+    const result = printNode(coder.write(scriptWithExportTracking));
 
     expect(scriptWithExportTracking.exports).toHaveProperty(
-      "searchItems_Querystring",
+      "HTTP_GET_Querystring",
     );
-    expect(result).toContain("querystring: searchItems_Querystring");
+    expect(result).toContain("querystring: HTTP_GET_Querystring");
     expect(result).not.toContain("querystring: never");
   });
 
@@ -901,7 +796,7 @@ describe("an OperationTypeCoder", () => {
     );
 
     const coder = new OperationTypeCoder(requirement, "", "get");
-    const result = coder.write(dummyScript);
+    const result = printNode(coder.write(dummyScript));
 
     expect(result).toContain("querystring: never");
   });
@@ -961,7 +856,7 @@ describe("an OperationTypeCoder", () => {
     const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(operationReq, "", "get");
-    const result = coder.write(scriptWithExportTracking);
+    const result = printNode(coder.write(scriptWithExportTracking));
 
     // Path type should be exported (not never)
     expect(result).not.toContain("path: never");
@@ -1029,7 +924,7 @@ describe("a VersionedArgTypeCoder", () => {
     const perVersionScript = repository.get(coder.modulePath());
 
     // write() on the per-version file should produce the $ arg type string
-    const result = coder.write(perVersionScript);
+    const result = printNode(coder.write(perVersionScript));
 
     expect(typeof result).toBe("string");
     expect(result).toContain("OmitValueWhenNever");
@@ -1048,7 +943,7 @@ describe("a VersionedArgTypeCoder", () => {
       return originalImportType(c);
     };
 
-    coder.write(sharedScript);
+    printNode(coder.write(sharedScript));
 
     expect(importTypeCalled).toBe(true);
   });
@@ -1065,24 +960,24 @@ describe("an OperationTypeCoder (versioned)", () => {
       "#/paths/pets/get",
     );
 
-  it("returns {raw: ''} from writeCode() so the normal export is suppressed", () => {
+  it("registers deferred declarations without a raw sentinel", () => {
     const coder = new OperationTypeCoder(makeRequirement(), "v1", "get");
     const repository = new Repository();
     const sharedScript = repository.get(coder.modulePath());
 
-    const result = coder.writeCode(sharedScript);
+    const result = coder.exportDeclarations(sharedScript, "HTTP_GET");
 
-    expect(result).toStrictEqual({ raw: "" });
+    expect(result).toEqual([]);
   });
 
-  it("registers a versionFormatter on the shared script", () => {
+  it("registers a versionBuilder on the shared script", () => {
     const coder = new OperationTypeCoder(makeRequirement(), "v1", "get");
     const repository = new Repository();
     const sharedScript = repository.get(coder.modulePath());
 
-    coder.writeCode(sharedScript);
+    coder.exportDeclarations(sharedScript, "HTTP_GET");
 
-    expect(sharedScript.versionFormatters.has("HTTP_GET")).toBe(true);
+    expect(sharedScript.versionBuilders.has("HTTP_GET")).toBe(true);
   });
 
   it("formatter generates correct merged type for two versions", async () => {
@@ -1094,16 +989,16 @@ describe("an OperationTypeCoder (versioned)", () => {
 
     // Run writeCode to register the formatter
     const coder = new OperationTypeCoder(requirement, "v1", "get");
-    coder.writeCode(sharedScript);
+    coder.exportDeclarations(sharedScript, "HTTP_GET");
 
-    const formatter = sharedScript.versionFormatters.get("HTTP_GET")!;
+    const formatter = sharedScript.versionBuilders.get("HTTP_GET")!;
 
     const versionCodes = new Map([
-      ["v1", "HTTP_GET_$_v1"],
-      ["v2", "HTTP_GET_$_v2"],
+      ["v1", typeReference("HTTP_GET_$_v1")],
+      ["v2", typeReference("HTTP_GET_$_v2")],
     ]);
 
-    const result = await formatCode(formatter(versionCodes), {
+    const result = await formatCode(printStatements(formatter(versionCodes)), {
       parser: "typescript",
     });
 
@@ -1120,7 +1015,7 @@ describe("an OperationTypeCoder (versioned)", () => {
     const repository = new Repository();
     const sharedScript = repository.get(coder.modulePath());
 
-    coder.writeCode(sharedScript);
+    coder.exportDeclarations(sharedScript, "HTTP_GET");
 
     expect(sharedScript.externalImport.has("Versioned")).toBe(true);
     expect(sharedScript.externalImport.get("Versioned")?.modulePath).toContain(
@@ -1198,14 +1093,14 @@ describe("version property in the generated $ arg type", () => {
     const repository = new Repository();
     const perVersionScript = repository.get(coder.modulePath());
 
-    const result = coder.writeCode(perVersionScript);
+    const result = printNode(coder.writeCode(perVersionScript));
 
     expect(result).toContain('version: "v3"');
   });
 
   it("includes version: never in the unversioned OperationTypeCoder output", () => {
     const coder = new OperationTypeCoder(makeRequirement(), "", "get");
-    const result = coder.write(dummyScript);
+    const result = printNode(coder.write(dummyScript));
 
     expect(result).toContain("version: never");
   });

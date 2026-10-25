@@ -1,6 +1,6 @@
 # TypeScript Native Mode
 
-Counterfact normally compiles authored route and context files into `.cache/`
+Counterfact normally compiles route and context files into `.cache/`
 before loading them. Its runtime can instead load `.ts` files directly when the
 current process supports both erasable TypeScript syntax and `.js` imports that
 resolve to the corresponding `.ts` files.
@@ -58,17 +58,17 @@ paths are repository paths, not instructions for an installed npm package.
 
 |                      | Compiled path                         | Native-capable runtime               |
 | -------------------- | ------------------------------------- | ------------------------------------ |
-| Authored route files | Compiled before loading               | `.ts` files loaded directly          |
+| Route source files   | Compiled before loading               | `.ts` files loaded directly          |
 | Route `.cache/`      | Created and managed by the transpiler | Skipped                              |
 | Detection            | Native probe fails                    | Type syntax and import probe succeed |
-| Hot reload           | Reloads compiled modules              | Reloads authored modules             |
+| Hot reload           | Reloads compiled modules              | Reloads source modules               |
 
-Native route loading and CLI bootstrap selection are separate boundaries. A
-runtime's ability to execute authored TypeScript does not establish that the
-installed CLI distribution contains its chosen entry point.
+Loading your route files and starting the CLI are separate steps. Even if the
+runtime supports TypeScript, the installed CLI must include the entry point
+it tries to load.
 
 ## See also
 
 - [Hot reload](./hot-reload.md)
-- [Reference](../reference.md) — CLI flags
-- [Usage](../usage.md)
+- [Reference](../api.md) — CLI flags
+- [Find your workflow](../usage.md)

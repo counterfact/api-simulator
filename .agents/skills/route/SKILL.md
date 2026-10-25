@@ -15,6 +15,15 @@ Implement or update route behavior in generated route files.
 
 ## Required rules
 
+- Always prefer function expressions with a block body and explicit `return`
+  for route handlers: `export const GET: HTTP_GET = function ($) { ... };`.
+- Annotate the exported constant with the generated handler type so TypeScript
+  infers `$` and checks that the handler returns a completed response. Preserve
+  the full handler type, not just its parameter type. Do not annotate `$`
+  separately or disable `noImplicitAny`.
+- Preserve `async` as `async function ($)` when the handler uses `await`.
+- Convert generated arrow-function handlers to this form when editing them.
+
 - Use the `$` API in every handler (`$.path`, `$.query`, `$.body`, `$.response`,
   `$.context`).
 - Cross-context access belongs in context methods: inject the generated
@@ -32,15 +41,15 @@ Implement or update route behavior in generated route files.
 1. Open the target file under `routes/` (e.g. `routes/pet/{petId}.ts`).
 2. Read input using `$` (`$.path`, `$.query`, `$.body`).
 3. Call a context method for logic/state changes.
-4. Return a response using `$.response[status]`.
+4. Return a response using `$.response.status(status)`.
 5. If needed, add new context methods instead of embedding logic in the route.
 
 ## Pattern
 
 ```ts
-export const POST: HTTP_POST = ($) => {
+export const POST: HTTP_POST = function ($) {
   const created = $.context.createThing($.body);
-  return $.response[201].json(created);
+  return $.response.status(201).json(created);
 };
 ```
 

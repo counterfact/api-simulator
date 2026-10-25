@@ -1,6 +1,16 @@
 import createDebugger from "debug";
-import { format } from "prettier";
+import ts from "typescript";
 
+import {
+  formatStatements,
+  importDeclaration,
+  objectExpression,
+  typeAlias,
+  typeLiteral,
+  typeProperty,
+  unknownType,
+  withComment,
+} from "./ast.js";
 import { escapePathForWindows } from "./windows-escape.js";
 import { pathJoin, pathRelative, pathDirname } from "./forward-slash-path.js";
 import type { Coder, ExportStatement } from "./coder.js";
@@ -9,61 +19,42 @@ import type { Repository } from "./repository.js";
 const debug = createDebugger("counterfact:typescript-generator:script");
 
 interface ImportEntry {
+  id: string;
   isDefault: boolean;
   isType: boolean;
   name: string;
   script: Script;
 }
 
+export type ModuleReference = string | { context: true };
+
 interface ExternalImportEntry {
   isDefault?: boolean;
   isType: boolean;
-  modulePath: string;
+  modulePath: ModuleReference;
 }
 
-/**
- * Represents a single TypeScript file being assembled by the code generator.
- *
- * A `Script` accumulates exports, imports, and external imports contributed by
- * {@link Coder} instances.  Once all coders have resolved, {@link contents}
- * formats the result with Prettier and returns the final source text.
- *
- * Scripts are created and retrieved through a {@link Repository} so that the
- * same module path always maps to the same `Script` instance.
- */
+/** One generated module: coders register nodes; printing occurs after resolution. */
 export class Script {
   public repository: Repository;
-  public comments: string[];
-  public exports: Map<string, ExportStatement>;
-  public versions: Map<string, Map<string, ExportStatement>>;
-  public versionFormatters: Map<
+  public comments: string[] = [];
+  public exports = new Map<string, ExportStatement>();
+  public versions = new Map<string, Map<string, ExportStatement>>();
+  public versionBuilders = new Map<
     string,
-    (versionCodes: Map<string, string>) => string
-  >;
+    (versions: Map<string, ts.TypeNode>) => ts.Statement[]
+  >();
+  public imports = new Map<string, ImportEntry>();
+  public externalImport = new Map<string, ExternalImportEntry>();
+  public cache = new Map<string, string>();
 
-  public imports: Map<string, ImportEntry>;
-  public externalImport: Map<string, ExternalImportEntry>;
-  public cache: Map<string, string>;
-  public typeCache: Map<string, string>;
-  public path: string;
-
-  public constructor(repository: Repository, path: string) {
+  public constructor(
+    repository: Repository,
+    public path: string,
+  ) {
     this.repository = repository;
-    this.comments = [];
-    this.exports = new Map();
-    this.versions = new Map();
-    this.versionFormatters = new Map();
-    this.imports = new Map();
-    this.externalImport = new Map();
-    this.cache = new Map();
-    this.typeCache = new Map();
-    this.path = path;
   }
 
-  /**
-   * A `"../"` path fragment that points from this script's directory back to
-   * the repository root, used to resolve relative import paths.
-   */
   public get relativePathToBase(): string {
     return this.path
       .split("/")
@@ -72,78 +63,61 @@ export class Script {
       .join("/");
   }
 
-  /**
-   * Picks the first name from `coder.names()` that is not already used as an
-   * import in this script, ensuring export/import name uniqueness.
-   *
-   * @param coder - The coder needing a name.
-   * @throws When all 100 candidate names are already taken.
-   */
-  public firstUniqueName(coder: Coder): string {
+  public firstUniqueName(
+    coder: Coder,
+    isType = false,
+    isDefault = false,
+  ): string {
     for (const name of coder.names()) {
-      if (!this.imports.has(name)) {
+      if (
+        (!this.imports.has(name) ||
+          (this.imports.get(name)!.id === coder.exportId &&
+            this.imports.get(name)!.isType === isType &&
+            this.imports.get(name)!.isDefault === isDefault)) &&
+        (!this.exports.has(name) ||
+          (this.exports.get(name)!.id === coder.exportId &&
+            this.exports.get(name)!.isType === isType &&
+            this.exports.get(name)!.isDefault === isDefault)) &&
+        !this.externalImport.has(name)
+      )
         return name;
-      }
     }
-
     throw new Error(`could not find a unique name for ${coder.id}`);
   }
 
-  /**
-   * Registers an export for `coder` in this script and returns the export name.
-   *
-   * If the same coder has already been exported (cache hit), the previously
-   * assigned name is returned without creating a duplicate.
-   *
-   * @param coder - The coder to export.
-   * @param isType - Emit `export type` instead of `export const`.
-   * @param isDefault - Emit `export default` instead of a named export.
-   * @returns The name under which the coder is exported.
-   */
   public export(coder: Coder, isType = false, isDefault = false): string {
     const cacheKey = isDefault ? "default" : `${coder.id}:${isType}`;
-
-    if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)!;
-    }
-
-    const name = this.firstUniqueName(coder);
-
+    if (this.cache.has(cacheKey)) return this.cache.get(cacheKey)!;
+    const name = this.firstUniqueName(coder, isType, isDefault);
     this.cache.set(cacheKey, name);
 
-    const exportStatement: ExportStatement = {
-      beforeExport: coder.beforeExport(this.path),
+    const entry: ExportStatement = {
       done: false,
-      id: coder.id,
+      id: coder.exportId,
       isDefault,
       isType,
+      name,
       jsdoc: "",
       typeDeclaration: coder.typeDeclaration(this.exports, this),
     };
-
-    exportStatement.promise = coder
+    this.exports.set(name, entry);
+    entry.promise = coder
       .delegate()
-
-      .then((availableCoder) => {
-        exportStatement.name = name;
-        exportStatement.code = availableCoder.write(this);
-        exportStatement.jsdoc = availableCoder.jsdoc();
-
-        return availableCoder;
+      .then((available) => {
+        entry.statements = available.exportDeclarations(this, name);
+        if (entry.statements === undefined) entry.node = available.write(this);
+        entry.jsdoc = available.jsdoc();
+        return available;
       })
-
       .catch((error: Error) => {
-        exportStatement.code = `{/* error creating export "${name}" for ${this.path}: ${error.stack} */}`;
-        exportStatement.error = error;
+        entry.node = isType ? unknownType() : objectExpression([]);
+        entry.jsdoc = `/** error creating export "${name}" for ${this.path}: ${error.stack} */`;
+        entry.error = error;
         return undefined;
       })
-
       .finally(() => {
-        exportStatement.done = true;
+        entry.done = true;
       });
-
-    this.exports.set(name, exportStatement);
-
     return name;
   }
 
@@ -151,317 +125,236 @@ export class Script {
     this.export(coder, isType, true);
   }
 
-  /**
-   * Registers an import of `coder` from its owning module and returns the
-   * local alias used in this script.
-   *
-   * The coder is also exported from its home module as a side effect.
-   *
-   * @param coder - The coder to import.
-   * @param isType - Use a `import type` declaration.
-   * @param isDefault - Import the default export rather than a named export.
-   */
   public import(coder: Coder, isType = false, isDefault = false): string {
-    debug("import coder: %s", coder.id);
-
     const modulePath = coder.modulePath();
-
-    const cacheKey = `${coder.id}@${modulePath}:${isType}:${isDefault}`;
-
-    debug("cache key: %s", cacheKey);
-
-    if (this.cache.has(cacheKey)) {
-      debug("cache hit: %s", cacheKey);
-
-      return this.cache.get(cacheKey)!;
-    }
-
-    debug("cache miss: %s", cacheKey);
-
-    const name = this.firstUniqueName(coder);
-
-    this.cache.set(cacheKey, name);
-
-    const scriptFromWhichToExport = this.repository.get(modulePath);
-
-    const exportedName = scriptFromWhichToExport.export(
-      coder,
-      isType,
-      isDefault,
-    );
-
+    const key = `${coder.id}@${modulePath}:${isType}:${isDefault}`;
+    if (this.cache.has(key)) return this.cache.get(key)!;
+    if (modulePath === this.path) return this.export(coder, isType, isDefault);
+    const name = this.firstUniqueName(coder, isType, isDefault);
+    this.cache.set(key, name);
+    const script = this.repository.get(modulePath);
+    const exportedName = script.export(coder, isType, isDefault);
     this.imports.set(name, {
+      id: coder.exportId,
       isDefault,
       isType,
       name: exportedName,
-      script: scriptFromWhichToExport,
+      script,
     });
-
+    debug("import %s as %s from %s", exportedName, name, modulePath);
     return name;
   }
 
   public importType(coder: Coder): string {
     return this.import(coder, true);
   }
-
   public importDefault(coder: Coder, isType = false): string {
     return this.import(coder, isType, true);
   }
 
-  /**
-   * Registers an import from an external npm package or absolute module path
-   * (not managed by the repository).
-   *
-   * @param name - The local binding name.
-   * @param modulePath - The module specifier (e.g. `"counterfact-types/index"`).
-   * @param isType - Use a `import type` declaration.
-   * @returns `name` (for convenience in method chaining).
-   */
   public importExternal(
     name: string,
-    modulePath: string,
+    modulePath: ModuleReference,
     isType = false,
   ): string {
     this.externalImport.set(name, { isType, modulePath });
-
     return name;
   }
-
-  /**
-   * Convenience wrapper that calls {@link importExternal} with `isType = true`.
-   */
-  public importExternalType(name: string, modulePath: string): string {
-    return this.importExternal(name, modulePath, true);
+  public importExternalType(name: string, path: ModuleReference): string {
+    return this.importExternal(name, path, true);
   }
-
-  /**
-   * Imports a type from the shared `counterfact-types/index.ts` module,
-   * resolving the path relative to this script's location in the repository.
-   *
-   * @param name - The type name to import (e.g. `"WideOperationArgument"`).
-   */
   public importSharedType(name: string): string {
-    return this.importExternal(
+    return this.importExternalType(
       name,
       pathJoin(this.relativePathToBase, "counterfact-types/index.ts"),
-      true,
     );
   }
-
-  /**
-   * Imports a type from the generated `types/versions.ts` module,
-   * resolving the path relative to this script's location in the repository.
-   *
-   * @param name - The type name to import (e.g. `"Versioned"`).
-   */
   public importVersionsType(name: string): string {
-    return this.importExternal(
+    return this.importExternalType(
       name,
       pathJoin(this.relativePathToBase, "types/versions.ts"),
-      true,
     );
   }
-
   public exportType(coder: Coder): string {
     return this.export(coder, true);
   }
 
-  /**
-   * Registers a formatter function for the merged versioned type emitted under
-   * `name` by {@link versionsTypeStatements}.
-   *
-   * When a formatter is present for a name, `versionsTypeStatements` delegates
-   * the entire type declaration to it instead of generating the default
-   * `Versions` object type.  The formatter receives a `Map<version, importAlias>`
-   * and must return the complete TypeScript source for that operation type.
-   */
-  public setVersionFormatter(
+  public setVersionBuilder(
     name: string,
-    formatter: (versionCodes: Map<string, string>) => string,
+    builder: (versions: Map<string, ts.TypeNode>) => ts.Statement[],
   ): void {
-    this.versionFormatters.set(name, formatter);
+    this.versionBuilders.set(name, builder);
   }
 
   public declareVersion(coder: Coder, name: string): void {
-    const version = coder.version;
-
     const versions =
       this.versions.get(name) ?? new Map<string, ExportStatement>();
     this.versions.set(name, versions);
-
-    if (versions.has(version)) {
-      return;
-    }
-
-    const versionStatement: ExportStatement = {
-      beforeExport: "",
+    if (versions.has(coder.version)) return;
+    const entry: ExportStatement = {
       done: false,
-      id: coder.id,
+      id: coder.exportId,
       isDefault: false,
       isType: true,
       jsdoc: "",
-      typeDeclaration: "",
     };
-
-    versionStatement.promise = coder
+    versions.set(coder.version, entry);
+    entry.promise = coder
       .delegate()
-      .then((availableCoder) => {
-        versionStatement.code = availableCoder.write(this);
-
-        return availableCoder;
+      .then((available) => {
+        entry.node = available.write(this);
+        return available;
       })
       .catch((error: Error) => {
-        versionStatement.code = `unknown /* error declaring version "${name}" (${version}) for ${this.path}: ${error.message} */`;
-        versionStatement.error = error;
+        entry.node = unknownType();
+        entry.error = error;
         return undefined;
       })
       .finally(() => {
-        versionStatement.done = true;
+        entry.done = true;
       });
-
-    versions.set(version, versionStatement);
   }
 
-  /** `true` while at least one export promise is still pending. */
   public isInProgress(): boolean {
-    return (
-      Array.from(this.exports.values()).some(
-        (exportStatement) => !exportStatement.done,
-      ) ||
-      Array.from(this.versions.values())
-        .flatMap((versions) => Array.from(versions.values()))
-        .some((versionStatement) => !versionStatement.done)
-    );
+    return [
+      ...this.exports.values(),
+      ...[...this.versions.values()].flatMap((versions) => [
+        ...versions.values(),
+      ]),
+    ].some((entry) => !entry.done);
   }
 
-  /** Returns a promise that resolves when all pending export promises settle. */
   public finished(): Promise<(Coder | undefined)[]> {
-    return Promise.all([
-      ...Array.from(this.exports.values(), (value) => value.promise!),
-      ...Array.from(this.versions.values())
-        .flatMap((versions) => Array.from(versions.values()))
-        .map((value) => value.promise!),
-    ]);
-  }
-
-  public externalImportStatements(): string[] {
-    return Array.from(
-      this.externalImport,
-      ([name, { isDefault, isType, modulePath }]) =>
-        `import${isType ? " type" : ""} ${
-          isDefault ? name : `{ ${name} }`
-        } from "${modulePath}";`,
+    return Promise.all(
+      [
+        ...this.exports.values(),
+        ...[...this.versions.values()].flatMap((versions) => [
+          ...versions.values(),
+        ]),
+      ].map((entry) => entry.promise!),
     );
   }
 
-  public importStatements(): string[] {
-    return Array.from(this.imports, ([name, { isDefault, isType, script }]) => {
-      const resolvedPath = escapePathForWindows(
-        pathRelative(
-          pathDirname(this.path),
-          script.path.replace(/\.ts$/u, ".js"),
-        ),
+  public externalImportStatements(
+    contextPath?: string,
+  ): ts.ImportDeclaration[] {
+    return Array.from(this.externalImport, ([name, entry]) => {
+      const modulePath =
+        typeof entry.modulePath === "string"
+          ? entry.modulePath
+          : (contextPath ??
+            pathRelative(pathDirname(this.path), "routes/_.context.ts"));
+      return importDeclaration(
+        name,
+        modulePath.startsWith(".") || typeof entry.modulePath === "string"
+          ? modulePath
+          : `./${modulePath}`,
+        entry.isType,
+        entry.isDefault,
       );
-
-      return `import${isType ? " type" : ""} ${
-        isDefault ? name : `{ ${name} }`
-      } from "${resolvedPath.includes("../") ? "" : "./"}${resolvedPath}";`;
     });
   }
 
-  public exportStatements(): string[] {
-    return Array.from(
-      this.exports.values(),
-      ({
-        beforeExport,
-        code,
-        isDefault,
-        isType,
-        jsdoc,
+  public importStatements(): ts.ImportDeclaration[] {
+    return Array.from(this.imports, ([name, entry]) => {
+      const path = escapePathForWindows(
+        pathRelative(
+          pathDirname(this.path),
+          entry.script.path.replace(/\.ts$/u, ".js"),
+        ),
+      );
+      return importDeclaration(
         name,
-        typeDeclaration,
-      }) => {
-        if (typeof code === "object" && code !== null && "raw" in code) {
-          return code.raw;
-        }
-
-        if (isDefault) {
-          return `${jsdoc}${beforeExport}export default ${code as string};`;
-        }
-
-        const keyword = isType ? "type" : "const";
-        const typeAnnotation =
-          (typeDeclaration ?? "").length === 0
-            ? ""
-            : `:${typeDeclaration ?? ""}`;
-
-        return `${jsdoc}${beforeExport}export ${keyword} ${name ?? ""}${typeAnnotation} = ${code as string};`;
-      },
-    );
+        path.includes("../") ? path : `./${path}`,
+        entry.isType,
+        entry.isDefault,
+        entry.name,
+      );
+    });
   }
 
-  public versionsTypeStatements(): string[] {
-    if (this.versions.size === 0) {
-      return [];
-    }
-
-    const statements: string[] = [];
-    const unformatted: Array<[string, Map<string, ExportStatement>]> = [];
-
-    for (const [name, versions] of this.versions) {
-      const formatter = this.versionFormatters.get(name);
-
-      if (formatter) {
-        const versionCodes = new Map(
-          Array.from(versions, ([version, stmt]) => [
-            version,
-            stmt.code as string,
-          ]),
+  public exportStatements(): ts.Statement[] {
+    return [...this.exports.values()].flatMap((entry) => {
+      if (entry.statements !== undefined) return entry.statements;
+      const node = entry.node!;
+      if (entry.isType) {
+        if (!ts.isTypeNode(node))
+          throw new Error(`Expected a type node for ${entry.name}`);
+        const declaration = withComment(
+          typeAlias(entry.name!, node),
+          entry.jsdoc,
         );
-
-        statements.push(formatter(versionCodes));
-      } else {
-        unformatted.push([name, versions]);
+        if (!entry.isDefault) return [declaration];
+        return [
+          declaration,
+          ts.factory.createExportDeclaration(
+            undefined,
+            true,
+            ts.factory.createNamedExports([
+              ts.factory.createExportSpecifier(false, entry.name!, "default"),
+            ]),
+          ),
+        ];
       }
-    }
+      if (ts.isTypeNode(node))
+        throw new Error(`Expected an expression for ${entry.name}`);
+      const statement = entry.isDefault
+        ? ts.factory.createExportAssignment(undefined, false, node)
+        : ts.factory.createVariableStatement(
+            [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            ts.factory.createVariableDeclarationList(
+              [
+                ts.factory.createVariableDeclaration(
+                  entry.name!,
+                  undefined,
+                  entry.typeDeclaration,
+                  node,
+                ),
+              ],
+              ts.NodeFlags.Const,
+            ),
+          );
+      return [withComment(statement, entry.jsdoc)];
+    });
+  }
 
-    if (unformatted.length > 0) {
-      const names = unformatted.map(([name, versions]) => {
-        const mappedVersions = Array.from(
-          versions,
-          ([version, versionStatement]) =>
-            `"${version}": ${versionStatement.code as string}`,
+  public versionsTypeStatements(): ts.Statement[] {
+    const statements: ts.Statement[] = [];
+    const unbuilt: ts.PropertySignature[] = [];
+    for (const [name, versions] of this.versions) {
+      const types = new Map<string, ts.TypeNode>();
+      for (const [version, entry] of versions) {
+        if (!entry.node || !ts.isTypeNode(entry.node))
+          throw new Error(`Expected a type for ${name} version ${version}`);
+        types.set(version, entry.node);
+      }
+      const builder = this.versionBuilders.get(name);
+      if (builder) statements.push(...builder(types));
+      else
+        unbuilt.push(
+          typeProperty(
+            name,
+            typeLiteral(
+              [...types].map(([version, type]) => typeProperty(version, type)),
+            ),
+          ),
         );
-
-        return `"${name}": { ${mappedVersions.join(", ")} }`;
-      });
-
-      statements.push(`export type Versions = { ${names.join(", ")} };`);
     }
-
+    if (unbuilt.length > 0)
+      statements.push(typeAlias("Versions", typeLiteral(unbuilt)));
     return statements;
   }
 
-  /**
-   * Formats the fully assembled script source with Prettier and returns it.
-   *
-   * All pending export promises are awaited before formatting.
-   */
-  public async contents(): Promise<string> {
+  public async contents(contextPath?: string): Promise<string> {
     await this.finished();
-
-    return format(
+    return formatStatements(
       [
-        this.comments.map((comment) => `// ${comment}`).join("\n"),
-        this.comments.length > 0 ? "\n\n" : "",
-        this.externalImportStatements().join("\n"),
-        this.importStatements().join("\n"),
-        "\n\n",
-        this.versionsTypeStatements().join("\n"),
-        this.versions.size > 0 ? "\n\n" : "",
-        this.exportStatements().join("\n\n"),
-      ].join(""),
-      { parser: "typescript" },
+        ...this.externalImportStatements(contextPath),
+        ...this.importStatements(),
+        ...this.versionsTypeStatements(),
+        ...this.exportStatements(),
+      ],
+      this.comments,
     );
   }
 }

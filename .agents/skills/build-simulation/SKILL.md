@@ -123,25 +123,27 @@ Then wire the context into each handler:
 
 ```ts
 // api/routes/pet.ts
-export const GET: HTTP_GET = ($) =>
-  $.response[200].json($.context.list($.query.status));
+export const GET: HTTP_GET = function ($) {
+  return $.response.status(200).json($.context.list($.query.status));
+};
 
-export const POST: HTTP_POST = ($) =>
-  $.response[200].json($.context.add($.body));
+export const POST: HTTP_POST = function ($) {
+  return $.response.status(200).json($.context.add($.body));
+};
 ```
 
 ```ts
 // api/routes/pet/{petId}.ts
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   const pet = $.context.get($.path.petId);
   return pet
-    ? $.response[200].json(pet)
-    : $.response[404].text(`Pet ${$.path.petId} not found`);
+    ? $.response.status(200).json(pet)
+    : $.response.status(404).text(`Pet ${$.path.petId} not found`);
 };
 
-export const DELETE: HTTP_DELETE = ($) => {
+export const DELETE: HTTP_DELETE = function ($) {
   $.context.remove($.path.petId);
-  return $.response[200];
+  return $.response.status(200);
 };
 ```
 
@@ -181,11 +183,11 @@ again after adding the context files so the typed `/users` overload is present.
 // api/routes/payments/{paymentId}.ts
 import type { HTTP_GET } from "../../types/paths/payments/{paymentId}.types.js";
 
-export const GET: HTTP_GET = ($) => {
+export const GET: HTTP_GET = function ($) {
   const payment = $.context.getWithUser($.path.paymentId);
   return payment
-    ? $.response[200].json(payment)
-    : $.response[404].text("Payment not found");
+    ? $.response.status(200).json(payment)
+    : $.response.status(404).text("Payment not found");
 };
 ```
 
@@ -195,8 +197,8 @@ growing too large, split it along domain lines.
 > **Docs:**
 >
 > - [State: Context Objects](https://counterfact.dev/docs/features/state.html)
-> - [Pattern: Mock APIs with Dummy Data](https://counterfact.dev/docs/patterns/mock-with-dummy-data.html)
-> - [Pattern: Federated Context Files](https://counterfact.dev/docs/patterns/federated-context.html)
+> - [Pattern: Mock APIs with Dummy Data](https://counterfact.dev/docs/manual/sample-responses)
+> - [Pattern: Federated Context Files](https://counterfact.dev/docs/manual/nested-contexts)
 
 ---
 
@@ -355,11 +357,11 @@ export class Context {
 
 ```ts
 // api/routes/pet/{petId}.ts
-export const GET: HTTP_GET = ($) => {
-  if ($.context.isDown) return $.response[500].text("Service unavailable");
-  if ($.context.isRateLimited) return $.response[429].text("Too many requests");
+export const GET: HTTP_GET = function ($) {
+  if ($.context.isDown) return $.response.status(500).text("Service unavailable");
+  if ($.context.isRateLimited) return $.response.status(429).text("Too many requests");
   const pet = $.context.get($.path.petId);
-  return pet ? $.response[200].json(pet) : $.response[404].text("Not found");
+  return pet ? $.response.status(200).json(pet) : $.response.status(404).text("Not found");
 };
 ```
 
@@ -379,7 +381,7 @@ Too many requests
 the request and response. The transcript above omits headers and formatting;
 it is not a parsed `{ status, body }` object.
 
-> **Docs:** [Pattern: Simulate Failures and Edge Cases](https://counterfact.dev/docs/patterns/simulate-failures.html)
+> **Docs:** [Pattern: Simulate Failures and Edge Cases](https://counterfact.dev/docs/manual/edge-cases)
 
 ---
 
@@ -389,14 +391,14 @@ it is not a parsed `{ status, body }` object.
 | ------------------------------------------- | --------------------------------------------------------------------- |
 | Getting started                             | https://counterfact.dev/docs/getting-started.html                     |
 | Full usage guide                            | https://counterfact.dev/docs/usage.html                               |
-| Reference (`$` param, CLI flags)            | https://counterfact.dev/docs/reference.html                           |
+| Reference (`$` param, CLI flags)            | https://counterfact.dev/docs/api                           |
 | State / context objects                     | https://counterfact.dev/docs/features/state.html                      |
 | REPL                                        | https://counterfact.dev/docs/features/repl.html                       |
-| Pattern: Mock with Dummy Data               | https://counterfact.dev/docs/patterns/mock-with-dummy-data.html       |
-| Pattern: Federated Context Files            | https://counterfact.dev/docs/patterns/federated-context.html          |
+| Pattern: Mock with Dummy Data               | https://counterfact.dev/docs/manual/sample-responses       |
+| Pattern: Federated Context Files            | https://counterfact.dev/docs/manual/nested-contexts          |
 | Pattern: Test the Context, Not the Handlers | https://counterfact.dev/docs/patterns/test-context-not-handlers.html  |
 | Pattern: Scenario Scripts                   | https://counterfact.dev/docs/patterns/scenario-scripts.html           |
-| Pattern: Simulate Failures and Edge Cases   | https://counterfact.dev/docs/patterns/simulate-failures.html          |
+| Pattern: Simulate Failures and Edge Cases   | https://counterfact.dev/docs/manual/edge-cases          |
 | Pattern: AI-Assisted Implementation         | https://counterfact.dev/docs/patterns/ai-assisted-implementation.html |
 | Petstore example                            | https://github.com/counterfact/example-petstore                       |
 

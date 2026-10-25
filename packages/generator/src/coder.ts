@@ -1,4 +1,5 @@
 import { RESERVED_WORDS } from "./reserved-words.js";
+import ts from "typescript";
 import type { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
 
@@ -7,7 +8,7 @@ import type { Script } from "./script.js";
  *
  * A `Coder` wraps a single {@link Requirement} node from the OpenAPI spec and
  * knows how to emit TypeScript code for it.  Subclasses override
- * {@link writeCode} to produce the actual source text.
+ * {@link writeCode} to produce an AST node.
  *
  * Coders are used by {@link Script} and {@link Repository} to lazily generate
  * exports and imports, resolving `$ref` references through the
@@ -34,16 +35,17 @@ export class Coder {
     return `${this.constructor.name}@${this.requirement.url}`;
   }
 
-  /**
-   * Optional preamble emitted before the `export` keyword.
-   *
-   * Subclasses can return a string (e.g. a type alias) that must appear in the
-   * output before this coder's export statement.
-   *
-   * @param _path - The path of the script being written (unused in base class).
-   */
-  public beforeExport(_path?: string): string {
-    return "";
+  /** Identity of a logical export, which may be shared by versioned inputs. */
+  public get exportId(): string {
+    return this.id;
+  }
+
+  /** Override when one export requires several declarations or deferred assembly. */
+  public exportDeclarations(
+    _script: Script,
+    _name: string,
+  ): ts.Statement[] | undefined {
+    return undefined;
   }
 
   /**
@@ -64,25 +66,25 @@ export class Coder {
    * {@link writeCode}.
    *
    * @param script - The script being assembled.
-   * @returns The TypeScript source text for this coder's export value.
+   * @returns The type or expression node for this coder's export value.
    */
-  public write(script: Script): string {
+  public write(script: Script): ts.Expression | ts.TypeNode {
     if (this.requirement.isReference) {
-      return script.import(this);
+      return ts.factory.createIdentifier(script.import(this));
     }
 
     return this.writeCode(script);
   }
 
   /**
-   * Generates the TypeScript source text for this coder's value.
+   * Generates the AST node for this coder's value.
    *
    * This method is abstract — subclasses **must** override it.
    *
    * @param _script - The script being assembled.
    * @throws Always — callers should never reach the base implementation.
    */
-  public writeCode(_script: Script): string {
+  public writeCode(_script: Script): ts.Expression | ts.TypeNode {
     throw new Error(
       "write() is abstract and should be overwritten by a subclass",
     );
@@ -138,16 +140,16 @@ export class Coder {
   }
 
   /**
-   * Returns an optional TypeScript type annotation string to be placed between
+   * Returns an optional TypeScript type annotation node to be placed between
    * the export name and its value (`export const name: <type> = value`).
    *
-   * Returns `""` by default.
+   * Returns `undefined` by default.
    */
   public typeDeclaration(
     _namespace?: Map<string, ExportStatement>,
     _script?: Script,
-  ): string {
-    return "";
+  ): ts.TypeNode | undefined {
+    return undefined;
   }
 
   /**
@@ -163,15 +165,15 @@ export class Coder {
 }
 
 export interface ExportStatement {
-  beforeExport: string;
   done: boolean;
   id: string;
   isDefault: boolean;
   isType: boolean;
   jsdoc: string;
-  typeDeclaration: string;
+  typeDeclaration?: ts.TypeNode;
   name?: string;
-  code?: string | { raw: string };
+  node?: ts.Expression | ts.TypeNode;
+  statements?: ts.Statement[];
   error?: Error;
   promise?: Promise<Coder | undefined>;
 }

@@ -29,11 +29,32 @@ We can also use those types on the _client_ side, assuming the client is written
 | `response-type-coder.ts`         | `ResponseTypeCoder`: generates the type for a single HTTP response, including headers, content, and named examples                                                                                                   |
 | `schema-type-coder.ts`           | `SchemaTypeCoder`: converts an OpenAPI schema definition to a TypeScript type (objects, arrays, unions, enums)                                                                                                       |
 | `schema-coder.ts`                | `SchemaCoder`: generates a JSON Schema representation of an OpenAPI schema for use in runtime validation                                                                                                             |
-| `context-file-token.ts`          | Exports a placeholder token used to reference context file paths during code generation                                                                                                                              |
-| `printers.ts`                    | Utility functions for formatting TypeScript object literals in generated code                                                                                                                                        |
+| `ast.ts`                         | TypeScript AST construction and printing helpers                                                                                                                                                                    |
 | `read-only-comments.ts`          | Standard warning comments inserted into generated type files to discourage manual edits                                                                                                                              |
 
 ## Architecture
+
+### AST assembly
+
+Type coders compose `TypeNode`s, and runtime coders compose `Expression`s through
+`write()`. `Script` assembles import, export, and version declarations into a
+`SourceFile`; the TypeScript printer emits it before Prettier formats the result.
+Versioned operations register declaration builders rather than raw source text.
+Context imports resolve their module paths before printing.
+
+The standalone versions, scenario, middleware, and starter-file generators use
+the same AST helpers. Repository regeneration reads existing route ASTs to find
+exported handlers and imports, then inserts printed declarations without
+reprinting user-authored text.
+
+`ast.ts` centralizes printing, literal property names, type references, and
+synthetic JSDoc. TypeScript is an explicit, pinned generator dependency because
+its compiler API is used when the installed package generates files.
+
+Keep OpenAPI traversal and file-writing policy separate from AST construction.
+Existing route edits must survive regeneration, including when new handlers are
+added. Check generated assignment behavior as well as snapshots when changing
+type composition.
 
 ```
 openapi.yaml

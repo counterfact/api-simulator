@@ -1,5 +1,31 @@
 type ScenarioModule = Record<string, unknown>;
 
+/** Resolves the same slash-delimited module/export path used by the REPL. */
+export function resolveScenario(
+  registry: { getModule(key: string): ScenarioModule | undefined } | undefined,
+  path: string,
+): (argument: {
+  context: Record<string, unknown>;
+  loadContext: (path: string) => Record<string, unknown>;
+  route: (path: string) => unknown;
+  routes: Record<string, unknown>;
+}) => void | Promise<void> {
+  const parts = path.split("/").filter(Boolean);
+  if (parts.length === 0) throw new Error("A scenario path is required");
+  if (parts.some((part) => part === "." || part === "..")) {
+    throw new Error("Path must not contain '.' or '..' segments");
+  }
+  const name = parts.at(-1)!;
+  const fileKey = parts.length === 1 ? "index" : parts.slice(0, -1).join("/");
+  const module = registry?.getModule(fileKey);
+  if (module === undefined)
+    throw new Error(`Could not find scenario file "${fileKey}"`);
+  const fn = module[name];
+  if (typeof fn !== "function")
+    throw new Error(`"${name}" is not a function exported from "${fileKey}"`);
+  return fn as ReturnType<typeof resolveScenario>;
+}
+
 /**
  * Registry of loaded scenario modules.
  *

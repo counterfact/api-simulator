@@ -13,7 +13,10 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 
 ## Start here
 
+- `docs/manual.md` — canonical feature explanations.
+
 - `docs/getting-started.md` — prerequisite, command, localhost browser request, generated files, and one optional custom response.
+- `docs/manual/guided-example.md` — bundled hands-on coffee shop; no OpenAPI document required.
 - `docs/first-10-minutes.md` — a small create/read workflow and a frontend-relevant failure.
 - `docs/usage.md` — task groups for frontend work, team/test work, advanced control, and reference/troubleshooting.
 
@@ -21,11 +24,11 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 
 - `docs/features/routes.md` — custom response handlers.
 - `docs/features/state.md` — small shared in-memory state.
-- `docs/patterns/simulate-failures.md` and `docs/patterns/simulate-latency.md` — deterministic frontend states.
+- `docs/manual/edge-cases.md` — deterministic frontend states.
 - `docs/features/proxy.md` — selected upstream paths behind one local base URL.
 - `docs/patterns/automated-integration-tests.md` — real HTTP test lifecycle.
 - `docs/features/repl.md` — inspect or steer a running local API.
-- `docs/reference.md` — CLI flags, `$` API, response builders, and programmatic API.
+- `docs/api.md` — CLI flags, `$` API, response builders, and programmatic API.
 - `docs/features/without-openapi.md` — alternative path only when no OpenAPI document exists.
 
 Generated `types/` are the endpoint-specific contract. Do not edit them. Edit

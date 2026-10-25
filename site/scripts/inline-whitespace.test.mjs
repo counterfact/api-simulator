@@ -109,6 +109,80 @@ test("the site build preserves authored inline whitespace", async (t) => {
       },
     );
 
+    await t.test(
+      "GitHub alerts render labels and preserve Markdown content",
+      async () => {
+        const html = await $.read("fixtures/alerts/index.html");
+        const document = parse(html);
+        const alerts = elements(document, (node) =>
+          node.attrs?.some(
+            (attr) =>
+              attr.name === "class" &&
+              attr.value.split(" ").includes("markdown-alert"),
+          ),
+        );
+        assert.equal(alerts.length, 5);
+        for (const [index, type] of [
+          "note",
+          "tip",
+          "important",
+          "warning",
+          "caution",
+        ].entries()) {
+          const alert = alerts[index];
+          assert.ok(
+            alert.attrs.some((attr) =>
+              attr.value.includes(`markdown-alert-${type}`),
+            ),
+          );
+          assert.equal(
+            proseText(alert.childNodes.find((node) => node.tagName === "p")),
+            type[0].toUpperCase() + type.slice(1),
+          );
+          assert.ok(!textContent(alert).includes(`[!${type.toUpperCase()}]`));
+        }
+        assert.equal(
+          elements(alerts[1], (node) => node.tagName === "code")
+            .map(textContent)
+            .join(" "),
+          "$ req res",
+        );
+        assert.equal(
+          elements(alerts[2], (node) => node.tagName === "a")[0].attrs.find(
+            (attr) => attr.name === "href",
+          ).value,
+          "/docs/reference",
+        );
+        assert.equal(
+          elements(alerts[3], (node) => node.tagName === "li").length,
+          2,
+        );
+        const quotes = elements(
+          document,
+          (node) => node.tagName === "blockquote",
+        );
+        assert.ok(
+          quotes.some((node) => proseText(node) === "An ordinary quote."),
+        );
+        assert.ok(
+          quotes.some(
+            (node) => proseText(node) === "[!UNKNOWN] Keep this text.",
+          ),
+        );
+        assert.ok(
+          quotes.some(
+            (node) =>
+              proseText(node) ===
+              "[!TIP] This is inline prose, not an alert marker.",
+          ),
+        );
+        assert.ok(
+          textContent(document).includes("> [!TIP]"),
+          "code examples stay literal",
+        );
+      },
+    );
+
     await build({
       root: siteRoot,
       outDir: $.path("site"),
@@ -189,19 +263,66 @@ test("the site build preserves authored inline whitespace", async (t) => {
     );
 
     await t.test(
-      "the homepage preserves inline links in the quick start",
+      "the homepage preserves inline code and installation links",
       async () => {
         const text = paragraphs(await $.read("site/index.html"));
         assert.ok(
           text.includes(
-            "Try http://localhost:3100/pet/1 or open Swagger UI. Generated sample responses are a starting point; customize the behavior your frontend needs.",
+            "Counterfact creates editable routes and generated types, then starts an HTTP server. Connect your client to localhost:3100.",
           ),
         );
         assert.ok(
           text.includes(
-            "Use your own OpenAPI document in place of the example URL. For a repeatable project or CI workflow, install a pinned version and commit the lockfile.",
+            "Node.js 22+. Swagger 2.0 and OpenAPI 3.0–3.2. Install a pinned version for a repeatable project, and commit the lockfile.",
           ),
         );
+      },
+    );
+    await t.test("canonical docs render GitHub alert markers", async () => {
+      for (const page of ["routes", "state"]) {
+        const document = parse(
+          await $.read(`site/docs/features/${page}/index.html`),
+        );
+        assert.ok(!/\[!(TIP|IMPORTANT)\]/.test(textContent(document)));
+        assert.ok(
+          elements(document, (node) =>
+            node.attrs?.some(
+              (attr) =>
+                attr.name === "class" && attr.value.includes("markdown-alert"),
+            ),
+          ).length > 0,
+        );
+      }
+    });
+    await t.test(
+      "retired documentation URLs lead to canonical chapters",
+      async () => {
+        for (const [slug, destination] of [
+          ["reference", "/docs/api"],
+          ["reference.md", "/docs/api"],
+          ["patterns/simulate-failures", "/docs/manual/edge-cases"],
+          ["patterns", "/docs/usage"],
+        ]) {
+          const document = parse(await $.read(`site/docs/${slug}/index.html`));
+          const redirect = elements(
+            document,
+            (node) =>
+              node.tagName === "meta" &&
+              node.attrs?.some(
+                (attr) =>
+                  attr.name === "http-equiv" &&
+                  attr.value.toLowerCase() === "refresh",
+              ),
+          );
+          assert.equal(redirect.length, 1);
+          const content = redirect[0].attrs.find(
+            (attr) => attr.name === "content",
+          ).value;
+          assert.ok(
+            content.endsWith(`url=${destination}`),
+            `${slug}: ${content}`,
+          );
+        }
       },
     );
     await t.test(

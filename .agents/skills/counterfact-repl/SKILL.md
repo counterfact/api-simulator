@@ -674,8 +674,8 @@ mean the server is old or absent.
 Example route handler:
 
 ```typescript
-export const GET: HTTP_GET = ($) => {
-  return $.response[200].json($.context.pets);
+export const GET: HTTP_GET = function ($) {
+  return $.response.status(200).json($.context.pets);
 };
 ```
 

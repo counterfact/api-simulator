@@ -1,6 +1,6 @@
 {
   "name": "@counterfact/client",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Build and send reusable OpenAPI-aware HTTP requests without starting Counterfact.",
   "type": "module",
   "main": "./dist/index.js",

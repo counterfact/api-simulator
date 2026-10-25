@@ -2,6 +2,8 @@
 
 The `route()` function in the Counterfact REPL creates a fluent, immutable request builder backed by your OpenAPI document. It is an alternative to the lower-level `client` object — offering autocomplete for path parameters, built-in validation of required parameters, and inline OpenAPI documentation.
 
+Use these examples at the terminal’s `⬣>` prompt after [starting the REPL](./repl.md). `client` is its built-in helper for direct HTTP requests; `route()` lets you prepare a request before sending it.
+
 ## Creating a builder
 
 ```js
@@ -205,4 +207,4 @@ Use `client` for quick one-off requests. Use `route()` when you want to inspect,
 ## See also
 
 - [REPL](./repl.md)
-- [Usage](../usage.md)
+- [Find your workflow](../usage.md)

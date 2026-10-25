@@ -32,7 +32,7 @@ Without documentation, users will not know the feature exists or how to adopt it
 
 2. **`packages/counterfact/docs/usage.md`** or **`packages/counterfact/docs/getting-started.md`** – Add a brief "Multiple versions" section that links to the feature page.
 
-3. **`packages/counterfact/docs/reference.md`** – Document the `version` field on `SpecConfig`, the `Versioned` type, and the `types/versions.ts` output file.
+3. **`packages/counterfact/docs/api.md`** – Document the `version` field on `SpecConfig`, the `Versioned` type, and the `types/versions.ts` output file.
 
 4. **`packages/types/src/` JSDoc** – Ensure `Versioned`, `Versions`, and `VersionsGTE` have accurate JSDoc comments that appear in IDE tooltips.
 
@@ -41,6 +41,6 @@ Without documentation, users will not know the feature exists or how to adopt it
 - [ ] `packages/counterfact/docs/features/multiple-versions.md` exists and covers config syntax, URL layout, code layout, handler authoring, and REPL usage
 - [ ] The example in the documentation uses a generic API, not a specific real-world API, to avoid implying the feature is limited to a particular use case
 - [ ] `packages/counterfact/docs/usage.md` or `packages/counterfact/docs/getting-started.md` links to the new feature page
-- [ ] `packages/counterfact/docs/reference.md` documents the `version` field and the `Versioned` type
+- [ ] `packages/counterfact/docs/api.md` documents the `version` field and the `Versioned` type
 - [ ] `Versioned`, `Versions`, and `VersionsGTE` have JSDoc comments
 - [ ] A code example shows a route handler using `minVersion()` to branch on API version

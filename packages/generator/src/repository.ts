@@ -5,6 +5,15 @@ import { fileURLToPath } from "node:url";
 /* eslint-disable security/detect-non-literal-fs-filename -- repository writes and stats generated files only inside destination output directories. */
 
 import createDebug from "debug";
+import ts from "typescript";
+
+import {
+  formatStatements,
+  importDeclaration,
+  parameter,
+  typeReference,
+  withJsDoc,
+} from "./ast.js";
 
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
 import {
@@ -12,7 +21,6 @@ import {
   pathRelative,
   pathDirname,
 } from "./forward-slash-path.js";
-import { CONTEXT_FILE_TOKEN } from "./context-file-token.js";
 import { Script } from "./script.js";
 import { escapePathForWindows } from "./windows-escape.js";
 
@@ -183,7 +191,9 @@ export class Repository {
 
       async ([path, script]) => {
         const fullPath = resolveDestinationPath(destination, path);
-        const contents = await script.contents();
+        const contents = await script.contents(
+          this.findContextPath(destination, path),
+        );
 
         await ensureDirectoryExists(fullPath);
 
@@ -198,13 +208,7 @@ export class Repository {
 
           if (fileExists) {
             debug(`route file exists, checking for new handlers: ${fullPath}`);
-            await this.appendNewHandlers(
-              fullPath,
-              contents.replaceAll(
-                CONTEXT_FILE_TOKEN,
-                this.findContextPath(destination, path),
-              ),
-            );
+            await this.appendNewHandlers(fullPath, script);
 
             return;
           }
@@ -212,13 +216,7 @@ export class Repository {
 
         if (shouldWriteRoutes || shouldWriteTypes) {
           debug("about to write", fullPath);
-          await fs.writeFile(
-            fullPath,
-            contents.replaceAll(
-              CONTEXT_FILE_TOKEN,
-              this.findContextPath(destination, path),
-            ),
-          );
+          await fs.writeFile(fullPath, contents);
           debug("did write", fullPath);
         }
       },
@@ -252,169 +250,349 @@ export class Repository {
 
     await ensureDirectoryExists(contextFilePath);
 
+    const context = withJsDoc(
+      ts.factory.createClassDeclaration(
+        [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+        "Context",
+        undefined,
+        undefined,
+        [
+          ts.factory.createConstructorDeclaration(
+            undefined,
+            [parameter("$", typeReference("Context$"))],
+            ts.factory.createBlock(
+              [
+                ts.factory.createExpressionStatement(
+                  ts.factory.createVoidExpression(
+                    ts.factory.createIdentifier("$"),
+                  ),
+                ),
+              ],
+              true,
+            ),
+          ),
+        ],
+      ),
+      {
+        description:
+          "This is the default context for Counterfact.\n\n" +
+          "It defines the context object in the REPL\nand the $.context object in the code.\n\n" +
+          "Add properties and methods to suit your needs.\n\n" +
+          "See https://github.com/counterfact/api-simulator/blob/main/docs/features/state.md",
+      },
+    );
     await fs.writeFile(
       contextFilePath,
-      `import type { Context$ } from "../types/_.context.js";
-
-/**
- * This is the default context for Counterfact.
- *
- * It defines the context object in the REPL
- * and the $.context object in the code.
- *
- * Add properties and methods to suit your needs.
- *
- * See https://github.com/counterfact/api-simulator/blob/main/docs/features/state.md
- */
-
-export class Context {
-  constructor($: Context$) {
-    void $;
-  }
-}
-`,
+      await formatStatements([
+        importDeclaration("Context$", "../types/_.context.js", true),
+        context,
+      ]),
     );
   }
 
   /**
-   * Appends any HTTP-method handler exports that appear in `generatedContent`
-   * but are absent from the existing file at `fullPath`.
-   *
-   * For each new export the corresponding `import type` statement is inserted
-   * after the last existing import line (or prepended when no imports exist),
-   * and the export block is appended at the end of the file.
-   *
-   * @param fullPath - Absolute path of the route file to update.
-   * @param generatedContent - The fully-generated file content (used as the
-   *   source of new import and export statements).
+   * Inserts newly generated handlers and their type imports without reprinting
+   * existing user code. Only the existing file is parsed; generated declarations
+   * are taken directly from the Script's AST.
    */
   private async appendNewHandlers(
     fullPath: string,
-    generatedContent: string,
+    script: Script,
   ): Promise<void> {
-    const existingContent = await fs.readFile(fullPath, "utf8");
-
-    // Names already exported by the existing file (e.g. GET, POST).
-    // RegExp match groups are typed as optional strings, so narrow defensively.
-    const existingExportNames = new Set<string>(
-      Array.from(
-        existingContent.matchAll(/^export\s+const\s+(\w+)/gmu),
-        (m) => m[1],
-      ).filter((name): name is string => name !== undefined),
+    const existing = await fs.readFile(fullPath, "utf8");
+    const source = ts.createSourceFile(
+      fullPath,
+      existing,
+      ts.ScriptTarget.Latest,
+      true,
     );
+    const exported = new Set<string>();
+    const bindings = new Set<string>();
+    const valueBindings = new Set<string>();
+    const imports = new Map<string, { module: string; exported: string }>();
+    let lastImport: ts.ImportDeclaration | undefined;
 
-    // All named exports in the generated content together with their type names.
-    const generatedExports = Array.from(
-      generatedContent.matchAll(/^export\s+const\s+(\w+)\s*:\s*(\w+)/gmu),
-      (m) => ({ methodName: m[1], typeName: m[2] }),
-    ).filter(
-      (
-        value,
-      ): value is {
-        methodName: string;
-        typeName: string;
-      } => value.methodName !== undefined && value.typeName !== undefined,
-    );
+    const collectBinding = (name: ts.BindingName): void => {
+      if (ts.isIdentifier(name)) {
+        bindings.add(name.text);
+        valueBindings.add(name.text);
+      } else
+        for (const element of name.elements) {
+          if (ts.isBindingElement(element)) collectBinding(element.name);
+        }
+    };
 
-    const newExports = generatedExports.filter(
-      ({ methodName }) => !existingExportNames.has(methodName),
-    );
-
-    if (newExports.length === 0) {
-      debug(`no new handlers to append to ${fullPath}`);
-
-      return;
-    }
-
-    debug(
-      `appending ${newExports.length} new handler(s) to ${fullPath}: %o`,
-      newExports.map(({ methodName }) => methodName),
-    );
-
-    const newImportLines: string[] = [];
-    const newExportBlocks: string[] = [];
-
-    for (const { methodName, typeName } of newExports) {
-      // Both names come from \w+ captures so they are safe identifiers, but
-      // guard explicitly to satisfy static analysis and avoid RegExp injection.
-      if (!/^\w+$/u.test(typeName) || !/^\w+$/u.test(methodName)) {
-        debug(
-          `skipping handler with unsafe name – methodName: %s, typeName: %s`,
-          methodName,
-          typeName,
-        );
-        continue;
+    for (const statement of source.statements) {
+      const isExported =
+        ts.canHaveModifiers(statement) &&
+        ts
+          .getModifiers(statement)
+          ?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword);
+      if (ts.isVariableStatement(statement)) {
+        for (const declaration of statement.declarationList.declarations) {
+          collectBinding(declaration.name);
+          if (isExported && ts.isIdentifier(declaration.name))
+            exported.add(declaration.name.text);
+        }
+      } else if (
+        (ts.isFunctionDeclaration(statement) ||
+          ts.isClassDeclaration(statement) ||
+          ts.isEnumDeclaration(statement) ||
+          ts.isTypeAliasDeclaration(statement) ||
+          ts.isInterfaceDeclaration(statement)) &&
+        statement.name
+      ) {
+        bindings.add(statement.name.text);
+        if (
+          !ts.isTypeAliasDeclaration(statement) &&
+          !ts.isInterfaceDeclaration(statement)
+        ) {
+          valueBindings.add(statement.name.text);
+          if (isExported) exported.add(statement.name.text);
+        }
+      } else if (ts.isExportDeclaration(statement)) {
+        if (statement.isTypeOnly) continue;
+        // Resolve aliases and re-exports using TypeScript's value namespace,
+        // without loading or executing any user-authored JavaScript.
+        const program = ts.createProgram([fullPath], {
+          allowJs: true,
+          noLib: true,
+          types: [],
+          module: ts.ModuleKind.ESNext,
+          moduleResolution: ts.ModuleResolutionKind.Bundler,
+        });
+        const checker = program.getTypeChecker();
+        const moduleSource = program.getSourceFile(fullPath)!;
+        const hasValue = (symbol: ts.Symbol | undefined): boolean => {
+          if (!symbol) return false;
+          if (symbol.flags & ts.SymbolFlags.Alias) {
+            if (
+              symbol.declarations?.some(
+                (declaration) =>
+                  (ts.isExportSpecifier(declaration) &&
+                    (declaration.isTypeOnly ||
+                      declaration.parent.parent.isTypeOnly)) ||
+                  (ts.isImportSpecifier(declaration) &&
+                    (declaration.isTypeOnly ||
+                      declaration.parent.parent.isTypeOnly)),
+              )
+            )
+              return false;
+            return hasValue(checker.getAliasedSymbol(symbol));
+          }
+          return (symbol.flags & ts.SymbolFlags.Value) !== 0;
+        };
+        const item = moduleSource.statements.find(
+          (candidate) => candidate.pos === statement.pos,
+        )!;
+        if (ts.isExportDeclaration(item)) {
+          if (item.exportClause && ts.isNamedExports(item.exportClause)) {
+            for (const element of item.exportClause.elements)
+              if (
+                !element.isTypeOnly &&
+                hasValue(checker.getSymbolAtLocation(element.name))
+              )
+                exported.add(element.name.text);
+          } else if (
+            item.exportClause &&
+            ts.isNamespaceExport(item.exportClause)
+          ) {
+            if (hasValue(checker.getSymbolAtLocation(item.exportClause.name)))
+              exported.add(item.exportClause.name.text);
+          } else if (item.moduleSpecifier) {
+            const symbol = checker.getSymbolAtLocation(item.moduleSpecifier);
+            if (!symbol)
+              throw new Error(
+                "Cannot resolve a star re-export while updating " + fullPath,
+              );
+            for (const entry of checker.getExportsOfModule(symbol))
+              if (entry.name !== "default" && hasValue(entry))
+                exported.add(entry.name);
+          }
+        }
       }
-
-      // Find the `import type { TypeName } from "..."` line for this type.
-      const importMatch = generatedContent.match(
-        new RegExp(
-          `^import\\s+type\\s+\\{[^}]*\\b${typeName}\\b[^}]*\\}\\s+from\\s+["'][^"']+["'];`,
-          "mu",
-        ),
-      );
-
-      if (importMatch?.[0] && !existingContent.includes(importMatch[0])) {
-        newImportLines.push(importMatch[0]);
-      }
-
-      // Find the export block: from `export const METHOD` to the closing `};`.
-      // The generated code is always Prettier-formatted, so the closing brace
-      // and semicolon of every top-level arrow-function export appear on their
-      // own line as `\n};`.
-      const startMatch = new RegExp(
-        `^export\\s+const\\s+${methodName}\\b`,
-        "mu",
-      ).exec(generatedContent);
-
-      if (startMatch) {
-        const fromExport = generatedContent.slice(startMatch.index);
-        const closingIndex = fromExport.indexOf("\n};");
-
-        if (closingIndex !== -1) {
-          // Include the closing `};` (3 chars: \n, }, ;)
-          newExportBlocks.push(fromExport.slice(0, closingIndex + 3));
+      if (ts.isImportDeclaration(statement)) {
+        lastImport = statement;
+        if (statement.importClause?.name) {
+          bindings.add(statement.importClause.name.text);
+          if (!statement.importClause.isTypeOnly)
+            valueBindings.add(statement.importClause.name.text);
+        }
+        const named = statement.importClause?.namedBindings;
+        if (named && ts.isNamespaceImport(named)) {
+          bindings.add(named.name.text);
+          if (!statement.importClause?.isTypeOnly)
+            valueBindings.add(named.name.text);
+        } else if (named && ts.isStringLiteral(statement.moduleSpecifier)) {
+          for (const element of named.elements) {
+            bindings.add(element.name.text);
+            if (!statement.importClause?.isTypeOnly && !element.isTypeOnly)
+              valueBindings.add(element.name.text);
+            imports.set(element.name.text, {
+              module: statement.moduleSpecifier.text,
+              exported: element.propertyName?.text ?? element.name.text,
+            });
+          }
         }
       }
     }
 
-    let updatedContent = existingContent;
+    const newImports: ts.ImportDeclaration[] = [];
+    const handlers: ts.Statement[] = [];
+    const generatedImports = script.importStatements();
+    for (const statement of script.exportStatements()) {
+      if (!ts.isVariableStatement(statement)) continue;
+      const declaration = statement.declarationList.declarations[0];
+      if (
+        !declaration ||
+        !ts.isIdentifier(declaration.name) ||
+        exported.has(declaration.name.text)
+      )
+        continue;
+      if (valueBindings.has(declaration.name.text))
+        throw new Error(
+          "Cannot add handler " +
+            declaration.name.text +
+            ": a local binding already exists in " +
+            fullPath,
+        );
+      if (
+        !declaration.type ||
+        !ts.isTypeReferenceNode(declaration.type) ||
+        !ts.isIdentifier(declaration.type.typeName)
+      ) {
+        throw new Error(
+          "Generated handler lacks a named type: " + declaration.name.text,
+        );
+      }
+      let localType = declaration.type.typeName.text;
+      const originalType = localType;
+      const imported = generatedImports.flatMap((item) => {
+        const named = item.importClause?.namedBindings;
+        return named && ts.isNamedImports(named)
+          ? named.elements
+              .filter((element) => element.name.text === originalType)
+              .map((element) => ({ item, element }))
+          : [];
+      })[0];
+      if (!imported || !ts.isStringLiteral(imported.item.moduleSpecifier))
+        throw new Error(
+          "Cannot find handler type import for " + declaration.name.text,
+        );
+      const module = imported.item.moduleSpecifier.text;
+      const exportedType =
+        imported.element.propertyName?.text ?? imported.element.name.text;
+      const existingImport = imports.get(localType);
+      if (
+        !existingImport ||
+        existingImport.module !== module ||
+        existingImport.exported !== exportedType
+      ) {
+        let suffix = 2;
+        while (bindings.has(localType)) localType = originalType + suffix++;
+        newImports.push(
+          importDeclaration(localType, module, true, false, exportedType),
+        );
+        imports.set(localType, { module, exported: exportedType });
+        bindings.add(localType);
+      }
+      handlers.push(
+        ts.factory.updateVariableStatement(
+          statement,
+          statement.modifiers,
+          ts.factory.updateVariableDeclarationList(statement.declarationList, [
+            ts.factory.updateVariableDeclaration(
+              declaration,
+              declaration.name,
+              declaration.exclamationToken,
+              typeReference(localType),
+              declaration.initializer,
+            ),
+          ]),
+        ),
+      );
+      exported.add(declaration.name.text);
+      bindings.add(declaration.name.text);
+      valueBindings.add(declaration.name.text);
+    }
+    if (handlers.length === 0) return;
 
-    // Insert new import lines right after the last existing import statement.
-    if (newImportLines.length > 0) {
-      const importMatches = [...existingContent.matchAll(/^import\s[^\n]*/gmu)];
-
-      if (importMatches.length > 0) {
-        const lastImport = importMatches[importMatches.length - 1];
-
-        const importIndex = lastImport?.index;
-        const insertPos =
-          importIndex === undefined
-            ? 0
-            : (() => {
-                const lineEnd = existingContent.indexOf("\n", importIndex);
-
-                return lineEnd === -1 ? existingContent.length : lineEnd + 1;
-              })();
-
-        updatedContent =
-          existingContent.slice(0, insertPos) +
-          newImportLines.join("\n") +
-          "\n" +
-          existingContent.slice(insertPos);
-      } else {
-        updatedContent = newImportLines.join("\n") + "\n" + existingContent;
+    // Include complete trailing comments before inserting after an import.
+    const afterLine = (position: number): number => {
+      const scanner = ts.createScanner(
+        ts.ScriptTarget.Latest,
+        false,
+        ts.LanguageVariant.Standard,
+        existing,
+      );
+      scanner.setTextPos(position);
+      let end = position;
+      for (
+        let token = scanner.scan();
+        token !== ts.SyntaxKind.EndOfFileToken;
+        token = scanner.scan()
+      ) {
+        if (token === ts.SyntaxKind.NewLineTrivia) return scanner.getTextPos();
+        if (
+          token !== ts.SyntaxKind.WhitespaceTrivia &&
+          token !== ts.SyntaxKind.SingleLineCommentTrivia &&
+          token !== ts.SyntaxKind.MultiLineCommentTrivia
+        )
+          break;
+        end = scanner.getTextPos();
+      }
+      return end;
+    };
+    let insertAt = lastImport ? afterLine(lastImport.end) : 0;
+    if (!lastImport) {
+      const references = [
+        ...source.referencedFiles,
+        ...source.typeReferenceDirectives,
+        ...source.libReferenceDirectives,
+      ];
+      const scanner = ts.createScanner(
+        ts.ScriptTarget.Latest,
+        false,
+        ts.LanguageVariant.Standard,
+        existing,
+      );
+      const trivia = new Set([
+        ts.SyntaxKind.WhitespaceTrivia,
+        ts.SyntaxKind.NewLineTrivia,
+        ts.SyntaxKind.SingleLineCommentTrivia,
+        ts.SyntaxKind.MultiLineCommentTrivia,
+        ts.SyntaxKind.ShebangTrivia,
+        ts.SyntaxKind.ConflictMarkerTrivia,
+      ]);
+      for (
+        let token = scanner.scan();
+        trivia.has(token);
+        token = scanner.scan()
+      ) {
+        const start = scanner.getTokenPos();
+        const end = scanner.getTextPos();
+        if (
+          token === ts.SyntaxKind.ShebangTrivia ||
+          references.some(
+            (reference) => start <= reference.pos && end >= reference.end,
+          )
+        )
+          insertAt = afterLine(end);
       }
     }
-
-    // Append new export blocks at the end of the file.
-    if (newExportBlocks.length > 0) {
-      const separator = updatedContent.endsWith("\n") ? "\n" : "\n\n";
-      updatedContent += separator + newExportBlocks.join("\n\n") + "\n";
+    let updated = existing;
+    if (newImports.length > 0) {
+      const prefix = existing.slice(0, insertAt);
+      updated =
+        prefix +
+        (prefix !== "" && !prefix.endsWith("\n") ? "\n" : "") +
+        (await formatStatements(newImports)) +
+        existing.slice(insertAt);
     }
-
-    await fs.writeFile(fullPath, updatedContent);
-    debug(`appended new handlers to ${fullPath}`);
+    updated +=
+      (updated.endsWith("\n") ? "\n" : "\n\n") +
+      (await formatStatements(handlers));
+    await fs.writeFile(fullPath, updated);
   }
 
   /**

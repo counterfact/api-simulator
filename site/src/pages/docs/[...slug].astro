@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
+import redirects from "../../data/documentation-redirects.json";
 import DocLayout from "../../layouts/DocLayout.astro";
 
 export async function getStaticPaths() {
@@ -17,10 +18,16 @@ export async function getStaticPaths() {
       props: { doc, isMdAlias: true },
     });
   }
+  for (const [slug, target] of Object.entries(redirects)) {
+    for (const alias of [slug, `${slug}.md`]) {
+      routes.push({ params: { slug: alias }, props: { redirect: target } });
+    }
+  }
   return routes;
 }
 
-const { doc, isMdAlias } = Astro.props;
+const { doc, isMdAlias, redirect } = Astro.props;
+if (redirect) return Astro.redirect(redirect, 301);
 
 // Canonical URL always points to the clean (no .md) path.
 const canonicalPath = `/docs/${doc.id}`;
@@ -42,6 +49,6 @@ const titleFromSlug = doc.id
 const title = titleFromHeading ?? titleFromSlug;
 ---
 
-<DocLayout title={title} canonicalPath={canonicalPath}>
+<DocLayout title={title} canonicalPath={canonicalPath} headings={headings}>
   <Content />
 </DocLayout>

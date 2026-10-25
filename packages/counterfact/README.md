@@ -39,9 +39,9 @@ local API is running.
 
 - [Getting started](./docs/getting-started.md) — the shortest path from OpenAPI document to browser request.
 - [First 10 minutes](./docs/first-10-minutes.md) — add a small stateful workflow and one failure.
-- [Usage](./docs/usage.md) — guides grouped by frontend, team/test, advanced, and reference work.
-- [Reference](./docs/reference.md) — CLI flags, response builders, generated files, and programmatic API.
-- [Patterns](./docs/patterns/index.md) — focused workflows, including failures, latency, proxying, and tests.
+- [User manual](./docs/manual.md) — feature-by-feature explanations of API generation, behavior, state, and integration.
+- [API reference](./docs/api.md) — CLI configuration, handler contracts, response builders, and simulator lifecycle.
+- [Find your workflow](docs/usage.md) — guides for frontend work, testing, proxying, and agents.
 - [Without OpenAPI](./docs/features/without-openapi.md) — the deeper alternative when no OpenAPI document exists.
 
 For a complete checked-in example, see the

@@ -2,6 +2,8 @@
 
 There are several tools in the API mocking space. Here's an honest look at how Counterfact fits in.
 
+The table uses [context](./manual/concepts.md#context-state-shared-by-nearby-routes) for shared in-memory behavior, [REPL](./features/repl.md) for the live JavaScript prompt, and [hybrid proxy](./features/proxy.md) for forwarding some requests to a real backend while handling others locally.
+
 ## Quick comparison
 
 |                            | Counterfact         | [json-server](#counterfact-vs-json-server) | [WireMock](#counterfact-vs-wiremock) | [Prism](#counterfact-vs-prism) | [Microcks](#counterfact-vs-microcks) |
@@ -25,7 +27,7 @@ A few things that are genuinely hard to find elsewhere:
 
 ### 1. Type-safe handler files generated from your spec
 
-You don't configure stubs. You write TypeScript. The types — derived directly from your OpenAPI document — tell you exactly what parameters you can read and what shapes your responses must be.
+Counterfact generates editable TypeScript handlers and request/response types from your OpenAPI document. Run an explicit TypeScript check to find mismatches in checked, typed handlers. Serving and hot reload do not run that check; untyped code and escape hatches can bypass it. See the [contract-change workflow](./patterns/contract-change.md).
 
 ### 2. State-preserving hot reload
 
@@ -47,16 +49,16 @@ Counterfact starts fast enough to use in CI. Start it programmatically in a `bef
 
 **json-server** lets you stand up a REST API from a JSON file in seconds. It's great for simple CRUD with no spec.
 
-Counterfact starts from an OpenAPI spec, not a flat JSON file, so you get correct types, valid schema-driven responses, and a server that matches your actual API contract — not just a generic REST interface you manually keep in sync.
+Counterfact starts from an OpenAPI document and generates contract-derived types, editable handlers, and schema-derived sample responses. You can then author the behavior a client workflow needs. Explicit [TypeScript checks](./patterns/contract-change.md), [supported runtime validation](./manual/validation.md), and HTTP assertions provide different kinds of feedback; they do not establish complete conformance to the real service. Response bodies do not receive general runtime schema validation.
 
 Use json-server when: you need something quick and have no spec.
-Use Counterfact when: you have an OpenAPI spec and want a server that actually matches it.
+Use Counterfact when: you have an OpenAPI document and want a local server with generated types and editable, testable behavior.
 
 ## Counterfact vs. WireMock
 
 WireMock supports [scenario state machines](https://wiremock.org/docs/stateful-behaviour/)
 that transition after requests and can be inspected or reset. This differs from
-Counterfact's shared user-authored context objects.
+Counterfact's shared custom context objects.
 
 **WireMock** is battle-tested and runs on the JVM. It excels at stubbing precise request/response pairs and is widely used in Java/Spring ecosystems.
 
@@ -106,7 +108,6 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 ## See also
 
 - [Getting started](./getting-started.md)
-- [Patterns](./patterns/index.md)
-- [Reference](./reference.md)
+- [API reference](./api.md)
 - [FAQ](./faq.md)
-- [Usage](./usage.md)
+- [Find your workflow](./usage.md)

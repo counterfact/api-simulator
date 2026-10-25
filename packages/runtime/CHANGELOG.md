@@ -1,5 +1,21 @@
 # @counterfact/runtime
 
+## 0.2.0
+
+### Minor Changes
+
+- 96b565d: Add simulator.reset() to reconstruct stores, dependent contexts, source routes and startup state without restarting HTTP, and simulator.scenario(path, group?) to await named scenarios with the REPL arguments. Document request gating, reset failure recovery, reference lifetimes, and worker-scoped Playwright integration.
+
+### Patch Changes
+
+- 376ec98: Updated dependency `js-yaml` in `counterfact` to `5.5.0`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.5.0`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.5.0`.
+- Updated dependencies [865750a]
+- Updated dependencies [376ec98]
+- Updated dependencies [91428ea]
+  - @counterfact/openapi@0.1.6
+
 ## 0.1.5
 
 ### Patch Changes
