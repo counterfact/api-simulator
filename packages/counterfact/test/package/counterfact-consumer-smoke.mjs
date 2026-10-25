@@ -359,6 +359,11 @@ try {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ step: 5 }),
   })).json();
   assert.equal(check.ok, true, check.message);
+  const milestone = await fetch(origin + "/tutorial-event", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "opened", step: 0 }),
+  });
+  assert.equal(milestone.status, 200);
+  assert.deepEqual(await milestone.json(), { ok: true });
 } finally {
   await runningTour.stop();
 }

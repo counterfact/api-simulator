@@ -30,6 +30,7 @@ export function hashTelemetryLocation(location: string): string {
 export function sendTelemetry(
   event: string,
   properties: Record<string, unknown> = {},
+  distinctId: string = randomUUID(),
 ): void {
   if (!isTelemetryEnabled()) {
     return;
@@ -42,7 +43,7 @@ export function sendTelemetry(
     const posthog = new PostHog(telemetryKey, { host: telemetryHost });
 
     posthog.capture({
-      distinctId: randomUUID(),
+      distinctId,
       event,
       properties: {
         nodeVersion: process.version,

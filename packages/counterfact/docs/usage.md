@@ -56,6 +56,20 @@ the Counterfact version and a subset of resolved options such as port and enable
 actions. API file locations are SHA-256 hashed before sending. REPL command
 arguments are not included in these events.
 
+The guided coffee-shop walkthrough also reports opening, starting, completed
+exercise phases, skipped lessons, and reaching the final screen. Each milestone
+is counted once per running simulator session, including across browser reloads
+and Back navigation. Events include the tour ID, phase number, elapsed seconds,
+and Counterfact version. The final event records how many of the ten exercise
+phases were completed, so skipping to the end does not count as completing all
+exercises. A separate completion event fires when every exercise has been
+completed, including when returning to skipped lessons. A random session ID connects these events and changes when the
+simulator restarts; it does not identify a person across runs. Walkthrough events
+exclude project paths, file contents, cart contents, and error text. The browser
+sends only milestone names and phase numbers to the local simulator; the CLI
+forwards events through the same telemetry transport and opt-out settings.
+Reporting failures do not interrupt the walkthrough.
+
 To disable Counterfact telemetry, set `COUNTERFACT_TELEMETRY_DISABLED=true`
 before starting the process. For example, in a POSIX shell:
 
