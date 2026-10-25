@@ -3037,9 +3037,9 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 `;
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 52`] = `
-"routes/schema-accuracy.ts:import type { getSchemaAccuracy } from "../types/paths/schema-accuracy.types.js";
-export const GET: getSchemaAccuracy = async ($) => {
-  return $.response[200].random();
+"routes/schema-accuracy.ts:import type { HTTP_GET } from "../types/paths/schema-accuracy.types.js";
+export const GET: HTTP_GET = async ($) => {
+  return $.response.status(200).random();
 };
 "
 `;
@@ -3058,12 +3058,12 @@ import type { SchemaAccuracy } from "../components/schemas/SchemaAccuracy.js";
 /**
  * Demonstrates the schema-type-accuracy acceptance criteria
  */
-export type getSchemaAccuracy = (
+export type HTTP_GET = (
   $: OmitValueWhenNever<{
     query: never;
     querystring: never;
     path: never;
-    headers: getSchemaAccuracy_Headers;
+    headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
     context: Context;
@@ -3089,7 +3089,7 @@ export type getSchemaAccuracy = (
     version: never;
   }>,
 ) => MaybePromise<COUNTERFACT_RESPONSE>;
-export type getSchemaAccuracy_Headers = { "x-api-key": string };
+export type HTTP_GET_Headers = { "x-api-key": string };
 "
 `;
 

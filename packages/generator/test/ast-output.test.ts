@@ -86,10 +86,10 @@ describe("standalone AST output", () => {
 
       // Acceptance 6: preserve an authored handler while regenerating contracts.
       const routePath = "routes/schema-accuracy.ts";
-      const authoredRoute = `import type { getSchemaAccuracy } from "../types/paths/schema-accuracy.types.js";
-export const GET: getSchemaAccuracy = function ($) {
+      const authoredRoute = `import type { HTTP_GET } from "../types/paths/schema-accuracy.types.js";
+export const GET: HTTP_GET = function ($) {
   // Keep this authored choice when regenerating the example.
-  return $.response[200].example("valid");
+  return $.response.status(200).example("valid");
 };
 `;
       await $.add(routePath, authoredRoute);
@@ -105,8 +105,8 @@ export const GET: getSchemaAccuracy = function ($) {
         import type { SchemaAccuracy } from "./types/components/schemas/SchemaAccuracy.js";
         import type { SchemaAccuracyBase } from "./types/components/schemas/SchemaAccuracyBase.js";
         import type { SchemaAccuracyAnimal } from "./types/components/schemas/SchemaAccuracyAnimal.js";
-        import type { getReport } from "./types/paths/reports/{reportId}.types.js";
-        import type { streamEvents } from "./types/paths/stream/events.types.js";
+        import type { HTTP_GET as getReport } from "./types/paths/reports/{reportId}.types.js";
+        import type { HTTP_GET as streamEvents } from "./types/paths/stream/events.types.js";
 
         const example: SchemaAccuracy = ${JSON.stringify(example)};
 
@@ -184,18 +184,18 @@ export const GET: getSchemaAccuracy = function ($) {
 
         // Acceptance 6: binary responses and streaming remain typed.
         function report($: Parameters<getReport>[0]) {
-          $.response[200].match("application/pdf", new Uint8Array([1]));
-          $.response[200].match("application/pdf", "PDF contents");
+          $.response.status(200).match("application/pdf", new Uint8Array([1]));
+          $.response.status(200).match("application/pdf", "PDF contents");
           // @ts-expect-error Binary responses reject numbers.
-          $.response[200].match("application/pdf", 1);
+          $.response.status(200).match("application/pdf", 1);
         }
         function stream($: Parameters<streamEvents>[0]) {
           async function* entries() {
             yield {timestamp: "2026-10-25T00:00:00Z", level: "INFO" as const, message: "example"};
           }
-          $.response[200].stream(entries());
+          $.response.status(200).stream(entries());
           // @ts-expect-error Stream items must satisfy LogEntry.
-          $.response[200].stream((async function* () { yield "wrong"; })());
+          $.response.status(200).stream((async function* () { yield "wrong"; })());
         }
       `,
       );

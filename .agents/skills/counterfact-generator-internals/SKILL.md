@@ -41,6 +41,7 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Keep TypeScript's compiler API dependency explicit and pinned in `@counterfact/generator`; a sibling package's dependency does not satisfy the packed generator.
 - Use the AST helpers for literal names, comments, and grouping. Preserve compact type-literal printing so Prettier does not introduce avoidable snapshot churn.
 - Validate generated syntax and assignment behavior for escaping and union/intersection precedence; snapshots alone do not establish type correctness.
+- When extending generated-output fixtures on an older PR branch, validate with current main integrated: CI tests the merge result, and newer handler type names or response APIs can invalidate newly added snapshots and compiler consumers.
 - Preserve composition siblings and containing `required` constraints without mutating referenced models. Compiler-check referenced unions as well as inline properties, and keep required constraints limited to object branches.
 - Emit a separate discriminator union arm for each mapping value, including multiple values that select the same model; grouping those values in one property union can prevent TypeScript from narrowing the remaining branches.
 - Finish builds and packed-consumer checks before running unit tests that import workspace packages; those checks replace shared `dist` files while rebuilding.
