@@ -1,5 +1,26 @@
 # @counterfact/runtime
 
+## 0.3.1
+
+### Patch Changes
+
+- ad9068d: Use Swagger UI 5.32.0 so documentation pages render OpenAPI 3.0.4 and 3.2.0 documents instead of reporting an invalid version field.
+- 9871d4c: Print distinct Swagger UI links for versioned APIs and serve the selected version's OpenAPI document and request prefix instead of always showing the first version in the group.
+
+## 0.3.0
+
+### Minor Changes
+
+- b0d11b6: Add `response.status(code)` as a typed alternative to `response[code]`. Allow headers and cookies before status selection, narrowing generated status choices by header names and values while preserving required-header and body validation.
+
+  Deprecate bracket-based `response[statusCode]` selection in favor of `response.status(statusCode)`. Update documentation and generated route stubs to use the function-based selector; existing bracket-based handlers remain supported.
+
+### Patch Changes
+
+- 70cbe2e: Preserve live object and array context state when unchanged declarations reload. Scenario-seeded inventory, request updates, and REPL edits now survive context reloads; deliberately changed initializers still apply.
+- Updated dependencies [b0d11b6]
+  - @counterfact/types@0.2.0
+
 ## 0.2.0
 
 ### Minor Changes

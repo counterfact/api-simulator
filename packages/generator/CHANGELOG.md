@@ -1,5 +1,30 @@
 # @counterfact/generator
 
+## 1.0.0
+
+### Major Changes
+
+- 442afd2: Generate operation and parameter types with stable HTTP method names such as
+  `HTTP_GET` and `HTTP_GET_Query`, independent of OpenAPI operationId. On CLI
+  startup, automatically migrate legacy operationId-based route imports and their
+  references while preserving route logic, explicit aliases, comments, and strings.
+  References outside route files must be updated manually.
+
+### Minor Changes
+
+- b0d11b6: Add `response.status(code)` as a typed alternative to `response[code]`. Allow headers and cookies before status selection, narrowing generated status choices by header names and values while preserving required-header and body validation.
+
+  Deprecate bracket-based `response[statusCode]` selection in favor of `response.status(statusCode)`. Update documentation and generated route stubs to use the function-based selector; existing bracket-based handlers remain supported.
+
+### Patch Changes
+
+- 872e12f: Preserve nullable values, primitive constants, inferred object properties, referenced dictionary values, composition properties and required fields, explicit discriminator mappings, and tuple prefixes in generated TypeScript contracts. Keep unrestricted values typed as unknown and retain Counterfact's streaming and server-oriented binary types.
+
+  Regenerating contracts can expose existing handler type errors where required properties or literal constraints were previously lost.
+
+- Updated dependencies [b0d11b6]
+  - @counterfact/types@0.2.0
+
 ## 0.1.6
 
 ### Patch Changes
