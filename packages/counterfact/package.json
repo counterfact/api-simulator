@@ -76,6 +76,7 @@
     "go:petstore2": "yarn build && yarn counterfact https://petstore.swagger.io/v2/swagger.json out",
     "go:example": "yarn build && node ./bin/counterfact.js ./test/fixtures/openapi/example.yaml out",
     "go:multiple-apis": "yarn build && node ./bin/counterfact.js --config ./test/fixtures/config/multiple-apis.yaml",
+    "go:multiple-versions": "yarn build && node ./bin/counterfact.js --config ./test/fixtures/config/multiple-versions.yaml",
     "counterfact": "./bin/counterfact.js"
   },
   "dependencies": {

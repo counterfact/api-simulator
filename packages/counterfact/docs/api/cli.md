@@ -99,7 +99,8 @@ Counterfact prints its version and a random tagline from its bundled collection.
 On startup, Counterfact reports the real work it is doing: loading an OpenAPI
 document, generating enabled artifacts, and preparing the mock runtime. Once
 ready, it prints only the capabilities enabled for that run, such as the mock
-server URL, Swagger UI URL, and active file watching.
+server URL, Swagger UI URL, and active file watching. For versioned specs, each
+Swagger UI link selects its version. See [Swagger UI](../manual/swagger-ui.md#supported-specs-and-versioned-documentation).
 
 Interactive terminals show a spinner while each startup step is running. The
 progress line clears when the step finishes, leaving its completed status.

@@ -44,7 +44,8 @@
     "go:first-run": "yarn build && node ./packages/counterfact/bin/counterfact.js",
     "go:swagger2": "yarn build && node ./packages/counterfact/bin/counterfact.js ./packages/counterfact/test/fixtures/openapi/swagger2.yaml out",
     "go:multipart": "yarn build && node ./packages/counterfact/bin/counterfact.js ./packages/counterfact/test/fixtures/openapi/multipart.yaml out",
-    "go:multiple-apis": "yarn build && node ./packages/counterfact/bin/counterfact.js --config ./packages/counterfact/test/fixtures/config/multiple-apis.yaml",
+    "go:multiple-apis": "yarn workspace counterfact go:multiple-apis",
+    "go:multiple-versions": "yarn workspace counterfact go:multiple-versions",
     "counterfact": "./packages/counterfact/bin/counterfact.js",
     "check:drift": "catchmydrift",
     "test:tutorials": "yarn workspace @counterfact/tutorials test"

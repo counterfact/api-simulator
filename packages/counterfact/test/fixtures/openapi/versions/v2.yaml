@@ -1,0 +1,27 @@
+openapi: 3.2.0
+info:
+  title: Greetings API v2
+  version: 2.0.0
+paths:
+  /greeting:
+    get:
+      operationId: getGreeting
+      responses:
+        "200":
+          description: A greeting with its locale
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message, locale]
+                properties:
+                  message:
+                    type: string
+                  locale:
+                    type: string
+                    enum: [en, es]
+              examples:
+                hello:
+                  value:
+                    message: Hello from v2
+                    locale: en
