@@ -581,6 +581,84 @@ void runner;
     { cwd: consumerDirectory },
   );
 
+  const schemaTypeDocs = await readFile(
+    path.join(installedRoot, "docs/api/schema-types.md"),
+    "utf8",
+  );
+  const codeBlockAfter = (heading) => {
+    const start = schemaTypeDocs.indexOf(heading);
+    assert(start !== -1, `Missing documented heading: ${heading}`);
+    const match = schemaTypeDocs
+      .slice(start + heading.length)
+      .match(/```[^\n]*\n([\s\S]*?)\n```/u);
+    assert(match, `Missing code block after ${heading}`);
+    return match[1] + "\n";
+  };
+  const docDirectory = path.join(consumerDirectory, "schema-type-example");
+  await mkdir(docDirectory);
+  for (const name of [
+    "package.json",
+    "openapi.yaml",
+    "counterfact.yaml",
+    "schema-type-transform.mjs",
+    "consumer.ts",
+    "tsconfig.json",
+  ]) {
+    await writeFile(
+      path.join(docDirectory, name),
+      codeBlockAfter("### `" + name + "`"),
+    );
+  }
+  const docCliOptions = { ...installedBinaryOptions, cwd: docDirectory };
+  const docConfig = path.join(docDirectory, "counterfact.yaml");
+  const generateDocs = () =>
+    run(
+      installedBinary,
+      ["--config", docConfig, "--no-update-check"],
+      docCliOptions,
+    );
+  const checkDocs = () =>
+    run(
+      process.execPath,
+      [
+        path.join(consumerDirectory, "node_modules/typescript/bin/tsc"),
+        "--project",
+        path.join(docDirectory, "tsconfig.json"),
+      ],
+      { cwd: docDirectory },
+    );
+  await generateDocs();
+  const invoicePath = path.join(
+    docDirectory,
+    "api/types/components/schemas/Invoice.ts",
+  );
+  const invoice = await readFile(invoicePath, "utf8");
+  assert.match(invoice, /total: bigint \| null/u);
+  assert.match(invoice, /id: string/u);
+  await checkDocs();
+  const originalDocConfig = await readFile(docConfig, "utf8");
+  await writeFile(
+    docConfig,
+    originalDocConfig.replace(/^schema-type-transform:.*\n/gmu, ""),
+  );
+  await generateDocs();
+  await assert.rejects(
+    checkDocs,
+    (error) =>
+      error.message.includes("bigint") &&
+      error.message.includes("Unused '@ts-expect-error'"),
+  );
+  await writeFile(docConfig, originalDocConfig);
+  await generateDocs();
+  await checkDocs();
+  const programmaticExample = path.join(docDirectory, "generate.mjs");
+  await writeFile(
+    programmaticExample,
+    codeBlockAfter("## Programmatic generation"),
+  );
+  await run(process.execPath, [programmaticExample], { cwd: docDirectory });
+  await checkDocs();
+
   const configDirectory = path.join(consumerDirectory, "settings");
   await mkdir(configDirectory);
   await writeFile(
@@ -596,7 +674,11 @@ void runner;
                 description: "Identifier",
                 content: {
                   "application/json": {
-                    schema: { type: "string", format: "uuid" },
+                    schema: {
+                      type: "string",
+                      format: "binary",
+                      "x-node-buffer": true,
+                    },
                   },
                 },
               },
@@ -612,7 +694,7 @@ void runner;
   );
   await writeFile(
     path.join(configDirectory, "transform.mjs"),
-    "export default (schema, type, script) => typeof schema === 'object' && schema.format === 'uuid' ? script.importType('node:buffer', 'Buffer') : type;\n",
+    codeBlockAfter("## Import an existing type"),
   );
   await run(
     installedBinary,

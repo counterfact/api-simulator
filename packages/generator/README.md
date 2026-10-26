@@ -19,6 +19,10 @@ complete public-import example.
 
 ## Customize schema types
 
+The [Schema type transforms reference](../counterfact/docs/api/schema-types.md)
+documents every argument, the import facade, reference traversal, errors, and a
+complete YAML-to-generated-model example with compiler checks.
+
 Pass a synchronous `schemaTypeTransform` to `CodeGenerator` to customize the
 TypeScript type generated for a JSON Schema. The callback receives the schema,
 Counterfact's default `ts.TypeNode`, and a small script facade for named type

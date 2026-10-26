@@ -97,8 +97,9 @@ types without changing runtime validation or conversion. Missing modules,
 non-function default exports, and callback failures produce startup/generation
 errors.
 
-For the complete transform contract and a TypeScript AST example, see the
-[generator documentation](https://github.com/counterfact/api-simulator/tree/main/packages/generator#customize-schema-types).
+For the exact callback signature, all three arguments, import handling, traversal
+rules, errors, and a complete example with a compiler check, see
+[Schema type transforms](./schema-types.md).
 
 ## First-run intro
 

@@ -28,6 +28,7 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 - `docs/features/proxy.md` — selected upstream paths behind one local base URL.
 - `docs/patterns/automated-integration-tests.md` — real HTTP test lifecycle.
 - `docs/features/repl.md` — inspect or steer a running local API.
+- `docs/api/schema-types.md` — schema type transforms: callback arguments, TypeScript AST examples, import facade, configuration, and errors.
 - `docs/api.md` — CLI flags, `$` API, response builders, and programmatic API.
 - `docs/features/without-openapi.md` — alternative path only when no OpenAPI document exists.
 

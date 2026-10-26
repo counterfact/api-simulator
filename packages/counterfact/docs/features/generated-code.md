@@ -59,8 +59,8 @@ replacement. Inline schemas and referenced definitions are transformed; existing
 route edits remain preserved. This changes generated types, not runtime
 validation or conversion.
 
-See the [generator package documentation](https://github.com/counterfact/api-simulator/tree/main/packages/generator#customize-schema-types)
-for the callback contract, import handling, shared repositories, and an example.
+See [Schema type transforms](../api/schema-types.md) for the full callback and
+facade reference, a complete example, and a TypeScript check of the generated model.
 
 ## Update a specification
 
