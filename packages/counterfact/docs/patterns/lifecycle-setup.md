@@ -6,10 +6,10 @@ The examples in this manual use Counterfact 3 or newer, including `response.stat
 
 ```sh
 npm init -y
-npm install --save-dev --save-exact counterfact@latest
+npm install --save-dev counterfact@latest
 ```
 
-For an existing npm project, skip `npm init -y`. Commit `package.json` and the lockfile so teammates and CI use the same version; use `npm ci` to reproduce that installation. Keep each recipe's files in this project directory.
+For an existing npm project, skip `npm init -y`. Commit `package.json` and the lockfile so teammates and CI use the same version; use `npm ci` to reproduce that installation. Run `npm update counterfact` to pick up compatible updates. Keep each recipe's files in this project directory.
 
 Use `npx --no-install counterfact` for generation commands so the CLI comes from the project's installed dependency.
 

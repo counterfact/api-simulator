@@ -4,17 +4,19 @@ Start with [Getting Started](./getting-started.md) to run the API and make a
 browser request. Next, make the API remember a pet you create, return it when
 requested, and simulate a failure.
 
-## Install a pinned version
+<span id="install-a-pinned-version"></span>
+
+## Install in a project
 
 Stop the Getting Started server with Ctrl+C in its terminal before continuing. This lesson uses a separate project and a pinned Petstore document so its request fields and examples stay consistent. The new `api/` directory will not reuse the trial’s custom handlers.
 
-Create a project directory, then follow the [project installation setup](./patterns/lifecycle-setup.md) to install the latest Counterfact release and pin the resolved version in your lockfile:
+Create a project directory, then follow the [project installation setup](./patterns/lifecycle-setup.md) to install the latest Counterfact release:
 
 ```sh
 mkdir counterfact-exercise
 cd counterfact-exercise
 npm init -y
-npm install --save-dev --save-exact counterfact@latest
+npm install --save-dev counterfact@latest
 ```
 
 Download the contract and start the installed CLI:

@@ -87,7 +87,7 @@ Save the file, then repeat the browser request above—no server restart is need
 
 ## Use a repeatable project
 
-For a project or CI workflow, install a pinned version and commit the lockfile. [First 10 minutes](./first-10-minutes.md#install-a-pinned-version) walks through stopping this trial, using a pinned implementation and contract in a separate project, and adding state. Use [project installation](./patterns/lifecycle-setup.md) for automated workflows.
+For a project or CI workflow, install Counterfact as a development dependency and commit the lockfile. [First 10 minutes](./first-10-minutes.md#install-in-a-project) walks through stopping this trial, installing Counterfact and using a pinned contract in a separate project, and adding state. Use [project installation](./patterns/lifecycle-setup.md) for automated workflows.
 
 ## Next steps
 
