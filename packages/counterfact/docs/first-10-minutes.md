@@ -8,13 +8,13 @@ requested, and simulate a failure.
 
 Stop the Getting Started server with Ctrl+C in its terminal before continuing. This lesson uses a separate project and a pinned Petstore document so its request fields and examples stay consistent. The new `api/` directory will not reuse the trial’s custom handlers.
 
-Create a project directory, then follow the [project installation setup](./patterns/lifecycle-setup.md) to install Counterfact 3 and pin the resolved version in your lockfile:
+Create a project directory, then follow the [project installation setup](./patterns/lifecycle-setup.md) to install the latest Counterfact release and pin the resolved version in your lockfile:
 
 ```sh
 mkdir counterfact-exercise
 cd counterfact-exercise
 npm init -y
-npm install --save-dev --save-exact counterfact@3
+npm install --save-dev --save-exact counterfact@latest
 ```
 
 Download the contract and start the installed CLI:
