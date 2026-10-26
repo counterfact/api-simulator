@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { usingTemporaryFiles } from "using-temporary-files";
 import { createHash } from "node:crypto";
 import {
   copyFile,
@@ -581,10 +582,7 @@ void runner;
     { cwd: consumerDirectory },
   );
 
-  const schemaTypeDocs = await readFile(
-    path.join(installedRoot, "docs/api/schema-types.md"),
-    "utf8",
-  );
+  let schemaTypeDocs = "";
   const codeBlockAfter = (heading) => {
     const start = schemaTypeDocs.indexOf(heading);
     assert(start !== -1, `Missing documented heading: ${heading}`);
@@ -594,70 +592,91 @@ void runner;
     assert(match, `Missing code block after ${heading}`);
     return match[1] + "\n";
   };
-  const docDirectory = path.join(consumerDirectory, "schema-type-example");
-  await mkdir(docDirectory);
-  for (const name of [
-    "package.json",
-    "openapi.yaml",
-    "counterfact.yaml",
-    "schema-type-transform.mjs",
-    "consumer.ts",
-    "tsconfig.json",
-  ]) {
-    await writeFile(
-      path.join(docDirectory, name),
-      codeBlockAfter("### `" + name + "`"),
-    );
+  // Keep the temporary example below the installed consumer so Node and tsc
+  // resolve the same public package imports shown in the documentation.
+  const temporaryVariables = ["TMPDIR", "TMP", "TEMP"];
+  const originalTemporaryEnvironment = temporaryVariables.map((name) => [
+    name,
+    process.env[name],
+  ]);
+  for (const name of temporaryVariables) {
+    process.env[name] = consumerDirectory;
   }
-  const docCliOptions = { ...installedBinaryOptions, cwd: docDirectory };
-  const docConfig = path.join(docDirectory, "counterfact.yaml");
-  const generateDocs = () =>
-    run(
-      installedBinary,
-      ["--config", docConfig, "--no-update-check"],
-      docCliOptions,
-    );
-  const checkDocs = () =>
-    run(
-      process.execPath,
-      [
-        path.join(consumerDirectory, "node_modules/typescript/bin/tsc"),
-        "--project",
-        path.join(docDirectory, "tsconfig.json"),
-      ],
-      { cwd: docDirectory },
-    );
-  await generateDocs();
-  const invoicePath = path.join(
-    docDirectory,
-    "api/types/components/schemas/Invoice.ts",
-  );
-  const invoice = await readFile(invoicePath, "utf8");
-  assert.match(invoice, /total: bigint \| null/u);
-  assert.match(invoice, /id: string/u);
-  await checkDocs();
-  const originalDocConfig = await readFile(docConfig, "utf8");
-  await writeFile(
-    docConfig,
-    originalDocConfig.replace(/^schema-type-transform:.*\n/gmu, ""),
-  );
-  await generateDocs();
-  await assert.rejects(
-    checkDocs,
-    (error) =>
-      error.message.includes("bigint") &&
-      error.message.includes("Unused '@ts-expect-error'"),
-  );
-  await writeFile(docConfig, originalDocConfig);
-  await generateDocs();
-  await checkDocs();
-  const programmaticExample = path.join(docDirectory, "generate.mjs");
-  await writeFile(
-    programmaticExample,
-    codeBlockAfter("## Programmatic generation"),
-  );
-  await run(process.execPath, [programmaticExample], { cwd: docDirectory });
-  await checkDocs();
+  try {
+    await usingTemporaryFiles(async ($) => {
+      const docDirectory = $.path(".");
+      schemaTypeDocs = await $.read(
+        path.relative(
+          docDirectory,
+          path.join(installedRoot, "docs/api/schema-types.md"),
+        ),
+      );
+      for (const name of [
+        "package.json",
+        "openapi.yaml",
+        "counterfact.yaml",
+        "schema-type-transform.mjs",
+        "consumer.ts",
+        "tsconfig.json",
+      ]) {
+        await $.add(name, codeBlockAfter("### `" + name + "`"));
+      }
+      const docCliOptions = { ...installedBinaryOptions, cwd: docDirectory };
+      const docConfig = path.join(docDirectory, "counterfact.yaml");
+      const generateDocs = () =>
+        run(
+          installedBinary,
+          ["--config", docConfig, "--no-update-check"],
+          docCliOptions,
+        );
+      const checkDocs = () =>
+        run(
+          process.execPath,
+          [
+            path.join(consumerDirectory, "node_modules/typescript/bin/tsc"),
+            "--project",
+            path.join(docDirectory, "tsconfig.json"),
+          ],
+          { cwd: docDirectory },
+        );
+      await generateDocs();
+      const invoicePath = path.join(
+        docDirectory,
+        "api/types/components/schemas/Invoice.ts",
+      );
+      const invoice = await $.read(path.relative(docDirectory, invoicePath));
+      assert.match(invoice, /total: bigint \| null/u);
+      assert.match(invoice, /id: string/u);
+      await checkDocs();
+      const originalDocConfig = await $.read("counterfact.yaml");
+      await $.add(
+        "counterfact.yaml",
+        originalDocConfig.replace(/^schema-type-transform:.*\n/gmu, ""),
+      );
+      await generateDocs();
+      await assert.rejects(
+        checkDocs,
+        (error) =>
+          error.message.includes("bigint") &&
+          error.message.includes("Unused '@ts-expect-error'"),
+      );
+      await $.add("counterfact.yaml", originalDocConfig);
+      await generateDocs();
+      await checkDocs();
+      const programmaticExample = path.join(docDirectory, "generate.mjs");
+      await $.add("generate.mjs", codeBlockAfter("## Programmatic generation"));
+      await run(process.execPath, [programmaticExample], { cwd: docDirectory });
+      await checkDocs();
+    });
+  } finally {
+    for (const [name, value] of originalTemporaryEnvironment) {
+      if (value === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = value;
+      }
+    }
+  }
 
   const configDirectory = path.join(consumerDirectory, "settings");
   await mkdir(configDirectory);
