@@ -1,6 +1,6 @@
 # Routes
 
-The examples on this page follow the current source. Use the [pinned source setup](../patterns/lifecycle-setup.md#run-examples-from-the-current-source) to run them with matching generated types and runtime APIs.
+Use the [project installation setup](../patterns/lifecycle-setup.md) to run these examples with Counterfact 3 or newer.
 
 Each file in `routes/` corresponds to an API path. For example, `/users/{userId}` maps to `routes/users/{userId}.ts`. The root path `/` maps to `routes/index.ts`.
 
@@ -116,7 +116,7 @@ The request is exposed through four typed properties:
 | `$.path`    | Path parameters (e.g. `$.path.userId` for `/users/{userId}`) |
 | `$.query`   | Query string parameters                                      |
 | `$.headers` | Request headers                                              |
-| `$.body`    | Parsed request body; `undefined` for GET and HEAD             |
+| `$.body`    | Parsed request body; `undefined` for GET and HEAD            |
 
 This example assumes a generated `POST /groups/{groupName}/search` operation with a required string path parameter `groupName`, required string query parameter `keyword`, a string `x-token` header, and a required JSON body containing a required `tags` array of strings. Its 200 and 401 responses both declare `text/plain`.
 

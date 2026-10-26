@@ -1,31 +1,17 @@
 # Install Counterfact for automated workflows
 
-Use Node.js 22 or newer. Install Counterfact in the project that owns the contract, custom handlers, and tests:
+The examples in this manual use Counterfact 3 or newer, including `response.status(...)` and generated handler types such as `HTTP_GET`. Use Node.js 22 or newer. Install Counterfact in the project that owns the contract, custom handlers, and tests:
+
+<span id="run-examples-from-the-current-source"></span>
 
 ```sh
 npm init -y
-npm install --save-dev --save-exact counterfact
+npm install --save-dev counterfact@latest
 ```
 
-For an existing npm project, skip `npm init -y`. Commit `package.json` and the lockfile so teammates and CI use the same version; use `npm ci` to reproduce that installation. Keep each recipe's files in this project directory.
+For an existing npm project, skip `npm init -y`. Commit `package.json` and the lockfile so teammates and CI use the same version; use `npm ci` to reproduce that installation. Run `npm update counterfact` to pick up compatible updates. Keep each recipe's files in this project directory.
 
 Use `npx --no-install counterfact` for generation commands so the CLI comes from the project's installed dependency.
-
-## Run examples from the current source
-
-The current manual uses APIs from `main`, including callable `response.status(...)`. The published `counterfact@2.17.0` package does not provide that response API. To run these examples before the corresponding release, use this pinned source checkout with Node.js 24 and Corepack available:
-
-```sh
-git clone https://github.com/counterfact/api-simulator.git counterfact-source
-cd counterfact-source
-git checkout d1531ee7033f8861f7ef11cf9beccfca0ca60da9
-corepack yarn install --immutable
-corepack yarn build
-mkdir counterfact-exercise
-cd counterfact-exercise
-```
-
-Keep the exercise inside this checkout: `import { counterfact } from "counterfact"` resolves the built workspace package from the parent repository. Use `npx --no-install counterfact` for CLI commands here so they run that same build. The checkout pins the implementation; it does not install or change the globally published package. Keep exercise files in this directory and stop any earlier trial server before starting another on the same port.
 
 ## Check the lifecycle API
 
