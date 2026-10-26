@@ -1015,6 +1015,7 @@
     },
     {
       "include": ["packages/counterfact/docs/api/*.md"],
+      "exclude": ["packages/counterfact/docs/api/schema-types.md"],
       "groups": [
         "counterfact",
         "client",
