@@ -8,7 +8,7 @@ OpenAPI, formerly Swagger, describes an API’s endpoints, parameters, and respo
 
 ## Prerequisite
 
-Use Node.js 22 or newer. Counterfact supports Swagger 2.0 and OpenAPI 3.0,
+Use Node.js 22 or newer and Counterfact 3 or newer for the examples below. Counterfact supports Swagger 2.0 and OpenAPI 3.0,
 3.1, and 3.2.
 
 ## Run one command
@@ -65,8 +65,6 @@ server is running.
 <span id="make-one-response-explicit-optional"></span>
 
 ## Customize a response
-
-The handler below uses the `response.status(...)` API from `main`, which is not in the published 2.17.0 package. Stop the trial server with Ctrl+C, complete the [pinned source setup](./patterns/lifecycle-setup.md#run-examples-from-the-current-source), and run `npx --no-install counterfact https://petstore3.swagger.io/api/v3/openapi.json api` from its exercise directory before editing.
 
 When a screen needs a specific case, replace the generated response in the
 corresponding handler. Counterfact supplies `$`: `$.path` contains URL parameters and `$.response` builds the HTTP response. The imported `HTTP_GET` type comes from the generated contract:

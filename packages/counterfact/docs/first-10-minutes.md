@@ -8,7 +8,16 @@ requested, and simulate a failure.
 
 Stop the Getting Started server with Ctrl+C in its terminal before continuing. This lesson uses a separate project and a pinned Petstore document so its request fields and examples stay consistent. The new `api/` directory will not reuse the trial’s custom handlers.
 
-Complete the [pinned source setup](./patterns/lifecycle-setup.md#run-examples-from-the-current-source) and stay in its `counterfact-exercise/` directory. The handlers below use APIs from `main` that are not in the published 2.17.0 package. Download the contract and start that source build:
+Create a project directory, then follow the [project installation setup](./patterns/lifecycle-setup.md) to install Counterfact 3 and pin the resolved version in your lockfile:
+
+```sh
+mkdir counterfact-exercise
+cd counterfact-exercise
+npm init -y
+npm install --save-dev --save-exact counterfact@3
+```
+
+Download the contract and start the installed CLI:
 
 ```sh
 curl --fail --location \
@@ -17,7 +26,7 @@ curl --fail --location \
 npx --no-install counterfact ./openapi.yaml api
 ```
 
-Keep the server running in this terminal and use your editor and browser for the following steps. Keep the source checkout, contract, and edited files when revisiting the exercise.
+Keep the server running in this terminal and use your editor and browser for the following steps. Keep the project, lockfile, contract, and edited files when revisiting the exercise.
 
 The command writes editable routes and generated types, then starts the API at
 `http://localhost:3100`. The generated responses work now; the next sections
