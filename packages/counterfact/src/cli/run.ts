@@ -11,6 +11,7 @@ import { counterfact, type SpecConfig } from "../app.js";
 import { pathsToRoutes } from "../migrate/paths-to-routes.js";
 import { updateRouteTypes } from "../migrate/update-route-types.js";
 import { pathResolve } from "../util/forward-slash-path.js";
+import { loadSchemaTypeTransform } from "../util/load-schema-type-transform.js";
 import { loadConfigFile } from "../util/load-config-file.js";
 import { checkForUpdates } from "./check-for-updates.js";
 import { runIntro } from "./intro.js";
@@ -206,6 +207,10 @@ function buildProgram(
       configFilePath,
       options.config !== undefined,
     );
+    const schemaTypeTransform = await loadSchemaTypeTransform(
+      fileConfig["schemaTypeTransform"],
+      configFilePath,
+    );
     debug("fileConfig: %o", fileConfig);
     // Even an empty config file signals an existing project. Only a truly
     // argument-free, unconfigured invocation enters the first-run flow.
@@ -230,6 +235,8 @@ function buildProgram(
     // Apply config file values for any option that was not explicitly set on
     // the command line (i.e. its source is "default" or it was never defined).
     for (const [key, value] of Object.entries(fileConfig)) {
+      // This config-only callback module has no corresponding command-line flag.
+      if (key === "schemaTypeTransform") continue;
       if (!knownOptionKeys.has(key)) {
         debug("ignoring unknown config key %s", key);
         continue;
@@ -301,6 +308,7 @@ function buildProgram(
     const guiUrl = `${origin}/counterfact/`;
 
     const config = {
+      ...(schemaTypeTransform ? { schemaTypeTransform } : {}),
       adminApiToken:
         options.adminApiToken ??
         process.env["COUNTERFACT_ADMIN_API_TOKEN"] ??

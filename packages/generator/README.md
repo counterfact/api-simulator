@@ -90,4 +90,6 @@ compiler API version (the generator pins its compiler dependency).
 - This API changes generated types only. It does not convert runtime values,
   change request/response validation, or change route-preservation behavior.
 
-There is no CLI configuration option for callbacks; use the programmatic API.
+For CLI projects, set `schema-type-transform: ./schema-type-transform.mjs` in
+`counterfact.yaml`. The module must default-export the callback; its path is
+relative to the config file. See the [Counterfact configuration reference](../counterfact/docs/api/cli.md#customize-generated-schema-types).

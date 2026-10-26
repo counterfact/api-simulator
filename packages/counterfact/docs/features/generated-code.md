@@ -50,8 +50,10 @@ Generation does not replace runtime validation. TypeScript cannot express every 
 
 ## Customize schema types
 
-The programmatic `@counterfact/generator` API accepts a `schemaTypeTransform`
-callback. It receives a JSON Schema, the default TypeScript type node, and a
+Set [`schema-type-transform` in `counterfact.yaml`](../api/cli.md#customize-generated-schema-types)
+to use a callback module from the CLI. The programmatic `@counterfact/generator`
+API accepts the same callback as `schemaTypeTransform`. The
+callback receives a JSON Schema, the default TypeScript type node, and a
 script facade for importing external types. Return the default type or a
 replacement. Inline schemas and referenced definitions are transformed; existing
 route edits remain preserved. This changes generated types, not runtime

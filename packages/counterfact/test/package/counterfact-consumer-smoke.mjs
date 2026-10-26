@@ -490,8 +490,13 @@ assert.equal(typeof createMswHandlers, "function");
     path.join(consumerDirectory, "consumer.ts"),
     `import { loadOpenApiDocument } from "@counterfact/openapi";
 import type { Middleware } from "@counterfact/types";
-import { counterfact, type MockRequest, type SpecConfig } from "counterfact";
+import { counterfact, type MockRequest, type SpecConfig, type SchemaTypeTransform } from "counterfact";
 
+export const transform: SchemaTypeTransform = (schema, defaultType, script) => {
+  if (typeof schema === "object" && schema.format === "uuid") return script.importType("node:buffer", "Buffer");
+  return defaultType;
+};
+void counterfact({ basePath: "api", schemaTypeTransform: transform });
 const spec: SpecConfig = { group: "smoke", source: "./openapi.yaml" };
 declare const middleware: Middleware;
 declare const request: MockRequest;
@@ -575,6 +580,56 @@ void runner;
     ],
     { cwd: consumerDirectory },
   );
+
+  const configDirectory = path.join(consumerDirectory, "settings");
+  await mkdir(configDirectory);
+  await writeFile(
+    path.join(consumerDirectory, "extension.json"),
+    JSON.stringify({
+      openapi: "3.0.3",
+      info: { title: "Configured type extension", version: "1" },
+      paths: {
+        "/id": {
+          get: {
+            responses: {
+              200: {
+                description: "Identifier",
+                content: {
+                  "application/json": {
+                    schema: { type: "string", format: "uuid" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+  );
+  await writeFile(
+    path.join(configDirectory, "counterfact.yaml"),
+    "spec: ./extension.json\ndestination: ./customized\nschema-type-transform: ./transform.mjs\n",
+  );
+  await writeFile(
+    path.join(configDirectory, "transform.mjs"),
+    "export default (schema, type, script) => typeof schema === 'object' && schema.format === 'uuid' ? script.importType('node:buffer', 'Buffer') : type;\n",
+  );
+  await run(
+    installedBinary,
+    [
+      "--config",
+      path.join(configDirectory, "counterfact.yaml"),
+      "--generate",
+      "--no-update-check",
+    ],
+    installedBinaryOptions,
+  );
+  const customized = await readFile(
+    path.join(consumerDirectory, "customized/types/paths/id.types.ts"),
+    "utf8",
+  );
+  assert.match(customized, /from "node:buffer"/u);
+  assert.match(customized, /Buffer as /u);
 
   process.stdout.write(
     updateFixtures
