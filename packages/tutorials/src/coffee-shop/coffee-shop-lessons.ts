@@ -211,7 +211,7 @@ export const PHASES: LessonPhase[] = [
     explanation:
       "A handler is your function for an HTTP operation. Returning explicit JSON gives you control over the response instead of generating it from the schema.",
     instruction:
-      "Prepare this step to add the catalog above the handler. In routes/products.ts, replace only the return statement below and save. Click Refresh products twice: the same three coffees should appear without restarting Counterfact.",
+      "I’ve added the catalog above the handler. In routes/products.ts, replace only the return statement below and save. Click Refresh products twice: the same three coffees should appear without restarting Counterfact.",
     edits: [
       edit(
         "routes/products.ts",
@@ -247,7 +247,7 @@ export const PHASES: LessonPhase[] = [
     explanation:
       "Your handler chooses the response status and body. Add a switch so you can produce a repeatable 503 response from the same endpoint.",
     instruction:
-      "Prepare this step, inspect the new 503 branch in routes/orders.ts, then change ordersAvailable to false, save, add a coffee, and place an order. The API should return 503 and the shop should keep your cart.",
+      "Inspect the new 503 branch in routes/orders.ts, then change ordersAvailable to false, save, add a coffee, and place an order. The API should return 503 and the shop should keep your cart.",
     edits: [
       edit(
         "routes/orders.ts",
@@ -283,7 +283,7 @@ export const PHASES: LessonPhase[] = [
     explanation:
       "Counterfact creates one running Context instance for these routes. Fields hold state; methods are ordinary TypeScript that you write. catalog contains product descriptions, inventory holds quantities by ID, and nextOrderId supplies successive confirmations.",
     instruction:
-      "Prepare this step and inspect routes/_.context.ts. Its collections start empty. Replace the TODO return in listProducts with the first return below, then replace the TODO return in confirmOrder with the second. listProducts combines descriptions and quantities; confirmOrder advances the counter. In the terminal’s ⬣> REPL, inspect context.catalog and context.inventory. Then click Check progress. The handlers still use their earlier responses until you connect them.",
+      "Inspect routes/_.context.ts. Its collections start empty. Replace the TODO return in listProducts with the first return below, then replace the TODO return in confirmOrder with the second. listProducts combines descriptions and quantities; confirmOrder advances the counter. In the terminal’s ⬣> REPL, inspect context.catalog and context.inventory. Then click Check my work. The handlers still use their earlier responses until you connect them.",
     edits: [
       edit(
         "routes/_.context.ts",
@@ -303,7 +303,7 @@ export const PHASES: LessonPhase[] = [
     explanation:
       "A scenario is a function you write to change the running context. reset below installs a complete baseline. startup tells Counterfact to apply that baseline when the server starts; saving the file alone does not apply it to this session.",
     instruction:
-      "Prepare this step, inspect reset() and the baseline in scenarios/index.ts, then append the startup export below to that scenario file. Run .scenario reset in the REPL and inspect context.inventory. Click Check progress to observe the initialized state. Three coffees make stock changes easy to see.",
+      "Inspect reset() and the baseline in scenarios/index.ts, then append the startup export below to that scenario file. Run .scenario reset in the REPL and inspect context.inventory. Click Check my work to observe the initialized state. Three coffees make stock changes easy to see.",
     edits: [
       edit(
         "scenarios/index.ts",
@@ -356,7 +356,7 @@ export const PHASES: LessonPhase[] = [
     explanation:
       "Counterfact supplies the context object, but stock rules are your methods. canFulfill checks quantities; getShortages reports requested and available stock, combining repeated product IDs. The route maps that result to HTTP 409.",
     instruction:
-      "Prepare this step and inspect the new Context methods. In routes/orders.ts, insert the 409 branch below immediately before the successful return statement. Save, add two Dark Roast to your cart, and set its running inventory to 1 in the REPL. Click Refresh products, then place the order. The API should reject it without changing inventory. Afterward, empty your cart, restore Dark Roast to 3, and refresh products.",
+      "Inspect the new Context methods. In routes/orders.ts, insert the 409 branch below immediately before the successful return statement. Save, add two Dark Roast to your cart, and set its running inventory to 1 in the REPL. Click Refresh products, then place the order. The API should reject it without changing inventory. Afterward, empty your cart, restore Dark Roast to 3, and refresh products.",
     edits: [
       edit(
         "routes/orders.ts",
@@ -392,7 +392,7 @@ export const PHASES: LessonPhase[] = [
     explanation:
       "An order confirmation and an inventory change are separate operations. The new helper receives the ordered items and the same inventory object read by the product handler.",
     instruction:
-      "Prepare this step, inspect the new helper and its call in routes/orders.ts, then replace only its TODO with the loop below. Save, buy another Dark Roast, and observe the lower inventory in GET /products.",
+      "Inspect the new helper and its call in routes/orders.ts, then replace only its TODO with the loop below. Save, buy another Dark Roast, and observe the lower inventory in GET /products.",
     edits: [
       edit(
         "routes/orders.ts",
@@ -432,7 +432,7 @@ export const PHASES: LessonPhase[] = [
     explanation:
       "Save a REPL state change as a named scenario so you can repeat it. This scenario changes only Dark Roast inventory. The other coffees and the order counter keep their current values.",
     instruction:
-      "Prepare this step, then replace the TODO in restockDarkRoast with the assignment below. Save, then run .scenario restockDarkRoast. Refresh products to see 5 bags. This completes the walkthrough. Try another product or another failure condition on your own.",
+      "Replace the TODO in restockDarkRoast with the assignment below. Save, then run .scenario restockDarkRoast. Refresh products to see 5 bags. This completes the walkthrough. Try another product or another failure condition on your own.",
     edits: [
       edit(
         "scenarios/index.ts",

@@ -56,6 +56,7 @@ function find(
 async function browser(
   options: {
     workspace?: boolean;
+    prepared?: string[];
     phase?: string;
     preview?: boolean;
     storage?: Map<string, string>;
@@ -76,7 +77,7 @@ async function browser(
   const server = {
     workspace: {
       enabled: !!options.workspace,
-      prepared: [] as string[],
+      prepared: options.prepared ?? [],
       checkpoints: [] as number[],
     },
     checkpointError: false,
@@ -341,32 +342,27 @@ it("does not credit a random confirmation or a catalog before a passing saved ch
   expect(app.root("request-trace").textContent).toContain('"request"');
 });
 
-it("previews later lessons without applying edits or crediting completion", async () => {
+it("keeps earlier turns visible and reveals the next lesson only after the learner replies", async () => {
   const app = await browser();
-  await app.click("skip");
-  expect(app.root("lesson").textContent).toContain("Preview: complete");
-  app.server.checkOk = true;
+  expect(app.root("lesson").textContent).toContain("Hi, I’m Milo.");
+  expect(app.root("lesson").textContent).not.toContain(
+    "Replace random products",
+  );
   await app.click("refresh-products");
-  await app.click("refresh-products");
-  expect(app.completed()).toEqual([]);
-  expect(
-    app.calls.every((call) =>
-      [
-        "/tutorial-info",
-        "/tutorial-check",
-        "/tutorial-event",
-        "/products",
-      ].includes(call.path),
-    ),
-  ).toBe(true);
-  find(
-    app.root("lesson"),
-    (element) =>
-      element.tag === "button" &&
-      element.textContent === "Return to required edit",
-  )!.onclick!();
+  await app.click("continue");
   expect(app.root("lesson").textContent).toContain(
     "Explore your generated API",
+  );
+  expect(app.root("lesson").textContent).toContain("I’m ready. What’s next?");
+  expect(app.root("lesson").textContent).toContain("Replace random products");
+  const history = app.root("lesson").textContent;
+  expect(history.indexOf("Inspect the generated stub")).toBeLessThan(
+    history.indexOf("That worked."),
+  );
+  expect(history.match(/Its Git history/g)).toHaveLength(1);
+  const restored = await browser({ storage: app.storage });
+  expect(restored.root("lesson").textContent).toContain(
+    "I’m ready. What’s next?",
   );
 });
 
@@ -424,7 +420,9 @@ it("keeps the inventory edit hidden through a wrong answer and reload, then reve
   expect(app.root("lesson").textContent).not.toContain("replace only its TODO");
   const restored = await browser({ storage: app.storage });
   expect(restored.root("inventory-question").textContent).toContain("3 → 3");
-  await restored.answer("Yes, stock decreased");
+  expect(restored.root("lesson").textContent).toContain(
+    "A confirmation does not change context",
+  );
   await restored.answer("Try again");
   await restored.answer("No, stock stayed the same");
   expect(restored.root("lesson").textContent).toContain(
@@ -617,25 +615,42 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
   const prepare = find(
     app.root("lesson"),
     (element) =>
-      element.tag === "button" && element.textContent === "Prepare this step",
+      element.tag === "button" &&
+      element.textContent === "Yes, make these edits",
   )!;
   expect(
     app.calls.filter((call) => call.path === "/tutorial-workspace"),
   ).toEqual([]);
   await prepare.onclick!();
   expect(app.server.workspace.prepared).toEqual(["catalog"]);
-  expect(app.root("lesson").textContent).toContain("Step prepared");
-  await app.click("skip");
-  expect(app.root("lesson").textContent).toContain("Preview:");
+  expect(app.root("lesson").textContent).toContain(
+    "I’ve added the supporting code",
+  );
   expect(
     find(
       app.root("lesson"),
-      (element) => element.textContent === "Prepare this step",
+      (element) =>
+        element.tag === "button" &&
+        element.textContent === "Yes, make these edits",
     ),
   ).toBeUndefined();
   expect(
     app.calls.filter((call) => call.path === "/tutorial-workspace"),
   ).toHaveLength(1);
+  const restored = await browser({
+    storage: app.storage,
+    workspace: true,
+    prepared: ["catalog"],
+  });
+  expect(restored.root("lesson").textContent).toContain(
+    "Yes, make these edits.",
+  );
+  expect(restored.root("lesson").textContent).toContain(
+    "I’ve added the supporting code",
+  );
+  expect(restored.root("lesson").textContent).toContain(
+    "May I make these supporting edits?",
+  );
   const order = await browser({
     phase: "order",
     workspace: true,
@@ -665,7 +680,8 @@ it("retains the preparation explanation when failure progresses to recovery", as
   const prepare = find(
     app.root("lesson"),
     (element) =>
-      element.tag === "button" && element.textContent === "Prepare this step",
+      element.tag === "button" &&
+      element.textContent === "Yes, make these edits",
   )!;
   await prepare.onclick!();
   const explanation = PHASES.find((phase) => phase.id === "fail")!.preparation!;

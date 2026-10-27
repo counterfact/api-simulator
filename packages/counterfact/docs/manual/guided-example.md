@@ -65,7 +65,8 @@ The twelve steps build on the code you have already written:
 | 12   | A focused `restockDarkRoast` scenario                                    | A reusable setup changes one product while preserving other inventory and order IDs.  |
 
 Each phase explains the Counterfact facility being used and names the file to edit.
-**Prepare this step** adds the supporting code described above the button. Review
+Milo, a coffee-shop owner and your Counterfact tutor, proposes the supporting
+edits before making them. Click **Yes, make these edits** to approve his proposal. Review
 that change in your IDE, then make the small edit supplied under **Show code**.
 You keep your existing file and change only the indicated return statement, branch,
 method body, or assignment. Counterfact prepares the surrounding structure and
@@ -74,11 +75,12 @@ path** help you find the file. File names in the prose also open in VSCode.
 Counterfact formats the supplied walkthrough infrastructure; the generator creates
 the initial product and order stubs, context, and default scenario file.
 
-New instructions and code hints appear when they become relevant. Earlier
-instructions stay visible. **Continue** moves between completed lessons;
-**Back** revisits them. **Preview next lesson** shows later instructions and the
-first missing prerequisite, with a return link. Previewing never applies code or
-marks an exercise complete.
+The guide is a conversation with Milo. You take turns: he explains what he wants
+to edit, you approve it, then he directs your own small edit and an API experiment.
+After the result is verified, reply **I’m ready. What’s next?** to continue.
+Earlier turns stay visible so you can scroll back without changing the current
+exercise. Your approvals, quiz replies, and Milo’s explanations survive a reload
+within the same running API session. There are no Back or preview controls.
 
 ## Follow changes in your IDE
 
@@ -102,7 +104,7 @@ Saved-file detection runs in the background without requesting new products.
 Checks call snapshots of your saved functions with fresh, isolated context, so
 they do not consume the running shop’s inventory or its order IDs. Missing methods
 and incomplete implementations produce guidance. Fix the code and save again, or
-click **Check progress** to retry.
+click **Check my work** to retry.
 
 A passing saved-file check is only part of an exercise. Follow the instructions
 to refresh products, place orders, or run a command against the live API. Handler
@@ -150,7 +152,7 @@ Decaf setter or automatic reset hidden in the product handler.
 ## Revisit or restart
 
 Browser reloads preserve the current lesson, completed phases, and cart within
-the same API session. Back and preview navigation preserve your source files and
+the same API session. Scrolling through earlier conversation turns preserves your source files and
 running state. If a revisited exercise needs inventory, use the REPL or your
 named scenario to establish that state explicitly; navigation never resets it.
 

@@ -68,6 +68,12 @@ export function runCoffeeShopWalkthrough(
     lastCatalog = "",
     orderIds: number[] = [],
     rejectionSeen = false;
+  type Turn = { phaseId: string; role: "you" | "tutor"; text: string };
+  let turns: Turn[] = [];
+  function record(role: Turn["role"], text: string) {
+    turns.push({ phaseId: phase().id, role, text });
+    save();
+  }
   const traces: Record<string, unknown> = {};
   const reported = new Set<string>();
   function save() {
@@ -80,6 +86,8 @@ export function runCoffeeShopWalkthrough(
           sessionId: info.sessionId,
           index,
           completed: [...completed],
+          turns,
+          quizWrong,
           cart: [...cart],
           observation,
           failedItems,
@@ -185,7 +193,7 @@ export function runCoffeeShopWalkthrough(
           },
         );
         if (!result.ok) throw new Error(result.message);
-        completionMessage += " " + result.message;
+        // Git is supporting infrastructure; keep the conversation about API behavior.
         checkpointRetry = undefined;
       } catch (error) {
         message =
@@ -199,6 +207,7 @@ export function runCoffeeShopWalkthrough(
       }
     }
     message = completionMessage;
+    record("tutor", "That worked. " + completionMessage);
     completed.add(phase().id);
     report("phase_completed");
     save();
@@ -231,6 +240,7 @@ export function runCoffeeShopWalkthrough(
     rejectionSeen = false;
     save();
     renderLesson();
+    byId("current-turn")?.scrollIntoView?.({ block: "start" });
     void checkFiles();
   }
   function renderQuestion() {
@@ -261,7 +271,9 @@ export function runCoffeeShopWalkthrough(
       panel.append(
         feedback,
         button("Try again", () => {
+          record("you", "Let me try again.");
           quizWrong = false;
+          save();
           renderLesson();
         }),
       );
@@ -272,8 +284,16 @@ export function runCoffeeShopWalkthrough(
       ] as const) {
         panel.append(
           button(label, () => {
+            record("you", label);
             if (answer !== reduced) {
               quizWrong = true;
+              record(
+                "tutor",
+                reduced
+                  ? "Stock decreased because your handler already subtracts the purchased quantities."
+                  : "The order succeeded, but stock stayed the same. A confirmation does not change context. The handler must explicitly subtract the purchased quantities.",
+              );
+              save();
               renderLesson();
             } else finish();
           }),
@@ -282,116 +302,140 @@ export function runCoffeeShopWalkthrough(
     }
     byId("lesson").append(panel);
   }
+  function bubble(role: "you" | "tutor", text = "") {
+    const result = node(
+      "article",
+      "",
+      "chat-turn " + (role === "you" ? "learner-turn" : "tutor-turn"),
+    );
+    result.append(
+      node(
+        "div",
+        role === "you" ? "You" : "Milo · your Counterfact tutor",
+        "speaker",
+      ),
+    );
+    if (text) result.append(fileText("p", text));
+    return result;
+  }
   function renderLesson() {
     const current = phase(),
-      preview = missing(),
       lesson = byId("lesson");
     const openHints = new Set(
       Array.from(
         lesson.querySelectorAll<HTMLDetailsElement>("details[open]"),
       ).map((hint) => hint.dataset.hint),
     );
-    lesson.replaceChildren(
+    lesson.replaceChildren();
+    const welcome = bubble("tutor");
+    welcome.append(
+      node("h2", "Hi, I’m Milo."),
       node(
-        "div",
-        "Step " +
-          current.lesson +
-          " of " +
-          Math.max(...phases.map((candidate) => candidate.lesson)),
-        "eyebrow",
+        "p",
+        "I run this little coffee shop. Let’s build its local API together, one behavior at a time.",
       ),
-      node("h2", current.title),
+      node(
+        "p",
+        "We’ll take turns. I’ll explain the supporting edits I want to make, and you’ll click ‘Yes, make these edits’ to approve them. Then I’ll guide you through a small edit of your own in your editor. You’ll try it in the shop or terminal, and we’ll compare what actually happened before moving on.",
+      ),
+      node(
+        "p",
+        "Open this demo folder in your IDE. Its Git history makes it easier to see what changed in each part of our conversation: the generated starting point is committed, our current edits appear in Source Control, and I save a local commit when we finish each lesson. Git is just our way to inspect the changes.",
+      ),
     );
-    if (preview) {
-      const banner = node(
-        "div",
-        "Preview: complete “" +
-          preview.title +
-          "” before trying this exercise.",
-        "notice",
-      );
-      banner.append(
-        button("Return to required edit", () => move(phases.indexOf(preview))),
-      );
-      lesson.append(banner);
-    }
-    if (info?.workspace?.enabled) {
-      lesson.append(
-        node(
-          "p",
-          "This demo has its own local Git history. Review the current changes in your IDE’s Source Control view. Each completed step is committed automatically; nothing is pushed.",
-          "notice",
-        ),
-      );
-    }
-    for (const preparable of phases.filter(
-      (candidate) =>
-        candidate.lesson === current.lesson &&
-        phases.indexOf(candidate) <= index &&
-        candidate.preparation,
-    )) {
-      const prepared = info?.workspace?.prepared.includes(preparable.id);
-      const panel = node("section", "", "notice");
-      panel.append(
-        node("p", "Counterfact prepares: " + preparable.preparation),
-      );
-      if (info?.workspace?.enabled && !preview) {
-        const prepare = button(
-          prepared ? "Step prepared" : "Prepare this step",
-          async () => {
-            prepare.disabled = true;
+    lesson.append(welcome);
+    for (const [phaseIndex, revealed] of phases.entries()) {
+      if (phaseIndex > index) break;
+      const active = revealed.id === current.id;
+      const prepared = !!info?.workspace?.prepared.includes(revealed.id);
+      const finished = completed.has(revealed.id);
+      const heading = bubble("tutor");
+      if (active) heading.id = "current-turn";
+      heading.append(node("div", "Lesson " + revealed.lesson, "eyebrow"));
+      const explanation = fileText("p", revealed.explanation);
+      if (revealed.id === "explore") {
+        const link = node("a", origin) as HTMLAnchorElement;
+        link.href = origin;
+        explanation.append(link, node("span", "."));
+      }
+      heading.append(node("h3", revealed.title), explanation);
+      lesson.append(heading);
+      if (revealed.preparation) {
+        const proposal = bubble(
+          "tutor",
+          "Here’s what I’d like to change: " + revealed.preparation,
+        );
+        proposal.append(
+          node(
+            "p",
+            "May I make these supporting edits? You’ll be able to review the diff in your IDE before making your part of the change.",
+          ),
+        );
+        if (
+          active &&
+          !prepared &&
+          !finished &&
+          info?.workspace?.enabled &&
+          !missing()
+        ) {
+          const approve = button("Yes, make these edits", async () => {
+            approve.disabled = true;
+            record("you", "Yes, make these edits.");
             try {
               const { value: result } = await json<{
                 ok: boolean;
                 message: string;
               }>("/tutorial-workspace", {
                 action: "prepare",
-                phaseId: preparable.id,
+                phaseId: revealed.id,
                 sessionId: info.sessionId,
               });
-              message = result.message;
               if (result.ok) {
-                info.workspace!.prepared.push(preparable.id);
+                info.workspace!.prepared.push(revealed.id);
                 checkedPhase = "";
-              }
+                record(
+                  "tutor",
+                  "I’ve added the supporting code. Review the changes in your IDE. Now it’s your turn.",
+                );
+              } else
+                record(
+                  "tutor",
+                  "I couldn’t apply that edit: " + result.message,
+                );
             } catch (error) {
-              message =
-                "Could not prepare this step: " +
-                (error instanceof Error ? error.message : String(error));
+              record(
+                "tutor",
+                "I couldn’t apply that edit: " +
+                  (error instanceof Error ? error.message : String(error)),
+              );
             }
             renderLesson();
             await checkFiles();
-          },
-        );
-        prepare.disabled =
-          !!prepared ||
-          completed.has(preparable.id) ||
-          preparable.id !== current.id;
-        panel.append(prepare);
-      } else if (!preview)
-        panel.append(
-          node(
-            "p",
-            "This project predates guided preparation. Start a new walkthrough to use prepared edits and local Git checkpoints; your existing files have been preserved.",
-          ),
-        );
-      lesson.append(panel);
-    }
-    if (checkpointRetry)
-      lesson.append(button("Retry Git checkpoint", checkpointRetry));
-    for (const revealed of phases.filter(
-      (candidate) =>
-        candidate.lesson === current.lesson &&
-        phases.indexOf(candidate) <= index,
-    )) {
-      const explanation = fileText("p", revealed.explanation);
-      explanation.className = "lesson-explanation";
-      if (revealed.id === "explore") {
-        const link = node("a", origin) as HTMLAnchorElement;
-        link.href = origin;
-        explanation.append(link, node("span", "."));
+          });
+          proposal.append(approve);
+        }
+        lesson.append(proposal);
       }
-      lesson.append(explanation, fileText("p", revealed.instruction));
+      const phaseTurns = turns.filter((turn) => turn.phaseId === revealed.id);
+      // The approval exchange precedes the exercise; observations and replies follow it.
+      const approvalEnd = phaseTurns.findIndex(
+        (turn) => turn.role === "tutor" && turn.text.startsWith("I’ve added"),
+      );
+      const before = !revealed.preparation
+        ? []
+        : approvalEnd < 0 && !prepared
+          ? phaseTurns
+          : phaseTurns.slice(0, approvalEnd + 1);
+      for (const turn of before) lesson.append(bubble(turn.role, turn.text));
+      if (
+        revealed.preparation &&
+        !prepared &&
+        !finished &&
+        info?.workspace?.enabled
+      )
+        continue;
+      const exercise = bubble("tutor");
+      exercise.append(fileText("p", revealed.instruction));
       for (const [editIndex, edit] of revealed.edits.entries()) {
         const actions = node("div", "", "file-actions");
         actions.append(
@@ -418,41 +462,51 @@ export function runCoffeeShopWalkthrough(
           fileLink(edit.file, projectPath + "/" + edit.file),
           node("pre", edit.code),
         );
-        lesson.append(actions, hint);
+        exercise.append(actions, hint);
       }
       if (revealed.commands)
-        lesson.append(
+        exercise.append(
           node("p", "In Counterfact’s terminal (⬣>):"),
           node("pre", revealed.commands.join("\n")),
         );
+      lesson.append(exercise);
+      for (const turn of phaseTurns.slice(before.length))
+        lesson.append(bubble(turn.role, turn.text));
+      if (active && current.id === "observe" && !finished) renderQuestion();
+      if (active && finished) {
+        const done = node("p", "✓ Lesson complete", "step-complete");
+        done.id = "step-completion";
+        lesson.append(done);
+        if (index === phases.length - 1) {
+          const goodbye = bubble(
+            "tutor",
+            "We’ve built the shop’s behavior together. Keep experimenting: add another product or a new failure condition. You can scroll back through our conversation whenever you need a reminder.",
+          );
+          goodbye.append(
+            node("p", "To restart, run this from " + restartDirectory + ":"),
+            node(
+              "pre",
+              restartCommand + " --port " + (window.location.port || "3100"),
+            ),
+            node(
+              "p",
+              "Restarting keeps your code and runs startup again. It begins a new walkthrough session; it does not regenerate or overwrite your implementations.",
+            ),
+          );
+          lesson.append(goodbye);
+        }
+      }
     }
-    if (current.id === "observe" && !preview && !completed.has(current.id))
-      renderQuestion();
-    if (completed.has(current.id)) {
-      const done = node("p", "✓ Step complete", "step-complete");
-      done.id = "step-completion";
-      lesson.append(done);
-      if (index === phases.length - 1)
-        lesson.append(
-          node(
-            "p",
-            "Your handlers and context now implement the behavior you observed. Keep using the shop, or stop Counterfact when finished.",
-          ),
-          node("p", "To restart, run this from " + restartDirectory + ":"),
-          node(
-            "pre",
-            restartCommand + " --port " + (window.location.port || "3100"),
-          ),
-          node(
-            "p",
-            "Restarting keeps your code and runs startup again. It begins a new walkthrough session; it does not regenerate or overwrite your implementations.",
-          ),
-        );
-    }
+    if (checkpointRetry)
+      lesson.append(button("Retry Git checkpoint", checkpointRetry));
     (byId("continue") as HTMLButtonElement).hidden =
       !completed.has(current.id) || index === phases.length - 1;
-    (byId("back") as HTMLButtonElement).hidden = index === 0;
-    (byId("skip") as HTMLButtonElement).hidden = index === phases.length - 1;
+    (byId("check-progress") as HTMLButtonElement).hidden = !!(
+      current.preparation &&
+      info?.workspace?.enabled &&
+      !info.workspace.prepared.includes(current.id) &&
+      !completed.has(current.id)
+    );
     renderStatus();
   }
   function renderStatus() {
@@ -755,6 +809,7 @@ export function runCoffeeShopWalkthrough(
             observed.after === observed.before - quantity)
         ) {
           observation = observed;
+          record("tutor", message);
           quizWrong = false;
           renderLesson();
         }
@@ -886,7 +941,7 @@ export function runCoffeeShopWalkthrough(
       renderStatus();
     } catch {
       checkMessage =
-        "Could not check saved files. Check Counterfact’s terminal, then click Check progress to retry.";
+        "Could not check saved files. Check Counterfact’s terminal, then click Check my work to retry.";
       renderStatus();
     }
   }
@@ -900,7 +955,11 @@ export function runCoffeeShopWalkthrough(
     busy = false;
     renderShop();
   };
-  byId("check-progress").onclick = () => checkFiles(true);
+  byId("check-progress").onclick = () => {
+    record("you", "Please check my work.");
+    renderLesson();
+    return checkFiles(true);
+  };
   byId("checkout").onclick = placeOrder;
   byId("empty-cart").onclick = () => {
     cart.clear();
@@ -908,23 +967,10 @@ export function runCoffeeShopWalkthrough(
     renderShop();
   };
   byId("continue").onclick = () => {
-    if (completed.has(phase().id)) move(index + 1);
-  };
-  byId("back").onclick = () => {
-    const lesson = phase().lesson;
-    move(
-      Math.max(
-        0,
-        phases.findIndex((candidate) => candidate.lesson === lesson - 1),
-      ),
-    );
-  };
-  byId("skip").onclick = () => {
-    report("lesson_skipped");
-    const next = phases.findIndex(
-      (candidate) => candidate.lesson > phase().lesson,
-    );
-    if (next >= 0) move(next);
+    if (completed.has(phase().id)) {
+      record("you", "I’m ready. What’s next?");
+      move(index + 1);
+    }
   };
   async function start() {
     const { value: initial } = await json<Info>("/tutorial-info");
@@ -943,6 +989,18 @@ export function runCoffeeShopWalkthrough(
             (id: unknown) => phases.some((candidate) => candidate.id === id),
           ),
         );
+        turns = (Array.isArray(saved.turns) ? saved.turns : []).filter(
+          (turn: Turn) =>
+            turn &&
+            phases.some((candidate) => candidate.id === turn.phaseId) &&
+            ["you", "tutor"].includes(turn.role) &&
+            typeof turn.text === "string",
+        );
+        quizWrong = saved.quizWrong === true;
+        const required = phases.findIndex(
+          (candidate) => !completed.has(candidate.id),
+        );
+        if (required >= 0) index = Math.min(index, required);
         cart = new Map(
           (Array.isArray(saved.cart) ? saved.cart : []).filter(
             (entry: unknown) =>
