@@ -152,7 +152,7 @@ const explanations = [
   "Retrying the same order shows whether the shopper can recover without rebuilding their cart. Keeping the order unchanged isolates the effect of restoring the API.",
   "An API can confirm an order without changing any data. Counterfact runs the behavior you model; this purchase lets you see whether the current handler actually changes stock.",
   "Context is shared state that survives between requests. When the order handler subtracts inventory and the product handler reads it, later requests can reflect an earlier purchase.",
-  "Zero stock is a boundary your frontend needs to handle. Selling out checks whether the same inventory behavior produces a useful sold-out state, rather than just a smaller number.",
+  "The same Counterfact handlers can produce in-stock and sold-out responses. Buying the remaining bags reduces inventory in $.context to zero; the next products request reads that updated value. You are changing the API’s state through requests, so its responses evolve as you use it.",
   "The REPL lets you inspect and change the running API’s state without editing a handler or restarting. Use it to put your frontend into a specific situation, such as stock becoming available again.",
   "Buying from the replenished stock checks that the REPL and HTTP handlers use the same running inventory. The purchase should reduce the quantity you just set.",
   "On your own API, model only the behavior needed for the client workflow you want to explore. Responses, shared context, and the REPL give you control over its inputs, consequences, and edge cases.",
