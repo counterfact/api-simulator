@@ -219,7 +219,16 @@ async function browser(
               (product) => product.id === item.productId,
             )!.stock -= item.quantity;
       }
-      return { status, ok: status < 400, json: async () => value };
+      return {
+        status,
+        ok: status < 400,
+        json: async () => value,
+        headers: new Map([["content-type", "application/json"]]),
+        text: async () =>
+          path === "/orders" && server.orderMode === "malformed"
+            ? "{broken JSON"
+            : JSON.stringify(value),
+      };
     },
   });
   vm.runInContext(page.split("<script>")[1]!.split("</script>")[0]!, context);
@@ -839,5 +848,122 @@ it("records order contents, failure, retry, and the actual response in chronolog
   ).toHaveLength(1);
   expect(
     reloaded.root("lesson").textContent.match(/Retried the order:/g),
+  ).toHaveLength(1);
+});
+
+it("attaches collapsed HTTP exchanges and handler links to their own action turns", async () => {
+  const app = await browser({ phase: "order" });
+  await app.click("refresh-products");
+  const first = find(
+    app.root("lesson"),
+    (element) =>
+      element.tag === "details" && element.className === "http-exchange",
+  )!;
+  expect(first.open).toBe(false);
+  expect(
+    find(first, (element) => element.className === "http-headers")!.open,
+  ).toBe(false);
+  expect(first.textContent).toContain("GET http://localhost:3100/products");
+  expect(find(first, (element) => element.tag === "a")!.href).toContain(
+    "/routes/products.ts",
+  );
+  first.open = true;
+  app.add();
+  expect(
+    find(
+      app.root("lesson"),
+      (element) =>
+        element.tag === "details" && element.className === "http-exchange",
+    )!.open,
+  ).toBe(true);
+  app.server.orderMode = "unavailable";
+  await app.api.placeOrder();
+  app.server.orderMode = "echo";
+  await app.api.placeOrder();
+  const transcript = JSON.parse(
+    app.storage.get("counterfact-coffee-v2")!,
+  ).turns;
+  const failed = transcript.find((turn: { text: string }) =>
+    turn.text.startsWith("Placed an order:"),
+  );
+  const retry = transcript.find((turn: { text: string }) =>
+    turn.text.startsWith("Retried the order:"),
+  );
+  expect(failed.exchanges).toHaveLength(2);
+  expect(failed.exchanges[0]).toMatchObject({
+    method: "POST",
+    handler: "routes/orders.ts",
+    status: 503,
+    requestBody: { items: [{ productId: "house-blend", quantity: 1 }] },
+    responseBody: { error: "Ordering is temporarily unavailable." },
+  });
+  expect(failed.exchanges[1]).toMatchObject({
+    method: "GET",
+    handler: "routes/products.ts",
+    status: 200,
+  });
+  expect(retry.exchanges[0]).toMatchObject({
+    status: 201,
+    responseBody: { orderId: 1 },
+  });
+  const reloaded = await browser({ storage: app.storage });
+  expect(reloaded.root("lesson").textContent).toContain(
+    "HTTP · POST /orders → 503",
+  );
+  expect(reloaded.root("lesson").textContent).toContain(
+    "HTTP · POST /orders → 201",
+  );
+});
+
+it("retains malformed and missing responses without inventing an HTTP result", async () => {
+  const app = await browser({ phase: "order" });
+  app.server.orderMode = "malformed";
+  app.add();
+  await app.api.placeOrder();
+  const malformed = JSON.parse(
+    app.storage.get("counterfact-coffee-v2")!,
+  ).turns.find((turn: { exchanges?: unknown }) => turn.exchanges);
+  expect(malformed.exchanges[0]).toMatchObject({
+    status: 201,
+    responseText: "{broken JSON",
+    error: expect.stringContaining("not valid JSON"),
+  });
+  app.server.orderMode = "offline";
+  await app.api.placeOrder();
+  const attempts = JSON.parse(
+    app.storage.get("counterfact-coffee-v2")!,
+  ).turns.filter((turn: { exchanges?: unknown }) => turn.exchanges);
+  expect(attempts[1].exchanges[0].status).toBeUndefined();
+  expect(attempts[1].exchanges[0].error).toContain("No confirmation");
+  expect(app.root("lesson").textContent).toContain(
+    "No HTTP response was recorded",
+  );
+});
+
+it("keeps each refresh snapshot immutable and marks an interrupted exchange on reload", async () => {
+  const app = await browser({ phase: "order" });
+  await app.click("refresh-products");
+  app.server.products[0]!.stock = 2;
+  await app.click("refresh-products");
+  const saved = JSON.parse(app.storage.get("counterfact-coffee-v2")!);
+  const refreshes = saved.turns.filter(
+    (turn: { text: string }) => turn.text === "Refreshed products.",
+  );
+  expect(refreshes[0].exchanges[0].responseBody[0].stock).toBe(5);
+  expect(refreshes[1].exchanges[0].responseBody[0].stock).toBe(2);
+  refreshes[1].exchanges[0].pending = true;
+  delete refreshes[1].exchanges[0].status;
+  delete refreshes[1].exchanges[0].responseBody;
+  delete refreshes[1].exchanges[0].responseText;
+  app.storage.set("counterfact-coffee-v2", JSON.stringify(saved));
+  const reloaded = await browser({ storage: app.storage });
+  expect(reloaded.root("lesson").textContent).toContain(
+    "The page reloaded before a response was recorded",
+  );
+  expect(reloaded.root("lesson").textContent).toContain(
+    "HTTP · GET /products → no response",
+  );
+  expect(
+    reloaded.calls.filter((call) => call.path === "/products"),
   ).toHaveLength(1);
 });

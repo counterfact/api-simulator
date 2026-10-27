@@ -74,21 +74,40 @@ export function runCoffeeShopWalkthrough(
     lastCatalog = "",
     orderIds: number[] = [],
     rejectionSeen = false;
+  type HttpExchange = {
+    id: string;
+    method: "GET" | "POST";
+    url: string;
+    handler: string;
+    requestHeaders: Record<string, string>;
+    requestBody?: unknown;
+    status?: number;
+    responseHeaders?: Record<string, string>;
+    responseBody?: unknown;
+    responseText?: string;
+    pending: boolean;
+    error?: string;
+    reason?: string;
+  };
   type Turn = {
     phaseId: string;
     role: "you" | "tutor";
     text: string;
     files?: FileChange[];
+    exchanges?: HttpExchange[];
   };
   let seenChanges = new Set<number>();
   let turns: Turn[] = [];
   function record(role: Turn["role"], text: string) {
-    turns.push({ phaseId: phase().id, role, text });
+    const turn: Turn = { phaseId: phase().id, role, text };
+    turns.push(turn);
     save();
+    return turn;
   }
   function uiAction(text: string) {
-    record("you", text);
+    const turn = record("you", text);
     renderLesson();
+    return turn;
   }
   function describeItems(items: Item[]) {
     return items
@@ -159,9 +178,36 @@ export function runCoffeeShopWalkthrough(
       reported.delete(key),
     );
   }
-  async function json<T = unknown>(path: string, body?: unknown) {
+  async function json<T = unknown>(
+    path: string,
+    body?: unknown,
+    action?: Turn,
+    reason?: string,
+  ) {
     const controller = new AbortController(),
       timer = setTimeout(() => controller.abort(), 4000);
+    const shopRequest = path === "/products" || path === "/orders";
+    const snapshot = (value: unknown) =>
+      value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+    let exchange: HttpExchange | undefined;
+    if (action && shopRequest) {
+      action.exchanges ??= [];
+      exchange = {
+        id: turns.indexOf(action) + ":" + action.exchanges.length,
+        method: body === undefined ? "GET" : "POST",
+        url: origin + path,
+        handler:
+          path === "/products" ? "routes/products.ts" : "routes/orders.ts",
+        requestHeaders:
+          body === undefined ? {} : { "Content-Type": "application/json" },
+        ...(body === undefined ? {} : { requestBody: snapshot(body) }),
+        pending: true,
+        ...(reason ? { reason } : {}),
+      };
+      action.exchanges.push(exchange);
+      save();
+      renderLesson();
+    }
     try {
       const response = await fetch(path, {
         signal: controller.signal,
@@ -173,8 +219,31 @@ export function runCoffeeShopWalkthrough(
               body: JSON.stringify(body),
             }),
       });
-      const value = (await response.json()) as T;
-      if (path === "/products" || path === "/orders") {
+      if (exchange) {
+        exchange.status = response.status;
+        exchange.responseHeaders = {};
+        response.headers?.forEach((value, name) => {
+          exchange!.responseHeaders![name] = value;
+        });
+      }
+      let value: T;
+      if (shopRequest && typeof response.text === "function") {
+        const raw = await response.text();
+        if (exchange) {
+          exchange.responseBody = raw;
+          exchange.responseText = raw;
+        }
+        try {
+          value = JSON.parse(raw) as T;
+        } catch (error) {
+          throw new Error(
+            "The API response is not valid JSON. Inspect the recorded HTTP exchange before retrying.",
+            { cause: error },
+          );
+        }
+      } else value = (await response.json()) as T;
+      if (exchange) exchange.responseBody = snapshot(value);
+      if (shopRequest) {
         traces[path] = {
           method: body === undefined ? "GET" : "POST",
           url: origin + path,
@@ -185,8 +254,17 @@ export function runCoffeeShopWalkthrough(
         byId("request-trace").textContent = JSON.stringify(traces, null, 2);
       }
       return { response, value };
+    } catch (error) {
+      if (exchange)
+        exchange.error = error instanceof Error ? error.message : String(error);
+      throw error;
     } finally {
       clearTimeout(timer);
+      if (exchange) {
+        exchange.pending = false;
+        save();
+        renderLesson();
+      }
     }
   }
   function fileLink(file: string, label = file) {
@@ -460,18 +538,111 @@ export function runCoffeeShopWalkthrough(
     details.append(pre);
     return details;
   }
-  function turnBubble(turn: Turn) {
+  function renderExchange(exchange: HttpExchange, openHints: Set<string>) {
+    const details = node("details", "", "http-exchange") as HTMLDetailsElement;
+    details.dataset.hint = "http:" + exchange.id;
+    details.open = openHints.has(details.dataset.hint);
+    const path = new URL(exchange.url).pathname;
+    details.append(
+      node(
+        "summary",
+        "HTTP · " +
+          exchange.method +
+          " " +
+          path +
+          " → " +
+          (exchange.pending ? "waiting" : (exchange.status ?? "no response")),
+      ),
+    );
+    if (exchange.reason) details.append(node("p", exchange.reason));
+    details.append(fileLink(exchange.handler, "Handler: " + exchange.handler));
+    const headers = (values: Record<string, string> = {}) =>
+      Object.entries(values)
+        .map(([name, value]) => name + ": " + value)
+        .join("\n");
+    const body = (value: unknown) =>
+      value === undefined
+        ? "(no body)"
+        : typeof value === "string"
+          ? value
+          : JSON.stringify(value, null, 2);
+    details.append(
+      node("h4", "Request"),
+      node(
+        "pre",
+        exchange.method +
+          " " +
+          exchange.url +
+          "\n" +
+          headers(exchange.requestHeaders) +
+          "\n\n" +
+          body(exchange.requestBody),
+      ),
+    );
+    details.append(
+      node(
+        "p",
+        "Request headers shown are those explicitly set by the shop.",
+        "http-note",
+      ),
+    );
+    details.append(node("h4", "Response"));
+    if (exchange.status !== undefined)
+      details.append(
+        node(
+          "pre",
+          "HTTP " +
+            exchange.status +
+            "\n\n" +
+            (exchange.responseText ??
+              (exchange.responseBody === undefined
+                ? "(response body not recorded)"
+                : body(exchange.responseBody))),
+        ),
+      );
+    else
+      details.append(
+        node(
+          "p",
+          exchange.pending
+            ? "Waiting for the API response…"
+            : "No HTTP response was recorded. The server may still have received the request.",
+        ),
+      );
+    if (
+      exchange.responseHeaders &&
+      Object.keys(exchange.responseHeaders).length
+    ) {
+      const responseHeaders = node(
+        "details",
+        "",
+        "http-headers",
+      ) as HTMLDetailsElement;
+      responseHeaders.dataset.hint = "http-headers:" + exchange.id;
+      responseHeaders.open = openHints.has(responseHeaders.dataset.hint);
+      responseHeaders.append(
+        node("summary", "Response headers"),
+        node("pre", headers(exchange.responseHeaders)),
+      );
+      details.append(responseHeaders);
+    }
+    if (exchange.error) details.append(node("p", exchange.error, "error"));
+    return details;
+  }
+  function turnBubble(turn: Turn, openHints: Set<string>) {
     const result = bubble(turn.role, turn.text);
     for (const file of turn.files ?? []) result.append(renderDiff(file));
+    for (const exchange of turn.exchanges ?? [])
+      result.append(renderExchange(exchange, openHints));
     return result;
   }
   function renderLesson() {
     const current = phase(),
       lesson = byId("lesson");
     const openHints = new Set(
-      Array.from(
-        lesson.querySelectorAll<HTMLDetailsElement>("details[open]"),
-      ).map((hint) => hint.dataset.hint),
+      Array.from(lesson.querySelectorAll<HTMLDetailsElement>("details[open]"))
+        .map((hint) => hint.dataset.hint)
+        .filter((hint): hint is string => typeof hint === "string"),
     );
     lesson.replaceChildren();
     const welcome = bubble("tutor");
@@ -581,7 +752,7 @@ export function runCoffeeShopWalkthrough(
         : preparationEnd < 0 && !prepared
           ? phaseTurns
           : phaseTurns.slice(0, preparationEnd + 1);
-      for (const turn of before) lesson.append(turnBubble(turn));
+      for (const turn of before) lesson.append(turnBubble(turn, openHints));
       if (
         revealed.preparation &&
         !prepared &&
@@ -626,7 +797,7 @@ export function runCoffeeShopWalkthrough(
         );
       lesson.append(exercise);
       for (const turn of phaseTurns.slice(before.length))
-        lesson.append(turnBubble(turn));
+        lesson.append(turnBubble(turn, openHints));
       if (active && current.id === "observe" && !finished) renderQuestion();
       if (active && finished) {
         const done = node("p", "✓ Lesson complete", "step-complete");
@@ -865,9 +1036,16 @@ export function runCoffeeShopWalkthrough(
     save();
     renderStatus();
   }
-  async function refreshProducts(source = "manual") {
+  async function refreshProducts(source = "manual", action?: Turn) {
     try {
-      const { response, value } = await json("/products");
+      const { response, value } = await json(
+        "/products",
+        undefined,
+        action,
+        source === "order"
+          ? "The shop refreshes products after the order to show the current API state."
+          : undefined,
+      );
       if (!response.ok || !validProducts(value))
         throw new Error(
           "The products response is invalid or contains duplicate IDs. Inspect it below, fix the handler or refresh again.",
@@ -926,7 +1104,7 @@ export function runCoffeeShopWalkthrough(
         productId,
         quantity,
       }));
-    uiAction(
+    const orderAction = uiAction(
       (failedItems ? "Retried the order: " : "Placed an order: ") +
         describeItems(items) +
         ".",
@@ -939,7 +1117,7 @@ export function runCoffeeShopWalkthrough(
         items?: Item[];
         error?: string;
         shortages?: { requested: number; available: number }[];
-      }>("/orders", { items });
+      }>("/orders", { items }, orderAction);
       const original = failedItems;
       record(
         "tutor",
@@ -968,7 +1146,7 @@ export function runCoffeeShopWalkthrough(
         byId("shop-notice").textContent =
           (value?.error ?? "Order rejected") + " Your cart has been kept.";
       }
-      await refreshProducts("order");
+      await refreshProducts("order", orderAction);
       if (phase().id !== currentId || missing()) return;
       const after = inventoryOf();
       const accepted = response.status === 201 && equal(value?.items, items);
@@ -1176,10 +1354,10 @@ export function runCoffeeShopWalkthrough(
   byId("refresh-products").onclick = async () => {
     if (busy) return;
     busy = true;
-    uiAction("Refreshed products.");
+    const action = uiAction("Refreshed products.");
     renderShop();
     await checkFiles();
-    await refreshProducts();
+    await refreshProducts("manual", action);
     await checkFiles(true);
     busy = false;
     renderShop();
@@ -1237,6 +1415,14 @@ export function runCoffeeShopWalkthrough(
             ["you", "tutor"].includes(turn.role) &&
             typeof turn.text === "string",
         );
+        for (const turn of turns)
+          for (const exchange of turn.exchanges ?? []) {
+            if (exchange.pending) {
+              exchange.pending = false;
+              exchange.error =
+                "The page reloaded before a response was recorded. Inspect the API state before retrying.";
+            }
+          }
         seenChanges = new Set(
           Array.isArray(saved.seenChanges)
             ? saved.seenChanges.filter((id: unknown) =>

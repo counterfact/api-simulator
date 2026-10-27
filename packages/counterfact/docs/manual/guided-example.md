@@ -86,6 +86,13 @@ Milo records the actual refresh result or order response after your action, so
 you can follow what happened in order. These turns survive reloads alongside
 your code diffs. There are no Back or preview controls.
 
+Expand the **HTTP** detail under a refresh, order, or retry turn to inspect that
+action’s request and response. The summary shows the method, path, and response
+status. Inside are the request URL, headers set by the shop, request body, and
+the actual response body. Response headers have their own disclosure. The **Handler** link opens the file that
+handles the request. Orders also include the product refresh that follows them.
+Earlier exchanges stay attached to their own actions when new requests arrive.
+
 ## Follow changes in the conversation
 
 When you approve Milo’s proposed edit, his next chat turn shows a diff of the
