@@ -82,21 +82,21 @@ Earlier turns stay visible so you can scroll back without changing the current
 exercise. Your approvals, quiz replies, and Milo’s explanations survive a reload
 within the same running API session. There are no Back or preview controls.
 
-## Follow changes in your IDE
+## Follow changes in the conversation
 
-Git must be installed. Your new demo has its own local Git repository, with a
-commit of the generated starting point. Each completed step creates another
-commit, including steps that only use HTTP requests or the REPL. Open the demo
-folder in your IDE and use its Source Control view to inspect the current step’s
-uncommitted changes. Both prepared code and your edits stay visible until that
-step completes.
+When you approve Milo’s proposed edit, his next chat turn shows a diff of the
+files he changed. Green lines with `+` were added; red lines with `-` were removed.
+Each diff names its file and can be expanded or collapsed.
 
-These commits stay local. Counterfact uses a walkthrough identity for its Git
-commands without changing your personal Git settings. A failed commit leaves
-your work in place and offers **Retry Git checkpoint** before you continue.
-Preparation remembers what it has added across reloads and refuses to replace
-conflicting code. Existing demos keep their files and history; start a new demo
-to use guided preparation and automatic checkpoints.
+Make your part of the change in your editor and save. A **Your saved changes**
+turn appears automatically with your diff, even if the edit is incomplete or has
+a syntax error. You can compare both sides of the work directly in the
+conversation. These diffs stay in the history when you continue or reload.
+
+The walkthrough records changes to the product handler, order handler, shared
+context, and scenario file. It keeps a local baseline and change journal; Git
+is not required. Existing repositories are left alone. File changes and lesson
+completion are separate: seeing a diff does not mark an exercise complete.
 
 ## Save, exercise, and compare
 

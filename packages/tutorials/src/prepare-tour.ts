@@ -7,7 +7,7 @@ import { format } from "prettier";
 import { coffeeShopFiles, SHOP_DOCUMENT } from "./coffee-shop/coffee-shop.js";
 
 import {
-  initializeWalkthroughRepository,
+  initializeWalkthroughWorkspace,
   walkthroughWorkspace,
 } from "./coffee-shop/coffee-shop-workspace.js";
 
@@ -44,7 +44,7 @@ export async function prepareTour(
       await format(contents, { parser: "typescript" }),
     );
   }
-  await initializeWalkthroughRepository(destination);
+  await initializeWalkthroughWorkspace(destination);
   return {
     source: join(destination, "openapi.json"),
     destination,
@@ -52,7 +52,7 @@ export async function prepareTour(
   };
 }
 
-/** Commit the normal generator output before inviting the learner to edit it. */
+/** Snapshot normal generator output before inviting the learner to edit it. */
 export async function finalizeTour(destination: string): Promise<void> {
   await walkthroughWorkspace(destination);
 }

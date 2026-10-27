@@ -1,5 +1,3 @@
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import { expect, it } from "@jest/globals";
 import {
   CodeGenerator,
@@ -9,7 +7,10 @@ import {
 import ts from "typescript";
 import { usingTemporaryFiles } from "using-temporary-files";
 import { prepareTour } from "../../src/prepare-tour.js";
-import { checkWalkthroughSave } from "../../src/coffee-shop/coffee-shop-checks.js";
+import {
+  checkWalkthroughSave,
+  walkthroughInfo,
+} from "../../src/coffee-shop/coffee-shop-checks.js";
 import {
   checkpointWalkthroughStep as checkpoint,
   prepareWalkthroughStep as prepare,
@@ -17,9 +18,6 @@ import {
 } from "../../src/coffee-shop/coffee-shop-workspace.js";
 import { PHASES } from "../../src/coffee-shop/coffee-shop-lessons.js";
 
-const exec = promisify(execFile);
-const git = async (root: string, ...args: string[]) =>
-  (await exec("git", args, { cwd: root })).stdout.trim();
 async function generate(root: string, source: string) {
   const repository = new Repository();
   await new CodeGenerator(source, root, { routes: true, types: true }).generate(
@@ -30,21 +28,29 @@ async function generate(root: string, source: string) {
   await scenarios.generate();
 }
 
-it("prepares focused changes, preserves learner edits, and records all twelve lessons in a private local history", async () => {
+it("prepares focused changes, preserves learner edits, and records all twelve lessons in a attributed file history without Git", async () => {
   await usingTemporaryFiles(async ($) => {
     const tour = await prepareTour($.path("."), "demo");
     await generate(tour.destination, tour.source);
     const root = tour.destination;
     await workspace(root);
-    expect(await git(root, "log", "--format=%s")).toBe(
-      "Start with Counterfact generated stubs",
-    );
-    expect(await git(root, "status", "--porcelain")).toBe("");
+    expect((await workspace(root)).changes).toEqual([]);
+    await expect($.read("demo/.git/HEAD")).rejects.toMatchObject({
+      code: "ENOENT",
+    });
     await expect(prepare(root, "context")).rejects.toThrow("preceding lesson");
     await checkpoint(root, "explore");
     await prepare(root, "catalog");
     expect(await $.read("demo/routes/products.ts")).toContain(".random()");
-    expect(await git(root, "diff", "--name-only")).toBe("routes/products.ts");
+    const prepared = (await workspace(root)).changes!;
+    expect(prepared).toHaveLength(1);
+    expect(prepared[0]).toMatchObject({
+      actor: "milo",
+      phaseId: "catalog",
+      files: [{ file: "routes/products.ts" }],
+    });
+    expect(prepared[0]!.files[0]!.before).not.toContain("const catalog");
+    expect(prepared[0]!.files[0]!.after).toContain("const catalog");
     // Apply exactly the small edits displayed by each lesson, leaving imports and other code alone.
     const replace = async (file: string, before: string, after: string) => {
       const text = await $.read("demo/" + file);
@@ -62,12 +68,20 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     await prepare(root, "catalog");
     expect(await $.read("demo/routes/products.ts")).toContain("Keep my note");
     expect((await checkWalkthroughSave(root, "catalog")).ok).toBe(true);
-    await $.add("demo/notes.md", "my unrelated staged notes");
-    await git(root, "add", "notes.md");
+    await $.add(
+      "demo/notes.md",
+      "unrelated notes stay outside the tutorial history",
+    );
     await checkpoint(root, "catalog");
-    expect(await git(root, "diff", "--cached", "--name-only")).toBe("notes.md");
-    await git(root, "reset", "HEAD", "--", "notes.md");
-    await $.remove("demo/notes.md");
+    const observed = (await workspace(root)).changes!;
+    expect(observed).toHaveLength(2);
+    expect(observed[1]).toMatchObject({
+      actor: "you",
+      files: [{ file: "routes/products.ts" }],
+    });
+    expect(observed[1]!.files[0]!.before).toContain(".random()");
+    expect(observed[1]!.files[0]!.after).toContain(".json(catalog)");
+    expect((await workspace(root)).changes).toHaveLength(2);
     await replace(
       "routes/orders.ts",
       "return $.response.status(201).random();",
@@ -160,11 +174,12 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     expect((await checkWalkthroughSave(root, "scenario")).ok).toBe(true);
     await checkpoint(root, "scenario");
     await checkpoint(root, "scenario");
-    expect((await git(root, "log", "--format=%s")).split("\n")).toHaveLength(
-      13,
+    expect((await workspace(root)).checkpoints).toEqual(
+      Array.from({ length: 12 }, (_, i) => i + 1),
     );
-    expect(await git(root, "status", "--porcelain")).toBe("");
-    expect(await git(root, "remote")).toBe("");
+    await expect($.read("demo/.git/HEAD")).rejects.toMatchObject({
+      code: "ENOENT",
+    });
     // Compile the final exercises against the real generated schema/handler types.
     const program = ts.createProgram(
       [
@@ -173,6 +188,7 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
         $.path("demo/routes/orders.ts"),
         $.path("demo/scenarios/index.ts"),
         $.path("demo/routes/tutorial-workspace.ts"),
+        $.path("demo/routes/tutorial-info.ts"),
       ],
       {
         noEmit: true,
@@ -202,15 +218,11 @@ it("never touches an existing project or overwrites conflicting learner code", a
   await usingTemporaryFiles(async ($) => {
     expect((await workspace($.path("."))).enabled).toBe(false);
     await expect(prepare($.path("."), "catalog")).rejects.toThrow("baseline");
-    await git($.path("."), "init");
-    await $.add("parent-notes.md", "keep the parent repository intact");
-    await git($.path("."), "add", "parent-notes.md");
+    await $.add(".git/index", "parent index must not change");
     const tour = await prepareTour($.path("."), "demo");
     await generate(tour.destination, tour.source);
     await workspace(tour.destination);
-    expect(await git($.path("."), "diff", "--cached", "--name-only")).toBe(
-      "parent-notes.md",
-    );
+    expect(await $.read(".git/index")).toBe("parent index must not change");
     await checkpoint(tour.destination, "explore");
     await $.add(
       "demo/routes/products.ts",
@@ -221,5 +233,69 @@ it("never touches an existing project or overwrites conflicting learner code", a
     );
     expect(await $.read("demo/routes/products.ts")).toContain("my own catalog");
     expect((await workspace(tour.destination)).prepared).toEqual([]);
+  });
+});
+
+it("records learner edits before tutor edits, including deletions and reversions", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const tour = await prepareTour($.path("."), "demo");
+    await generate(tour.destination, tour.source);
+    await workspace(tour.destination);
+    await checkpoint(tour.destination, "explore");
+    const original = await $.read("demo/routes/orders.ts");
+    await $.add("demo/routes/orders.ts", original + "\n// My experiment\n");
+    await prepare(tour.destination, "catalog");
+    const changes = (await workspace(tour.destination)).changes!;
+    expect(changes.map((change) => change.actor)).toEqual(["you", "milo"]);
+    expect(
+      (await walkthroughInfo(tour.destination, {})).workspace.changes,
+    ).toEqual([]);
+    expect(
+      (await walkthroughInfo(tour.destination, {}, true)).workspace.changes,
+    ).toHaveLength(2);
+    await $.remove("demo/routes/orders.ts");
+    const deleted = (await workspace(tour.destination)).changes!.at(-1)!;
+    expect(deleted).toMatchObject({
+      actor: "you",
+      files: [{ file: "routes/orders.ts", after: "" }],
+    });
+    await $.add("demo/routes/orders.ts", original);
+    const restored = (await workspace(tour.destination)).changes!.at(-1)!;
+    expect(restored.files[0]).toEqual({
+      file: "routes/orders.ts",
+      before: "",
+      after: original,
+    });
+    expect(
+      (await workspace(tour.destination)).changes!.map((change) => change.id),
+    ).toEqual([1, 2, 3, 4]);
+  });
+});
+
+it("imports earlier progress without changing the existing repository", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const tour = await prepareTour($.path("."), "demo");
+    await generate(tour.destination, tour.source);
+    await $.remove("demo/.counterfact-walkthrough-state.json");
+    await $.add("demo/.git/HEAD", "ref: refs/heads/keep-my-history");
+    await $.add(
+      "demo/.git/counterfact-walkthrough.json",
+      JSON.stringify({
+        prepared: ["catalog"],
+        checkpoints: [1],
+        baseline: true,
+      }),
+    );
+    expect(await workspace(tour.destination)).toMatchObject({
+      prepared: ["catalog"],
+      checkpoints: [1],
+      changes: [],
+    });
+    expect(await $.read("demo/.git/HEAD")).toBe(
+      "ref: refs/heads/keep-my-history",
+    );
+    expect(
+      JSON.parse(await $.read("demo/.git/counterfact-walkthrough.json")),
+    ).toMatchObject({ prepared: ["catalog"], checkpoints: [1] });
   });
 });

@@ -1,8 +1,6 @@
 /* eslint-disable security/detect-non-literal-fs-filename -- Only fixed lesson paths inside an explicitly created demo are editable. */
-import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { promisify } from "node:util";
 import { format } from "prettier";
 import ts from "typescript";
 import {
@@ -16,10 +14,28 @@ import {
   STOCK_METHODS,
 } from "./coffee-shop-lessons.js";
 
-const exec = promisify(execFile);
 const marker = ".counterfact-walkthrough.json";
-const statePath = ".git/counterfact-walkthrough.json";
-type State = { prepared: string[]; checkpoints: number[]; baseline: boolean };
+const statePath = ".counterfact-walkthrough-state.json";
+export type FileChange = { file: string; before: string; after: string };
+export type EditEvent = {
+  id: number;
+  actor: "milo" | "you";
+  phaseId?: string;
+  files: FileChange[];
+};
+const lessonFiles = [
+  "routes/products.ts",
+  "routes/orders.ts",
+  "routes/_.context.ts",
+  "scenarios/index.ts",
+];
+type State = {
+  prepared: string[];
+  checkpoints: number[];
+  baseline: boolean;
+  snapshots: Record<string, string>;
+  changes: EditEvent[];
+};
 const queues = new Map<string, Promise<unknown>>();
 async function serial<T>(root: string, action: () => Promise<T>): Promise<T> {
   const previous = queues.get(root) ?? Promise.resolve();
@@ -31,30 +47,6 @@ async function serial<T>(root: string, action: () => Promise<T>): Promise<T> {
     if (queues.get(root) === current) queues.delete(root);
   }
 }
-async function git(root: string, ...args: string[]) {
-  const { stdout } = await exec(
-    "git",
-    [
-      "-c",
-      "user.name=Counterfact Walkthrough",
-      "-c",
-      "user.email=walkthrough@counterfact.local",
-      "-c",
-      "commit.gpgsign=false",
-      "-c",
-      "core.hooksPath=.git/counterfact-no-hooks",
-      ...args,
-    ],
-    {
-      cwd: root,
-      maxBuffer: 1024 * 1024,
-      env: Object.fromEntries(
-        Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
-      ),
-    },
-  );
-  return stdout.trim();
-}
 async function readState(root: string): Promise<State | undefined> {
   try {
     await fs.access(join(root, marker));
@@ -62,71 +54,95 @@ async function readState(root: string): Promise<State | undefined> {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
     throw error;
   }
-  const dotGit = await fs.lstat(join(root, ".git"));
-  if (!dotGit.isDirectory() || dotGit.isSymbolicLink())
-    throw new Error("This demo must have its own local Git repository.");
-  const top = await git(root, "rev-parse", "--show-toplevel");
-  if ((await fs.realpath(root)) !== (await fs.realpath(top)))
-    throw new Error("Refusing to change a Git repository outside this demo.");
-  return JSON.parse(await fs.readFile(join(root, statePath), "utf8")) as State;
+  try {
+    return JSON.parse(
+      await fs.readFile(join(root, statePath), "utf8"),
+    ) as State;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    // Older demos keep their repositories; importing their progress never invokes Git.
+    try {
+      const legacy = JSON.parse(
+        await fs.readFile(
+          join(root, ".git/counterfact-walkthrough.json"),
+          "utf8",
+        ),
+      );
+      return {
+        prepared: legacy.prepared ?? [],
+        checkpoints: legacy.checkpoints ?? [],
+        baseline: false,
+        snapshots: {},
+        changes: [],
+      };
+    } catch (legacyError) {
+      if ((legacyError as NodeJS.ErrnoException).code !== "ENOENT")
+        throw legacyError;
+      throw new Error(
+        "The walkthrough's saved state is missing. Start a new demo; your files have been kept.",
+        { cause: legacyError },
+      );
+    }
+  }
 }
-const writeState = (root: string, state: State) =>
-  fs.writeFile(join(root, statePath), JSON.stringify(state));
-const trackedPaths = [
-  ".gitignore",
-  marker,
-  "openapi.json",
-  "routes",
-  "scenarios",
-  "types",
-  "counterfact-types",
-];
-async function commit(root: string, message: string) {
-  // --only includes exactly these project paths, leaving unrelated staged files alone.
-  await git(root, "add", "--", ...trackedPaths);
-  await git(
-    root,
-    "commit",
-    "--only",
-    "--allow-empty",
-    "-m",
-    message,
-    "--",
-    ...trackedPaths,
-  );
+async function writeState(root: string, state: State) {
+  const destination = join(root, statePath);
+  await fs.writeFile(destination + ".tmp", JSON.stringify(state));
+  await fs.rename(destination + ".tmp", destination);
 }
-/** Called only for the new, exclusively created demo, before normal generation. */
-export async function initializeWalkthroughRepository(root: string) {
-  await git(root, "init", "--initial-branch=walkthrough");
+async function captureChanges(
+  root: string,
+  state: State,
+  actor: EditEvent["actor"],
+  phaseId?: string,
+) {
+  const files: FileChange[] = [];
+  for (const file of lessonFiles) {
+    let after = "";
+    try {
+      after = await readEditable(root, file);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+    const before = state.snapshots[file] ?? "";
+    if (after !== before) files.push({ file, before, after });
+    state.snapshots[file] = after;
+  }
+  if (files.length)
+    state.changes.push({
+      id: (state.changes.at(-1)?.id ?? 0) + 1,
+      actor,
+      ...(phaseId ? { phaseId } : {}),
+      files,
+    });
+}
+/** Only the exclusively created demo receives walkthrough state. No repository is created. */
+export async function initializeWalkthroughWorkspace(root: string) {
   await fs.writeFile(join(root, marker), JSON.stringify({ version: 2 }));
-  await fs.writeFile(
-    join(root, statePath),
-    JSON.stringify({ prepared: [], checkpoints: [], baseline: false }),
-  );
-  // The generator may extend this ignore file; generated types remain visible and tracked.
-  await fs.writeFile(join(root, ".gitignore"), ".cache/\nnode_modules/\n");
+  await writeState(root, {
+    prepared: [],
+    checkpoints: [],
+    baseline: false,
+    snapshots: {},
+    changes: [],
+  });
 }
 export async function walkthroughWorkspace(root: string) {
   return serial(root, async () => {
     const state = await readState(root);
-    if (!state) return { enabled: false, prepared: [], checkpoints: [] };
+    if (!state)
+      return { enabled: false, prepared: [], checkpoints: [], changes: [] };
     if (!state.baseline) {
-      // /tutorial-info is first served after the normal generator has finished.
-      for (const path of [
-        "routes/products.ts",
-        "routes/orders.ts",
-        "routes/_.context.ts",
-        "scenarios/index.ts",
-      ])
-        await fs.access(join(root, path));
-      await commit(root, "Start with Counterfact generated stubs");
+      for (const file of lessonFiles)
+        state.snapshots[file] = await readEditable(root, file);
       state.baseline = true;
-      await writeState(root, state);
-    }
+    } else await captureChanges(root, state, "you");
+    await writeState(root, state);
     return {
       enabled: true,
       prepared: state.prepared,
       checkpoints: state.checkpoints,
+      changes: state.changes,
     };
   });
 }
@@ -223,6 +239,7 @@ export async function prepareWalkthroughStep(root: string, phaseId: string) {
       throw new Error(
         "Complete the preceding lesson before preparing this step. Previews never change files.",
       );
+    await captureChanges(root, state, "you");
     const changes: [string, string][] = [];
     if (phaseId === "catalog") {
       const text = await readEditable(root, "routes/products.ts");
@@ -403,13 +420,21 @@ export async function prepareWalkthroughStep(root: string, phaseId: string) {
           [file, await format(text, { parser: "typescript" })] as const,
       ),
     );
+    for (const [file] of formatted) {
+      if ((await readEditable(root, file)) !== state.snapshots[file])
+        throw new Error(
+          "This file changed while I was preparing the edit. Review your changes and try again.",
+        );
+    }
     for (const [file, text] of formatted)
       await fs.writeFile(join(root, file), text);
+    await captureChanges(root, state, "milo", phaseId);
     state.prepared.push(phaseId);
     await writeState(root, state);
     return {
       ok: true,
-      message: `Prepared ${formatted.map(([file]) => file).join(" and ")}. Review the uncommitted diff in your IDE, then make the exercise edit.`,
+      message: `Updated ${formatted.map(([file]) => file).join(" and ")}. Review the diff in our conversation, then make your edit.`,
+      changes: state.changes,
     };
   });
 }
@@ -432,13 +457,13 @@ export async function checkpointWalkthroughStep(root: string, phaseId: string) {
     if (!state.checkpoints.includes(phase.lesson)) {
       if (phase.lesson > 1 && !state.checkpoints.includes(phase.lesson - 1))
         throw new Error("Complete the preceding lesson first.");
-      await commit(root, `Step ${phase.lesson}: ${phase.title}`);
+      await captureChanges(root, state, "you");
       state.checkpoints.push(phase.lesson);
       await writeState(root, state);
     }
     return {
       ok: true,
-      message: `Step ${phase.lesson} committed locally. Your IDE is ready to show the next changes.`,
+      message: `Lesson ${phase.lesson} progress saved.`,
     };
   });
 }

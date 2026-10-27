@@ -1,6 +1,7 @@
 import vm from "node:vm";
 import { expect, it } from "@jest/globals";
 import { coffeeShopPage } from "../../src/coffee-shop/coffee-shop-page.js";
+import type { EditEvent } from "../../src/coffee-shop/coffee-shop-workspace.js";
 import { CATALOG, PHASES } from "../../src/coffee-shop/coffee-shop-lessons.js";
 
 class Element {
@@ -79,6 +80,7 @@ async function browser(
       enabled: !!options.workspace,
       prepared: options.prepared ?? [],
       checkpoints: [] as number[],
+      changes: [] as EditEvent[],
     },
     checkpointError: false,
     revision: "initial",
@@ -168,8 +170,8 @@ async function browser(
         value = {
           ok: !server.checkpointError,
           message: server.checkpointError
-            ? "Git is temporarily unavailable"
-            : "Saved local Git checkpoint",
+            ? "Progress storage is temporarily unavailable"
+            : "Saved progress",
         };
       } else if (path === "/tutorial-check")
         value = {
@@ -359,7 +361,7 @@ it("keeps earlier turns visible and reveals the next lesson only after the learn
   expect(history.indexOf("Inspect the generated stub")).toBeLessThan(
     history.indexOf("That worked."),
   );
-  expect(history.match(/Its Git history/g)).toHaveLength(1);
+  expect(history.match(/show the diff here/g)).toHaveLength(1);
   const restored = await browser({ storage: app.storage });
   expect(restored.root("lesson").textContent).toContain(
     "I’m ready. What’s next?",
@@ -610,7 +612,7 @@ it("lets an already-restocked shop establish a new observable starting quantity"
   expect(app.completed()).toContain("scenario");
 });
 
-it("only prepares attended lessons, retains preparation on reload, and retries failed Git checkpoints", async () => {
+it("only prepares attended lessons, retains preparation on reload, and retries failed progress saves", async () => {
   const app = await browser({ phase: "catalog", workspace: true });
   const prepare = find(
     app.root("lesson"),
@@ -662,13 +664,13 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
   await new Promise((resolve) => setImmediate(resolve));
   expect(order.completed()).not.toContain("order");
   expect(order.root("guide-status").textContent).toContain(
-    "Git is temporarily unavailable",
+    "Progress storage is temporarily unavailable",
   );
   const retry = find(
     order.root("lesson"),
     (element) =>
       element.tag === "button" &&
-      element.textContent === "Retry Git checkpoint",
+      element.textContent === "Retry saving progress",
   )!;
   order.server.checkpointError = false;
   await retry.onclick!();
@@ -692,5 +694,66 @@ it("retains the preparation explanation when failure progresses to recovery", as
   expect(app.root("lesson").textContent).toContain(explanation);
   expect(app.root("lesson").textContent).toContain(
     "Change ordersAvailable to true",
+  );
+});
+
+it("shows attributed diffs for Milo and learner edits once, and retains them across reloads", async () => {
+  const app = await browser({ phase: "catalog", workspace: true });
+  const milo: EditEvent = {
+    id: 1,
+    actor: "milo",
+    phaseId: "catalog",
+    files: [
+      {
+        file: "routes/products.ts",
+        before:
+          "const catalog = [];\nreturn $.response.status(200).random();\n",
+        after:
+          "const catalog = [1];\nreturn $.response.status(200).random();\n",
+      },
+    ],
+  };
+  // Polling brings in an approved supporting edit recorded by the server.
+  app.server.workspace.prepared.push("catalog");
+  app.server.workspace.changes.push(milo);
+  await app.poll();
+  expect(app.root("lesson").textContent).toContain(
+    "Here are the edits I made.",
+  );
+  expect(app.root("lesson").textContent).toContain("- const catalog = [];");
+  expect(app.root("lesson").textContent).toContain("+ const catalog = [1];");
+  app.server.workspace.changes.push({
+    id: 2,
+    actor: "you",
+    files: [
+      {
+        file: "routes/products.ts",
+        before: "return $.response.status(200).random();",
+        after: "return $.response.status(200).json(catalog);",
+      },
+    ],
+  });
+  await app.poll();
+  expect(app.root("lesson").textContent).toContain("Your saved changes");
+  expect(app.root("lesson").textContent).toContain(
+    "- return $.response.status(200).random();",
+  );
+  expect(app.root("lesson").textContent).toContain(
+    "+ return $.response.status(200).json(catalog);",
+  );
+  await app.poll();
+  expect(
+    app.root("lesson").textContent.match(/Your saved changes/g),
+  ).toHaveLength(1);
+  const reloaded = await browser({
+    storage: app.storage,
+    workspace: true,
+    prepared: ["catalog"],
+  });
+  expect(reloaded.root("lesson").textContent).toContain(
+    "+ return $.response.status(200).json(catalog);",
+  );
+  expect(reloaded.root("lesson").textContent).toContain(
+    "Here are the edits I made.",
   );
 });

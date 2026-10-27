@@ -52,14 +52,19 @@ async function snapshot(root: string) {
 }
 const revisionOf = (sources: string[]) =>
   createHash("sha256").update(JSON.stringify(sources)).digest("hex");
-export async function walkthroughInfo(root: string, context: Context) {
+export async function walkthroughInfo(
+  root: string,
+  context: Context,
+  includeChanges = false,
+) {
   if (!sessionIds.has(root)) {
     if (sessionIds.size >= 128)
       sessionIds.delete(sessionIds.keys().next().value!);
     sessionIds.set(root, randomUUID());
   }
+  const workspace = await walkthroughWorkspace(root);
   return {
-    workspace: await walkthroughWorkspace(root),
+    workspace: includeChanges ? workspace : { ...workspace, changes: [] },
     projectPath: root,
     sessionId: sessionIds.get(root)!,
     walkthroughVersion: 2,

@@ -1,3 +1,4 @@
+import type { EditEvent, FileChange } from "./coffee-shop-workspace.js";
 import type { LessonPhase } from "./coffee-shop-lessons.js";
 
 /** Serialized into the page; keep all browser dependencies inside this function. */
@@ -16,7 +17,12 @@ export function runCoffeeShopWalkthrough(
   };
   type Item = { productId: string; quantity: number };
   type Info = {
-    workspace?: { enabled: boolean; prepared: string[]; checkpoints: number[] };
+    workspace?: {
+      enabled: boolean;
+      prepared: string[];
+      checkpoints: number[];
+      changes?: EditEvent[];
+    };
     sessionId: string;
     revision: string;
     state: { catalog: unknown; inventory: Record<string, number> | null };
@@ -68,11 +74,38 @@ export function runCoffeeShopWalkthrough(
     lastCatalog = "",
     orderIds: number[] = [],
     rejectionSeen = false;
-  type Turn = { phaseId: string; role: "you" | "tutor"; text: string };
+  type Turn = {
+    phaseId: string;
+    role: "you" | "tutor";
+    text: string;
+    files?: FileChange[];
+  };
+  let seenChanges = new Set<number>();
   let turns: Turn[] = [];
   function record(role: Turn["role"], text: string) {
     turns.push({ phaseId: phase().id, role, text });
     save();
+  }
+  function syncChanges(changes: EditEvent[] = []) {
+    let changed = false;
+    for (const edit of changes) {
+      if (seenChanges.has(edit.id)) continue;
+      seenChanges.add(edit.id);
+      const phaseId = edit.phaseId ?? phase().id;
+      if (!phases.some((candidate) => candidate.id === phaseId)) continue;
+      turns.push({
+        phaseId,
+        role: edit.actor === "milo" ? "tutor" : "you",
+        text:
+          edit.actor === "milo"
+            ? "Here are the edits I made."
+            : "Your saved changes",
+        files: edit.files,
+      });
+      changed = true;
+    }
+    if (changed) save();
+    return changed;
   }
   const traces: Record<string, unknown> = {};
   const reported = new Set<string>();
@@ -87,6 +120,7 @@ export function runCoffeeShopWalkthrough(
           index,
           completed: [...completed],
           turns,
+          seenChanges: [...seenChanges],
           quizWrong,
           cart: [...cart],
           observation,
@@ -193,11 +227,11 @@ export function runCoffeeShopWalkthrough(
           },
         );
         if (!result.ok) throw new Error(result.message);
-        // Git is supporting infrastructure; keep the conversation about API behavior.
+        // Completion is recorded separately from file-change history.
         checkpointRetry = undefined;
       } catch (error) {
         message =
-          "Could not save the local Git checkpoint: " +
+          "Could not save lesson progress: " +
           (error instanceof Error ? error.message : String(error));
         checkpointRetry = () => finish(completionMessage);
         renderLesson();
@@ -318,6 +352,104 @@ export function runCoffeeShopWalkthrough(
     if (text) result.append(fileText("p", text));
     return result;
   }
+  function renderDiff(change: FileChange) {
+    const details = node("details", "", "file-diff") as HTMLDetailsElement;
+    details.open = true;
+    details.append(
+      node("summary", change.file),
+      fileLink(change.file, "Open file"),
+    );
+    const before = change.before.split("\n"),
+      after = change.after.split("\n");
+    if (before.at(-1) === "") before.pop();
+    if (after.at(-1) === "") after.pop();
+    const rows: { kind: "context" | "remove" | "add"; text: string }[] = [];
+    let prefix = 0;
+    while (
+      prefix < before.length &&
+      prefix < after.length &&
+      before[prefix] === after[prefix]
+    ) {
+      rows.push({ kind: "context", text: before[prefix]! });
+      prefix++;
+    }
+    let oldEnd = before.length,
+      newEnd = after.length;
+    while (
+      oldEnd > prefix &&
+      newEnd > prefix &&
+      before[oldEnd - 1] === after[newEnd - 1]
+    ) {
+      oldEnd--;
+      newEnd--;
+    }
+    const oldLines = before.slice(prefix, oldEnd),
+      newLines = after.slice(prefix, newEnd);
+    if (oldLines.length * newLines.length <= 250000) {
+      const lengths = Array.from(
+        { length: oldLines.length + 1 },
+        () => new Uint32Array(newLines.length + 1),
+      );
+      for (let i = oldLines.length - 1; i >= 0; i--)
+        for (let j = newLines.length - 1; j >= 0; j--)
+          lengths[i]![j] =
+            oldLines[i] === newLines[j]
+              ? lengths[i + 1]![j + 1]! + 1
+              : Math.max(lengths[i + 1]![j]!, lengths[i]![j + 1]!);
+      let i = 0,
+        j = 0;
+      while (i < oldLines.length || j < newLines.length) {
+        if (
+          i < oldLines.length &&
+          j < newLines.length &&
+          oldLines[i] === newLines[j]
+        ) {
+          rows.push({ kind: "context", text: oldLines[i++]! });
+          j++;
+        } else if (
+          i < oldLines.length &&
+          (j === newLines.length || lengths[i + 1]![j]! >= lengths[i]![j + 1]!)
+        )
+          rows.push({ kind: "remove", text: oldLines[i++]! });
+        else rows.push({ kind: "add", text: newLines[j++]! });
+      }
+    } else {
+      for (const text of oldLines) rows.push({ kind: "remove", text });
+      for (const text of newLines) rows.push({ kind: "add", text });
+    }
+    for (const text of before.slice(oldEnd))
+      rows.push({ kind: "context", text });
+    const pre = node("pre");
+    let omitted = false;
+    rows.forEach((row, index) => {
+      const nearEdit = rows
+        .slice(Math.max(0, index - 3), index + 4)
+        .some((candidate) => candidate.kind !== "context");
+      if (!nearEdit) {
+        if (!omitted)
+          pre.append(node("span", "  …\n", "diff-line diff-context"));
+        omitted = true;
+        return;
+      }
+      omitted = false;
+      pre.append(
+        node(
+          "span",
+          (row.kind === "add" ? "+ " : row.kind === "remove" ? "- " : "  ") +
+            row.text +
+            "\n",
+          "diff-line diff-" + row.kind,
+        ),
+      );
+    });
+    details.append(pre);
+    return details;
+  }
+  function turnBubble(turn: Turn) {
+    const result = bubble(turn.role, turn.text);
+    for (const file of turn.files ?? []) result.append(renderDiff(file));
+    return result;
+  }
   function renderLesson() {
     const current = phase(),
       lesson = byId("lesson");
@@ -340,7 +472,7 @@ export function runCoffeeShopWalkthrough(
       ),
       node(
         "p",
-        "Open this demo folder in your IDE. Its Git history makes it easier to see what changed in each part of our conversation: the generated starting point is committed, our current edits appear in Source Control, and I save a local commit when we finish each lesson. Git is just our way to inspect the changes.",
+        "Open this demo folder in your editor. Whenever either of us changes a lesson file, I’ll show the diff here in our conversation: green lines were added and red lines were removed. Your saved edits appear automatically, so we can follow exactly how the API gains behavior.",
       ),
     );
     lesson.append(welcome);
@@ -368,7 +500,7 @@ export function runCoffeeShopWalkthrough(
         proposal.append(
           node(
             "p",
-            "May I make these supporting edits? You’ll be able to review the diff in your IDE before making your part of the change.",
+            "May I make these supporting edits? You’ll be able to review the diff here before making your part of the change.",
           ),
         );
         if (
@@ -385,6 +517,7 @@ export function runCoffeeShopWalkthrough(
               const { value: result } = await json<{
                 ok: boolean;
                 message: string;
+                changes?: EditEvent[];
               }>("/tutorial-workspace", {
                 action: "prepare",
                 phaseId: revealed.id,
@@ -393,9 +526,10 @@ export function runCoffeeShopWalkthrough(
               if (result.ok) {
                 info.workspace!.prepared.push(revealed.id);
                 checkedPhase = "";
+                syncChanges(result.changes);
                 record(
                   "tutor",
-                  "I’ve added the supporting code. Review the changes in your IDE. Now it’s your turn.",
+                  "I’ve added the supporting code. Review that diff. Now it’s your turn.",
                 );
               } else
                 record(
@@ -421,12 +555,18 @@ export function runCoffeeShopWalkthrough(
       const approvalEnd = phaseTurns.findIndex(
         (turn) => turn.role === "tutor" && turn.text.startsWith("I’ve added"),
       );
+      const preparationEnd =
+        approvalEnd >= 0
+          ? approvalEnd
+          : phaseTurns.findIndex(
+              (turn) => turn.role === "tutor" && turn.files?.length,
+            );
       const before = !revealed.preparation
         ? []
-        : approvalEnd < 0 && !prepared
+        : preparationEnd < 0 && !prepared
           ? phaseTurns
-          : phaseTurns.slice(0, approvalEnd + 1);
-      for (const turn of before) lesson.append(bubble(turn.role, turn.text));
+          : phaseTurns.slice(0, preparationEnd + 1);
+      for (const turn of before) lesson.append(turnBubble(turn));
       if (
         revealed.preparation &&
         !prepared &&
@@ -471,7 +611,7 @@ export function runCoffeeShopWalkthrough(
         );
       lesson.append(exercise);
       for (const turn of phaseTurns.slice(before.length))
-        lesson.append(bubble(turn.role, turn.text));
+        lesson.append(turnBubble(turn));
       if (active && current.id === "observe" && !finished) renderQuestion();
       if (active && finished) {
         const done = node("p", "✓ Lesson complete", "step-complete");
@@ -498,7 +638,7 @@ export function runCoffeeShopWalkthrough(
       }
     }
     if (checkpointRetry)
-      lesson.append(button("Retry Git checkpoint", checkpointRetry));
+      lesson.append(button("Retry saving progress", checkpointRetry));
     (byId("continue") as HTMLButtonElement).hidden =
       !completed.has(current.id) || index === phases.length - 1;
     (byId("check-progress") as HTMLButtonElement).hidden = !!(
@@ -860,6 +1000,7 @@ export function runCoffeeShopWalkthrough(
       )
         throw new Error("Tutorial information unavailable.");
       info = latest;
+      if (syncChanges(info.workspace?.changes)) renderLesson();
       if (phase().id !== requestedId) return;
       if (
         phase().check &&
@@ -883,6 +1024,7 @@ export function runCoffeeShopWalkthrough(
           return;
         }
         info = after;
+        if (syncChanges(info.workspace?.changes)) renderLesson();
         ready = checked.ok === true;
         checkMessage = ready
           ? checked.message
@@ -975,6 +1117,9 @@ export function runCoffeeShopWalkthrough(
   async function start() {
     const { value: initial } = await json<Info>("/tutorial-info");
     info = initial;
+    seenChanges = new Set(
+      initial.workspace?.changes?.map((change) => change.id) ?? [],
+    );
     try {
       const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? "null");
       if (saved?.version === 2 && saved.sessionId === info.sessionId) {
@@ -995,6 +1140,13 @@ export function runCoffeeShopWalkthrough(
             phases.some((candidate) => candidate.id === turn.phaseId) &&
             ["you", "tutor"].includes(turn.role) &&
             typeof turn.text === "string",
+        );
+        seenChanges = new Set(
+          Array.isArray(saved.seenChanges)
+            ? saved.seenChanges.filter((id: unknown) =>
+                Number.isSafeInteger(id),
+              )
+            : [],
         );
         quizWrong = saved.quizWrong === true;
         const required = phases.findIndex(
@@ -1039,6 +1191,7 @@ export function runCoffeeShopWalkthrough(
     } catch {
       /* A corrupt or unavailable saved session starts fresh. */
     }
+    syncChanges(info.workspace?.changes);
     entryState ??= JSON.parse(JSON.stringify(info.state));
     report("opened", phases[0]!.id);
     renderLesson();

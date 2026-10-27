@@ -46,7 +46,12 @@ export const SHOP_DOCUMENT = {
   paths: {
     "/tutorial-info": {
       get: {
+        parameters: [
+          { in: "header", name: "origin", schema: { type: "string" } },
+          { in: "header", name: "host", schema: { type: "string" } },
+        ],
         responses: {
+          "403": errorResponse,
           "200": jsonResponse({
             type: "object",
             required: ["projectPath", "sessionId"],
@@ -251,7 +256,11 @@ export function coffeeShopFiles(projectPath: string): Record<string, string> {
     "routes/tutorial-info.ts": `import type { HTTP_GET } from "../types/paths/tutorial-info.types.js";
 ${helpersImport}
 export const GET: HTTP_GET = async function ($) {
-  return $.response.status(200).json(await (await helpers).walkthroughInfo(${project}, $.context));
+  if ($.headers.origin && new URL($.headers.origin).host !== $.headers.host) {
+    const denied = { error: "File history is available only to this walkthrough's origin." };
+    return $.response.status(403).json(denied);
+  }
+  return $.response.status(200).json(await (await helpers).walkthroughInfo(${project}, $.context, true));
 };
 `,
     "routes/tutorial-check.ts": `import type { HTTP_POST } from "../types/paths/tutorial-check.types.js";

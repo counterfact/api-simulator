@@ -603,12 +603,13 @@ def coffee_shop_purchase(journey):
     assert "Walkthrough instructions" in page.text
     assert "Refresh products" in page.text
     assert "Latest API requests and responses" in page.text
-    # The CLI commits the real generated baseline before opening the browser.
-    assert "Start with Counterfact generated stubs" in (journey.output / ".git/logs/HEAD").read_text()
+    # The walkthrough snapshots the generated baseline without requiring Git.
+    assert not (journey.output / ".git").exists()
     info = journey.request("get", "/tutorial-info")
     assert info.status_code == 200, info.text
     assert os.path.realpath(info.json()["projectPath"]) == os.path.realpath(journey.output)
     assert info.json()["walkthroughVersion"] == 2
+    assert info.json()["workspace"]["changes"] == []
     assert info.json()["state"] == {"catalog": None, "inventory": None}
     for route in ["products", "orders"]:
         assert ".random()" in (journey.output / f"routes/{route}.ts").read_text()
@@ -838,7 +839,14 @@ def coffee_restock_composes(journey):
     coffee_workspace(journey, "checkpoint", "scenario")
     info = journey.request("get", "/tutorial-info").json()
     assert info["workspace"]["checkpoints"] == list(range(1, 13))
-    assert (journey.output / ".git/logs/HEAD").read_text().count("commit") == 13
+    assert not (journey.output / ".git").exists()
+    denied = journey.request("get", "/tutorial-info", headers={"Origin": "https://unrelated.example"})
+    assert denied.status_code == 403, denied.text
+    assert "Your saved changes" not in denied.text
+    changes = info["workspace"]["changes"]
+    assert any(change["actor"] == "milo" for change in changes)
+    assert any(change["actor"] == "you" for change in changes)
+    assert any("reduceInventory" in file["after"] for change in changes for file in change["files"])
 
 
 @when("I restart the guided API")
