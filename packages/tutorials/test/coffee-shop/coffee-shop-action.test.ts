@@ -56,7 +56,7 @@ it("keeps failed orders at the ordering action and skips retained inventory edit
   );
   expect(
     coffeeShopAction({ ...state, step: 7, inventoryUpdated: false })?.text,
-  ).toBe("Complete the inventory TODO in routes/orders.ts, then save");
+  ).toBe("Complete reduceInventory in routes/orders.ts, then save");
 });
 
 it("points to the REPL restock without confirmation buttons", () => {

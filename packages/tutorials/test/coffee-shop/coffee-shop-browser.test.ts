@@ -701,7 +701,7 @@ it("keeps step 5 copy fixed as purchases and saved edits move the bold action", 
   expect(app.read("progress.step")).toBe(7);
   expect(lessonCopy(app)).toEqual(copy);
   expect(bold()).toBe(
-    "Complete the inventory TODO in routes/orders.ts, then save",
+    "Complete reduceInventory in routes/orders.ts, then save",
   );
   app.server.checkOk = true;
   app.server.revision = "subtract";

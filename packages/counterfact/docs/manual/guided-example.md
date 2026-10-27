@@ -29,8 +29,9 @@ The walkthrough starts with a normal purchase, then guides you through:
 
 1. Making sold-out Decaf available by editing `routes/products.ts`.
 2. Making orders fail, preserving the cart, and restoring successful retries.
-3. Completing the TODO inside the existing order-item loop in
-   `routes/orders.ts`: subtract each purchased quantity from `$.context.inventory`.
+3. Completing `reduceInventory(items, inventory)` in `routes/orders.ts`. For each
+   item, subtract its quantity from `inventory[item.productId]`. The order handler
+   already calls this function with the purchased items and shared inventory.
 4. Buying the remaining Dark Roast stock and seeing the shop mark it sold out.
 5. Inspecting and replenishing that same inventory through the REPL:
 

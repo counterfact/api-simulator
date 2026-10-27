@@ -235,6 +235,13 @@ export const SHOP_ORDERS = `import type { HTTP_POST } from "../types/paths/order
 // Lesson: set this to false to try the shop's error and retry behavior.
 const ordersAvailable = true;
 
+function reduceInventory(
+  items: { productId: string; quantity: number }[],
+  inventory: Record<string, number>,
+) {
+  // TODO: For each item, subtract its quantity from inventory[item.productId].
+}
+
 export const POST: HTTP_POST = ($) => {
   if (!ordersAvailable) {
     return $.response[503].json({ error: "Ordering is temporarily unavailable." });
@@ -247,9 +254,7 @@ export const POST: HTTP_POST = ($) => {
     return $.response[409].json({ error: "There isn't enough stock for this order.", shortages });
   }
 
-  for (const item of items) {
-    // TODO: decrease the quantity of each item in $.context.inventory.
-  }
+  reduceInventory(items, $.context.inventory);
 
   return $.response[201].json({ orderId: $.context.nextOrderId++, items });
 };
