@@ -106,6 +106,8 @@ URL scheme, or **Copy file path** beside the edit instruction to find a file in 
 The adjacent **Open in VSCode** link names its destination explicitly; code hints
 remain optional. Shared inventory is declared in `routes/_.context.ts` and initialized
 by `scenarios/index.ts`; products and orders access the same running object.
+The context handles stock checks, shortage details, and order confirmations,
+so the order handler stays focused on the request flow.
 The initial order handler intentionally does not reduce stock until you add
 that operation. No payments or real purchases take place. The final screen offers an optional
 challenge: make another coffee unavailable, verify the shopper’s experience,

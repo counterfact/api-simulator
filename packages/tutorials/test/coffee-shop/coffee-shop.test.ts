@@ -13,6 +13,13 @@ function context() {
       inventory: Record<string, number>;
       setDecafStock: (quantity: number) => void;
       canFulfill: (items: { productId: string; quantity: number }[]) => boolean;
+      getShortages: (
+        items: { productId: string; quantity: number }[],
+      ) => { productId: string; requested: number; available: number }[];
+      confirmOrder: (items: { productId: string; quantity: number }[]) => {
+        orderId: number;
+        items: { productId: string; quantity: number }[];
+      };
     };
   };
   vm.runInNewContext(
@@ -57,6 +64,60 @@ describe("the example's shared context", () => {
     );
     expect(shop.canFulfill([])).toBe(false);
     expect(shop.inventory["dark-roast"]).toBe(3);
+  });
+
+  it("reports combined shortages without changing inventory or the order", () => {
+    const shop = context();
+    shop.inventory = { "dark-roast": 3, decaf: 0, "house-blend": 5 };
+    const items = [
+      { productId: "dark-roast", quantity: 2 },
+      { productId: "dark-roast", quantity: 2 },
+      { productId: "decaf", quantity: 1 },
+      { productId: "house-blend", quantity: 2 },
+      { productId: "missing", quantity: 1 },
+    ];
+    expect(shop.getShortages(items)).toEqual([
+      { productId: "dark-roast", requested: 4, available: 3 },
+      { productId: "decaf", requested: 1, available: 0 },
+      { productId: "missing", requested: 1, available: 0 },
+    ]);
+    expect(shop.inventory).toEqual({
+      "dark-roast": 3,
+      decaf: 0,
+      "house-blend": 5,
+    });
+    expect(items[0]).toEqual({ productId: "dark-roast", quantity: 2 });
+    expect(
+      shop.getShortages([{ productId: "dark-roast", quantity: 3 }]),
+    ).toEqual([]);
+    expect(shop.getShortages([])).toEqual([]);
+  });
+
+  it("accepts combined quantities within stock and rejects invalid quantities", () => {
+    const shop = context();
+    shop.inventory = { "dark-roast": 3 };
+    expect(
+      shop.canFulfill([
+        { productId: "dark-roast", quantity: 1 },
+        { productId: "dark-roast", quantity: 2 },
+      ]),
+    ).toBe(true);
+    expect(shop.canFulfill([{ productId: "dark-roast", quantity: 0 }])).toBe(
+      false,
+    );
+    expect(shop.canFulfill([{ productId: "dark-roast", quantity: 0.5 }])).toBe(
+      false,
+    );
+  });
+
+  it("assigns sequential order confirmations without subtracting stock", () => {
+    const shop = context();
+    shop.inventory = { "dark-roast": 3 };
+    const items = [{ productId: "dark-roast", quantity: 2 }];
+    expect(shop.confirmOrder(items)).toEqual({ orderId: 1, items });
+    expect(shop.confirmOrder(items)).toEqual({ orderId: 2, items });
+    expect(shop.inventory).toEqual({ "dark-roast": 3 });
+    expect(items).toEqual([{ productId: "dark-roast", quantity: 2 }]);
   });
 });
 

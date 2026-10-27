@@ -186,9 +186,11 @@ export const SHOP_DOCUMENT = {
   },
 };
 
-export const SHOP_CONTEXT = `export class Context {
+export const SHOP_CONTEXT = `export type OrderItem = { productId: string; quantity: number };
+
+export class Context {
   inventory: Record<string, number> = {};
-  nextOrderId = 1;
+  private nextOrderId = 1;
   // Identifies this in-memory session, not a credential.
   sessionId = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
   private decafSetting = 0;
@@ -201,15 +203,31 @@ export const SHOP_CONTEXT = `export class Context {
     }
   }
 
-  canFulfill(items: { productId: string; quantity: number }[]) {
-    const quantities: Record<string, number> = {};
-    for (const item of items) {
-      if (!Number.isInteger(item.quantity) || item.quantity <= 0) return false;
-      quantities[item.productId] = (quantities[item.productId] ?? 0) + item.quantity;
+  canFulfill(items: OrderItem[]) {
+    return items.length > 0
+      && items.every(item => Number.isInteger(item.quantity) && item.quantity > 0)
+      && this.getShortages(items).length === 0;
+  }
+
+  getShortages(items: OrderItem[]) {
+    const shortages: { productId: string; requested: number; available: number }[] = [];
+    for (const [productId, requested] of this.quantitiesFor(items)) {
+      const available = this.inventory[productId] ?? 0;
+      if (requested > available) shortages.push({ productId, requested, available });
     }
-    return items.length > 0 && Object.entries(quantities).every(
-      ([id, quantity]) => quantity <= (this.inventory[id] ?? 0),
-    );
+    return shortages;
+  }
+
+  confirmOrder(items: OrderItem[]) {
+    return { orderId: this.nextOrderId++, items };
+  }
+
+  private quantitiesFor(items: OrderItem[]) {
+    const quantities = new Map<string, number>();
+    for (const item of items) {
+      quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
+    }
+    return quantities;
   }
 }
 `;
@@ -231,32 +249,33 @@ export const GET: HTTP_GET = ($) => {
 `;
 
 export const SHOP_ORDERS = `import type { HTTP_POST } from "../types/paths/orders.types.js";
+import type { OrderItem } from "./_.context.js";
 
 // Lesson: set this to false to try the shop's error and retry behavior.
 const ordersAvailable = true;
 
 function reduceInventory(
-  items: { productId: string; quantity: number }[],
+  items: OrderItem[],
   inventory: Record<string, number>,
 ) {
   // TODO: For each item, subtract its quantity from inventory[item.productId].
 }
 
-export const POST: HTTP_POST = ($) => {
+export const POST: HTTP_POST = function ($) {
   if (!ordersAvailable) {
     return $.response[503].json({ error: "Ordering is temporarily unavailable." });
   }
   const items = $.body.items;
   if (!$.context.canFulfill(items)) {
-    const quantities: Record<string, number> = {};
-    for (const item of items) quantities[item.productId] = (quantities[item.productId] ?? 0) + item.quantity;
-    const shortages = Object.entries(quantities).filter(([id, quantity]) => quantity > ($.context.inventory[id] ?? 0)).map(([productId, requested]) => ({ productId, requested, available: $.context.inventory[productId] ?? 0 }));
-    return $.response[409].json({ error: "There isn't enough stock for this order.", shortages });
+    return $.response[409].json({
+      error: "There isn't enough stock for this order.",
+      shortages: $.context.getShortages(items),
+    });
   }
 
   reduceInventory(items, $.context.inventory);
 
-  return $.response[201].json({ orderId: $.context.nextOrderId++, items });
+  return $.response[201].json($.context.confirmOrder(items));
 };
 `;
 
