@@ -13,6 +13,10 @@ import { TypeCoder } from "./type-coder.js";
 import { pathJoin } from "./forward-slash-path.js";
 import { buildJsDoc } from "./jsdoc.js";
 import { Requirement } from "./requirement.js";
+import {
+  SchemaTypeTransformError,
+  type JsonSchema,
+} from "./schema-type-transform.js";
 import type { Script } from "./script.js";
 
 export class SchemaTypeCoder extends TypeCoder {
@@ -285,6 +289,41 @@ export class SchemaTypeCoder extends TypeCoder {
   }
 
   public override writeCode(script: Script): ts.TypeNode {
+    const defaultType = this.defaultType(script);
+    const transform = script?.repository?.options.schemaTypeTransform;
+    if (
+      !transform ||
+      this.requirement.data === null ||
+      (typeof this.requirement.data !== "object" &&
+        typeof this.requirement.data !== "boolean")
+    )
+      return defaultType;
+    try {
+      const result = transform(
+        this.requirement.data as JsonSchema,
+        defaultType,
+        Object.freeze({
+          importType: (module: string, name: string) =>
+            script.importSchemaType(module, name),
+        }),
+      );
+      if (result instanceof Promise) {
+        // Invalid JavaScript callbacks must not also leak unhandled rejections.
+        void result.catch(() => undefined);
+        throw new TypeError("Expected a synchronous TypeNode result.");
+      }
+      if (!result || !ts.isTypeNode(result))
+        throw new TypeError("Expected a synchronous TypeNode result.");
+      return result;
+    } catch (cause) {
+      throw new SchemaTypeTransformError(
+        `Schema type transform failed at ${this.requirement.url}: ${cause instanceof Error ? cause.message : String(cause)}`,
+        { cause },
+      );
+    }
+  }
+
+  private defaultType(script: Script): ts.TypeNode {
     if (this.requirement.data === false) return neverType();
     if (this.requirement.data === true || this.requirement.data === null)
       return unknownType();

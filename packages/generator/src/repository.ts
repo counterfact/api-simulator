@@ -22,6 +22,7 @@ import {
   pathDirname,
 } from "./forward-slash-path.js";
 import { Script } from "./script.js";
+import { type SchemaTypeTransform } from "./schema-type-transform.js";
 import { escapePathForWindows } from "./windows-escape.js";
 
 const debug = createDebug("counterfact:server:repository");
@@ -86,7 +87,9 @@ interface WriteFilesOptions {
 export class Repository {
   public scripts: Map<string, Script>;
 
-  public constructor() {
+  public constructor(
+    public readonly options: { schemaTypeTransform?: SchemaTypeTransform } = {},
+  ) {
     this.scripts = new Map();
   }
 
@@ -127,6 +130,8 @@ export class Repository {
         Array.from(this.scripts.values(), (script) => script.finished()),
       );
     }
+    for (const script of this.scripts.values())
+      script.assertTransformsSucceeded();
   }
 
   /**

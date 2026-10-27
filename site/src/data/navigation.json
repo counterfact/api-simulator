@@ -167,6 +167,10 @@
       "path": "/docs/api/cli"
     },
     {
+      "title": "Schema type transforms",
+      "path": "/docs/api/schema-types"
+    },
+    {
       "title": "Handler arguments",
       "path": "/docs/api/handlers"
     },

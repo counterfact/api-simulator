@@ -13,6 +13,7 @@ import {
 } from "./ast.js";
 import { escapePathForWindows } from "./windows-escape.js";
 import { pathJoin, pathRelative, pathDirname } from "./forward-slash-path.js";
+import { SchemaTypeTransformError } from "./schema-type-transform.js";
 import type { Coder, ExportStatement } from "./coder.js";
 import type { Repository } from "./repository.js";
 
@@ -47,6 +48,10 @@ export class Script {
   public imports = new Map<string, ImportEntry>();
   public externalImport = new Map<string, ExternalImportEntry>();
   public cache = new Map<string, string>();
+  private readonly schemaImports = new Map<
+    string,
+    { module: string; exported: string; local: string }
+  >();
 
   public constructor(
     repository: Repository,
@@ -78,7 +83,8 @@ export class Script {
           (this.exports.get(name)!.id === coder.exportId &&
             this.exports.get(name)!.isType === isType &&
             this.exports.get(name)!.isDefault === isDefault)) &&
-        !this.externalImport.has(name)
+        !this.externalImport.has(name) &&
+        ![...this.schemaImports.values()].some((entry) => entry.local === name)
       )
         return name;
     }
@@ -150,6 +156,47 @@ export class Script {
   }
   public importDefault(coder: Coder, isType = false): string {
     return this.import(coder, isType, true);
+  }
+
+  /** Register an extension import without exposing Script's mutable bookkeeping. */
+  public importSchemaType(
+    module: string,
+    exported: string,
+  ): ts.TypeReferenceNode {
+    if (!module || !/^[$A-Z_a-z][$\w]*$/u.test(exported)) {
+      throw new Error(
+        "Expected a nonempty module specifier and a named type export.",
+      );
+    }
+    const key = JSON.stringify([module, exported]);
+    let entry = this.schemaImports.get(key);
+    if (!entry) {
+      // Avoid shadowing globals such as Array or imports emitted by built-in coders.
+      const base = `__CounterfactSchemaType_${exported}`;
+      let local = base;
+      let suffix = 2;
+      while (
+        this.imports.has(local) ||
+        this.exports.has(local) ||
+        this.externalImport.has(local) ||
+        [...this.schemaImports.values()].some((item) => item.local === local)
+      )
+        local = base + suffix++;
+      entry = { module, exported, local };
+      this.schemaImports.set(key, entry);
+    }
+    return ts.factory.createTypeReferenceNode(entry.local);
+  }
+
+  public assertTransformsSucceeded(): void {
+    const entries = [
+      ...this.exports.values(),
+      ...[...this.versions.values()].flatMap((versions) => [
+        ...versions.values(),
+      ]),
+    ];
+    for (const entry of entries)
+      if (entry.error instanceof SchemaTypeTransformError) throw entry.error;
   }
 
   public importExternal(
@@ -347,12 +394,48 @@ export class Script {
 
   public async contents(contextPath?: string): Promise<string> {
     await this.finished();
+    this.assertTransformsSucceeded();
+    const statements = [
+      ...this.versionsTypeStatements(),
+      ...this.exportStatements(),
+    ];
+    const imports = [
+      ...this.externalImportStatements(contextPath),
+      ...this.importStatements(),
+      ...[...this.schemaImports.values()].map((entry) =>
+        importDeclaration(
+          entry.local,
+          entry.module,
+          true,
+          false,
+          entry.exported,
+        ),
+      ),
+    ];
+    const used = new Set<string>();
+    const visit = (node: ts.Node): void => {
+      if (ts.isTypeReferenceNode(node) || ts.isTypeQueryNode(node)) {
+        let name = ts.isTypeReferenceNode(node) ? node.typeName : node.exprName;
+        while (ts.isQualifiedName(name)) name = name.left;
+        if (ts.isIdentifier(name)) used.add(name.text);
+      }
+      ts.forEachChild(node, visit);
+    };
+    if (this.repository.options.schemaTypeTransform) statements.forEach(visit);
     return formatStatements(
       [
-        ...this.externalImportStatements(contextPath),
-        ...this.importStatements(),
-        ...this.versionsTypeStatements(),
-        ...this.exportStatements(),
+        ...imports.filter((declaration) => {
+          if (!this.repository.options.schemaTypeTransform) return true;
+          const clause = declaration.importClause;
+          if (!clause?.isTypeOnly) return true;
+          const named = clause.namedBindings;
+          return clause.name
+            ? used.has(clause.name.text)
+            : named &&
+                ts.isNamedImports(named) &&
+                named.elements.some((element) => used.has(element.name.text));
+        }),
+        ...statements,
       ],
       this.comments,
     );

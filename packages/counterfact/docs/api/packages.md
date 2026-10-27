@@ -42,3 +42,10 @@ The [repository package directory](https://github.com/counterfact/api-simulator/
 The MSW entry point is an adapter interface. Its existence does not imply that the Node-oriented runtime can be loaded directly into a browser. The standard Counterfact workflow runs a real HTTP server.
 
 For everyday simulator use, start with `counterfact`; use focused packages when embedding individual capabilities.
+
+## Schema type extensions
+
+Both `counterfact` and `@counterfact/generator` export the types `JsonSchema`,
+`SchemaTypeTransform`, and `SchemaTypeScript`. Configure a callback in YAML or
+pass it to `CodeGenerator`, `Repository`, or the full simulator. See
+[Schema type transforms](./schema-types.md) for signatures, examples, and execution rules.

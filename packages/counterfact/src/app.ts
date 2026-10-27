@@ -25,6 +25,11 @@ import { sendTelemetry } from "./cli/telemetry.js";
 import type { Config } from "./config.js";
 import { ensureDirectoryExists } from "./util/ensure-directory-exists.js";
 
+export type {
+  JsonSchema,
+  SchemaTypeScript,
+  SchemaTypeTransform,
+} from "@counterfact/generator";
 export { loadOpenApiDocument } from "@counterfact/runtime";
 export {
   createMswHandlers,
@@ -508,7 +513,11 @@ export async function counterfact<TStore = unknown>(
     await Promise.all(
       Array.from(runnersByGroup.values()).map(async (bucket) => {
         const sharedRepository =
-          bucket.length > 1 ? new Repository() : undefined;
+          bucket.length > 1
+            ? new Repository({
+                schemaTypeTransform: config.schemaTypeTransform,
+              })
+            : undefined;
         for (const runner of bucket) {
           await runner.generate(sharedRepository);
         }

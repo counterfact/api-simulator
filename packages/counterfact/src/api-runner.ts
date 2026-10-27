@@ -160,7 +160,10 @@ export class ApiRunner {
     this.codeGenerator = new CodeGenerator(
       this.openApiPath,
       config.basePath + this.subdirectory,
-      this.config.generate,
+      {
+        ...this.config.generate,
+        schemaTypeTransform: this.config.schemaTypeTransform,
+      },
       version,
       config.overlays ?? [],
     );

@@ -2,6 +2,24 @@
   "$schema": "./node_modules/catchmydrift/catchmydrift.schema.json",
   "threshold": 20,
   "groups": {
+    "schema-type-transforms": {
+      "include": [
+        "packages/generator/src/schema-type-transform.ts",
+        "packages/generator/src/schema-type-coder.ts",
+        "packages/generator/src/script.ts",
+        "packages/generator/src/code-generator.ts",
+        "packages/generator/src/repository.ts",
+        "packages/generator/package.json",
+        "packages/counterfact/src/util/load-schema-type-transform.ts",
+        "packages/counterfact/src/config.ts",
+        "packages/counterfact/src/cli/run.ts",
+        "packages/counterfact/src/api-runner.ts",
+        "packages/counterfact/src/app.ts",
+        "packages/generator/test/schema-type-transform.test.ts",
+        "packages/counterfact/test/package/counterfact-consumer-smoke.mjs",
+        "test-black-box/test_schema_type_extension_journey.py"
+      ]
+    },
     "counterfact": {
       "include": [
         "packages/counterfact/bin/**",
@@ -828,6 +846,10 @@
       ]
     },
     {
+      "include": ["packages/counterfact/docs/api/schema-types.md"],
+      "groups": ["schema-type-transforms"]
+    },
+    {
       "include": ["packages/counterfact/docs/features/generated-code.md"],
       "groups": ["generator", "types", "openapi", "hot-reload"]
     },
@@ -993,6 +1015,7 @@
     },
     {
       "include": ["packages/counterfact/docs/api/*.md"],
+      "exclude": ["packages/counterfact/docs/api/schema-types.md"],
       "groups": [
         "counterfact",
         "client",

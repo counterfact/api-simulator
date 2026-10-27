@@ -184,6 +184,51 @@ await new CodeGenerator(${JSON.stringify(openApiPath)}, ${JSON.stringify(outputP
     access(path.join(consumerDirectory, "node_modules", "counterfact")),
   );
 
+  const transformExample = path.join(
+    consumerDirectory,
+    "customize-schema-types.mjs",
+  );
+  await writeFile(
+    transformExample,
+    await readFile(
+      path.join(packageRoot, "examples/customize-schema-types.mjs"),
+      "utf8",
+    ),
+  );
+  await run(executable("node"), [transformExample], consumerDirectory);
+  await writeFile(
+    path.join(consumerDirectory, "transform-contract.ts"),
+    `
+    import type { JsonSchema, SchemaTypeScript, SchemaTypeTransform } from "@counterfact/generator";
+    import ts from "typescript";
+    const schema: JsonSchema = { type: "string", format: "uuid" };
+    export const transform: SchemaTypeTransform = (input, type, script: SchemaTypeScript) => {
+      if (typeof input === "object" && input.format === "uuid") return script.importType("@domain/types", "UUID");
+      return type;
+    };
+    // @ts-expect-error Schema input is read-only.
+    if (typeof schema === "object") schema.type = "number";
+    // @ts-expect-error Transform results must be synchronous TypeNodes.
+    export const invalid: SchemaTypeTransform = async () => ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword);
+  `,
+  );
+  await run(
+    executable("node"),
+    [
+      "node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--module",
+      "NodeNext",
+      "--moduleResolution",
+      "NodeNext",
+      "--target",
+      "ES2022",
+      "transform-contract.ts",
+    ],
+    consumerDirectory,
+  );
   process.stdout.write("installed generator consumer smoke test passed\n");
 } finally {
   await rm(temporaryRoot, { force: true, recursive: true });

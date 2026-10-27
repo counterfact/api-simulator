@@ -48,6 +48,20 @@ Schema types also preserve:
 
 Generation does not replace runtime validation. TypeScript cannot express every JSON Schema constraint. In particular, `oneOf` is represented as a union rather than a guarantee that exactly one branch validates.
 
+## Customize schema types
+
+Set [`schema-type-transform` in `counterfact.yaml`](../api/cli.md#customize-generated-schema-types)
+to use a callback module from the CLI. The programmatic `@counterfact/generator`
+API accepts the same callback as `schemaTypeTransform`. The
+callback receives a JSON Schema, the default TypeScript type node, and a
+script facade for importing external types. Return the default type or a
+replacement. Inline schemas and referenced definitions are transformed; existing
+route edits remain preserved. This changes generated types, not runtime
+validation or conversion.
+
+See [Schema type transforms](../api/schema-types.md) for the full callback and
+facade reference, a complete example, and a TypeScript check of the generated model.
+
 ## Update a specification
 
 With specification watching enabled, save the OpenAPI document to regenerate the enabled artifacts. Types reflect the updated contract; existing route implementations retain your edits. Use your editor or TypeScript checks to find handlers whose assumptions no longer match the specification.
