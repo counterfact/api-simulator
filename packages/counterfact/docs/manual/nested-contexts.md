@@ -1,6 +1,6 @@
 # Nested and connected contexts
 
-The examples on this page follow the current source. Use the [pinned source setup](../patterns/lifecycle-setup.md#run-examples-from-the-current-source) to run them with matching generated types and runtime APIs.
+Use the [project installation setup](../patterns/lifecycle-setup.md) to run these examples with Counterfact 3 or newer.
 
 Use nested contexts when separate route areas need their own state or behavior. A route uses the nearest `_.context.ts` in its directory or a parent directory.
 

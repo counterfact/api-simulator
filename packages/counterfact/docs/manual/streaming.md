@@ -8,7 +8,7 @@ Counterfact supports OpenAPI 3.2 sequential media types. When your spec uses `it
 
 ## Define and generate a streaming operation
 
-Complete the [pinned source setup](../patterns/lifecycle-setup.md#run-examples-from-the-current-source) first; the published 2.17.0 package does not support the response API below. In its `counterfact-exercise/` directory, save this complete operation as `openapi.yaml`. The streaming media type and `itemSchema` let generation produce the matching handler type:
+Follow the [project installation setup](../patterns/lifecycle-setup.md) to install Counterfact 3 or newer. In that project directory, save this complete operation as `openapi.yaml`. The streaming media type and `itemSchema` let generation produce the matching handler type:
 
 ```yaml
 openapi: 3.2.0

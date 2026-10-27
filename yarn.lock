@@ -1083,16 +1083,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@counterfact/repl@npm:0.1.7, @counterfact/repl@workspace:packages/repl":
+"@counterfact/repl@npm:0.1.8, @counterfact/repl@workspace:packages/repl":
   version: 0.0.0-use.local
   resolution: "@counterfact/repl@workspace:packages/repl"
   dependencies:
     "@counterfact/client": "npm:0.2.1"
-    "@counterfact/runtime": "npm:0.3.0"
+    "@counterfact/runtime": "npm:0.3.1"
   languageName: unknown
   linkType: soft
 
-"@counterfact/runtime@npm:0.3.0, @counterfact/runtime@workspace:packages/runtime":
+"@counterfact/runtime@npm:0.3.1, @counterfact/runtime@workspace:packages/runtime":
   version: 0.0.0-use.local
   resolution: "@counterfact/runtime@workspace:packages/runtime"
   dependencies:
@@ -1117,11 +1117,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@counterfact/tutorials@npm:0.2.0, @counterfact/tutorials@workspace:packages/tutorials":
+"@counterfact/tutorials@npm:0.2.1, @counterfact/tutorials@workspace:packages/tutorials":
   version: 0.0.0-use.local
   resolution: "@counterfact/tutorials@workspace:packages/tutorials"
   dependencies:
-    "@counterfact/runtime": "npm:0.3.0"
+    "@counterfact/runtime": "npm:0.3.1"
     prettier: "npm:3.9.10"
   languageName: unknown
   linkType: soft
@@ -2251,7 +2251,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@posthog/core@npm:^1.60.0":
+"@posthog/core@npm:^1.60.1":
   version: 1.60.1
   resolution: "@posthog/core@npm:1.60.1"
   dependencies:
@@ -2320,26 +2320,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@stryker-mutator/api@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@stryker-mutator/api@npm:10.0.0"
+"@stryker-mutator/api@npm:10.1.1":
+  version: 10.1.1
+  resolution: "@stryker-mutator/api@npm:10.1.1"
   dependencies:
     mutation-testing-metrics: "npm:3.8.4"
     mutation-testing-report-schema: "npm:3.8.4"
     tslib: "npm:~2.8.0"
     typed-inject: "npm:~5.0.0"
-  checksum: 10c0/bd8f7148fb1dd33b07579a13888ce55795bf9d2449311996ff4dfc6c00fdd22d25b848c688eaaf83ae542e1f1af3e28f0877ea19c4536f3d128db3fbf1a6635b
+  checksum: 10c0/0d357554e71c22226965e38f267796662ad757e9c94162eb2038ed86d3dfa2e423ee764f6843d07bbb377aa1682f2062a9aec98a96a88e0318fe5c7e9faa2d2d
   languageName: node
   linkType: hard
 
-"@stryker-mutator/core@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@stryker-mutator/core@npm:10.0.0"
+"@stryker-mutator/core@npm:10.1.1":
+  version: 10.1.1
+  resolution: "@stryker-mutator/core@npm:10.1.1"
   dependencies:
     "@inquirer/prompts": "npm:^8.0.0"
-    "@stryker-mutator/api": "npm:10.0.0"
-    "@stryker-mutator/instrumenter": "npm:10.0.0"
-    "@stryker-mutator/util": "npm:10.0.0"
+    "@stryker-mutator/api": "npm:10.1.1"
+    "@stryker-mutator/instrumenter": "npm:10.1.1"
+    "@stryker-mutator/util": "npm:10.1.1"
     ajv: "npm:~8.20.0"
     chalk: "npm:~5.6.0"
     commander: "npm:~14.0.0"
@@ -2364,13 +2364,13 @@ __metadata:
     typed-rest-client: "npm:~2.3.0"
   bin:
     stryker: bin/stryker.js
-  checksum: 10c0/aa100e2f13c59dde77ba8f12d5d588201078e9494e18c8daa1c94379d65a4a06586f1cf3ba7d88779553a979169a5a67e5f801befa2e001c80648050cee62a64
+  checksum: 10c0/453a438b4ac7f0b0a63cc11f8aeb18eaec9fe2d8c6781eb5c8177dd69f94e9ec4ac87a7c49c3e1c0ed15e83e559002e3da792d5341816a481377333f84d5c698
   languageName: node
   linkType: hard
 
-"@stryker-mutator/instrumenter@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@stryker-mutator/instrumenter@npm:10.0.0"
+"@stryker-mutator/instrumenter@npm:10.1.1":
+  version: 10.1.1
+  resolution: "@stryker-mutator/instrumenter@npm:10.1.1"
   dependencies:
     "@babel/core": "npm:~8.0.0"
     "@babel/generator": "npm:~8.0.0"
@@ -2380,48 +2380,48 @@ __metadata:
     "@babel/preset-react": "npm:~8.0.0"
     "@babel/preset-typescript": "npm:~8.0.0"
     "@babel/traverse": "npm:~8.0.4"
-    "@stryker-mutator/api": "npm:10.0.0"
-    "@stryker-mutator/util": "npm:10.0.0"
+    "@stryker-mutator/api": "npm:10.1.1"
+    "@stryker-mutator/util": "npm:10.1.1"
     angular-html-parser: "npm:~10.11.0"
     semver: "npm:~7.8.0"
     tslib: "npm:2.8.1"
     weapon-regex: "npm:~2.0.0"
-  checksum: 10c0/d432787446b8a065e4751a3e1fc98f62783923f3690494f5cca544901a37a7c9190bcecd56678868b5b10bc0cbbf423613a57e37bd34264ce9b246da89358546
+  checksum: 10c0/42df7a739574a5094ac85ca3eaadad1ce961977dc918f854f497e06009043fe39f1b6a9077b37ca9899399b0028d8f887f9560f3d63f6589b902a39695222762
   languageName: node
   linkType: hard
 
-"@stryker-mutator/jest-runner@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@stryker-mutator/jest-runner@npm:10.0.0"
+"@stryker-mutator/jest-runner@npm:10.1.1":
+  version: 10.1.1
+  resolution: "@stryker-mutator/jest-runner@npm:10.1.1"
   dependencies:
-    "@stryker-mutator/api": "npm:10.0.0"
-    "@stryker-mutator/util": "npm:10.0.0"
+    "@stryker-mutator/api": "npm:10.1.1"
+    "@stryker-mutator/util": "npm:10.1.1"
     semver: "npm:~7.8.0"
     tslib: "npm:~2.8.0"
   peerDependencies:
-    "@stryker-mutator/core": 10.0.0
-  checksum: 10c0/1f19bf8fe4a2535a186a955f36506eae4a4851a8b3f25b504646f581982264a33b4feef4d66aac6d4da0fe5fb768084fdb7e4f7d4930146a03031a2e66995923
+    "@stryker-mutator/core": 10.1.1
+  checksum: 10c0/3fe6642cfd1f47f75a8b1cf45dc3ad3f48a48319bb53a03304c795c4f7634854e31a25209111d5614134d47240ef6cb2cb5549d9dbab0efd7a0ccec629ad80db
   languageName: node
   linkType: hard
 
-"@stryker-mutator/typescript-checker@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@stryker-mutator/typescript-checker@npm:10.0.0"
+"@stryker-mutator/typescript-checker@npm:10.1.1":
+  version: 10.1.1
+  resolution: "@stryker-mutator/typescript-checker@npm:10.1.1"
   dependencies:
-    "@stryker-mutator/api": "npm:10.0.0"
-    "@stryker-mutator/util": "npm:10.0.0"
+    "@stryker-mutator/api": "npm:10.1.1"
+    "@stryker-mutator/util": "npm:10.1.1"
     semver: "npm:~7.8.0"
   peerDependencies:
-    "@stryker-mutator/core": 10.0.0
+    "@stryker-mutator/core": 10.1.1
     typescript: ">=3.6"
-  checksum: 10c0/c506c64e2b47b307a234379520f2d8cd342f795411839ac2034e30e78009c35009b55d6e164670421af01ef9c8d8332149baba9b6a13f19618260f3e58a953f6
+  checksum: 10c0/2fdf24765c6184096fc60cc143e2891e9018f291fcc03c8497a4a78e91c1664aeeecb65551873daad6cc50ad6a13dee68eb24abd1a2500c31e43c972f5021a66
   languageName: node
   linkType: hard
 
-"@stryker-mutator/util@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@stryker-mutator/util@npm:10.0.0"
-  checksum: 10c0/00f5b9b3ebe6697b9b5f9ade0b73362052d20c1da1b11681a0e7c54ff2a0cc9d5262805e45869f25676244f9f8e0c382fe81793ca8cf034293c04eb889550c97
+"@stryker-mutator/util@npm:10.1.1":
+  version: 10.1.1
+  resolution: "@stryker-mutator/util@npm:10.1.1"
+  checksum: 10c0/14ff278714e1253118e76714b25f15b318b34a5319fd6b956f9d4c82d77a3b77f47e4e8ff797e2151191a699aa3fa7e2a4708e90a67d026854ae755df59404ef
   languageName: node
   linkType: hard
 
@@ -3095,6 +3095,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@typescript-eslint/project-service@npm:8.72.1":
+  version: 8.72.1
+  resolution: "@typescript-eslint/project-service@npm:8.72.1"
+  dependencies:
+    "@typescript-eslint/tsconfig-utils": "npm:^8.72.1"
+    "@typescript-eslint/types": "npm:^8.72.1"
+    debug: "npm:^4.4.3"
+  peerDependencies:
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/666172a721ef93b97129b7452e2a025487892b04c6dec8c98f22146354947361be0fd087c5404372f2f4a9be72abfc7d513a35a64509a694e0adb847f8b47e93
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/scope-manager@npm:8.72.0":
   version: 8.72.0
   resolution: "@typescript-eslint/scope-manager@npm:8.72.0"
@@ -3105,12 +3118,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@typescript-eslint/scope-manager@npm:8.72.1":
+  version: 8.72.1
+  resolution: "@typescript-eslint/scope-manager@npm:8.72.1"
+  dependencies:
+    "@typescript-eslint/types": "npm:8.72.1"
+    "@typescript-eslint/visitor-keys": "npm:8.72.1"
+  checksum: 10c0/75d55ebcf24c628c955f95446f553991e5b6e30b7f4bc8f14247d72b6490771e7d44757302cf4bc8f5529c1dd58a87d362b5ddbedf9299ff407a0604c25a0a5b
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/tsconfig-utils@npm:8.72.0, @typescript-eslint/tsconfig-utils@npm:^8.72.0":
   version: 8.72.0
   resolution: "@typescript-eslint/tsconfig-utils@npm:8.72.0"
   peerDependencies:
     typescript: ">=4.8.4 <6.1.0"
   checksum: 10c0/98a23511042dcf4af517897712a44e69a50304f2ea9a1e004ed95f53185e17f669d2d4333384b6b611177a2ecaba65b1ad0f821ecc7d4fdccc6868aa87491f36
+  languageName: node
+  linkType: hard
+
+"@typescript-eslint/tsconfig-utils@npm:8.72.1, @typescript-eslint/tsconfig-utils@npm:^8.72.1":
+  version: 8.72.1
+  resolution: "@typescript-eslint/tsconfig-utils@npm:8.72.1"
+  peerDependencies:
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/121640ae8861828e50d677e7234e70ae03c24786bedac09f4a944bcf59fde90dca6507a1f796974ed6cd9c45d2404562caf3833e6bdfcf3f02a495259b47fc17
   languageName: node
   linkType: hard
 
@@ -3134,6 +3166,13 @@ __metadata:
   version: 8.72.0
   resolution: "@typescript-eslint/types@npm:8.72.0"
   checksum: 10c0/11ee41f1860149f3dcfe6f517840cd7254fbc90f4acaf6098f731bb00a6392f8e5d7d9d0e47e516bd0e5fcd3110e41624ad893036ad79fa6dd6b5a67d6a42aa6
+  languageName: node
+  linkType: hard
+
+"@typescript-eslint/types@npm:8.72.1, @typescript-eslint/types@npm:^8.72.1":
+  version: 8.72.1
+  resolution: "@typescript-eslint/types@npm:8.72.1"
+  checksum: 10c0/759f36d27a5b6c4dcdcd035ddec6e39d261cfcab864e641c4a6252d4be6358e53055ad737f1797e6ebb2b64b8cda380a0492acb96d7115e7ed86e6b27ceeddc3
   languageName: node
   linkType: hard
 
@@ -3174,18 +3213,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@typescript-eslint/typescript-estree@npm:8.72.1":
+  version: 8.72.1
+  resolution: "@typescript-eslint/typescript-estree@npm:8.72.1"
+  dependencies:
+    "@typescript-eslint/project-service": "npm:8.72.1"
+    "@typescript-eslint/tsconfig-utils": "npm:8.72.1"
+    "@typescript-eslint/types": "npm:8.72.1"
+    "@typescript-eslint/visitor-keys": "npm:8.72.1"
+    debug: "npm:^4.4.3"
+    minimatch: "npm:^10.2.2"
+    semver: "npm:^7.7.3"
+    tinyglobby: "npm:^0.2.15"
+    ts-api-utils: "npm:^2.5.0"
+  peerDependencies:
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/88ed2e3f46275972e8a016c66c9f6cf3aca22d0dd3be6c4573d80c8cf78c0322b967c5f1c26759487f79bc005db3fe4ec2bf45715518a5becaab42943981571b
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/utils@npm:^8.58.0":
-  version: 8.72.0
-  resolution: "@typescript-eslint/utils@npm:8.72.0"
+  version: 8.72.1
+  resolution: "@typescript-eslint/utils@npm:8.72.1"
   dependencies:
     "@eslint-community/eslint-utils": "npm:^4.9.1"
-    "@typescript-eslint/scope-manager": "npm:8.72.0"
-    "@typescript-eslint/types": "npm:8.72.0"
-    "@typescript-eslint/typescript-estree": "npm:8.72.0"
+    "@typescript-eslint/scope-manager": "npm:8.72.1"
+    "@typescript-eslint/types": "npm:8.72.1"
+    "@typescript-eslint/typescript-estree": "npm:8.72.1"
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
     typescript: ">=4.8.4 <6.1.0"
-  checksum: 10c0/5d6404bdf52fe4e55af411ad92e3cfb9d183b7379af9e8e30d4f818dabdac4043023e717043d6985d8f3090b11a6d47f7f47df52feb890dc7f5eda3ec5e83037
+  checksum: 10c0/f0be6d53ee67c65a4b37431367ef58441e60e88d220f2fafd22ecbba91f5ce0c8ba340c4b0f4d1551ef6856f310b353593a4b5304636fbe37aea3fc0eaa8182f
   languageName: node
   linkType: hard
 
@@ -3196,6 +3254,16 @@ __metadata:
     "@typescript-eslint/types": "npm:8.72.0"
     eslint-visitor-keys: "npm:^5.0.0"
   checksum: 10c0/9df92b2ece08c5c7f2568b88d1c6c1fcb4233c9dc67f42b0d1eb60564cd0f1970e00ad6a917ce28da21476ca930a92f45414d4e27f59bb8a502abef5c436be48
+  languageName: node
+  linkType: hard
+
+"@typescript-eslint/visitor-keys@npm:8.72.1":
+  version: 8.72.1
+  resolution: "@typescript-eslint/visitor-keys@npm:8.72.1"
+  dependencies:
+    "@typescript-eslint/types": "npm:8.72.1"
+    eslint-visitor-keys: "npm:^5.0.0"
+  checksum: 10c0/758e253217971fb795a5988dffe6257a5655e4c1afebc66892b9d42b1569787a03059e1a64dcabae7cb847b6e7cfba2b8e9fc1a77d17f470cbdaa9419e65e6bb
   languageName: node
   linkType: hard
 
@@ -4261,9 +4329,9 @@ __metadata:
     "@changesets/cli": "npm:3.0.3"
     "@eslint/js": "npm:10.0.1"
     "@jest/globals": "npm:30.5.2"
-    "@stryker-mutator/core": "npm:10.0.0"
-    "@stryker-mutator/jest-runner": "npm:10.0.0"
-    "@stryker-mutator/typescript-checker": "npm:10.0.0"
+    "@stryker-mutator/core": "npm:10.1.1"
+    "@stryker-mutator/jest-runner": "npm:10.1.1"
+    "@stryker-mutator/typescript-checker": "npm:10.1.1"
     "@swc/core": "npm:1.16.20"
     "@swc/jest": "npm:0.2.39"
     "@testing-library/dom": "npm:10.4.2"
@@ -4315,15 +4383,15 @@ __metadata:
     "@counterfact/client": "npm:0.2.1"
     "@counterfact/generator": "npm:1.0.0"
     "@counterfact/openapi": "npm:0.1.6"
-    "@counterfact/repl": "npm:0.1.7"
-    "@counterfact/runtime": "npm:0.3.0"
-    "@counterfact/tutorials": "npm:0.2.0"
+    "@counterfact/repl": "npm:0.1.8"
+    "@counterfact/runtime": "npm:0.3.1"
+    "@counterfact/tutorials": "npm:0.2.1"
     commander: "npm:15.0.0"
     debug: "npm:4.4.3"
     http-terminator: "npm:3.2.0"
     js-yaml: "npm:5.5.0"
     open: "npm:11.0.4"
-    posthog-node: "npm:5.57.0"
+    posthog-node: "npm:5.57.1"
     typescript: "npm:6.0.3"
   bin:
     counterfact: bin/counterfact.js
@@ -8718,11 +8786,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-node@npm:5.57.0":
-  version: 5.57.0
-  resolution: "posthog-node@npm:5.57.0"
+"posthog-node@npm:5.57.1":
+  version: 5.57.1
+  resolution: "posthog-node@npm:5.57.1"
   dependencies:
-    "@posthog/core": "npm:^1.60.0"
+    "@posthog/core": "npm:^1.60.1"
   peerDependencies:
     "@opentelemetry/api": ^1.2.0
     rxjs: ^7.0.0
@@ -8731,7 +8799,7 @@ __metadata:
       optional: true
     rxjs:
       optional: true
-  checksum: 10c0/de8040db2162a09a7d2f108cf2903efd1563f75f3f2a2a7ef8c6902d9ab7180015881ad8e68df66374ce23ac46b386ddb83e6a4ecfe5de2214bd4f3147a01e07
+  checksum: 10c0/896730d11037e60283a1f7c08c9fe508c31161204f29a22f8d688239f3c52708ef7102f6ff9c84380699a1f7162acd76d9bd2dce0205ea90a03f73fd92f6ec04
   languageName: node
   linkType: hard
 
