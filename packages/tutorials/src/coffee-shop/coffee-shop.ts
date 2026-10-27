@@ -4,15 +4,30 @@ import { coffeeShopPage } from "./coffee-shop-page.js";
 const validationModule = new URL("./coffee-shop-checks.js", import.meta.url)
   .href;
 
+const workspaceModule = new URL("./coffee-shop-workspace.js", import.meta.url)
+  .href;
+
 const telemetryModule = new URL("./coffee-shop-telemetry.js", import.meta.url)
   .href;
 
-const item = {
+const orderItem = {
   type: "object",
   required: ["productId", "quantity"],
   properties: {
     productId: { type: "string", minLength: 1 },
     quantity: { type: "integer", minimum: 1 },
+  },
+};
+const item = { $ref: "#/components/schemas/OrderItem" };
+const product = {
+  type: "object",
+  required: ["id", "name", "description", "price", "stock"],
+  properties: {
+    id: { type: "string", minLength: 1, maxLength: 32 },
+    name: { type: "string", minLength: 1, maxLength: 40 },
+    description: { type: "string", maxLength: 120 },
+    price: { type: "integer", minimum: 500, maximum: 2500 },
+    stock: { type: "integer", minimum: 0, maximum: 20 },
   },
 };
 const jsonResponse = (schema: object) => ({
@@ -27,6 +42,7 @@ const errorResponse = jsonResponse({
 export const SHOP_DOCUMENT = {
   openapi: "3.0.3",
   info: { title: "Counterfact Coffee", version: "1.0.0" },
+  components: { schemas: { Product: product, OrderItem: orderItem } },
   paths: {
     "/tutorial-info": {
       get: {
@@ -82,6 +98,43 @@ export const SHOP_DOCUMENT = {
         },
       },
     },
+    "/tutorial-workspace": {
+      post: {
+        parameters: [
+          { in: "header", name: "origin", schema: { type: "string" } },
+          { in: "header", name: "host", schema: { type: "string" } },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["action", "phaseId", "sessionId"],
+                properties: {
+                  action: { type: "string", enum: ["prepare", "checkpoint"] },
+                  phaseId: {
+                    type: "string",
+                    enum: PHASES.map((phase) => phase.id),
+                  },
+                  sessionId: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": jsonResponse({
+            type: "object",
+            required: ["ok", "message"],
+            properties: {
+              ok: { type: "boolean" },
+              message: { type: "string" },
+            },
+          }),
+        },
+      },
+    },
     "/tutorial-check": {
       post: {
         requestBody: {
@@ -123,17 +176,7 @@ export const SHOP_DOCUMENT = {
             type: "array",
             minItems: 3,
             maxItems: 3,
-            items: {
-              type: "object",
-              required: ["id", "name", "description", "price", "stock"],
-              properties: {
-                id: { type: "string", minLength: 1, maxLength: 32 },
-                name: { type: "string", minLength: 1, maxLength: 40 },
-                description: { type: "string", maxLength: 120 },
-                price: { type: "integer", minimum: 500, maximum: 2500 },
-                stock: { type: "integer", minimum: 0, maximum: 20 },
-              },
-            },
+            items: { $ref: "#/components/schemas/Product" },
           }),
         },
       },
@@ -215,6 +258,23 @@ export const GET: HTTP_GET = async function ($) {
 ${helpersImport}
 export const POST: HTTP_POST = async function ($) {
   return $.response.status(200).json(await (await helpers).checkWalkthroughSave(${project}, $.body.phaseId));
+};
+`,
+    "routes/tutorial-workspace.ts": `import type { HTTP_POST } from "../types/paths/tutorial-workspace.types.js";
+${helpersImport}
+const workspace = new Function("url", "return import(url)")(${JSON.stringify(workspaceModule)});
+export const POST: HTTP_POST = async function ($) {
+  try {
+    if ($.headers.origin && new URL($.headers.origin).host !== $.headers.host)
+      throw new Error("Workspace changes must come from this walkthrough's origin.");
+    const info = await (await helpers).walkthroughInfo(${project}, $.context);
+    if ($.body.sessionId !== info.sessionId) throw new Error("Reload the walkthrough before changing its workspace.");
+    const action = $.body.action === "prepare" ? (await workspace).prepareWalkthroughStep : (await workspace).checkpointWalkthroughStep;
+    return $.response.status(200).json(await action(${project}, $.body.phaseId));
+  } catch (error) {
+    const result = { ok: false, message: error instanceof Error ? error.message : String(error) };
+    return $.response.status(200).json(result);
+  }
 };
 `,
     "routes/tutorial-event.ts": `import type { HTTP_POST } from "../types/paths/tutorial-event.types.js";

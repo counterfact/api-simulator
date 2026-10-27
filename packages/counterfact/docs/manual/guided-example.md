@@ -64,8 +64,12 @@ The twelve steps build on the code you have already written:
 | 11   | Requests that sell out and REPL commands that restock                    | The same handlers produce different responses as shared state evolves.                |
 | 12   | A focused `restockDarkRoast` scenario                                    | A reusable setup changes one product while preserving other inventory and order IDs.  |
 
-Each phase explains the Counterfact facility being used, names the file to edit,
-and supplies copyable code under **Show code**. **Open in VSCode** and **Copy file
+Each phase explains the Counterfact facility being used and names the file to edit.
+**Prepare this step** adds the supporting code described above the button. Review
+that change in your IDE, then make the small edit supplied under **Show code**.
+You keep your existing file and change only the indicated return statement, branch,
+method body, or assignment. Counterfact prepares the surrounding structure and
+data; you connect the behavior. Preparation never runs a scenario or resets state. **Open in VSCode** and **Copy file
 path** help you find the file. File names in the prose also open in VSCode.
 Counterfact formats the supplied walkthrough infrastructure; the generator creates
 the initial product and order stubs, context, and default scenario file.
@@ -75,6 +79,22 @@ instructions stay visible. **Continue** moves between completed lessons;
 **Back** revisits them. **Preview next lesson** shows later instructions and the
 first missing prerequisite, with a return link. Previewing never applies code or
 marks an exercise complete.
+
+## Follow changes in your IDE
+
+Git must be installed. Your new demo has its own local Git repository, with a
+commit of the generated starting point. Each completed step creates another
+commit, including steps that only use HTTP requests or the REPL. Open the demo
+folder in your IDE and use its Source Control view to inspect the current step’s
+uncommitted changes. Both prepared code and your edits stay visible until that
+step completes.
+
+These commits stay local. Counterfact uses a walkthrough identity for its Git
+commands without changing your personal Git settings. A failed commit leaves
+your work in place and offers **Retry Git checkpoint** before you continue.
+Preparation remembers what it has added across reloads and refuses to replace
+conflicting code. Existing demos keep their files and history; start a new demo
+to use guided preparation and automatic checkpoints.
 
 ## Save, exercise, and compare
 
@@ -105,7 +125,10 @@ original failed order if you have changed its items.
 
 ## Make state changes explicit
 
-The context starts empty. You add its fields and methods yourself. The baseline
+The context starts empty. Preparation adds its fields and method stubs; you fill
+in the two method bodies. `Product` and `OrderItem` are imported from the schema
+types Counterfact generated from the bundled OpenAPI document. There are no
+duplicate model type definitions in your context file. The baseline
 scenario contains the example catalog and starting quantities; `startup`
 delegates to that scenario on subsequent server starts. Saving a scenario does
 not apply it to an already running session. Run it explicitly:

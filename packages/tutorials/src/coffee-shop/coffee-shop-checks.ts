@@ -7,6 +7,8 @@ import { join } from "node:path";
 import { Transpiler } from "@counterfact/runtime";
 import { CATALOG, PHASES } from "./coffee-shop-lessons.js";
 
+import { walkthroughWorkspace } from "./coffee-shop-workspace.js";
+
 const sessionIds = new Map<string, string>();
 const paths = [
   "routes/products.ts",
@@ -57,6 +59,7 @@ export async function walkthroughInfo(root: string, context: Context) {
     sessionIds.set(root, randomUUID());
   }
   return {
+    workspace: await walkthroughWorkspace(root),
     projectPath: root,
     sessionId: sessionIds.get(root)!,
     walkthroughVersion: 2,

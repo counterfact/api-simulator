@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@counterfact/runtime": "0.3.1",
-    "prettier": "3.9.10"
+    "prettier": "3.9.10",
+    "typescript": "6.0.3"
   }
 }

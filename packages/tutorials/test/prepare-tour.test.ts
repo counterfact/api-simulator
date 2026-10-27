@@ -38,6 +38,7 @@ it("creates a restartable offline shop without touching an existing project", as
       "routes/tutorial-info.ts",
       "routes/tutorial-check.ts",
       "routes/tutorial-event.ts",
+      "routes/tutorial-workspace.ts",
       "routes/walkthrough.ts",
     ]) {
       expect(

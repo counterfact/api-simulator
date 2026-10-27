@@ -3,6 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 /* eslint-disable security/detect-non-literal-fs-filename -- CLI migration cleanup operates on known child directories under config.basePath. */
 
+import { finalizeTour } from "@counterfact/tutorials";
 import { Command } from "commander";
 import createDebug from "debug";
 import open from "open";
@@ -465,7 +466,10 @@ function buildProgram(
     try {
       await startupReporter.step(
         createRuntimeProgressMessage(config, hasOpenApi),
-        () => start(config),
+        async () => {
+          await start(config);
+          if (walkthroughPath) await finalizeTour(config.basePath);
+        },
       );
     } catch (error) {
       process.stderr.write(

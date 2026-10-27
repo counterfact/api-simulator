@@ -55,6 +55,7 @@ function find(
 }
 async function browser(
   options: {
+    workspace?: boolean;
     phase?: string;
     preview?: boolean;
     storage?: Map<string, string>;
@@ -73,6 +74,12 @@ async function browser(
   );
   const productData = structuredClone(options.products ?? CATALOG);
   const server = {
+    workspace: {
+      enabled: !!options.workspace,
+      prepared: [] as string[],
+      checkpoints: [] as number[],
+    },
+    checkpointError: false,
     revision: "initial",
     sessionId: options.sessionId ?? "same-session",
     checkOk: options.checkOk ?? false,
@@ -149,11 +156,21 @@ async function browser(
         value: unknown;
       if (path === "/tutorial-info")
         value = {
+          workspace: structuredClone(server.workspace),
           sessionId: server.sessionId,
           revision: server.revision,
           state: structuredClone(server.state),
         };
-      else if (path === "/tutorial-check")
+      else if (path === "/tutorial-workspace") {
+        if (body?.action === "prepare")
+          server.workspace.prepared.push(String(body.phaseId));
+        value = {
+          ok: !server.checkpointError,
+          message: server.checkpointError
+            ? "Git is temporarily unavailable"
+            : "Saved local Git checkpoint",
+        };
+      } else if (path === "/tutorial-check")
         value = {
           revision: server.revision,
           ok: server.checkOk,
@@ -396,9 +413,7 @@ it("waits for an explicit seed command instead of completing from a saved scenar
 
 it("keeps the inventory edit hidden through a wrong answer and reload, then reveals it after retry", async () => {
   const app = await browser({ phase: "observe" });
-  expect(app.root("lesson").textContent).not.toContain(
-    "Replace routes/orders.ts",
-  );
+  expect(app.root("lesson").textContent).not.toContain("replace only its TODO");
   app.add("dark-roast");
   await app.api.placeOrder();
   expect(app.root("inventory-question").textContent).toContain("3 → 3");
@@ -406,16 +421,14 @@ it("keeps the inventory edit hidden through a wrong answer and reload, then reve
   expect(app.root("inventory-question").textContent).toContain(
     "separate operations",
   );
-  expect(app.root("lesson").textContent).not.toContain(
-    "Replace routes/orders.ts",
-  );
+  expect(app.root("lesson").textContent).not.toContain("replace only its TODO");
   const restored = await browser({ storage: app.storage });
   expect(restored.root("inventory-question").textContent).toContain("3 → 3");
   await restored.answer("Yes, stock decreased");
   await restored.answer("Try again");
   await restored.answer("No, stock stayed the same");
   expect(restored.root("lesson").textContent).toContain(
-    "Replace routes/orders.ts",
+    "replace only its TODO",
   );
   expect(restored.root("lesson").textContent).toContain(
     "inventory[item.productId] -= item.quantity",
@@ -597,4 +610,71 @@ it("lets an already-restocked shop establish a new observable starting quantity"
   app.server.state.inventory["dark-roast"] = 5;
   await app.click("check-progress");
   expect(app.completed()).toContain("scenario");
+});
+
+it("only prepares attended lessons, retains preparation on reload, and retries failed Git checkpoints", async () => {
+  const app = await browser({ phase: "catalog", workspace: true });
+  const prepare = find(
+    app.root("lesson"),
+    (element) =>
+      element.tag === "button" && element.textContent === "Prepare this step",
+  )!;
+  expect(
+    app.calls.filter((call) => call.path === "/tutorial-workspace"),
+  ).toEqual([]);
+  await prepare.onclick!();
+  expect(app.server.workspace.prepared).toEqual(["catalog"]);
+  expect(app.root("lesson").textContent).toContain("Step prepared");
+  await app.click("skip");
+  expect(app.root("lesson").textContent).toContain("Preview:");
+  expect(
+    find(
+      app.root("lesson"),
+      (element) => element.textContent === "Prepare this step",
+    ),
+  ).toBeUndefined();
+  expect(
+    app.calls.filter((call) => call.path === "/tutorial-workspace"),
+  ).toHaveLength(1);
+  const order = await browser({
+    phase: "order",
+    workspace: true,
+    checkOk: true,
+  });
+  order.server.checkpointError = true;
+  order.add();
+  await order.api.placeOrder();
+  await new Promise((resolve) => setImmediate(resolve));
+  expect(order.completed()).not.toContain("order");
+  expect(order.root("guide-status").textContent).toContain(
+    "Git is temporarily unavailable",
+  );
+  const retry = find(
+    order.root("lesson"),
+    (element) =>
+      element.tag === "button" &&
+      element.textContent === "Retry Git checkpoint",
+  )!;
+  order.server.checkpointError = false;
+  await retry.onclick!();
+  expect(order.completed()).toContain("order");
+});
+
+it("retains the preparation explanation when failure progresses to recovery", async () => {
+  const app = await browser({ phase: "fail", workspace: true, checkOk: true });
+  const prepare = find(
+    app.root("lesson"),
+    (element) =>
+      element.tag === "button" && element.textContent === "Prepare this step",
+  )!;
+  await prepare.onclick!();
+  const explanation = PHASES.find((phase) => phase.id === "fail")!.preparation!;
+  app.server.orderMode = "unavailable";
+  app.add();
+  await app.api.placeOrder();
+  await new Promise((resolve) => setImmediate(resolve));
+  expect(app.root("lesson").textContent).toContain(explanation);
+  expect(app.root("lesson").textContent).toContain(
+    "Change ordersAvailable to true",
+  );
 });

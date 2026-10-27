@@ -6,6 +6,11 @@ import { format } from "prettier";
 
 import { coffeeShopFiles, SHOP_DOCUMENT } from "./coffee-shop/coffee-shop.js";
 
+import {
+  initializeWalkthroughRepository,
+  walkthroughWorkspace,
+} from "./coffee-shop/coffee-shop-workspace.js";
+
 export async function findTourDirectory(root: string): Promise<string> {
   for (let suffix = 1; ; suffix++) {
     const name =
@@ -39,9 +44,15 @@ export async function prepareTour(
       await format(contents, { parser: "typescript" }),
     );
   }
+  await initializeWalkthroughRepository(destination);
   return {
     source: join(destination, "openapi.json"),
     destination,
     walkthroughPath: "/walkthrough",
   };
+}
+
+/** Commit the normal generator output before inviting the learner to edit it. */
+export async function finalizeTour(destination: string): Promise<void> {
+  await walkthroughWorkspace(destination);
 }

@@ -1,1 +1,5 @@
-export { findTourDirectory, prepareTour } from "./prepare-tour.js";
+export {
+  findTourDirectory,
+  prepareTour,
+  finalizeTour,
+} from "./prepare-tour.js";

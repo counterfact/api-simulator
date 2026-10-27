@@ -603,6 +603,8 @@ def coffee_shop_purchase(journey):
     assert "Walkthrough instructions" in page.text
     assert "Refresh products" in page.text
     assert "Latest API requests and responses" in page.text
+    # The CLI commits the real generated baseline before opening the browser.
+    assert "Start with Counterfact generated stubs" in (journey.output / ".git/logs/HEAD").read_text()
     info = journey.request("get", "/tutorial-info")
     assert info.status_code == 200, info.text
     assert os.path.realpath(info.json()["projectPath"]) == os.path.realpath(journey.output)
@@ -632,34 +634,6 @@ COFFEE_CATALOG = [
     {"id": "dark-roast", "name": "Dark Roast", "description": "Rich cocoa with a bold, toasted finish.", "price": 1600, "stock": 3},
     {"id": "decaf", "name": "Decaf", "description": "All the comfort of coffee. An easier evening.", "price": 1500, "stock": 0},
 ]
-COFFEE_CONTEXT = r'''export type OrderItem = { productId: string; quantity: number };
-export type CatalogProduct = { id: string; name: string; description: string; price: number };
-export class Context {
-  catalog: CatalogProduct[] = [];
-  inventory: Record<string, number> = {};
-  private nextOrderId = 1;
-  listProducts() { return this.catalog.map(product => ({ ...product, stock: this.inventory[product.id] ?? 0 })); }
-  confirmOrder(items: OrderItem[]) { return { orderId: this.nextOrderId++, items }; }
-  reset() { this.catalog = []; this.inventory = {}; this.nextOrderId = 1; }
-}
-'''
-COFFEE_STOCK_METHODS = r'''
-  canFulfill(items: OrderItem[]) {
-    return items.length > 0 && items.every(item => Number.isInteger(item.quantity) && item.quantity > 0) && this.getShortages(items).length === 0;
-  }
-  getShortages(items: OrderItem[]) {
-    const quantities = new Map<string, number>();
-    for (const item of items) quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
-    return [...quantities].filter(([id, requested]) => requested > (this.inventory[id] ?? 0)).map(([productId, requested]) => ({ productId, requested, available: this.inventory[productId] ?? 0 }));
-  }
-'''
-COFFEE_ORDERS = r'''import type { HTTP_POST } from "../types/paths/orders.types.js";
-const ordersAvailable = true;
-export const POST: HTTP_POST = function ($) {
-  if (!ordersAvailable) return $.response.status(503).json({ error: "Ordering is temporarily unavailable." });
-  return $.response.status(201).json({ orderId: 1, items: $.body.items });
-};
-'''
 
 
 def apply_coffee_scenario(journey, name):
@@ -683,10 +657,27 @@ def coffee_order(journey, product_id, quantity):
     return journey.request("post", "/orders", json={"items": [{"productId": product_id, "quantity": quantity}]})
 
 
+def coffee_workspace(journey, action, phase):
+    info = journey.request("get", "/tutorial-info").json()
+    response = journey.request("post", "/tutorial-workspace", json={"action": action, "phaseId": phase, "sessionId": info["sessionId"]})
+    assert response.status_code == 200 and response.json()["ok"], response.text
+
+
+def edit_coffee(journey, filename, before, after):
+    path = journey.output / filename
+    source = path.read_text()
+    assert before in source
+    path.write_text(source.replace(before, after, 1))
+
+
 @when("I replace the product and order stubs with explicit responses")
 def replace_coffee_stubs(journey):
-    (journey.output / "routes/products.ts").write_text('import type { HTTP_GET } from "../types/paths/products.types.js";\nexport const GET: HTTP_GET = function ($) { return $.response.status(200).json(' + json.dumps(COFFEE_CATALOG) + '); };\n')
-    (journey.output / "routes/orders.ts").write_text(COFFEE_ORDERS)
+    coffee_workspace(journey, "checkpoint", "explore")
+    coffee_workspace(journey, "prepare", "catalog")
+    edit_coffee(journey, "routes/products.ts", "return $.response.status(200).random();", "return $.response.status(200).json(catalog);")
+    journey.wait_for_http("/products", lambda response: response.status_code == 200 and response.json() == COFFEE_CATALOG)
+    coffee_workspace(journey, "checkpoint", "catalog")
+    edit_coffee(journey, "routes/orders.ts", "return $.response.status(201).random();", "return $.response.status(201).json({ orderId: 1, items: $.body.items });")
 
 
 @then("repeated product responses are stable and confirmations echo the order")
@@ -696,21 +687,26 @@ def explicit_coffee_responses(journey):
     items = [{"productId": "house-blend", "quantity": 2}]
     journey.wait_for_http("/orders", lambda response: response.status_code == 201 and response.json().get("items") == items and response.json()["orderId"] == 1, method="post", json={"items": items})
     assert coffee_stock(journey, "house-blend") == 5
+    coffee_workspace(journey, "checkpoint", "order")
 
 
 @when("I introduce shared context and explicitly run its reset scenario")
 def introduce_coffee_context(journey):
-    (journey.output / "routes/_.context.ts").write_text(COFFEE_CONTEXT)
+    coffee_workspace(journey, "prepare", "context")
+    edit_coffee(journey, "routes/_.context.ts", "return [];", "return this.catalog.map(product => ({ ...product, stock: this.inventory[product.id] ?? 0 }));")
+    edit_coffee(journey, "routes/_.context.ts", "orderId: 0", "orderId: this.nextOrderId++")
     journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "context"})
-    metadata = [{key: value for key, value in product.items() if key != "stock"} for product in COFFEE_CATALOG]
-    baseline = 'import type { Scenario } from "../types/_.context.js";\nexport const reset: Scenario = function ($) { $.context.reset(); $.context.catalog = ' + json.dumps(metadata) + '; $.context.inventory = { "house-blend": 5, "dark-roast": 3, "decaf": 0 }; };\nexport const startup: Scenario = reset;\n'
-    (journey.output / "scenarios/index.ts").write_text(baseline)
+    coffee_workspace(journey, "checkpoint", "context")
+    coffee_workspace(journey, "prepare", "seed")
+    path = journey.output / "scenarios/index.ts"
+    path.write_text(path.read_text() + "\nexport const startup: Scenario = reset;\n")
     journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "seed"})
     journey.wait_for_http("/tutorial-info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"] == {})
     apply_coffee_scenario(journey, "reset")
     journey.wait_for_http("/tutorial-info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"].get("dark-roast") == 3)
-    (journey.output / "routes/products.ts").write_text('import type { HTTP_GET } from "../types/paths/products.types.js";\nexport const GET: HTTP_GET = function ($) { return $.response.status(200).json($.context.listProducts()); };\n')
-    (journey.output / "routes/orders.ts").write_text(COFFEE_ORDERS.replace("{ orderId: 1, items: $.body.items }", "$.context.confirmOrder($.body.items)"))
+    coffee_workspace(journey, "checkpoint", "seed")
+    edit_coffee(journey, "routes/products.ts", "return $.response.status(200).json(catalog);", "return $.response.status(200).json($.context.listProducts());")
+    edit_coffee(journey, "routes/orders.ts", "{ orderId: 1, items: $.body.items }", "$.context.confirmOrder($.body.items)")
     journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "connect"})
 
 
@@ -721,6 +717,7 @@ def connected_coffee_handlers(journey):
     second = coffee_order(journey, "house-blend", 1).json()["orderId"]
     assert second == first + 1
     assert coffee_stock(journey, "house-blend") == 5
+    coffee_workspace(journey, "checkpoint", "connect")
 
 
 @when("I make Decaf available through the running REPL")
@@ -733,10 +730,12 @@ def decaf_available(journey):
     assert coffee_stock(journey, "decaf") == 5
     assert coffee_order(journey, "decaf", 1).status_code == 201
     assert coffee_stock(journey, "decaf") == 5
+    coffee_workspace(journey, "checkpoint", "decaf")
 
 
 @when("I make ordering unavailable and then restore it")
 def unavailable_orders(journey):
+    coffee_workspace(journey, "prepare", "fail")
     path = journey.output / "routes/orders.ts"
     path.write_text(path.read_text().replace("const ordersAvailable = true;", "const ordersAvailable = false;"))
     journey.wait_for_http("/orders", lambda response: response.status_code == 503, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]})
@@ -751,10 +750,12 @@ def retry_orders(journey):
     path.write_text(path.read_text().replace("const ordersAvailable = false;", "const ordersAvailable = true;"))
     journey.wait_for_http("/orders", lambda response: response.status_code == 201, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]})
 
+    coffee_workspace(journey, "checkpoint", "retry")
+
 
 @when("I add stock rules to context and the order handler")
 def add_coffee_stock_rules(journey):
-    (journey.output / "routes/_.context.ts").write_text(COFFEE_CONTEXT.rsplit("}", 1)[0] + COFFEE_STOCK_METHODS + "}\n")
+    coffee_workspace(journey, "prepare", "rules")
     path = journey.output / "routes/orders.ts"
     path.write_text(path.read_text().replace('  return $.response.status(201)', '  if (!$.context.canFulfill($.body.items)) return $.response.status(409).json({ error: "Not enough stock", shortages: $.context.getShortages($.body.items) });\n  return $.response.status(201)'))
     journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "rules"})
@@ -767,13 +768,13 @@ def reject_coffee_shortages(journey):
     assert duplicate.status_code == 409
     assert duplicate.json()["shortages"] == [{"productId": "dark-roast", "requested": 4, "available": 3}]
     assert coffee_stock(journey, "dark-roast") == 3
+    coffee_workspace(journey, "checkpoint", "rules")
 
 
 @when("I add the inventory mutation to the successful order handler")
 def update_order_context(journey):
-    path = journey.output / "routes/orders.ts"
-    source = path.read_text().replace('export const POST', 'function reduceInventory(items: { productId: string; quantity: number }[], inventory: Record<string, number>) { for (const item of items) inventory[item.productId] -= item.quantity; }\nexport const POST')
-    path.write_text(source.replace('  return $.response.status(201)', '  reduceInventory($.body.items, $.context.inventory);\n  return $.response.status(201)'))
+    coffee_workspace(journey, "prepare", "reduce")
+    edit_coffee(journey, "routes/orders.ts", "// TODO: For each item, subtract its quantity from inventory[item.productId].", "for (const item of items) { inventory[item.productId] -= item.quantity; }")
     journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "reduce"})
 
 
@@ -786,6 +787,7 @@ def purchase_updates_inventory(journey):
             break
         time.sleep(0.1)
     assert coffee_stock(journey, "dark-roast") == 2
+    coffee_workspace(journey, "checkpoint", "reduce")
 
 
 @when("I purchase the remaining Dark Roast stock")
@@ -809,6 +811,7 @@ def restock_and_purchase(journey):
     assert coffee_stock(journey, "dark-roast") == 5
     assert coffee_order(journey, "dark-roast", 1).status_code == 201
     assert coffee_stock(journey, "dark-roast") == 4
+    coffee_workspace(journey, "checkpoint", "restock")
     session = journey.request("get", "/tutorial-info").json()["sessionId"]
     for filename in ["routes/products.ts", "routes/_.context.ts"]:
         path = journey.output / filename
@@ -819,8 +822,8 @@ def restock_and_purchase(journey):
 
 @when("I save and apply a focused Dark Roast restock scenario")
 def reusable_coffee_restock(journey):
-    path = journey.output / "scenarios/index.ts"
-    path.write_text(path.read_text() + '\nexport const restockDarkRoast: Scenario = function ($) { $.context.inventory["dark-roast"] = 5; };\n')
+    coffee_workspace(journey, "prepare", "scenario")
+    edit_coffee(journey, "scenarios/index.ts", "// TODO: set Dark Roast inventory to 5.", '$.context.inventory["dark-roast"] = 5;')
     journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "scenario"})
     journey.coffee_order_id = coffee_order(journey, "house-blend", 1).json()["orderId"]
     apply_coffee_scenario(journey, "restockDarkRoast")
@@ -832,6 +835,10 @@ def coffee_restock_composes(journey):
     assert coffee_stock(journey, "decaf") == 5
     assert coffee_stock(journey, "house-blend") == 4
     assert coffee_order(journey, "house-blend", 1).json()["orderId"] == journey.coffee_order_id + 1
+    coffee_workspace(journey, "checkpoint", "scenario")
+    info = journey.request("get", "/tutorial-info").json()
+    assert info["workspace"]["checkpoints"] == list(range(1, 13))
+    assert (journey.output / ".git/logs/HEAD").read_text().count("commit") == 13
 
 
 @when("I restart the guided API")

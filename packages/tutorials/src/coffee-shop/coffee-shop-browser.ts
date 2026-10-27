@@ -16,6 +16,7 @@ export function runCoffeeShopWalkthrough(
   };
   type Item = { productId: string; quantity: number };
   type Info = {
+    workspace?: { enabled: boolean; prepared: string[]; checkpoints: number[] };
     sessionId: string;
     revision: string;
     state: { catalog: unknown; inventory: Record<string, number> | null };
@@ -168,8 +169,35 @@ export function runCoffeeShopWalkthrough(
     }
     return result;
   }
-  function finish(completionMessage = "Observed behavior verified.") {
-    if (missing() || completed.has(phase().id)) return;
+  let finishing = false;
+  let checkpointRetry: (() => unknown) | undefined;
+  async function finish(completionMessage = "Observed behavior verified.") {
+    if (missing() || completed.has(phase().id) || finishing) return;
+    if (info?.workspace?.enabled) {
+      finishing = true;
+      try {
+        const { value: result } = await json<{ ok: boolean; message: string }>(
+          "/tutorial-workspace",
+          {
+            action: "checkpoint",
+            phaseId: phase().id,
+            sessionId: info.sessionId,
+          },
+        );
+        if (!result.ok) throw new Error(result.message);
+        completionMessage += " " + result.message;
+        checkpointRetry = undefined;
+      } catch (error) {
+        message =
+          "Could not save the local Git checkpoint: " +
+          (error instanceof Error ? error.message : String(error));
+        checkpointRetry = () => finish(completionMessage);
+        renderLesson();
+        return;
+      } finally {
+        finishing = false;
+      }
+    }
     message = completionMessage;
     completed.add(phase().id);
     report("phase_completed");
@@ -182,6 +210,8 @@ export function runCoffeeShopWalkthrough(
     }
   }
   function move(next: number) {
+    if (finishing) return;
+    checkpointRetry = undefined;
     index = Math.max(0, Math.min(phases.length - 1, next));
     ready = false;
     checkedPhase = "";
@@ -285,6 +315,70 @@ export function runCoffeeShopWalkthrough(
       );
       lesson.append(banner);
     }
+    if (info?.workspace?.enabled) {
+      lesson.append(
+        node(
+          "p",
+          "This demo has its own local Git history. Review the current changes in your IDE’s Source Control view. Each completed step is committed automatically; nothing is pushed.",
+          "notice",
+        ),
+      );
+    }
+    for (const preparable of phases.filter(
+      (candidate) =>
+        candidate.lesson === current.lesson &&
+        phases.indexOf(candidate) <= index &&
+        candidate.preparation,
+    )) {
+      const prepared = info?.workspace?.prepared.includes(preparable.id);
+      const panel = node("section", "", "notice");
+      panel.append(
+        node("p", "Counterfact prepares: " + preparable.preparation),
+      );
+      if (info?.workspace?.enabled && !preview) {
+        const prepare = button(
+          prepared ? "Step prepared" : "Prepare this step",
+          async () => {
+            prepare.disabled = true;
+            try {
+              const { value: result } = await json<{
+                ok: boolean;
+                message: string;
+              }>("/tutorial-workspace", {
+                action: "prepare",
+                phaseId: preparable.id,
+                sessionId: info.sessionId,
+              });
+              message = result.message;
+              if (result.ok) {
+                info.workspace!.prepared.push(preparable.id);
+                checkedPhase = "";
+              }
+            } catch (error) {
+              message =
+                "Could not prepare this step: " +
+                (error instanceof Error ? error.message : String(error));
+            }
+            renderLesson();
+            await checkFiles();
+          },
+        );
+        prepare.disabled =
+          !!prepared ||
+          completed.has(preparable.id) ||
+          preparable.id !== current.id;
+        panel.append(prepare);
+      } else if (!preview)
+        panel.append(
+          node(
+            "p",
+            "This project predates guided preparation. Start a new walkthrough to use prepared edits and local Git checkpoints; your existing files have been preserved.",
+          ),
+        );
+      lesson.append(panel);
+    }
+    if (checkpointRetry)
+      lesson.append(button("Retry Git checkpoint", checkpointRetry));
     for (const revealed of phases.filter(
       (candidate) =>
         candidate.lesson === current.lesson &&
