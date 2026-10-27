@@ -9,6 +9,8 @@ import { CATALOG, PHASES } from "./coffee-shop-lessons.js";
 
 import { walkthroughWorkspace } from "./coffee-shop-workspace.js";
 
+import { readTourReplSubmissions } from "./coffee-shop-repl.js";
+
 const sessionIds = new Map<string, string>();
 const paths = [
   "routes/products.ts",
@@ -65,6 +67,7 @@ export async function walkthroughInfo(
   const workspace = await walkthroughWorkspace(root);
   return {
     workspace: includeChanges ? workspace : { ...workspace, changes: [] },
+    replSubmissions: includeChanges ? await readTourReplSubmissions(root) : [],
     projectPath: root,
     sessionId: sessionIds.get(root)!,
     walkthroughVersion: 2,

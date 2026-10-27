@@ -212,6 +212,7 @@ try {
     "dist/coffee-shop/coffee-shop-validation.js",
     "dist/coffee-shop/coffee-shop-checks.js",
     "dist/coffee-shop/coffee-shop-workspace.js",
+    "dist/coffee-shop/coffee-shop-repl.js",
     "dist/coffee-shop/coffee-shop-lessons.js",
     "dist/coffee-shop/coffee-shop-browser.js",
   ]) {

@@ -3,7 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 /* eslint-disable security/detect-non-literal-fs-filename -- CLI migration cleanup operates on known child directories under config.basePath. */
 
-import { finalizeTour } from "@counterfact/tutorials";
+import { createTourReplObserver, finalizeTour } from "@counterfact/tutorials";
 import { Command } from "commander";
 import createDebug from "debug";
 import open from "open";
@@ -515,7 +515,9 @@ function buildProgram(
           );
         }
       }
-      startRepl();
+      const observeRepl = await createTourReplObserver(config.basePath);
+      const replServer = startRepl();
+      if (replServer) observeRepl?.(replServer);
     }
 
     if (openBrowser) {

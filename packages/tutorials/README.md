@@ -52,6 +52,8 @@ Version 1 numeric events remain accepted for existing generated demos and retain
 
 ## Add another tour
 
+For managed demos, the CLI attaches `createTourReplObserver(projectPath)` to the running native REPL. Submitted input lines become learner turns, including inspections, assignments, and dot commands; repeated submissions remain separate. Blank input is ignored. The observer does not evaluate input, capture terminal output, or credit lesson completion. It is detached when the REPL exits. Input is kept in memory for that server session and included only in the explicitly opted-in tutorial-info response; browser history deduplicates submissions by ID and retains them across reloads. Normal projects are not observed, and raw input is never routed through telemetry.
+
 Keep tour-specific files under their own directory in `src/`, alongside `src/coffee-shop/`. Add preparation/selection in `src/prepare-tour.ts` and expose caller-facing capabilities through `src/index.ts`. Keep browser presentation, lesson progression, and checks in this package; use ordinary Counterfact routes and documented runtime exports for the exercises. Extend shared machinery when a second tour demonstrates the need.
 
 This package depends only on public runtime exports. It must not import the CLI facade or CLI internals. The CLI consumes the package root export; coffee-shop internals are not public entry points.

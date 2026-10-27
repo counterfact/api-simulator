@@ -86,6 +86,12 @@ Milo records the actual refresh result or order response after your action, so
 you can follow what happened in order. These turns survive reloads alongside
 your code diffs. There are no Back or preview controls.
 
+Commands you submit in the REPL also appear as your own turns, with the input in
+a code block. This includes context inspections, assignments, and `.scenario`
+commands. These turns record submitted input; the terminal shows its result and
+the guide checks the resulting behavior separately. Commands stay in the local
+walkthrough history across page reloads and are not sent through telemetry.
+
 Expand the **HTTP** detail under a refresh, order, or retry turn to inspect that
 action’s request and response. The summary shows the method, path, and response
 status. Inside are the request URL, headers set by the shop, request body, and

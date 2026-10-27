@@ -643,6 +643,8 @@ def apply_coffee_scenario(journey, name):
     while time.monotonic() < deadline:
         transcript = journey.terminal.command(".scenario " + name)
         if "Applied " + name in transcript:
+            submissions = journey.request("get", "/tutorial-info").json()["replSubmissions"]
+            assert any(entry["command"] == ".scenario " + name for entry in submissions)
             return
         time.sleep(0.1)
     raise AssertionError("Scenario did not become available after saving: " + transcript)
@@ -724,6 +726,9 @@ def connected_coffee_handlers(journey):
 @when("I make Decaf available through the running REPL")
 def edit_decaf(journey):
     journey.terminal.command('context.inventory["decaf"] = 5')
+    submissions = journey.request("get", "/tutorial-info").json()["replSubmissions"]
+    assert submissions[-1]["command"] == 'context.inventory["decaf"] = 5'
+    assert len({entry["id"] for entry in submissions}) == len(submissions)
 
 
 @then("the coffee API returns the changed stock and accepts a Decaf order")
@@ -865,3 +870,6 @@ def coffee_startup_baseline(journey):
     assert coffee_order(journey, "house-blend", 1).json()["orderId"] == 1
     assert coffee_stock(journey, "house-blend") == 4
     assert journey.request("get", "/tutorial-info").json()["sessionId"] != journey.coffee_previous_session
+    journey.terminal.command("context.inventory.decaf")
+    submissions = journey.request("get", "/tutorial-info").json()["replSubmissions"]
+    assert [entry["command"] for entry in submissions] == ["context.inventory.decaf"]

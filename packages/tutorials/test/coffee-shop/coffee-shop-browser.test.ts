@@ -76,6 +76,7 @@ async function browser(
   );
   const productData = structuredClone(options.products ?? CATALOG);
   const server = {
+    replSubmissions: [] as { id: string; command: string }[],
     workspace: {
       enabled: !!options.workspace,
       prepared: options.prepared ?? [],
@@ -163,6 +164,7 @@ async function browser(
           sessionId: server.sessionId,
           revision: server.revision,
           state: structuredClone(server.state),
+          replSubmissions: structuredClone(server.replSubmissions),
         };
       else if (path === "/tutorial-workspace") {
         if (body?.action === "prepare")
@@ -276,6 +278,39 @@ async function browser(
     },
   };
 }
+
+it("retains submitted REPL commands once and orders them before a following shop action", async () => {
+  const app = await browser({ phase: "decaf" });
+  app.server.replSubmissions.push({
+    id: "one",
+    command: 'context.inventory["decaf"] = 5',
+  });
+  await app.click("refresh-products");
+  app.server.replSubmissions.push(
+    { id: "two", command: ".scenario reset" },
+    { id: "three", command: ".scenario reset" },
+  );
+  await app.poll();
+  await app.poll();
+  const transcript = app.root("lesson").textContent;
+  expect(transcript.indexOf('context.inventory["decaf"] = 5')).toBeLessThan(
+    transcript.indexOf("Refreshed products"),
+  );
+  expect(transcript.match(/Submitted in the REPL/g)).toHaveLength(3);
+  const turns = JSON.parse(app.storage.get("counterfact-coffee-v2")!).turns as {
+    command?: string;
+  }[];
+  expect(
+    turns.filter((turn) => turn.command === ".scenario reset"),
+  ).toHaveLength(2);
+  expect(app.completed()).not.toContain("decaf");
+  const reloaded = await browser({ storage: app.storage });
+  reloaded.server.replSubmissions.push(...app.server.replSubmissions);
+  await reloaded.poll();
+  expect(
+    reloaded.root("lesson").textContent.match(/Submitted in the REPL/g),
+  ).toHaveLength(3);
+});
 
 it.each(["http://localhost:3100", "http://localhost:4123"])(
   "links the opening explanation to the actual API at %s",

@@ -10,3 +10,5 @@ Present lessons as a conversation with Milo, a coffee-shop owner and tutor. Expl
 Record explicit shop actions and their observed results in the conversation, including product refreshes, cart edits, order attempts, failures, and retries. Preserve these turns across reloads without turning automatic requests into learner actions.
 
 Attach collapsed HTTP request/response snapshots to refresh, order, and retry turns, including handler-file links. Retain each exchange across later actions and reloads, and keep malformed or missing responses visible for diagnosis.
+
+Include submitted REPL input as learner turns alongside file edits and shop actions. Keep repeated commands and reload history, while leaving command evaluation and lesson verification separate and excluding raw input from telemetry.

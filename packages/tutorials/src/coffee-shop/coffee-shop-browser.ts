@@ -1,3 +1,4 @@
+import type { ReplSubmission } from "./coffee-shop-repl.js";
 import type { EditEvent, FileChange } from "./coffee-shop-workspace.js";
 import type { LessonPhase } from "./coffee-shop-lessons.js";
 
@@ -23,6 +24,7 @@ export function runCoffeeShopWalkthrough(
       checkpoints: number[];
       changes?: EditEvent[];
     };
+    replSubmissions?: ReplSubmission[];
     sessionId: string;
     revision: string;
     state: { catalog: unknown; inventory: Record<string, number> | null };
@@ -95,8 +97,10 @@ export function runCoffeeShopWalkthrough(
     text: string;
     files?: FileChange[];
     exchanges?: HttpExchange[];
+    command?: string;
   };
   let seenChanges = new Set<number>();
+  let seenReplSubmissions = new Set<string>();
   let turns: Turn[] = [];
   function record(role: Turn["role"], text: string) {
     const turn: Turn = { phaseId: phase().id, role, text };
@@ -141,6 +145,22 @@ export function runCoffeeShopWalkthrough(
     if (changed) save();
     return changed;
   }
+  function syncReplSubmissions(entries: ReplSubmission[] = []) {
+    let changed = false;
+    for (const entry of entries) {
+      if (seenReplSubmissions.has(entry.id)) continue;
+      seenReplSubmissions.add(entry.id);
+      turns.push({
+        phaseId: phase().id,
+        role: "you",
+        text: "Submitted in the REPL",
+        command: entry.command,
+      });
+      changed = true;
+    }
+    if (changed) save();
+    return changed;
+  }
   const traces: Record<string, unknown> = {};
   const reported = new Set<string>();
   function save() {
@@ -155,6 +175,7 @@ export function runCoffeeShopWalkthrough(
           completed: [...completed],
           turns,
           seenChanges: [...seenChanges],
+          seenReplSubmissions: [...seenReplSubmissions],
           quizWrong,
           cart: [...cart],
           observation,
@@ -631,6 +652,7 @@ export function runCoffeeShopWalkthrough(
   }
   function turnBubble(turn: Turn, openHints: Set<string>) {
     const result = bubble(turn.role, turn.text);
+    if (turn.command !== undefined) result.append(node("pre", turn.command));
     for (const file of turn.files ?? []) result.append(renderDiff(file));
     for (const exchange of turn.exchanges ?? [])
       result.append(renderExchange(exchange, openHints));
@@ -1104,14 +1126,14 @@ export function runCoffeeShopWalkthrough(
         productId,
         quantity,
       }));
-    const orderAction = uiAction(
-      (failedItems ? "Retried the order: " : "Placed an order: ") +
-        describeItems(items) +
-        ".",
-    );
     try {
       await checkFiles();
       if (phase().id !== currentId) return;
+      const orderAction = uiAction(
+        (failedItems ? "Retried the order: " : "Placed an order: ") +
+          describeItems(items) +
+          ".",
+      );
       const { response, value } = await json<{
         orderId?: number;
         items?: Item[];
@@ -1264,7 +1286,8 @@ export function runCoffeeShopWalkthrough(
       )
         throw new Error("Tutorial information unavailable.");
       info = latest;
-      if (syncChanges(info.workspace?.changes)) renderLesson();
+      const changed = syncChanges(info.workspace?.changes);
+      if (syncReplSubmissions(info.replSubmissions) || changed) renderLesson();
       if (phase().id !== requestedId) return;
       if (
         phase().check &&
@@ -1288,7 +1311,9 @@ export function runCoffeeShopWalkthrough(
           return;
         }
         info = after;
-        if (syncChanges(info.workspace?.changes)) renderLesson();
+        const changedAfterCheck = syncChanges(info.workspace?.changes);
+        if (syncReplSubmissions(info.replSubmissions) || changedAfterCheck)
+          renderLesson();
         ready = checked.ok === true;
         checkMessage = ready
           ? checked.message
@@ -1354,15 +1379,16 @@ export function runCoffeeShopWalkthrough(
   byId("refresh-products").onclick = async () => {
     if (busy) return;
     busy = true;
-    const action = uiAction("Refreshed products.");
     renderShop();
     await checkFiles();
+    const action = uiAction("Refreshed products.");
     await refreshProducts("manual", action);
     await checkFiles(true);
     busy = false;
     renderShop();
   };
-  byId("check-progress").onclick = () => {
+  byId("check-progress").onclick = async () => {
+    await checkFiles();
     record("you", "Please check my work.");
     renderLesson();
     return checkFiles(true);
@@ -1382,8 +1408,9 @@ export function runCoffeeShopWalkthrough(
     if (phase().id !== "retry") failedItems = undefined;
     renderShop();
   };
-  byId("continue").onclick = () => {
+  byId("continue").onclick = async () => {
     if (completed.has(phase().id)) {
+      await checkFiles();
       record("you", "I’m ready. What’s next?");
       move(index + 1);
     }
@@ -1427,6 +1454,13 @@ export function runCoffeeShopWalkthrough(
           Array.isArray(saved.seenChanges)
             ? saved.seenChanges.filter((id: unknown) =>
                 Number.isSafeInteger(id),
+              )
+            : [],
+        );
+        seenReplSubmissions = new Set(
+          Array.isArray(saved.seenReplSubmissions)
+            ? saved.seenReplSubmissions.filter(
+                (id: unknown) => typeof id === "string",
               )
             : [],
         );
@@ -1474,6 +1508,7 @@ export function runCoffeeShopWalkthrough(
       /* A corrupt or unavailable saved session starts fresh. */
     }
     syncChanges(info.workspace?.changes);
+    syncReplSubmissions(info.replSubmissions);
     entryState ??= JSON.parse(JSON.stringify(info.state));
     report("opened", phases[0]!.id);
     renderLesson();
