@@ -86,6 +86,21 @@ export function runCoffeeShopWalkthrough(
     turns.push({ phaseId: phase().id, role, text });
     save();
   }
+  function uiAction(text: string) {
+    record("you", text);
+    renderLesson();
+  }
+  function describeItems(items: Item[]) {
+    return items
+      .map(
+        (item) =>
+          item.quantity +
+          " × " +
+          (products.find((product) => product.id === item.productId)?.name ??
+            item.productId),
+      )
+      .join(", ");
+  }
   function syncChanges(changes: EditEvent[] = []) {
     let changed = false;
     for (const edit of changes) {
@@ -704,7 +719,15 @@ export function runCoffeeShopWalkthrough(
         ),
       );
       const add = button("Add to cart", () => {
-        cart.set(product.id, (cart.get(product.id) ?? 0) + 1);
+        const quantity = (cart.get(product.id) ?? 0) + 1;
+        cart.set(product.id, quantity);
+        uiAction(
+          "Added " +
+            product.name +
+            " to the cart (quantity: " +
+            quantity +
+            ").",
+        );
         renderShop();
       });
       add.disabled = busy || !fresh || available === 0;
@@ -735,6 +758,19 @@ export function runCoffeeShopWalkthrough(
           const value = quantity + delta;
           if (value <= 0) cart.delete(id);
           else cart.set(id, value);
+          uiAction(
+            value <= 0
+              ? "Removed " +
+                  (product?.name ?? id) +
+                  " from the cart (quantity: 0)."
+              : "Changed " +
+                  (product?.name ?? id) +
+                  " in the cart from " +
+                  quantity +
+                  " to " +
+                  value +
+                  ".",
+          );
           renderShop();
         });
         control.disabled =
@@ -751,6 +787,13 @@ export function runCoffeeShopWalkthrough(
       actions.append(
         button("Remove", () => {
           cart.delete(id);
+          uiAction(
+            "Removed " +
+              (product?.name ?? id) +
+              " from the cart (" +
+              quantity +
+              " removed).",
+          );
           renderShop();
         }),
       );
@@ -783,6 +826,11 @@ export function runCoffeeShopWalkthrough(
         button("Restore original cart", () => {
           cart = new Map(
             failedItems!.map((item) => [item.productId, item.quantity]),
+          );
+          uiAction(
+            "Restored the original failed cart: " +
+              describeItems(failedItems!) +
+              ".",
           );
           renderShop();
         }),
@@ -836,6 +884,20 @@ export function runCoffeeShopWalkthrough(
       }
       products = value;
       fresh = true;
+      if (source === "manual") {
+        record(
+          "tutor",
+          "GET /products returned HTTP " +
+            response.status +
+            " with " +
+            products.length +
+            " products." +
+            (message.startsWith("Refreshing random products clears")
+              ? " " + message
+              : ""),
+        );
+        renderLesson();
+      }
       renderShop();
       observeProducts(source);
       return true;
@@ -845,6 +907,10 @@ export function runCoffeeShopWalkthrough(
         error instanceof Error
           ? error.message
           : "Product request failed. Click Refresh products to retry.";
+      if (source === "manual") {
+        record("tutor", "The product refresh failed: " + message);
+        renderLesson();
+      }
       renderShop();
       renderStatus();
       return false;
@@ -860,6 +926,11 @@ export function runCoffeeShopWalkthrough(
         productId,
         quantity,
       }));
+    uiAction(
+      (failedItems ? "Retried the order: " : "Placed an order: ") +
+        describeItems(items) +
+        ".",
+    );
     try {
       await checkFiles();
       if (phase().id !== currentId) return;
@@ -870,6 +941,19 @@ export function runCoffeeShopWalkthrough(
         shortages?: { requested: number; available: number }[];
       }>("/orders", { items });
       const original = failedItems;
+      record(
+        "tutor",
+        "POST /orders returned HTTP " +
+          response.status +
+          (response.status === 201 && Number.isInteger(value?.orderId)
+            ? " with order ID " + value.orderId + "."
+            : value?.error
+              ? ": " +
+                value.error +
+                (/[.!?]$/u.test(value.error) ? " " : ". ") +
+                "The cart has been kept."
+              : "."),
+      );
       if (response.status === 201 && Number.isInteger(value?.orderId)) {
         cart.clear();
         failedItems = undefined;
@@ -972,8 +1056,10 @@ export function runCoffeeShopWalkthrough(
         error instanceof Error
           ? error.message
           : "No order confirmation. Your cart has been kept; inspect the API before retrying.";
+      record("tutor", "The order has no usable confirmation: " + message);
     } finally {
       busy = false;
+      renderLesson();
       renderShop();
       renderStatus();
       save();
@@ -1090,6 +1176,7 @@ export function runCoffeeShopWalkthrough(
   byId("refresh-products").onclick = async () => {
     if (busy) return;
     busy = true;
+    uiAction("Refreshed products.");
     renderShop();
     await checkFiles();
     await refreshProducts();
@@ -1104,7 +1191,16 @@ export function runCoffeeShopWalkthrough(
   };
   byId("checkout").onclick = placeOrder;
   byId("empty-cart").onclick = () => {
+    const emptied = [...cart].map(([productId, quantity]) => ({
+      productId,
+      quantity,
+    }));
     cart.clear();
+    uiAction(
+      emptied.length
+        ? "Emptied the cart: " + describeItems(emptied) + "."
+        : "Emptied the cart (it was already empty).",
+    );
     if (phase().id !== "retry") failedItems = undefined;
     renderShop();
   };

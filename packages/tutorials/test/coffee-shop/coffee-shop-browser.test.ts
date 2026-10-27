@@ -386,6 +386,9 @@ it("does not reveal the recovery edit before the observed failure, then retries 
   );
   find(app.root("retry-recovery"), (element) => element.tag === "button")!
     .onclick!();
+  expect(app.root("lesson").textContent).toContain(
+    "Restored the original failed cart: 1 × House Blend.",
+  );
   app.server.orderMode = "echo";
   app.server.revision = "retry-edit";
   await app.api.checkFiles();
@@ -756,4 +759,85 @@ it("shows attributed diffs for Milo and learner edits once, and retains them acr
   expect(reloaded.root("lesson").textContent).toContain(
     "Here are the edits I made.",
   );
+});
+
+it("records cart actions with quantities and retains them after reload", async () => {
+  const app = await browser({ phase: "order" });
+  app.add();
+  find(
+    app.root("cart"),
+    (element) => element.tag === "button" && element.textContent === "+",
+  )!.onclick!();
+  find(
+    app.root("cart"),
+    (element) => element.tag === "button" && element.textContent === "−",
+  )!.onclick!();
+  find(
+    app.root("cart"),
+    (element) => element.tag === "button" && element.textContent === "Remove",
+  )!.onclick!();
+  app.add("dark-roast");
+  await app.click("empty-cart");
+  const history = app.root("lesson").textContent;
+  expect(history).toContain("Added House Blend to the cart (quantity: 1).");
+  expect(history).toContain("Changed House Blend in the cart from 1 to 2.");
+  expect(history).toContain("Changed House Blend in the cart from 2 to 1.");
+  expect(history).toContain("Removed House Blend from the cart (1 removed).");
+  expect(history).toContain("Emptied the cart: 1 × Dark Roast.");
+  const reloaded = await browser({ storage: app.storage });
+  expect(reloaded.root("lesson").textContent).toContain(
+    "Changed House Blend in the cart from 1 to 2.",
+  );
+  expect(reloaded.root("lesson").textContent).toContain(
+    "Emptied the cart: 1 × Dark Roast.",
+  );
+});
+
+it("records explicit refreshes and their outcomes without treating background requests as user actions", async () => {
+  const app = await browser();
+  expect(app.root("lesson").textContent).not.toContain("Refreshed products.");
+  await app.click("refresh-products");
+  expect(app.root("lesson").textContent).toContain(
+    "GET /products returned HTTP 200 with 3 products.",
+  );
+  await app.poll();
+  await app.poll();
+  expect(
+    app.root("lesson").textContent.match(/Refreshed products\./g),
+  ).toHaveLength(1);
+  app.server.productMode = "offline";
+  await app.click("refresh-products");
+  expect(app.root("lesson").textContent).toContain(
+    "The product refresh failed:",
+  );
+});
+
+it("records order contents, failure, retry, and the actual response in chronological order", async () => {
+  const app = await browser({ phase: "order" });
+  app.server.orderMode = "unavailable";
+  app.add();
+  await app.api.placeOrder();
+  app.server.orderMode = "echo";
+  await app.api.placeOrder();
+  const history = app.root("lesson").textContent;
+  const placed = history.indexOf("Placed an order: 1 × House Blend.");
+  const failed = history.indexOf("POST /orders returned HTTP 503");
+  const retried = history.indexOf("Retried the order: 1 × House Blend.");
+  const succeeded = history.indexOf(
+    "POST /orders returned HTTP 201 with order ID 1.",
+  );
+  expect(placed).toBeGreaterThan(-1);
+  expect(placed).toBeLessThan(failed);
+  expect(failed).toBeLessThan(retried);
+  expect(retried).toBeLessThan(succeeded);
+  expect(history).not.toContain("Refreshed products.");
+  const reloaded = await browser({ storage: app.storage });
+  expect(
+    reloaded
+      .root("lesson")
+      .textContent.match(/POST \/orders returned HTTP 503/g),
+  ).toHaveLength(1);
+  expect(
+    reloaded.root("lesson").textContent.match(/Retried the order:/g),
+  ).toHaveLength(1);
 });

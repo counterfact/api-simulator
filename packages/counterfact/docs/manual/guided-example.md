@@ -80,7 +80,11 @@ to edit, you approve it, then he directs your own small edit and an API experime
 After the result is verified, reply **I’m ready. What’s next?** to continue.
 Earlier turns stay visible so you can scroll back without changing the current
 exercise. Your approvals, quiz replies, and Milo’s explanations survive a reload
-within the same running API session. There are no Back or preview controls.
+within the same running API session. Shop actions join that history too: product
+refreshes, cart changes, order attempts, retries, and restoring a failed cart.
+Milo records the actual refresh result or order response after your action, so
+you can follow what happened in order. These turns survive reloads alongside
+your code diffs. There are no Back or preview controls.
 
 ## Follow changes in the conversation
 
