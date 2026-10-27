@@ -4,7 +4,7 @@ import {
   SHOP_CONTEXT,
   SHOP_ORDERS,
   SHOP_PRODUCTS,
-} from "../../src/coffee-shop/coffee-shop.js";
+} from "../fixtures/legacy-coffee-shop.js";
 import {
   checkShopSave,
   shopRevision,

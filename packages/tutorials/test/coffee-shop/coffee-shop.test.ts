@@ -1,142 +1,106 @@
 import vm from "node:vm";
-
 import { describe, expect, it } from "@jest/globals";
 import ts from "typescript";
-
 import { coffeeShopPage } from "../../src/coffee-shop/coffee-shop-page.js";
+import {
+  CATALOG,
+  CONTEXT,
+  RULES_CONTEXT,
+} from "../../src/coffee-shop/coffee-shop-lessons.js";
 
-import { SHOP_CONTEXT } from "../../src/coffee-shop/coffee-shop.js";
-
-function context() {
-  const exports = {} as {
-    Context: new () => {
-      inventory: Record<string, number>;
-      setDecafStock: (quantity: number) => void;
-      canFulfill: (items: { productId: string; quantity: number }[]) => boolean;
-      getShortages: (
-        items: { productId: string; quantity: number }[],
-      ) => { productId: string; requested: number; available: number }[];
-      confirmOrder: (items: { productId: string; quantity: number }[]) => {
-        orderId: number;
-        items: { productId: string; quantity: number }[];
-      };
-    };
-  };
+type Item = { productId: string; quantity: number };
+type TestContext = {
+  catalog: Omit<(typeof CATALOG)[number], "stock">[];
+  inventory: Record<string, number>;
+  listProducts: () => typeof CATALOG;
+  confirmOrder: (items: Item[]) => { orderId: number; items: Item[] };
+  reset: () => void;
+  canFulfill: (items: Item[]) => boolean;
+  getShortages: (
+    items: Item[],
+  ) => { productId: string; requested: number; available: number }[];
+};
+function context(source = RULES_CONTEXT) {
+  const exports = {} as { Context: new () => TestContext };
   vm.runInNewContext(
-    ts.transpileModule(SHOP_CONTEXT, {
+    ts.transpileModule(source, {
       compilerOptions: { module: ts.ModuleKind.CommonJS },
     }).outputText,
     { exports },
   );
   return new exports.Context();
 }
-
-describe("the example's shared context", () => {
-  it("applies a changed Decaf setting once without undoing subsequent purchases", () => {
-    const shop = context();
-    shop.inventory = { "dark-roast": 3, decaf: 0 };
-    shop.setDecafStock(5);
-    expect(shop.inventory).toEqual({ "dark-roast": 3, decaf: 5 });
-    shop.inventory.decaf -= 1;
-    shop.setDecafStock(5);
-    expect(shop.inventory.decaf).toBe(4);
-    shop.setDecafStock(2);
-    expect(shop.inventory.decaf).toBe(2);
-  });
-
-  it("checks the complete order without mutating inventory", () => {
-    const shop = context();
-    shop.inventory = { "dark-roast": 3 };
-    expect(shop.canFulfill([{ productId: "dark-roast", quantity: 2 }])).toBe(
+describe("context methods introduced in the walkthrough", () => {
+  it("starts empty and lists quantities from running inventory", () => {
+    const shop = context(CONTEXT);
+    expect(shop.listProducts()).toEqual([]);
+    expect(shop.inventory).toEqual({});
+    shop.catalog = CATALOG.map(({ stock: _stock, ...product }) => product);
+    expect(shop.listProducts().every((product) => product.stock === 0)).toBe(
       true,
     );
+    shop.inventory.decaf = 7;
     expect(
-      shop.canFulfill([
-        { productId: "dark-roast", quantity: 2 },
-        { productId: "dark-roast", quantity: 2 },
-      ]),
-    ).toBe(false);
-    expect(shop.canFulfill([{ productId: "missing", quantity: 1 }])).toBe(
-      false,
-    );
-    expect(shop.canFulfill([{ productId: "dark-roast", quantity: -1 }])).toBe(
-      false,
-    );
-    expect(shop.canFulfill([])).toBe(false);
+      shop.listProducts().find((product) => product.id === "decaf")!.stock,
+    ).toBe(7);
+  });
+  it("creates sequential confirmations without mutating inventory", () => {
+    const shop = context();
+    shop.inventory = { "dark-roast": 3 };
+    const items = [{ productId: "dark-roast", quantity: 2 }];
+    expect(shop.confirmOrder(items)).toEqual({ orderId: 1, items });
+    expect(shop.confirmOrder(items)).toEqual({ orderId: 2, items });
     expect(shop.inventory["dark-roast"]).toBe(3);
   });
-
-  it("reports combined shortages without changing inventory or the order", () => {
+  it("resets only when explicitly called", () => {
     const shop = context();
-    shop.inventory = { "dark-roast": 3, decaf: 0, "house-blend": 5 };
+    shop.inventory.decaf = 5;
+    shop.catalog = CATALOG;
+    shop.confirmOrder([]);
+    shop.reset();
+    expect(shop.catalog).toEqual([]);
+    expect(shop.inventory).toEqual({});
+    expect(shop.confirmOrder([]).orderId).toBe(1);
+  });
+  it("combines duplicate quantities and reports shortages without changing state", () => {
+    const shop = context();
+    shop.inventory = { "dark-roast": 3, decaf: 0 };
     const items = [
       { productId: "dark-roast", quantity: 2 },
       { productId: "dark-roast", quantity: 2 },
       { productId: "decaf", quantity: 1 },
-      { productId: "house-blend", quantity: 2 },
       { productId: "missing", quantity: 1 },
     ];
+    expect(shop.canFulfill(items)).toBe(false);
     expect(shop.getShortages(items)).toEqual([
       { productId: "dark-roast", requested: 4, available: 3 },
       { productId: "decaf", requested: 1, available: 0 },
       { productId: "missing", requested: 1, available: 0 },
     ]);
-    expect(shop.inventory).toEqual({
-      "dark-roast": 3,
-      decaf: 0,
-      "house-blend": 5,
-    });
-    expect(items[0]).toEqual({ productId: "dark-roast", quantity: 2 });
-    expect(
-      shop.getShortages([{ productId: "dark-roast", quantity: 3 }]),
-    ).toEqual([]);
-    expect(shop.getShortages([])).toEqual([]);
-  });
-
-  it("accepts combined quantities within stock and rejects invalid quantities", () => {
-    const shop = context();
-    shop.inventory = { "dark-roast": 3 };
+    expect(shop.inventory).toEqual({ "dark-roast": 3, decaf: 0 });
     expect(
       shop.canFulfill([
         { productId: "dark-roast", quantity: 1 },
         { productId: "dark-roast", quantity: 2 },
       ]),
     ).toBe(true);
-    expect(shop.canFulfill([{ productId: "dark-roast", quantity: 0 }])).toBe(
-      false,
-    );
-    expect(shop.canFulfill([{ productId: "dark-roast", quantity: 0.5 }])).toBe(
-      false,
-    );
   });
-
-  it("assigns sequential order confirmations without subtracting stock", () => {
-    const shop = context();
-    shop.inventory = { "dark-roast": 3 };
-    const items = [{ productId: "dark-roast", quantity: 2 }];
-    expect(shop.confirmOrder(items)).toEqual({ orderId: 1, items });
-    expect(shop.confirmOrder(items)).toEqual({ orderId: 2, items });
-    expect(shop.inventory).toEqual({ "dark-roast": 3 });
-    expect(items).toEqual([{ productId: "dark-roast", quantity: 2 }]);
-  });
+  it.each([0, -1, 0.5, Number.NaN, Number.POSITIVE_INFINITY])(
+    "rejects invalid quantity %s",
+    (quantity) => {
+      const shop = context();
+      shop.inventory = { "dark-roast": 3 };
+      expect(shop.canFulfill([{ productId: "dark-roast", quantity }])).toBe(
+        false,
+      );
+      expect(shop.canFulfill([])).toBe(false);
+    },
+  );
 });
-
-it("ships syntactically valid browser code with escaped project paths", () => {
+it("ships valid browser code with escaped paths", () => {
   const page = coffeeShopPage("/tmp/coffee</script>shop");
-  const script = page.split("<script>")[1]!.split("</script>")[0]!;
-  expect(() => new vm.Script(script)).not.toThrow();
-  expect(page).toContain("Walkthrough instructions");
+  expect(
+    () => new vm.Script(page.split("<script>")[1]!.split("</script>")[0]!),
+  ).not.toThrow();
   expect(page).not.toContain("/tmp/coffee</script>shop");
 });
-
-it.each([
-  ["/tmp/coffee shop#1?", "vscode://file/tmp/coffee%20shop%231%3F/"],
-  [String.raw`C:\coffee shop\demo`, "vscode://file/C:/coffee%20shop/demo/"],
-])(
-  "uses an escaped VSCode base URL for instructional file links (%s)",
-  (path, url) => {
-    const page = coffeeShopPage(path);
-    expect(page).toContain(`const projectEditorUrl = "${url}";`);
-    expect(page).not.toContain("Repeat instructions");
-  },
-);

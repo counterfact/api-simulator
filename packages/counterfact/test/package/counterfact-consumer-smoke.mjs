@@ -210,6 +210,9 @@ try {
     "dist/prepare-tour.js",
     "dist/coffee-shop/coffee-shop-page.js",
     "dist/coffee-shop/coffee-shop-validation.js",
+    "dist/coffee-shop/coffee-shop-checks.js",
+    "dist/coffee-shop/coffee-shop-lessons.js",
+    "dist/coffee-shop/coffee-shop-browser.js",
   ]) {
     assert(
       tutorialsPack.files.some(
@@ -356,11 +359,14 @@ try {
   const info = await (await fetch(origin + "/tutorial-info")).json();
   assert.match(info.revision, /^[a-f0-9]{64}$/);
   const check = await (await fetch(origin + "/tutorial-check", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ step: 5 }),
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phaseId: "catalog" }),
   })).json();
-  assert.equal(check.ok, true, check.message);
+  assert.equal(info.walkthroughVersion, 2);
+  assert.deepEqual(info.state, { catalog: null, inventory: null });
+  assert.equal(check.ok, false);
+  assert.match(check.message, /random product stub/);
   const milestone = await fetch(origin + "/tutorial-event", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "opened", step: 0 }),
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "opened", phaseId: "explore" }),
   });
   assert.equal(milestone.status, 200);
   assert.deepEqual(await milestone.json(), { ok: true });

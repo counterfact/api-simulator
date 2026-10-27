@@ -1,3 +1,4 @@
+import { PHASES } from "./coffee-shop-lessons.js";
 import { randomUUID } from "node:crypto";
 import { channel } from "node:diagnostics_channel";
 
@@ -82,5 +83,96 @@ export function reportCoffeeShopEvent(
     }
   } catch {
     // Reporting must never interrupt an exercise or expose a transport failure.
+  }
+}
+
+const versionTwoSessions = new Map<
+  string,
+  {
+    id: string;
+    startedAt: number;
+    reported: Set<string>;
+    completed: Set<string>;
+  }
+>();
+
+/** Version 2 phases have stable identifiers; keep v1 numeric callers working. */
+export function reportWalkthroughEvent(
+  sessionId: string,
+  event: unknown,
+  phaseId: unknown,
+): void {
+  if (
+    !events.hasSubscribers ||
+    typeof event !== "string" ||
+    typeof phaseId !== "string"
+  )
+    return;
+  const phase = PHASES.find((candidate) => candidate.id === phaseId);
+  if (
+    !phase ||
+    ![
+      "opened",
+      "started",
+      "phase_completed",
+      "lesson_skipped",
+      "finished",
+    ].includes(event)
+  )
+    return;
+  if ((event === "opened" || event === "started") && phaseId !== PHASES[0]!.id)
+    return;
+  if (event === "finished" && phaseId !== PHASES.at(-1)!.id) return;
+  const key = "v2:" + sessionId;
+  try {
+    let session = versionTwoSessions.get(key);
+    if (!session) {
+      if (versionTwoSessions.size >= 128)
+        versionTwoSessions.delete(versionTwoSessions.keys().next().value!);
+      session = {
+        id: randomUUID(),
+        startedAt: Date.now(),
+        reported: new Set<string>(),
+        completed: new Set<string>(),
+      };
+      versionTwoSessions.set(key, session);
+    }
+    const reportKey = event + ":" + phaseId;
+    if (session.reported.has(reportKey)) return;
+    session.reported.add(reportKey);
+    if (event === "phase_completed") session.completed.add(phaseId);
+    const properties = {
+      tour: "coffee-shop",
+      walkthroughVersion: 2,
+      phaseId,
+      lesson: phase.lesson,
+      elapsedSeconds: Math.floor((Date.now() - session.startedAt) / 1000),
+    };
+    events.publish({
+      event: "walkthrough_" + event,
+      sessionId: session.id,
+      properties: {
+        ...properties,
+        ...(event === "finished"
+          ? {
+              completedPhases: session.completed.size,
+              allExercisesCompleted: session.completed.size === PHASES.length,
+            }
+          : {}),
+      },
+    });
+    if (
+      session.completed.size === PHASES.length &&
+      !session.reported.has("completed")
+    ) {
+      session.reported.add("completed");
+      events.publish({
+        event: "walkthrough_completed",
+        sessionId: session.id,
+        properties,
+      });
+    }
+  } catch {
+    /* Reporting never interrupts the exercise. */
   }
 }

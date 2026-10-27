@@ -1,152 +1,153 @@
-# Try the guided coffee shop
+# Build a coffee-shop API from generated stubs
 
-Learn Counterfact by editing a running API and observing the app use it. The bundled coffee shop works without an OpenAPI document of your own.
+Learn Counterfact by replacing generated responses with behavior you write. The
+bundled coffee shop starts against the same random handlers Counterfact generates
+for your own OpenAPI document. OpenAPI, formerly Swagger, describes the requests
+and responses; your handlers add the behavior.
 
 ## Start the example
-
-For an interactive introduction, run:
 
 ```sh
 npx counterfact@latest
 ```
 
-With no arguments and no `counterfact.yaml`, choose **Try a guided example**
-(the default) or **Use my OpenAPI document**. Documentation is also available.
+With no arguments and no `counterfact.yaml`, choose **Try a guided example**.
+Counterfact shows the new `counterfact-demo/` directory and server address before
+starting. Press Enter to start, `p` to change the port, or `b` to go back. Existing
+directories are preserved by choosing a new numbered name.
 
-The guided example opens **Counterfact Coffee** in your browser. Instructions
-stay on the left; the working shop is on the right, in equal-width columns. The walkthrough is designed
-for a desktop browser window at least 1100px wide. Keep Counterfact running
-in its terminal and make file changes in your own editor.
+The walkthrough opens in your browser. Instructions stay on the left and the
+working shop stays on the right. Use a desktop browser at least 1100px wide. Keep
+Counterfact running in its terminal and make the edits in your own editor.
+The first lesson links to your actual local API address, normally
+`http://localhost:3100`.
 
-Before starting, Counterfact shows the new `counterfact-demo/` directory and
-local server address. Press Enter to start, `p` to change the port, or `b` to
-go back. Existing directories are preserved by choosing a new numbered name.
-The example uses bundled files and needs no contract download.
+## Start with the generated behavior
 
-## Change behavior and observe the shop
+The initial product handler calls:
 
-The walkthrough starts with a normal purchase, then guides you through:
+```ts
+return $.response.status(200).random();
+```
 
-1. Making sold-out Decaf available by editing `routes/products.ts`.
-2. Making orders fail, preserving the cart, and restoring successful retries.
-3. Completing `reduceInventory(items, inventory)` in `routes/orders.ts`. For each
-   item, subtract its quantity from `inventory[item.productId]`. The order handler
-   already calls this function with the purchased items and shared inventory.
-4. Buying the remaining Dark Roast stock and seeing the shop mark it sold out.
-5. Inspecting and replenishing that same inventory through the REPL:
+The order handler similarly generates an HTTP 201 response. Counterfact builds
+these responses from the bundled spec. Product names, IDs, prices, and stock may
+change with each request; the generated order response does not yet reflect your
+cart or update any state.
 
-   ```js
-   context.inventory["dark-roast"];
-   context.inventory["dark-roast"] = 5;
-   ```
+The shop renders the real responses, including arbitrary product IDs. Click
+**Refresh products** to request another catalog. There is no background product
+polling. Refreshing a random catalog clears its previous cart because IDs and
+prices may change. Invalid responses or duplicate product IDs produce an
+explanation and can be retried with **Refresh products**.
 
-6. Making another purchase and seeing five bags become four.
+Expand **Latest API requests and responses** to inspect the actual GET and POST
+traffic: the URL, request body, response status, and response body. The shop does
+not substitute a working catalog or silently install backend implementations.
 
-Each lesson briefly explains why the experiment matters and how the behavior
-relates to your own frontend and API.
+## Add one behavior at a time
 
-The walkthrough has eight screens. Related phases share one lesson: making
-Decaf available and buying it; failing and retrying an order; observing unchanged
-stock and adding inventory subtraction; restocking through the REPL and buying
-from that inventory. Instructions and code hints appear as each phase becomes
-relevant. Earlier instructions stay visible, so you can review what you have done
-without the copy being replaced.
-A green **✓ Step complete** message confirms success before **Continue** moves
-between concepts. The displayed quantities are guided examples:
-other positive whole-number stock values and fulfilled purchase quantities also
-work. Inventory lessons verify that the purchased quantity is subtracted.
+The twelve steps build on the code you have already written:
 
-Follow the instructions beside the real shop. Use **Open in VSCode** or
-**Copy file path** beside an edit instruction to find the file. Open
-**Show code hint** when you want an example edit. File names and displayed
-file paths in the instructions open the corresponding file in VSCode. Saved
-lesson files are detected automatically and their handlers are called with fresh
-test inventory. A passing check prompts you to try the change in the shop; an unexpected response or broken handler shows
-an alert explaining the mismatch. Fix the code and save again to rerun the check.
-Test orders do not consume the shop’s inventory or affect its cart.
-The REPL commands are shown directly; restocking is detected from the product
-response, without confirmation buttons. Saved-file checks do not replace the
-shopper actions required to complete the lesson.
+| Step | What you add                                                             | What to observe                                                                       |
+| ---- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| 1    | Inspect and refresh the generated API                                    | The handler generates each response from its schema.                                  |
+| 2    | An explicit product response                                             | Repeated requests return the same three coffees.                                      |
+| 3    | An order response using `$.body.items`                                   | The confirmation reflects the submitted cart.                                         |
+| 4    | A 503 branch and recovery switch                                         | A rejected order keeps its cart; restoring the handler lets the same request succeed. |
+| 5    | An empty Context class with catalog, inventory, and confirmation methods | You can inspect the running object in the REPL before routes use it.                  |
+| 6    | A baseline `reset` scenario and `startup` export                         | Nothing is seeded until you explicitly run `.scenario reset`.                         |
+| 7    | Handlers calling context methods                                         | Products read shared state and successive orders receive successive IDs.              |
+| 8    | A Decaf inventory assignment in the REPL                                 | The next product request reads the changed quantity.                                  |
+| 9    | Stock validation and shortage methods                                    | Oversized orders return HTTP 409 with requested and available quantities.             |
+| 10   | `reduceInventory(items, inventory)`                                      | Successful purchases now change the quantity returned by later product requests.      |
+| 11   | Requests that sell out and REPL commands that restock                    | The same handlers produce different responses as shared state evolves.                |
+| 12   | A focused `restockDarkRoast` scenario                                    | A reusable setup changes one product while preserving other inventory and order IDs.  |
 
-In step 5, make a purchase and compare the inventory before answering whether
-accepting an order also subtracts stock. A wrong answer shows the observed
-quantities and an explanation; choose **Try again** to answer again. A correct
-answer reveals the `reduceInventory` exercise and its code hint. The answer is
-checked against your purchase, including when your handler already reduces stock.
-Reloading keeps an unanswered question pending.
+Each phase explains the Counterfact facility being used, names the file to edit,
+and supplies copyable code under **Show code**. **Open in VSCode** and **Copy file
+path** help you find the file. File names in the prose also open in VSCode.
+Counterfact formats the supplied walkthrough infrastructure; the generator creates
+the initial product and order stubs, context, and default scenario file.
 
-## Recover and revisit lessons
+New instructions and code hints appear when they become relevant. Earlier
+instructions stay visible. **Continue** moves between completed lessons;
+**Back** revisits them. **Preview next lesson** shows later instructions and the
+first missing prerequisite, with a return link. Previewing never applies code or
+marks an exercise complete.
 
-Product cards use shopper-facing messages such as **4 bags available** or
-**Sold out**, without exposing where inventory is stored. Adding bags changes the cart and availability
-immediately; reducing a quantity or removing an item restores availability.
-Only the API reports inventory changes after purchases or context updates.
-If the products response fails or contains invalid stock, cards show **Availability temporarily unavailable** and buying pauses until a fresh response arrives. Stock rejections
-show the requested and available quantities reported by the order API. If you change
-the cart during the retry lesson, **Restore original cart** brings back the
-original failed order so you can complete that experiment. Missing
-order confirmations are labeled unknown rather than rejected; the cart is kept.
+## Save, exercise, and compare
 
-The shop checks the products API automatically while visible and after each
-order. Saved inventory edits and REPL changes appear without a manual refresh.
-Changing feedback appears under a small **Update** label, separate from the
-lesson instructions. Background API checks run without a status feed or clock. Saving a file alone
-does not complete a task. **Continue** moves on after success; **Back** and **Skip lesson** let you control the pace. A browser reload
-keeps the current lesson and cart within the same running API session. Back also
-keeps your edited handlers and inventory; if an exercise needs stock,
-a separate recovery notice shows the REPL command to restore it without replacing
-the lesson instructions or resetting your files.
+Saved-file detection runs in the background without requesting new products.
+Checks call snapshots of your saved functions with fresh, isolated context, so
+they do not consume the running shop’s inventory or its order IDs. Missing methods
+and incomplete implementations produce guidance. Fix the code and save again, or
+click **Check progress** to retry.
 
-## Work in your editor
+A passing saved-file check is only part of an exercise. Follow the instructions
+to refresh products, place orders, or run a command against the live API. Handler
+and context reloads are asynchronous; if the old behavior is still visible just
+after saving, repeat the observation after the reload completes.
 
-The generated TypeScript files are formatted with Prettier before you open them.
+In the inventory lesson, buy Dark Roast and answer whether that order also
+subtracted stock. A wrong answer explains the observed before/after quantities
+and offers **Try again**. A correct answer reveals the helper exercise. The answer
+uses the actual purchase result, including when you revisit with an already
+implemented handler. Reloading preserves an unanswered question and its observed
+quantities.
 
-Use the instructional file links to open files in VSCode through the `vscode://`
-URL scheme, or **Copy file path** beside the edit instruction to find a file in another editor.
-The adjacent **Open in VSCode** link names its destination explicitly; code hints
-remain optional. Shared inventory is declared in `routes/_.context.ts` and initialized
-by `scenarios/index.ts`; products and orders access the same running object.
-The context handles stock checks, shortage details, and order confirmations,
-so the order handler stays focused on the request flow.
-The initial order handler intentionally does not reduce stock until you add
-that operation. No payments or real purchases take place. The final screen offers an optional
-challenge: make another coffee unavailable, verify the shopper’s experience,
-then restore it without a hint. The same workflow applies to your own API.
+For stock rejection, add two bags while stock is sufficient, lower the running
+quantity in the REPL, refresh, and place the order. The cart is preserved on
+rejection. Empty it and restore stock before continuing. Missing confirmations
+are described as unknown; inspect the request and inventory before retrying.
+During the failure/recovery lesson, **Restore original cart** brings back the
+original failed order if you have changed its items.
 
-The shop and REPL remain running after completion, and your files remain after
-quitting. If a browser cannot be opened, use the walkthrough URL printed in the
-terminal. The final panel prints the command to restart the project; run it from
-the directory named above the command. The command includes the current server
-port; change `--port <number>` if you need a different one.
+## Make state changes explicit
 
-Restarting keeps your handler edits but starts a new in-memory session. The
-startup scenario seeds the inventory again, and the browser starts a new lesson
-and cart. Reloading the browser while the same server is running preserves the
-lesson and cart instead.
+The context starts empty. You add its fields and methods yourself. The baseline
+scenario contains the example catalog and starting quantities; `startup`
+delegates to that scenario on subsequent server starts. Saving a scenario does
+not apply it to an already running session. Run it explicitly:
 
-The generated lesson-check routes refer to helpers in the Counterfact
-installation that created the example. Keep that installation available when
-restarting. For a lasting exercise, install a pinned Counterfact version in your
-project before starting the intro; see [project installation](../patterns/lifecycle-setup.md).
-Moving only the generated directory to another machine does not include those
-helpers.
+```text
+.scenario reset
+```
 
-## Use your own API
+This restores the entire shop baseline, including order IDs. A focused scenario
+such as `restockDarkRoast` changes only its named condition. It preserves other
+products and the order counter. The three-product catalog is deliberately small
+so stock changes and selling out are easy to observe.
 
-To use your own document, choose it from discovered local OpenAPI files or
-enter a path or URL, then choose an output directory and available port.
-Use `q`, Ctrl+C, or Ctrl+D to cancel setup before creating files.
+The terminal’s `⬣>` prompt is the REPL. Its `context` is the same running object
+routes access as `$.context`. After a direct assignment or scenario command,
+click **Refresh products** to request the updated state. There is no special
+Decaf setter or automatic reset hidden in the product handler.
 
-If you already have a config file or pass any arguments, Counterfact uses its
-usual startup behavior. In CI or without interactive input and output,
-an unconfigured no-argument run prints guidance and exits. Pass a spec
-explicitly for scripts, or `_` to start without OpenAPI.
+## Revisit or restart
+
+Browser reloads preserve the current lesson, completed phases, and cart within
+the same API session. Back and preview navigation preserve your source files and
+running state. If a revisited exercise needs inventory, use the REPL or your
+named scenario to establish that state explicitly; navigation never resets it.
+
+The final lesson prints the restart command and the directory to run it from.
+The command includes your current port. Restarting keeps your source edits,
+runs your `startup` scenario, and begins a new browser lesson session. It does
+not overwrite your implementations. Existing generated demos remain untouched;
+start a new guided example to use the rebuilt walkthrough.
+
+The generated tutorial infrastructure references helpers in the Counterfact
+installation that created it. Keep that installation available when restarting.
+For a lasting exercise, install Counterfact in your project; see
+[project installation](../patterns/lifecycle-setup.md). Legacy generated demos
+retain their original saved-file and telemetry helper interfaces.
 
 ## Continue learning
 
-- [Generate an API from OpenAPI](../getting-started.md) — apply the workflow to your own API.
-- [Custom route handlers](../features/routes.md) — use typed requests and explicit responses in your own routes.
-- [Stateful contexts](../features/state.md) and [scenario scripts](../patterns/scenario-scripts.md) — model shared inventory and repeatable startup state.
-- [Interactive REPL](../features/repl.md) — inspect and change a running simulation.
-- [First 10 minutes](../first-10-minutes.md) — build a small create/read workflow.
-- [CLI and configuration](../api/cli.md#first-run-intro) — setup, discovery limits, and unattended startup.
+- [Generate an API from OpenAPI](../getting-started.md)
+- [Custom route handlers](../features/routes.md)
+- [Stateful contexts](../features/state.md)
+- [Scenario scripts](../patterns/scenario-scripts.md)
+- [Interactive REPL](../features/repl.md)
+- [CLI and configuration](../api/cli.md#first-run-intro)

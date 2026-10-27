@@ -3,6 +3,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "lib": ["ES2023", "DOM"],
     "rootDir": "src",
     "outDir": "dist",
     "tsBuildInfoFile": "../../node_modules/.cache/counterfact/tutorials.tsbuildinfo"

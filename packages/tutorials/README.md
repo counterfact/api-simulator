@@ -21,39 +21,28 @@ const tour = await prepareTour(root, directory, "coffee-shop");
 
 Start Counterfact with the returned document and project directory, then open the returned walkthrough path on its bound HTTP origin. The [CLI guided-example chapter](https://counterfact.dev/docs/manual/guided-example) describes the reader experience.
 
-The generated project contains ordinary routes, context, and a startup scenario. Its lesson-check routes load helpers from this package's installed location. Keep that installation available when restarting the project; the generated exercise is editable but is not a standalone distribution of the tutorial system. Handler checks use separate temporary inventory and leave the running shop untouched.
+The prepared project supplies only walkthrough infrastructure and the bundled OpenAPI document. The normal generator creates product and order random stubs, an empty context class, and its default scenario file. The learner adds business behavior through twelve lessons. Copyable implementations live in the lesson definitions; preparation never installs them.
+
+The storefront renders arbitrary schema-generated products, uses explicit refresh instead of product polling, and displays actual request/response bodies. File checks run against isolated snapshots, while progress also observes the running API. Source checks and snapshots include missing or partially implemented context and scenario files. A saved scenario does not mutate live state. Previewing a later lesson shows missing prerequisites without applying code or earning completion.
+
+Tutorial session identity belongs to the infrastructure, outside the learner's context. New browser state is stored separately as walkthrough version 2. Existing generated demos keep their numeric saved-file and telemetry helper interfaces. Keep the package installation available when restarting: generated infrastructure loads its helper modules from that installation.
 
 ## Walkthrough milestones
 
-The generated `/tutorial-event` route accepts only milestone names and phase numbers.
-It publishes bounded events on Node's `counterfact:walkthrough` diagnostics channel.
-The CLI subscribes and applies its existing telemetry transport and opt-out settings;
-this package does not depend on an analytics SDK or send external requests.
-A temporary random session ID connects milestones, while server-side deduplication
-prevents browser reloads, polling, and lesson revisits from inflating counts.
-Reaching the last screen records completed phases separately from skipped lessons.
-`walkthrough_completed` fires once all ten phases have been completed, including
-when the learner returns to previously skipped lessons.
+The generated `/tutorial-event` route accepts allowlisted event names and stable phase IDs defined in the shared lesson inventory. Events are published on Node's `counterfact:walkthrough` diagnostics channel. The CLI owns transport, consent, and opt-outs; this package sends no external analytics requests.
 
-The event schema is:
+Version 2 properties include `tour: "coffee-shop"`, `walkthroughVersion: 2`, `phaseId`, the displayed lesson number, and elapsed whole seconds. A temporary opaque identity connects events within a server session. Deduplication covers reloads and revisits. Neither file paths nor source, request bodies, response bodies, cart contents, or context snapshots enter telemetry.
 
-| Event | Trigger |
-| --- | --- |
-| `walkthrough_opened` | Browser walkthrough initializes |
-| `walkthrough_started` | Learner clicks Start shopping |
-| `walkthrough_phase_completed` | Existing progress checks observe the required behavior |
-| `walkthrough_lesson_skipped` | Learner clicks Skip lesson |
-| `walkthrough_finished` | Final screen is first shown, with `completedPhases` and `allExercisesCompleted` |
-| `walkthrough_completed` | All ten exercise phases have been observed, regardless of navigation order |
+| Event                         | Trigger                                                                                               |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `walkthrough_opened`          | Browser initializes.                                                                                  |
+| `walkthrough_started`         | Learner explicitly refreshes the initial generated response.                                          |
+| `walkthrough_phase_completed` | Required source and live observations succeed; the inventory question also requires a correct answer. |
+| `walkthrough_lesson_skipped`  | Learner previews a later lesson without completion credit.                                            |
+| `walkthrough_finished`        | Last lesson completes, with completed-phase count and whether all required phases were observed.      |
+| `walkthrough_completed`       | Every phase in the shared inventory has completed.                                                    |
 
-Events contain `tour: "coffee-shop"` and elapsed whole seconds since the first
-reported milestone. Browser milestones also contain `phase`: 0 is the introduction;
-1 is the first purchase; 2–3 edit and purchase Decaf; 4–5 disable ordering and retry;
-6 observes inventory and waits for a correct browser answer before revealing the
-edit; 7 verifies inventory subtraction; 8 sells out;
-9–10 restock and purchase; 11 is the final screen. The CLI adds its version and
-standard platform properties. The temporary session ID is the PostHog distinct ID,
-so funnels can connect events within one run without a persistent user identity.
+Version 1 numeric events remain accepted for existing generated demos and retain their original completion semantics. Version 2 phase IDs and completion totals come from `PHASES`; do not duplicate numeric lesson boundaries across the browser, schemas, checks, and telemetry.
 
 ## Add another tour
 

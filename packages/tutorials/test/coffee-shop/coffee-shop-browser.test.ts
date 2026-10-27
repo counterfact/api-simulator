@@ -1,58 +1,50 @@
 import vm from "node:vm";
 import { expect, it } from "@jest/globals";
 import { coffeeShopPage } from "../../src/coffee-shop/coffee-shop-page.js";
+import { CATALOG, PHASES } from "../../src/coffee-shop/coffee-shop-lessons.js";
 
-// A small DOM and controlled HTTP responses exercise the shipped browser script,
-// including async refreshes. Real-browser layout is checked separately.
 class Element {
   id = "";
   href = "";
   className = "";
-  dataset: Record<string, string> = {};
   disabled = false;
   hidden = false;
+  open = false;
+  dataset: Record<string, string> = {};
   children: Element[] = [];
-  parent: Element | undefined;
   onclick: (() => unknown) | undefined;
   private text = "";
   constructor(readonly tag: string) {}
-  set textContent(text: string) {
-    this.text = text;
+  set textContent(value: string) {
+    this.text = value;
     this.children = [];
   }
   get textContent(): string {
     return this.text + this.children.map((child) => child.textContent).join("");
   }
   append(...children: Element[]) {
-    for (const child of children) {
-      child.parent = this;
-      this.children.push(child);
-    }
+    this.children.push(...children);
   }
   replaceChildren(...children: Element[]) {
     this.text = "";
-    this.children = [];
-    this.append(...children);
+    this.children = children;
   }
   setAttribute(name: string, value: string) {
     if (name === "id") this.id = value;
   }
-  replaceWith(node: Element) {
-    if (!this.parent) return;
-    const index = this.parent.children.indexOf(this);
-    this.parent.children[index] = node;
-    node.parent = this.parent;
-  }
-  remove() {
-    if (this.parent)
-      this.parent.children = this.parent.children.filter(
-        (child) => child !== this,
-      );
+  querySelectorAll() {
+    const result: Element[] = [];
+    const visit = (current: Element) => {
+      if (current.tag === "details" && current.open) result.push(current);
+      current.children.forEach(visit);
+    };
+    this.children.forEach(visit);
+    return result;
   }
 }
 function find(
   node: Element,
-  predicate: (node: Element) => boolean,
+  predicate: (element: Element) => boolean,
 ): Element | undefined {
   if (predicate(node)) return node;
   for (const child of node.children) {
@@ -62,718 +54,547 @@ function find(
   return undefined;
 }
 async function browser(
-  storage = new Map<string, string>(),
-  stocks = { "house-blend": 5, "dark-roast": 3, decaf: 0 },
-  projectPath = "/tmp/coffee-shop",
+  options: {
+    phase?: string;
+    preview?: boolean;
+    storage?: Map<string, string>;
+    origin?: string;
+    deduct?: boolean;
+    products?: typeof CATALOG;
+    checkOk?: boolean;
+    observation?: { before: number; after: number; quantity: number };
+    entryState?: unknown;
+    sessionId?: string;
+  } = {},
 ) {
-  const page = coffeeShopPage(projectPath);
+  const storage = options.storage ?? new Map<string, string>();
+  const phaseIndex = PHASES.findIndex(
+    (phase) => phase.id === (options.phase ?? "explore"),
+  );
+  const productData = structuredClone(options.products ?? CATALOG);
+  const server = {
+    revision: "initial",
+    sessionId: options.sessionId ?? "same-session",
+    checkOk: options.checkOk ?? false,
+    deduct: options.deduct ?? false,
+    orderMode: "echo",
+    productMode: "valid",
+    products: productData,
+    state: {
+      catalog: null as unknown,
+      inventory: null as Record<string, number> | null,
+    },
+    nextId: 1,
+  };
+  if (options.phase)
+    storage.set(
+      "counterfact-coffee-v2",
+      JSON.stringify({
+        version: 2,
+        sessionId: server.sessionId,
+        index: phaseIndex,
+        completed: options.preview
+          ? []
+          : PHASES.slice(0, phaseIndex).map((phase) => phase.id),
+        cart: [],
+        observation: options.observation,
+        entryState: options.entryState,
+      }),
+    );
+  const page = coffeeShopPage("/tmp/coffee shop#1?");
   const roots = [...page.split("<script>")[0]!.matchAll(/id="([^"]+)"/gu)].map(
     (match) => {
-      const node = new Element("div");
-      node.id = match[1]!;
-      return node;
+      const element = new Element("div");
+      element.id = match[1]!;
+      return element;
     },
   );
   const root = (id: string) =>
-    roots.map((node) => find(node, (node) => node.id === id)).find(Boolean)!;
-  const server = {
-    productMode: "valid",
-    orderMode: "accepted",
-    deduct: false,
-    revision: "original",
-    checkOk: false,
-  };
-  const calls: string[] = [];
-  const milestones: { event: string; step: number }[] = [];
+    roots
+      .map((element) => find(element, (candidate) => candidate.id === id))
+      .find(Boolean)!;
+  const calls: { path: string; body?: Record<string, unknown> }[] = [];
   let poll: (() => unknown) | undefined;
-  const products = () => [
-    {
-      id: "house-blend",
-      name: "House Blend",
-      description: "Coffee",
-      price: 1400,
-      stock: stocks["house-blend"],
-    },
-    {
-      id: "dark-roast",
-      name: "Dark Roast",
-      description: "Coffee",
-      price: 1600,
-      stock: stocks["dark-roast"],
-    },
-    {
-      id: "decaf",
-      name: "Decaf",
-      description: "Coffee",
-      price: 1500,
-      stock: stocks.decaf,
-    },
-  ];
   const context = vm.createContext({
     document: {
       hidden: false,
       createElement: (tag: string) => new Element(tag),
       getElementById: root,
     },
-    window: { addEventListener: () => undefined },
+    window: {
+      location: {
+        origin: options.origin ?? "http://localhost:3100",
+        port: new URL(options.origin ?? "http://localhost:3100").port,
+      },
+    },
     navigator: {},
-    AbortController,
     URL,
+    AbortController,
     setTimeout,
     clearTimeout,
-    setInterval: (callback: () => void) => {
+    setInterval: (callback: () => unknown) => {
       poll = callback;
       return 1;
     },
     sessionStorage: {
-      getItem: (key: string) => storage.get(key) || null,
+      getItem: (key: string) => storage.get(key) ?? null,
       setItem: (key: string, value: string) => storage.set(key, value),
     },
-    fetch: async (path: string, options: { body?: string } = {}) => {
-      calls.push(path);
-      let status = 200;
-      let result: unknown;
+    fetch: async (path: string, request: { body?: string } = {}) => {
+      const body = request.body
+        ? (JSON.parse(request.body) as Record<string, unknown>)
+        : undefined;
+      calls.push({ path, body });
+      let status = 200,
+        value: unknown;
       if (path === "/tutorial-info")
-        result = { sessionId: "same-api-session", revision: server.revision };
-      else if (path === "/tutorial-event") {
-        if (server.productMode === "telemetry-offline")
-          throw Error("Reporting unavailable");
-        milestones.push(JSON.parse(options.body!));
-        result = { ok: true };
-      } else if (path === "/tutorial-check")
-        result = {
+        value = {
+          sessionId: server.sessionId,
+          revision: server.revision,
+          state: structuredClone(server.state),
+        };
+      else if (path === "/tutorial-check")
+        value = {
           revision: server.revision,
           ok: server.checkOk,
           message: server.checkOk
-            ? "Saved change checked"
-            : "Expected different handler behavior",
+            ? "Saved implementation verified."
+            : "Expected an explicit implementation.",
         };
+      else if (path === "/tutorial-event") value = { ok: true };
       else if (path === "/products") {
-        if (server.productMode === "offline") throw Error("Disconnected");
-        result =
+        if (server.productMode === "offline")
+          throw new Error("Disconnected. Click Refresh products to retry.");
+        value =
           server.productMode === "invalid"
-            ? [{ id: "house-blend" }]
-            : products();
+            ? [{ id: "missing-fields" }]
+            : structuredClone(server.products);
       } else {
-        if (server.orderMode === "offline") throw Error("No confirmation");
-        const items = (
-          JSON.parse(options.body!) as {
-            items: { productId: keyof typeof stocks; quantity: number }[];
-          }
-        ).items;
+        if (server.orderMode === "offline")
+          throw new Error("No confirmation; inspect the API before retrying.");
+        const items = body!.items as { productId: string; quantity: number }[];
         status =
-          server.orderMode === "shortage"
-            ? 409
-            : server.orderMode === "unavailable"
-              ? 503
+          server.orderMode === "unavailable"
+            ? 503
+            : server.orderMode === "shortage"
+              ? 409
               : 201;
-        result =
-          status === 409
+        value =
+          status === 201
             ? {
-                error: "Not enough stock",
-                shortages: items.map((item) => ({
-                  productId: item.productId,
-                  requested: item.quantity,
-                  available: stocks[item.productId],
-                })),
+                orderId: server.nextId++,
+                items: server.orderMode === "random" ? [] : items,
               }
-            : { orderId: 1 };
+            : status === 409
+              ? {
+                  error: "Not enough stock",
+                  shortages: [
+                    { productId: "dark-roast", requested: 2, available: 1 },
+                  ],
+                }
+              : { error: "Ordering is temporarily unavailable." };
         if (status === 201 && server.deduct)
-          for (const item of items) stocks[item.productId] -= item.quantity;
+          for (const item of items)
+            server.products.find(
+              (product) => product.id === item.productId,
+            )!.stock -= item.quantity;
       }
-      return { status, ok: status < 400, json: async () => result };
+      return { status, ok: status < 400, json: async () => value };
     },
   });
-  const read = <T = unknown>(code: string): T =>
-    vm.runInContext(code, context) as T;
   vm.runInContext(page.split("<script>")[1]!.split("</script>")[0]!, context);
-  await read<Promise<void>>("walkthroughReady");
+  const api = (await vm.runInContext("walkthroughReady", context)) as {
+    placeOrder: () => Promise<void>;
+    checkFiles: (force?: boolean) => Promise<void>;
+  };
+  const click = async (id: string) => {
+    await root(id).onclick!();
+  };
   return {
-    server,
-    stocks,
-    calls,
-    milestones,
     root,
-    read,
+    server,
+    calls,
     storage,
+    click,
+    api,
+    async poll() {
+      await poll!();
+      await new Promise((resolve) => setImmediate(resolve));
+    },
     add(id = "house-blend") {
       const card = find(
         root("products"),
-        (node) => node.dataset.productId === id,
+        (element) => element.dataset.productId === id,
       )!;
-      find(card, (node) => node.tag === "button")!.onclick!();
+      find(
+        card,
+        (element) =>
+          element.tag === "button" && element.textContent === "Add to cart",
+      )!.onclick!();
     },
-    order: () => read<Promise<void>>("placeOrder()"),
-    async poll() {
-      await poll!();
+    async answer(label: string) {
+      await find(
+        root("inventory-question"),
+        (element) => element.tag === "button" && element.textContent === label,
+      )!.onclick!();
+    },
+    completed() {
+      return (
+        JSON.parse(storage.get("counterfact-coffee-v2")!) as {
+          completed: string[];
+        }
+      ).completed;
     },
   };
 }
 
-it("shows shopper availability while adding to the cart leaves API inventory unchanged", async () => {
-  const app = await browser();
-  app.add();
-  expect(app.stocks["house-blend"]).toBe(5);
-  expect(app.root("products").textContent).toContain("4 more bags available");
-});
-
-it("automatically refreshes shop availability after accepted orders", async () => {
-  const app = await browser();
-  app.add();
-  await app.order();
-  expect(app.root("products").textContent).toContain("5 bags available");
-  expect(app.root("guide-status").textContent).toContain(
-    "House Blend API stock stayed at 5",
-  );
-  app.server.deduct = true;
-  app.add();
-  await app.order();
-  expect(app.root("products").textContent).toContain("4 bags available");
-  expect(app.root("guide-status").textContent).toContain(
-    "House Blend API stock 5 → 4 after checkout",
-  );
-  expect(app.calls.filter((path) => path === "/orders")).toHaveLength(2);
-});
-
-it("observes a live inventory edit and credits the response without manual refresh", async () => {
-  const app = await browser();
-  app.read("progress.step=2;showLesson()");
-  app.stocks.decaf = 5;
-  app.server.checkOk = true;
-  app.server.revision = "decaf-change";
-  await app.poll();
-  expect(app.read("progress.step")).toBe(3);
-  expect(app.read("progress.done")).toBe(false);
-  expect(app.root("products").textContent).toContain("Decaf");
-  expect(app.stocks.decaf).toBe(5);
-  app.add("decaf");
-  expect(app.root("guide-status").textContent).toContain(
-    "Decaf is in your cart",
-  );
-  find(
-    app.root("cart"),
-    (node) => node.tag === "button" && node.textContent === "Remove",
-  )!.onclick!();
-  expect(app.root("guide-status").textContent).toBe("");
-});
-
-it("keeps rejected carts and explains server-reported requested and available quantities", async () => {
-  const app = await browser();
-  app.add();
-  app.stocks["house-blend"] = 0;
-  app.server.orderMode = "shortage";
-  await app.order();
-  expect(app.root("shop-notice").textContent).toContain(
-    "House Blend: your cart requested 1; the order API reported 0 available",
-  );
-  expect(app.root("cart").textContent).toContain("House Blend × 1");
-});
-
-it.each(["invalid", "offline"])(
-  "marks %s product data stale and reconnects without losing the cart",
-  async (mode) => {
-    const app = await browser();
-    app.add();
-    app.server.productMode = mode;
-    await app.poll();
-    expect(app.root("products").textContent).toContain(
-      "Availability temporarily unavailable",
-    );
-    expect(app.root("checkout").disabled).toBe(true);
-    expect(app.root("cart").textContent).toContain("House Blend × 1");
-    app.server.productMode = "valid";
-    await app.poll();
-    expect(app.root("checkout").disabled).toBe(false);
-    expect(app.root("products").textContent).not.toContain(
-      "Availability temporarily unavailable",
+it.each(["http://localhost:3100", "http://localhost:4123"])(
+  "links the opening explanation to the actual API at %s",
+  async (origin) => {
+    const app = await browser({ origin });
+    expect(
+      find(
+        app.root("lesson"),
+        (element) => element.tag === "a" && element.textContent === origin,
+      )?.href,
+    ).toBe(origin);
+    expect(app.root("lesson").textContent).toContain(
+      "your local API, which is running at",
     );
   },
 );
 
-it("distinguishes an unknown confirmation from rejection and prevents duplicate simultaneous orders", async () => {
-  const app = await browser();
-  app.add();
-  app.server.orderMode = "offline";
-  await Promise.all([app.order(), app.order()]);
-  expect(app.calls.filter((path) => path === "/orders")).toHaveLength(1);
-  expect(app.root("shop-notice").textContent).toContain(
-    "may have been accepted",
-  );
-  expect(app.root("cart").textContent).toContain("House Blend × 1");
-});
-
-it("preserves the current lesson and cart on reload without another order", async () => {
-  const app = await browser();
-  app.read("progress.step=1;showLesson()");
-  app.add();
-  const restored = await browser(app.storage, app.stocks);
-  expect(restored.read("progress.step")).toBe(1);
-  expect(restored.root("cart").textContent).toContain("House Blend × 1");
-  expect(restored.calls).not.toContain("/orders");
-});
-
-it.each([
-  ["/tmp/coffee shop#1?", "vscode://file/tmp/coffee%20shop%231%3F/"],
-  [String.raw`C:\coffee shop\demo`, "vscode://file/C:/coffee%20shop/demo/"],
-])(
-  "links instructional file names and revealed hints (%s)",
-  async (projectPath, base) => {
-    const app = await browser(undefined, undefined, projectPath);
-    app.read("progress.step=7;progress.inventoryUpdated=false;showLesson()");
-    const paragraph = app.root("instruction-text");
-    expect(
-      find(
-        app.root("lesson"),
-        (node) => node.tag === "a" && node.textContent === "Open in VSCode",
-      )?.href,
-    ).toBe(base + "routes/orders.ts");
-    expect(
-      find(
-        app.root("lesson"),
-        (node) =>
-          node.tag === "button" && node.textContent === "Copy file path",
-      )?.parent?.className,
-    ).toBe("file-actions");
-    expect(
-      find(
-        paragraph,
-        (node) =>
-          node.tag === "a" && node.textContent === "routes/_.context.ts",
-      )?.href,
-    ).toBe(base + "routes/_.context.ts");
-    expect(
-      find(
-        paragraph,
-        (node) => node.tag === "a" && node.textContent === "routes/orders.ts",
-      )?.href,
-    ).toBe(base + "routes/orders.ts");
-    expect(
-      find(
-        app.root("lesson"),
-        (node) =>
-          node.tag === "a" &&
-          node.textContent === projectPath + "/routes/orders.ts",
-      )?.href,
-    ).toBe(base + "routes/orders.ts");
-    app.read("passedSaveCheck=true;updateAction()");
-    expect(
-      find(
-        app.root("instruction-text"),
-        (node) => node.tag === "a" && node.textContent === "routes/orders.ts",
-      )?.href,
-    ).toBe(base + "routes/orders.ts");
-    app.read("progress.step=11;showLesson()");
-    expect(
-      find(
-        app.root("lesson"),
-        (node) => node.tag === "a" && node.textContent === "openapi.json",
-      )?.href,
-    ).toBe(base + "openapi.json");
-  },
-);
-
-it("detects saves, reports a failed check, and advances the action only after a passing check", async () => {
-  const app = await browser();
-  app.read("progress.step=4;cart={'house-blend':1};showLesson()");
-  await app.poll(); // Establish the lesson's saved revision; no failed alert before an edit.
-  expect(app.root("save-check").textContent).toBe("");
-  expect(app.root("lesson").textContent).not.toContain("I've saved the file");
-  app.server.revision = "wrong-edit";
-  await app.poll();
-  expect(app.root("save-check").textContent).toContain(
-    "Expected different handler behavior",
-  );
-  expect(app.read("passedSaveCheck")).toBe(false);
-  const checks = app.calls.filter((path) => path === "/tutorial-check").length;
-  await app.poll();
-  expect(app.calls.filter((path) => path === "/tutorial-check")).toHaveLength(
-    checks,
-  );
-  app.server.revision = "correct-edit";
-  app.server.checkOk = true;
-  await app.poll();
-  expect(app.root("save-check").textContent).toContain("Saved change checked");
-  expect(app.read("passedSaveCheck")).toBe(true);
-  expect(app.read("progress.done")).toBe(false);
-  expect(app.read("cart")).toEqual({ "house-blend": 1 });
-  expect(app.calls.filter((path) => path === "/orders")).toHaveLength(0);
-});
-
-it("discards a delayed check when the user has moved to another lesson", async () => {
-  const app = await browser();
-  app.read(`progress.step=4;showLesson();
-    const originalRequest=requestJson;
-    let releaseCheck;
-    requestJson=async(path,options)=>{if(path==='/tutorial-check')await new Promise(resolve=>releaseCheck=resolve);return originalRequest(path,options);};`);
-  const pending = app.read<Promise<void>>("checkSavedFiles()");
-  await new Promise((resolve) => setImmediate(resolve));
-  app.read("progress.step=5;showLesson();releaseCheck()");
-  await pending;
-  expect(app.root("save-check").textContent).toBe("");
-  expect(app.read("passedSaveCheck")).toBe(false);
-});
-
-it("replaces the old failure notice when a saved handler recovers and clears the check after retry", async () => {
-  const app = await browser();
-  app.read("progress.step=4;showLesson()");
-  app.add();
-  app.server.orderMode = "unavailable";
-  await app.order();
-  expect(app.root("shop-notice").textContent).toContain("restore ordering");
-  const restored = await browser(app.storage, app.stocks);
-  expect(restored.root("checkout").textContent).toBe("Try again");
-  app.read("progress.step=5;progress.done=false;showLesson()");
-  app.server.orderMode = "accepted";
-  app.server.checkOk = true;
-  app.server.revision = "recovered";
-  await app.poll();
-  expect(app.root("shop-notice").textContent).toContain(
-    "Ordering is available again",
-  );
-  expect(app.root("shop-notice").textContent).not.toContain("restore ordering");
-  expect(app.root("guide-status").textContent).not.toContain(
-    "Restore ordering",
-  );
-  await app.order();
-  expect(app.root("save-check").textContent).toBe("");
-  expect(app.read("progress.done")).toBe(true);
-});
-
-it("completes all eight lessons with an inventory question before the edit", async () => {
-  const app = await browser();
-  const advance = async () => {
-    app.root("continue").onclick!();
-    await app.poll();
-  };
-  await advance();
-  expect(app.root("lesson").textContent).not.toContain("✓ Step complete");
-  app.add();
-  await app.order();
-  expect(app.root("step-completion").textContent).toBe("✓ Step complete");
-  expect(app.root("continue").hidden).toBe(false);
-  expect(app.root("guide-status").textContent).toContain(
-    "has not reduced stock",
-  );
-  await advance();
-  expect(app.root("shop-notice").textContent).toBe("");
-  expect(app.root("lesson").textContent).not.toContain("✓ Step complete");
-  app.stocks.decaf = 5;
-  app.server.revision = "decaf";
-  app.server.checkOk = true;
-  await app.poll();
-  expect(app.read("progress.step")).toBe(3);
-  expect(app.root("lesson").textContent).toContain("Step 3 of 8");
-  expect(app.root("continue").hidden).toBe(true);
-  expect(app.root("lesson").textContent).not.toContain("✓ Step complete");
-  expect(app.root("save-check").textContent).toBe("");
-  app.add("decaf");
-  await app.order();
-  expect(app.root("step-completion").textContent).toBe("✓ Step complete");
-  await advance();
-  app.add("dark-roast");
-  app.server.orderMode = "unavailable";
-  await app.order();
-  expect(app.read("progress.step")).toBe(5);
-  expect(app.root("lesson").textContent).toContain("Step 4 of 8");
-  app.server.orderMode = "accepted";
-  app.server.revision = "recovered";
-  await app.poll();
-  await app.order();
-  expect(app.root("save-check").textContent).toBe("");
-  await advance();
-  app.add("dark-roast");
-  await app.order();
-  expect(app.read("progress.step")).toBe(6);
-  answerInventory(app, "No, stock stayed the same");
-  expect(app.read("progress.step")).toBe(7);
-  expect(app.root("lesson").textContent).toContain("Step 5 of 8");
-  app.server.deduct = true;
-  app.server.revision = "subtract";
-  await app.poll();
-  app.add("dark-roast");
-  await app.order();
-  await advance();
-  app.add("dark-roast");
-  app.add("dark-roast");
-  await app.order();
-  expect(app.stocks["dark-roast"]).toBe(0);
-  await advance();
-  expect(app.root("lesson").textContent).toContain(
-    'context.inventory["dark-roast"] = 5',
-  );
-  expect(app.root("lesson").textContent).not.toContain("I'm at the REPL");
-  app.stocks["dark-roast"] = 5;
-  await app.poll();
-  expect(app.read("progress.step")).toBe(10);
-  expect(app.root("lesson").textContent).toContain("Step 7 of 8");
-  expect(app.root("continue").hidden).toBe(true);
-  app.add("dark-roast");
-  await app.order();
-  expect(app.stocks["dark-roast"]).toBe(4);
-  await advance();
-  expect(app.root("lesson").textContent).toContain("Step 8 of 8");
-  expect(app.read("progress.step")).toBe(11);
-});
-
-it("keeps usable stock on Back and offers REPL recovery only for depleted inventory", async () => {
-  const app = await browser(undefined, {
-    "house-blend": 5,
-    "dark-roast": 3,
-    decaf: 4,
+it("renders arbitrary product IDs safely and refreshes only on explicit actions", async () => {
+  const app = await browser({
+    products: [
+      {
+        id: "__proto__",
+        name: "Random coffee",
+        description: "Generated",
+        price: 700,
+        stock: 2,
+      },
+    ],
   });
-  app.server.checkOk = true;
-  app.read("progress.step=4;showLesson()");
-  app.root("back").onclick!();
+  app.add("__proto__");
+  expect(app.root("cart").textContent).toContain("Random coffee × 1");
   await app.poll();
-  expect(app.read("progress.step")).toBe(3);
-  expect(app.stocks.decaf).toBe(4);
-  app.stocks.decaf = 0;
   await app.poll();
-  expect(app.root("lesson").textContent).toContain(
-    "Back keeps your files and inventory",
+  expect(app.calls.filter((call) => call.path === "/products")).toHaveLength(1);
+  app.server.products[0]!.name = "Another response";
+  await app.click("refresh-products");
+  expect(app.root("cart").textContent).toContain("empty");
+  expect(app.root("guide-status").textContent).toContain(
+    "clears the previous cart",
   );
-  expect(app.root("lesson").textContent).toContain(
-    'context.inventory["decaf"] = 5',
-  );
-  expect(app.stocks.decaf).toBe(0);
-  app.stocks.decaf = 7;
-  await app.poll();
-  expect(app.root("lesson").textContent).not.toContain("Back keeps your files");
-  app.read("progress.step=1;showLesson()");
-  app.stocks["house-blend"] = 0;
-  await app.poll();
-  expect(app.root("lesson").textContent).toContain(
-    'context.inventory["house-blend"] = 5',
-  );
-  app.stocks["house-blend"] = 5;
-  await app.poll();
-  expect(app.root("lesson").textContent).toContain(
-    "Add House Blend to your cart",
+  expect(app.root("products").textContent).toContain("Another response");
+  expect(app.completed()).toContain("explore");
+  expect(app.root("request-trace").textContent).toContain(
+    "http://localhost:3100/products",
   );
 });
 
-it("recovers the original retry cart after a different successful purchase and reload", async () => {
-  const storage = new Map<string, string>();
-  const app = await browser(storage);
-  app.read("progress.step=4;showLesson()");
+it("rejects duplicate IDs with a useful explanation and recovers on refresh", async () => {
+  const app = await browser({ products: [CATALOG[0]!, CATALOG[0]!] });
+  expect(app.root("guide-status").textContent).toContain("duplicate IDs");
+  app.server.products = structuredClone(CATALOG);
+  await app.click("refresh-products");
+  expect(app.root("products").textContent).toContain("Dark Roast");
+});
+
+it("does not credit a random confirmation or a catalog before a passing saved check", async () => {
+  const app = await browser({ phase: "catalog" });
+  await app.click("refresh-products");
+  await app.click("refresh-products");
+  expect(app.completed()).not.toContain("catalog");
+  app.server.checkOk = true;
+  app.server.revision = "catalog-edit";
+  await app.click("refresh-products");
+  await app.click("refresh-products");
+  expect(app.completed()).toContain("catalog");
+  await app.click("continue");
+  app.server.orderMode = "random";
   app.add();
+  await app.api.placeOrder();
+  expect(app.completed()).not.toContain("order");
+  app.server.orderMode = "echo";
+  app.add();
+  await app.api.placeOrder();
+  expect(app.completed()).toContain("order");
+  expect(app.root("request-trace").textContent).toContain('"request"');
+});
+
+it("previews later lessons without applying edits or crediting completion", async () => {
+  const app = await browser();
+  await app.click("skip");
+  expect(app.root("lesson").textContent).toContain("Preview: complete");
+  app.server.checkOk = true;
+  await app.click("refresh-products");
+  await app.click("refresh-products");
+  expect(app.completed()).toEqual([]);
+  expect(
+    app.calls.every((call) =>
+      [
+        "/tutorial-info",
+        "/tutorial-check",
+        "/tutorial-event",
+        "/products",
+      ].includes(call.path),
+    ),
+  ).toBe(true);
+  find(
+    app.root("lesson"),
+    (element) =>
+      element.tag === "button" &&
+      element.textContent === "Return to required edit",
+  )!.onclick!();
+  expect(app.root("lesson").textContent).toContain(
+    "Explore your generated API",
+  );
+});
+
+it("does not reveal the recovery edit before the observed failure, then retries the original cart", async () => {
+  const app = await browser({ phase: "fail", checkOk: true });
+  expect(app.root("lesson").textContent).not.toContain(
+    "Change ordersAvailable to true",
+  );
   app.server.orderMode = "unavailable";
-  await app.order();
-  expect(app.read("progress.step")).toBe(5);
   app.add();
-  expect(app.root("retry-recovery").textContent).toContain("House Blend × 1");
-  app.server.orderMode = "accepted";
-  await app.order();
-  expect(app.read("progress.done")).toBe(false);
-  expect(app.root("cart").textContent).toContain("empty");
+  await app.api.placeOrder();
+  expect(app.root("lesson").textContent).toContain(
+    "Change ordersAvailable to true",
+  );
+  expect(app.root("cart").textContent).toContain("House Blend × 1");
+  app.add();
   expect(app.root("retry-recovery").textContent).toContain(
     "Restore original cart",
   );
-  const restored = await browser(storage);
-  expect(restored.root("retry-recovery").textContent).toContain(
-    "House Blend × 1",
-  );
-  find(restored.root("retry-recovery"), (node) => node.tag === "button")!
+  find(app.root("retry-recovery"), (element) => element.tag === "button")!
     .onclick!();
-  expect(restored.root("cart").textContent).toContain("House Blend × 1");
-  expect(restored.root("retry-recovery").textContent).toBe("");
-  await restored.order();
-  expect(restored.read("progress.done")).toBe(true);
-  expect(restored.root("step-completion").textContent).toBe("✓ Step complete");
+  app.server.orderMode = "echo";
+  app.server.revision = "retry-edit";
+  await app.api.checkFiles();
+  await app.api.placeOrder();
+  expect(app.completed()).toContain("retry");
 });
 
-it("names the restart directory and fresh session behavior at the handoff", async () => {
-  const app = await browser();
-  app.read("progress.step=11;showLesson()");
-  expect(app.root("lesson").textContent).toContain("run this from /tmp:");
-  expect(app.root("lesson").textContent).toContain("--port 3100");
-  expect(app.root("lesson").textContent).toContain("keeps your handler edits");
-  expect(app.root("lesson").textContent).toContain(
-    "fresh inventory, lesson progress, and cart",
-  );
-});
-
-it("reports observed exercise completion once while polling and navigation stay usable", async () => {
-  const app = await browser();
-  expect(app.milestones).toEqual([{ event: "opened", step: 0 }]);
-  app.root("continue").onclick!();
-  app.add();
-  await app.order();
-  await app.poll();
-  app.read("checkProgress();checkProgress()");
-  expect(app.milestones).toEqual([
-    { event: "opened", step: 0 },
-    { event: "started", step: 0 },
-    { event: "phase_completed", step: 1 },
-  ]);
-  app.root("continue").onclick!();
-  app.root("skip").onclick!();
-  expect(app.milestones.at(-1)).toEqual({ event: "lesson_skipped", step: 2 });
-  expect(app.milestones).not.toContainEqual({
-    event: "phase_completed",
-    step: 2,
+it("waits for an explicit seed command instead of completing from a saved scenario alone", async () => {
+  const app = await browser({
+    phase: "seed",
+    checkOk: true,
+    entryState: { catalog: [], inventory: {} },
   });
-  app.read("progress.step=11;showLesson();showLesson()");
-  expect(
-    app.milestones.filter((event) => event.event === "finished"),
-  ).toHaveLength(1);
-});
-
-it("reports automatic phase completion before moving to the next instruction", async () => {
-  const app = await browser();
-  app.read("progress.step=2;showLesson()");
-  app.stocks.decaf = 5;
-  app.server.checkOk = true;
-  app.server.revision = "decaf-change";
-  await app.poll();
-  expect(app.milestones).toContainEqual({ event: "phase_completed", step: 2 });
-  expect(app.read("progress.step")).toBe(3);
-});
-
-it("continues lessons when milestone reporting fails", async () => {
-  const app = await browser();
-  app.server.productMode = "telemetry-offline";
-  app.root("continue").onclick!();
-  app.add();
-  await app.order();
-  expect(app.read("progress.done")).toBe(true);
-  expect(app.root("step-completion").textContent).toContain("Step complete");
-});
-
-function lessonCopy(app: Awaited<ReturnType<typeof browser>>) {
-  const lesson = app.root("lesson");
-  return {
-    title: find(lesson, (node) => node.tag === "h2")?.textContent,
-    explanation: find(lesson, (node) => node.className === "lesson-explanation")
-      ?.textContent,
-    instructions: app.root("instruction-text").textContent,
-    hints: lesson.children
-      .filter((node) => node.className === "code-hint")
-      .map((node) => node.textContent),
-    files: find(lesson, (node) => node.className === "file-actions")
-      ?.textContent,
+  await app.click("check-progress");
+  expect(app.completed()).not.toContain("seed");
+  app.server.state = {
+    catalog: CATALOG.map(({ stock: _stock, ...product }) => product),
+    inventory: { "house-blend": 5, "dark-roast": 3, decaf: 0 },
   };
-}
-
-function answerInventory(
-  app: Awaited<ReturnType<typeof browser>>,
-  label: string,
-) {
-  find(
-    app.root("inventory-question"),
-    (node) => node.tag === "button" && node.textContent === label,
-  )!.onclick!();
-}
-
-it.each([
-  [2, 3],
-  [4, 5],
-  [6, 7],
-  [9, 10],
-])(
-  "reveals phase %s before %s and retains previously shown instructions",
-  async (first, second) => {
-    const app = await browser(undefined, {
-      "house-blend": 5,
-      "dark-roast": 3,
-      decaf: 5,
-    });
-    app.read(`progress.step=${first};showLesson()`);
-    const initial = lessonCopy(app);
-    const laterText = app.read<string>(`lessons[${second}][1]`);
-    expect(initial.instructions).not.toContain(laterText);
-    app.read(`progress.step=${second};showLesson()`);
-    const revealed = lessonCopy(app);
-    expect(revealed.title).toBe(initial.title);
-    expect(revealed.instructions).toBe(initial.instructions + " " + laterText);
-    expect(revealed.explanation).toContain(initial.explanation);
-    expect(
-      find(app.root("instruction-text"), (node) => node.tag === "strong"),
-    ).toBeUndefined();
-    app.read("progress.done=true;showLesson()");
-    expect(lessonCopy(app)).toEqual(revealed);
-  },
-);
-
-it("requires a correct answer before revealing step 5's inventory edit", async () => {
-  const app = await browser();
-  app.read("progress.step=6;showLesson()");
-  const initial = lessonCopy(app);
-  expect(app.root("lesson").textContent).not.toContain(
-    "Complete reduceInventory",
-  );
-  expect(
-    find(app.root("lesson"), (node) => node.id === "inventory-question"),
-  ).toBeUndefined();
-  expect(initial.hints).toEqual([]);
-  expect(initial.files).toBeUndefined();
-  app.add("dark-roast");
-  await app.order();
-  expect(app.read("progress.step")).toBe(6);
-  expect(app.root("continue").hidden).toBe(true);
-  app.root("continue").onclick!();
-  expect(app.read("progress.step")).toBe(6);
-  expect(app.root("lesson").textContent).not.toContain("✓ Step complete");
-  answerInventory(app, "Yes, stock decreased");
-  expect(app.root("inventory-question").textContent).toContain(
-    "stock stayed at 3",
-  );
-  expect(app.root("inventory-question").textContent).toContain(
-    "Confirming an order and updating inventory are separate actions",
-  );
-  expect(app.root("lesson").textContent).not.toContain(
-    "Complete reduceInventory",
-  );
-  await app.poll();
-  expect(app.root("inventory-question").textContent).toContain("Try again");
-  expect(app.milestones).not.toContainEqual({
-    event: "phase_completed",
-    step: 6,
-  });
-  answerInventory(app, "Try again");
-  answerInventory(app, "No, stock stayed the same");
-  expect(app.milestones).toContainEqual({ event: "phase_completed", step: 6 });
-  expect(app.read("progress.step")).toBe(7);
-  const revealed = lessonCopy(app);
-  expect(revealed.instructions).toContain(initial.instructions);
-  expect(revealed.instructions).toContain("Complete reduceInventory");
-  expect(revealed.hints.join(" ")).toContain(
-    "inventory[item.productId] -= item.quantity;",
-  );
-  app.server.checkOk = true;
-  app.server.revision = "subtract";
-  app.server.deduct = true;
-  await app.poll();
-  app.add("dark-roast");
-  await app.order();
-  expect(app.read("progress.done")).toBe(true);
-  expect(lessonCopy(app)).toEqual(revealed);
+  await app.click("check-progress");
+  expect(app.completed()).toContain("seed");
 });
 
-it("restores an unanswered inventory question on reload and accepts the observed result when stock already decreases", async () => {
-  const app = await browser();
-  app.read("progress.step=6;showLesson()");
-  app.server.deduct = true;
+it("keeps the inventory edit hidden through a wrong answer and reload, then reveals it after retry", async () => {
+  const app = await browser({ phase: "observe" });
+  expect(app.root("lesson").textContent).not.toContain(
+    "Replace routes/orders.ts",
+  );
   app.add("dark-roast");
-  await app.order();
-  const restored = await browser(app.storage, app.stocks);
-  expect(restored.read("progress.step")).toBe(6);
-  expect(restored.root("continue").hidden).toBe(true);
-  answerInventory(restored, "No, stock stayed the same");
-  expect(restored.root("inventory-question").textContent).toContain(
-    "stock decreased from 3 to 2",
+  await app.api.placeOrder();
+  expect(app.root("inventory-question").textContent).toContain("3 → 3");
+  await app.answer("Yes, stock decreased");
+  expect(app.root("inventory-question").textContent).toContain(
+    "separate operations",
   );
-  answerInventory(restored, "Try again");
-  answerInventory(restored, "Yes, stock decreased");
-  expect(restored.read("progress.step")).toBe(7);
-  const revealed = lessonCopy(restored);
-  restored.stocks["dark-roast"] = 0;
-  await restored.poll();
+  expect(app.root("lesson").textContent).not.toContain(
+    "Replace routes/orders.ts",
+  );
+  const restored = await browser({ storage: app.storage });
+  expect(restored.root("inventory-question").textContent).toContain("3 → 3");
+  await restored.answer("Yes, stock decreased");
+  await restored.answer("Try again");
+  await restored.answer("No, stock stayed the same");
   expect(restored.root("lesson").textContent).toContain(
-    "Restock Dark Roast through Counterfact’s REPL",
+    "Replace routes/orders.ts",
   );
-  expect(lessonCopy(restored)).toEqual(revealed);
-  restored.stocks["dark-roast"] = 5;
-  await restored.poll();
-  expect(lessonCopy(restored)).toEqual(revealed);
+  expect(restored.root("lesson").textContent).toContain(
+    "inventory[item.productId] -= item.quantity",
+  );
+  expect(restored.completed()).toContain("observe");
+});
+
+it("checks the quiz against the actual reduction in a retained implementation", async () => {
+  const app = await browser({ phase: "observe", deduct: true });
+  app.add("dark-roast");
+  await app.api.placeOrder();
+  await app.answer("No, stock stayed the same");
+  expect(app.root("inventory-question").textContent).toContain(
+    "already subtracts",
+  );
+  await app.answer("Try again");
+  await app.answer("Yes, stock decreased");
+  expect(app.completed()).toContain("observe");
+});
+
+it("credits inventory reduction only after a checked handler and a matching observed purchase", async () => {
+  const app = await browser({ phase: "reduce", checkOk: true, deduct: true });
+  app.add("dark-roast");
+  await app.api.placeOrder();
+  expect(app.completed()).toContain("reduce");
+  expect(app.root("products").textContent).toContain("2 bags available");
+});
+
+it("keeps the cart on unknown confirmation and disables orders on stale product data", async () => {
+  const app = await browser();
+  app.add();
+  app.server.orderMode = "offline";
+  await app.api.placeOrder();
+  expect(app.root("cart").textContent).toContain("House Blend × 1");
+  app.server.productMode = "offline";
+  await app.click("refresh-products");
+  expect(app.root("checkout").disabled).toBe(true);
+  app.server.productMode = "valid";
+  await app.click("refresh-products");
+  expect(app.root("checkout").disabled).toBe(true); // Random refresh explicitly cleared the old cart.
+});
+
+it("keeps code hints open across a save check and uses escaped editor links", async () => {
+  const app = await browser({ phase: "catalog" });
+  const hint = find(
+    app.root("lesson"),
+    (element) => element.tag === "details",
+  )!;
+  hint.open = true;
+  expect(
+    find(
+      app.root("lesson"),
+      (element) =>
+        element.tag === "a" && element.textContent === "Open in VSCode",
+    )!.href,
+  ).toBe("vscode://file/tmp/coffee%20shop%231%3F/routes/products.ts");
+  app.server.revision = "saved";
+  await app.poll();
+  expect(
+    find(app.root("lesson"), (element) => element.tag === "details")!.open,
+  ).toBe(true);
+});
+
+it("requires two observed sequential confirmations to connect the shared context", async () => {
+  const app = await browser({ phase: "connect", checkOk: true });
+  app.add();
+  await app.api.placeOrder();
+  expect(app.completed()).not.toContain("connect");
+  app.add();
+  await app.api.placeOrder();
+  expect(app.completed()).toContain("connect");
+});
+
+it("waits for stock rejection, an emptied cart, and explicit restoration before the inventory lesson", async () => {
+  const app = await browser({ phase: "rules", checkOk: true });
+  app.add("dark-roast");
+  app.add("dark-roast");
+  app.server.products.find((product) => product.id === "dark-roast")!.stock = 1;
+  await app.click("refresh-products");
+  app.server.orderMode = "shortage";
+  await app.api.placeOrder();
+  expect(app.completed()).not.toContain("rules");
+  expect(app.root("cart").textContent).toContain("Dark Roast × 2");
+  await app.click("empty-cart");
+  app.server.products.find((product) => product.id === "dark-roast")!.stock = 3;
+  await app.click("refresh-products");
+  expect(app.completed()).toContain("rules");
+  expect(app.root("checkout").textContent).toBe("Place order");
+});
+
+it("does not complete the focused scenario until its live change preserves other inventory", async () => {
+  const app = await browser({
+    phase: "scenario",
+    checkOk: true,
+    origin: "http://localhost:4123",
+    entryState: {
+      catalog: [],
+      inventory: { "dark-roast": 4, decaf: 5, "house-blend": 3 },
+    },
+  });
+  await app.click("check-progress");
+  expect(app.completed()).not.toContain("scenario");
+  app.server.state.inventory = { "dark-roast": 5, decaf: 0, "house-blend": 3 };
+  await app.click("check-progress");
+  expect(app.completed()).not.toContain("scenario");
+  app.server.state.inventory.decaf = 5;
+  await app.click("check-progress");
+  expect(app.completed()).toContain("scenario");
+  expect(app.root("lesson").textContent).toContain("--port 4123");
+  expect(app.root("lesson").textContent).toContain(
+    "Restarting keeps your code",
+  );
+});
+
+it("a newly saved invalid handler cannot earn progress through the previously checked implementation", async () => {
+  const app = await browser({ phase: "order", checkOk: true });
+  app.server.revision = "broken-edit";
+  app.server.checkOk = false;
+  app.add();
+  await app.api.placeOrder();
+  expect(app.completed()).not.toContain("order");
+  expect(app.root("save-check").textContent).toContain(
+    "Expected an explicit implementation",
+  );
+  app.server.revision = "repaired-edit";
+  app.server.checkOk = true;
+  app.add();
+  await app.api.placeOrder();
+  expect(app.completed()).toContain("order");
+});
+
+it("starts a new lesson session after a server restart without accepting old completion state", async () => {
+  const app = await browser({
+    phase: "observe",
+    observation: { before: 3, after: 3, quantity: 1 },
+  });
+  const restarted = await browser({
+    storage: app.storage,
+    sessionId: "new-server-session",
+  });
+  expect(restarted.root("lesson").textContent).toContain(
+    "Explore your generated API",
+  );
+  expect(restarted.completed()).toEqual([]);
+});
+
+it("uses the observed post-purchase stock when entering the reusable scenario lesson", async () => {
+  const initialProducts = structuredClone(CATALOG);
+  initialProducts.find((product) => product.id === "dark-roast")!.stock = 5;
+  const app = await browser({
+    phase: "restock",
+    checkOk: true,
+    deduct: true,
+    products: initialProducts,
+  });
+  app.server.state = {
+    catalog: [],
+    inventory: { "house-blend": 5, "dark-roast": 5, decaf: 0 },
+  };
+  app.add("dark-roast");
+  await app.api.placeOrder();
+  expect(app.completed()).toContain("restock");
+  await app.click("continue");
+  // The information snapshot preceded the order; the product response observed 4.
+  app.server.state.inventory!["dark-roast"] = 5;
+  await app.click("check-progress");
+  expect(app.completed()).toContain("scenario");
+});
+
+it("lets an already-restocked shop establish a new observable starting quantity", async () => {
+  const app = await browser({
+    phase: "scenario",
+    checkOk: true,
+    entryState: { catalog: [], inventory: { "dark-roast": 5, decaf: 0 } },
+  });
+  app.server.state.inventory = { "dark-roast": 4, decaf: 0 };
+  await app.click("check-progress");
+  expect(app.completed()).not.toContain("scenario");
+  app.server.state.inventory["dark-roast"] = 5;
+  await app.click("check-progress");
+  expect(app.completed()).toContain("scenario");
 });

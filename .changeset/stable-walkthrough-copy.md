@@ -1,9 +1,7 @@
 ---
-"@counterfact/tutorials": patch
+"@counterfact/tutorials": minor
 ---
 
-Reveal walkthrough instructions and code hints progressively while retaining earlier instructions. Replace moving bold emphasis with an inventory question in step 5: explain incorrect answers and offer Try again before revealing the editing exercise. Preserve unanswered questions on reload and check answers against the observed purchase.
+Rebuild the coffee-shop walkthrough as twelve lessons that start with Counterfact’s actual generated random stubs. Render arbitrary products, refresh only on explicit actions, and show actual HTTP requests and responses. Learners add explicit responses, context methods, baseline scenarios, stock rules, and inventory reduction themselves.
 
-Extract the inventory exercise into an empty `reduceInventory(items, inventory)` function with a focused TODO and a complete loop in the code hint. Keep inventory recovery guidance beside the lesson.
-
-Keep the order handler readable by moving shortage calculations and order confirmations into context methods.
+Reveal instructions progressively, check the inventory question before revealing its exercise, and make skipping a prerequisite-aware preview without applying code. Version new lesson progress and telemetry while retaining helper compatibility for existing generated demos.

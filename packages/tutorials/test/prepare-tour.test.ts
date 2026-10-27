@@ -19,24 +19,26 @@ it("creates a restartable offline shop without touching an existing project", as
     const spec = JSON.parse(await $.read(`${directory}/openapi.json`));
     expect(spec.paths["/products"].get.responses["200"]).toBeDefined();
     expect(spec.paths["/orders"].post.responses["503"]).toBeDefined();
-    expect(await $.read(`${directory}/routes/_.context.ts`)).toContain(
-      "inventory",
+    await expect(
+      $.read(`${directory}/routes/_.context.ts`),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(
+      $.read(`${directory}/routes/products.ts`),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    await expect($.read(`${directory}/routes/orders.ts`)).rejects.toMatchObject(
+      { code: "ENOENT" },
     );
-    expect(await $.read(`${directory}/scenarios/index.ts`)).toContain(
-      '"dark-roast": 3',
-    );
+    await expect(
+      $.read(`${directory}/scenarios/index.ts`),
+    ).rejects.toMatchObject({ code: "ENOENT" });
     expect(await $.read(`${directory}/routes/walkthrough.ts`)).toContain(
       "Counterfact Coffee",
     );
     for (const file of [
-      "routes/products.ts",
-      "routes/orders.ts",
-      "routes/_.context.ts",
       "routes/tutorial-info.ts",
       "routes/tutorial-check.ts",
       "routes/tutorial-event.ts",
       "routes/walkthrough.ts",
-      "scenarios/index.ts",
     ]) {
       expect(
         await check(await $.read(`${directory}/${file}`), {

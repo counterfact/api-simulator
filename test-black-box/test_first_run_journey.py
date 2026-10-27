@@ -1,6 +1,7 @@
 """First-run CLI journeys through its shipped terminal and file interfaces."""
 
 import os
+import json
 import re
 import select
 import time
@@ -512,7 +513,9 @@ def correct_port(journey):
 def existing_unchanged(journey):
     assert (journey.project / "counterfact-demo/keep.txt").read_text() == "user content"
     assert set((journey.project / "counterfact-demo").iterdir()) == {journey.project / "counterfact-demo/keep.txt"}
-    assert journey.request("get", "/products").json()[2]["stock"] == 0
+    products = journey.request("get", "/products").json()
+    assert len(products) == 3
+    assert all(0 <= product["stock"] <= 20 for product in products)
 
 
 @when("I return from document selection to the opening menu")
@@ -591,35 +594,83 @@ def test_coffee_shop_purchase():
     """The generated project serves the app and its real shopping API."""
 
 
-@then("the coffee shop serves products and accepts a demo purchase")
+@then("the coffee shop renders schema-generated products and order responses")
 def coffee_shop_purchase(journey):
     page = journey.request("get", "/walkthrough")
     assert page.status_code == 200
     assert "text/html" in page.headers["Content-Type"]
     assert "Counterfact Coffee" in page.text
     assert "Walkthrough instructions" in page.text
+    assert "Refresh products" in page.text
+    assert "Latest API requests and responses" in page.text
     info = journey.request("get", "/tutorial-info")
     assert info.status_code == 200, info.text
     assert os.path.realpath(info.json()["projectPath"]) == os.path.realpath(journey.output)
-    assert info.json()["sessionId"]
-    assert "sessionStorage" in page.text
-    assert "Open in VSCode" in page.text
-    assert "vscode://file/" in page.text
-    assert "Repeat instructions" not in page.text
+    assert info.json()["walkthroughVersion"] == 2
+    assert info.json()["state"] == {"catalog": None, "inventory": None}
+    for route in ["products", "orders"]:
+        assert ".random()" in (journey.output / f"routes/{route}.ts").read_text()
     products = journey.request("get", "/products").json()
-    assert [product["id"] for product in products] == ["house-blend", "dark-roast", "decaf"]
-    assert products[2]["stock"] == 0
-    order = journey.request("post", "/orders", json={"items": [{"productId": "house-blend", "quantity": 1}]})
+    assert len(products) == 3
+    for product in products:
+        assert isinstance(product["id"], str)
+        assert 500 <= product["price"] <= 2500
+        assert 0 <= product["stock"] <= 20
+    order = journey.request("post", "/orders", json={"items": [{"productId": products[0]["id"], "quantity": 1}]})
     assert order.status_code == 201, order.text
-    assert order.json()["orderId"] == 1
-    impossible = journey.request("post", "/orders", json={"items": [{"productId": "dark-roast", "quantity": 4}]})
-    assert impossible.status_code == 409
+    assert isinstance(order.json()["orderId"], int)
 
 
 @TERMINAL_ONLY
 @scenario("features/first_run.feature", "Update coffee inventory in a handler and restock through the REPL")
 def test_coffee_shop_inventory():
-    """Editor changes and REPL mutations affect the same running inventory."""
+    """Build behavior from the generated stubs through editor and REPL actions."""
+
+
+COFFEE_CATALOG = [
+    {"id": "house-blend", "name": "House Blend", "description": "Chocolate, caramel, and a gentle finish.", "price": 1400, "stock": 5},
+    {"id": "dark-roast", "name": "Dark Roast", "description": "Rich cocoa with a bold, toasted finish.", "price": 1600, "stock": 3},
+    {"id": "decaf", "name": "Decaf", "description": "All the comfort of coffee. An easier evening.", "price": 1500, "stock": 0},
+]
+COFFEE_CONTEXT = r'''export type OrderItem = { productId: string; quantity: number };
+export type CatalogProduct = { id: string; name: string; description: string; price: number };
+export class Context {
+  catalog: CatalogProduct[] = [];
+  inventory: Record<string, number> = {};
+  private nextOrderId = 1;
+  listProducts() { return this.catalog.map(product => ({ ...product, stock: this.inventory[product.id] ?? 0 })); }
+  confirmOrder(items: OrderItem[]) { return { orderId: this.nextOrderId++, items }; }
+  reset() { this.catalog = []; this.inventory = {}; this.nextOrderId = 1; }
+}
+'''
+COFFEE_STOCK_METHODS = r'''
+  canFulfill(items: OrderItem[]) {
+    return items.length > 0 && items.every(item => Number.isInteger(item.quantity) && item.quantity > 0) && this.getShortages(items).length === 0;
+  }
+  getShortages(items: OrderItem[]) {
+    const quantities = new Map<string, number>();
+    for (const item of items) quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
+    return [...quantities].filter(([id, requested]) => requested > (this.inventory[id] ?? 0)).map(([productId, requested]) => ({ productId, requested, available: this.inventory[productId] ?? 0 }));
+  }
+'''
+COFFEE_ORDERS = r'''import type { HTTP_POST } from "../types/paths/orders.types.js";
+const ordersAvailable = true;
+export const POST: HTTP_POST = function ($) {
+  if (!ordersAvailable) return $.response.status(503).json({ error: "Ordering is temporarily unavailable." });
+  return $.response.status(201).json({ orderId: 1, items: $.body.items });
+};
+'''
+
+
+def apply_coffee_scenario(journey, name):
+    deadline = time.monotonic() + STARTUP_TIMEOUT
+    transcript = ""
+    while time.monotonic() < deadline:
+        transcript = journey.terminal.command(".scenario " + name)
+        if "Applied " + name in transcript:
+            return
+        time.sleep(0.1)
+    raise AssertionError("Scenario did not become available after saving: " + transcript)
 
 
 def coffee_stock(journey, product_id):
@@ -632,15 +683,54 @@ def coffee_order(journey, product_id, quantity):
     return journey.request("post", "/orders", json={"items": [{"productId": product_id, "quantity": quantity}]})
 
 
-@when("I make Decaf available by editing its product handler")
+@when("I replace the product and order stubs with explicit responses")
+def replace_coffee_stubs(journey):
+    (journey.output / "routes/products.ts").write_text('import type { HTTP_GET } from "../types/paths/products.types.js";\nexport const GET: HTTP_GET = function ($) { return $.response.status(200).json(' + json.dumps(COFFEE_CATALOG) + '); };\n')
+    (journey.output / "routes/orders.ts").write_text(COFFEE_ORDERS)
+
+
+@then("repeated product responses are stable and confirmations echo the order")
+def explicit_coffee_responses(journey):
+    journey.wait_for_http("/products", lambda response: response.status_code == 200 and response.json() == COFFEE_CATALOG)
+    assert journey.request("get", "/products").json() == COFFEE_CATALOG
+    items = [{"productId": "house-blend", "quantity": 2}]
+    journey.wait_for_http("/orders", lambda response: response.status_code == 201 and response.json().get("items") == items and response.json()["orderId"] == 1, method="post", json={"items": items})
+    assert coffee_stock(journey, "house-blend") == 5
+
+
+@when("I introduce shared context and explicitly run its reset scenario")
+def introduce_coffee_context(journey):
+    (journey.output / "routes/_.context.ts").write_text(COFFEE_CONTEXT)
+    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "context"})
+    metadata = [{key: value for key, value in product.items() if key != "stock"} for product in COFFEE_CATALOG]
+    baseline = 'import type { Scenario } from "../types/_.context.js";\nexport const reset: Scenario = function ($) { $.context.reset(); $.context.catalog = ' + json.dumps(metadata) + '; $.context.inventory = { "house-blend": 5, "dark-roast": 3, "decaf": 0 }; };\nexport const startup: Scenario = reset;\n'
+    (journey.output / "scenarios/index.ts").write_text(baseline)
+    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "seed"})
+    journey.wait_for_http("/tutorial-info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"] == {})
+    apply_coffee_scenario(journey, "reset")
+    journey.wait_for_http("/tutorial-info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"].get("dark-roast") == 3)
+    (journey.output / "routes/products.ts").write_text('import type { HTTP_GET } from "../types/paths/products.types.js";\nexport const GET: HTTP_GET = function ($) { return $.response.status(200).json($.context.listProducts()); };\n')
+    (journey.output / "routes/orders.ts").write_text(COFFEE_ORDERS.replace("{ orderId: 1, items: $.body.items }", "$.context.confirmOrder($.body.items)"))
+    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "connect"})
+
+
+@then("the handlers read the initialized context and return successive order IDs")
+def connected_coffee_handlers(journey):
+    assert journey.request("get", "/products").json() == COFFEE_CATALOG
+    first = journey.wait_for_http("/orders", lambda response: response.status_code == 201 and response.json()["orderId"] >= 2, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]}).json()["orderId"]
+    second = coffee_order(journey, "house-blend", 1).json()["orderId"]
+    assert second == first + 1
+    assert coffee_stock(journey, "house-blend") == 5
+
+
+@when("I make Decaf available through the running REPL")
 def edit_decaf(journey):
-    path = journey.output / "routes/products.ts"
-    path.write_text(path.read_text().replace("const decafStock = 0;", "const decafStock = 5;"))
+    journey.terminal.command('context.inventory["decaf"] = 5')
 
 
 @then("the coffee API returns the changed stock and accepts a Decaf order")
 def decaf_available(journey):
-    journey.wait_for_http("/products", lambda response: response.status_code == 200 and response.json()[2]["stock"] == 5)
+    assert coffee_stock(journey, "decaf") == 5
     assert coffee_order(journey, "decaf", 1).status_code == 201
     assert coffee_stock(journey, "decaf") == 5
 
@@ -662,42 +752,55 @@ def retry_orders(journey):
     journey.wait_for_http("/orders", lambda response: response.status_code == 201, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]})
 
 
+@when("I add stock rules to context and the order handler")
+def add_coffee_stock_rules(journey):
+    (journey.output / "routes/_.context.ts").write_text(COFFEE_CONTEXT.rsplit("}", 1)[0] + COFFEE_STOCK_METHODS + "}\n")
+    path = journey.output / "routes/orders.ts"
+    path.write_text(path.read_text().replace('  return $.response.status(201)', '  if (!$.context.canFulfill($.body.items)) return $.response.status(409).json({ error: "Not enough stock", shortages: $.context.getShortages($.body.items) });\n  return $.response.status(201)'))
+    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "rules"})
+
+
+@then("oversized and duplicate-item orders are rejected without changing inventory")
+def reject_coffee_shortages(journey):
+    journey.wait_for_http("/orders", lambda response: response.status_code == 409, method="post", json={"items": [{"productId": "dark-roast", "quantity": 4}]})
+    duplicate = journey.request("post", "/orders", json={"items": [{"productId": "dark-roast", "quantity": 2}, {"productId": "dark-roast", "quantity": 2}]})
+    assert duplicate.status_code == 409
+    assert duplicate.json()["shortages"] == [{"productId": "dark-roast", "requested": 4, "available": 3}]
+    assert coffee_stock(journey, "dark-roast") == 3
+
+
 @when("I add the inventory mutation to the successful order handler")
 def update_order_context(journey):
     path = journey.output / "routes/orders.ts"
-    path.write_text(path.read_text().replace("// TODO: For each item, subtract its quantity from inventory[item.productId].", "for (const item of items) {\n  inventory[item.productId] -= item.quantity;\n}"))
+    source = path.read_text().replace('export const POST', 'function reduceInventory(items: { productId: string; quantity: number }[], inventory: Record<string, number>) { for (const item of items) inventory[item.productId] -= item.quantity; }\nexport const POST')
+    path.write_text(source.replace('  return $.response.status(201)', '  reduceInventory($.body.items, $.context.inventory);\n  return $.response.status(201)'))
+    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "reduce"})
 
 
 @then("buying coffee reduces the inventory returned by the products API")
 def purchase_updates_inventory(journey):
-    # A request made before the hot reload may still use the old handler. It
-    # has no inventory mutation; retry only until one order visibly changes it.
     deadline = time.monotonic() + STARTUP_TIMEOUT
     while time.monotonic() < deadline:
         assert coffee_order(journey, "dark-roast", 1).status_code == 201
         if coffee_stock(journey, "dark-roast") == 2:
             break
         time.sleep(0.1)
-    assert coffee_stock(journey, "dark-roast") == 2, journey.logs()
-    assert coffee_stock(journey, "decaf") == 5
+    assert coffee_stock(journey, "dark-roast") == 2
 
 
 @when("I purchase the remaining Dark Roast stock")
-def purchase_remaining(journey):
+def purchase_remaining_coffee(journey):
     assert coffee_order(journey, "dark-roast", 2).status_code == 201
 
 
 @then("Dark Roast is sold out and another order is rejected")
-def sold_out(journey):
+def coffee_sold_out(journey):
     assert coffee_stock(journey, "dark-roast") == 0
     assert coffee_order(journey, "dark-roast", 1).status_code == 409
-    assert coffee_stock(journey, "dark-roast") == 0
 
 
 @when("I restock Dark Roast through the running REPL")
-def repl_restock(journey):
-    output = journey.terminal.command('context.inventory["dark-roast"]')
-    assert "0" in output
+def restock_coffee(journey):
     journey.terminal.command('context.inventory["dark-roast"] = 5')
 
 
@@ -706,20 +809,44 @@ def restock_and_purchase(journey):
     assert coffee_stock(journey, "dark-roast") == 5
     assert coffee_order(journey, "dark-roast", 1).status_code == 201
     assert coffee_stock(journey, "dark-roast") == 4
-    assert coffee_order(journey, "dark-roast", 5).status_code == 409
-    duplicate = journey.request("post", "/orders", json={"items": [{"productId": "dark-roast", "quantity": 3}, {"productId": "dark-roast", "quantity": 3}]})
-    assert duplicate.status_code == 409
-    assert duplicate.json()["shortages"] == [{"productId": "dark-roast", "requested": 6, "available": 4}]
-    assert coffee_stock(journey, "dark-roast") == 4
-    path = journey.output / "routes/products.ts"
-    path.write_text(path.read_text() + "\n// Preserve running inventory across route reloads.\n")
-    journey.wait_for_http("/products", lambda response: response.status_code == 200 and response.json()[1]["stock"] == 4)
-
     session = journey.request("get", "/tutorial-info").json()["sessionId"]
-    context_path = journey.output / "routes/_.context.ts"
-    context_path.write_text(context_path.read_text() + "\n// Reload context without changing the inventory declaration.\n")
-    journey.wait_for_http("/tutorial-info", lambda response: response.status_code == 200 and response.json()["sessionId"] != session)
-    assert coffee_stock(journey, "dark-roast") == 4
-    assert coffee_stock(journey, "house-blend") == 5
-    assert coffee_order(journey, "house-blend", 1).status_code == 201
+    for filename in ["routes/products.ts", "routes/_.context.ts"]:
+        path = journey.output / filename
+        path.write_text(path.read_text() + "\n// Keep the running inventory across hot reload.\n")
+    journey.wait_for_http("/products", lambda response: response.status_code == 200 and next(product["stock"] for product in response.json() if product["id"] == "dark-roast") == 4)
+    assert journey.request("get", "/tutorial-info").json()["sessionId"] == session
+
+
+@when("I save and apply a focused Dark Roast restock scenario")
+def reusable_coffee_restock(journey):
+    path = journey.output / "scenarios/index.ts"
+    path.write_text(path.read_text() + '\nexport const restockDarkRoast: Scenario = function ($) { $.context.inventory["dark-roast"] = 5; };\n')
+    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "scenario"})
+    journey.coffee_order_id = coffee_order(journey, "house-blend", 1).json()["orderId"]
+    apply_coffee_scenario(journey, "restockDarkRoast")
+
+
+@then("the restock preserves other inventory and order IDs")
+def coffee_restock_composes(journey):
+    assert coffee_stock(journey, "dark-roast") == 5
+    assert coffee_stock(journey, "decaf") == 5
     assert coffee_stock(journey, "house-blend") == 4
+    assert coffee_order(journey, "house-blend", 1).json()["orderId"] == journey.coffee_order_id + 1
+
+
+@when("I restart the guided API")
+def restart_guided_coffee(journey):
+    journey.coffee_previous_session = journey.request("get", "/tutorial-info").json()["sessionId"]
+    journey.terminal.close()
+    journey.terminal = None
+    port = journey.allocate_port()
+    journey.start_cli(journey.output / "openapi.json", journey.output, "--port", port, "--no-update-check", terminal=True)
+    journey.terminal.wait_for("⬣>", STARTUP_TIMEOUT)
+
+
+@then("startup restores the explicit baseline without overwriting my handlers")
+def coffee_startup_baseline(journey):
+    assert journey.request("get", "/products").json() == COFFEE_CATALOG
+    assert coffee_order(journey, "house-blend", 1).json()["orderId"] == 1
+    assert coffee_stock(journey, "house-blend") == 4
+    assert journey.request("get", "/tutorial-info").json()["sessionId"] != journey.coffee_previous_session
