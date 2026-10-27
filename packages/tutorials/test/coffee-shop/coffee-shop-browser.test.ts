@@ -316,7 +316,7 @@ it.each([
   ["/tmp/coffee shop#1?", "vscode://file/tmp/coffee%20shop%231%3F/"],
   [String.raw`C:\coffee shop\demo`, "vscode://file/C:/coffee%20shop/demo/"],
 ])(
-  "links instructional file names, including bold actions and hints (%s)",
+  "links instructional file names and revealed hints (%s)",
   async (projectPath, base) => {
     const app = await browser(undefined, undefined, projectPath);
     app.read("progress.step=7;progress.inventoryUpdated=false;showLesson()");
@@ -439,7 +439,7 @@ it("replaces the old failure notice when a saved handler recovers and clears the
   expect(app.read("progress.done")).toBe(true);
 });
 
-it("completes all eight lessons with automatic transitions inside each concept", async () => {
+it("completes all eight lessons with an inventory question before the edit", async () => {
   const app = await browser();
   const advance = async () => {
     app.root("continue").onclick!();
@@ -483,6 +483,8 @@ it("completes all eight lessons with automatic transitions inside each concept",
   await advance();
   app.add("dark-roast");
   await app.order();
+  expect(app.read("progress.step")).toBe(6);
+  answerInventory(app, "No, stock stayed the same");
   expect(app.read("progress.step")).toBe(7);
   expect(app.root("lesson").textContent).toContain("Step 5 of 8");
   app.server.deduct = true;
@@ -653,13 +655,23 @@ function lessonCopy(app: Awaited<ReturnType<typeof browser>>) {
   };
 }
 
+function answerInventory(
+  app: Awaited<ReturnType<typeof browser>>,
+  label: string,
+) {
+  find(
+    app.root("inventory-question"),
+    (node) => node.tag === "button" && node.textContent === label,
+  )!.onclick!();
+}
+
 it.each([
   [2, 3],
   [4, 5],
   [6, 7],
   [9, 10],
 ])(
-  "keeps the visible lesson copy and hints fixed across phases %s and %s",
+  "reveals phase %s before %s and retains previously shown instructions",
   async (first, second) => {
     const app = await browser(undefined, {
       "house-blend": 5,
@@ -667,72 +679,101 @@ it.each([
       decaf: 5,
     });
     app.read(`progress.step=${first};showLesson()`);
-    const copy = lessonCopy(app);
-    expect(
-      find(
-        app.root("instruction-text"),
-        (node) => node.className === "instruction-pending",
-      ),
-    ).toBeDefined();
+    const initial = lessonCopy(app);
+    const laterText = app.read<string>(`lessons[${second}][1]`);
+    expect(initial.instructions).not.toContain(laterText);
     app.read(`progress.step=${second};showLesson()`);
-    expect(lessonCopy(app)).toEqual(copy);
+    const revealed = lessonCopy(app);
+    expect(revealed.title).toBe(initial.title);
+    expect(revealed.instructions).toBe(initial.instructions + " " + laterText);
+    expect(revealed.explanation).toContain(initial.explanation);
     expect(
-      find(
-        app.root("instruction-text"),
-        (node) => node.className === "instruction-pending",
-      ),
+      find(app.root("instruction-text"), (node) => node.tag === "strong"),
     ).toBeUndefined();
     app.read("progress.done=true;showLesson()");
-    expect(lessonCopy(app)).toEqual(copy);
+    expect(lessonCopy(app)).toEqual(revealed);
   },
 );
 
-it("keeps step 5 copy fixed as purchases and saved edits move the bold action", async () => {
+it("requires a correct answer before revealing step 5's inventory edit", async () => {
   const app = await browser();
   app.read("progress.step=6;showLesson()");
-  const copy = lessonCopy(app);
-  const bold = () =>
-    find(app.root("instruction-text"), (node) => node.tag === "strong")
-      ?.textContent;
-  expect(bold()).toBe("Add one Dark Roast to your cart");
+  const initial = lessonCopy(app);
+  expect(app.root("lesson").textContent).not.toContain(
+    "Complete reduceInventory",
+  );
+  expect(
+    find(app.root("lesson"), (node) => node.id === "inventory-question"),
+  ).toBeUndefined();
+  expect(initial.hints).toEqual([]);
+  expect(initial.files).toBeUndefined();
   app.add("dark-roast");
-  expect(bold()).toBe("place an order");
   await app.order();
+  expect(app.read("progress.step")).toBe(6);
+  expect(app.root("continue").hidden).toBe(true);
+  app.root("continue").onclick!();
+  expect(app.read("progress.step")).toBe(6);
+  expect(app.root("lesson").textContent).not.toContain("✓ Step complete");
+  answerInventory(app, "Yes, stock decreased");
+  expect(app.root("inventory-question").textContent).toContain(
+    "stock stayed at 3",
+  );
+  expect(app.root("inventory-question").textContent).toContain(
+    "Confirming an order and updating inventory are separate actions",
+  );
+  expect(app.root("lesson").textContent).not.toContain(
+    "Complete reduceInventory",
+  );
+  await app.poll();
+  expect(app.root("inventory-question").textContent).toContain("Try again");
+  expect(app.milestones).not.toContainEqual({
+    event: "phase_completed",
+    step: 6,
+  });
+  answerInventory(app, "Try again");
+  answerInventory(app, "No, stock stayed the same");
+  expect(app.milestones).toContainEqual({ event: "phase_completed", step: 6 });
   expect(app.read("progress.step")).toBe(7);
-  expect(lessonCopy(app)).toEqual(copy);
-  expect(bold()).toBe(
-    "Complete reduceInventory in routes/orders.ts, then save",
+  const revealed = lessonCopy(app);
+  expect(revealed.instructions).toContain(initial.instructions);
+  expect(revealed.instructions).toContain("Complete reduceInventory");
+  expect(revealed.hints.join(" ")).toContain(
+    "inventory[item.productId] -= item.quantity;",
   );
   app.server.checkOk = true;
   app.server.revision = "subtract";
   app.server.deduct = true;
   await app.poll();
-  expect(lessonCopy(app)).toEqual(copy);
-  expect(bold()).toBe("Add one Dark Roast to your cart");
   app.add("dark-roast");
-  expect(bold()).toBe("place an order");
   await app.order();
   expect(app.read("progress.done")).toBe(true);
-  expect(lessonCopy(app)).toEqual(copy);
-  expect(bold()).toBeUndefined();
+  expect(lessonCopy(app)).toEqual(revealed);
 });
 
-it("keeps the lesson copy when stock recovery appears and an existing inventory edit is detected", async () => {
+it("restores an unanswered inventory question on reload and accepts the observed result when stock already decreases", async () => {
   const app = await browser();
   app.read("progress.step=6;showLesson()");
-  const copy = lessonCopy(app);
   app.server.deduct = true;
   app.add("dark-roast");
   await app.order();
-  expect(app.read("progress.inventoryUpdated")).toBe(true);
-  expect(lessonCopy(app)).toEqual(copy);
-  app.stocks["dark-roast"] = 0;
-  await app.poll();
-  expect(app.root("lesson").textContent).toContain(
+  const restored = await browser(app.storage, app.stocks);
+  expect(restored.read("progress.step")).toBe(6);
+  expect(restored.root("continue").hidden).toBe(true);
+  answerInventory(restored, "No, stock stayed the same");
+  expect(restored.root("inventory-question").textContent).toContain(
+    "stock decreased from 3 to 2",
+  );
+  answerInventory(restored, "Try again");
+  answerInventory(restored, "Yes, stock decreased");
+  expect(restored.read("progress.step")).toBe(7);
+  const revealed = lessonCopy(restored);
+  restored.stocks["dark-roast"] = 0;
+  await restored.poll();
+  expect(restored.root("lesson").textContent).toContain(
     "Restock Dark Roast through Counterfact’s REPL",
   );
-  expect(lessonCopy(app)).toEqual(copy);
-  app.stocks["dark-roast"] = 5;
-  await app.poll();
-  expect(lessonCopy(app)).toEqual(copy);
+  expect(lessonCopy(restored)).toEqual(revealed);
+  restored.stocks["dark-roast"] = 5;
+  await restored.poll();
+  expect(lessonCopy(restored)).toEqual(revealed);
 });

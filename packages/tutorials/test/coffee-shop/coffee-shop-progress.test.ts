@@ -123,3 +123,13 @@ it("accepts a positive restock and the corresponding purchase reduction beyond t
   lesson.products({ "dark-roast": 5 });
   expect(lesson.done).toBe(true);
 });
+
+it("uses the current purchase result when revisiting the inventory question", () => {
+  const lesson = new CoffeeShopProgress();
+  lesson.step = 6;
+  lesson.inventoryUpdated = true;
+  lesson.order(true, [{ productId: "dark-roast", quantity: 1 }], 3, 201);
+  lesson.products({ "dark-roast": 3 });
+  expect(lesson.done).toBe(true);
+  expect(lesson.inventoryUpdated).toBe(false);
+});

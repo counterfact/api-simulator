@@ -49,7 +49,8 @@ The event schema is:
 Events contain `tour: "coffee-shop"` and elapsed whole seconds since the first
 reported milestone. Browser milestones also contain `phase`: 0 is the introduction;
 1 is the first purchase; 2–3 edit and purchase Decaf; 4–5 disable ordering and retry;
-6 observes unchanged stock; 7 verifies inventory subtraction; 8 sells out;
+6 observes inventory and waits for a correct browser answer before revealing the
+edit; 7 verifies inventory subtraction; 8 sells out;
 9–10 restock and purchase; 11 is the final screen. The CLI adds its version and
 standard platform properties. The temporary session ID is the PostHog distinct ID,
 so funnels can connect events within one run without a persistent user identity.

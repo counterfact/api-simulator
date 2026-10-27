@@ -1,4 +1,3 @@
-import { coffeeShopAction } from "./coffee-shop-action.js";
 import { CoffeeShopProgress } from "./coffee-shop-progress.js";
 
 import { COUNTERFACT_LOGO } from "../counterfact-logo.js";
@@ -21,7 +20,7 @@ export function coffeeShopPage(projectPath: string): string {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Counterfact Coffee · Guided example</title>
 <style>
-:root{--paper:#fafafa;--surface:#fff;--ink:#17202a;--muted:#536170;--rule:#dce2e8;--blue:#0869a6;--blue-dark:#04517f;--orange:#f58e00;--orange-dark:#a24b00;--code:#f1f4f6;font-family:system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--paper);font-size:16px}*{box-sizing:border-box}body{margin:0}button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:11px 16px;background:var(--blue);color:white;font-weight:650}button:hover:not(:disabled){background:var(--blue-dark)}button.secondary:hover:not(:disabled){background:#dce9f3}button:disabled{background:#e5eaf0;color:var(--muted);cursor:not-allowed}button.secondary{background:#edf3f8;color:var(--ink)}button:focus-visible,a:focus-visible{outline:3px solid var(--orange-dark);outline-offset:3px}a{color:var(--blue)}.brand{margin-bottom:24px}.counterfact-logo{display:block;width:240px;max-width:100%;height:auto;margin-bottom:14px}.layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:1100px;min-height:100vh}.guide{min-width:0;padding:36px;background:#fff;border-right:1px solid var(--rule)}.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted)}h1{font-family:Georgia,serif;font-size:36px;margin:8px 0 10px}h2{font-size:25px;line-height:1.2}h3{margin:0 0 8px}p{line-height:1.6}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--code);padding:14px;border-radius:8px;font-size:13px;line-height:1.5}.path{font-size:12px;overflow-wrap:anywhere;color:var(--muted)}.shop{min-width:0;padding:36px;width:100%;align-self:start}.shop-head{display:flex;justify-content:space-between;gap:20px;align-items:center}.demo{font-size:13px;color:var(--muted)}.products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:28px 0}.card{background:#fff;border:1px solid var(--rule);border-radius:14px;padding:20px;display:flex;flex-direction:column}.bag{height:145px;display:grid;place-items:center;margin-bottom:20px;background:#e3f0f9;border-radius:8px}.bag.dark-roast{background:#dce7f0}.bag.decaf{background:#fff0d9}.bag-label{background:#fff;border:1px solid var(--rule);padding:22px 14px;text-align:center;box-shadow:5px 5px 0 #0001;font-family:Georgia,serif;font-size:22px}.card p{font-size:14px;flex:1;color:var(--muted)}.stock{font-size:14px;margin:14px 0;color:var(--muted);font-weight:600}.price{font-weight:700}.cart{background:white;border:1px solid var(--rule);border-radius:14px;padding:24px}.cart-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule)}.cart-row button{padding:5px 10px}.cart-footer{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:22px}.notice{padding:16px;background:#eaf5fb;border-radius:8px;margin:18px 0}.error{background:#fff0e7;color:#8c351c}.file-actions{display:flex;align-items:center;gap:12px;margin:12px 0;font-size:12px}.file-actions button{font-size:12px;padding:6px 10px}.code-hint{margin:18px 0}.code-hint summary{cursor:pointer;font-weight:650}.instruction-pending,.instruction-pending a{color:var(--muted)}.step-complete{color:#17623a;background:#edf8f0;border:1px solid #a9d8b6;border-radius:8px;padding:12px 16px;font-weight:650}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}.controls button{font-size:13px}#guide-status{font-size:14px;color:var(--muted);border-left:2px solid var(--rule);padding:4px 0 4px 12px;margin:18px 0}#guide-status::before{content:"Update";display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}#guide-status:empty{display:none}
+:root{--paper:#fafafa;--surface:#fff;--ink:#17202a;--muted:#536170;--rule:#dce2e8;--blue:#0869a6;--blue-dark:#04517f;--orange:#f58e00;--orange-dark:#a24b00;--code:#f1f4f6;font-family:system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--paper);font-size:16px}*{box-sizing:border-box}body{margin:0}button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:11px 16px;background:var(--blue);color:white;font-weight:650}button:hover:not(:disabled){background:var(--blue-dark)}button.secondary:hover:not(:disabled){background:#dce9f3}button:disabled{background:#e5eaf0;color:var(--muted);cursor:not-allowed}button.secondary{background:#edf3f8;color:var(--ink)}button:focus-visible,a:focus-visible{outline:3px solid var(--orange-dark);outline-offset:3px}a{color:var(--blue)}.brand{margin-bottom:24px}.counterfact-logo{display:block;width:240px;max-width:100%;height:auto;margin-bottom:14px}.layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:1100px;min-height:100vh}.guide{min-width:0;padding:36px;background:#fff;border-right:1px solid var(--rule)}.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted)}h1{font-family:Georgia,serif;font-size:36px;margin:8px 0 10px}h2{font-size:25px;line-height:1.2}h3{margin:0 0 8px}p{line-height:1.6}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--code);padding:14px;border-radius:8px;font-size:13px;line-height:1.5}.path{font-size:12px;overflow-wrap:anywhere;color:var(--muted)}.shop{min-width:0;padding:36px;width:100%;align-self:start}.shop-head{display:flex;justify-content:space-between;gap:20px;align-items:center}.demo{font-size:13px;color:var(--muted)}.products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:28px 0}.card{background:#fff;border:1px solid var(--rule);border-radius:14px;padding:20px;display:flex;flex-direction:column}.bag{height:145px;display:grid;place-items:center;margin-bottom:20px;background:#e3f0f9;border-radius:8px}.bag.dark-roast{background:#dce7f0}.bag.decaf{background:#fff0d9}.bag-label{background:#fff;border:1px solid var(--rule);padding:22px 14px;text-align:center;box-shadow:5px 5px 0 #0001;font-family:Georgia,serif;font-size:22px}.card p{font-size:14px;flex:1;color:var(--muted)}.stock{font-size:14px;margin:14px 0;color:var(--muted);font-weight:600}.price{font-weight:700}.cart{background:white;border:1px solid var(--rule);border-radius:14px;padding:24px}.cart-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule)}.cart-row button{padding:5px 10px}.cart-footer{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:22px}.notice button{margin-right:8px}.notice{padding:16px;background:#eaf5fb;border-radius:8px;margin:18px 0}.error{background:#fff0e7;color:#8c351c}.file-actions{display:flex;align-items:center;gap:12px;margin:12px 0;font-size:12px}.file-actions button{font-size:12px;padding:6px 10px}.code-hint{margin:18px 0}.code-hint summary{cursor:pointer;font-weight:650}.step-complete{color:#17623a;background:#edf8f0;border:1px solid #a9d8b6;border-radius:8px;padding:12px 16px;font-weight:650}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}.controls button{font-size:13px}#guide-status{font-size:14px;color:var(--muted);border-left:2px solid var(--rule);padding:4px 0 4px 12px;margin:18px 0}#guide-status::before{content:"Update";display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}#guide-status:empty{display:none}
 </style></head><body><main class="layout">
 <aside class="guide" aria-label="Walkthrough instructions"><div class="brand">${COUNTERFACT_LOGO}<div class="eyebrow">Learn by doing</div></div><div id="lesson"></div><p id="guide-status" role="status" aria-live="polite"></p><div id="save-check" role="status" aria-live="polite"></div><div id="retry-recovery" role="status" aria-live="polite"></div><div class="controls"><button id="continue" hidden>Continue</button><button id="back" class="secondary" hidden>Back</button><button id="skip" class="secondary">Skip lesson</button></div></aside>
 <section class="shop" aria-label="Coffee shop"><header class="shop-head"><div><div class="eyebrow">Small batch · Big comfort</div><h1>Counterfact Coffee</h1><div class="demo">A local demo shop. No payments or real orders.</div></div></header><div id="shop-notice" role="status" aria-live="polite"></div><div id="products" class="products"></div><section class="cart" aria-label="Shopping cart"><h2>Your cart</h2><div id="cart"></div><div class="cart-footer"><strong id="total"></strong><button id="checkout" disabled>Place order</button></div></section></section>
@@ -31,9 +30,9 @@ const projectEditorUrl = ${JSON.stringify(editorUrl.href)};
 const restartCommand = ${restart};
 const restartDirectory = ${restartDirectory};
 let sessionId, displayedPhase, displayedRecovery, pendingPurchase;
+let inventoryAnswerWrong=false;
 let savedRevision, saveCheckRequest, checkedLesson, passedSaveCheck=false, saveCheckDirty=false;
 ${CoffeeShopProgress.toString()}
-${coffeeShopAction.toString()}
 const progress = new CoffeeShopProgress();
 const $ = (id) => document.getElementById(id);
 const money = (cents) => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents / 100);
@@ -72,7 +71,7 @@ function reportPurchase(){
   const unchanged=observed.every(item=>before[item.productId]===after[item.productId]);
   const text=observed.map(item=>productName(item.productId)+' API stock '+(before[item.productId]===after[item.productId]?'stayed at '+after[item.productId]:before[item.productId]+' → '+after[item.productId]+' after checkout')).join('; ');
   const explanation=phase===1&&unchanged?'The order succeeded, but the starter API has not reduced stock. '+text+'. We’ll add that behavior shortly.':'Order confirmed. '+text+'.';
-  const next=phase===6&&progress.step===7&&!progress.done&&!progress.inventoryUpdated?' Now add the inventory update.':phase===4&&!progress.done?' Save ordersAvailable = false, then try another order.':'';
+  const next=phase===4&&!progress.done?' Save ordersAvailable = false, then try another order.':'';
   $('guide-status').textContent=explanation+next;
 }
 function renderProducts(){
@@ -178,7 +177,6 @@ function currentRecovery(){
   if(stock===undefined||stock>0)return;
   return {id,stock,name:productName(id),command:'context.inventory["'+id+'"] = 5'};
 }
-function currentAction(){const recovery=currentRecovery();if(recovery)return {text:'Restock '+recovery.name+' through Counterfact’s REPL'};return coffeeShopAction({step:progress.step,done:progress.done,cart,stock:Object.fromEntries(products.map(p=>[p.id,p.stock])),ordered:!!progress.lastOrder,editVerified:passedSaveCheck,inventoryUpdated:progress.inventoryUpdated});}
 const instructionFiles=['routes/_.context.ts','routes/products.ts','routes/orders.ts','scenarios/index.ts','openapi.json'];
 function fileLink(file,label=file){const link=element('a',label);link.href=new URL(file,projectEditorUrl).href;link.title='Open in VSCode';return link;}
 function fileText(tag,text,className){
@@ -191,38 +189,56 @@ function fileText(tag,text,className){
   }
   return node;
 }
-// Internal phases share one visible lesson and one fixed set of instructions.
+// Reveal each phase without replacing instructions already shown in this lesson.
 const lessonPhases=[[0],[1],[2,3],[4,5],[6,7],[8],[9,10],[11]];
 function instructionParagraph(){
   const paragraph=element('p','');paragraph.id='instruction-text';
-  const action=currentRecovery()?undefined:currentAction();
-  for(const phase of lessonPhases[progress.lessonIndex]){
-    const text=lessons[phase][1];
+  for(const phase of lessonPhases[progress.lessonIndex].filter(phase=>phase<=progress.step)){
     if(paragraph.children.length)paragraph.append(element('span',' '));
-    const section=element('span','',phase>progress.step?'instruction-pending':'');
-    const start=phase===progress.step&&action?text.toLowerCase().indexOf(action.text.toLowerCase()):-1;
-    if(start<0)section.append(fileText('span',text));
-    else section.append(fileText('span',text.slice(0,start)),fileText('strong',text.slice(start,start+action.text.length)),fileText('span',text.slice(start+action.text.length)));
-    paragraph.append(section);
+    paragraph.append(fileText('span',lessons[phase][1]));
   }
   return paragraph;
 }
 function updateAction(){
   const paragraph=$('instruction-text');if(paragraph)paragraph.replaceWith(instructionParagraph());
 }
+function inventoryQuestion(){
+  const panel=element('section','','notice');panel.id='inventory-question';panel.setAttribute('aria-label','Inventory question');
+  const before=progress.lastOrder.stock;
+  const quantity=progress.lastOrder.items.filter(item=>item.productId==='dark-roast').reduce((total,item)=>total+item.quantity,0);
+  panel.append(element('p','Your order bought '+quantity+' Dark Roast. API stock: '+before+' → '+(progress.inventoryUpdated?before-quantity:before)+'.'),element('p','Based on your purchase, does accepting an order also subtract stock?'));
+  if(inventoryAnswerWrong){
+    const explanation=progress.inventoryUpdated?'Dark Roast stock decreased from '+before+' to '+(before-quantity)+'. Your current handler already subtracts purchased quantities.':'Dark Roast stock stayed at '+before+' after the order succeeded. Confirming an order and updating inventory are separate actions; the handler must explicitly subtract purchased quantities.';
+    const feedback=element('p',explanation);feedback.setAttribute('role','status');
+    const retry=element('button','Try again','secondary');retry.onclick=()=>{inventoryAnswerWrong=false;showLesson();};panel.append(feedback,retry);
+  }else{
+    for(const [label,reduced] of [['Yes, stock decreased',true],['No, stock stayed the same',false]]){
+      const answer=element('button',label,'secondary');
+      answer.onclick=()=>{
+        if(reduced!==progress.inventoryUpdated){inventoryAnswerWrong=true;showLesson();return;}
+        reportEvent('phase_completed');progress.next();showLesson();
+        $('guide-status').textContent=progress.inventoryUpdated?'Correct. Your handler already reduces stock. Make one more purchase to verify it.':'Correct. The order succeeded, but stock stayed the same. Now implement reduceInventory to connect orders to inventory.';
+      };
+      panel.append(answer);
+    }
+  }
+  return panel;
+}
 function showLesson(){
   if(progress.step===11)reportEvent('finished');
   if(displayedPhase!==progress.step&&!lastFailure)$('shop-notice').replaceChildren();
+  if(displayedPhase!==progress.step&&progress.step===6)inventoryAnswerWrong=false;
   displayedPhase=progress.step;
   if(checkedLesson!==progress.step){passedSaveCheck=false;$('save-check').replaceChildren();}
   if(progress.done&&passedSaveCheck)$('save-check').replaceChildren();
   saveProgress();
-  const phases=lessonPhases[progress.lessonIndex];
+  const phases=lessonPhases[progress.lessonIndex].filter(phase=>phase<=progress.step);
   const lesson=[...lessons[phases[0]]];
   const hints=phases.map(phase=>lessons[phase]).filter(lesson=>lesson[2]||lesson[3]||lesson[4]);
   const editFile=hints.find(lesson=>lesson[4])?.[4];
   const recovery=currentRecovery();displayedRecovery=recovery?.id;
   $('lesson').replaceChildren(element('div','Step '+(progress.lessonIndex+1)+' of 8','eyebrow'),fileText('h2',lesson[0]),element('p',phases.map(phase=>explanations[phase]).join(' '),'lesson-explanation'),instructionParagraph());
+  if(progress.step===6&&progress.done)$('lesson').append(inventoryQuestion());
   if(editFile){const actions=element('div','','file-actions');actions.append(fileLink(editFile,'Open in VSCode'));const copy=element('button','Copy file path','secondary');copy.onclick=()=>copyPath(projectPath+'/'+editFile,copy);actions.append(copy);$('lesson').append(actions);}
   if(recovery){const panel=element('div','','notice');panel.append(element('p',recovery.name+' has '+recovery.stock+' bags in your running shop. Back keeps your files and inventory. '),element('strong','Restock '+recovery.name+' through Counterfact’s REPL'),element('p','Then continue this exercise.'),element('pre',recovery.command));$('lesson').append(panel);}
   for(const [index,lesson] of hints.entries()){
@@ -233,15 +249,16 @@ function showLesson(){
     $('lesson').append(hint);
   }
   if(progress.step===11){$('lesson').append(element('p','Try it without a hint: choose another coffee, make it unavailable, verify the shopper’s experience, then restore it. This optional challenge is yours to explore.'),element('p','After stopping Counterfact, run this from '+restartDirectory+':'),fileText('pre',restartCommand+' --port '+(window.location?.port||'3100')),element('p','Restarting keeps your handler edits and starts fresh inventory, lesson progress, and cart.'));const link=element('a','Continue learning');link.href='https://counterfact.dev/docs/first-10-minutes/';$('lesson').append(link);}
-  if(progress.done&&progress.step>0&&progress.step<11){const complete=element('p','✓ Step complete','step-complete');complete.id='step-completion';complete.setAttribute('role','status');$('lesson').append(complete);const next=element('p','');next.append(element('strong','Click Continue'),element('span',' to move to the next lesson.'));$('lesson').append(next);}
-  $('guide-status').textContent=progress.done?(progress.step===6&&progress.inventoryUpdated?'Your saved order handler already reduces stock. Continue to verify the shared inventory.':successes[progress.step]):'';
-  $('continue').hidden=!(progress.done||progress.step===0);$('continue').textContent=progress.step===0?'Start shopping':'Continue';$('back').hidden=progress.step===0;$('skip').hidden=progress.step===11;updateAction();
+  if(progress.done&&progress.step>0&&progress.step<11&&progress.step!==6){const complete=element('p','✓ Step complete','step-complete');complete.id='step-completion';complete.setAttribute('role','status');$('lesson').append(complete);const next=element('p','');next.append(element('strong','Click Continue'),element('span',' to move to the next lesson.'));$('lesson').append(next);}
+  $('guide-status').textContent=progress.done&&progress.step!==6?successes[progress.step]:'';
+  $('continue').hidden=!(progress.done||progress.step===0)||progress.step===6;$('continue').textContent=progress.step===0?'Start shopping':'Continue';$('back').hidden=progress.step===0;$('skip').hidden=progress.step===11;updateAction();
 }
 function checkProgress(){
+  if(progress.step===6&&progress.done){showLesson();return;}
   if(progress.done&&progress.step>0&&progress.step<11)reportEvent('phase_completed');
-  if(progress.done&&[2,4,6,9].includes(progress.step)){
+  if(progress.done&&[2,4,9].includes(progress.step)){
     const phase=progress.step;progress.next();showLesson();
-    const transitions={2:'Decaf is available. Now buy a bag to try your change.',4:'The order failed and your cart is still here. Restore ordering, then retry.',6:progress.inventoryUpdated?'Your handler already reduces stock. Make one more purchase to verify it.':'The order succeeded, but stock stayed the same. Now add the inventory update.',9:'Dark Roast is available. Buy a bag to check the shared inventory.'};
+    const transitions={2:'Decaf is available. Now buy a bag to try your change.',4:'The order failed and your cart is still here. Restore ordering, then retry.',9:'Dark Roast is available. Buy a bag to check the shared inventory.'};
     $('guide-status').textContent=transitions[phase];
   }else if(progress.done||displayedRecovery!==currentRecovery()?.id)showLesson();else updateAction();
 }
@@ -250,7 +267,7 @@ function onProducts(){
   if(progress.step===2&&!passedSaveCheck)return;
   progress.products(Object.fromEntries(products.map(product=>[product.id,product.stock])));checkProgress();
   if(!progress.done&&progress.step===2)$('guide-status').textContent='Decaf is still unavailable. Check the displayed file, save your change, then watch for the product response.';
-  if(!progress.done&&[7,8].includes(progress.step)&&progress.lastOrder)$('guide-status').textContent='The inventory has not decreased as expected. Check that your new lines are in the successful-order section, save, buy another bag, and watch its effect.';
+  if(!progress.done&&[7,8].includes(progress.step)&&progress.lastOrder)$('guide-status').textContent='The inventory has not decreased as expected. Check the loop in reduceInventory, save, buy another bag, and watch its effect.';
 }
 function onOrder(success,items,status){
   progress.order(success,items,products.find(product=>product.id==='dark-roast')?.stock||0,status);checkProgress();
@@ -258,7 +275,7 @@ function onOrder(success,items,status){
   if(success&&progress.step===4)$('guide-status').textContent='This order succeeded. Save ordersAvailable = false, add another coffee, and try again.';
 }
 $('checkout').onclick=placeOrder;
-$('continue').onclick=()=>{if(progress.step===0)reportEvent('started',0);progress.next();showLesson();refreshProducts({source:'lesson'});};$('back').onclick=()=>{progress.back();showLesson();refreshProducts({source:'lesson'});};$('skip').onclick=()=>{reportEvent('lesson_skipped');progress.skip();showLesson();refreshProducts({source:'lesson'});};
+$('continue').onclick=()=>{if(progress.step===6)return;if(progress.step===0)reportEvent('started',0);progress.next();showLesson();refreshProducts({source:'lesson'});};$('back').onclick=()=>{progress.back();showLesson();refreshProducts({source:'lesson'});};$('skip').onclick=()=>{reportEvent('lesson_skipped');progress.skip();showLesson();refreshProducts({source:'lesson'});};
 async function copyPath(path,button){try{await navigator.clipboard.writeText(path);button.textContent='Copied';}catch{$('guide-status').textContent='Select and copy the path shown in the instructions.';}}
 function saveProgress(){if(!sessionId)return;try{sessionStorage.setItem('counterfact-coffee',JSON.stringify({sessionId,progress,cart}));}catch{}}
 async function checkSavedFiles(){
@@ -300,6 +317,7 @@ async function startWalkthrough(){
       if(typeof saved.progress.failedItems==='string')progress.failedItems=saved.progress.failedItems;
       const previous=saved.progress.lastOrder;
       if(previous&&Number.isInteger(previous.stock)&&Array.isArray(previous.items)&&previous.items.every(item=>['house-blend','dark-roast','decaf'].includes(item.productId)&&Number.isSafeInteger(item.quantity)&&item.quantity>0))progress.lastOrder=previous;
+      if(progress.step===6&&progress.done&&!progress.lastOrder)progress.done=false;
       if(saved.cart&&typeof saved.cart==='object')cart=Object.fromEntries(Object.entries(saved.cart).filter(([id,quantity])=>['house-blend','dark-roast','decaf'].includes(id)&&Number.isSafeInteger(quantity)&&quantity>0));
     }
   }catch{ /* A missing or corrupt saved lesson starts a fresh browser lesson. */ }

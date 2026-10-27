@@ -48,9 +48,9 @@ relates to your own frontend and API.
 The walkthrough has eight screens. Related phases share one lesson: making
 Decaf available and buying it; failing and retrying an order; observing unchanged
 stock and adding inventory subtraction; restocking through the REPL and buying
-from that inventory. The full instructions stay visible and unchanged throughout each lesson. Later
-phases appear in gray until they become relevant; bold emphasis moves to the
-current action automatically.
+from that inventory. Instructions and code hints appear as each phase becomes
+relevant. Earlier instructions stay visible, so you can review what you have done
+without the copy being replaced.
 A green **✓ Step complete** message confirms success before **Continue** moves
 between concepts. The displayed quantities are guided examples:
 other positive whole-number stock values and fulfilled purchase quantities also
@@ -59,15 +59,21 @@ work. Inventory lessons verify that the purchased quantity is subtracted.
 Follow the instructions beside the real shop. Use **Open in VSCode** or
 **Copy file path** beside an edit instruction to find the file. Open
 **Show code hint** when you want an example edit. File names and displayed
-file paths in the instructions open the corresponding file in VSCode. The instructions bold the next action. Cart changes and successful orders move
-the emphasis automatically. Saved lesson files are detected automatically and their
-handlers are called with fresh test inventory. A passing check moves the emphasis
-to trying the change in the shop; an unexpected response or broken handler shows
+file paths in the instructions open the corresponding file in VSCode. Saved
+lesson files are detected automatically and their handlers are called with fresh
+test inventory. A passing check prompts you to try the change in the shop; an unexpected response or broken handler shows
 an alert explaining the mismatch. Fix the code and save again to rerun the check.
 Test orders do not consume the shop’s inventory or affect its cart.
 The REPL commands are shown directly; restocking is detected from the product
 response, without confirmation buttons. Saved-file checks do not replace the
 shopper actions required to complete the lesson.
+
+In step 5, make a purchase and compare the inventory before answering whether
+accepting an order also subtracts stock. A wrong answer shows the observed
+quantities and an explanation; choose **Try again** to answer again. A correct
+answer reveals the `reduceInventory` exercise and its code hint. The answer is
+checked against your purchase, including when your handler already reduces stock.
+Reloading keeps an unanswered question pending.
 
 ## Recover and revisit lessons
 
