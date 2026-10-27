@@ -47,7 +47,9 @@ relates to your own frontend and API.
 The walkthrough has eight screens. Related phases share one lesson: making
 Decaf available and buying it; failing and retrying an order; observing unchanged
 stock and adding inventory subtraction; restocking through the REPL and buying
-from that inventory. Instructions advance automatically within each lesson;
+from that inventory. The full instructions stay visible and unchanged throughout each lesson. Later
+phases appear in gray until they become relevant; bold emphasis moves to the
+current action automatically.
 A green **✓ Step complete** message confirms success before **Continue** moves
 between concepts. The displayed quantities are guided examples:
 other positive whole-number stock values and fulfilled purchase quantities also
@@ -84,8 +86,9 @@ Changing feedback appears under a small **Update** label, separate from the
 lesson instructions. Background API checks run without a status feed or clock. Saving a file alone
 does not complete a task. **Continue** moves on after success; **Back** and **Skip lesson** let you control the pace. A browser reload
 keeps the current lesson and cart within the same running API session. Back also
-keeps your edited handlers and inventory; if an exercise needs stock, its
-instructions show the REPL command to restore it without resetting your files.
+keeps your edited handlers and inventory; if an exercise needs stock,
+a separate recovery notice shows the REPL command to restore it without replacing
+the lesson instructions or resetting your files.
 
 ## Work in your editor
 

@@ -637,3 +637,102 @@ it("continues lessons when milestone reporting fails", async () => {
   expect(app.read("progress.done")).toBe(true);
   expect(app.root("step-completion").textContent).toContain("Step complete");
 });
+
+function lessonCopy(app: Awaited<ReturnType<typeof browser>>) {
+  const lesson = app.root("lesson");
+  return {
+    title: find(lesson, (node) => node.tag === "h2")?.textContent,
+    explanation: find(lesson, (node) => node.className === "lesson-explanation")
+      ?.textContent,
+    instructions: app.root("instruction-text").textContent,
+    hints: lesson.children
+      .filter((node) => node.className === "code-hint")
+      .map((node) => node.textContent),
+    files: find(lesson, (node) => node.className === "file-actions")
+      ?.textContent,
+  };
+}
+
+it.each([
+  [2, 3],
+  [4, 5],
+  [6, 7],
+  [9, 10],
+])(
+  "keeps the visible lesson copy and hints fixed across phases %s and %s",
+  async (first, second) => {
+    const app = await browser(undefined, {
+      "house-blend": 5,
+      "dark-roast": 3,
+      decaf: 5,
+    });
+    app.read(`progress.step=${first};showLesson()`);
+    const copy = lessonCopy(app);
+    expect(
+      find(
+        app.root("instruction-text"),
+        (node) => node.className === "instruction-pending",
+      ),
+    ).toBeDefined();
+    app.read(`progress.step=${second};showLesson()`);
+    expect(lessonCopy(app)).toEqual(copy);
+    expect(
+      find(
+        app.root("instruction-text"),
+        (node) => node.className === "instruction-pending",
+      ),
+    ).toBeUndefined();
+    app.read("progress.done=true;showLesson()");
+    expect(lessonCopy(app)).toEqual(copy);
+  },
+);
+
+it("keeps step 5 copy fixed as purchases and saved edits move the bold action", async () => {
+  const app = await browser();
+  app.read("progress.step=6;showLesson()");
+  const copy = lessonCopy(app);
+  const bold = () =>
+    find(app.root("instruction-text"), (node) => node.tag === "strong")
+      ?.textContent;
+  expect(bold()).toBe("Add one Dark Roast to your cart");
+  app.add("dark-roast");
+  expect(bold()).toBe("place an order");
+  await app.order();
+  expect(app.read("progress.step")).toBe(7);
+  expect(lessonCopy(app)).toEqual(copy);
+  expect(bold()).toBe(
+    "Complete the inventory TODO in routes/orders.ts, then save",
+  );
+  app.server.checkOk = true;
+  app.server.revision = "subtract";
+  app.server.deduct = true;
+  await app.poll();
+  expect(lessonCopy(app)).toEqual(copy);
+  expect(bold()).toBe("Add one Dark Roast to your cart");
+  app.add("dark-roast");
+  expect(bold()).toBe("place an order");
+  await app.order();
+  expect(app.read("progress.done")).toBe(true);
+  expect(lessonCopy(app)).toEqual(copy);
+  expect(bold()).toBeUndefined();
+});
+
+it("keeps the lesson copy when stock recovery appears and an existing inventory edit is detected", async () => {
+  const app = await browser();
+  app.read("progress.step=6;showLesson()");
+  const copy = lessonCopy(app);
+  app.server.deduct = true;
+  app.add("dark-roast");
+  await app.order();
+  expect(app.read("progress.inventoryUpdated")).toBe(true);
+  expect(lessonCopy(app)).toEqual(copy);
+  app.stocks["dark-roast"] = 0;
+  await app.poll();
+  expect(app.root("lesson").textContent).toContain(
+    "Restock Dark Roast through Counterfact’s REPL",
+  );
+  expect(lessonCopy(app)).toEqual(copy);
+  app.stocks["dark-roast"] = 5;
+  await app.poll();
+  expect(lessonCopy(app)).toEqual(copy);
+});
