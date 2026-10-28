@@ -2673,3 +2673,38 @@ it("recognizes the complete baseline independent of catalog and property orderin
   await app.poll();
   expect(app.completed()).toContain("seed");
 });
+
+it("preserves the revealed reset-recovery hint when the observed baseline completes the lesson", async () => {
+  const practice = {
+    id: "practice-coffee",
+    name: "Practice Coffee",
+    description: "Chocolate",
+    price: 1400,
+  };
+  const app = await browser({
+    phase: "seed",
+    checkOk: true,
+    entryState: { catalog: [practice], inventory: { "practice-coffee": 5 } },
+    state: { catalog: [practice], inventory: { "practice-coffee": 5 } },
+  });
+  app.server.state.inventory!["dark-roast"] = 3;
+  await app.poll();
+  await app.click("hint");
+  const hint = () =>
+    find(
+      app.root("lesson"),
+      (element) => element.className === "notice lesson-hint",
+    )!.textContent;
+  const before = hint();
+  expect(before).toContain(
+    "The running shop does not yet match reset’s baseline",
+  );
+  app.server.state = {
+    catalog: CATALOG.map(({ stock: _stock, ...coffee }) => coffee),
+    inventory: { "house-blend": 5, "dark-roast": 3, decaf: 0 },
+  };
+  await app.poll();
+  expect(app.completed()).toContain("seed");
+  expect(hint()).toBe(before);
+  expect(app.root("hint").hidden).toBe(true);
+});

@@ -84,3 +84,5 @@ Make the practice-coffee Hint reflect existing and duplicate catalog entries, id
 Require the complete live catalog and inventory baseline before crediting reset, and explain remaining mismatches through Milo and Hint.
 
 Describe fresh context initializers accurately in the connection lesson without implying that retained exploratory data was cleared.
+
+Keep revealed reset-recovery guidance intact when the baseline is restored instead of replacing it with an already-completed edit instruction.

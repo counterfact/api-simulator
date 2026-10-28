@@ -1163,6 +1163,13 @@ export function runCoffeeShopWalkthrough(
         "Your API experiment succeeded, but saving its lesson checkpoint failed. Click Retry saving progress in the conversation to save that checkpoint without repeating the order.";
     else if (phase().id === "seed" && ready && !hasBaseline(info.state))
       text = baselineRecovery(info.state);
+    else if (
+      phase().id === "seed" &&
+      ready &&
+      hasBaseline(info.state) &&
+      !hasBaseline(entryState)
+    )
+      return;
     else if (phase().id === "context-repl")
       text =
         !ready && checkedPhase === "context-repl"
