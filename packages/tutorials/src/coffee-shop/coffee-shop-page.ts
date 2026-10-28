@@ -2,6 +2,7 @@ import { basename, dirname } from "node:path";
 import { COUNTERFACT_LOGO } from "../counterfact-logo.js";
 import {
   phasesForVersion,
+  CATALOG,
   WALKTHROUGH_VERSION,
 } from "./coffee-shop-lessons.js";
 import { runCoffeeShopWalkthrough } from "./coffee-shop-browser.js";
@@ -32,6 +33,6 @@ export function coffeeShopPage(
 <div id="panel-divider" class="panel-divider" role="separator" tabindex="0" aria-label="Resize chat and coffee shop panels" aria-orientation="vertical" aria-controls="chat-panel" aria-valuemin="30" aria-valuemax="70" aria-valuenow="50" title="Drag to resize, or use the left and right arrow keys"></div>
 <section class="shop" aria-label="Coffee shop"><header><div class="shop-head"><div class="eyebrow">Small batch · Big comfort</div><button id="refresh-products" class="secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg><span>Refresh products</span></button></div><h1>Counterfact Coffee</h1><p class="demo">A local demo shop. No payments or real orders.</p></header><div id="shop-notice" role="status" aria-live="polite"></div><div id="products" class="products"></div><section class="cart" aria-label="Shopping cart"><h2>Your cart</h2><div id="cart"></div><button id="empty-cart" class="secondary">Empty cart</button><div class="cart-footer"><strong id="total"></strong><button id="checkout" disabled>Place order</button></div></section></section>
 </main><script>
-const walkthroughReady=(${runCoffeeShopWalkthrough.toString()})(${json(projectPath)},${json(phasesForVersion(version))},${json(dirname(projectPath))},${json(restart)},${version});
+const walkthroughReady=(${runCoffeeShopWalkthrough.toString()})(${json(projectPath)},${json(phasesForVersion(version))},${json(dirname(projectPath))},${json(restart)},${version},${json(CATALOG)});
 </script></body></html>`;
 }

@@ -1439,7 +1439,10 @@ it("lets a resumed seed lesson demonstrate reset even when startup already appli
     ),
     prepared: ["seed"],
     checkOk: true,
-    state: { catalog: CATALOG, inventory: { "dark-roast": 3 } },
+    state: {
+      catalog: CATALOG,
+      inventory: { "house-blend": 5, "dark-roast": 3, decaf: 0 },
+    },
   });
   await find(
     app.root("lesson"),
@@ -1455,10 +1458,16 @@ it("lets a resumed seed lesson demonstrate reset even when startup already appli
     "Then run the reset scenario",
   );
   expect(app.completed()).not.toContain("seed");
+  const tutorCount = () =>
+    JSON.parse(app.storage.get("counterfact-coffee-v6")!).turns.filter(
+      (turn: { role: string }) => turn.role === "tutor",
+    ).length;
+  const beforeResetPrompt = tutorCount();
   app.server.state.inventory!["dark-roast"] = 0;
   await app.poll();
+  expect(tutorCount()).toBe(beforeResetPrompt + 1);
   expect(app.root("lesson").textContent).toContain(
-    "The running inventory has changed. Run the reset scenario in the REPL.",
+    "The running shop has changed. Run the reset scenario in the REPL.",
   );
   app.server.state.inventory!["dark-roast"] = 3;
   await app.poll();
@@ -2601,3 +2610,66 @@ it.each([0, 5])(
     expect(app.server.state.catalog).toEqual([coffee]);
   },
 );
+
+it("does not credit reset from one matching stock quantity or an incomplete baseline", async () => {
+  const practice = {
+    id: "practice-coffee",
+    name: "Practice Coffee",
+    description: "Chocolate",
+    price: 1400,
+  };
+  const app = await browser({
+    phase: "seed",
+    checkOk: true,
+    entryState: { catalog: [practice], inventory: { "practice-coffee": 5 } },
+    state: { catalog: [practice], inventory: { "practice-coffee": 5 } },
+  });
+  app.server.state.inventory!["dark-roast"] = 3;
+  await app.poll();
+  expect(app.completed()).not.toContain("seed");
+  expect(app.root("lesson").textContent).toContain(
+    "Catalog entries still differ for House Blend, Dark Roast, Decaf",
+  );
+  await app.click("hint");
+  expect(app.root("lesson").textContent).toContain(
+    "Inventory still contains extra entries",
+  );
+  app.server.state.catalog = CATALOG.map(
+    ({ stock: _stock, ...coffee }) => coffee,
+  );
+  app.server.state.inventory = {
+    "house-blend": 5,
+    "dark-roast": 3,
+    decaf: 0,
+    "practice-coffee": 5,
+  };
+  await app.poll();
+  expect(app.completed()).not.toContain("seed");
+  app.server.state.inventory = { "house-blend": 5, "dark-roast": 3, decaf: 1 };
+  await app.poll();
+  expect(app.completed()).not.toContain("seed");
+  const visible = app.root("lesson").textContent;
+  await app.poll();
+  expect(app.root("lesson").textContent).toBe(visible);
+  app.server.state.inventory.decaf = 0;
+  await app.poll();
+  expect(app.completed()).toContain("seed");
+  expect(app.root("continue").hidden).toBe(false);
+});
+
+it("recognizes the complete baseline independent of catalog and property ordering", async () => {
+  const app = await browser({
+    phase: "seed",
+    checkOk: true,
+    entryState: { catalog: [], inventory: {} },
+  });
+  app.server.state.catalog = [...CATALOG].reverse().map((coffee) => ({
+    price: coffee.price,
+    description: coffee.description,
+    name: coffee.name,
+    id: coffee.id,
+  }));
+  app.server.state.inventory = { decaf: 0, "dark-roast": 3, "house-blend": 5 };
+  await app.poll();
+  expect(app.completed()).toContain("seed");
+});

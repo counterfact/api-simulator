@@ -80,3 +80,5 @@ Teach the shared context binding in routes and the terminal REPL before introduc
 Credit verified context methods without requiring empty live collections, and preserve exploratory REPL data.
 
 Make the practice-coffee Hint reflect existing and duplicate catalog entries, identify live-data errors accurately, and update open guidance without mutating learner data.
+
+Require the complete live catalog and inventory baseline before crediting reset, and explain remaining mismatches through Milo and Hint.

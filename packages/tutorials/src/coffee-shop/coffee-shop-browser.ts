@@ -9,6 +9,13 @@ export function runCoffeeShopWalkthrough(
   restartDirectory: string,
   restartCommand: string,
   walkthroughVersion = 6,
+  baselineProducts: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    stock: number;
+  }[] = [],
 ) {
   type Product = {
     id: string;
@@ -1048,6 +1055,65 @@ export function runCoffeeShopWalkthrough(
       if (!waitingForAction) (byId("hint") as HTMLButtonElement).hidden = true;
     }
   }
+  function hasBaseline(state: Info["state"] | undefined) {
+    if (
+      !state ||
+      !Array.isArray(state.catalog) ||
+      !state.inventory ||
+      baselineProducts.length === 0 ||
+      state.catalog.length !== baselineProducts.length ||
+      Object.keys(state.inventory).length !== baselineProducts.length
+    )
+      return false;
+    const catalog = state.catalog;
+    const inventory = state.inventory;
+    return baselineProducts.every((expected) => {
+      const actual = catalog.find((coffee) => coffee?.id === expected.id);
+      return (
+        actual &&
+        ["id", "name", "description", "price"].every(
+          (key) => actual[key] === expected[key as keyof typeof expected],
+        ) &&
+        inventory[expected.id] === expected.stock
+      );
+    });
+  }
+  function baselineRecovery(state: Info["state"]) {
+    const catalog = Array.isArray(state.catalog) ? state.catalog : [];
+    const changed = baselineProducts
+      .filter((expected) => {
+        const actual = catalog.find((coffee) => coffee?.id === expected.id);
+        return (
+          !actual ||
+          ["id", "name", "description", "price"].some(
+            (key) => actual[key] !== expected[key as keyof typeof expected],
+          )
+        );
+      })
+      .map((coffee) => coffee.name);
+    const stocks = baselineProducts
+      .filter((coffee) => state.inventory?.[coffee.id] !== coffee.stock)
+      .map((coffee) => coffee.name + ": " + coffee.stock);
+    const extraCatalog =
+      catalog.length !== baselineProducts.length
+        ? "The catalog must contain exactly the three baseline coffees. "
+        : "";
+    const extraInventory = Object.keys(state.inventory ?? {}).some(
+      (id) => !baselineProducts.some((coffee) => coffee.id === id),
+    )
+      ? "Inventory still contains extra entries. "
+      : "";
+    return (
+      "The running shop does not yet match reset’s baseline. " +
+      (changed.length
+        ? "Catalog entries still differ for " + changed.join(", ") + ". "
+        : "") +
+      (stocks.length ? "Expected stock: " + stocks.join(", ") + ". " : "") +
+      extraCatalog +
+      extraInventory +
+      "At the terminal’s ⬣> prompt, run `reset` through the `.scenario` command."
+    );
+  }
   function practiceSetupHint() {
     const catalog = info?.state.catalog;
     if (!Array.isArray(catalog) || catalog.length === 0)
@@ -1095,6 +1161,8 @@ export function runCoffeeShopWalkthrough(
     if (checkpointRetry)
       text =
         "Your API experiment succeeded, but saving its lesson checkpoint failed. Click Retry saving progress in the conversation to save that checkpoint without repeating the order.";
+    else if (phase().id === "seed" && ready && !hasBaseline(info.state))
+      text = baselineRecovery(info.state);
     else if (phase().id === "context-repl")
       text =
         !ready && checkedPhase === "context-repl"
@@ -2157,8 +2225,8 @@ export function runCoffeeShopWalkthrough(
           ) &&
           !(
             requestedId === "seed" &&
-            entryState?.inventory?.["dark-roast"] === 3 &&
-            info.state.inventory?.["dark-roast"] !== 3
+            hasBaseline(entryState) &&
+            !hasBaseline(info.state)
           ) &&
           !completed.has(requestedId) &&
           !turns.some(
@@ -2169,16 +2237,14 @@ export function runCoffeeShopWalkthrough(
         ) {
           const feedback = record(
             "tutor",
-            requestedId === "seed" &&
-              entryState?.inventory?.["dark-roast"] === 3
+            requestedId === "seed" && hasBaseline(entryState)
               ? "Startup has already applied the baseline in this session. To observe reset changing state, set Dark Roast to 0 in the REPL."
               : requestedId === "scenario" &&
                   entryState?.inventory?.["dark-roast"] === 5
                 ? "Dark Roast already has 5 bags. To make your scenario’s change observable, set Dark Roast inventory to 4 in the REPL."
                 : (phase().verification ?? checked.message),
             true,
-            requestedId === "seed" &&
-              entryState?.inventory?.["dark-roast"] === 3
+            requestedId === "seed" && hasBaseline(entryState)
               ? "In the terminal’s REPL, assign 0 to the `dark-roast` entry in `context.inventory` and press Enter. Milo will detect that the baseline has changed."
               : requestedId === "scenario" &&
                   entryState?.inventory?.["dark-roast"] === 5
@@ -2198,15 +2264,15 @@ export function runCoffeeShopWalkthrough(
         if (requestedId === "context-repl") renderLesson();
       }
       if (!missing() && ready && !completed.has(requestedId)) {
-        if (
+        const leftBaseline =
           requestedId === "seed" &&
-          entryState?.inventory?.["dark-roast"] === 3 &&
-          info.state.inventory?.["dark-roast"] !== 3
-        ) {
+          hasBaseline(entryState) &&
+          !hasBaseline(info.state);
+        if (leftBaseline) {
           entryState = JSON.parse(JSON.stringify(info.state));
           record(
             "tutor",
-            "The running inventory has changed. Run the reset scenario in the REPL.",
+            "The running shop has changed. Run the reset scenario in the REPL.",
             true,
             phase().verificationHint,
           );
@@ -2221,10 +2287,25 @@ export function runCoffeeShopWalkthrough(
           );
         if (
           requestedId === "seed" &&
-          info.state.inventory?.["dark-roast"] === 3 &&
-          !equal(entryState, info.state)
+          hasBaseline(info.state) &&
+          !hasBaseline(entryState)
         )
           finish();
+        else if (
+          requestedId === "seed" &&
+          stateChanged &&
+          !announcedSave &&
+          !leftBaseline &&
+          !hasBaseline(info.state) &&
+          !turns.some(
+            (turn) =>
+              turn.phaseId === requestedId &&
+              turn.text === baselineRecovery(info.state),
+          )
+        ) {
+          record("tutor", baselineRecovery(info.state), true);
+          renderLesson();
+        }
         if (requestedId === "scenario") {
           const loweredFromFive =
             entryState?.inventory?.["dark-roast"] === 5 &&

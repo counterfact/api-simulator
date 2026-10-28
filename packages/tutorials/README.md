@@ -65,7 +65,7 @@ state.
 saves, REPL submissions, or shop experiments. A **Hint** button appears while
 waiting for learner work and reveals precise instructions for that particular
 action. Revealing a hint does not approve edits, run requests, or complete lessons;
-revealed hints remain in the conversation across reloads. Each prompt ends at its instruction,
+revealed hints remain in the conversation across reloads. Practice setup hints reflect existing or duplicate catalog entries. Correct context methods can complete with exploratory live data intact; reset completion requires the full baseline catalog and inventory. Each prompt ends at its instruction,
 with necessary context and expected results before it. Editing prompts stop at
 saving; a verified save reveals the shop or REPL test. Completion is detected
 automatically from verified saves and the running state, without a manual check
