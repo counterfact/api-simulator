@@ -58,3 +58,5 @@ Reserve Okay for explanatory text. Keep action instructions visible while waitin
 Move tutorial HTTP out of the shop contract and generated routes. Host /tutorial/* before simulation dispatch, mount the two simulated shop operations under /shop, and introduce both namespaces. Version 4 starts with a coffee order to learn the tutorial before inspecting or editing handlers, while retaining prior checkpoint protocols.
 
 Keep the conversation scrollbar inside the chat panel by sizing the layout to the viewport and letting the chat and shop scroll independently. Reserve space for the offline alert without growing the document.
+
+End Milo’s action prompts at the requested work. Separate code edits from their saved-code test instructions, wait for refreshes before asking for orders, and reveal cleanup and quiz steps after their triggering responses. Keep file-opening confirmation separate from the next API experiment.

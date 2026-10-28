@@ -48,8 +48,7 @@ types. `/walkthrough` redirects to `/tutorial/` for existing links.
 ## Learning flow
 
 Fourteen lessons start with placing a coffee order to learn the shop and chat.
-The introduction explains `GET /shop/products`, `POST /shop/orders`, and the
-separate `/tutorial/*` infrastructure. The next lesson inspects the generated
+The introduction explains `GET /shop/products` and `POST /shop/orders`. The next lesson inspects the generated
 handler and bundled schema; subsequent lessons add explicit responses, shared
 state, stock rules, and reusable scenarios.
 
@@ -61,8 +60,11 @@ learner save. Preparation is idempotent and does not run scenarios or seed live
 state.
 
 **Okay** only continues an explanation. Action prompts wait for real approval,
-saves, REPL submissions, or shop experiments. Successful saved-code checks produce
-lesson-specific feedback; live requests still earn the required observations.
+saves, REPL submissions, or shop experiments. Each prompt ends at its instruction,
+with necessary context and expected results before it. Editing prompts stop at
+saving; a verified save reveals the shop or REPL test. Refreshes and responses
+unlock subsequent order, cleanup, and quiz steps. Live requests still earn the
+required observations.
 **Next Lesson** names the next concept. The divider resizes the panels; new text
 types out and scrolling follows it, respecting reduced-motion preferences.
 

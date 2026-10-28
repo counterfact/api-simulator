@@ -454,7 +454,7 @@ export function runCoffeeShopWalkthrough(
       node("strong", "The walkthrough server is offline or unreachable."),
       node(
         "p",
-        "You may have stopped Counterfact in the terminal. Check that terminal for errors. If it stopped, restart it with the command below. Keep this page open; it will reconnect automatically when the server returns.",
+        "You may have stopped Counterfact in the terminal. This page will reconnect automatically when the server returns. Check the terminal for errors and restart Counterfact if it stopped.",
       ),
       node("p", "Run this from " + restartDirectory + ":"),
       node(
@@ -1129,6 +1129,8 @@ export function runCoffeeShopWalkthrough(
     lesson.replaceChildren();
     const welcome = bubble("tutor", "", "welcome");
     const demoFolder = node("p", "Open this demo folder in your editor: ");
+    demoFolder.dataset.prose =
+      "Open this demo folder in your editor: " + projectPath;
     if (!folderOpened) demoFolder.dataset.waitForAction = "true";
     demoFolder.append(fileLink("", projectPath), node("span", "."));
     if (!folderOpened)
@@ -1165,8 +1167,8 @@ export function runCoffeeShopWalkthrough(
           checkpoint +
           " completed lessons. Your saved code is still here. " +
           (next
-            ? "Resume at lesson " + next.lesson + ": " + next.title + "."
-            : "You’ve completed the walkthrough. Resume to keep experimenting with your API."),
+            ? "Your next lesson is " + next.lesson + ": " + next.title + "."
+            : "You’ve completed the walkthrough. Your API is available for more experiments."),
       );
       handoff.dataset.action = "true";
       handoff.dataset.waitForAction = "true";
@@ -1228,7 +1230,7 @@ export function runCoffeeShopWalkthrough(
         lesson.append(
           bubble(
             "tutor",
-            "Before we inspect the handler, here’s where this API starts. OpenAPI, formerly Swagger, is a format for describing an HTTP API: its endpoints, the requests they accept, and the responses they return. A schema describes the shape of data, including its properties, types, and limits. Counterfact includes a coffee-shop API description with this walkthrough and saved a copy as openapi.yaml in your demo folder. It used that file to generate your starting handlers and TypeScript types. Open it to see the product and order schemas that the generated responses follow.",
+            "Before we inspect the handler, here’s where this API starts. OpenAPI, formerly Swagger, is a format for describing an HTTP API: its endpoints, the requests they accept, and the responses they return. A schema describes the shape of data, including its properties, types, and limits. Counterfact includes a coffee-shop API description with this walkthrough and saved a copy as openapi.yaml in your demo folder. It used that file to generate your starting handlers and TypeScript types.",
             revealed.id,
           ),
         );
@@ -1273,7 +1275,7 @@ export function runCoffeeShopWalkthrough(
             "p",
             applied
               ? "Changes applied."
-              : "Review this diff. Apply changes saves these edits to your files.",
+              : "This diff shows the edits I’m proposing: green lines are additions and red lines are removals. Click Apply changes to save them.",
             applied ? "step-complete" : "",
           ),
         );
@@ -1363,9 +1365,16 @@ export function runCoffeeShopWalkthrough(
       if (!revealed.preparation && revealed.id !== "explore")
         exercise.append(explanation);
       if (revealed.id === "explore" && walkthroughVersion >= 4) {
-        const folder = node("p", "Open this demo folder in your editor: ");
-        folder.append(fileLink("", projectPath), node("span", "."));
-        exercise.append(folder);
+        const folderPrompt = bubble("tutor", "", revealed.id);
+        folderPrompt.dataset.action = "true";
+        if (active && !finished && !folderOpened)
+          folderPrompt.dataset.waitForAction = "true";
+        if (finished) {
+          const folder = node("p", "Demo folder: ");
+          folder.append(fileLink("", projectPath));
+          folderPrompt.append(folder);
+        } else folderPrompt.append(demoFolder);
+        lesson.append(folderPrompt);
       }
       exercise.append(fileText("p", revealed.instruction, revealed.id));
       for (const edit of revealed.edits) {
@@ -1391,23 +1400,9 @@ export function runCoffeeShopWalkthrough(
             false,
           ),
         );
-        exercise.append(fileText("p", edit.instruction, revealed.id), actions);
+        exercise.append(actions);
       }
       lesson.append(exercise);
-      if (
-        active &&
-        revealed.id === "seed" &&
-        entryState?.inventory?.["dark-roast"] === 3 &&
-        !finished
-      ) {
-        exercise.append(
-          fileText(
-            "p",
-            "Startup has already applied the baseline in this session. To observe reset changing state, set Dark Roast to 0 in the REPL and click Check my work. Then run the reset scenario and check again.",
-            revealed.id,
-          ),
-        );
-      }
       for (const turn of phaseTurns.slice(before.length))
         if (!(turn.role === "tutor" && turn.files?.length))
           lesson.append(turnBubble(turn, openHints));
@@ -1419,17 +1414,17 @@ export function runCoffeeShopWalkthrough(
         if (index === phases.length - 1) {
           const goodbye = bubble(
             "tutor",
-            "We’ve built the shop’s behavior together. Keep experimenting: add another product or a new failure condition. You can scroll back through our conversation whenever you need a reminder.",
+            "We’ve built the shop’s behavior together. Your API now supports more experiments with products and failure conditions. Our conversation stays available as a reference.",
           );
           goodbye.append(
+            node(
+              "p",
+              "Restarting keeps your code and runs startup again. Your saved lesson progress remains available through Resume this project, with fresh cart, request, and quiz observations.",
+            ),
             node("p", "To restart, run this from " + restartDirectory + ":"),
             node(
               "pre",
               restartCommand + " --port " + (window.location.port || "3100"),
-            ),
-            node(
-              "p",
-              "Restarting keeps your code and runs startup again. Choose Resume this project to continue from saved lesson progress with fresh cart, request, and quiz observations.",
             ),
           );
           lesson.append(goodbye);
@@ -1634,8 +1629,27 @@ export function runCoffeeShopWalkthrough(
     if (id === "explore" && source === "manual") {
       report("started", phases[0]!.id);
       finish(
-        "Compare the returned products with the schemas in openapi.yaml to see how the API description shapes its data.",
+        "The returned products follow the shapes described in openapi.yaml.",
       );
+    }
+    if (source === "manual") {
+      let nextAction: string | undefined;
+      if (id === "connect" && ready && orderIds.length === 0)
+        nextAction =
+          "Click Add to cart on House Blend, then click Place order.";
+      if (id === "decaf" && inventoryOf().decaf === 5)
+        nextAction =
+          "Decaf now shows 5 in the running API. Click Add to cart on Decaf, then click Place order.";
+      if (id === "restock" && inventoryOf()["dark-roast"] === 5)
+        nextAction =
+          "Dark Roast now has 5 bags, so buying one should leave 4. Click Add to cart on Dark Roast once, then click Place order.";
+      if (
+        nextAction &&
+        !turns.some((turn) => turn.phaseId === id && turn.text === nextAction)
+      ) {
+        record("tutor", nextAction, true);
+        renderLesson();
+      }
     }
     if (id === "name-example" && ready && source === "manual") {
       if (
@@ -1752,7 +1766,7 @@ export function runCoffeeShopWalkthrough(
           "HTTP 201 received. Inspect the request and response in the chat.";
       } else if (response.ok)
         throw new Error(
-          "The confirmation has no integer orderId. Inspect POST /orders in the chat before retrying; the order may have been accepted.",
+          "The confirmation has no integer orderId, but the order may have been accepted. Inspect POST /orders in the chat before retrying.",
         );
       else {
         failedItems = items;
@@ -1783,7 +1797,7 @@ export function runCoffeeShopWalkthrough(
           finish();
         else {
           message =
-            "Click Add to cart on House Blend, then Place order again. Compare the order IDs in the two HTTP responses.";
+            "The next confirmation should have an order ID one greater than the first. Click Add to cart on House Blend, then Place order again.";
           record("tutor", message, true);
         }
       }
@@ -1956,7 +1970,10 @@ export function runCoffeeShopWalkthrough(
         ) {
           const feedback = record(
             "tutor",
-            phase().verification ?? checked.message,
+            requestedId === "seed" &&
+              entryState?.inventory?.["dark-roast"] === 3
+              ? "Startup has already applied the baseline in this session. To observe reset changing state, set Dark Roast to 0 in the REPL and click Check my work."
+              : (phase().verification ?? checked.message),
             true,
           );
           feedback.verificationRevision = revision;
@@ -1974,8 +1991,15 @@ export function runCoffeeShopWalkthrough(
           requestedId === "seed" &&
           entryState?.inventory?.["dark-roast"] === 3 &&
           info.state.inventory?.["dark-roast"] !== 3
-        )
+        ) {
           entryState = JSON.parse(JSON.stringify(info.state));
+          record(
+            "tutor",
+            "The running inventory has changed. Run the reset scenario in the REPL, then click Check my work.",
+            true,
+          );
+          renderLesson();
+        }
         if (
           requestedId === "context" &&
           Array.isArray(info.state.catalog) &&
@@ -2012,7 +2036,7 @@ export function runCoffeeShopWalkthrough(
             finish();
           else
             message =
-              "Run `.scenario restockDarkRoast` after changing Dark Roast below 5, then refresh and check progress. Other inventory should stay unchanged.";
+              "Other inventory should stay unchanged. With Dark Roast below 5, run `restockDarkRoast` through the REPL’s `.scenario` command, refresh products, then click Check my work.";
         }
       }
       save();
@@ -2216,7 +2240,7 @@ export function runCoffeeShopWalkthrough(
       return api;
     } catch {
       message =
-        "Could not initialize the walkthrough. Check Counterfact’s terminal; this page will retry automatically.";
+        "Could not initialize the walkthrough. This page will retry automatically. Check Counterfact’s terminal.";
       renderStatus();
     } finally {
       initializing = false;
