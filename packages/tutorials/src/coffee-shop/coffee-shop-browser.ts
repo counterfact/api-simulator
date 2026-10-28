@@ -157,8 +157,7 @@ export function runCoffeeShopWalkthrough(
     checkedRevision = "",
     checkedPhase = "",
     ready = false;
-  let message = "",
-    checkMessage = "",
+  let checkMessage = "",
     quizWrong = false;
   let observation: Observation | undefined, failedItems: Item[] | undefined;
   let expectedExamples: string[] | undefined;
@@ -552,9 +551,10 @@ export function runCoffeeShopWalkthrough(
         // Completion is recorded separately from file-change history.
         checkpointRetry = undefined;
       } catch (error) {
-        message =
+        const message =
           "Could not save lesson progress: " +
           (error instanceof Error ? error.message : String(error));
+        record("tutor", message, true);
         checkpointRetry = () => finish(completionMessage);
         renderLesson();
         return;
@@ -562,7 +562,6 @@ export function runCoffeeShopWalkthrough(
         finishing = false;
       }
     }
-    message = completionMessage;
     const next = phases[index + 1];
     if (!next || next.lesson !== phase().lesson)
       record("tutor", "That worked. " + completionMessage);
@@ -582,7 +581,6 @@ export function runCoffeeShopWalkthrough(
     ready = false;
     checkedPhase = "";
     checkMessage = "";
-    message = "";
     quizWrong = false;
     observation = undefined;
     entryState = info?.state
@@ -1380,25 +1378,25 @@ export function runCoffeeShopWalkthrough(
       for (const edit of revealed.edits) {
         const file = schemaFile(edit.file);
         const actions = node("div", "", "file-actions");
+        const copyPath = button(
+          "Copy file path",
+          async () => {
+            try {
+              await navigator.clipboard.writeText(projectPath + "/" + file);
+              copyPath.textContent = "Copied!";
+            } catch {
+              copyPath.textContent = "Couldn’t copy path";
+            }
+          },
+          false,
+        );
         actions.append(
           fileLink(
             edit.file,
             "Open in VSCode",
             editLine(edit.file, revealed.id),
           ),
-          button(
-            "Copy file path",
-            async () => {
-              try {
-                await navigator.clipboard.writeText(projectPath + "/" + file);
-                message = "File path copied.";
-              } catch {
-                message = "Open or copy this file: " + projectPath + "/" + file;
-              }
-              renderStatus();
-            },
-            false,
-          ),
+          copyPath,
         );
         exercise.append(actions);
       }
@@ -1449,7 +1447,6 @@ export function runCoffeeShopWalkthrough(
     scrollToLatestMessage();
   }
   function renderStatus() {
-    byId("guide-status").textContent = message;
     byId("save-check").textContent = checkMessage;
   }
   function validProducts(value: unknown): value is Product[] {
@@ -1673,9 +1670,14 @@ export function runCoffeeShopWalkthrough(
             (id === "name-example" ? "name example" : "description examples") +
             ". The product handler still calls `.random()`.",
         );
-      else
-        message =
-          "The example is saved. Wait for Counterfact to reload the spec, then refresh products again to observe it.";
+      else {
+        record(
+          "tutor",
+          "The example is saved. Wait for Counterfact to reload the spec, then refresh products again to observe it.",
+          true,
+        );
+        renderLesson();
+      }
     }
     if (id === "catalog" && ready && source === "manual") {
       const current = JSON.stringify(products);
@@ -1683,7 +1685,7 @@ export function runCoffeeShopWalkthrough(
       lastCatalog = current;
       if (catalogReads >= 2) finish();
       else {
-        message =
+        const message =
           "The catalog is in place. Click Refresh products once more and compare the two responses in the chat.";
         record("tutor", message, true);
         renderLesson();
@@ -1721,7 +1723,7 @@ export function runCoffeeShopWalkthrough(
         cart.size
       ) {
         cart.clear();
-        message =
+        const message =
           "Refreshing random products clears the previous cart because product IDs and prices may change.";
         record("tutor", message);
       }
@@ -1733,7 +1735,7 @@ export function runCoffeeShopWalkthrough(
       return true;
     } catch (error) {
       fresh = false;
-      message =
+      const message =
         error instanceof Error
           ? error.message
           : "Product request failed. Click Refresh products to retry.";
@@ -1809,7 +1811,7 @@ export function runCoffeeShopWalkthrough(
         if (orderIds.length >= 2 && orderIds.at(-1) === orderIds.at(-2)! + 1)
           finish();
         else {
-          message =
+          const message =
             "The next confirmation should have an order ID one greater than the first. Click Add to cart on House Blend, then Place order again.";
           record("tutor", message, true);
         }
@@ -1832,7 +1834,7 @@ export function runCoffeeShopWalkthrough(
         )
       ) {
         rejectionSeen = true;
-        message =
+        const message =
           "The oversized order was rejected. Click Empty cart, restore Dark Roast inventory to 3 in the terminal’s REPL, then click Refresh products.";
         record("tutor", message, true);
       }
@@ -1851,7 +1853,7 @@ export function runCoffeeShopWalkthrough(
           after: after["dark-roast"]!,
           quantity,
         };
-        message =
+        const message =
           "Dark Roast API stock: " +
           observed.before +
           " → " +
@@ -1884,7 +1886,7 @@ export function runCoffeeShopWalkthrough(
           finish();
       }
     } catch (error) {
-      message =
+      const message =
         error instanceof Error
           ? error.message
           : "No order confirmation. Your cart has been kept; inspect the API before retrying.";
@@ -1911,6 +1913,7 @@ export function runCoffeeShopWalkthrough(
   }
   async function runCheckFiles(force: boolean) {
     const requestedId = phase().id;
+    let announcedSave = false;
     try {
       const { response, value: latest } = await json<Info>("/tutorial-info");
       if (
@@ -1995,6 +1998,7 @@ export function runCoffeeShopWalkthrough(
             true,
           );
           feedback.verificationRevision = revision;
+          announcedSave = true;
           renderLesson();
         }
         if (checkedRevision !== revision) {
@@ -2052,9 +2056,14 @@ export function runCoffeeShopWalkthrough(
             )
           )
             finish();
-          else
-            message =
-              "Other inventory should stay unchanged. With Dark Roast below 5, run `restockDarkRoast` through the REPL’s `.scenario` command, refresh products, then click Check my work.";
+          else if (!announcedSave) {
+            record(
+              "tutor",
+              "Other inventory should stay unchanged. With Dark Roast below 5, run `restockDarkRoast` through the REPL’s `.scenario` command, refresh products, then click Check my work.",
+              true,
+            );
+            renderLesson();
+          }
         }
       }
       save();
@@ -2257,7 +2266,7 @@ export function runCoffeeShopWalkthrough(
       initialized = true;
       return api;
     } catch {
-      message =
+      checkMessage =
         "Could not initialize the walkthrough. This page will retry automatically. Check Counterfact’s terminal.";
       renderStatus();
     } finally {

@@ -883,7 +883,8 @@ it("renders arbitrary product IDs safely and refreshes only on explicit actions"
 
 it("rejects duplicate IDs with a useful explanation and recovers on refresh", async () => {
   const app = await browser({ products: [CATALOG[0]!, CATALOG[0]!] });
-  expect(app.root("guide-status").textContent).toContain("duplicate IDs");
+  await app.click("refresh-products");
+  expect(app.root("lesson").textContent).toContain("duplicate IDs");
   app.server.products = structuredClone(CATALOG);
   await app.click("refresh-products");
   expect(app.root("products").textContent).toContain("Dark Roast");
@@ -1692,7 +1693,7 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
   await order.api.placeOrder();
   await new Promise((resolve) => setImmediate(resolve));
   expect(order.completed()).not.toContain("order");
-  expect(order.root("guide-status").textContent).toContain(
+  expect(order.root("lesson").textContent).toContain(
     "Progress storage is temporarily unavailable",
   );
   const retry = find(
@@ -2173,4 +2174,20 @@ it("describes an empty storefront without API inspection instructions", async ()
   expect(app.root("products").textContent).toBe(
     "No coffees are available right now.",
   );
+});
+
+it("keeps completion feedback only in Milo’s conversation without a separate Update area", async () => {
+  const app = await browser({ phase: "orientation" });
+  expect(coffeeShopPage("/tmp/demo")).not.toContain("guide-status");
+  app.add();
+  await app.click("checkout");
+  expect(
+    app
+      .root("lesson")
+      .textContent.match(
+        /You’ve tried the shop and seen its request and response in the conversation/g,
+      ),
+  ).toHaveLength(1);
+  expect(app.root("save-check").textContent).toBe("");
+  expect(app.root("continue").hidden).toBe(false);
 });

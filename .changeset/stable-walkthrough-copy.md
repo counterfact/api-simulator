@@ -64,3 +64,5 @@ End Milo’s action prompts at the requested work. Separate code edits from thei
 Start the OpenAPI 3.1 coffee-shop schema with ten readable name examples. Explain initially random descriptions after exploration, then teach description examples in lesson three. Version the new exercise while retaining older demos’ name-example lesson and checkpoints.
 
 Keep API status and inspection instructions out of the storefront, using customer-facing order and empty-catalog feedback instead. Place Refresh products at the top right with a decorative refresh icon and its existing accessible label.
+
+Remove the redundant Update area beneath the conversation. Keep completion and follow-up feedback in Milo’s messages, preserve progress-save errors alongside the retry action, and show copy feedback on its button.
