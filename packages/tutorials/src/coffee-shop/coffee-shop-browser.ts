@@ -1048,6 +1048,42 @@ export function runCoffeeShopWalkthrough(
       if (!waitingForAction) (byId("hint") as HTMLButtonElement).hidden = true;
     }
   }
+  function practiceSetupHint() {
+    const catalog = info?.state.catalog;
+    if (!Array.isArray(catalog) || catalog.length === 0)
+      return phase().hint ?? phase().instruction;
+    const practiceIndex = catalog.findIndex(
+      (coffee) => coffee?.id === "practice-coffee",
+    );
+    const keep = practiceIndex < 0 ? 0 : practiceIndex;
+    const extras = catalog
+      .map((_, index) => index)
+      .filter((index) => index !== keep)
+      .reverse();
+    if (extras.length)
+      return (
+        "Your running catalog has " +
+        catalog.length +
+        " entries; this exercise needs one. Keep the coffee at zero-based index " +
+        keep +
+        ". In the REPL, use the `splice` method on `context.catalog` to remove the extra entries at indices " +
+        extras.join(", ") +
+        " in that order. For each removal, pass its index and a count of 1. Then click Refresh products."
+      );
+    const coffee = catalog[0];
+    if (
+      practiceIndex < 0 ||
+      typeof coffee?.name !== "string" ||
+      typeof coffee?.description !== "string" ||
+      !Number.isInteger(coffee?.price) ||
+      coffee.price < 500 ||
+      coffee.price > 2500
+    )
+      return "A coffee already exists in `context.catalog`; edit that entry instead of appending another. At the REPL, update the object at index 0: its `id` should be practice-coffee, `name` Practice Coffee, `description` Chocolate and caramel, and numeric `price` 1400. Then click Refresh products.";
+    if (info.state.inventory?.["practice-coffee"] !== 5)
+      return "The practice coffee already exists. In the REPL, assign 5 to the practice-coffee entry in `context.inventory`, then click Refresh products.";
+    return "The practice coffee and its stock are already in the running context. Click Refresh products to observe them through the shop.";
+  }
   function currentHint() {
     const prompt = (Array.from(byId("lesson").children) as HTMLElement[])
       .filter((element) => element.className.split(" ").includes("tutor-turn"))
@@ -1059,6 +1095,11 @@ export function runCoffeeShopWalkthrough(
     if (checkpointRetry)
       text =
         "Your API experiment succeeded, but saving its lesson checkpoint failed. Click Retry saving progress in the conversation to save that checkpoint without repeating the order.";
+    else if (phase().id === "context-repl")
+      text =
+        !ready && checkedPhase === "context-repl"
+          ? phases.find((candidate) => candidate.id === "connect")!.hint!
+          : practiceSetupHint();
     else if (quiz)
       text = quizWrong
         ? "Click Try again below the inventory question. Compare the stock before and after the order: unchanged stock means the order did not subtract it; a decrease by the purchased quantity means it did."
@@ -1073,6 +1114,22 @@ export function runCoffeeShopWalkthrough(
     const control = byId("hint") as HTMLButtonElement;
     const hint = currentHint();
     control.hidden = !hint || !!typing;
+    if (hint) {
+      let wasOpen = false;
+      for (const [key, previous] of revealedHints)
+        if (
+          previous.messageId === hint.prompt.dataset.messageId &&
+          key !== hint.key
+        ) {
+          revealedHints.delete(key);
+          wasOpen = true;
+        }
+      if (wasOpen)
+        revealedHints.set(hint.key, {
+          messageId: hint.prompt.dataset.messageId!,
+          text: hint.text,
+        });
+    }
     control.textContent =
       hint && revealedHints.has(hint.key) ? "Hide hint" : "Hint";
     for (const message of Array.from(
@@ -1795,7 +1852,9 @@ export function runCoffeeShopWalkthrough(
       );
       if (!response.ok || !validProducts(value))
         throw new Error(
-          "The products response is invalid or contains duplicate IDs. Inspect it in the chat, fix the handler or refresh again.",
+          phase().id === "context-repl" && ready
+            ? "The running catalog contains invalid coffee data or duplicate IDs. Use Hint to correct the existing catalog entries in the REPL."
+            : "The products response is invalid or contains duplicate IDs. Inspect it in the chat, fix the handler or refresh again.",
         );
       if (
         !completed.has("catalog") &&
@@ -2032,7 +2091,8 @@ export function runCoffeeShopWalkthrough(
       if (
         syncReplSubmissions(info.replSubmissions) ||
         changed ||
-        locationsChanged
+        locationsChanged ||
+        (stateChanged && requestedId === "context-repl")
       )
         renderLesson();
       if (phase().id !== requestedId) return;
@@ -2135,6 +2195,7 @@ export function runCoffeeShopWalkthrough(
         }
         checkedRevision = revision;
         checkedPhase = requestedId;
+        if (requestedId === "context-repl") renderLesson();
       }
       if (!missing() && ready && !completed.has(requestedId)) {
         if (

@@ -2220,7 +2220,10 @@ it("keeps completion feedback only in Milo’s conversation without a separate U
 it.each(PHASES)(
   "offers a precise hint for $id without advancing or doing the work",
   async (phase) => {
-    const app = await browser({ phase: phase.id });
+    const app = await browser({
+      phase: phase.id,
+      checkOk: phase.id === "context-repl",
+    });
     expect(app.root("hint").hidden).toBe(false);
     const hint = phase.hint!.replaceAll("`", "");
     expect(app.root("lesson").textContent).not.toContain(hint);
@@ -2243,7 +2246,10 @@ it.each(PHASES)(
     const visible = app.root("lesson").textContent;
     await app.poll();
     expect(app.root("lesson").textContent).toBe(visible);
-    const restored = await browser({ storage: app.storage });
+    const restored = await browser({
+      storage: app.storage,
+      checkOk: phase.id === "context-repl",
+    });
     expect(restored.root("lesson").textContent).toContain(hint);
     await app.click("hint");
     expect(app.root("hint").textContent).toBe("Hint");
@@ -2514,5 +2520,84 @@ it.each([
       "data you’ve added to this running session is kept",
     );
     expect(app.server.state).toEqual(state);
+  },
+);
+
+it("updates the practice Hint to repair duplicate REPL entries without changing them automatically", async () => {
+  const coffee = {
+    id: "practice-coffee",
+    name: "Practice Coffee",
+    description: "Chocolate and caramel",
+    price: 1400,
+  };
+  const app = await browser({
+    phase: "context-repl",
+    checkOk: true,
+    state: { catalog: [], inventory: {} },
+    products: [],
+  });
+  await app.click("hint");
+  expect(app.root("lesson").textContent).toContain(
+    "use the push method on context.catalog",
+  );
+  app.server.state.catalog = [coffee, { ...coffee }];
+  app.server.state.inventory = { "practice-coffee": 5 };
+  app.server.products = [
+    { ...coffee, stock: 5 },
+    { ...coffee, stock: 5 },
+  ];
+  await app.poll();
+  expect(app.root("lesson").textContent).toContain(
+    "remove the extra entries at indices 1",
+  );
+  expect(app.root("lesson").textContent).not.toContain(
+    "use the push method on context.catalog",
+  );
+  expect(app.server.state.catalog).toHaveLength(2);
+  await app.click("refresh-products");
+  expect(app.root("lesson").textContent).toContain(
+    "Use Hint to correct the existing catalog entries in the REPL",
+  );
+  await app.click("hint");
+  expect(app.root("lesson").textContent).toContain(
+    "pass its index and a count of 1",
+  );
+  expect(app.completed()).not.toContain("context-repl");
+  app.server.state.catalog = [coffee];
+  app.server.products = [{ ...coffee, stock: 5 }];
+  await app.poll();
+  expect(app.root("lesson").textContent).toContain(
+    "The practice coffee and its stock are already in the running context",
+  );
+  expect(app.completed()).not.toContain("context-repl");
+  await app.click("refresh-products");
+  expect(app.completed()).toContain("context-repl");
+});
+
+it.each([0, 5])(
+  "does not suggest appending an existing practice coffee with stock %i",
+  async (stock) => {
+    const coffee = {
+      id: "practice-coffee",
+      name: "Practice Coffee",
+      description: "Chocolate and caramel",
+      price: 1400,
+    };
+    const app = await browser({
+      phase: "context-repl",
+      checkOk: true,
+      state: { catalog: [coffee], inventory: { "practice-coffee": stock } },
+      products: [{ ...coffee, stock }],
+    });
+    await app.click("hint");
+    const hint = find(
+      app.root("lesson"),
+      (element) => element.className === "notice lesson-hint",
+    )!;
+    expect(hint.textContent).not.toContain("push");
+    expect(hint.textContent).toContain(
+      stock === 5 ? "Click Refresh products" : "assign 5",
+    );
+    expect(app.server.state.catalog).toEqual([coffee]);
   },
 );

@@ -78,3 +78,5 @@ Remove Check my work and detect shared-context, reset, and scenario completion a
 Teach the shared context binding in routes and the terminal REPL before introducing scenarios. Lesson eight connects handlers and verifies a coffee added through the REPL against a live shop response; lesson nine introduces reusable reset/startup scenarios. Version the reordered inventory to retain existing demos’ checkpoints.
 
 Credit verified context methods without requiring empty live collections, and preserve exploratory REPL data.
+
+Make the practice-coffee Hint reflect existing and duplicate catalog entries, identify live-data errors accurately, and update open guidance without mutating learner data.
