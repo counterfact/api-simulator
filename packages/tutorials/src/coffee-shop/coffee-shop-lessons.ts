@@ -461,7 +461,7 @@ export const PHASES: LessonPhase[] = [
     explanation:
       "Let’s get comfortable with the tutorial before editing code. The coffee shop on the right sends requests to the simulated shop API; our conversation on the left shows what happened.",
     instruction:
-      "Click Add to cart on any coffee with stock, then click Place order. Expand the HTTP details in your order message to inspect the request and response. The starting API generates its responses, so the confirmation may not match your cart yet. For this first lesson, just try ordering and see how the shop and conversation work together. If every coffee is sold out, click Refresh products to generate another catalog.",
+      "Click Add to cart on any coffee with stock, then click Place order.",
     edits: [],
   },
   ...PHASES_V3.map((phase) => ({
