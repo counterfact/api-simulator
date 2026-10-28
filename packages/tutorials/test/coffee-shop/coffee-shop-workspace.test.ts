@@ -224,6 +224,23 @@ it("prepares focused changes, preserves learner edits, and records all current l
       "export type",
     );
     await checkpoint(root, "context");
+    await replace(
+      "routes/products.ts",
+      "return $.response.status(200).json(catalog);",
+      "return $.response.status(200).json($.context.listProducts());",
+    );
+    await replace(
+      "routes/orders.ts",
+      "return $.response.status(201).json({ orderId: 1, items: $.body.items });",
+      "return $.response.status(201).json($.context.confirmOrder($.body.items));",
+    );
+    expect((await checkWalkthroughSave(root, "connect")).ok).toBe(true);
+    expect(await $.read("demo/scenarios/index.ts")).not.toContain(
+      "export const reset",
+    );
+    await checkpoint(root, "connect");
+    await checkpoint(root, "context-repl");
+
     await append("scenarios/index.ts", 'export const myNote = "keep this";');
     await previewAndApply("seed");
     expect(await $.read("demo/scenarios/index.ts")).toContain(
@@ -238,17 +255,6 @@ it("prepares focused changes, preserves learner edits, and records all current l
     );
     expect((await checkWalkthroughSave(root, "seed")).ok).toBe(true);
     await checkpoint(root, "seed");
-    await replace(
-      "routes/products.ts",
-      "return $.response.status(200).json(catalog);",
-      "return $.response.status(200).json($.context.listProducts());",
-    );
-    await replace(
-      "routes/orders.ts",
-      "return $.response.status(201).json({ orderId: 1, items: $.body.items });",
-      "return $.response.status(201).json($.context.confirmOrder($.body.items));",
-    );
-    await checkpoint(root, "connect");
     await checkpoint(root, "decaf");
     await previewAndApply("rules");
     await replace(

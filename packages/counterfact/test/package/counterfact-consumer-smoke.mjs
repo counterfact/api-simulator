@@ -363,7 +363,7 @@ try {
   const check = await (await fetch(origin + "/tutorial/check", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phaseId: "catalog" }),
   })).json();
-  assert.equal(info.walkthroughVersion, 5);
+  assert.equal(info.walkthroughVersion, 6);
   assert.deepEqual(info.state, { catalog: null, inventory: null });
   assert.equal(check.ok, false);
   assert.match(check.message, /random product stub/);

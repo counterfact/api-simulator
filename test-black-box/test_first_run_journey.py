@@ -609,7 +609,7 @@ def coffee_shop_purchase(journey):
     info = journey.request("get", "/tutorial/info")
     assert info.status_code == 200, info.text
     assert os.path.realpath(info.json()["projectPath"]) == os.path.realpath(journey.output)
-    assert info.json()["walkthroughVersion"] == 5
+    assert info.json()["walkthroughVersion"] == 6
     assert "example" not in yaml.safe_load((journey.output / "openapi.yaml").read_text())["components"]["schemas"]["Product"]["properties"]["name"]
     assert info.json()["workspace"]["changes"] == []
     assert info.json()["state"] == {"catalog": None, "inventory": None}
@@ -737,7 +737,7 @@ def explicit_coffee_responses(journey):
     coffee_workspace(journey, "checkpoint", "order")
 
 
-@when("I introduce shared context and explicitly run its reset scenario")
+@when("I introduce shared context and connect it to routes and the REPL")
 def introduce_coffee_context(journey):
     coffee_workspace(journey, "prepare", "context")
     edit_coffee(journey, "routes/_.context.ts", "orderId: 0", "orderId: this.nextOrderId++")
@@ -747,27 +747,37 @@ def introduce_coffee_context(journey):
     edit_coffee(journey, "routes/_.context.ts", "return [];", "return this.catalog.map(product => ({ ...product, stock: this.inventory[product.id] ?? 0 }));")
     journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "context"})
     coffee_workspace(journey, "checkpoint", "context")
+    edit_coffee(journey, "routes/products.ts", "return $.response.status(200).json(catalog);", "return $.response.status(200).json($.context.listProducts());")
+    edit_coffee(journey, "routes/orders.ts", "{ orderId: 1, items: $.body.items }", "$.context.confirmOrder($.body.items)")
+    journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "connect"})
+    coffee_workspace(journey, "checkpoint", "connect")
+    journey.terminal.command('context.catalog.push({ id: "practice-coffee", name: "Practice Coffee", description: "Chocolate and caramel", price: 1400 })')
+    journey.terminal.command('context.inventory["practice-coffee"] = 5')
+    journey.wait_for_http("/shop/products", lambda response: response.status_code == 200 and len(response.json()) == 1 and response.json()[0]["id"] == "practice-coffee" and response.json()[0]["stock"] == 5)
+    assert "export const reset" not in (journey.output / "scenarios/index.ts").read_text()
+    coffee_workspace(journey, "checkpoint", "context-repl")
+
+
+@when("I initialize context with reset and startup scenarios")
+def initialize_coffee_context(journey):
     coffee_workspace(journey, "prepare", "seed")
     path = journey.output / "scenarios/index.ts"
     path.write_text(path.read_text() + "\nexport const startup: Scenario = reset;\n")
     journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "seed"})
-    journey.wait_for_http("/tutorial/info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"] == {})
+    journey.wait_for_http("/tutorial/info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"].get("practice-coffee") == 5)
     apply_coffee_scenario(journey, "reset")
     journey.wait_for_http("/tutorial/info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"].get("dark-roast") == 3)
     coffee_workspace(journey, "checkpoint", "seed")
-    edit_coffee(journey, "routes/products.ts", "return $.response.status(200).json(catalog);", "return $.response.status(200).json($.context.listProducts());")
-    edit_coffee(journey, "routes/orders.ts", "{ orderId: 1, items: $.body.items }", "$.context.confirmOrder($.body.items)")
-    journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "connect"})
+
 
 
 @then("the handlers read the initialized context and return successive order IDs")
 def connected_coffee_handlers(journey):
     assert journey.request("get", "/shop/products").json() == COFFEE_CATALOG
-    first = journey.wait_for_http("/shop/orders", lambda response: response.status_code == 201 and response.json()["orderId"] >= 2, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]}).json()["orderId"]
+    first = journey.wait_for_http("/shop/orders", lambda response: response.status_code == 201 and response.json()["orderId"] >= 1, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]}).json()["orderId"]
     second = coffee_order(journey, "house-blend", 1).json()["orderId"]
     assert second == first + 1
     assert coffee_stock(journey, "house-blend") == 5
-    coffee_workspace(journey, "checkpoint", "connect")
 
 
 @when("I make Decaf available through the running REPL")

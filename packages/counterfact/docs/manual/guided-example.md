@@ -109,26 +109,39 @@ examples. Counterfact reloads the spec while the product handler keeps calling
 `.random()`. Examples guide generation; they do not install a fixed catalog or a
 business rule. The next lesson replaces the response with three explicit coffees.
 
+## Connect context, routes, and the REPL
+
+After implementing the context methods, connect the product and order handlers
+to them. The class in `routes/_.context.ts` defines one running context instance.
+Handlers access it through `$.context`; the terminal’s `context` variable refers
+to that same object. The ⬣> prompt is a REPL (read–eval–print loop), where JavaScript
+expressions run against the live API process.
+
+Lesson eight asks you to add a single practice coffee and its stock through the
+REPL, then refresh the shop. Its Hint supplies the exact fields and values while
+leaving you to write the expressions. A real product response demonstrates the
+connection before lesson nine introduces scenarios as reusable setup functions.
+
 ## Add one behavior at a time
 
 The fourteen lessons start with using the tutorial, then build on your code:
 
-| Step | What you add                                                             | What to observe                                                                                                   |
-| ---- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| 1    | Place an order without editing code                                      | Learn the shop, cart, and HTTP details in the conversation.                                                       |
-| 2    | Inspect and refresh the generated API                                    | The handler generates each response from its schema.                                                              |
-| 3    | Description examples in `openapi.yaml`                                   | The existing `.random()` handler uses meaningful coffee descriptions; IDs, prices, and stock are still generated. |
-| 4    | An explicit product response                                             | Repeated requests return the same three coffees.                                                                  |
-| 5    | An order response using `$.body.items`                                   | The confirmation reflects the submitted cart.                                                                     |
-| 6    | A 503 branch and recovery switch                                         | A rejected order keeps its cart; restoring the handler lets the same request succeed.                             |
-| 7    | An empty Context class with catalog, inventory, and confirmation methods | You can inspect the running object in the REPL before routes use it.                                              |
-| 8    | A baseline `reset` scenario and `startup` export                         | Nothing is seeded until you explicitly run `.scenario reset`.                                                     |
-| 9    | Handlers calling context methods                                         | Products read shared state and successive orders receive successive IDs.                                          |
-| 10   | A Decaf inventory assignment in the REPL                                 | The next product request reads the changed quantity.                                                              |
-| 11   | Stock validation and shortage methods                                    | Oversized orders return HTTP 409 with requested and available quantities.                                         |
-| 12   | `reduceInventory(items, inventory)`                                      | Successful purchases now change the quantity returned by later product requests.                                  |
-| 13   | Requests that sell out and REPL commands that restock                    | The same handlers produce different responses as shared state evolves.                                            |
-| 14   | A focused `restockDarkRoast` scenario                                    | A reusable setup changes one product while preserving other inventory and order IDs.                              |
+| Step | What you add                                                             | What to observe                                                                                                            |
+| ---- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Place an order without editing code                                      | Learn the shop, cart, and HTTP details in the conversation.                                                                |
+| 2    | Inspect and refresh the generated API                                    | The handler generates each response from its schema.                                                                       |
+| 3    | Description examples in `openapi.yaml`                                   | The existing `.random()` handler uses meaningful coffee descriptions; IDs, prices, and stock are still generated.          |
+| 4    | An explicit product response                                             | Repeated requests return the same three coffees.                                                                           |
+| 5    | An order response using `$.body.items`                                   | The confirmation reflects the submitted cart.                                                                              |
+| 6    | A 503 branch and recovery switch                                         | A rejected order keeps its cart; restoring the handler lets the same request succeed.                                      |
+| 7    | An empty Context class with catalog, inventory, and confirmation methods | You can inspect the running object in the REPL before routes use it.                                                       |
+| 8    | Handlers reading shared context and a live REPL experiment               | The REPL’s `context` and handlers’ `$.context` refer to the same instance; a coffee added in the REPL appears in the shop. |
+| 9    | A baseline `reset` scenario and `startup` export                         | A named scenario repeats the setup you first performed manually in the REPL; startup reuses it on restart.                 |
+| 10   | A Decaf inventory assignment in the REPL                                 | The next product request reads the changed quantity.                                                                       |
+| 11   | Stock validation and shortage methods                                    | Oversized orders return HTTP 409 with requested and available quantities.                                                  |
+| 12   | `reduceInventory(items, inventory)`                                      | Successful purchases now change the quantity returned by later product requests.                                           |
+| 13   | Requests that sell out and REPL commands that restock                    | The same handlers produce different responses as shared state evolves.                                                     |
+| 14   | A focused `restockDarkRoast` scenario                                    | A reusable setup changes one product while preserving other inventory and order IDs.                                       |
 
 Each phase explains the Counterfact facility being used and names the file to edit.
 Milo, a coffee-shop owner and your Counterfact tutor, proposes the supporting

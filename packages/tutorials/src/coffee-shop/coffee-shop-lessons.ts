@@ -173,6 +173,7 @@ export type LessonPhase = {
   lesson: number;
   title: string;
   explanation: string;
+  introduction?: string;
   instruction: string;
   edits: { file: string; instruction: string }[];
   preparation?: string;
@@ -186,7 +187,7 @@ const edit = (file: string, instruction: string) => ({
   file,
   instruction,
 });
-export const WALKTHROUGH_VERSION = 5;
+export const WALKTHROUGH_VERSION = 6;
 export const PHASES_V2: LessonPhase[] = [
   {
     id: "explore",
@@ -559,7 +560,7 @@ const PHASE_HINTS: Record<string, { hint: string; verificationHint?: string }> =
     },
   };
 
-export const PHASES: LessonPhase[] = PHASES_V4.map((phase) =>
+export const PHASES_V5: LessonPhase[] = PHASES_V4.map((phase) =>
   phase.id === "name-example"
     ? {
         ...phase,
@@ -580,15 +581,55 @@ export const PHASES: LessonPhase[] = PHASES_V4.map((phase) =>
       }
     : phase,
 ).map((phase) => ({ ...phase, ...PHASE_HINTS[phase.id] }));
+const beforeScenarios = PHASES_V5.findIndex((phase) => phase.id === "seed");
+const contextConnection = PHASES_V5.find((phase) => phase.id === "connect")!;
+const scenarioInitialization = PHASES_V5.find((phase) => phase.id === "seed")!;
+export const PHASES: LessonPhase[] = [
+  ...PHASES_V5.slice(0, beforeScenarios),
+  {
+    ...contextConnection,
+    lesson: 8,
+    title: "Connect routes and the REPL",
+    introduction:
+      "The class in routes/_.context.ts describes your shop’s shared state and methods. Counterfact creates one running instance. Inside a route, `$.context` refers to that instance. In the terminal, `context` refers to the same instance. The ⬣> prompt is a REPL—a read–eval–print loop where you enter JavaScript and see its result while Counterfact keeps running.",
+    explanation:
+      "Connecting the handlers to this shared object lets HTTP requests read the state you change in the REPL. The collections are still empty.",
+    verification:
+      "Your handlers now use the shared context. Next, change that same object from the REPL and observe it through the shop.",
+  },
+  {
+    id: "context-repl",
+    lesson: 8,
+    title: "Connect routes and the REPL",
+    explanation:
+      "Your handlers now use the shared object you can access as `context` at the terminal’s ⬣> prompt. A change there affects the next request without editing or restarting a route.",
+    instruction:
+      "In the REPL, add one coffee with ID practice-coffee to `context.catalog` and give it a quantity of 5 in `context.inventory`, then click Refresh products.",
+    hint: "At the ⬣> prompt in the terminal running Counterfact, use the `push` method on `context.catalog` to add one object. Give it `id` practice-coffee, `name` Practice Coffee, `description` Chocolate and caramel, and `price` 1400. Stock belongs separately in `context.inventory`: assign 5 to its practice-coffee entry. Press Enter after each expression, then click Refresh products in the browser.",
+    edits: [],
+  },
+  {
+    ...scenarioInitialization,
+    lesson: 9,
+    title: "Initialize context with scenarios",
+    explanation:
+      "You’ve changed the running context directly in the REPL. A scenario saves a setup as a function so you can repeat it. The reset scenario installs a complete baseline; startup tells Counterfact to apply that baseline when the server starts. Saving its file alone does not apply it to this session.",
+  },
+  ...PHASES_V5.slice(beforeScenarios + 1).filter(
+    (phase) => phase.id !== "connect",
+  ),
+];
 export function phasesForVersion(version: number) {
   const phases =
-    version === 5
+    version === 6
       ? PHASES
-      : version === 4
-        ? PHASES_V4
-        : version === 3
-          ? PHASES_V3
-          : PHASES_V2;
+      : version === 5
+        ? PHASES_V5
+        : version === 4
+          ? PHASES_V4
+          : version === 3
+            ? PHASES_V3
+            : PHASES_V2;
   return phases.map((phase) => ({ ...phase, ...PHASE_HINTS[phase.id] }));
 }
 export const LESSON_COUNT = Math.max(...PHASES.map((phase) => phase.lesson));

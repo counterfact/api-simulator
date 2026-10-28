@@ -101,7 +101,7 @@ export function reportWalkthroughEvent(
   sessionId: string,
   event: unknown,
   phaseId: unknown,
-  version: 2 | 3 | 4 | 5 = 2,
+  version: 2 | 3 | 4 | 5 | 6 = 2,
 ): void {
   if (
     !events.hasSubscribers ||
@@ -109,7 +109,14 @@ export function reportWalkthroughEvent(
     typeof phaseId !== "string"
   )
     return;
-  if (version !== 2 && version !== 3 && version !== 4 && version !== 5) return;
+  if (
+    version !== 2 &&
+    version !== 3 &&
+    version !== 4 &&
+    version !== 5 &&
+    version !== 6
+  )
+    return;
   const phases = phasesForVersion(version);
   const phase = phases.find((candidate) => candidate.id === phaseId);
   if (

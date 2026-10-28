@@ -74,3 +74,5 @@ Introduce the catalog proposal with the coffee-shop analogy and explain the appr
 Declare the generated Product[] return type on the lesson’s listProducts method so editor diagnostics catch missing stock properties, including an inventory property returned in its place.
 
 Remove Check my work and detect shared-context, reset, and scenario completion automatically from verified saves and observed live state. Offer persistent, precise Hint guidance for each current learner action without performing the work or advancing the lesson.
+
+Teach the shared context binding in routes and the terminal REPL before introducing scenarios. Lesson eight connects handlers and verifies a coffee added through the REPL against a live shop response; lesson nine introduces reusable reset/startup scenarios. Version the reordered inventory to retain existing demos’ checkpoints.

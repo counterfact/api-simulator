@@ -117,7 +117,8 @@ Feature: Find a useful starting point on the first run
     Then repeated product responses are stable and confirmations echo the order
     When I make ordering unavailable and then restore it
     Then an unsuccessful order preserves inventory and a retry succeeds
-    When I introduce shared context and explicitly run its reset scenario
+    When I introduce shared context and connect it to routes and the REPL
+    And I initialize context with reset and startup scenarios
     Then the handlers read the initialized context and return successive order IDs
     When I make Decaf available through the running REPL
     Then the coffee API returns the changed stock and accepts a Decaf order

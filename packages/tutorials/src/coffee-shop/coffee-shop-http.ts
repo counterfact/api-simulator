@@ -47,7 +47,8 @@ export async function createTourRequestHandler(
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
     throw error;
   }
-  if (marker.version !== 4 && marker.version !== 5) return;
+  if (marker.version !== 4 && marker.version !== 5 && marker.version !== 6)
+    return;
   const version = marker.version;
   return async (
     request: IncomingMessage,

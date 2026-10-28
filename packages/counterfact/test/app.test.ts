@@ -66,7 +66,7 @@ describe("counterfact", () => {
         expect((await fetch(origin + "/products")).status).toBe(404);
         expect((await fetch(origin + "/tutorial/")).status).toBe(200);
         const info = await (await fetch(origin + "/tutorial/info")).json();
-        expect(info.walkthroughVersion).toBe(5);
+        expect(info.walkthroughVersion).toBe(6);
         expect(simulator.registry.exists("GET", "/products")).toBe(true);
         expect(simulator.registry.exists("GET", "/tutorial/info")).toBe(false);
         expect(simulator.registry.exists("POST", "/tutorial/check")).toBe(

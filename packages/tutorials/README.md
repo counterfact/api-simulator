@@ -21,7 +21,7 @@ symlinks. `findTourDirectory` proposes an unused numbered name without reserving
 it. The root directory must exist.
 
 Start Counterfact with `tour.source` and `tour.destination`. The facade recognizes
-a managed version 4 or 5 marker, mounts the simulated API under `/shop`, and hosts
+a managed version 4, 5, or 6 marker, mounts the simulated API under `/shop`, and hosts
 `createTourRequestHandler` before the simulator's HTTP callback. After generation,
 `finalizeTour(tour.destination)` captures the baseline. The CLI does this and opens
 `tour.walkthroughPath`, `/tutorial/`, on the bound HTTP origin.
@@ -93,9 +93,12 @@ server session. Browser storage preserves revealed messages and disclosure
 choices across reloads without completing exercises. Saved checks use isolated
 snapshots, never the running shop's inventory or order counter.
 
-Version 5 starts with ten coffee-name examples and teaches description examples
+Version 6 connects routes to context and introduces the terminal REPL in lesson
+eight, before scenarios in lesson nine. The learner changes the shared context
+in the REPL and observes that state through a real shop request. Version 5
+started with ten coffee-name examples and teaches description examples
 in lesson three. Version 4 added the orientation lesson and independent tutorial
-HTTP. Existing version 2, 3, and 4 projects retain their lesson inventory, saved
+HTTP. Existing version 2, 3, 4, and 5 projects retain their lesson inventory, saved
 helpers, and milestone interpretation; their generated pages and handlers remain unchanged.
 New projects need the installed tutorials package available when restarting.
 
@@ -104,7 +107,7 @@ New projects need the installed tutorials package available when restarting.
 `/tutorial/event` accepts bounded event names and stable phase IDs and publishes
 on Node's `counterfact:walkthrough` diagnostics channel. The CLI owns transport,
 consent, and opt-outs. This package sends no external analytics requests.
-Version 4 and 5 events include the tour, walkthrough version, phase ID, lesson number,
+Version 4, 5, and 6 events include the tour, walkthrough version, phase ID, lesson number,
 and elapsed seconds. Session identities are opaque and temporary; reporting is
 deduplicated. Paths, source, request/response bodies, carts, and context snapshots
 are excluded from telemetry.

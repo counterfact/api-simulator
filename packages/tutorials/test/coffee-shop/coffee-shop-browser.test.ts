@@ -5,6 +5,7 @@ import type { EditEvent } from "../../src/coffee-shop/coffee-shop-workspace.js";
 import {
   CATALOG,
   PHASES,
+  phasesForVersion,
   LESSON_COUNT,
 } from "../../src/coffee-shop/coffee-shop-lessons.js";
 
@@ -115,6 +116,7 @@ async function browser(
     workspace?: boolean;
     prepared?: string[];
     phase?: string;
+    version?: number;
     preview?: boolean;
     storage?: Map<string, string>;
     origin?: string;
@@ -132,7 +134,10 @@ async function browser(
   } = {},
 ) {
   const storage = options.storage ?? new Map<string, string>();
-  const phaseIndex = PHASES.findIndex(
+  const version = options.version ?? 6;
+  const phaseList = phasesForVersion(version);
+  const storageKey = "counterfact-coffee-v" + version;
+  const phaseIndex = phaseList.findIndex(
     (phase) => phase.id === (options.phase ?? "explore"),
   );
   const productData = structuredClone(options.products ?? CATALOG);
@@ -174,20 +179,20 @@ async function browser(
   };
   if (options.phase || (!options.storage && !options.checkpoints?.length))
     storage.set(
-      "counterfact-coffee-v5",
+      storageKey,
       JSON.stringify({
-        version: 5,
+        version,
         sessionId: server.sessionId,
         index: phaseIndex,
         completed: options.preview
           ? []
-          : PHASES.slice(0, phaseIndex).map((phase) => phase.id),
+          : phaseList.slice(0, phaseIndex).map((phase) => phase.id),
         cart: [],
         observation: options.observation,
         entryState: options.entryState,
       }),
     );
-  const page = coffeeShopPage("/tmp/coffee shop#1?");
+  const page = coffeeShopPage("/tmp/coffee shop#1?", version);
   const roots = [...page.split("<script>")[0]!.matchAll(/id="([^"]+)"/gu)].map(
     (match) => {
       const element = new Element("div");
@@ -410,7 +415,7 @@ async function browser(
     },
     completed() {
       return (
-        JSON.parse(storage.get("counterfact-coffee-v5")!) as {
+        JSON.parse(storage.get(storageKey)!) as {
           completed: string[];
         }
       ).completed;
@@ -773,7 +778,7 @@ it("retains submitted REPL commands once and orders them before a following shop
     transcript.indexOf("Refreshed products"),
   );
   expect(transcript.match(/Submitted in the REPL/g)).toHaveLength(3);
-  const turns = JSON.parse(app.storage.get("counterfact-coffee-v5")!).turns as {
+  const turns = JSON.parse(app.storage.get("counterfact-coffee-v6")!).turns as {
     command?: string;
   }[];
   expect(
@@ -1219,7 +1224,7 @@ it("keeps escaped editor links after a save check without exposing solutions", a
 });
 
 it("requires two observed sequential confirmations to connect the shared context", async () => {
-  const app = await browser({ phase: "connect", checkOk: true });
+  const app = await browser({ phase: "connect", checkOk: true, version: 5 });
   app.add();
   await app.api.placeOrder();
   expect(app.completed()).not.toContain("connect");
@@ -1275,7 +1280,7 @@ it("does not complete the focused scenario until its live change preserves other
   );
 });
 
-it.each(PHASES.filter((phase) => phase.check))(
+it.each(PHASES.filter((phase) => phase.check && phase.id !== "connect"))(
   "puts feedback for $id in Milo’s conversation once per verified save",
   async (phase) => {
     const app = await browser({ phase: phase.id, checkOk: true });
@@ -1429,7 +1434,7 @@ it("lets a resumed seed lesson demonstrate reset even when startup already appli
   const app = await browser({
     workspace: true,
     checkpoints: Array.from(
-      { length: PHASES.find((p) => p.id === "context")!.lesson },
+      { length: PHASES.find((p) => p.id === "seed")!.lesson - 1 },
       (_, i) => i + 1,
     ),
     prepared: ["seed"],
@@ -1674,7 +1679,7 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
         call.path === "/tutorial/workspace" && call.body?.action === "prepare",
     ),
   ).toHaveLength(1);
-  const saved = JSON.parse(app.storage.get("counterfact-coffee-v5")!);
+  const saved = JSON.parse(app.storage.get("counterfact-coffee-v6")!);
   expect(
     saved.turns.some(
       (turn: { text: string }) => turn.text === "Apply changes.",
@@ -1688,7 +1693,7 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
       text: "I’ve added the supporting code. Now it’s your turn.",
     },
   );
-  app.storage.set("counterfact-coffee-v5", JSON.stringify(saved));
+  app.storage.set("counterfact-coffee-v6", JSON.stringify(saved));
   const restored = await browser({
     storage: app.storage,
     workspace: true,
@@ -1917,7 +1922,7 @@ it("attaches collapsed HTTP exchanges and handler links to their own action turn
   app.server.orderMode = "echo";
   await app.api.placeOrder();
   const transcript = JSON.parse(
-    app.storage.get("counterfact-coffee-v5")!,
+    app.storage.get("counterfact-coffee-v6")!,
   ).turns;
   const failed = transcript.find((turn: { text: string }) =>
     turn.text.startsWith("Placed an order:"),
@@ -1957,7 +1962,7 @@ it("retains malformed and missing responses without inventing an HTTP result", a
   app.add();
   await app.api.placeOrder();
   const malformed = JSON.parse(
-    app.storage.get("counterfact-coffee-v5")!,
+    app.storage.get("counterfact-coffee-v6")!,
   ).turns.find((turn: { exchanges?: unknown }) => turn.exchanges);
   expect(malformed.exchanges[0]).toMatchObject({
     status: 201,
@@ -1967,7 +1972,7 @@ it("retains malformed and missing responses without inventing an HTTP result", a
   app.server.orderMode = "offline";
   await app.api.placeOrder();
   const attempts = JSON.parse(
-    app.storage.get("counterfact-coffee-v5")!,
+    app.storage.get("counterfact-coffee-v6")!,
   ).turns.filter((turn: { exchanges?: unknown }) => turn.exchanges);
   expect(attempts[1].exchanges[0].status).toBeUndefined();
   expect(attempts[1].exchanges[0].error).toContain("No confirmation");
@@ -1981,7 +1986,7 @@ it("keeps each refresh snapshot immutable and marks an interrupted exchange on r
   await app.click("refresh-products");
   app.server.products[0]!.stock = 2;
   await app.click("refresh-products");
-  const saved = JSON.parse(app.storage.get("counterfact-coffee-v5")!);
+  const saved = JSON.parse(app.storage.get("counterfact-coffee-v6")!);
   const refreshes = saved.turns.filter(
     (turn: { text: string }) => turn.text === "Refreshed products.",
   );
@@ -1991,7 +1996,7 @@ it("keeps each refresh snapshot immutable and marks an interrupted exchange on r
   delete refreshes[1].exchanges[0].status;
   delete refreshes[1].exchanges[0].responseBody;
   delete refreshes[1].exchanges[0].responseText;
-  app.storage.set("counterfact-coffee-v5", JSON.stringify(saved));
+  app.storage.set("counterfact-coffee-v6", JSON.stringify(saved));
   const reloaded = await browser({ storage: app.storage });
   expect(reloaded.root("lesson").textContent).toContain(
     "The page reloaded before a response was recorded",
@@ -2004,7 +2009,7 @@ it("keeps each refresh snapshot immutable and marks an interrupted exchange on r
   ).toHaveLength(1);
 });
 
-it.each(PHASES.filter((phase) => phase.check))(
+it.each(PHASES.filter((phase) => phase.check && phase.id !== "connect"))(
   "detects a verified save for $id without a manual check",
   async (phase) => {
     const app = await browser({ phase: phase.id });
@@ -2077,7 +2082,11 @@ it.each([
 ])(
   "waits for the $phase refresh before asking for its order",
   async ({ phase, product, prompt }) => {
-    const app = await browser({ phase, checkOk: true });
+    const app = await browser({
+      phase,
+      checkOk: true,
+      version: phase === "connect" ? 5 : 6,
+    });
     const currentText = () =>
       app
         .root("lesson")
@@ -2381,4 +2390,87 @@ it("does not repeat automatic checkpoint failures on unchanged polling", async (
   )!.onclick!();
   await app.acknowledge();
   expect(app.completed()).toContain("context");
+});
+
+it("introduces shared context and the REPL before scenarios while retaining older lesson inventories", () => {
+  expect(PHASES.find((phase) => phase.id === "connect")!.lesson).toBe(8);
+  expect(PHASES.find((phase) => phase.id === "context-repl")!.lesson).toBe(8);
+  expect(PHASES.find((phase) => phase.id === "seed")!.lesson).toBe(9);
+  expect(PHASES.findIndex((phase) => phase.id === "context-repl")).toBeLessThan(
+    PHASES.findIndex((phase) => phase.id === "seed"),
+  );
+  expect(
+    PHASES.find((phase) => phase.id === "connect")!.introduction,
+  ).toContain("read–eval–print loop");
+  expect(phasesForVersion(5).find((phase) => phase.id === "seed")!.lesson).toBe(
+    8,
+  );
+  expect(
+    phasesForVersion(5).find((phase) => phase.id === "connect")!.lesson,
+  ).toBe(9);
+  expect(phasesForVersion(5).some((phase) => phase.id === "context-repl")).toBe(
+    false,
+  );
+});
+
+it("connects handlers before requiring a live REPL-to-shop experiment and never seeds it automatically", async () => {
+  const app = await browser({
+    phase: "connect",
+    state: { catalog: [], inventory: {} },
+  });
+  expect(app.root("lesson").textContent).toContain(
+    "$.context refers to that instance",
+  );
+  expect(app.root("lesson").textContent).toContain(
+    "In the terminal, context refers to the same instance",
+  );
+  expect(app.root("lesson").textContent).not.toContain(
+    "Initialize context with scenarios",
+  );
+  app.server.checkOk = true;
+  app.server.revision = "handlers-connected";
+  app.server.workspace.changes.push({
+    id: 1,
+    actor: "you",
+    phaseId: "connect",
+    files: [
+      { file: "routes/products.ts", before: "catalog", after: "context" },
+    ],
+  });
+  await app.poll();
+  expect(app.completed()).toContain("connect");
+  expect(app.completed()).not.toContain("context-repl");
+  expect(app.root("lesson").textContent).toContain(
+    "add one coffee with ID practice-coffee",
+  );
+  expect(app.root("hint").hidden).toBe(false);
+  await app.click("hint");
+  expect(app.root("lesson").textContent).toContain(
+    "use the push method on context.catalog to add one object",
+  );
+  const practice = {
+    id: "practice-coffee",
+    name: "Practice Coffee",
+    description: "Chocolate and caramel",
+    price: 1400,
+  };
+  app.server.state.catalog = [practice];
+  app.server.state.inventory = { "practice-coffee": 5 };
+  app.server.products = [{ ...practice, stock: 5 }];
+  app.server.replSubmissions.push({
+    id: "practice-data",
+    command: 'context.inventory["practice-coffee"] = 5',
+  });
+  await app.poll();
+  expect(app.completed()).not.toContain("context-repl");
+  await app.click("refresh-products");
+  expect(app.completed()).toContain("context-repl");
+  expect(app.root("continue").textContent).toBe(
+    "Next Lesson: Initialize context with scenarios",
+  );
+  expect(
+    app.calls.some(
+      (call) => call.body?.action === "prepare" && call.body.phaseId === "seed",
+    ),
+  ).toBe(false);
 });

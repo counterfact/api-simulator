@@ -8,7 +8,7 @@ export function runCoffeeShopWalkthrough(
   phases: LessonPhase[],
   restartDirectory: string,
   restartCommand: string,
-  walkthroughVersion = 5,
+  walkthroughVersion = 6,
 ) {
   type Product = {
     id: string;
@@ -1278,6 +1278,8 @@ export function runCoffeeShopWalkthrough(
       }
       const introduction = bubble("tutor", "", revealed.id);
       if (active) introduction.id = "current-turn";
+      if (revealed.introduction)
+        lesson.append(bubble("tutor", revealed.introduction, revealed.id));
       const explanation = fileText("p", revealed.explanation, revealed.id);
       if (revealed.id === "explore") {
         const link = node("a", origin) as HTMLAnchorElement;
@@ -1679,7 +1681,12 @@ export function runCoffeeShopWalkthrough(
     if (source === "manual") {
       let nextAction: string | undefined;
       let nextHint: string | undefined;
-      if (id === "connect" && ready && orderIds.length === 0)
+      if (
+        id === "connect" &&
+        walkthroughVersion < 6 &&
+        ready &&
+        orderIds.length === 0
+      )
         nextAction =
           "Click Add to cart on House Blend, then click Place order.";
       if (id === "decaf" && inventoryOf().decaf === 5)
@@ -1705,6 +1712,20 @@ export function runCoffeeShopWalkthrough(
         renderLesson();
       }
     }
+    if (
+      id === "context-repl" &&
+      ready &&
+      source === "manual" &&
+      products.length === 1 &&
+      products[0]?.id === "practice-coffee" &&
+      products[0]?.stock === 5 &&
+      info.state.inventory?.["practice-coffee"] === 5 &&
+      Array.isArray(info.state.catalog) &&
+      info.state.catalog.length === 1
+    )
+      finish(
+        "The shop read the coffee and stock you added through the REPL. Routes and the REPL share this same running context.",
+      );
     if (
       ["name-example", "description-example"].includes(id) &&
       ready &&
@@ -1866,7 +1887,12 @@ export function runCoffeeShopWalkthrough(
       if (currentId === "fail" && ready && response.status === 503) finish();
       if (currentId === "retry" && ready && accepted && equal(original, items))
         finish();
-      if (currentId === "connect" && ready && accepted) {
+      if (
+        currentId === "connect" &&
+        walkthroughVersion < 6 &&
+        ready &&
+        accepted
+      ) {
         orderIds.push(value.orderId!);
         if (orderIds.length >= 2 && orderIds.at(-1) === orderIds.at(-2)! + 1)
           finish();
@@ -2014,7 +2040,7 @@ export function runCoffeeShopWalkthrough(
       await loadProposal(requestedId);
       if (phase().id !== requestedId) return;
       if (
-        phase().check &&
+        (phase().check || requestedId === "context-repl") &&
         (force ||
           checkedRevision !== info.revision ||
           checkedPhase !== requestedId)
@@ -2026,7 +2052,9 @@ export function runCoffeeShopWalkthrough(
           message: string;
           example?: string;
           examples?: string[];
-        }>("/tutorial-check", { phaseId: requestedId });
+        }>("/tutorial-check", {
+          phaseId: requestedId === "context-repl" ? "connect" : requestedId,
+        });
         const { value: after } = await json<Info>("/tutorial-info");
         if (
           phase().id !== requestedId ||
@@ -2058,6 +2086,10 @@ export function runCoffeeShopWalkthrough(
             changedAfterCheck ||
             checkedPhase !== requestedId) &&
           requestedId !== "context" &&
+          !(
+            walkthroughVersion >= 6 &&
+            ["connect", "context-repl"].includes(requestedId)
+          ) &&
           !(
             requestedId === "scenario" &&
             entryState?.inventory?.["dark-roast"] === 5 &&
@@ -2119,6 +2151,8 @@ export function runCoffeeShopWalkthrough(
           );
           renderLesson();
         }
+        if (requestedId === "connect" && walkthroughVersion >= 6)
+          finish(phase().verification);
         if (
           requestedId === "context" &&
           Array.isArray(info.state.catalog) &&

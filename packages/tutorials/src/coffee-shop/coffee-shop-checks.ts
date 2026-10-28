@@ -287,6 +287,33 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
           ),
           "Implement listProducts(): combine each catalog product with its inventory quantity, using 0 when its ID has no inventory entry.",
         );
+      } else if (
+        phaseId === "connect" &&
+        (await walkthroughWorkspace(root)).version >= 6
+      ) {
+        context.catalog = CATALOG.map(
+          ({ stock: _stock, ...product }) => product,
+        );
+        context.inventory = Object.fromEntries(
+          CATALOG.map((product) => [product.id, product.stock]),
+        );
+        ensure(
+          equal(await readProducts(), CATALOG),
+          "The product handler must read the live context through listProducts().",
+        );
+        context.inventory.decaf = 7;
+        ensure(
+          (await readProducts()).find((product) => product.id === "decaf")
+            ?.stock === 7,
+          "The product handler must read changes to the live context.",
+        );
+        const first = await confirm(),
+          second = await confirm();
+        ensure(
+          second.orderId === first.orderId + 1 &&
+            context.inventory["dark-roast"] === 3,
+          "Use context.confirmOrder() for successive IDs without reducing inventory yet.",
+        );
       } else {
         const scenarios = load("scenarios/index");
         ensure(

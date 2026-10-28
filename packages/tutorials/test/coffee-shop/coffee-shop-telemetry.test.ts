@@ -129,10 +129,10 @@ it("versions stable lesson phases and derives completion from the current lesson
   events.subscribe(collect);
   const session = randomUUID();
   for (const phase of PHASES) {
-    reportWalkthroughEvent(session, "phase_completed", phase.id, 5);
-    reportWalkthroughEvent(session, "phase_completed", phase.id, 5);
+    reportWalkthroughEvent(session, "phase_completed", phase.id, 6);
+    reportWalkthroughEvent(session, "phase_completed", phase.id, 6);
   }
-  reportWalkthroughEvent(session, "finished", PHASES.at(-1)!.id, 5);
+  reportWalkthroughEvent(session, "finished", PHASES.at(-1)!.id, 6);
   expect(
     received.filter(
       (event) => (event as { event: string }).event === "walkthrough_completed",
@@ -140,7 +140,7 @@ it("versions stable lesson phases and derives completion from the current lesson
   ).toHaveLength(1);
   expect(received.at(-1)).toMatchObject({
     properties: {
-      walkthroughVersion: 5,
+      walkthroughVersion: 6,
       completedPhases: PHASES.length,
       allExercisesCompleted: true,
     },
