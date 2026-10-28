@@ -70,3 +70,5 @@ Remove the redundant Update area beneath the conversation. Keep completion and f
 Remove the duplicate editor-link and copy-path controls beneath exercises. Keep the inline file links in Milo’s messages, including their current edit line numbers.
 
 Introduce the catalog proposal with the coffee-shop analogy and explain the approval workflow when Milo first proposes a file change.
+
+Declare the generated Product[] return type on the lesson’s listProducts method so editor diagnostics catch missing stock properties, including an inventory property returned in its place.

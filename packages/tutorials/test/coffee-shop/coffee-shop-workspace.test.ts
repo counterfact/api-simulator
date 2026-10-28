@@ -20,6 +20,7 @@ import {
 } from "../../src/coffee-shop/coffee-shop-workspace.js";
 import {
   PHASES,
+  CONTEXT,
   LESSON_COUNT,
   INVENTORY_LOOP,
   RULES_ORDERS,
@@ -204,6 +205,9 @@ it("prepares focused changes, preserves learner edits, and records all current l
     );
     await checkpoint(root, "retry");
     await previewAndApply("context");
+    expect(await $.read("demo/routes/_.context.ts")).toContain(
+      "listProducts(): Product[]",
+    );
     expect((await checkWalkthroughSave(root, "context")).ok).toBe(false);
     await replace(
       "routes/_.context.ts",
@@ -430,5 +434,41 @@ it("imports earlier progress without changing the existing repository", async ()
     expect(
       JSON.parse(await $.read("demo/.git/counterfact-walkthrough.json")),
     ).toMatchObject({ prepared: ["catalog"], checkpoints: [1] });
+  });
+});
+
+it("uses the generated Product return type to catch inventory instead of stock", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const tour = await prepareTour($.path("."), "typed-context");
+    await generate(tour.destination, tour.source);
+    const file = "typed-context/routes/_.context.ts";
+    const diagnostics = () =>
+      ts
+        .getPreEmitDiagnostics(
+          ts.createProgram([$.path(file)], {
+            noEmit: true,
+            strict: true,
+            skipLibCheck: true,
+            types: [],
+            target: ts.ScriptTarget.ES2023,
+            module: ts.ModuleKind.NodeNext,
+            moduleResolution: ts.ModuleResolutionKind.NodeNext,
+          }),
+        )
+        .map((diagnostic) =>
+          ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"),
+        );
+    await $.add(file, CONTEXT);
+    expect(diagnostics()).toEqual([]);
+    await $.add(
+      file,
+      CONTEXT.replace(
+        "stock: this.inventory[product.id] ?? 0",
+        "inventory: this.inventory[product.id] ?? 0",
+      ),
+    );
+    expect(diagnostics()).toEqual([
+      expect.stringContaining("Property 'stock' is missing"),
+    ]);
   });
 });

@@ -57,7 +57,7 @@ export class Context {
   inventory: Record<string, number> = {};
   private nextOrderId = 1;
 
-  listProducts() {
+  listProducts(): Product[] {
     return this.catalog.map(product => ({ ...product, stock: this.inventory[product.id] ?? 0 }));
   }
 
@@ -278,7 +278,7 @@ export const PHASES_V2: LessonPhase[] = [
     verification:
       "Great job! Your context methods combine product descriptions with stock and give each confirmation a successive order ID. The running collections are still empty; their starting data comes next. In the terminal’s ⬣> REPL, inspect `context.catalog` and `context.inventory`, then click Check my work.",
     preparation:
-      "Add empty `catalog` and `inventory` fields, the order counter, and two method stubs to routes/_.context.ts. `Product` and `OrderItem` come from Counterfact’s generated types, matching the OpenAPI schemas; this file defines no duplicate model types.",
+      "Add empty `catalog` and `inventory` fields, the order counter, and two method stubs to routes/_.context.ts. `Product` and `OrderItem` come from Counterfact’s generated types, matching the OpenAPI schemas. The `Product[]` return type on `listProducts` lets your editor check that each returned coffee includes `stock`.",
     lesson: 5,
     title: "Introduce shared context",
     explanation:
