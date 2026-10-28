@@ -608,7 +608,8 @@ def coffee_shop_purchase(journey):
     info = journey.request("get", "/tutorial-info")
     assert info.status_code == 200, info.text
     assert os.path.realpath(info.json()["projectPath"]) == os.path.realpath(journey.output)
-    assert info.json()["walkthroughVersion"] == 2
+    assert info.json()["walkthroughVersion"] == 3
+    assert "example" not in json.loads((journey.output / "openapi.json").read_text())["components"]["schemas"]["Product"]["properties"]["name"]
     assert info.json()["workspace"]["changes"] == []
     assert info.json()["state"] == {"catalog": None, "inventory": None}
     for route in ["products", "orders"]:
@@ -684,6 +685,29 @@ def edit_coffee(journey, filename, before, after):
     source = path.read_text()
     assert before in source
     path.write_text(source.replace(before, after, 1))
+
+
+@when("I add a coffee-name example to the OpenAPI document")
+def add_coffee_name_example(journey):
+    coffee_workspace(journey, "checkpoint", "explore")
+    journey.product_stub_before_example = (journey.output / "routes/products.ts").read_text()
+    spec = journey.output / "openapi.json"
+    document = json.loads(spec.read_text())
+    document["components"]["schemas"]["Product"]["properties"]["name"]["example"] = "House Blend"
+    spec.write_text(json.dumps(document, indent=2))
+
+
+@then("generated products use the name example without changing their handler")
+def generated_name_example(journey):
+    journey.wait_for_http("/products", lambda response: response.status_code == 200 and len(response.json()) == 3 and all(product["name"] == "House Blend" for product in response.json()))
+    assert (journey.output / "routes/products.ts").read_text() == journey.product_stub_before_example
+    assert ".random()" in journey.product_stub_before_example
+    check = journey.request("post", "/tutorial-check", json={"phaseId": "name-example"}).json()
+    assert check["ok"] and check["example"] == "House Blend", check
+    info = journey.request("get", "/tutorial-info").json()
+    assert info["state"] == {"catalog": None, "inventory": None}
+    assert any(file["file"] == "openapi.json" and '"example": "House Blend"' in file["after"] for change in info["workspace"]["changes"] for file in change["files"])
+    coffee_workspace(journey, "checkpoint", "name-example")
 
 
 @when("I replace the product and order stubs with explicit responses")
@@ -859,7 +883,7 @@ def coffee_restock_composes(journey):
     assert coffee_order(journey, "house-blend", 1).json()["orderId"] == journey.coffee_order_id + 1
     coffee_workspace(journey, "checkpoint", "scenario")
     info = journey.request("get", "/tutorial-info").json()
-    assert info["workspace"]["checkpoints"] == list(range(1, 13))
+    assert info["workspace"]["checkpoints"] == list(range(1, 14))
     assert not (journey.output / ".git").exists()
     denied = journey.request("get", "/tutorial-info", headers={"Origin": "https://unrelated.example"})
     assert denied.status_code == 403, denied.text
@@ -886,7 +910,7 @@ def coffee_startup_baseline(journey):
     assert coffee_order(journey, "house-blend", 1).json()["orderId"] == 1
     assert coffee_stock(journey, "house-blend") == 4
     assert journey.request("get", "/tutorial-info").json()["sessionId"] != journey.coffee_previous_session
-    assert journey.request("get", "/tutorial-info").json()["workspace"]["checkpoints"] == list(range(1, 13))
+    assert journey.request("get", "/tutorial-info").json()["workspace"]["checkpoints"] == list(range(1, 14))
     journey.terminal.command("context.inventory.decaf")
     submissions = journey.request("get", "/tutorial-info").json()["replSubmissions"]
     assert [entry["command"] for entry in submissions] == ["context.inventory.decaf"]

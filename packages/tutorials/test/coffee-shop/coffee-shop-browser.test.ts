@@ -2,7 +2,11 @@ import vm from "node:vm";
 import { expect, it } from "@jest/globals";
 import { coffeeShopPage } from "../../src/coffee-shop/coffee-shop-page.js";
 import type { EditEvent } from "../../src/coffee-shop/coffee-shop-workspace.js";
-import { CATALOG, PHASES } from "../../src/coffee-shop/coffee-shop-lessons.js";
+import {
+  CATALOG,
+  PHASES,
+  LESSON_COUNT,
+} from "../../src/coffee-shop/coffee-shop-lessons.js";
 
 class Element {
   id = "";
@@ -111,13 +115,14 @@ async function browser(
       catalog: null as unknown,
       inventory: null as Record<string, number> | null,
     },
+    example: "House Blend",
     nextId: 1,
   };
   if (options.phase)
     storage.set(
-      "counterfact-coffee-v2",
+      "counterfact-coffee-v3",
       JSON.stringify({
-        version: 2,
+        version: 3,
         sessionId: server.sessionId,
         index: phaseIndex,
         completed: options.preview
@@ -223,6 +228,8 @@ async function browser(
         value = {
           revision: server.revision,
           ok: server.checkOk,
+          example:
+            body?.phaseId === "name-example" ? server.example : undefined,
           message: server.checkOk
             ? "Saved implementation verified."
             : "Expected an explicit implementation.",
@@ -316,7 +323,7 @@ async function browser(
     },
     completed() {
       return (
-        JSON.parse(storage.get("counterfact-coffee-v2")!) as {
+        JSON.parse(storage.get("counterfact-coffee-v3")!) as {
           completed: string[];
         }
       ).completed;
@@ -342,7 +349,7 @@ it("retains submitted REPL commands once and orders them before a following shop
     transcript.indexOf("Refreshed products"),
   );
   expect(transcript.match(/Submitted in the REPL/g)).toHaveLength(3);
-  const turns = JSON.parse(app.storage.get("counterfact-coffee-v2")!).turns as {
+  const turns = JSON.parse(app.storage.get("counterfact-coffee-v3")!).turns as {
     command?: string;
   }[];
   expect(
@@ -433,6 +440,41 @@ it("does not credit a random confirmation or a catalog before a passing saved ch
   expect(app.root("request-trace").textContent).toContain('"request"');
 });
 
+it("requires both a saved name example and an explicit matching generated response", async () => {
+  const app = await browser({ phase: "name-example" });
+  for (const product of app.server.products) product.name = "House Blend";
+  await app.click("refresh-products");
+  expect(app.completed()).not.toContain("name-example");
+  app.server.checkOk = true;
+  app.server.revision = "saved-openapi-example";
+  app.server.workspace.changes.push({
+    id: 1,
+    actor: "you",
+    files: [
+      {
+        file: "openapi.json",
+        before: '"maxLength": 40',
+        after: '"maxLength": 40, "example": "House Blend"',
+      },
+    ],
+  });
+  const before = app.calls.filter((call) => call.path === "/products").length;
+  await app.poll();
+  expect(app.calls.filter((call) => call.path === "/products")).toHaveLength(
+    before,
+  );
+  expect(app.root("lesson").textContent).toContain("openapi.json");
+  expect(app.completed()).not.toContain("name-example");
+  app.server.products[0]!.name = "old spec response";
+  await app.click("refresh-products");
+  expect(app.completed()).not.toContain("name-example");
+  app.server.products[0]!.name = "House Blend";
+  await app.click("refresh-products");
+  expect(app.completed()).toContain("name-example");
+  await app.click("continue");
+  expect(app.root("lesson").textContent).toContain("Replace random products");
+});
+
 it("keeps earlier turns visible and reveals the next lesson only after the learner replies", async () => {
   const app = await browser();
   expect(app.root("lesson").textContent).toContain("Hi, I’m Milo.");
@@ -445,7 +487,9 @@ it("keeps earlier turns visible and reveals the next lesson only after the learn
     "Explore your generated API",
   );
   expect(app.root("lesson").textContent).toContain("I’m ready. What’s next?");
-  expect(app.root("lesson").textContent).toContain("Replace random products");
+  expect(app.root("lesson").textContent).toContain(
+    "Give generated names a coffee example",
+  );
   const history = app.root("lesson").textContent;
   expect(history.indexOf("Inspect the generated stub")).toBeLessThan(
     history.indexOf("That worked."),
@@ -670,7 +714,7 @@ it("starts a new lesson session without trusting old session observations when p
 it("resumes completed projects from durable checkpoints instead of replaying incompatible early handlers", async () => {
   const app = await browser({
     workspace: true,
-    checkpoints: Array.from({ length: 12 }, (_, i) => i + 1),
+    checkpoints: Array.from({ length: LESSON_COUNT }, (_, i) => i + 1),
     state: {
       catalog: CATALOG,
       inventory: { "house-blend": 5, "dark-roast": 3, decaf: 0 },
@@ -683,7 +727,7 @@ it("resumes completed projects from durable checkpoints instead of replaying inc
   const waiting = await browser({
     storage: app.storage,
     workspace: true,
-    checkpoints: Array.from({ length: 12 }, (_, i) => i + 1),
+    checkpoints: Array.from({ length: LESSON_COUNT }, (_, i) => i + 1),
   });
   await find(
     waiting.root("lesson"),
@@ -713,7 +757,10 @@ it("resumes the next unfinished lesson with fresh cart and quiz observations aft
   const app = await browser({
     storage: prior.storage,
     workspace: true,
-    checkpoints: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    checkpoints: Array.from(
+      { length: PHASES.find((p) => p.id === "rules")!.lesson },
+      (_, i) => i + 1,
+    ),
     sessionId: "restarted",
   });
   await find(
@@ -735,7 +782,10 @@ it("resumes the next unfinished lesson with fresh cart and quiz observations aft
 it("lets a resumed seed lesson demonstrate reset even when startup already applied the baseline", async () => {
   const app = await browser({
     workspace: true,
-    checkpoints: [1, 2, 3, 4, 5],
+    checkpoints: Array.from(
+      { length: PHASES.find((p) => p.id === "context")!.lesson },
+      (_, i) => i + 1,
+    ),
     prepared: ["seed"],
     checkOk: true,
     state: { catalog: CATALOG, inventory: { "dark-roast": 3 } },
@@ -1181,7 +1231,7 @@ it("attaches collapsed HTTP exchanges and handler links to their own action turn
   app.server.orderMode = "echo";
   await app.api.placeOrder();
   const transcript = JSON.parse(
-    app.storage.get("counterfact-coffee-v2")!,
+    app.storage.get("counterfact-coffee-v3")!,
   ).turns;
   const failed = transcript.find((turn: { text: string }) =>
     turn.text.startsWith("Placed an order:"),
@@ -1221,7 +1271,7 @@ it("retains malformed and missing responses without inventing an HTTP result", a
   app.add();
   await app.api.placeOrder();
   const malformed = JSON.parse(
-    app.storage.get("counterfact-coffee-v2")!,
+    app.storage.get("counterfact-coffee-v3")!,
   ).turns.find((turn: { exchanges?: unknown }) => turn.exchanges);
   expect(malformed.exchanges[0]).toMatchObject({
     status: 201,
@@ -1231,7 +1281,7 @@ it("retains malformed and missing responses without inventing an HTTP result", a
   app.server.orderMode = "offline";
   await app.api.placeOrder();
   const attempts = JSON.parse(
-    app.storage.get("counterfact-coffee-v2")!,
+    app.storage.get("counterfact-coffee-v3")!,
   ).turns.filter((turn: { exchanges?: unknown }) => turn.exchanges);
   expect(attempts[1].exchanges[0].status).toBeUndefined();
   expect(attempts[1].exchanges[0].error).toContain("No confirmation");
@@ -1245,7 +1295,7 @@ it("keeps each refresh snapshot immutable and marks an interrupted exchange on r
   await app.click("refresh-products");
   app.server.products[0]!.stock = 2;
   await app.click("refresh-products");
-  const saved = JSON.parse(app.storage.get("counterfact-coffee-v2")!);
+  const saved = JSON.parse(app.storage.get("counterfact-coffee-v3")!);
   const refreshes = saved.turns.filter(
     (turn: { text: string }) => turn.text === "Refreshed products.",
   );
@@ -1255,7 +1305,7 @@ it("keeps each refresh snapshot immutable and marks an interrupted exchange on r
   delete refreshes[1].exchanges[0].status;
   delete refreshes[1].exchanges[0].responseBody;
   delete refreshes[1].exchanges[0].responseText;
-  app.storage.set("counterfact-coffee-v2", JSON.stringify(saved));
+  app.storage.set("counterfact-coffee-v3", JSON.stringify(saved));
   const reloaded = await browser({ storage: app.storage });
   expect(reloaded.root("lesson").textContent).toContain(
     "The page reloaded before a response was recorded",

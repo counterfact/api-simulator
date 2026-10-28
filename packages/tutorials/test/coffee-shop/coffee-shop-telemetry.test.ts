@@ -2,7 +2,10 @@ import { randomUUID } from "node:crypto";
 import { channel } from "node:diagnostics_channel";
 import { afterEach, expect, it } from "@jest/globals";
 
-import { PHASES } from "../../src/coffee-shop/coffee-shop-lessons.js";
+import {
+  PHASES,
+  PHASES_V2,
+} from "../../src/coffee-shop/coffee-shop-lessons.js";
 import {
   reportCoffeeShopEvent,
   reportWalkthroughEvent,
@@ -103,14 +106,33 @@ it("does not forward the simulator local session identifier", () => {
   });
 });
 
+it("keeps version 2 lesson numbering and rejects new lessons for older callers", () => {
+  events.subscribe(collect);
+  const session = randomUUID();
+  reportWalkthroughEvent(session, "phase_completed", "catalog");
+  expect(received.at(-1)).toMatchObject({
+    properties: {
+      walkthroughVersion: 2,
+      lesson: PHASES_V2.find((phase) => phase.id === "catalog")!.lesson,
+    },
+  });
+  const count = received.length;
+  reportWalkthroughEvent(session, "phase_completed", "name-example");
+  expect(received).toHaveLength(count);
+  reportWalkthroughEvent(session, "phase_completed", "catalog", 3);
+  expect(received.at(-1)).toMatchObject({
+    properties: { walkthroughVersion: 3, lesson: 3 },
+  });
+});
+
 it("versions stable lesson phases and derives completion from the current lesson inventory", () => {
   events.subscribe(collect);
   const session = randomUUID();
   for (const phase of PHASES) {
-    reportWalkthroughEvent(session, "phase_completed", phase.id);
-    reportWalkthroughEvent(session, "phase_completed", phase.id);
+    reportWalkthroughEvent(session, "phase_completed", phase.id, 3);
+    reportWalkthroughEvent(session, "phase_completed", phase.id, 3);
   }
-  reportWalkthroughEvent(session, "finished", PHASES.at(-1)!.id);
+  reportWalkthroughEvent(session, "finished", PHASES.at(-1)!.id, 3);
   expect(
     received.filter(
       (event) => (event as { event: string }).event === "walkthrough_completed",
@@ -118,7 +140,7 @@ it("versions stable lesson phases and derives completion from the current lesson
   ).toHaveLength(1);
   expect(received.at(-1)).toMatchObject({
     properties: {
-      walkthroughVersion: 2,
+      walkthroughVersion: 3,
       completedPhases: PHASES.length,
       allExercisesCompleted: true,
     },

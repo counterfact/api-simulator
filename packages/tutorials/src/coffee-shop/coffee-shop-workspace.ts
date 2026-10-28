@@ -9,7 +9,8 @@ import {
   CATALOG,
   CONTEXT,
   INVENTORY_TODO,
-  PHASES,
+  phasesForVersion,
+  WALKTHROUGH_VERSION,
   RESET_METHOD,
   RESTOCK_SCENARIO,
   STOCK_METHODS,
@@ -24,13 +25,14 @@ export type EditEvent = {
   phaseId?: string;
   files: FileChange[];
 };
-const lessonFiles = [
+const baseLessonFiles = [
   "routes/products.ts",
   "routes/orders.ts",
   "routes/_.context.ts",
   "scenarios/index.ts",
 ];
 type State = {
+  version?: number;
   prepared: string[];
   checkpoints: number[];
   baseline: boolean;
@@ -98,7 +100,9 @@ async function captureChanges(
   phaseId?: string,
 ) {
   const files: FileChange[] = [];
-  for (const file of lessonFiles) {
+  for (const file of state.version === 3
+    ? [...baseLessonFiles, "openapi.json"]
+    : baseLessonFiles) {
     let after = "";
     try {
       after = await readEditable(root, file);
@@ -119,8 +123,12 @@ async function captureChanges(
 }
 /** Only the exclusively created demo receives walkthrough state. No repository is created. */
 export async function initializeWalkthroughWorkspace(root: string) {
-  await fs.writeFile(join(root, marker), JSON.stringify({ version: 2 }));
+  await fs.writeFile(
+    join(root, marker),
+    JSON.stringify({ version: WALKTHROUGH_VERSION }),
+  );
   await writeState(root, {
+    version: WALKTHROUGH_VERSION,
     prepared: [],
     checkpoints: [],
     baseline: false,
@@ -132,14 +140,23 @@ export async function walkthroughWorkspace(root: string) {
   return serial(root, async () => {
     const state = await readState(root);
     if (!state)
-      return { enabled: false, prepared: [], checkpoints: [], changes: [] };
+      return {
+        version: 2,
+        enabled: false,
+        prepared: [],
+        checkpoints: [],
+        changes: [],
+      };
     if (!state.baseline) {
-      for (const file of lessonFiles)
+      for (const file of state.version === 3
+        ? [...baseLessonFiles, "openapi.json"]
+        : baseLessonFiles)
         state.snapshots[file] = await readEditable(root, file);
       state.baseline = true;
     } else await captureChanges(root, state, "you");
     await writeState(root, state);
     return {
+      version: state.version ?? 2,
       enabled: true,
       prepared: state.prepared,
       checkpoints: state.checkpoints,
@@ -234,7 +251,8 @@ export async function prepareWalkthroughStep(
       throw new Error(
         "Open the walkthrough to establish its generated baseline first.",
       );
-    const phase = PHASES.find(
+    const phases = phasesForVersion(state.version ?? 2);
+    const phase = phases.find(
       (candidate) => candidate.id === phaseId && candidate.preparation,
     );
     if (!phase) throw new Error("This phase needs no preparation.");
@@ -485,9 +503,10 @@ export async function checkpointWalkthroughStep(root: string, phaseId: string) {
         ok: true,
         message: "This existing demo keeps its original file workflow.",
       };
-    const phase = PHASES.find((candidate) => candidate.id === phaseId);
+    const phases = phasesForVersion(state.version ?? 2);
+    const phase = phases.find((candidate) => candidate.id === phaseId);
     if (!phase) throw new Error("Unknown phase.");
-    const next = PHASES[PHASES.indexOf(phase) + 1];
+    const next = phases[phases.indexOf(phase) + 1];
     if (next?.lesson === phase.lesson)
       return {
         ok: true,

@@ -1,6 +1,6 @@
 import { basename, dirname } from "node:path";
 import { COUNTERFACT_LOGO } from "../counterfact-logo.js";
-import { PHASES } from "./coffee-shop-lessons.js";
+import { PHASES, WALKTHROUGH_VERSION } from "./coffee-shop-lessons.js";
 import { runCoffeeShopWalkthrough } from "./coffee-shop-browser.js";
 
 export function coffeeShopPage(projectPath: string): string {
@@ -20,6 +20,6 @@ export function coffeeShopPage(projectPath: string): string {
 <aside class="guide" aria-label="Walkthrough instructions"><div class="brand">${COUNTERFACT_LOGO}<div class="eyebrow">Coffee with Milo</div><p class="tutor-intro">Build your API together. Follow the conversation below.</p></div><div id="lesson" aria-label="Conversation with Milo"></div><p id="guide-status" role="status" aria-live="polite"></p><div id="save-check" role="status" aria-live="polite"></div><div id="retry-recovery" role="status" aria-live="polite"></div><div class="controls"><button id="check-progress" class="secondary">Check my work</button><button id="continue" hidden>I’m ready. What’s next?</button></div></aside>
 <section class="shop" aria-label="Coffee shop"><header><div class="eyebrow">Small batch · Big comfort</div><h1>Counterfact Coffee</h1><p class="demo">A local demo shop. No payments or real orders.</p><button id="refresh-products" class="secondary">Refresh products</button></header><div id="shop-notice" role="status" aria-live="polite"></div><div id="products" class="products"></div><section class="cart" aria-label="Shopping cart"><h2>Your cart</h2><div id="cart"></div><button id="empty-cart" class="secondary">Empty cart</button><div class="cart-footer"><strong id="total"></strong><button id="checkout" disabled>Place order</button></div></section><details class="code-hint"><summary>Latest API requests and responses</summary><pre id="request-trace"></pre></details></section>
 </main><script>
-const walkthroughReady=(${runCoffeeShopWalkthrough.toString()})(${json(projectPath)},${json(PHASES)},${json(dirname(projectPath))},${json(restart)});
+const walkthroughReady=(${runCoffeeShopWalkthrough.toString()})(${json(projectPath)},${json(PHASES)},${json(dirname(projectPath))},${json(restart)},${WALKTHROUGH_VERSION});
 </script></body></html>`;
 }

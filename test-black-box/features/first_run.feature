@@ -111,6 +111,8 @@ Feature: Find a useful starting point on the first run
     When I run Counterfact without arguments in a terminal
     And I start the guided example on an available port
     Then the coffee shop renders schema-generated products and order responses
+    When I add a coffee-name example to the OpenAPI document
+    Then generated products use the name example without changing their handler
     When I replace the product and order stubs with explicit responses
     Then repeated product responses are stable and confirmations echo the order
     When I make ordering unavailable and then restore it

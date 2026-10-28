@@ -45,24 +45,43 @@ Expand **Latest API requests and responses** to inspect the actual GET and POST
 traffic: the URL, request body, response status, and response body. The shop does
 not substitute a working catalog or silently install backend implementations.
 
+Before replacing the handler, add an example to the name property in
+`openapi.json`, under `components.schemas.Product.properties.name`:
+
+```json
+{
+  "type": "string",
+  "minLength": 1,
+  "maxLength": 40,
+  "example": "House Blend"
+}
+```
+
+Add only the `example` property to the existing schema. Save and click **Refresh
+products**. Counterfact reloads the spec while your product handler keeps calling
+`.random()`. Each generated name now uses the example; IDs, prices, and stock
+remain generated. An example is a generation hint, not a fixed catalog or a
+business rule. The next lesson replaces the response with three explicit coffees.
+
 ## Add one behavior at a time
 
-The twelve steps build on the code you have already written:
+The thirteen steps build on the code you have already written:
 
-| Step | What you add                                                             | What to observe                                                                       |
-| ---- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| 1    | Inspect and refresh the generated API                                    | The handler generates each response from its schema.                                  |
-| 2    | An explicit product response                                             | Repeated requests return the same three coffees.                                      |
-| 3    | An order response using `$.body.items`                                   | The confirmation reflects the submitted cart.                                         |
-| 4    | A 503 branch and recovery switch                                         | A rejected order keeps its cart; restoring the handler lets the same request succeed. |
-| 5    | An empty Context class with catalog, inventory, and confirmation methods | You can inspect the running object in the REPL before routes use it.                  |
-| 6    | A baseline `reset` scenario and `startup` export                         | Nothing is seeded until you explicitly run `.scenario reset`.                         |
-| 7    | Handlers calling context methods                                         | Products read shared state and successive orders receive successive IDs.              |
-| 8    | A Decaf inventory assignment in the REPL                                 | The next product request reads the changed quantity.                                  |
-| 9    | Stock validation and shortage methods                                    | Oversized orders return HTTP 409 with requested and available quantities.             |
-| 10   | `reduceInventory(items, inventory)`                                      | Successful purchases now change the quantity returned by later product requests.      |
-| 11   | Requests that sell out and REPL commands that restock                    | The same handlers produce different responses as shared state evolves.                |
-| 12   | A focused `restockDarkRoast` scenario                                    | A reusable setup changes one product while preserving other inventory and order IDs.  |
+| Step | What you add                                                             | What to observe                                                                                          |
+| ---- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| 1    | Inspect and refresh the generated API                                    | The handler generates each response from its schema.                                                     |
+| 2    | A name-property example in `openapi.json`                                | The existing `.random()` handler uses readable coffee names; IDs, prices, and stock are still generated. |
+| 3    | An explicit product response                                             | Repeated requests return the same three coffees.                                                         |
+| 4    | An order response using `$.body.items`                                   | The confirmation reflects the submitted cart.                                                            |
+| 5    | A 503 branch and recovery switch                                         | A rejected order keeps its cart; restoring the handler lets the same request succeed.                    |
+| 6    | An empty Context class with catalog, inventory, and confirmation methods | You can inspect the running object in the REPL before routes use it.                                     |
+| 7    | A baseline `reset` scenario and `startup` export                         | Nothing is seeded until you explicitly run `.scenario reset`.                                            |
+| 8    | Handlers calling context methods                                         | Products read shared state and successive orders receive successive IDs.                                 |
+| 9    | A Decaf inventory assignment in the REPL                                 | The next product request reads the changed quantity.                                                     |
+| 10   | Stock validation and shortage methods                                    | Oversized orders return HTTP 409 with requested and available quantities.                                |
+| 11   | `reduceInventory(items, inventory)`                                      | Successful purchases now change the quantity returned by later product requests.                         |
+| 12   | Requests that sell out and REPL commands that restock                    | The same handlers produce different responses as shared state evolves.                                   |
+| 13   | A focused `restockDarkRoast` scenario                                    | A reusable setup changes one product while preserving other inventory and order IDs.                     |
 
 Each phase explains the Counterfact facility being used and names the file to edit.
 Milo, a coffee-shop owner and your Counterfact tutor, proposes the supporting
@@ -115,8 +134,8 @@ turn appears automatically with your diff, even if the edit is incomplete or has
 a syntax error. You can compare both sides of the work directly in the
 conversation. These diffs stay in the history when you continue or reload.
 
-The walkthrough records changes to the product handler, order handler, shared
-context, and scenario file. It keeps a local baseline and change journal; Git
+The walkthrough records changes to the OpenAPI document, product handler, order
+handler, shared context, and scenario file. It keeps a local baseline and change journal; Git
 is not required. Existing repositories are left alone. File changes and lesson
 completion are separate: seeing a diff does not mark an exercise complete.
 

@@ -363,7 +363,7 @@ try {
   const check = await (await fetch(origin + "/tutorial-check", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phaseId: "catalog" }),
   })).json();
-  assert.equal(info.walkthroughVersion, 2);
+  assert.equal(info.walkthroughVersion, 3);
   assert.deepEqual(info.state, { catalog: null, inventory: null });
   assert.equal(check.ok, false);
   assert.match(check.message, /random product stub/);
@@ -371,6 +371,7 @@ try {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, phaseId, revision, sessionId: info.sessionId }),
   })).json();
   assert.equal((await workspace("checkpoint", "explore")).ok, true);
+  assert.equal((await workspace("checkpoint", "name-example")).ok, true);
   const proposal = await workspace("preview", "catalog");
   assert.equal(proposal.ok, true);
   assert.equal(proposal.files.length, 1);

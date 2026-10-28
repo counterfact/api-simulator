@@ -17,7 +17,10 @@ import {
   previewWalkthroughStep as preview,
   walkthroughWorkspace as workspace,
 } from "../../src/coffee-shop/coffee-shop-workspace.js";
-import { PHASES } from "../../src/coffee-shop/coffee-shop-lessons.js";
+import {
+  PHASES,
+  LESSON_COUNT,
+} from "../../src/coffee-shop/coffee-shop-lessons.js";
 
 async function generate(root: string, source: string) {
   const repository = new Repository();
@@ -29,7 +32,7 @@ async function generate(root: string, source: string) {
   await scenarios.generate();
 }
 
-it("prepares focused changes, preserves learner edits, and records all twelve lessons in a attributed file history without Git", async () => {
+it("prepares focused changes, preserves learner edits, and records all current lessons in a attributed file history without Git", async () => {
   await usingTemporaryFiles(async ($) => {
     const tour = await prepareTour($.path("."), "demo");
     await generate(tour.destination, tour.source);
@@ -40,6 +43,7 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
         "routes/orders.ts",
         "routes/_.context.ts",
         "scenarios/index.ts",
+        "openapi.json",
       ];
       const before = await Promise.all(
         lessonFiles.map((file) => $.read("demo/" + file)),
@@ -65,6 +69,12 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     });
     await expect(prepare(root, "context")).rejects.toThrow("preceding lesson");
     await checkpoint(root, "explore");
+    const document = JSON.parse(await $.read("demo/openapi.json"));
+    document.components.schemas.Product.properties.name.example = "House Blend";
+    await $.add("demo/openapi.json", JSON.stringify(document, null, 2));
+    expect((await checkWalkthroughSave(root, "name-example")).ok).toBe(true);
+    await checkpoint(root, "name-example");
+
     const original = await $.read("demo/routes/products.ts");
     const originalState = await $.read(
       "demo/.counterfact-walkthrough-state.json",
@@ -94,14 +104,14 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     );
     expect(await $.read("demo/routes/products.ts")).toContain(".random()");
     const prepared = (await workspace(root)).changes!;
-    expect(prepared).toHaveLength(2);
-    expect(prepared[1]).toMatchObject({
+    expect(prepared).toHaveLength(3);
+    expect(prepared[2]).toMatchObject({
       actor: "milo",
       phaseId: "catalog",
       files: [{ file: "routes/products.ts" }],
     });
-    expect(prepared[1]!.files[0]!.before).not.toContain("const catalog");
-    expect(prepared[1]!.files[0]!.after).toContain("const catalog");
+    expect(prepared[2]!.files[0]!.before).not.toContain("const catalog");
+    expect(prepared[2]!.files[0]!.after).toContain("const catalog");
     // Apply exactly the small edits displayed by each lesson, leaving imports and other code alone.
     const replace = async (file: string, before: string, after: string) => {
       const text = await $.read("demo/" + file);
@@ -125,14 +135,14 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     );
     await checkpoint(root, "catalog");
     const observed = (await workspace(root)).changes!;
-    expect(observed).toHaveLength(3);
-    expect(observed[2]).toMatchObject({
+    expect(observed).toHaveLength(4);
+    expect(observed[3]).toMatchObject({
       actor: "you",
       files: [{ file: "routes/products.ts" }],
     });
-    expect(observed[2]!.files[0]!.before).toContain(".random()");
-    expect(observed[2]!.files[0]!.after).toContain(".json(catalog)");
-    expect((await workspace(root)).changes).toHaveLength(3);
+    expect(observed[3]!.files[0]!.before).toContain(".random()");
+    expect(observed[3]!.files[0]!.after).toContain(".json(catalog)");
+    expect((await workspace(root)).changes).toHaveLength(4);
     await replace(
       "routes/orders.ts",
       "return $.response.status(201).random();",
@@ -147,7 +157,9 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     );
     expect((await checkWalkthroughSave(root, "fail")).ok).toBe(true);
     await checkpoint(root, "fail");
-    expect((await workspace(root)).checkpoints).not.toContain(4);
+    expect((await workspace(root)).checkpoints).not.toContain(
+      PHASES.find((p) => p.id === "fail")!.lesson,
+    );
     await replace(
       "routes/orders.ts",
       "ordersAvailable = false",
@@ -226,7 +238,7 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     await checkpoint(root, "scenario");
     await checkpoint(root, "scenario");
     expect((await workspace(root)).checkpoints).toEqual(
-      Array.from({ length: 12 }, (_, i) => i + 1),
+      Array.from({ length: LESSON_COUNT }, (_, i) => i + 1),
     );
     await expect($.read("demo/.git/HEAD")).rejects.toMatchObject({
       code: "ENOENT",
@@ -265,6 +277,35 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
   });
 });
 
+it("keeps version 2 checkpoints and its four-file journal compatible with existing demos", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const tour = await prepareTour($.path("."), "older-demo");
+    await generate(tour.destination, tour.source);
+    const state = JSON.parse(
+      await $.read("older-demo/.counterfact-walkthrough-state.json"),
+    );
+    delete state.version;
+    await $.add(
+      "older-demo/.counterfact-walkthrough-state.json",
+      JSON.stringify(state),
+    );
+    await $.add(
+      "older-demo/.counterfact-walkthrough.json",
+      JSON.stringify({ version: 2 }),
+    );
+    await workspace(tour.destination);
+    await checkpoint(tour.destination, "explore");
+    await prepare(tour.destination, "catalog");
+    expect(
+      (await walkthroughInfo(tour.destination, {})).walkthroughVersion,
+    ).toBe(2);
+    await $.add("older-demo/openapi.json", "{}");
+    expect((await workspace(tour.destination)).changes).toHaveLength(1);
+    await checkpoint(tour.destination, "catalog");
+    expect((await workspace(tour.destination)).checkpoints).toEqual([1, 2]);
+  });
+});
+
 it("never touches an existing project or overwrites conflicting learner code", async () => {
   await usingTemporaryFiles(async ($) => {
     expect((await workspace($.path("."))).enabled).toBe(false);
@@ -275,6 +316,7 @@ it("never touches an existing project or overwrites conflicting learner code", a
     await workspace(tour.destination);
     expect(await $.read(".git/index")).toBe("parent index must not change");
     await checkpoint(tour.destination, "explore");
+    await checkpoint(tour.destination, "name-example");
     await $.add(
       "demo/routes/products.ts",
       'export const catalog = "my own catalog";',
@@ -293,6 +335,7 @@ it("records learner edits before tutor edits, including deletions and reversions
     await generate(tour.destination, tour.source);
     await workspace(tour.destination);
     await checkpoint(tour.destination, "explore");
+    await checkpoint(tour.destination, "name-example");
     const original = await $.read("demo/routes/orders.ts");
     await $.add("demo/routes/orders.ts", original + "\n// My experiment\n");
     await prepare(tour.destination, "catalog");

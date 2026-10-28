@@ -17,6 +17,7 @@ const paths = [
   "routes/orders.ts",
   "routes/_.context.ts",
   "scenarios/index.ts",
+  "openapi.json",
 ];
 const require = createRequire(import.meta.url);
 type Item = { productId: string; quantity: number };
@@ -70,7 +71,7 @@ export async function walkthroughInfo(
     replSubmissions: includeChanges ? await readTourReplSubmissions(root) : [],
     projectPath: root,
     sessionId: sessionIds.get(root)!,
-    walkthroughVersion: 2,
+    walkthroughVersion: workspace.version,
     revision: revisionOf(await snapshot(root)),
     state: {
       catalog: context.catalog ?? null,
@@ -161,6 +162,35 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
       );
       return body;
     };
+    if (phaseId === "name-example") {
+      let document;
+      try {
+        document = JSON.parse(sources[4] ?? "");
+      } catch {
+        throw new Error(
+          "Fix the JSON syntax in openapi.json before checking the name example.",
+        );
+      }
+      const example =
+        document.components?.schemas?.Product?.properties?.name?.example;
+      ensure(
+        typeof example === "string" &&
+          example.trim().length > 0 &&
+          example.length <= 40,
+        "Add a readable string example to components.schemas.Product.properties.name in openapi.json.",
+      );
+      ensure(
+        (await products(request())).random === true,
+        "Keep the generated product handler calling .random() for this experiment; you will replace it in the next lesson.",
+      );
+      return {
+        ok: true,
+        revision,
+        example,
+        message:
+          "The name example is saved. Refresh products to observe it in the generated response.",
+      };
+    }
     if (phaseId === "catalog") {
       const first = await readProducts();
       ensure(

@@ -8,6 +8,7 @@ export function runCoffeeShopWalkthrough(
   phases: LessonPhase[],
   restartDirectory: string,
   restartCommand: string,
+  walkthroughVersion = 3,
 ) {
   type Product = {
     id: string;
@@ -54,7 +55,7 @@ export function runCoffeeShopWalkthrough(
       style: "currency",
       currency: "USD",
     }).format(cents / 100);
-  const storageKey = "counterfact-coffee-v2";
+  const storageKey = "counterfact-coffee-v" + walkthroughVersion;
   const origin = window.location.origin;
   let index = 0,
     products: Product[] = [],
@@ -71,6 +72,7 @@ export function runCoffeeShopWalkthrough(
     checkMessage = "",
     quizWrong = false;
   let observation: Observation | undefined, failedItems: Item[] | undefined;
+  let expectedNameExample: string | undefined;
   let entryState: Info["state"] | undefined;
   let catalogReads = 0,
     lastCatalog = "",
@@ -220,7 +222,7 @@ export function runCoffeeShopWalkthrough(
       sessionStorage.setItem(
         storageKey,
         JSON.stringify({
-          version: 2,
+          version: walkthroughVersion,
           sessionId: info.sessionId,
           index,
           completed: [...completed],
@@ -1200,6 +1202,19 @@ export function runCoffeeShopWalkthrough(
       report("started", phases[0]!.id);
       finish(message || "Generated response refreshed.");
     }
+    if (id === "name-example" && ready && source === "manual") {
+      if (
+        expectedNameExample &&
+        products.length > 0 &&
+        products.every((product) => product.name === expectedNameExample)
+      )
+        finish(
+          "The generated response now uses your OpenAPI name example. The product handler still calls .random().",
+        );
+      else
+        message =
+          "The example is saved. Wait for Counterfact to reload the spec, then refresh products again to observe it.";
+    }
     if (id === "catalog" && ready && source === "manual") {
       const current = JSON.stringify(products);
       catalogReads = current === lastCatalog ? catalogReads + 1 : 1;
@@ -1469,6 +1484,7 @@ export function runCoffeeShopWalkthrough(
           ok: boolean;
           revision: string;
           message: string;
+          example?: string;
         }>("/tutorial-check", { phaseId: requestedId });
         const { value: after } = await json<Info>("/tutorial-info");
         if (
@@ -1484,6 +1500,8 @@ export function runCoffeeShopWalkthrough(
         if (syncReplSubmissions(info.replSubmissions) || changedAfterCheck)
           renderLesson();
         ready = checked.ok === true;
+        if (requestedId === "name-example")
+          expectedNameExample = checked.example;
         checkMessage = ready
           ? checked.message
           : force ||
@@ -1608,7 +1626,10 @@ export function runCoffeeShopWalkthrough(
     let restored = false;
     try {
       const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? "null");
-      if (saved?.version === 2 && saved.sessionId === info.sessionId) {
+      if (
+        saved?.version === walkthroughVersion &&
+        saved.sessionId === info.sessionId
+      ) {
         restored = true;
         if (saved.diffStates && typeof saved.diffStates === "object")
           for (const [key, open] of Object.entries(saved.diffStates))

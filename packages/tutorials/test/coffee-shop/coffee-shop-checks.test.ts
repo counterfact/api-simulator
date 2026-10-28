@@ -108,6 +108,49 @@ it("checks every documented edit from generated stubs without touching live stat
   });
 });
 
+it("checks the OpenAPI name example while requiring the actual product stub", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const root = $.path(".");
+    await $.add("routes/_.context.ts", "export class Context {}");
+    await $.add(
+      "routes/products.ts",
+      "export const GET = $ => $.response.status(200).random();",
+    );
+    await $.add(
+      "routes/orders.ts",
+      "export const POST = $ => $.response.status(201).random();",
+    );
+    expect((await checkWalkthroughSave(root, "name-example")).ok).toBe(false);
+    const before = (await walkthroughInfo(root, {})).revision;
+    await $.add(
+      "openapi.json",
+      JSON.stringify({
+        components: {
+          schemas: {
+            Product: {
+              properties: { name: { type: "string", example: "Dark Roast" } },
+            },
+          },
+        },
+      }),
+    );
+    expect((await walkthroughInfo(root, {})).revision).not.toBe(before);
+    expect(await checkWalkthroughSave(root, "name-example")).toMatchObject({
+      ok: true,
+      example: "Dark Roast",
+    });
+    await $.add("routes/products.ts", FIXED_PRODUCTS);
+    expect(await checkWalkthroughSave(root, "name-example")).toMatchObject({
+      ok: false,
+      message: expect.stringContaining(".random()"),
+    });
+    await $.add("openapi.json", "{");
+    expect(
+      (await checkWalkthroughSave(root, "name-example")).message,
+    ).toContain("JSON syntax");
+  });
+});
+
 it("reports missing methods, invalid phases, broken files, and destructive restock scenarios", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add("routes/_.context.ts", "export class Context {}\n");

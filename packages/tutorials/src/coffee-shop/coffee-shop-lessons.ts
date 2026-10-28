@@ -184,8 +184,8 @@ const edit = (file: string, instruction: string, code: string) => ({
   instruction,
   code,
 });
-export const WALKTHROUGH_VERSION = 2;
-export const PHASES: LessonPhase[] = [
+export const WALKTHROUGH_VERSION = 3;
+export const PHASES_V2: LessonPhase[] = [
   {
     id: "explore",
     lesson: 1,
@@ -444,4 +444,31 @@ export const PHASES: LessonPhase[] = [
     check: true,
   },
 ];
+export const PHASES: LessonPhase[] = [
+  PHASES_V2[0]!,
+  {
+    id: "name-example",
+    lesson: 2,
+    title: "Give generated names a coffee example",
+    explanation:
+      "The OpenAPI schema shapes generated responses. A property’s example supplies a readable value while the handler still calls .random(). It does not create a fixed catalog or add order behavior.",
+    instruction:
+      'Open openapi.json and find components.schemas.Product.properties.name. Add "example": "House Blend" alongside its existing type and length limits, then save. Keep routes/products.ts calling .random(). Counterfact reloads the spec without restarting; click Refresh products and inspect GET /products. Each generated name now uses your example, while IDs, prices, and stock are still generated.',
+    edits: [
+      edit(
+        "openapi.json",
+        "Add example inside the existing Product name property. Keep the surrounding schema.",
+        '{\n  "type": "string",\n  "minLength": 1,\n  "maxLength": 40,\n  "example": "House Blend"\n}',
+      ),
+    ],
+    check: true,
+  },
+  ...PHASES_V2.slice(1).map((phase) => ({
+    ...phase,
+    lesson: phase.lesson + 1,
+  })),
+];
+export function phasesForVersion(version: number) {
+  return version === 3 ? PHASES : PHASES_V2;
+}
 export const LESSON_COUNT = Math.max(...PHASES.map((phase) => phase.lesson));

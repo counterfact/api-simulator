@@ -1,4 +1,4 @@
-import { PHASES } from "./coffee-shop-lessons.js";
+import { phasesForVersion } from "./coffee-shop-lessons.js";
 import { randomUUID } from "node:crypto";
 import { channel } from "node:diagnostics_channel";
 
@@ -96,11 +96,12 @@ const versionTwoSessions = new Map<
   }
 >();
 
-/** Version 2 phases have stable identifiers; keep v1 numeric callers working. */
+/** Keep legacy numeric and v2 callers stable while new guides add lessons. */
 export function reportWalkthroughEvent(
   sessionId: string,
   event: unknown,
   phaseId: unknown,
+  version: 2 | 3 = 2,
 ): void {
   if (
     !events.hasSubscribers ||
@@ -108,7 +109,9 @@ export function reportWalkthroughEvent(
     typeof phaseId !== "string"
   )
     return;
-  const phase = PHASES.find((candidate) => candidate.id === phaseId);
+  if (version !== 2 && version !== 3) return;
+  const phases = phasesForVersion(version);
+  const phase = phases.find((candidate) => candidate.id === phaseId);
   if (
     !phase ||
     ![
@@ -120,10 +123,10 @@ export function reportWalkthroughEvent(
     ].includes(event)
   )
     return;
-  if ((event === "opened" || event === "started") && phaseId !== PHASES[0]!.id)
+  if ((event === "opened" || event === "started") && phaseId !== phases[0]!.id)
     return;
-  if (event === "finished" && phaseId !== PHASES.at(-1)!.id) return;
-  const key = "v2:" + sessionId;
+  if (event === "finished" && phaseId !== phases.at(-1)!.id) return;
+  const key = "v" + version + ":" + sessionId;
   try {
     let session = versionTwoSessions.get(key);
     if (!session) {
@@ -143,7 +146,7 @@ export function reportWalkthroughEvent(
     if (event === "phase_completed") session.completed.add(phaseId);
     const properties = {
       tour: "coffee-shop",
-      walkthroughVersion: 2,
+      walkthroughVersion: version,
       phaseId,
       lesson: phase.lesson,
       elapsedSeconds: Math.floor((Date.now() - session.startedAt) / 1000),
@@ -156,13 +159,13 @@ export function reportWalkthroughEvent(
         ...(event === "finished"
           ? {
               completedPhases: session.completed.size,
-              allExercisesCompleted: session.completed.size === PHASES.length,
+              allExercisesCompleted: session.completed.size === phases.length,
             }
           : {}),
       },
     });
     if (
-      session.completed.size === PHASES.length &&
+      session.completed.size === phases.length &&
       !session.reported.has("completed")
     ) {
       session.reported.add("completed");

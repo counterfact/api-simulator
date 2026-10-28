@@ -1,4 +1,4 @@
-import { PHASES } from "./coffee-shop-lessons.js";
+import { PHASES, WALKTHROUGH_VERSION } from "./coffee-shop-lessons.js";
 import { coffeeShopPage } from "./coffee-shop-page.js";
 
 const validationModule = new URL("./coffee-shop-checks.js", import.meta.url)
@@ -301,7 +301,7 @@ const telemetry = new Function("url", "return import(url)")(${JSON.stringify(tel
 export const POST: HTTP_POST = async function ($) {
   try {
     const info = await (await helpers).walkthroughInfo(${project}, $.context);
-    (await telemetry).reportWalkthroughEvent(info.sessionId, $.body.event, $.body.phaseId);
+    (await telemetry).reportWalkthroughEvent(info.sessionId, $.body.event, $.body.phaseId, ${WALKTHROUGH_VERSION});
   } catch { /* Reporting never blocks learning. */ }
   return $.response.status(200).json({ ok: true });
 };
