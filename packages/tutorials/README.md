@@ -21,7 +21,7 @@ symlinks. `findTourDirectory` proposes an unused numbered name without reserving
 it. The root directory must exist.
 
 Start Counterfact with `tour.source` and `tour.destination`. The facade recognizes
-the managed version 4 marker, mounts the simulated API under `/shop`, and hosts
+a managed version 4 or 5 marker, mounts the simulated API under `/shop`, and hosts
 `createTourRequestHandler` before the simulator's HTTP callback. After generation,
 `finalizeTour(tour.destination)` captures the baseline. The CLI does this and opens
 `tour.walkthroughPath`, `/tutorial/`, on the bound HTTP origin.
@@ -49,7 +49,9 @@ types. `/walkthrough` redirects to `/tutorial/` for existing links.
 
 Fourteen lessons start with placing a coffee order to learn the shop and chat.
 The introduction explains `GET /shop/products` and `POST /shop/orders`. The next lesson inspects the generated
-handler and bundled schema; subsequent lessons add explicit responses, shared
+handler and bundled OpenAPI 3.1 schema. Names start with ten coffee examples,
+while descriptions start as random strings. Lesson three adds description
+examples; subsequent lessons add explicit responses, shared
 state, stock rules, and reusable scenarios.
 
 Milo proposes supporting edits as exact diffs before writing them. **Apply
@@ -86,9 +88,10 @@ server session. Browser storage preserves revealed messages and disclosure
 choices across reloads without completing exercises. Saved checks use isolated
 snapshots, never the running shop's inventory or order counter.
 
-Version 4 adds the orientation lesson and independent tutorial HTTP. Existing
-version 2 and 3 projects retain their lesson numbering, saved helpers, and
-milestone interpretation; their generated pages and handlers remain unchanged.
+Version 5 starts with ten coffee-name examples and teaches description examples
+in lesson three. Version 4 added the orientation lesson and independent tutorial
+HTTP. Existing version 2, 3, and 4 projects retain their lesson inventory, saved
+helpers, and milestone interpretation; their generated pages and handlers remain unchanged.
 New projects need the installed tutorials package available when restarting.
 
 ## Milestones and REPL history
@@ -96,7 +99,7 @@ New projects need the installed tutorials package available when restarting.
 `/tutorial/event` accepts bounded event names and stable phase IDs and publishes
 on Node's `counterfact:walkthrough` diagnostics channel. The CLI owns transport,
 consent, and opt-outs. This package sends no external analytics requests.
-Version 4 events include the tour, walkthrough version, phase ID, lesson number,
+Version 4 and 5 events include the tour, walkthrough version, phase ID, lesson number,
 and elapsed seconds. Session identities are opaque and temporary; reporting is
 deduplicated. Paths, source, request/response bodies, carts, and context snapshots
 are excluded from telemetry.

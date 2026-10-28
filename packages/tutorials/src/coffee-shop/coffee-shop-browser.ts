@@ -8,7 +8,7 @@ export function runCoffeeShopWalkthrough(
   phases: LessonPhase[],
   restartDirectory: string,
   restartCommand: string,
-  walkthroughVersion = 4,
+  walkthroughVersion = 5,
 ) {
   type Product = {
     id: string;
@@ -161,7 +161,7 @@ export function runCoffeeShopWalkthrough(
     checkMessage = "",
     quizWrong = false;
   let observation: Observation | undefined, failedItems: Item[] | undefined;
-  let expectedNameExample: string | undefined;
+  let expectedExamples: string[] | undefined;
   let entryState: Info["state"] | undefined;
   let catalogReads = 0,
     lastCatalog = "",
@@ -1629,7 +1629,10 @@ export function runCoffeeShopWalkthrough(
     if (id === "explore" && source === "manual") {
       report("started", phases[0]!.id);
       finish(
-        "The returned products follow the shapes described in openapi.yaml.",
+        "The returned products follow the shapes described in openapi.yaml." +
+          (walkthroughVersion >= 5
+            ? " At this point Counterfact doesn't know anything about the description field except that it's a string, so it's generating random, nonsensical strings. Let's fix that."
+            : ""),
       );
     }
     if (source === "manual") {
@@ -1651,14 +1654,24 @@ export function runCoffeeShopWalkthrough(
         renderLesson();
       }
     }
-    if (id === "name-example" && ready && source === "manual") {
+    if (
+      ["name-example", "description-example"].includes(id) &&
+      ready &&
+      source === "manual"
+    ) {
       if (
-        expectedNameExample &&
+        expectedExamples?.length &&
         products.length > 0 &&
-        products.every((product) => product.name === expectedNameExample)
+        products.every((product) =>
+          expectedExamples!.includes(
+            id === "name-example" ? product.name : product.description,
+          ),
+        )
       )
         finish(
-          "The generated response now uses your OpenAPI name example. The product handler still calls `.random()`.",
+          "The generated response now uses your OpenAPI " +
+            (id === "name-example" ? "name example" : "description examples") +
+            ". The product handler still calls `.random()`.",
         );
       else
         message =
@@ -1935,6 +1948,7 @@ export function runCoffeeShopWalkthrough(
           revision: string;
           message: string;
           example?: string;
+          examples?: string[];
         }>("/tutorial-check", { phaseId: requestedId });
         const { value: after } = await json<Info>("/tutorial-info");
         if (
@@ -1950,8 +1964,10 @@ export function runCoffeeShopWalkthrough(
         if (syncReplSubmissions(info.replSubmissions) || changedAfterCheck)
           renderLesson();
         ready = checked.ok === true;
-        if (requestedId === "name-example")
-          expectedNameExample = checked.example;
+        if (["name-example", "description-example"].includes(requestedId))
+          expectedExamples =
+            checked.examples ??
+            (checked.example ? [checked.example] : undefined);
         checkMessage = ready
           ? ""
           : force ||

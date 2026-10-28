@@ -21,7 +21,7 @@ export function lessonLocations(
     for (const { file, text, parsed } of sources) {
       if (!parsed) {
         files[file] = 1;
-        if (phase.id === "name-example") {
+        if (["name-example", "description-example"].includes(phase.id)) {
           const lineCounter = new LineCounter();
           const document = parseDocument(text, { lineCounter });
           const properties = document.getIn(
@@ -30,7 +30,10 @@ export function lessonLocations(
           );
           const key = isMap(properties)
             ? properties.items.find(
-                (item) => isScalar(item.key) && item.key.value === "name",
+                (item) =>
+                  isScalar(item.key) &&
+                  item.key.value ===
+                    (phase.id === "name-example" ? "name" : "description"),
               )?.key
             : undefined;
           if (isScalar(key) && key.range)

@@ -39,7 +39,7 @@ it("serves tutorial controls outside simulation dispatch without generated tutor
       expect(page.status).toBe(200);
       expect(await page.text()).toContain("Counterfact Coffee");
       const info = await (await fetch(origin + "/tutorial/info")).json();
-      expect(info.walkthroughVersion).toBe(4);
+      expect(info.walkthroughVersion).toBe(5);
       expect(info.state.inventory["house-blend"]).toBe(5);
       context.inventory["house-blend"] = 3;
       expect(

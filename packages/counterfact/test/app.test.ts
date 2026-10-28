@@ -53,11 +53,20 @@ describe("counterfact", () => {
       const { stop } = await simulator.start();
       try {
         const origin = `http://127.0.0.1:${simulator.status().address!.port}`;
-        expect((await fetch(origin + "/shop/products")).status).toBe(200);
+        const productResponse = await fetch(origin + "/shop/products");
+        expect(productResponse.status).toBe(200);
+        const schema = (await import("yaml")).parse(
+          await $.read("demo/openapi.yaml"),
+        );
+        const names =
+          schema.components.schemas.Product.properties.name.examples;
+        const products = await productResponse.json();
+        expect(products).toHaveLength(3);
+        for (const product of products) expect(names).toContain(product.name);
         expect((await fetch(origin + "/products")).status).toBe(404);
         expect((await fetch(origin + "/tutorial/")).status).toBe(200);
         const info = await (await fetch(origin + "/tutorial/info")).json();
-        expect(info.walkthroughVersion).toBe(4);
+        expect(info.walkthroughVersion).toBe(5);
         expect(simulator.registry.exists("GET", "/products")).toBe(true);
         expect(simulator.registry.exists("GET", "/tutorial/info")).toBe(false);
         expect(simulator.registry.exists("POST", "/tutorial/check")).toBe(

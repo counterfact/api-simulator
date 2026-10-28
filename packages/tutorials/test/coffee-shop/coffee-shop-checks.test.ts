@@ -176,3 +176,62 @@ it("reports missing methods, invalid phases, broken files, and destructive resto
     expect((await checkWalkthroughSave(root, "catalog")).ok).toBe(false);
   });
 });
+
+it("checks description examples without mistaking supplied name examples for learner work", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const root = $.path(".");
+    await $.add("routes/_.context.ts", "export class Context {}");
+    await $.add(
+      "routes/products.ts",
+      "export const GET = $ => $.response.status(200).random();",
+    );
+    await $.add(
+      "routes/orders.ts",
+      "export const POST = $ => $.response.status(201).random();",
+    );
+    const document = {
+      components: {
+        schemas: {
+          Product: {
+            properties: {
+              name: { type: "string", examples: ["House Blend", "Dark Roast"] },
+              description: {
+                type: "string",
+                maxLength: 120,
+                examples: [] as unknown[],
+              },
+            },
+          },
+        },
+      },
+    };
+    await $.add("openapi.yaml", stringify(document));
+    expect((await checkWalkthroughSave(root, "description-example")).ok).toBe(
+      false,
+    );
+    document.components.schemas.Product.properties.description.examples = [
+      "Chocolate and caramel.",
+      "Rich cocoa and a bold finish.",
+    ];
+    await $.add("openapi.yaml", stringify(document));
+    expect(
+      await checkWalkthroughSave(root, "description-example"),
+    ).toMatchObject({
+      ok: true,
+      examples: ["Chocolate and caramel.", "Rich cocoa and a bold finish."],
+    });
+    for (const invalid of [
+      ["Only one"],
+      ["", "Readable"],
+      [123, "Readable"],
+      ["x".repeat(121), "Readable"],
+    ]) {
+      document.components.schemas.Product.properties.description.examples =
+        invalid;
+      await $.add("openapi.yaml", stringify(document));
+      expect((await checkWalkthroughSave(root, "description-example")).ok).toBe(
+        false,
+      );
+    }
+  });
+});

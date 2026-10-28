@@ -183,7 +183,7 @@ const edit = (file: string, instruction: string) => ({
   file,
   instruction,
 });
-export const WALKTHROUGH_VERSION = 4;
+export const WALKTHROUGH_VERSION = 5;
 export const PHASES_V2: LessonPhase[] = [
   {
     id: "explore",
@@ -452,7 +452,7 @@ export const PHASES_V3: LessonPhase[] = [
     lesson: phase.lesson + 1,
   })),
 ];
-export const PHASES: LessonPhase[] = [
+export const PHASES_V4: LessonPhase[] = [
   {
     id: "orientation",
     lesson: 1,
@@ -474,7 +474,34 @@ export const PHASES: LessonPhase[] = [
       .replaceAll("POST /orders", "POST /shop/orders"),
   })),
 ];
+export const PHASES: LessonPhase[] = PHASES_V4.map((phase) =>
+  phase.id === "name-example"
+    ? {
+        ...phase,
+        id: "description-example",
+        title: "Give generated descriptions coffee examples",
+        explanation:
+          "The name field already has ten coffee examples in the OpenAPI schema. Examples can also give the description field meaningful values while the handler keeps calling `.random()`.",
+        instruction:
+          "The description field’s string type and length limit stay in place. In openapi.yaml, add a few sensible coffee descriptions to `components.schemas.Product.properties.description.examples`, then save.",
+        edits: [
+          edit(
+            "openapi.yaml",
+            "Add examples inside the existing Product description property.",
+          ),
+        ],
+        verification:
+          "You’ve given the description field meaningful coffee examples while keeping the handler random. Counterfact reloads the spec without restarting. Click Refresh products and compare the generated descriptions with your examples.",
+      }
+    : phase,
+);
 export function phasesForVersion(version: number) {
-  return version === 4 ? PHASES : version === 3 ? PHASES_V3 : PHASES_V2;
+  return version === 5
+    ? PHASES
+    : version === 4
+      ? PHASES_V4
+      : version === 3
+        ? PHASES_V3
+        : PHASES_V2;
 }
 export const LESSON_COUNT = Math.max(...PHASES.map((phase) => phase.lesson));

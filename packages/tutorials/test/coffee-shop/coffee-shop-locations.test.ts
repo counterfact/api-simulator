@@ -39,16 +39,23 @@ it("finds lesson-specific edit locations and follows lines inserted by the learn
   expect(shifted.fail?.["routes/orders.ts"]).toBe(3);
 });
 
-it("links the schema lesson to Product.name rather than another name property", () => {
+it("links the schema lesson to Product.description rather than another description property", () => {
   const text = stringify({
-    info: { name: "Not the edit" },
+    info: { description: "Not the edit" },
     components: {
-      schemas: { Product: { properties: { name: { type: "string" } } } },
+      schemas: {
+        Product: {
+          properties: {
+            name: { type: "string" },
+            description: { type: "string" },
+          },
+        },
+      },
     },
   });
   const locations = lessonLocations({ "openapi.yaml": text }, PHASES);
-  const line = locations["name-example"]!["openapi.yaml"]!;
-  expect(text.split("\n")[line - 1]?.trim()).toBe("name:");
+  const line = locations["description-example"]!["openapi.yaml"]!;
+  expect(text.split("\n")[line - 1]?.trim()).toBe("description:");
   expect(locations.explore?.["openapi.yaml"]).toBe(1);
 });
 

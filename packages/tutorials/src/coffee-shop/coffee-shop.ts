@@ -12,7 +12,23 @@ const product = {
   required: ["id", "name", "description", "price", "stock"],
   properties: {
     id: { type: "string", minLength: 1, maxLength: 32 },
-    name: { type: "string", minLength: 1, maxLength: 40 },
+    name: {
+      type: "string",
+      minLength: 1,
+      maxLength: 40,
+      examples: [
+        "House Blend",
+        "Dark Roast",
+        "Decaf",
+        "Breakfast Blend",
+        "Colombian Supremo",
+        "Ethiopian Yirgacheffe",
+        "Sumatra Mandheling",
+        "Guatemala Antigua",
+        "Costa Rica Tarrazú",
+        "Espresso Blend",
+      ],
+    },
     description: { type: "string", maxLength: 120 },
     price: { type: "integer", minimum: 500, maximum: 2500 },
     stock: { type: "integer", minimum: 0, maximum: 20 },
@@ -28,7 +44,7 @@ const errorResponse = jsonResponse({
   properties: { error: { type: "string" } },
 });
 export const SHOP_DOCUMENT = {
-  openapi: "3.0.3",
+  openapi: "3.1.0",
   info: { title: "Counterfact Coffee", version: "1.0.0" },
   components: { schemas: { Product: product, OrderItem: orderItem } },
   servers: [{ url: "/shop" }],

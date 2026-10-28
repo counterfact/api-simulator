@@ -47,7 +47,8 @@ export async function createTourRequestHandler(
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
     throw error;
   }
-  if (marker.version !== 4) return;
+  if (marker.version !== 4 && marker.version !== 5) return;
+  const version = marker.version;
   return async (
     request: IncomingMessage,
     response: ServerResponse,
@@ -89,7 +90,7 @@ export async function createTourRequestHandler(
           "Content-Type": "text/html; charset=utf-8",
           "Cache-Control": "no-store",
         });
-        response.end(coffeeShopPage(root));
+        response.end(coffeeShopPage(root, version));
         return true;
       }
       if (path === "/tutorial/info" && request.method === "GET") {
@@ -117,7 +118,7 @@ export async function createTourRequestHandler(
       }
       const info = await walkthroughInfo(root, context());
       if (path === "/tutorial/event") {
-        reportWalkthroughEvent(info.sessionId, body.event, phaseId, 4);
+        reportWalkthroughEvent(info.sessionId, body.event, phaseId, version);
         json(200, { ok: true });
         return true;
       }

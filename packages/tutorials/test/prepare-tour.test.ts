@@ -35,6 +35,16 @@ it("creates a restartable offline shop without touching an existing project", as
     await expect(
       $.read(`${directory}/scenarios/index.ts`),
     ).rejects.toMatchObject({ code: "ENOENT" });
+    expect(spec.openapi).toBe("3.1.0");
+    const names = spec.components.schemas.Product.properties.name.examples;
+    expect(names).toHaveLength(10);
+    expect(new Set(names).size).toBe(10);
+    expect(names).toEqual(
+      expect.arrayContaining(["House Blend", "Dark Roast", "Decaf"]),
+    );
+    expect(
+      spec.components.schemas.Product.properties.description.examples,
+    ).toBeUndefined();
     expect(spec.servers).toEqual([{ url: "/shop" }]);
     expect(Object.keys(spec.paths)).toEqual(["/products", "/orders"]);
     for (const file of [

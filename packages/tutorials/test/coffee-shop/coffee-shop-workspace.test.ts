@@ -102,10 +102,15 @@ it("prepares focused changes, preserves learner edits, and records all current l
     await checkpoint(root, "orientation");
     await checkpoint(root, "explore");
     const document = parse(await $.read("demo/openapi.yaml"));
-    document.components.schemas.Product.properties.name.example = "House Blend";
+    document.components.schemas.Product.properties.description.examples = [
+      "Chocolate and caramel.",
+      "Rich cocoa and a bold finish.",
+    ];
     await $.add("demo/openapi.yaml", stringify(document));
-    expect((await checkWalkthroughSave(root, "name-example")).ok).toBe(true);
-    await checkpoint(root, "name-example");
+    expect((await checkWalkthroughSave(root, "description-example")).ok).toBe(
+      true,
+    );
+    await checkpoint(root, "description-example");
 
     const original = await $.read("demo/routes/products.ts");
     const originalState = await $.read(
@@ -349,7 +354,7 @@ it("never touches an existing project or overwrites conflicting learner code", a
     expect(await $.read(".git/index")).toBe("parent index must not change");
     await checkpoint(tour.destination, "orientation");
     await checkpoint(tour.destination, "explore");
-    await checkpoint(tour.destination, "name-example");
+    await checkpoint(tour.destination, "description-example");
     await $.add(
       "demo/routes/products.ts",
       'export const catalog = "my own catalog";',
@@ -369,7 +374,7 @@ it("records learner edits before tutor edits, including deletions and reversions
     await workspace(tour.destination);
     await checkpoint(tour.destination, "orientation");
     await checkpoint(tour.destination, "explore");
-    await checkpoint(tour.destination, "name-example");
+    await checkpoint(tour.destination, "description-example");
     const original = await $.read("demo/routes/orders.ts");
     await $.add("demo/routes/orders.ts", original + "\n// My experiment\n");
     await prepare(tour.destination, "catalog");

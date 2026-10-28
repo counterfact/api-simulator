@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Transpiler } from "@counterfact/runtime";
 import { parse } from "yaml";
-import { CATALOG, PHASES } from "./coffee-shop-lessons.js";
+import { CATALOG, PHASES, PHASES_V3 } from "./coffee-shop-lessons.js";
 
 import { walkthroughWorkspace } from "./coffee-shop-workspace.js";
 
@@ -103,7 +103,9 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
   const loaded: string[] = [];
   try {
     ensure(
-      PHASES.some((phase) => phase.id === phaseId && phase.check),
+      [...PHASES, ...PHASES_V3].some(
+        (phase) => phase.id === phaseId && phase.check,
+      ),
       "This phase has no saved-file check.",
     );
     const sources = await snapshot(root);
@@ -173,23 +175,41 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
       );
       return body;
     };
-    if (phaseId === "name-example") {
+    if (["name-example", "description-example"].includes(phaseId)) {
+      const property = phaseId === "name-example" ? "name" : "description";
       let document;
       try {
         document = parse(sources[4] ?? "");
       } catch {
         throw new Error(
-          "Fix the YAML syntax in openapi.yaml before checking the name example.",
+          "Fix the YAML syntax in openapi.yaml before checking the " +
+            property +
+            " examples.",
         );
       }
-      const example =
-        document?.components?.schemas?.Product?.properties?.name?.example;
-      ensure(
-        typeof example === "string" &&
-          example.trim().length > 0 &&
-          example.length <= 40,
-        "Add a readable string example to components.schemas.Product.properties.name in openapi.yaml.",
-      );
+      const schema =
+        document?.components?.schemas?.Product?.properties?.[property];
+      const example = schema?.example;
+      const examples: unknown = schema?.examples;
+      if (property === "name")
+        ensure(
+          typeof example === "string" &&
+            example.trim().length > 0 &&
+            example.length <= 40,
+          "Add a readable string example to components.schemas.Product.properties.name in openapi.yaml.",
+        );
+      else
+        ensure(
+          Array.isArray(examples) &&
+            examples.length >= 2 &&
+            examples.every(
+              (value) =>
+                typeof value === "string" &&
+                value.trim().length > 0 &&
+                value.length <= 120,
+            ),
+          "Add at least two readable coffee descriptions to components.schemas.Product.properties.description.examples in openapi.yaml.",
+        );
       ensure(
         (await products(request())).random === true,
         "Keep the generated product handler calling .random() for this experiment; you will replace it in the next lesson.",
@@ -197,8 +217,10 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
       return {
         ok: true,
         revision,
-        example,
-        message: PHASES.find((phase) => phase.id === phaseId)!.verification!,
+        ...(property === "name" ? { example } : { examples }),
+        message: [...PHASES, ...PHASES_V3].find(
+          (phase) => phase.id === phaseId,
+        )!.verification!,
       };
     }
     if (phaseId === "catalog") {

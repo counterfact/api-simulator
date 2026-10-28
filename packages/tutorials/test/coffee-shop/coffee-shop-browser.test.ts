@@ -166,14 +166,14 @@ async function browser(
       catalog: null as unknown,
       inventory: null as Record<string, number> | null,
     },
-    example: "House Blend",
+    example: "Chocolate and caramel.",
     nextId: 1,
   };
   if (options.phase || (!options.storage && !options.checkpoints?.length))
     storage.set(
-      "counterfact-coffee-v4",
+      "counterfact-coffee-v5",
       JSON.stringify({
-        version: 4,
+        version: 5,
         sessionId: server.sessionId,
         index: phaseIndex,
         completed: options.preview
@@ -282,8 +282,10 @@ async function browser(
         value = {
           revision: server.revision,
           ok: server.checkOk,
-          example:
-            body?.phaseId === "name-example" ? server.example : undefined,
+          examples:
+            body?.phaseId === "description-example"
+              ? [server.example, "Rich cocoa and a bold finish."]
+              : undefined,
           message: server.checkOk
             ? "Saved implementation verified."
             : "Expected an explicit implementation.",
@@ -405,7 +407,7 @@ async function browser(
     },
     completed() {
       return (
-        JSON.parse(storage.get("counterfact-coffee-v4")!) as {
+        JSON.parse(storage.get("counterfact-coffee-v5")!) as {
           completed: string[];
         }
       ).completed;
@@ -768,7 +770,7 @@ it("retains submitted REPL commands once and orders them before a following shop
     transcript.indexOf("Refreshed products"),
   );
   expect(transcript.match(/Submitted in the REPL/g)).toHaveLength(3);
-  const turns = JSON.parse(app.storage.get("counterfact-coffee-v4")!).turns as {
+  const turns = JSON.parse(app.storage.get("counterfact-coffee-v5")!).turns as {
     command?: string;
   }[];
   expect(
@@ -909,11 +911,12 @@ it("does not credit a random confirmation or a catalog before a passing saved ch
   expect(app.root("lesson").textContent).toContain('"items"');
 });
 
-it("requires both a saved name example and an explicit matching generated response", async () => {
-  const app = await browser({ phase: "name-example" });
-  for (const product of app.server.products) product.name = "House Blend";
+it("requires both saved description examples and an explicit matching generated response", async () => {
+  const app = await browser({ phase: "description-example" });
+  for (const product of app.server.products)
+    product.description = "Chocolate and caramel.";
   await app.click("refresh-products");
-  expect(app.completed()).not.toContain("name-example");
+  expect(app.completed()).not.toContain("description-example");
   app.server.checkOk = true;
   app.server.revision = "saved-openapi-example";
   app.server.workspace.changes.push({
@@ -922,8 +925,9 @@ it("requires both a saved name example and an explicit matching generated respon
     files: [
       {
         file: "openapi.yaml",
-        before: "maxLength: 40",
-        after: "maxLength: 40\nexample: House Blend",
+        before: "maxLength: 120",
+        after:
+          "maxLength: 120\nexamples: [Chocolate and caramel., Rich cocoa and a bold finish.]",
       },
     ],
   });
@@ -935,13 +939,13 @@ it("requires both a saved name example and an explicit matching generated respon
     app.calls.filter((call) => call.path === "/shop/products"),
   ).toHaveLength(before);
   expect(app.root("lesson").textContent).toContain("openapi.yaml");
-  expect(app.completed()).not.toContain("name-example");
-  app.server.products[0]!.name = "old spec response";
+  expect(app.completed()).not.toContain("description-example");
+  app.server.products[0]!.description = "old spec response";
   await app.click("refresh-products");
-  expect(app.completed()).not.toContain("name-example");
-  app.server.products[0]!.name = "House Blend";
+  expect(app.completed()).not.toContain("description-example");
+  app.server.products[0]!.description = "Chocolate and caramel.";
   await app.click("refresh-products");
-  expect(app.completed()).toContain("name-example");
+  expect(app.completed()).toContain("description-example");
   await app.click("continue");
   expect(app.root("lesson").textContent).toContain("Replace random products");
 });
@@ -950,7 +954,7 @@ it("names the next lesson on the button and records that choice in the conversat
   const app = await browser();
   expect(app.root("continue").hidden).toBe(true);
   expect(app.root("continue").textContent).toBe(
-    "Next Lesson: Give generated names a coffee example",
+    "Next Lesson: Give generated descriptions coffee examples",
   );
   await app.click("refresh-products");
   expect(app.root("continue").hidden).toBe(false);
@@ -960,7 +964,7 @@ it("names the next lesson on the button and records that choice in the conversat
   );
   expect(app.root("continue").hidden).toBe(true);
   expect(app.root("lesson").textContent).toContain(
-    "Next Lesson: Give generated names a coffee example",
+    "Next Lesson: Give generated descriptions coffee examples",
   );
   const finalLesson = await browser({ phase: "scenario" });
   expect(finalLesson.root("continue").hidden).toBe(true);
@@ -974,7 +978,7 @@ it("renders a distinct heading outside tutor bubbles once per lesson", async () 
   expect(headings.map((heading) => heading.textContent)).toEqual([
     "Lesson 1Try the coffee shop",
     "Lesson 2Explore your generated API",
-    "Lesson 3Give generated names a coffee example",
+    "Lesson 3Give generated descriptions coffee examples",
     "Lesson 4Replace random products",
     "Lesson 5Respond to the order you received",
     "Lesson 6Add failure and recovery",
@@ -1000,10 +1004,10 @@ it("keeps earlier turns visible and reveals the next lesson only after the learn
     "Explore your generated API",
   );
   expect(app.root("lesson").textContent).toContain(
-    "Next Lesson: Give generated names a coffee example",
+    "Next Lesson: Give generated descriptions coffee examples",
   );
   expect(app.root("lesson").textContent).toContain(
-    "Give generated names a coffee example",
+    "Give generated descriptions coffee examples",
   );
   const history = app.root("lesson").textContent;
   expect(history.indexOf("Inspect the generated stub")).toBeLessThan(
@@ -1012,7 +1016,7 @@ it("keeps earlier turns visible and reveals the next lesson only after the learn
   expect(history.match(/Hi, I’m Milo\./g)).toHaveLength(1);
   const restored = await browser({ storage: app.storage });
   expect(restored.root("lesson").textContent).toContain(
-    "Next Lesson: Give generated names a coffee example",
+    "Next Lesson: Give generated descriptions coffee examples",
   );
 });
 
@@ -1144,10 +1148,10 @@ it("keeps the cart on unknown confirmation and disables orders on stale product 
 
 it("uses each lesson’s current edit line in prose and editor actions", async () => {
   const app = await browser({
-    phase: "name-example",
+    phase: "description-example",
     locations: {
       explore: { "routes/products.ts": 12, "openapi.yaml": 1 },
-      "name-example": { "openapi.yaml": 47 },
+      "description-example": { "openapi.yaml": 47 },
     },
   });
   const links: Element[] = [];
@@ -1158,17 +1162,19 @@ it("uses each lesson’s current edit line in prose and editor actions", async (
   }
   for (const turn of app
     .root("lesson")
-    .children.filter((element) => element.dataset.phase === "name-example"))
+    .children.filter(
+      (element) => element.dataset.phase === "description-example",
+    ))
     collect(turn);
   expect(links).toHaveLength(2);
   for (const link of links) expect(link.href).toMatch(/openapi\.yaml:47$/u);
-  app.server.workspace.locations["name-example"]!["openapi.yaml"] = 52;
+  app.server.workspace.locations["description-example"]!["openapi.yaml"] = 52;
   await app.poll();
   const updated = app
     .root("lesson")
     .children.find((turn) =>
       turn.textContent.includes(
-        "give components.schemas.Product.properties.name",
+        "add a few sensible coffee descriptions to components.schemas.Product.properties.description.examples",
       ),
     )!;
   expect(
@@ -1651,7 +1657,7 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
         call.path === "/tutorial/workspace" && call.body?.action === "prepare",
     ),
   ).toHaveLength(1);
-  const saved = JSON.parse(app.storage.get("counterfact-coffee-v4")!);
+  const saved = JSON.parse(app.storage.get("counterfact-coffee-v5")!);
   expect(
     saved.turns.some(
       (turn: { text: string }) => turn.text === "Apply changes.",
@@ -1665,7 +1671,7 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
       text: "I’ve added the supporting code. Now it’s your turn.",
     },
   );
-  app.storage.set("counterfact-coffee-v4", JSON.stringify(saved));
+  app.storage.set("counterfact-coffee-v5", JSON.stringify(saved));
   const restored = await browser({
     storage: app.storage,
     workspace: true,
@@ -1894,7 +1900,7 @@ it("attaches collapsed HTTP exchanges and handler links to their own action turn
   app.server.orderMode = "echo";
   await app.api.placeOrder();
   const transcript = JSON.parse(
-    app.storage.get("counterfact-coffee-v4")!,
+    app.storage.get("counterfact-coffee-v5")!,
   ).turns;
   const failed = transcript.find((turn: { text: string }) =>
     turn.text.startsWith("Placed an order:"),
@@ -1934,7 +1940,7 @@ it("retains malformed and missing responses without inventing an HTTP result", a
   app.add();
   await app.api.placeOrder();
   const malformed = JSON.parse(
-    app.storage.get("counterfact-coffee-v4")!,
+    app.storage.get("counterfact-coffee-v5")!,
   ).turns.find((turn: { exchanges?: unknown }) => turn.exchanges);
   expect(malformed.exchanges[0]).toMatchObject({
     status: 201,
@@ -1944,7 +1950,7 @@ it("retains malformed and missing responses without inventing an HTTP result", a
   app.server.orderMode = "offline";
   await app.api.placeOrder();
   const attempts = JSON.parse(
-    app.storage.get("counterfact-coffee-v4")!,
+    app.storage.get("counterfact-coffee-v5")!,
   ).turns.filter((turn: { exchanges?: unknown }) => turn.exchanges);
   expect(attempts[1].exchanges[0].status).toBeUndefined();
   expect(attempts[1].exchanges[0].error).toContain("No confirmation");
@@ -1958,7 +1964,7 @@ it("keeps each refresh snapshot immutable and marks an interrupted exchange on r
   await app.click("refresh-products");
   app.server.products[0]!.stock = 2;
   await app.click("refresh-products");
-  const saved = JSON.parse(app.storage.get("counterfact-coffee-v4")!);
+  const saved = JSON.parse(app.storage.get("counterfact-coffee-v5")!);
   const refreshes = saved.turns.filter(
     (turn: { text: string }) => turn.text === "Refreshed products.",
   );
@@ -1968,7 +1974,7 @@ it("keeps each refresh snapshot immutable and marks an interrupted exchange on r
   delete refreshes[1].exchanges[0].status;
   delete refreshes[1].exchanges[0].responseBody;
   delete refreshes[1].exchanges[0].responseText;
-  app.storage.set("counterfact-coffee-v4", JSON.stringify(saved));
+  app.storage.set("counterfact-coffee-v5", JSON.stringify(saved));
   const reloaded = await browser({ storage: app.storage });
   expect(reloaded.root("lesson").textContent).toContain(
     "The page reloaded before a response was recorded",
@@ -2105,4 +2111,35 @@ it("waits for opening the demo folder before asking to refresh products", async 
       (element) => element.tag === "button" && element.textContent === "Okay",
     ),
   ).toBeUndefined();
+});
+
+it("explains nonsensical descriptions after exploration and makes lesson three about description examples", async () => {
+  const app = await browser();
+  expect(app.root("lesson").textContent).not.toContain(
+    "At this point Counterfact",
+  );
+  await app.click("refresh-products");
+  expect(app.root("lesson").textContent).toContain(
+    "The returned products follow the shapes described in openapi.yaml.",
+  );
+  expect(app.root("lesson").textContent).toContain(
+    "At this point Counterfact doesn't know anything about the description field except that it's a string, so it's generating random, nonsensical strings. Let's fix that.",
+  );
+  await app.click("continue");
+  expect(app.root("lesson").textContent).toContain(
+    "Give generated descriptions coffee examples",
+  );
+  expect(app.root("lesson").textContent).toContain(
+    "components.schemas.Product.properties.description.examples",
+  );
+  expect(app.root("lesson").textContent).not.toContain(
+    "an example value of House Blend",
+  );
+});
+
+it("keeps the name-example lesson in existing version 4 pages", () => {
+  const page = coffeeShopPage("/tmp/demo", 4);
+  expect(page).toContain('"id":"name-example"');
+  expect(page).not.toContain('"id":"description-example"');
+  expect(coffeeShopPage("/tmp/demo")).toContain('"id":"description-example"');
 });

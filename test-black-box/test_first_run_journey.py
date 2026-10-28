@@ -609,7 +609,7 @@ def coffee_shop_purchase(journey):
     info = journey.request("get", "/tutorial/info")
     assert info.status_code == 200, info.text
     assert os.path.realpath(info.json()["projectPath"]) == os.path.realpath(journey.output)
-    assert info.json()["walkthroughVersion"] == 4
+    assert info.json()["walkthroughVersion"] == 5
     assert "example" not in yaml.safe_load((journey.output / "openapi.yaml").read_text())["components"]["schemas"]["Product"]["properties"]["name"]
     assert info.json()["workspace"]["changes"] == []
     assert info.json()["state"] == {"catalog": None, "inventory": None}
@@ -694,27 +694,27 @@ def edit_coffee(journey, filename, before, after):
     path.write_text(source.replace(before, after, 1))
 
 
-@when("I add a coffee-name example to the OpenAPI document")
-def add_coffee_name_example(journey):
+@when("I add coffee-description examples to the OpenAPI document")
+def add_coffee_description_examples(journey):
     coffee_workspace(journey, "checkpoint", "explore")
     journey.product_stub_before_example = (journey.output / "routes/products.ts").read_text()
     spec = journey.output / "openapi.yaml"
     document = yaml.safe_load(spec.read_text())
-    document["components"]["schemas"]["Product"]["properties"]["name"]["example"] = "House Blend"
+    document["components"]["schemas"]["Product"]["properties"]["description"]["examples"] = ["Chocolate and caramel.", "Rich cocoa and a bold finish."]
     spec.write_text(yaml.safe_dump(document, sort_keys=False))
 
 
-@then("generated products use the name example without changing their handler")
-def generated_name_example(journey):
-    journey.wait_for_http("/shop/products", lambda response: response.status_code == 200 and len(response.json()) == 3 and all(product["name"] == "House Blend" for product in response.json()))
+@then("generated products use the description examples without changing their handler")
+def generated_description_examples(journey):
+    journey.wait_for_http("/shop/products", lambda response: response.status_code == 200 and len(response.json()) == 3 and all(product["description"] in ["Chocolate and caramel.", "Rich cocoa and a bold finish."] for product in response.json()))
     assert (journey.output / "routes/products.ts").read_text() == journey.product_stub_before_example
     assert ".random()" in journey.product_stub_before_example
-    check = journey.request("post", "/tutorial/check", json={"phaseId": "name-example"}).json()
-    assert check["ok"] and check["example"] == "House Blend", check
+    check = journey.request("post", "/tutorial/check", json={"phaseId": "description-example"}).json()
+    assert check["ok"] and check["examples"] == ["Chocolate and caramel.", "Rich cocoa and a bold finish."], check
     info = journey.request("get", "/tutorial/info").json()
     assert info["state"] == {"catalog": None, "inventory": None}
-    assert any(file["file"] == "openapi.yaml" and 'example: House Blend' in file["after"] for change in info["workspace"]["changes"] for file in change["files"])
-    coffee_workspace(journey, "checkpoint", "name-example")
+    assert any(file["file"] == "openapi.yaml" and 'Chocolate and caramel.' in file["after"] for change in info["workspace"]["changes"] for file in change["files"])
+    coffee_workspace(journey, "checkpoint", "description-example")
 
 
 @when("I replace the product and order stubs with explicit responses")

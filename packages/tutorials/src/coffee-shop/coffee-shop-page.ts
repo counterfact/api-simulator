@@ -1,9 +1,15 @@
 import { basename, dirname } from "node:path";
 import { COUNTERFACT_LOGO } from "../counterfact-logo.js";
-import { PHASES, WALKTHROUGH_VERSION } from "./coffee-shop-lessons.js";
+import {
+  phasesForVersion,
+  WALKTHROUGH_VERSION,
+} from "./coffee-shop-lessons.js";
 import { runCoffeeShopWalkthrough } from "./coffee-shop-browser.js";
 
-export function coffeeShopPage(projectPath: string): string {
+export function coffeeShopPage(
+  projectPath: string,
+  version = WALKTHROUGH_VERSION,
+): string {
   const json = (value: unknown) =>
     JSON.stringify(value).replace(/</gu, "\\u003c");
   const restart = `npx counterfact ./${basename(projectPath)}/openapi.yaml ./${basename(projectPath)}`;
@@ -26,6 +32,6 @@ export function coffeeShopPage(projectPath: string): string {
 <div id="panel-divider" class="panel-divider" role="separator" tabindex="0" aria-label="Resize chat and coffee shop panels" aria-orientation="vertical" aria-controls="chat-panel" aria-valuemin="30" aria-valuemax="70" aria-valuenow="50" title="Drag to resize, or use the left and right arrow keys"></div>
 <section class="shop" aria-label="Coffee shop"><header><div class="eyebrow">Small batch · Big comfort</div><h1>Counterfact Coffee</h1><p class="demo">A local demo shop. No payments or real orders.</p><button id="refresh-products" class="secondary">Refresh products</button></header><div id="shop-notice" role="status" aria-live="polite"></div><div id="products" class="products"></div><section class="cart" aria-label="Shopping cart"><h2>Your cart</h2><div id="cart"></div><button id="empty-cart" class="secondary">Empty cart</button><div class="cart-footer"><strong id="total"></strong><button id="checkout" disabled>Place order</button></div></section></section>
 </main><script>
-const walkthroughReady=(${runCoffeeShopWalkthrough.toString()})(${json(projectPath)},${json(PHASES)},${json(dirname(projectPath))},${json(restart)},${WALKTHROUGH_VERSION});
+const walkthroughReady=(${runCoffeeShopWalkthrough.toString()})(${json(projectPath)},${json(phasesForVersion(version))},${json(dirname(projectPath))},${json(restart)},${version});
 </script></body></html>`;
 }
