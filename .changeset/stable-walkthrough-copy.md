@@ -72,3 +72,5 @@ Remove the duplicate editor-link and copy-path controls beneath exercises. Keep 
 Introduce the catalog proposal with the coffee-shop analogy and explain the approval workflow when Milo first proposes a file change.
 
 Declare the generated Product[] return type on the lesson’s listProducts method so editor diagnostics catch missing stock properties, including an inventory property returned in its place.
+
+Remove Check my work and detect shared-context, reset, and scenario completion automatically from verified saves and observed live state. Offer persistent, precise Hint guidance for each current learner action without performing the work or advancing the lesson.

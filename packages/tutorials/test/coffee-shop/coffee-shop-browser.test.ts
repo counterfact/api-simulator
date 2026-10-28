@@ -163,8 +163,11 @@ async function browser(
     productMode: "valid",
     products: productData,
     state: options.state ?? {
-      catalog: null as unknown,
-      inventory: null as Record<string, number> | null,
+      catalog: options.phase === "context" ? [] : (null as unknown),
+      inventory:
+        options.phase === "context"
+          ? {}
+          : (null as Record<string, number> | null),
     },
     example: "Chocolate and caramel.",
     nextId: 1,
@@ -466,7 +469,7 @@ it("waits for approval, a saved edit, and live requests instead of offering Okay
     "replace .random() with .json(catalog)",
   );
   expect(okay()).toBeUndefined();
-  expect(app.root("check-progress").hidden).toBe(false);
+  expect(app.root("hint").hidden).toBe(false);
   expect(app.completed()).not.toContain("catalog");
   app.server.checkOk = true;
   app.server.revision = "user-saved-catalog";
@@ -562,7 +565,7 @@ it("reveals long explanations a message at a time and keeps the pause across rel
   const restored = await browser({ storage: app.storage, acknowledge: false });
   expect(restored.root("lesson").textContent).toBe(visible);
   expect(restored.root("continue").hidden).toBe(true);
-  expect(restored.root("check-progress").hidden).toBe(true);
+  expect(restored.root("hint").hidden).toBe(true);
   let next = find(
     restored.root("lesson"),
     (element) =>
@@ -1025,7 +1028,7 @@ it("keeps earlier turns visible and reveals the next lesson only after the learn
 
 it("does not reveal the recovery edit before the observed failure, then retries the original cart", async () => {
   const app = await browser({ phase: "fail", checkOk: true });
-  await app.click("check-progress");
+  await app.poll();
   const guidance = app
     .root("lesson")
     .children.find(
@@ -1073,13 +1076,13 @@ it("waits for an explicit seed command instead of completing from a saved scenar
     checkOk: true,
     entryState: { catalog: [], inventory: {} },
   });
-  await app.click("check-progress");
+  await app.poll();
   expect(app.completed()).not.toContain("seed");
   app.server.state = {
     catalog: CATALOG.map(({ stock: _stock, ...product }) => product),
     inventory: { "house-blend": 5, "dark-roast": 3, decaf: 0 },
   };
-  await app.click("check-progress");
+  await app.poll();
   expect(app.completed()).toContain("seed");
 });
 
@@ -1258,13 +1261,13 @@ it("does not complete the focused scenario until its live change preserves other
       inventory: { "dark-roast": 4, decaf: 5, "house-blend": 3 },
     },
   });
-  await app.click("check-progress");
+  await app.poll();
   expect(app.completed()).not.toContain("scenario");
   app.server.state.inventory = { "dark-roast": 5, decaf: 0, "house-blend": 3 };
-  await app.click("check-progress");
+  await app.poll();
   expect(app.completed()).not.toContain("scenario");
   app.server.state.inventory.decaf = 5;
-  await app.click("check-progress");
+  await app.poll();
   expect(app.completed()).toContain("scenario");
   expect(app.root("lesson").textContent).toContain("--port 4123");
   expect(app.root("lesson").textContent).toContain(
@@ -1276,7 +1279,7 @@ it.each(PHASES.filter((phase) => phase.check))(
   "puts feedback for $id in Milo’s conversation once per verified save",
   async (phase) => {
     const app = await browser({ phase: phase.id, checkOk: true });
-    await app.click("check-progress");
+    await app.poll();
     const opening = phase.verification!.split(". ")[0]!;
     const feedback = app
       .root("lesson")
@@ -1439,7 +1442,7 @@ it("lets a resumed seed lesson demonstrate reset even when startup already appli
       element.tag === "button" && element.textContent === "Resume this project",
   )!.onclick!();
   await app.acknowledge();
-  await app.click("check-progress");
+  await app.poll();
   expect(app.root("lesson").textContent).toContain(
     "Startup has already applied the baseline",
   );
@@ -1448,12 +1451,12 @@ it("lets a resumed seed lesson demonstrate reset even when startup already appli
   );
   expect(app.completed()).not.toContain("seed");
   app.server.state.inventory!["dark-roast"] = 0;
-  await app.click("check-progress");
+  await app.poll();
   expect(app.root("lesson").textContent).toContain(
-    "The running inventory has changed. Run the reset scenario in the REPL, then click Check my work.",
+    "The running inventory has changed. Run the reset scenario in the REPL.",
   );
   app.server.state.inventory!["dark-roast"] = 3;
-  await app.click("check-progress");
+  await app.poll();
   expect(app.completed()).toContain("seed");
 });
 
@@ -1529,7 +1532,7 @@ it("uses the observed post-purchase stock when entering the reusable scenario le
   await app.click("continue");
   // The information snapshot preceded the order; the product response observed 4.
   app.server.state.inventory!["dark-roast"] = 5;
-  await app.click("check-progress");
+  await app.poll();
   expect(app.completed()).toContain("scenario");
 });
 
@@ -1540,10 +1543,10 @@ it("lets an already-restocked shop establish a new observable starting quantity"
     entryState: { catalog: [], inventory: { "dark-roast": 5, decaf: 0 } },
   });
   app.server.state.inventory = { "dark-roast": 4, decaf: 0 };
-  await app.click("check-progress");
+  await app.poll();
   expect(app.completed()).not.toContain("scenario");
   app.server.state.inventory["dark-roast"] = 5;
-  await app.click("check-progress");
+  await app.poll();
   expect(app.completed()).toContain("scenario");
 });
 
@@ -2002,7 +2005,7 @@ it("keeps each refresh snapshot immutable and marks an interrupted exchange on r
 });
 
 it.each(PHASES.filter((phase) => phase.check))(
-  "ends $id at the edit and waits for a verified save before giving its test action",
+  "detects a verified save for $id without a manual check",
   async (phase) => {
     const app = await browser({ phase: phase.id });
     const currentTurns = () =>
@@ -2036,10 +2039,10 @@ it.each(PHASES.filter((phase) => phase.check))(
       files: [{ file: phase.edits[0]!.file, before: "old", after: "saved" }],
     });
     await app.poll();
-    const nextPrompt = currentTurns().at(-1)!;
-    expect(nextPrompt.textContent).toContain(
-      phase.verification!.replaceAll("`", ""),
-    );
+    const nextPrompt = currentTurns().find((turn) =>
+      turn.textContent.includes(phase.verification!.replaceAll("`", "")),
+    )!;
+    expect(nextPrompt).toBeDefined();
     expect(
       find(
         nextPrompt,
@@ -2049,7 +2052,7 @@ it.each(PHASES.filter((phase) => phase.check))(
     const after = app.root("lesson").textContent;
     await app.poll();
     expect(app.root("lesson").textContent).toBe(after);
-    expect(app.completed()).not.toContain(phase.id);
+    expect(app.completed().includes(phase.id)).toBe(phase.id === "context");
   },
 );
 
@@ -2203,4 +2206,179 @@ it("keeps completion feedback only in Milo’s conversation without a separate U
   ).toHaveLength(1);
   expect(app.root("save-check").textContent).toBe("");
   expect(app.root("continue").hidden).toBe(false);
+});
+
+it.each(PHASES)(
+  "offers a precise hint for $id without advancing or doing the work",
+  async (phase) => {
+    const app = await browser({ phase: phase.id });
+    expect(app.root("hint").hidden).toBe(false);
+    const hint = phase.hint!.replaceAll("`", "");
+    expect(app.root("lesson").textContent).not.toContain(hint);
+    const completed = app.completed();
+    const beforeRequests = app.calls.filter(
+      (call) =>
+        call.path === "/tutorial/workspace" && call.body?.action === "prepare",
+    ).length;
+    await app.click("hint");
+    expect(app.root("hint").textContent).toBe("Hide hint");
+    expect(app.root("lesson").textContent).toContain(hint);
+    expect(app.completed()).toEqual(completed);
+    expect(
+      app.calls.filter(
+        (call) =>
+          call.path === "/tutorial/workspace" &&
+          call.body?.action === "prepare",
+      ),
+    ).toHaveLength(beforeRequests);
+    const visible = app.root("lesson").textContent;
+    await app.poll();
+    expect(app.root("lesson").textContent).toBe(visible);
+    const restored = await browser({ storage: app.storage });
+    expect(restored.root("lesson").textContent).toContain(hint);
+    await app.click("hint");
+    expect(app.root("hint").textContent).toBe("Hint");
+    expect(app.root("lesson").textContent).not.toContain(hint);
+  },
+);
+
+it("gives approval guidance through Hint without applying the proposed edit", async () => {
+  const app = await browser({ phase: "catalog", workspace: true });
+  await app.click("hint");
+  expect(app.root("lesson").textContent).toContain(
+    "Expand the proposed file diff and review the highlighted additions and removals.",
+  );
+  expect(app.server.workspace.prepared).not.toContain("catalog");
+  expect(app.calls.filter((call) => call.body?.action === "prepare")).toEqual(
+    [],
+  );
+});
+
+it("switches from an edit hint to the precise test hint after an automatic save check", async () => {
+  const app = await browser({ phase: "catalog" });
+  await app.click("hint");
+  expect(app.root("lesson").textContent).toContain(
+    "Replace only .random() with .json(catalog), then save.",
+  );
+  app.server.checkOk = true;
+  app.server.revision = "saved-catalog";
+  app.server.workspace.changes.push({
+    id: 1,
+    actor: "you",
+    phaseId: "catalog",
+    files: [{ file: "routes/products.ts", before: "random", after: "catalog" }],
+  });
+  await app.poll();
+  expect(app.root("hint").textContent).toBe("Hint");
+  await app.click("hint");
+  expect(app.root("lesson").textContent).toContain(
+    "Click Refresh products at the top right. Expand the GET request’s HTTP details in your chat bubble to see the three coffees returned by your catalog.",
+  );
+  expect(app.completed()).not.toContain("catalog");
+});
+
+it("completes context from a valid save and live empty collections without a manual check", async () => {
+  const app = await browser({ phase: "context" });
+  expect(coffeeShopPage("/tmp/demo")).not.toContain("check-progress");
+  expect(coffeeShopPage("/tmp/demo")).not.toContain("Check my work");
+  await app.poll();
+  expect(app.completed()).not.toContain("context");
+  app.server.checkOk = true;
+  app.server.revision = "context-complete";
+  app.server.workspace.changes.push({
+    id: 1,
+    actor: "you",
+    phaseId: "context",
+    files: [
+      { file: "routes/_.context.ts", before: "TODO", after: "implemented" },
+    ],
+  });
+  await app.poll();
+  expect(app.completed()).toContain("context");
+  expect(app.root("hint").hidden).toBe(true);
+  expect(app.root("continue").hidden).toBe(false);
+  const visible = app.root("lesson").textContent;
+  await app.poll();
+  expect(app.root("lesson").textContent).toBe(visible);
+});
+
+it("provides a quiz hint without answering or completing the observation", async () => {
+  const app = await browser({ phase: "observe" });
+  app.add("dark-roast");
+  await app.click("checkout");
+  expect(app.root("hint").hidden).toBe(false);
+  await app.click("hint");
+  expect(app.root("lesson").textContent).toContain(
+    "Compare the before and after stock counts shown with the question.",
+  );
+  expect(app.completed()).not.toContain("observe");
+  expect(app.root("inventory-question").textContent).toContain(
+    "Does accepting an order also subtract stock?",
+  );
+});
+
+it("automatically guides a restock experiment that starts at five bags", async () => {
+  const inventory = { "dark-roast": 5, decaf: 0 };
+  const app = await browser({
+    phase: "scenario",
+    checkOk: true,
+    entryState: { catalog: [], inventory },
+    state: { catalog: [], inventory: { ...inventory } },
+  });
+  expect(app.root("lesson").textContent).toContain(
+    "set Dark Roast inventory to 4 in the REPL.",
+  );
+  await app.click("hint");
+  expect(app.root("lesson").textContent).toContain(
+    "assign 4 to the dark-roast entry in context.inventory",
+  );
+  app.server.state.inventory!["dark-roast"] = 4;
+  await app.poll();
+  expect(app.root("lesson").textContent).toContain(
+    "Dark Roast’s quantity has changed. Run restockDarkRoast",
+  );
+  expect(app.completed()).not.toContain("scenario");
+  app.server.state.inventory!["dark-roast"] = 5;
+  await app.poll();
+  expect(app.completed()).toContain("scenario");
+});
+
+it("does not repeat automatic checkpoint failures on unchanged polling", async () => {
+  const app = await browser({
+    phase: "context",
+    workspace: true,
+    prepared: ["context"],
+  });
+  app.server.checkpointError = true;
+  app.server.checkOk = true;
+  app.server.revision = "context-done";
+  app.server.workspace.changes.push({
+    id: 1,
+    actor: "you",
+    phaseId: "context",
+    files: [{ file: "routes/_.context.ts", before: "TODO", after: "done" }],
+  });
+  await app.poll();
+  await new Promise((resolve) => setImmediate(resolve));
+  expect(app.completed()).not.toContain("context");
+  const before = app.root("lesson").textContent;
+  await app.poll();
+  await app.poll();
+  expect(app.root("lesson").textContent).toBe(before);
+  expect(
+    app.calls.filter((call) => call.body?.action === "checkpoint"),
+  ).toHaveLength(1);
+  await app.click("hint");
+  expect(app.root("lesson").textContent).toContain(
+    "Click Retry saving progress in the conversation",
+  );
+  app.server.checkpointError = false;
+  await find(
+    app.root("lesson"),
+    (element) =>
+      element.tag === "button" &&
+      element.textContent === "Retry saving progress",
+  )!.onclick!();
+  await app.acknowledge();
+  expect(app.completed()).toContain("context");
 });

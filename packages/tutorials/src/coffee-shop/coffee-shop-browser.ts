@@ -192,6 +192,7 @@ export function runCoffeeShopWalkthrough(
     command?: string;
     verificationRevision?: string;
     waitForAction?: boolean;
+    hint?: string;
   };
   type Proposal = {
     files?: FileChange[];
@@ -203,6 +204,7 @@ export function runCoffeeShopWalkthrough(
   const proposals = new Map<string, Proposal>();
   const revealedMessages: Record<string, number> = {};
   const displayedMessages = new Set<string>();
+  const revealedHints = new Map<string, { messageId: string; text: string }>();
   let messageAllowance = 1;
   let folderOpened = false;
   let typing: { id: string; shown: number } | undefined;
@@ -253,8 +255,13 @@ export function runCoffeeShopWalkthrough(
   let seenChanges = new Set<number>();
   let seenReplSubmissions = new Set<string>();
   let turns: Turn[] = [];
-  function record(role: Turn["role"], text: string, waitForAction = false) {
-    const turn: Turn = { phaseId: phase().id, role, text, waitForAction };
+  function record(
+    role: Turn["role"],
+    text: string,
+    waitForAction = false,
+    hint?: string,
+  ) {
+    const turn: Turn = { phaseId: phase().id, role, text, waitForAction, hint };
     turns.push(turn);
     save();
     return turn;
@@ -341,6 +348,7 @@ export function runCoffeeShopWalkthrough(
           diffStates,
           revealedMessages,
           displayedMessages: [...displayedMessages],
+          revealedHints: [...revealedHints],
           folderOpened,
         }),
       );
@@ -535,7 +543,8 @@ export function runCoffeeShopWalkthrough(
   let finishing = false;
   let checkpointRetry: (() => unknown) | undefined;
   async function finish(completionMessage = "Observed behavior verified.") {
-    if (missing() || completed.has(phase().id) || finishing) return;
+    if (missing() || completed.has(phase().id) || finishing || checkpointRetry)
+      return;
     if (info?.workspace?.enabled) {
       finishing = true;
       try {
@@ -555,7 +564,10 @@ export function runCoffeeShopWalkthrough(
           "Could not save lesson progress: " +
           (error instanceof Error ? error.message : String(error));
         record("tutor", message, true);
-        checkpointRetry = () => finish(completionMessage);
+        checkpointRetry = () => {
+          checkpointRetry = undefined;
+          return finish(completionMessage);
+        };
         renderLesson();
         return;
       } finally {
@@ -878,6 +890,13 @@ export function runCoffeeShopWalkthrough(
   }
   function turnBubble(turn: Turn, openHints: Set<string>) {
     const result = bubble(turn.role, turn.text, turn.phaseId);
+    const turnPhase =
+      phases.find((candidate) => candidate.id === turn.phaseId) ?? phase();
+    result.dataset.hintText =
+      turn.hint ??
+      (turn.verificationRevision ? turnPhase.verificationHint : undefined) ??
+      turnPhase.hint ??
+      turnPhase.instruction;
     if (turn.waitForAction || turn.verificationRevision) {
       result.dataset.action = "true";
       if (turn.phaseId === phase().id && !completed.has(turn.phaseId))
@@ -989,6 +1008,8 @@ export function runCoffeeShopWalkthrough(
           children.some((child) => child.dataset.waitForAction === "true")
         )
           message.dataset.waitForAction = "true";
+        message.dataset.hintText =
+          element.dataset.hintText ?? phase().hint ?? phase().instruction;
         if (partIndex === 0) message.id = element.id;
         if (partIndex === groups.length - 1 && element.dataset.proposal)
           message.dataset.proposal = element.dataset.proposal;
@@ -1024,8 +1045,48 @@ export function runCoffeeShopWalkthrough(
     lesson.replaceChildren(...visible);
     if (waiting) {
       (byId("continue") as HTMLButtonElement).hidden = true;
-      if (!waitingForAction)
-        (byId("check-progress") as HTMLButtonElement).hidden = true;
+      if (!waitingForAction) (byId("hint") as HTMLButtonElement).hidden = true;
+    }
+  }
+  function currentHint() {
+    const prompt = (Array.from(byId("lesson").children) as HTMLElement[])
+      .filter((element) => element.className.split(" ").includes("tutor-turn"))
+      .at(-1);
+    const quiz =
+      phase().id === "observe" && observation && !completed.has("observe");
+    if (!prompt || (!quiz && prompt.dataset.waitForAction !== "true")) return;
+    let text = prompt.dataset.hintText ?? phase().hint ?? phase().instruction;
+    if (checkpointRetry)
+      text =
+        "Your API experiment succeeded, but saving its lesson checkpoint failed. Click Retry saving progress in the conversation to save that checkpoint without repeating the order.";
+    else if (quiz)
+      text = quizWrong
+        ? "Click Try again below the inventory question. Compare the stock before and after the order: unchanged stock means the order did not subtract it; a decrease by the purchased quantity means it did."
+        : "Compare the before and after stock counts shown with the question. Choose No if stock stayed the same, or Yes if it fell by the purchased quantity.";
+    return {
+      prompt,
+      text,
+      key: JSON.stringify([prompt.dataset.messageId, text]),
+    };
+  }
+  function renderHint() {
+    const control = byId("hint") as HTMLButtonElement;
+    const hint = currentHint();
+    control.hidden = !hint || !!typing;
+    control.textContent =
+      hint && revealedHints.has(hint.key) ? "Hide hint" : "Hint";
+    for (const message of Array.from(
+      byId("lesson").children,
+    ) as HTMLElement[]) {
+      for (const revealed of revealedHints.values()) {
+        if (revealed.messageId !== message.dataset.messageId) continue;
+        const content = node("aside", "", "notice lesson-hint");
+        content.append(
+          node("strong", "Hint"),
+          fileText("p", revealed.text, message.dataset.phase),
+        );
+        message.append(content);
+      }
     }
   }
   function acknowledgeVisibleMessages() {
@@ -1044,6 +1105,7 @@ export function runCoffeeShopWalkthrough(
   }
   function scrollToLatestMessage() {
     paceConversation();
+    renderHint();
     const lesson = byId("lesson");
     const content = lesson.textContent ?? "";
     const end = node("div", "", "conversation-end");
@@ -1086,7 +1148,7 @@ export function runCoffeeShopWalkthrough(
     message.dataset.typing = "true";
     message.setAttribute("aria-busy", "true");
     (byId("continue") as HTMLButtonElement).hidden = true;
-    (byId("check-progress") as HTMLButtonElement).hidden = true;
+    (byId("hint") as HTMLButtonElement).hidden = true;
     const draw = () => {
       let remaining = typing!.shown;
       for (const item of text) {
@@ -1168,6 +1230,8 @@ export function runCoffeeShopWalkthrough(
             ? "Your next lesson is " + next.lesson + ": " + next.title + "."
             : "You’ve completed the walkthrough. Your API is available for more experiments."),
       );
+      handoff.dataset.hintText =
+        "Click Resume this project to continue from the saved lesson checkpoint. Your files will be kept and the shop will start with fresh cart and request observations.";
       handoff.dataset.action = "true";
       handoff.dataset.waitForAction = "true";
       handoff.append(
@@ -1192,7 +1256,7 @@ export function runCoffeeShopWalkthrough(
       );
       lesson.append(handoff);
       (byId("continue") as HTMLButtonElement).hidden = true;
-      (byId("check-progress") as HTMLButtonElement).hidden = true;
+      (byId("hint") as HTMLButtonElement).hidden = true;
       scrollToLatestMessage();
       return;
     }
@@ -1265,6 +1329,9 @@ export function runCoffeeShopWalkthrough(
         );
         const preview = proposals.get(revealed.id);
         const applied = prepared || !!appliedEdit;
+        proposal.dataset.hintText = preview?.error
+          ? "Click Retry preview to regenerate the proposed diff. This only prepares a preview; your files stay unchanged until you approve it."
+          : "Expand the proposed file diff and review the highlighted additions and removals. Click Apply changes to approve exactly those edits.";
         proposal.dataset.proposal = revealed.id;
         proposal.dataset.action = "true";
         if (active && !applied && !finished && info?.workspace?.enabled)
@@ -1361,11 +1428,17 @@ export function runCoffeeShopWalkthrough(
         continue;
       const exercise = bubble("tutor", "", revealed.id);
       exercise.dataset.action = "true";
-      if (active && !finished) exercise.dataset.waitForAction = "true";
+      exercise.dataset.hintText = revealed.hint ?? revealed.instruction;
+      if (active && !finished && !ready)
+        exercise.dataset.waitForAction = "true";
+      if (active && !finished && !revealed.check)
+        exercise.dataset.waitForAction = "true";
       if (!revealed.preparation && revealed.id !== "explore")
         exercise.append(explanation);
       if (revealed.id === "explore" && walkthroughVersion >= 4) {
         const folderPrompt = bubble("tutor", "", revealed.id);
+        folderPrompt.dataset.hintText =
+          "Click the demo-folder link to open the project in VSCode, or open that folder in your preferred editor. Once it is open, click Folder is open.";
         folderPrompt.dataset.action = "true";
         if (active && !finished && !folderOpened)
           folderPrompt.dataset.waitForAction = "true";
@@ -1414,12 +1487,6 @@ export function runCoffeeShopWalkthrough(
       ? "Next Lesson: " + next.title
       : "Walkthrough complete";
     nextButton.hidden = !completed.has(current.id) || !next;
-    (byId("check-progress") as HTMLButtonElement).hidden = !!(
-      current.preparation &&
-      info?.workspace?.enabled &&
-      !info.workspace.prepared.includes(current.id) &&
-      !completed.has(current.id)
-    );
     renderStatus();
     scrollToLatestMessage();
   }
@@ -1611,6 +1678,7 @@ export function runCoffeeShopWalkthrough(
     }
     if (source === "manual") {
       let nextAction: string | undefined;
+      let nextHint: string | undefined;
       if (id === "connect" && ready && orderIds.length === 0)
         nextAction =
           "Click Add to cart on House Blend, then click Place order.";
@@ -1620,11 +1688,20 @@ export function runCoffeeShopWalkthrough(
       if (id === "restock" && inventoryOf()["dark-roast"] === 5)
         nextAction =
           "Dark Roast now has 5 bags, so buying one should leave 4. Click Add to cart on Dark Roast once, then click Place order.";
+      if (id === "connect")
+        nextHint =
+          "On the House Blend card, click Add to cart once, then click Place order in the cart.";
+      if (id === "decaf")
+        nextHint =
+          "On the Decaf card showing 5 bags, click Add to cart once, then click Place order in the cart.";
+      if (id === "restock")
+        nextHint =
+          "On the Dark Roast card showing 5 bags, click Add to cart once, then click Place order in the cart.";
       if (
         nextAction &&
         !turns.some((turn) => turn.phaseId === id && turn.text === nextAction)
       ) {
-        record("tutor", nextAction, true);
+        record("tutor", nextAction, true, nextHint);
         renderLesson();
       }
     }
@@ -1652,6 +1729,7 @@ export function runCoffeeShopWalkthrough(
           "tutor",
           "The example is saved. Wait for Counterfact to reload the spec, then refresh products again to observe it.",
           true,
+          "Click Refresh products again after Counterfact has reloaded the saved OpenAPI file. The response values must match your saved examples.",
         );
         renderLesson();
       }
@@ -1664,7 +1742,12 @@ export function runCoffeeShopWalkthrough(
       else {
         const message =
           "The catalog is in place. Click Refresh products once more and compare the two responses in the chat.";
-        record("tutor", message, true);
+        record(
+          "tutor",
+          message,
+          true,
+          "Click Refresh products at the top right once more. Compare this GET response with the previous one in the chat; the three catalog entries should match.",
+        );
         renderLesson();
       }
     }
@@ -1717,7 +1800,7 @@ export function runCoffeeShopWalkthrough(
           ? error.message
           : "Product request failed. Click Refresh products to retry.";
       if (source === "manual") {
-        record("tutor", "The product refresh failed: " + message);
+        record("tutor", "The product refresh failed: " + message, true);
         renderLesson();
       }
       renderShop();
@@ -1790,7 +1873,12 @@ export function runCoffeeShopWalkthrough(
         else {
           const message =
             "The next confirmation should have an order ID one greater than the first. Click Add to cart on House Blend, then Place order again.";
-          record("tutor", message, true);
+          record(
+            "tutor",
+            message,
+            true,
+            "Add one bag of House Blend again, then click Place order. This uses the same context counter for a second confirmation.",
+          );
         }
       }
       if (
@@ -1813,7 +1901,12 @@ export function runCoffeeShopWalkthrough(
         rejectionSeen = true;
         const message =
           "The oversized order was rejected. Click Empty cart, restore Dark Roast inventory to 3 in the terminal’s REPL, then click Refresh products.";
-        record("tutor", message, true);
+        record(
+          "tutor",
+          message,
+          true,
+          "Click Empty cart in the shop. In the REPL, assign 3 to the `dark-roast` entry in `context.inventory`. Return to the shop and click Refresh products.",
+        );
       }
       const quantity = items
         .filter((item) => item.productId === "dark-roast")
@@ -1869,7 +1962,7 @@ export function runCoffeeShopWalkthrough(
           : "No order confirmation. Your cart has been kept; inspect the API before retrying.";
       byId("shop-notice").textContent =
         "We couldn’t place your order. Your cart has been kept.";
-      record("tutor", "The order has no usable confirmation: " + message);
+      record("tutor", "The order has no usable confirmation: " + message, true);
     } finally {
       busy = false;
       renderLesson();
@@ -1906,6 +1999,8 @@ export function runCoffeeShopWalkthrough(
       const locationsChanged =
         JSON.stringify(info?.workspace?.locations) !==
         JSON.stringify(latest.workspace?.locations);
+      const stateChanged = !!info && !equal(info.state, latest.state);
+      if (stateChanged) acknowledgeVisibleMessages();
       info = latest;
       const changed = syncChanges(info.workspace?.changes);
       if (
@@ -1958,7 +2053,21 @@ export function runCoffeeShopWalkthrough(
             : "";
         if (
           ready &&
-          (force || changed || changedAfterCheck) &&
+          (force ||
+            changed ||
+            changedAfterCheck ||
+            checkedPhase !== requestedId) &&
+          requestedId !== "context" &&
+          !(
+            requestedId === "scenario" &&
+            entryState?.inventory?.["dark-roast"] === 5 &&
+            info.state.inventory?.["dark-roast"] !== 5
+          ) &&
+          !(
+            requestedId === "seed" &&
+            entryState?.inventory?.["dark-roast"] === 3 &&
+            info.state.inventory?.["dark-roast"] !== 3
+          ) &&
           !completed.has(requestedId) &&
           !turns.some(
             (turn) =>
@@ -1970,9 +2079,19 @@ export function runCoffeeShopWalkthrough(
             "tutor",
             requestedId === "seed" &&
               entryState?.inventory?.["dark-roast"] === 3
-              ? "Startup has already applied the baseline in this session. To observe reset changing state, set Dark Roast to 0 in the REPL and click Check my work."
-              : (phase().verification ?? checked.message),
+              ? "Startup has already applied the baseline in this session. To observe reset changing state, set Dark Roast to 0 in the REPL."
+              : requestedId === "scenario" &&
+                  entryState?.inventory?.["dark-roast"] === 5
+                ? "Dark Roast already has 5 bags. To make your scenario’s change observable, set Dark Roast inventory to 4 in the REPL."
+                : (phase().verification ?? checked.message),
             true,
+            requestedId === "seed" &&
+              entryState?.inventory?.["dark-roast"] === 3
+              ? "In the terminal’s REPL, assign 0 to the `dark-roast` entry in `context.inventory` and press Enter. Milo will detect that the baseline has changed."
+              : requestedId === "scenario" &&
+                  entryState?.inventory?.["dark-roast"] === 5
+                ? "In the terminal’s REPL, assign 4 to the `dark-roast` entry in `context.inventory` and press Enter. Milo will detect the lower quantity automatically."
+                : phase().verificationHint,
           );
           feedback.verificationRevision = revision;
           announcedSave = true;
@@ -1985,7 +2104,7 @@ export function runCoffeeShopWalkthrough(
         checkedRevision = revision;
         checkedPhase = requestedId;
       }
-      if (force && !missing() && ready) {
+      if (!missing() && ready && !completed.has(requestedId)) {
         if (
           requestedId === "seed" &&
           entryState?.inventory?.["dark-roast"] === 3 &&
@@ -1994,8 +2113,9 @@ export function runCoffeeShopWalkthrough(
           entryState = JSON.parse(JSON.stringify(info.state));
           record(
             "tutor",
-            "The running inventory has changed. Run the reset scenario in the REPL, then click Check my work.",
+            "The running inventory has changed. Run the reset scenario in the REPL.",
             true,
+            phase().verificationHint,
           );
           renderLesson();
         }
@@ -2006,7 +2126,10 @@ export function runCoffeeShopWalkthrough(
           info.state.inventory &&
           Object.keys(info.state.inventory).length === 0
         )
-          finish();
+          finish(
+            phase().verification ??
+              "Your shared context implementation is ready.",
+          );
         if (
           requestedId === "seed" &&
           info.state.inventory?.["dark-roast"] === 3 &&
@@ -2014,12 +2137,19 @@ export function runCoffeeShopWalkthrough(
         )
           finish();
         if (requestedId === "scenario") {
-          if (
+          const loweredFromFive =
             entryState?.inventory?.["dark-roast"] === 5 &&
-            info.state.inventory &&
-            info.state.inventory["dark-roast"] !== 5
-          ) {
+            !!info.state.inventory &&
+            info.state.inventory["dark-roast"] !== 5;
+          if (loweredFromFive) {
             entryState = JSON.parse(JSON.stringify(info.state));
+            record(
+              "tutor",
+              "Dark Roast’s quantity has changed. Run `restockDarkRoast` through the REPL’s `.scenario` command.",
+              true,
+              phase().verificationHint,
+            );
+            renderLesson();
           }
           const before = entryState?.inventory,
             after = info.state.inventory;
@@ -2033,10 +2163,10 @@ export function runCoffeeShopWalkthrough(
             )
           )
             finish();
-          else if (!announcedSave) {
+          else if (!announcedSave && stateChanged && !loweredFromFive) {
             record(
               "tutor",
-              "Other inventory should stay unchanged. With Dark Roast below 5, run `restockDarkRoast` through the REPL’s `.scenario` command, refresh products, then click Check my work.",
+              "Other inventory should stay unchanged. With Dark Roast below 5, run `restockDarkRoast` through the REPL’s `.scenario` command.",
               true,
             );
             renderLesson();
@@ -2047,7 +2177,7 @@ export function runCoffeeShopWalkthrough(
       renderStatus();
     } catch {
       checkMessage =
-        "Could not check saved files. Check Counterfact’s terminal, then click Check my work to retry.";
+        "Could not check saved files. I’ll retry automatically. Check Counterfact’s terminal for errors.";
       renderStatus();
     }
   }
@@ -2063,12 +2193,16 @@ export function runCoffeeShopWalkthrough(
     busy = false;
     renderShop();
   };
-  byId("check-progress").onclick = async () => {
-    acknowledgeVisibleMessages();
-    await checkFiles();
-    record("you", "Please check my work.");
+  byId("hint").onclick = () => {
+    const hint = currentHint();
+    if (!hint || typing) return;
+    if (revealedHints.has(hint.key)) revealedHints.delete(hint.key);
+    else
+      revealedHints.set(hint.key, {
+        messageId: hint.prompt.dataset.messageId!,
+        text: hint.text,
+      });
     renderLesson();
-    return checkFiles(true);
   };
   byId("checkout").onclick = placeOrder;
   byId("empty-cart").onclick = () => {
@@ -2118,6 +2252,15 @@ export function runCoffeeShopWalkthrough(
       ) {
         restored = true;
         folderOpened = saved.folderOpened === true;
+        if (Array.isArray(saved.revealedHints))
+          for (const entry of saved.revealedHints)
+            if (
+              Array.isArray(entry) &&
+              typeof entry[0] === "string" &&
+              typeof entry[1]?.messageId === "string" &&
+              typeof entry[1]?.text === "string"
+            )
+              revealedHints.set(entry[0], entry[1]);
         if (Array.isArray(saved.displayedMessages)) {
           typing = undefined;
           displayedMessages.clear();

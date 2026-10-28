@@ -62,9 +62,14 @@ learner save. Preparation is idempotent and does not run scenarios or seed live
 state.
 
 **Okay** only continues an explanation. Action prompts wait for real approval,
-saves, REPL submissions, or shop experiments. Each prompt ends at its instruction,
+saves, REPL submissions, or shop experiments. A **Hint** button appears while
+waiting for learner work and reveals precise instructions for that particular
+action. Revealing a hint does not approve edits, run requests, or complete lessons;
+revealed hints remain in the conversation across reloads. Each prompt ends at its instruction,
 with necessary context and expected results before it. Editing prompts stop at
-saving; a verified save reveals the shop or REPL test. Refreshes and responses
+saving; a verified save reveals the shop or REPL test. Completion is detected
+automatically from verified saves and the running state, without a manual check
+button. Refreshes and responses
 unlock subsequent order, cleanup, and quiz steps. Live requests still earn the
 required observations.
 **Next Lesson** names the next concept. The divider resizes the panels; new text

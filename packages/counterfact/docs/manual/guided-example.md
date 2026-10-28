@@ -199,8 +199,9 @@ completion are separate: seeing a diff does not mark an exercise complete.
 Saved-file detection runs in the background without requesting new products.
 Checks call snapshots of your saved functions with fresh, isolated context, so
 they do not consume the running shop’s inventory or its order IDs. Missing methods
-and incomplete implementations produce guidance. Fix the code and save again, or
-click **Check my work** to retry.
+and incomplete implementations produce guidance. Saving a correction triggers
+another check automatically. Use **Hint** whenever Milo is waiting for you to
+reveal precise instructions for the current action.
 
 When your saved code passes, Milo adds feedback to the conversation that names
 the behavior you implemented and suggests the next experiment. Repeated checks
@@ -268,7 +269,8 @@ An open guide detects a server restart and reloads into this handoff.
 
 If you return to the initialization lesson after `startup` has already seeded
 the inventory, Milo explains how to make reset observable: set Dark Roast to 0
-in the REPL, click **Check my work**, then run `.scenario reset` and check again.
+in the REPL, wait for Milo to observe that change, then run the reset scenario.
+Milo detects the restored baseline automatically.
 Resuming never resets state or edits your files. Existing generated demos remain untouched;
 start a new guided example to use the rebuilt walkthrough.
 

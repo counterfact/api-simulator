@@ -177,6 +177,8 @@ export type LessonPhase = {
   edits: { file: string; instruction: string }[];
   preparation?: string;
   approval?: string;
+  hint?: string;
+  verificationHint?: string;
   check?: boolean;
   verification?: string;
 };
@@ -276,7 +278,7 @@ export const PHASES_V2: LessonPhase[] = [
   {
     id: "context",
     verification:
-      "Great job! Your context methods combine product descriptions with stock and give each confirmation a successive order ID. The running collections are still empty; their starting data comes next. In the terminal’s ⬣> REPL, inspect `context.catalog` and `context.inventory`, then click Check my work.",
+      "Great job! Your context methods combine product descriptions with stock and give each confirmation a successive order ID. The running collections are still empty; their starting data comes next.",
     preparation:
       "Add empty `catalog` and `inventory` fields, the order counter, and two method stubs to routes/_.context.ts. `Product` and `OrderItem` come from Counterfact’s generated types, matching the OpenAPI schemas. The `Product[]` return type on `listProducts` lets your editor check that each returned coffee includes `stock`.",
     lesson: 5,
@@ -296,7 +298,7 @@ export const PHASES_V2: LessonPhase[] = [
   {
     id: "seed",
     verification:
-      "Your saved scenarios now provide a starting catalog and inventory, with startup reusing reset. In the REPL, use the `.scenario` command to run `reset`, inspect `context.inventory`, then click Check my work.",
+      "Your saved scenarios now provide a starting catalog and inventory, with startup reusing reset. In the REPL, use the `.scenario` command to run `reset`.",
     preparation:
       "Add `Context.reset()` and the `reset` scenario containing the catalog and initial quantities. `reset` clears state and IDs before the scenario installs its baseline. Nothing applies the scenario to the running API yet.",
     lesson: 6,
@@ -412,7 +414,7 @@ export const PHASES_V2: LessonPhase[] = [
   {
     id: "scenario",
     verification:
-      "Your saved restock scenario changes Dark Roast without replacing the rest of the shop’s state. Run it in the REPL, refresh products, and click Check my work to verify the running result.",
+      "Your saved restock scenario changes Dark Roast without replacing the rest of the shop’s state. Run `restockDarkRoast` through the REPL’s `.scenario` command.",
     preparation:
       "Append an empty `restockDarkRoast` scenario, keeping `reset` and `startup`. It includes a guard for missing baseline inventory; you supply the assignment that changes Dark Roast.",
     lesson: 12,
@@ -477,6 +479,86 @@ export const PHASES_V4: LessonPhase[] = [
       .replaceAll("POST /orders", "POST /shop/orders"),
   })),
 ];
+const PHASE_HINTS: Record<string, { hint: string; verificationHint?: string }> =
+  {
+    orientation: {
+      hint: "Choose a coffee card showing at least one bag available. Click its Add to cart button once. Your cart will show one bag and a total; click Place order.",
+    },
+    explore: {
+      hint: "Click Refresh products at the top right of the shop. In your new chat bubble, expand the GET request’s HTTP details and compare its response body with the coffee cards.",
+    },
+    "name-example": {
+      hint: "In openapi.yaml, find the name property inside components → schemas → Product → properties. Add an `example` property at the same indentation as `type`, using House Blend as its string value. Keep the existing limits and save the file.",
+      verificationHint:
+        "Click Refresh products at the top right. Expand the GET request’s HTTP details in your chat bubble and compare the name values with your saved example.",
+    },
+    "description-example": {
+      hint: "In openapi.yaml, find description inside components → schemas → Product → properties. Add `examples` at the same indentation as `type` and `maxLength`. Under it, indent a YAML list with at least two different coffee descriptions, each on its own line starting with a dash. Keep each description within 120 characters, preserve the existing type and limit, then save.",
+      verificationHint:
+        "Click Refresh products at the top right. Expand the GET request’s HTTP details in your chat bubble. Every description should come from the examples you saved.",
+    },
+    catalog: {
+      hint: "In routes/products.ts, find the return statement inside GET. Keep `$.response.status(200)` and the supplied catalog constant. Replace only `.random()` with `.json(catalog)`, then save.",
+      verificationHint:
+        "Click Refresh products at the top right. Expand the GET request’s HTTP details in your chat bubble to see the three coffees returned by your catalog.",
+    },
+    order: {
+      hint: "In routes/orders.ts, keep the 201 status. Replace the random response with a JSON response containing two properties: `orderId` with the number 1, and `items` with the submitted array from `$.body.items`. Save the file.",
+      verificationHint:
+        "Click Add to cart on House Blend once, then click Place order in the cart.",
+    },
+    fail: {
+      hint: "In routes/orders.ts, locate the existing `ordersAvailable` constant above POST. Change its value from `true` to `false`, preserving the supplied 503 branch and success response, then save.",
+      verificationHint:
+        "Click Add to cart on House Blend once, then click Place order. Your handler’s existing switch should select the unavailable response and preserve the cart.",
+    },
+    retry: {
+      hint: "In routes/orders.ts, change the existing `ordersAvailable` constant back to `true` and save. Keep the failed order’s cart intact.",
+      verificationHint:
+        "Keep the same items as the failed order. If you changed the cart, use Restore original cart in the chat. Click Try again in the shop.",
+    },
+    context: {
+      hint: "In routes/_.context.ts, `listProducts` returns `Product[]`. Use the catalog array’s `map` method to create a new object for each coffee: copy its existing properties and add a property named `stock`, looked up in inventory using the coffee’s ID. Use zero for a missing entry. In `confirmOrder`, return the supplied items and the current order counter, advancing the counter once for the next call. Leave catalog and inventory empty, then save.",
+    },
+    seed: {
+      hint: "In scenarios/index.ts, the reset scenario already installs the baseline. Export that same function under the additional name `startup`; use an export alias rather than copying its body. Keep the existing reset export and save.",
+      verificationHint:
+        "At the terminal’s ⬣> prompt, use the `.scenario` command with the existing scenario name `reset` and press Enter. Milo will observe the running inventory automatically.",
+    },
+    connect: {
+      hint: "In routes/products.ts, replace the catalog argument to the JSON response with the result of `$.context.listProducts`. In routes/orders.ts, pass `$.body.items` to `$.context.confirmOrder` and use its returned object as the JSON response. Call both methods, keep the availability switch and statuses, then save both files.",
+      verificationHint:
+        "Click Refresh products at the top right so the shop reads your shared context.",
+    },
+    decaf: {
+      hint: "At the terminal’s ⬣> prompt, assign the number 5 to the `decaf` entry in `context.inventory` and press Enter. Return to the browser and click Refresh products.",
+    },
+    rules: {
+      hint: "In routes/orders.ts, add a check before the successful confirmation. Pass the incoming items to `$.context.canFulfill`. When it returns false, return status 409 with an error string and a shortages array returned by `$.context.getShortages` for the same items. Keep successful requests using the existing confirmation, then save.",
+      verificationHint:
+        "Add two bags of Dark Roast to the cart while stock allows it. In the terminal’s REPL, set the `dark-roast` entry in `context.inventory` to 1. Return to the shop, click Refresh products, then Place order.",
+    },
+    observe: {
+      hint: "Note Dark Roast’s displayed stock. Add one bag of Dark Roast to the cart, then click Place order.",
+    },
+    reduce: {
+      hint: "In routes/orders.ts, find the TODO inside `reduceInventory`. Loop over every item in the supplied items array. Use each item’s product ID to find its entry in the supplied inventory object, and subtract that item’s quantity from that entry. Change the supplied inventory itself; keep the helper’s existing call after validation. Save the file.",
+      verificationHint:
+        "Note Dark Roast’s displayed stock, add one bag of Dark Roast to your cart, then click Place order.",
+    },
+    sellout: {
+      hint: "Read Dark Roast’s remaining stock. Use its Add to cart button until the cart contains exactly that many bags, then click Place order.",
+    },
+    restock: {
+      hint: "In the terminal’s REPL, assign the number 5 to the `dark-roast` entry in `context.inventory` and press Enter. Return to the shop and click Refresh products.",
+    },
+    scenario: {
+      hint: "In scenarios/index.ts, find the TODO inside `restockDarkRoast`. Assign 5 to the `dark-roast` entry in the scenario’s shared context inventory. Keep the existing guard, other inventory entries, reset, startup, and the order counter unchanged, then save.",
+      verificationHint:
+        "At the terminal’s ⬣> prompt, use the `.scenario` command with the name `restockDarkRoast` and press Enter. Milo will detect its inventory change automatically.",
+    },
+  };
+
 export const PHASES: LessonPhase[] = PHASES_V4.map((phase) =>
   phase.id === "name-example"
     ? {
@@ -497,14 +579,16 @@ export const PHASES: LessonPhase[] = PHASES_V4.map((phase) =>
           "You’ve given the description field meaningful coffee examples while keeping the handler random. Counterfact reloads the spec without restarting. Click Refresh products and compare the generated descriptions with your examples.",
       }
     : phase,
-);
+).map((phase) => ({ ...phase, ...PHASE_HINTS[phase.id] }));
 export function phasesForVersion(version: number) {
-  return version === 5
-    ? PHASES
-    : version === 4
-      ? PHASES_V4
-      : version === 3
-        ? PHASES_V3
-        : PHASES_V2;
+  const phases =
+    version === 5
+      ? PHASES
+      : version === 4
+        ? PHASES_V4
+        : version === 3
+          ? PHASES_V3
+          : PHASES_V2;
+  return phases.map((phase) => ({ ...phase, ...PHASE_HINTS[phase.id] }));
 }
 export const LESSON_COUNT = Math.max(...PHASES.map((phase) => phase.lesson));
