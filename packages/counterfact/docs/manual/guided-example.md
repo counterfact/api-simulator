@@ -105,7 +105,8 @@ Earlier exchanges stay attached to their own actions when new requests arrive.
 Milo shows each proposed edit as a diff before changing any files. Green lines
 with `+` will be added; red lines with `-` will be removed. **Apply changes**
 saves the reviewed edit and marks that same proposal bubble **Changes applied**.
-Each diff names its file and can be expanded or collapsed.
+Each diff names its file and can be expanded or collapsed. Your disclosure choices
+stay in place through shop actions, new transcript turns, and page reloads.
 If you save a file after the preview, Milo refreshes the diff and asks you to
 apply it again. He preserves your save instead of applying an outdated proposal.
 
@@ -179,8 +180,16 @@ named scenario to establish that state explicitly; navigation never resets it.
 
 The final lesson prints the restart command and the directory to run it from.
 The command includes your current port. Restarting keeps your source edits,
-runs your `startup` scenario, and begins a new browser lesson session. It does
-not overwrite your implementations. Existing generated demos remain untouched;
+runs your `startup` scenario, and begins a new browser session. Choose **Resume
+this project** to continue after the last completed lesson. Completed projects
+return to the final lesson so you can keep experimenting. Your saved code and
+lesson checkpoints are preserved; cart, request, and quiz observations start fresh.
+An open guide detects a server restart and reloads into this handoff.
+
+If you return to the initialization lesson after `startup` has already seeded
+the inventory, Milo explains how to make reset observable: set Dark Roast to 0
+in the REPL, click **Check my work**, then run `.scenario reset` and check again.
+Resuming never resets state or edits your files. Existing generated demos remain untouched;
 start a new guided example to use the rebuilt walkthrough.
 
 The generated tutorial infrastructure references helpers in the Counterfact

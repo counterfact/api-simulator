@@ -200,6 +200,31 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
             context.confirmOrder(items).orderId === 2,
           "confirmOrder() must advance the order ID counter.",
         );
+        context.catalog = [
+          {
+            id: "sample-bean",
+            name: "Sample Bean",
+            description: "A test catalog entry.",
+            price: 900,
+          },
+          {
+            id: "no-stock",
+            name: "No Stock",
+            description: "No inventory entry yet.",
+            price: 1100,
+          },
+        ];
+        context.inventory = { "sample-bean": 7, unrelated: 19 };
+        ensure(
+          equal(
+            context.listProducts(),
+            context.catalog.map((product) => ({
+              ...product,
+              stock: product.id === "sample-bean" ? 7 : 0,
+            })),
+          ),
+          "Implement listProducts(): combine each catalog product with its inventory quantity, using 0 when its ID has no inventory entry.",
+        );
       } else {
         const scenarios = load("scenarios/index");
         ensure(

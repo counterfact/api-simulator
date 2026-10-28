@@ -53,6 +53,22 @@ it("checks every documented edit from generated stubs without touching live stat
     );
     expect((await checkWalkthroughSave(root, "retry")).ok).toBe(true);
     await $.add("routes/_.context.ts", CONTEXT);
+    await $.add(
+      "routes/_.context.ts",
+      CONTEXT.replace(
+        "return this.catalog.map(product => ({ ...product, stock: this.inventory[product.id] ?? 0 }));",
+        "return [];",
+      ),
+    );
+    const unfinished = await checkWalkthroughSave(root, "context");
+    expect(unfinished.ok).toBe(false);
+    expect(unfinished.message).toContain("Implement listProducts()");
+    await $.add(
+      "routes/_.context.ts",
+      CONTEXT.replace("stock: this.inventory[product.id] ?? 0", "stock: 0"),
+    );
+    expect((await checkWalkthroughSave(root, "context")).ok).toBe(false);
+    await $.add("routes/_.context.ts", CONTEXT);
     expect((await checkWalkthroughSave(root, "context")).ok).toBe(true);
     await $.add("routes/_.context.ts", SEEDED_CONTEXT);
     await $.add("scenarios/index.ts", BASELINE_SCENARIO);

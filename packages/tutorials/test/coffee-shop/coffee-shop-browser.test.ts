@@ -14,6 +14,7 @@ class Element {
   dataset: Record<string, string> = {};
   children: Element[] = [];
   onclick: (() => unknown) | undefined;
+  ontoggle: (() => unknown) | undefined;
   private text = "";
   constructor(readonly tag: string) {}
   set textContent(value: string) {
@@ -33,10 +34,15 @@ class Element {
   setAttribute(name: string, value: string) {
     if (name === "id") this.id = value;
   }
-  querySelectorAll() {
+  querySelectorAll(selector = "details[open]") {
     const result: Element[] = [];
     const visit = (current: Element) => {
-      if (current.tag === "details" && current.open) result.push(current);
+      if (
+        current.tag === "details" &&
+        (!selector.includes("[open]") || current.open) &&
+        (!selector.includes(".file-diff") || current.className === "file-diff")
+      )
+        result.push(current);
       current.children.forEach(visit);
     };
     this.children.forEach(visit);
@@ -68,6 +74,8 @@ async function browser(
     observation?: { before: number; after: number; quantity: number };
     entryState?: unknown;
     sessionId?: string;
+    checkpoints?: number[];
+    state?: { catalog: unknown; inventory: Record<string, number> | null };
   } = {},
 ) {
   const storage = options.storage ?? new Map<string, string>();
@@ -88,7 +96,7 @@ async function browser(
     workspace: {
       enabled: !!options.workspace,
       prepared: options.prepared ?? [],
-      checkpoints: [] as number[],
+      checkpoints: options.checkpoints ?? [],
       changes: [] as EditEvent[],
     },
     checkpointError: false,
@@ -99,7 +107,7 @@ async function browser(
     orderMode: "echo",
     productMode: "valid",
     products: productData,
-    state: {
+    state: options.state ?? {
       catalog: null as unknown,
       inventory: null as Record<string, number> | null,
     },
@@ -134,6 +142,7 @@ async function browser(
       .find(Boolean)!;
   const calls: { path: string; body?: Record<string, unknown> }[] = [];
   let poll: (() => unknown) | undefined;
+  let reloaded = false;
   const context = vm.createContext({
     document: {
       hidden: false,
@@ -142,6 +151,9 @@ async function browser(
     },
     window: {
       location: {
+        reload: () => {
+          reloaded = true;
+        },
         origin: options.origin ?? "http://localhost:3100",
         port: new URL(options.origin ?? "http://localhost:3100").port,
       },
@@ -278,6 +290,7 @@ async function browser(
     server,
     calls,
     storage,
+    wasReloaded: () => reloaded,
     click,
     api,
     async poll() {
@@ -639,7 +652,7 @@ it("a newly saved invalid handler cannot earn progress through the previously ch
   expect(app.completed()).toContain("order");
 });
 
-it("starts a new lesson session after a server restart without accepting old completion state", async () => {
+it("starts a new lesson session without trusting old session observations when project checkpoints are absent", async () => {
   const app = await browser({
     phase: "observe",
     observation: { before: 3, after: 3, quantity: 1 },
@@ -652,6 +665,149 @@ it("starts a new lesson session after a server restart without accepting old com
     "Explore your generated API",
   );
   expect(restarted.completed()).toEqual([]);
+});
+
+it("resumes completed projects from durable checkpoints instead of replaying incompatible early handlers", async () => {
+  const app = await browser({
+    workspace: true,
+    checkpoints: Array.from({ length: 12 }, (_, i) => i + 1),
+    state: {
+      catalog: CATALOG,
+      inventory: { "house-blend": 5, "dark-roast": 3, decaf: 0 },
+    },
+  });
+  expect(app.root("lesson").textContent).toContain("Resume this project");
+  expect(app.root("lesson").textContent).not.toContain(
+    "Explore your generated API",
+  );
+  const waiting = await browser({
+    storage: app.storage,
+    workspace: true,
+    checkpoints: Array.from({ length: 12 }, (_, i) => i + 1),
+  });
+  await find(
+    waiting.root("lesson"),
+    (element) =>
+      element.tag === "button" && element.textContent === "Resume this project",
+  )!.onclick!();
+  expect(waiting.completed()).toEqual(PHASES.map((phase) => phase.id));
+  expect(waiting.root("lesson").textContent).toContain(
+    "We’ve built the shop’s behavior together",
+  );
+  expect(
+    waiting.calls
+      .filter((call) => call.path === "/tutorial-check")
+      .map((call) => call.body?.phaseId),
+  ).not.toContain("catalog");
+  expect(
+    waiting.calls.filter((call) => call.path === "/tutorial-workspace"),
+  ).toEqual([]);
+});
+
+it("resumes the next unfinished lesson with fresh cart and quiz observations after restart", async () => {
+  const prior = await browser({
+    phase: "observe",
+    observation: { before: 3, after: 3, quantity: 1 },
+  });
+  prior.add("dark-roast");
+  const app = await browser({
+    storage: prior.storage,
+    workspace: true,
+    checkpoints: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    sessionId: "restarted",
+  });
+  await find(
+    app.root("lesson"),
+    (element) =>
+      element.tag === "button" && element.textContent === "Resume this project",
+  )!.onclick!();
+  expect(app.root("lesson").textContent).toContain(
+    "Does accepting an order also subtract stock?",
+  );
+  expect(
+    find(app.root("lesson"), (element) => element.id === "inventory-question"),
+  ).toBeUndefined();
+  expect(app.root("cart").textContent).not.toContain("Dark Roast ×");
+  expect(app.completed()).not.toContain("observe");
+  expect(app.completed()).toContain("rules");
+});
+
+it("lets a resumed seed lesson demonstrate reset even when startup already applied the baseline", async () => {
+  const app = await browser({
+    workspace: true,
+    checkpoints: [1, 2, 3, 4, 5],
+    prepared: ["seed"],
+    checkOk: true,
+    state: { catalog: CATALOG, inventory: { "dark-roast": 3 } },
+  });
+  await find(
+    app.root("lesson"),
+    (element) =>
+      element.tag === "button" && element.textContent === "Resume this project",
+  )!.onclick!();
+  expect(app.root("lesson").textContent).toContain(
+    "Startup has already applied the baseline",
+  );
+  await app.click("check-progress");
+  expect(app.completed()).not.toContain("seed");
+  app.server.state.inventory!["dark-roast"] = 0;
+  await app.click("check-progress");
+  app.server.state.inventory!["dark-roast"] = 3;
+  await app.click("check-progress");
+  expect(app.completed()).toContain("seed");
+});
+
+it("keeps pending, applied, and learner diff disclosures collapsed across actions and reload", async () => {
+  const app = await browser({ phase: "catalog", workspace: true });
+  const diffs = () => app.root("lesson").querySelectorAll("details.file-diff");
+  diffs()[0]!.open = false;
+  diffs()[0]!.ontoggle!();
+  app.add();
+  await app.click("refresh-products");
+  expect(diffs()[0]!.open).toBe(false);
+  await find(
+    app.root("lesson"),
+    (element) =>
+      element.tag === "button" && element.textContent === "Apply changes",
+  )!.onclick!();
+  expect(diffs()[0]!.open).toBe(false);
+  app.server.workspace.changes.push({
+    id: 2,
+    actor: "you",
+    files: [
+      {
+        file: "routes/products.ts",
+        before: "random()",
+        after: "json(catalog)",
+      },
+    ],
+  });
+  await app.poll();
+  expect(diffs()[1]!.open).toBe(true);
+  diffs()[1]!.open = false;
+  diffs()[1]!.ontoggle!();
+  const restored = await browser({
+    storage: app.storage,
+    workspace: true,
+    prepared: ["catalog"],
+  });
+  expect(
+    restored
+      .root("lesson")
+      .querySelectorAll("details.file-diff")
+      .map((diff) => diff.open),
+  ).toEqual([false, false]);
+});
+
+it("reloads when an open page detects a new runtime session instead of reusing old observations", async () => {
+  const app = await browser({
+    phase: "observe",
+    observation: { before: 3, after: 3, quantity: 1 },
+  });
+  app.server.sessionId = "new-runtime";
+  await app.poll();
+  expect(app.wasReloaded()).toBe(true);
+  expect(app.completed()).not.toContain("observe");
 });
 
 it("uses the observed post-purchase stock when entering the reusable scenario lesson", async () => {

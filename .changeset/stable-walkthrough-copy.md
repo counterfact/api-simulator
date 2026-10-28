@@ -14,3 +14,5 @@ Attach collapsed HTTP request/response snapshots to refresh, order, and retry tu
 Include submitted REPL input as learner turns alongside file edits and shop actions. Keep repeated commands and reload history, while leaving command evaluation and lesson verification separate and excluding raw input from telemetry.
 
 Show Milo’s exact proposed file diff before saving. Apply changes writes only the reviewed edit, then updates the same proposal bubble to Changes applied. Refresh stale previews for review and preserve learner saves made in the meantime.
+
+Offer Resume this project from durable lesson checkpoints after restart or a new browser visit, while clearing transient cart and quiz observations. Verify listProducts against populated isolated state before crediting the context lesson. Preserve collapsed file diffs across transcript updates and reloads, and wrap arbitrary generated product names and descriptions within their cards.

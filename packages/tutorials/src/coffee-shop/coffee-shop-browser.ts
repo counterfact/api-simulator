@@ -76,6 +76,8 @@ export function runCoffeeShopWalkthrough(
     lastCatalog = "",
     orderIds: number[] = [],
     rejectionSeen = false;
+  let resumeCheckpoint: number | undefined;
+  const diffStates: Record<string, boolean> = {};
   type HttpExchange = {
     id: string;
     method: "GET" | "POST";
@@ -234,6 +236,8 @@ export function runCoffeeShopWalkthrough(
           lastCatalog,
           orderIds,
           rejectionSeen,
+          resumeCheckpoint,
+          diffStates,
         }),
       );
     } catch {
@@ -515,9 +519,16 @@ export function runCoffeeShopWalkthrough(
     if (text) result.append(fileText("p", text));
     return result;
   }
-  function renderDiff(change: FileChange) {
+  function renderDiff(change: FileChange, key: string) {
     const details = node("details", "", "file-diff") as HTMLDetailsElement;
-    details.open = true;
+    details.dataset.diff = key;
+    details.open = diffStates[key] ?? true;
+    details.ontoggle = () => {
+      if (diffStates[key] !== details.open) {
+        diffStates[key] = details.open;
+        save();
+      }
+    };
     details.append(
       node("summary", change.file),
       fileLink(change.file, "Open file"),
@@ -702,7 +713,10 @@ export function runCoffeeShopWalkthrough(
   function turnBubble(turn: Turn, openHints: Set<string>) {
     const result = bubble(turn.role, turn.text);
     if (turn.command !== undefined) result.append(node("pre", turn.command));
-    for (const file of turn.files ?? []) result.append(renderDiff(file));
+    for (const file of turn.files ?? [])
+      result.append(
+        renderDiff(file, "turn:" + turns.indexOf(turn) + ":" + file.file),
+      );
     for (const exchange of turn.exchanges ?? [])
       result.append(renderExchange(exchange, openHints));
     return result;
@@ -710,6 +724,10 @@ export function runCoffeeShopWalkthrough(
   function renderLesson() {
     const current = phase(),
       lesson = byId("lesson");
+    for (const diff of lesson.querySelectorAll<HTMLDetailsElement>(
+      "details.file-diff",
+    ))
+      if (diff.dataset.diff) diffStates[diff.dataset.diff] = diff.open;
     const openHints = new Set(
       Array.from(lesson.querySelectorAll<HTMLDetailsElement>("details[open]"))
         .map((hint) => hint.dataset.hint)
@@ -733,6 +751,52 @@ export function runCoffeeShopWalkthrough(
       ),
     );
     lesson.append(welcome);
+    if (resumeCheckpoint !== undefined) {
+      const checkpoint = resumeCheckpoint;
+      const next = phases.find((candidate) => candidate.lesson > checkpoint);
+      const handoff = bubble(
+        "tutor",
+        "Welcome back. This project has " +
+          checkpoint +
+          " completed lessons. Your saved code is still here. " +
+          (next
+            ? "Resume at lesson " + next.lesson + ": " + next.title + "."
+            : "You’ve completed the walkthrough. Resume to keep experimenting with your API."),
+      );
+      handoff.append(
+        node(
+          "p",
+          "This API session starts with fresh cart, request, and quiz observations. Resuming does not edit your files or run a scenario.",
+        ),
+        button("Resume this project", async () => {
+          completed = new Set(
+            phases
+              .filter((candidate) => candidate.lesson <= checkpoint)
+              .map((candidate) => candidate.id),
+          );
+          index = next ? phases.indexOf(next) : phases.length - 1;
+          resumeCheckpoint = undefined;
+          entryState = JSON.parse(JSON.stringify(info.state));
+          record("you", "Resume this project.");
+          record(
+            "tutor",
+            next
+              ? "We’ll continue from your saved lesson progress."
+              : "Your completed lessons are preserved. Keep experimenting with your API.",
+          );
+          renderLesson();
+          renderShop();
+          await checkFiles();
+          (byId("step-completion") ?? byId("current-turn"))?.scrollIntoView?.({
+            block: "start",
+          });
+        }),
+      );
+      lesson.append(handoff);
+      (byId("continue") as HTMLButtonElement).hidden = true;
+      (byId("check-progress") as HTMLButtonElement).hidden = true;
+      return;
+    }
     for (const [phaseIndex, revealed] of phases.entries()) {
       if (phaseIndex > index) break;
       const active = revealed.id === current.id;
@@ -750,9 +814,13 @@ export function runCoffeeShopWalkthrough(
       heading.append(node("h3", revealed.title), explanation);
       lesson.append(heading);
       const phaseTurns = turns.filter((turn) => turn.phaseId === revealed.id);
-      const appliedEdit = phaseTurns.find(
-        (turn) => turn.role === "tutor" && turn.files?.length,
-      );
+      const appliedEdit =
+        phaseTurns.find(
+          (turn) => turn.role === "tutor" && turn.files?.length,
+        ) ??
+        info?.workspace?.changes?.find(
+          (edit) => edit.actor === "milo" && edit.phaseId === revealed.id,
+        );
       if (revealed.preparation) {
         const proposal = bubble(
           "tutor",
@@ -771,7 +839,9 @@ export function runCoffeeShopWalkthrough(
           ),
         );
         for (const file of appliedEdit?.files ?? preview?.files ?? [])
-          proposal.append(renderDiff(file));
+          proposal.append(
+            renderDiff(file, "proposal:" + revealed.id + ":" + file.file),
+          );
         if (
           active &&
           !applied &&
@@ -895,6 +965,19 @@ export function runCoffeeShopWalkthrough(
           node("pre", revealed.commands.join("\n")),
         );
       lesson.append(exercise);
+      if (
+        active &&
+        revealed.id === "seed" &&
+        entryState?.inventory?.["dark-roast"] === 3 &&
+        !finished
+      ) {
+        const recovery = bubble(
+          "tutor",
+          "Startup has already applied the baseline in this session. To observe reset changing state, set Dark Roast to 0 in the REPL and click Check my work. Then run .scenario reset and check again.",
+        );
+        recovery.append(node("pre", 'context.inventory["dark-roast"] = 0'));
+        lesson.append(recovery);
+      }
       for (const turn of phaseTurns.slice(before.length))
         if (!(turn.role === "tutor" && turn.files?.length))
           lesson.append(turnBubble(turn, openHints));
@@ -916,7 +999,7 @@ export function runCoffeeShopWalkthrough(
             ),
             node(
               "p",
-              "Restarting keeps your code and runs startup again. It begins a new walkthrough session; it does not regenerate or overwrite your implementations.",
+              "Restarting keeps your code and runs startup again. Choose Resume this project to continue from saved lesson progress with fresh cart, request, and quiz observations.",
             ),
           );
           lesson.append(goodbye);
@@ -1001,7 +1084,8 @@ export function runCoffeeShopWalkthrough(
         );
         renderShop();
       });
-      add.disabled = busy || !fresh || available === 0;
+      add.disabled =
+        busy || resumeCheckpoint !== undefined || !fresh || available === 0;
       card.append(add);
       byId("products").append(card);
     }
@@ -1110,7 +1194,7 @@ export function runCoffeeShopWalkthrough(
     save();
   }
   function observeProducts(source: string) {
-    if (missing() || !fresh) return;
+    if (resumeCheckpoint !== undefined || missing() || !fresh) return;
     const id = phase().id;
     if (id === "explore" && source === "manual") {
       report("started", phases[0]!.id);
@@ -1195,7 +1279,7 @@ export function runCoffeeShopWalkthrough(
     }
   }
   async function placeOrder() {
-    if (busy || !fresh || !cart.size) return;
+    if (resumeCheckpoint !== undefined || busy || !fresh || !cart.size) return;
     busy = true;
     renderShop();
     const currentId = phase().id,
@@ -1363,10 +1447,15 @@ export function runCoffeeShopWalkthrough(
         typeof latest.sessionId !== "string"
       )
         throw new Error("Tutorial information unavailable.");
+      if (info && latest.sessionId !== info.sessionId) {
+        window.location.reload();
+        return;
+      }
       info = latest;
       const changed = syncChanges(info.workspace?.changes);
       if (syncReplSubmissions(info.replSubmissions) || changed) renderLesson();
       if (phase().id !== requestedId) return;
+      if (resumeCheckpoint !== undefined) return;
       await loadProposal(requestedId);
       if (phase().id !== requestedId) return;
       if (
@@ -1409,6 +1498,12 @@ export function runCoffeeShopWalkthrough(
         checkedPhase = requestedId;
       }
       if (force && !missing() && ready) {
+        if (
+          requestedId === "seed" &&
+          entryState?.inventory?.["dark-roast"] === 3 &&
+          info.state.inventory?.["dark-roast"] !== 3
+        )
+          entryState = JSON.parse(JSON.stringify(info.state));
         if (
           requestedId === "context" &&
           Array.isArray(info.state.catalog) &&
@@ -1498,12 +1593,31 @@ export function runCoffeeShopWalkthrough(
   async function start() {
     const { value: initial } = await json<Info>("/tutorial-info");
     info = initial;
+    let projectCheckpoint = 0;
+    if (info.workspace?.enabled)
+      while (
+        phases.some(
+          (candidate) => candidate.lesson === projectCheckpoint + 1,
+        ) &&
+        info.workspace.checkpoints.includes(projectCheckpoint + 1)
+      )
+        projectCheckpoint++;
     seenChanges = new Set(
       initial.workspace?.changes?.map((change) => change.id) ?? [],
     );
+    let restored = false;
     try {
       const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? "null");
       if (saved?.version === 2 && saved.sessionId === info.sessionId) {
+        restored = true;
+        if (saved.diffStates && typeof saved.diffStates === "object")
+          for (const [key, open] of Object.entries(saved.diffStates))
+            if (typeof open === "boolean") diffStates[key] = open;
+        if (
+          projectCheckpoint > 0 &&
+          saved.resumeCheckpoint === projectCheckpoint
+        )
+          resumeCheckpoint = saved.resumeCheckpoint;
         if (
           Number.isInteger(saved.index) &&
           saved.index >= 0 &&
@@ -1587,6 +1701,8 @@ export function runCoffeeShopWalkthrough(
     } catch {
       /* A corrupt or unavailable saved session starts fresh. */
     }
+    if (!restored && projectCheckpoint > 0)
+      resumeCheckpoint = projectCheckpoint;
     syncChanges(info.workspace?.changes);
     syncReplSubmissions(info.replSubmissions);
     entryState ??= JSON.parse(JSON.stringify(info.state));

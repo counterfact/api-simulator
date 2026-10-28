@@ -709,8 +709,11 @@ def explicit_coffee_responses(journey):
 @when("I introduce shared context and explicitly run its reset scenario")
 def introduce_coffee_context(journey):
     coffee_workspace(journey, "prepare", "context")
-    edit_coffee(journey, "routes/_.context.ts", "return [];", "return this.catalog.map(product => ({ ...product, stock: this.inventory[product.id] ?? 0 }));")
     edit_coffee(journey, "routes/_.context.ts", "orderId: 0", "orderId: this.nextOrderId++")
+    unfinished = journey.request("post", "/tutorial-check", json={"phaseId": "context"}).json()
+    assert unfinished["ok"] is False and "Implement listProducts()" in unfinished["message"], unfinished
+    journey.wait_for_http("/tutorial-info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"] == {})
+    edit_coffee(journey, "routes/_.context.ts", "return [];", "return this.catalog.map(product => ({ ...product, stock: this.inventory[product.id] ?? 0 }));")
     journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "context"})
     coffee_workspace(journey, "checkpoint", "context")
     coffee_workspace(journey, "prepare", "seed")
@@ -883,6 +886,7 @@ def coffee_startup_baseline(journey):
     assert coffee_order(journey, "house-blend", 1).json()["orderId"] == 1
     assert coffee_stock(journey, "house-blend") == 4
     assert journey.request("get", "/tutorial-info").json()["sessionId"] != journey.coffee_previous_session
+    assert journey.request("get", "/tutorial-info").json()["workspace"]["checkpoints"] == list(range(1, 13))
     journey.terminal.command("context.inventory.decaf")
     submissions = journey.request("get", "/tutorial-info").json()["replSubmissions"]
     assert [entry["command"] for entry in submissions] == ["context.inventory.decaf"]
