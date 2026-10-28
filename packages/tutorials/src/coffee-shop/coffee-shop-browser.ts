@@ -126,7 +126,10 @@ export function runCoffeeShopWalkthrough(
   };
   const button = (text: string, action: () => unknown) => {
     const result = node("button", text, "secondary") as HTMLButtonElement;
-    result.onclick = action;
+    result.onclick = () => {
+      acknowledgeVisibleMessages();
+      return action();
+    };
     return result;
   };
   const equal = (left: unknown, right: unknown) =>
@@ -885,7 +888,8 @@ export function runCoffeeShopWalkthrough(
     const lesson = byId("lesson");
     const visible: HTMLElement[] = [];
     let waiting = false;
-    for (const element of Array.from(lesson.children) as HTMLElement[]) {
+    const elements = Array.from(lesson.children) as HTMLElement[];
+    for (const [elementIndex, element] of elements.entries()) {
       if (!element.className.split(" ").includes("tutor-turn")) {
         visible.push(element);
         continue;
@@ -896,10 +900,6 @@ export function runCoffeeShopWalkthrough(
         .map((child) => child.textContent ?? "")
         .join(" ")
         .split(/\s+/u).length;
-      if (words <= 60) {
-        visible.push(element);
-        continue;
-      }
       const phaseId = element.dataset.phase ?? phase().id;
       const key = JSON.stringify([
         phaseId,
@@ -908,7 +908,7 @@ export function runCoffeeShopWalkthrough(
       const groups: HTMLElement[][] = [];
       let group: HTMLElement[] = [];
       let hasParagraph = false;
-      for (const child of contents) {
+      for (const child of words > 60 ? contents : []) {
         if (child.tagName !== "P") {
           group.push(child);
           continue;
@@ -924,23 +924,32 @@ export function runCoffeeShopWalkthrough(
           hasParagraph = true;
         }
       }
+      if (words <= 60) group = contents;
       if (group.length) groups.push(group);
-      const historical =
-        completed.has(phaseId) ||
-        (phases.findIndex((candidate) => candidate.id === phaseId) >= 0 &&
-          phases.findIndex((candidate) => candidate.id === phaseId) < index);
-      const revealed = historical
-        ? groups.length
-        : Math.min(groups.length, revealedMessages[key] ?? 1);
+      const acknowledged = revealedMessages[key] ?? 1;
+      const revealed = Math.min(groups.length, acknowledged);
       for (const [partIndex, children] of groups.slice(0, revealed).entries()) {
         const message = bubble("tutor", "", phaseId);
+        message.dataset.pacingKey = key;
+        message.dataset.pacingPart = String(partIndex);
         if (partIndex === 0) message.id = element.id;
         if (partIndex === groups.length - 1 && element.dataset.proposal)
           message.dataset.proposal = element.dataset.proposal;
         message.append(...children);
         visible.push(message);
       }
-      if (revealed < groups.length) {
+      const nextMessage = elements
+        .slice(elementIndex + 1)
+        .find((candidate) =>
+          candidate.className
+            .split(" ")
+            .some((name) => name === "tutor-turn" || name === "learner-turn"),
+        );
+      if (
+        revealed < groups.length ||
+        (acknowledged <= groups.length &&
+          nextMessage?.className.split(" ").includes("tutor-turn"))
+      ) {
         visible.at(-1)!.append(
           button("Okay", () => {
             revealedMessages[key] = revealed + 1;
@@ -957,6 +966,19 @@ export function runCoffeeShopWalkthrough(
       (byId("continue") as HTMLButtonElement).hidden = true;
       (byId("check-progress") as HTMLButtonElement).hidden = true;
     }
+  }
+  function acknowledgeVisibleMessages() {
+    for (const element of Array.from(
+      byId("lesson").children,
+    ) as HTMLElement[]) {
+      const key = element.dataset.pacingKey;
+      if (key)
+        revealedMessages[key] = Math.max(
+          revealedMessages[key] ?? 1,
+          Number(element.dataset.pacingPart) + 2,
+        );
+    }
+    save();
   }
   function scrollToLatestMessage() {
     paceConversation();
@@ -1544,6 +1566,7 @@ export function runCoffeeShopWalkthrough(
   }
   async function placeOrder() {
     if (resumeCheckpoint !== undefined || busy || !fresh || !cart.size) return;
+    acknowledgeVisibleMessages();
     busy = true;
     renderShop();
     const currentId = phase().id,
@@ -1827,6 +1850,7 @@ export function runCoffeeShopWalkthrough(
   }
   byId("refresh-products").onclick = async () => {
     if (busy) return;
+    acknowledgeVisibleMessages();
     busy = true;
     renderShop();
     await checkFiles();
@@ -1837,6 +1861,7 @@ export function runCoffeeShopWalkthrough(
     renderShop();
   };
   byId("check-progress").onclick = async () => {
+    acknowledgeVisibleMessages();
     await checkFiles();
     record("you", "Please check my work.");
     renderLesson();
@@ -1858,6 +1883,7 @@ export function runCoffeeShopWalkthrough(
     renderShop();
   };
   byId("continue").onclick = async () => {
+    acknowledgeVisibleMessages();
     const next = phases[index + 1];
     if (completed.has(phase().id) && next) {
       await checkFiles();

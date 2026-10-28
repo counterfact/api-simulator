@@ -48,3 +48,5 @@ Make each live exercise explicit about the next shop or terminal action and the 
 Break long tutor explanations into smaller messages and reveal each next part through an Okay button. Preserve the reading position across reloads, keep completed lessons readable, and keep acknowledgment separate from applying edits and completing exercises.
 
 Make the divider between the conversation and coffee shop draggable, with keyboard resizing, minimum panel widths, and a saved split across reloads. Let the product cards adapt to the resized shop.
+
+Require a user action between every new tutor message, including the boundary between the final part of an explanation and the next instruction. Each Okay click reveals exactly one bubble, so the OpenAPI background cannot be skipped by automatic follow-up rendering.

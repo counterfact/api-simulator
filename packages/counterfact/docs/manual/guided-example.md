@@ -26,6 +26,9 @@ The conversation scrolls to the latest message as replies and saved edits arrive
 Long explanations arrive in smaller messages. Click **Okay** to reveal the next
 part; the messages already revealed stay visible. Reloading keeps your place.
 **Okay** reveals text without applying changes or completing an exercise.
+Each user action reveals at most one new Milo message. When he has more to say,
+**Okay** remains available between messages, including between the final part of
+an explanation and the next instruction. Background checks do not advance it.
 Your action bubbles contain the HTTP results. Milo adds lesson feedback and
 guidance rather than repeating routine request summaries.
 The welcome message shows the demo folder’s full path and links to open it in VS Code.

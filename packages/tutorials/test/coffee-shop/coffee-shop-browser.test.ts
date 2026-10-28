@@ -500,6 +500,43 @@ it("reveals long explanations a message at a time and keeps the pause across rel
   ).toHaveLength(0);
 });
 
+it("requires a user action between every Milo message, including the final OpenAPI background part", async () => {
+  const app = await browser({ acknowledge: false });
+  const tutorCount = () =>
+    app
+      .root("lesson")
+      .children.filter((turn) => turn.className === "chat-turn tutor-turn")
+      .length;
+  let foundSource = false;
+  for (let step = 0; step < 30; step++) {
+    const okay = find(
+      app.root("lesson"),
+      (element) => element.tag === "button" && element.textContent === "Okay",
+    );
+    if (!okay) break;
+    const before = tutorCount();
+    await okay.onclick!();
+    expect(tutorCount()).toBe(before + 1);
+    if (
+      app
+        .root("lesson")
+        .textContent.includes("Counterfact includes a coffee-shop API")
+    ) {
+      foundSource = true;
+      break;
+    }
+  }
+  expect(foundSource).toBe(true);
+  expect(app.root("lesson").textContent).not.toContain(
+    "Open routes/products.ts",
+  );
+  const visible = app.root("lesson").textContent;
+  await app.poll();
+  expect(app.root("lesson").textContent).toBe(visible);
+  const restored = await browser({ storage: app.storage, acknowledge: false });
+  expect(restored.root("lesson").textContent).toBe(visible);
+});
+
 it("scrolls to new conversation messages without scrolling on unchanged polling", async () => {
   const app = await browser();
   await app.click("empty-cart");
@@ -1505,6 +1542,7 @@ it("retains the preparation explanation when failure progresses to recovery", as
   await app.api.placeOrder();
   await new Promise((resolve) => setImmediate(resolve));
   expect(app.root("lesson").textContent).toContain(explanation);
+  await app.acknowledge();
   expect(app.root("lesson").textContent).toContain(
     "Change ordersAvailable to true",
   );
