@@ -29,6 +29,10 @@ part; the messages already revealed stay visible. Reloading keeps your place.
 Each user action reveals at most one new Milo message. When he has more to say,
 **Okay** remains available between messages, including between the final part of
 an explanation and the next instruction. Background checks do not advance it.
+New Milo messages type out progressively as the conversation scrolls smoothly
+to keep them in view. Messages already seen do not replay their typing effect on
+reload. Reduced-motion preferences show the text immediately and use instant
+scrolling.
 Your action bubbles contain the HTTP results. Milo adds lesson feedback and
 guidance rather than repeating routine request summaries.
 The welcome message shows the demo folder’s full path and links to open it in VS Code.

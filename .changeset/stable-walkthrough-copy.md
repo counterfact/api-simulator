@@ -50,3 +50,5 @@ Break long tutor explanations into smaller messages and reveal each next part th
 Make the divider between the conversation and coffee shop draggable, with keyboard resizing, minimum panel widths, and a saved split across reloads. Let the product cards adapt to the resized shop.
 
 Require a user action between every new tutor message, including the boundary between the final part of an explanation and the next instruction. Each Okay click reveals exactly one bubble, so the OpenAPI background cannot be skipped by automatic follow-up rendering.
+
+Track actually displayed messages separately from acknowledged sections so saved progress cannot reveal multiple new welcome or handoff bubbles at once. Animate new Milo text and smoothly follow it while preserving links, respecting reduced motion, and leaving previously read messages unanimated.

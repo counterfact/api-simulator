@@ -207,6 +207,7 @@ async function browser(
     },
     window: {
       addEventListener: () => undefined,
+      matchMedia: () => ({ matches: true }),
       location: {
         reload: () => {
           reloaded = true;
@@ -537,21 +538,80 @@ it("requires a user action between every Milo message, including the final OpenA
   expect(restored.root("lesson").textContent).toBe(visible);
 });
 
+it("pauses between the demo-folder message, file-change explanation, and welcome-back handoff", async () => {
+  const app = await browser({
+    acknowledge: false,
+    workspace: true,
+    checkpoints: [1],
+  });
+  const acknowledgeOne = async () => {
+    const before = app
+      .root("lesson")
+      .children.filter(
+        (turn) => turn.className === "chat-turn tutor-turn",
+      ).length;
+    const okay = find(
+      app.root("lesson"),
+      (element) => element.tag === "button" && element.textContent === "Okay",
+    )!;
+    await okay.onclick!();
+    expect(
+      app
+        .root("lesson")
+        .children.filter((turn) => turn.className === "chat-turn tutor-turn"),
+    ).toHaveLength(before + 1);
+  };
+  for (
+    let step = 0;
+    step < 15 &&
+    !app.root("lesson").textContent.includes("Open this demo folder");
+    step++
+  )
+    await acknowledgeOne();
+  expect(app.root("lesson").textContent).toContain("Open this demo folder");
+  expect(app.root("lesson").textContent).not.toContain("Whenever either");
+  expect(app.root("lesson").textContent).not.toContain("Welcome back");
+  await acknowledgeOne();
+  expect(app.root("lesson").textContent).toContain("Whenever either");
+  expect(app.root("lesson").textContent).not.toContain("Welcome back");
+  await app.poll();
+  expect(app.root("lesson").textContent).not.toContain("Welcome back");
+  const restored = await browser({
+    storage: app.storage,
+    acknowledge: false,
+    workspace: true,
+    checkpoints: [1],
+  });
+  expect(restored.root("lesson").textContent).toBe(
+    app.root("lesson").textContent,
+  );
+  await acknowledgeOne();
+  expect(app.root("lesson").textContent).toContain("Welcome back");
+});
+
 it("scrolls to new conversation messages without scrolling on unchanged polling", async () => {
   const app = await browser();
   await app.click("empty-cart");
-  expect(app.root("conversation-end").scrolls).toEqual([{ block: "end" }]);
+  expect(app.root("conversation-end").scrolls).toEqual([
+    { block: "end", behavior: "auto" },
+  ]);
   await app.poll();
-  expect(app.root("conversation-end").scrolls).toEqual([{ block: "end" }]);
+  expect(app.root("conversation-end").scrolls).toEqual([
+    { block: "end", behavior: "auto" },
+  ]);
   app.server.workspace.changes.push({
     id: 1,
     actor: "you",
     files: [{ file: "routes/products.ts", before: "old", after: "new" }],
   });
   await app.poll();
-  expect(app.root("conversation-end").scrolls).toEqual([{ block: "end" }]);
+  expect(app.root("conversation-end").scrolls).toEqual([
+    { block: "end", behavior: "auto" },
+  ]);
   await app.poll();
-  expect(app.root("conversation-end").scrolls).toEqual([{ block: "end" }]);
+  expect(app.root("conversation-end").scrolls).toEqual([
+    { block: "end", behavior: "auto" },
+  ]);
 });
 
 it("alerts when the server stops and reconnects when it returns", async () => {

@@ -202,6 +202,12 @@ export function runCoffeeShopWalkthrough(
   };
   const proposals = new Map<string, Proposal>();
   const revealedMessages: Record<string, number> = {};
+  const displayedMessages = new Set<string>();
+  let messageAllowance = 1;
+  let typing: { id: string; shown: number } | undefined;
+  let typingTimer: ReturnType<typeof setTimeout> | undefined;
+  const reducedMotion = () =>
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
   async function loadProposal(phaseId: string, force = false) {
     const candidate = phases.find((candidate) => candidate.id === phaseId)!;
     if (
@@ -331,6 +337,7 @@ export function runCoffeeShopWalkthrough(
           resumeCheckpoint,
           diffStates,
           revealedMessages,
+          displayedMessages: [...displayedMessages],
         }),
       );
     } catch {
@@ -889,7 +896,7 @@ export function runCoffeeShopWalkthrough(
     const visible: HTMLElement[] = [];
     let waiting = false;
     const elements = Array.from(lesson.children) as HTMLElement[];
-    for (const [elementIndex, element] of elements.entries()) {
+    messages: for (const [elementIndex, element] of elements.entries()) {
       if (!element.className.split(" ").includes("tutor-turn")) {
         visible.push(element);
         continue;
@@ -929,7 +936,25 @@ export function runCoffeeShopWalkthrough(
       const acknowledged = revealedMessages[key] ?? 1;
       const revealed = Math.min(groups.length, acknowledged);
       for (const [partIndex, children] of groups.slice(0, revealed).entries()) {
+        const id = JSON.stringify([key, partIndex]);
+        if (!displayedMessages.has(id)) {
+          if (!messageAllowance) {
+            const previous = visible
+              .slice()
+              .reverse()
+              .find((candidate) =>
+                candidate.className.split(" ").includes("tutor-turn"),
+              );
+            previous?.append(button("Okay", () => renderLesson()));
+            waiting = true;
+            break messages;
+          }
+          messageAllowance--;
+          displayedMessages.add(id);
+          if (!reducedMotion()) typing = { id, shown: 0 };
+        }
         const message = bubble("tutor", "", phaseId);
+        message.dataset.messageId = id;
         message.dataset.pacingKey = key;
         message.dataset.pacingPart = String(partIndex);
         if (partIndex === 0) message.id = element.id;
@@ -968,6 +993,7 @@ export function runCoffeeShopWalkthrough(
     }
   }
   function acknowledgeVisibleMessages() {
+    messageAllowance = 1;
     for (const element of Array.from(
       byId("lesson").children,
     ) as HTMLElement[]) {
@@ -989,8 +1015,66 @@ export function runCoffeeShopWalkthrough(
     end.setAttribute("aria-hidden", "true");
     lesson.append(end);
     if (content !== renderedConversation)
-      end.scrollIntoView?.({ block: "end" });
+      end.scrollIntoView?.({
+        block: "end",
+        behavior: reducedMotion() ? "auto" : "smooth",
+      });
     renderedConversation = content;
+    save();
+    animateTyping();
+  }
+  function animateTyping() {
+    if (typingTimer) clearTimeout(typingTimer);
+    if (!typing) return;
+    const message = (Array.from(byId("lesson").children) as HTMLElement[]).find(
+      (candidate) => candidate.dataset.messageId === typing!.id,
+    );
+    if (!message) return;
+    const text: { node: Text; full: string }[] = [];
+    for (const paragraph of message.querySelectorAll("p,h2")) {
+      const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT);
+      for (
+        let current = walker.nextNode();
+        current;
+        current = walker.nextNode()
+      )
+        text.push({ node: current as Text, full: current.textContent ?? "" });
+    }
+    const total = text.reduce((length, item) => length + item.full.length, 0);
+    if (typing.shown >= total || reducedMotion()) {
+      typing = undefined;
+      return;
+    }
+    const controls = Array.from(message.querySelectorAll("button"));
+    for (const control of controls) control.disabled = true;
+    message.dataset.typing = "true";
+    message.setAttribute("aria-busy", "true");
+    (byId("continue") as HTMLButtonElement).hidden = true;
+    (byId("check-progress") as HTMLButtonElement).hidden = true;
+    const draw = () => {
+      let remaining = typing!.shown;
+      for (const item of text) {
+        item.node.textContent = item.full.slice(0, Math.max(0, remaining));
+        remaining -= item.full.length;
+      }
+    };
+    draw();
+    const tick = () => {
+      if (!typing) return;
+      typing.shown = Math.min(total, typing.shown + 4);
+      draw();
+      if (typing.shown % 40 === 0)
+        byId("conversation-end")?.scrollIntoView?.({
+          block: "end",
+          behavior: "smooth",
+        });
+      if (typing.shown < total) typingTimer = setTimeout(tick, 16);
+      else {
+        typing = undefined;
+        renderLesson();
+      }
+    };
+    typingTimer = setTimeout(tick, 100);
   }
   function renderLesson() {
     const current = phase(),
@@ -1914,6 +1998,13 @@ export function runCoffeeShopWalkthrough(
         saved.sessionId === info.sessionId
       ) {
         restored = true;
+        if (Array.isArray(saved.displayedMessages)) {
+          typing = undefined;
+          displayedMessages.clear();
+          for (const id of saved.displayedMessages)
+            if (typeof id === "string") displayedMessages.add(id);
+          messageAllowance = 0;
+        }
         if (
           saved.revealedMessages &&
           typeof saved.revealedMessages === "object"
