@@ -62,3 +62,5 @@ Keep the conversation scrollbar inside the chat panel by sizing the layout to th
 End Milo’s action prompts at the requested work. Separate code edits from their saved-code test instructions, wait for refreshes before asking for orders, and reveal cleanup and quiz steps after their triggering responses. Keep file-opening confirmation separate from the next API experiment.
 
 Start the OpenAPI 3.1 coffee-shop schema with ten readable name examples. Explain initially random descriptions after exploration, then teach description examples in lesson three. Version the new exercise while retaining older demos’ name-example lesson and checkpoints.
+
+Keep API status and inspection instructions out of the storefront, using customer-facing order and empty-catalog feedback instead. Place Refresh products at the top right with a decorative refresh icon and its existing accessible label.

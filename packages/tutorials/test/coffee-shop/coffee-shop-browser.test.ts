@@ -2143,3 +2143,34 @@ it("keeps the name-example lesson in existing version 4 pages", () => {
   expect(page).not.toContain('"id":"description-example"');
   expect(coffeeShopPage("/tmp/demo")).toContain('"id":"description-example"');
 });
+
+it("keeps order diagnostics in chat and customer feedback in the store", async () => {
+  const app = await browser({ phase: "orientation" });
+  app.add();
+  await app.click("checkout");
+  expect(app.root("shop-notice").textContent).toBe(
+    "Thanks! Your order has been placed.",
+  );
+  expect(app.root("lesson").textContent).toContain(
+    "HTTP · POST /shop/orders → 201",
+  );
+  app.server.orderMode = "offline";
+  app.add();
+  await app.click("checkout");
+  expect(app.root("shop-notice").textContent).toBe(
+    "We couldn’t place your order. Your cart has been kept.",
+  );
+  expect(app.root("shop-notice").textContent).not.toMatch(
+    /HTTP|API|chat|response/iu,
+  );
+  expect(app.root("lesson").textContent).toContain(
+    "The order has no usable confirmation",
+  );
+});
+
+it("describes an empty storefront without API inspection instructions", async () => {
+  const app = await browser({ products: [] });
+  expect(app.root("products").textContent).toBe(
+    "No coffees are available right now.",
+  );
+});

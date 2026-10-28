@@ -1524,7 +1524,7 @@ export function runCoffeeShopWalkthrough(
         node(
           "p",
           fresh
-            ? "The API returned an empty catalog. Inspect the response in the chat."
+            ? "No coffees are available right now."
             : "Refresh products to load the catalog.",
         ),
       );
@@ -1750,6 +1750,7 @@ export function runCoffeeShopWalkthrough(
     if (resumeCheckpoint !== undefined || busy || !fresh || !cart.size) return;
     acknowledgeVisibleMessages();
     busy = true;
+    byId("shop-notice").textContent = "";
     renderShop();
     const currentId = phase().id,
       before = inventoryOf(),
@@ -1775,8 +1776,7 @@ export function runCoffeeShopWalkthrough(
       if (response.status === 201 && Number.isInteger(value?.orderId)) {
         cart.clear();
         failedItems = undefined;
-        byId("shop-notice").textContent =
-          "HTTP 201 received. Inspect the request and response in the chat.";
+        byId("shop-notice").textContent = "Thanks! Your order has been placed.";
       } else if (response.ok)
         throw new Error(
           "The confirmation has no integer orderId, but the order may have been accepted. Inspect POST /orders in the chat before retrying.",
@@ -1888,6 +1888,8 @@ export function runCoffeeShopWalkthrough(
         error instanceof Error
           ? error.message
           : "No order confirmation. Your cart has been kept; inspect the API before retrying.";
+      byId("shop-notice").textContent =
+        "We couldn’t place your order. Your cart has been kept.";
       record("tutor", "The order has no usable confirmation: " + message);
     } finally {
       busy = false;
