@@ -2153,13 +2153,7 @@ export function runCoffeeShopWalkthrough(
         }
         if (requestedId === "connect" && walkthroughVersion >= 6)
           finish(phase().verification);
-        if (
-          requestedId === "context" &&
-          Array.isArray(info.state.catalog) &&
-          info.state.catalog.length === 0 &&
-          info.state.inventory &&
-          Object.keys(info.state.inventory).length === 0
-        )
+        if (requestedId === "context")
           finish(
             phase().verification ??
               "Your shared context implementation is ready.",

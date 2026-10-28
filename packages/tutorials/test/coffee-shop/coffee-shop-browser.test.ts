@@ -2474,3 +2474,45 @@ it("connects handlers before requiring a live REPL-to-shop experiment and never 
     ),
   ).toBe(false);
 });
+
+it.each([
+  { catalog: [], inventory: { "sample-bean": 7 } },
+  {
+    catalog: [
+      { id: "sample-bean", name: "Sample", description: "Sample", price: 900 },
+    ],
+    inventory: {},
+  },
+  {
+    catalog: [
+      { id: "sample-bean", name: "Sample", description: "Sample", price: 900 },
+    ],
+    inventory: { "sample-bean": 7 },
+  },
+])(
+  "credits correct context methods while preserving exploratory state %#",
+  async (state) => {
+    const app = await browser({
+      phase: "context",
+      state: structuredClone(state),
+    });
+    expect(app.completed()).not.toContain("context");
+    app.server.checkOk = true;
+    app.server.revision = "correct-context";
+    app.server.workspace.changes.push({
+      id: 1,
+      actor: "you",
+      phaseId: "context",
+      files: [
+        { file: "routes/_.context.ts", before: "TODO", after: "correct" },
+      ],
+    });
+    await app.poll();
+    expect(app.completed()).toContain("context");
+    expect(app.root("continue").hidden).toBe(false);
+    expect(app.root("lesson").textContent).toContain(
+      "data you’ve added to this running session is kept",
+    );
+    expect(app.server.state).toEqual(state);
+  },
+);

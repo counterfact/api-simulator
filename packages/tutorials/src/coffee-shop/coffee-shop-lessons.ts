@@ -279,7 +279,7 @@ export const PHASES_V2: LessonPhase[] = [
   {
     id: "context",
     verification:
-      "Great job! Your context methods combine product descriptions with stock and give each confirmation a successive order ID. The running collections are still empty; their starting data comes next.",
+      "Great job! Your context methods combine product descriptions with stock and give each confirmation a successive order ID. The fields start empty in a fresh context; data you’ve added to this running session is kept.",
     preparation:
       "Add empty `catalog` and `inventory` fields, the order counter, and two method stubs to routes/_.context.ts. `Product` and `OrderItem` come from Counterfact’s generated types, matching the OpenAPI schemas. The `Product[]` return type on `listProducts` lets your editor check that each returned coffee includes `stock`.",
     lesson: 5,
@@ -519,7 +519,7 @@ const PHASE_HINTS: Record<string, { hint: string; verificationHint?: string }> =
         "Keep the same items as the failed order. If you changed the cart, use Restore original cart in the chat. Click Try again in the shop.",
     },
     context: {
-      hint: "In routes/_.context.ts, `listProducts` returns `Product[]`. Use the catalog array’s `map` method to create a new object for each coffee: copy its existing properties and add a property named `stock`, looked up in inventory using the coffee’s ID. Use zero for a missing entry. In `confirmOrder`, return the supplied items and the current order counter, advancing the counter once for the next call. Leave catalog and inventory empty, then save.",
+      hint: "In routes/_.context.ts, `listProducts` returns `Product[]`. Use the catalog array’s `map` method to create a new object for each coffee: copy its existing properties and add a property named `stock`, looked up in inventory using the coffee’s ID. Use zero for a missing entry. In `confirmOrder`, return the supplied items and the current order counter, advancing the counter once for the next call. Keep the catalog and inventory field initializers empty in the file, then save.",
     },
     seed: {
       hint: "In scenarios/index.ts, the reset scenario already installs the baseline. Export that same function under the additional name `startup`; use an export alias rather than copying its body. Keep the existing reset export and save.",
