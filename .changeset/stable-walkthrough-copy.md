@@ -68,3 +68,5 @@ Keep API status and inspection instructions out of the storefront, using custome
 Remove the redundant Update area beneath the conversation. Keep completion and follow-up feedback in Milo’s messages, preserve progress-save errors alongside the retry action, and show copy feedback on its button.
 
 Remove the duplicate editor-link and copy-path controls beneath exercises. Keep the inline file links in Milo’s messages, including their current edit line numbers.
+
+Introduce the catalog proposal with the coffee-shop analogy and explain the approval workflow when Milo first proposes a file change.

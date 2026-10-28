@@ -176,6 +176,7 @@ export type LessonPhase = {
   instruction: string;
   edits: { file: string; instruction: string }[];
   preparation?: string;
+  approval?: string;
   check?: boolean;
   verification?: string;
 };
@@ -205,7 +206,9 @@ export const PHASES_V2: LessonPhase[] = [
     verification:
       "Great job! You replaced the default random response with a meaningful catalog. The same three coffees should now appear on each request. Click Refresh products and inspect the response in your chat bubble.",
     preparation:
-      "Add a catalog constant containing the three coffees in routes/products.ts. The handler keeps returning random data until you change its return statement.",
+      "Remember how `routes/products.ts` returns random data with `.random()`? Instead of rolling dice, let's return predictable, hard-coded JSON data. To get us started, I'll create a constant called `catalog` with dummy data.",
+    approval:
+      "Whenever I want to make a change to a file, I'll show you what I'm going to do first. Then you can approve by clicking \"Apply changes.\"",
     lesson: 2,
     title: "Replace random products",
     explanation:

@@ -1549,6 +1549,15 @@ it("lets an already-restocked shop establish a new observable starting quantity"
 
 it("shows the diff before applying, refreshes stale proposals, and marks the same bubble as applied", async () => {
   const app = await browser({ phase: "catalog", workspace: true });
+  expect(app.root("lesson").textContent).toContain(
+    "Remember how routes/products.ts returns random data with .random()? Instead of rolling dice, let's return predictable, hard-coded JSON data. To get us started, I'll create a constant called catalog with dummy data.",
+  );
+  expect(app.root("lesson").textContent).toContain(
+    "Whenever I want to make a change to a file, I'll show you what I'm going to do first. Then you can approve by clicking \"Apply changes.\"",
+  );
+  expect(app.root("lesson").textContent).not.toContain(
+    "Here’s what I’d like to change: Add a catalog",
+  );
   const proposal = () =>
     find(
       app.root("lesson"),

@@ -1255,10 +1255,11 @@ export function runCoffeeShopWalkthrough(
       if (revealed.preparation) {
         const proposal = bubble("tutor", "", revealed.id);
         proposal.append(
-          explanation,
+          ...(revealed.approval ? [] : [explanation]),
           fileText(
             "p",
-            "Here’s what I’d like to change: " + revealed.preparation,
+            (revealed.approval ? "" : "Here’s what I’d like to change: ") +
+              revealed.preparation,
             revealed.id,
           ),
         );
@@ -1273,7 +1274,8 @@ export function runCoffeeShopWalkthrough(
             "p",
             applied
               ? "Changes applied."
-              : "This diff shows the edits I’m proposing: green lines are additions and red lines are removals. Click Apply changes to save them.",
+              : (revealed.approval ??
+                  "This diff shows the edits I’m proposing: green lines are additions and red lines are removals. Click Apply changes to save them."),
             applied ? "step-complete" : "",
           ),
         );
