@@ -76,6 +76,14 @@ async function browser(
   );
   const productData = structuredClone(options.products ?? CATALOG);
   const server = {
+    previewRevision: "proposal-v1",
+    previewFiles: [
+      {
+        file: "routes/products.ts",
+        before: "return $.response.status(200).random();",
+        after: "const catalog = [];\nreturn $.response.status(200).random();",
+      },
+    ],
     replSubmissions: [] as { id: string; command: string }[],
     workspace: {
       enabled: !!options.workspace,
@@ -167,13 +175,37 @@ async function browser(
           replSubmissions: structuredClone(server.replSubmissions),
         };
       else if (path === "/tutorial-workspace") {
-        if (body?.action === "prepare")
+        const stale =
+          body?.action === "prepare" &&
+          body.revision !== server.previewRevision;
+        if (body?.action === "prepare" && !stale && !server.checkpointError) {
           server.workspace.prepared.push(String(body.phaseId));
+          server.workspace.changes.push({
+            id: server.workspace.changes.length + 1,
+            actor: "milo",
+            phaseId: String(body.phaseId),
+            files: structuredClone(server.previewFiles),
+          });
+        }
         value = {
-          ok: !server.checkpointError,
-          message: server.checkpointError
-            ? "Progress storage is temporarily unavailable"
-            : "Saved progress",
+          ok: !server.checkpointError && !stale,
+          message: stale
+            ? "Your files changed since this preview."
+            : server.checkpointError
+              ? "Progress storage is temporarily unavailable"
+              : "Saved progress",
+          files:
+            body?.action === "preview" && !server.checkpointError
+              ? structuredClone(server.previewFiles)
+              : undefined,
+          revision:
+            body?.action === "preview" && !server.checkpointError
+              ? server.previewRevision
+              : undefined,
+          changes:
+            body?.action === "prepare"
+              ? structuredClone(server.workspace.changes)
+              : undefined,
         };
       } else if (path === "/tutorial-check")
         value = {
@@ -659,16 +691,100 @@ it("lets an already-restocked shop establish a new observable starting quantity"
   expect(app.completed()).toContain("scenario");
 });
 
+it("shows the diff before applying, refreshes stale proposals, and marks the same bubble as applied", async () => {
+  const app = await browser({ phase: "catalog", workspace: true });
+  const proposal = () =>
+    find(
+      app.root("lesson"),
+      (element) => element.dataset.proposal === "catalog",
+    )!;
+  const apply = () =>
+    find(
+      proposal(),
+      (element) =>
+        element.tag === "button" && element.textContent === "Apply changes",
+    )!.onclick!();
+  expect(proposal().textContent).toContain("+ const catalog = [];");
+  expect(proposal().textContent).not.toContain("Changes applied.");
+  expect(app.server.workspace.prepared).toEqual([]);
+  expect(app.root("lesson").textContent).not.toContain(
+    "replace only the return statement",
+  );
+  app.server.previewRevision = "proposal-v2";
+  app.server.previewFiles[0]!.after =
+    "const catalog = [2];\nreturn $.response.status(200).random();";
+  await apply();
+  expect(app.server.workspace.prepared).toEqual([]);
+  expect(proposal().textContent).toContain(
+    "Your files changed since this preview",
+  );
+  expect(proposal().textContent).toContain("+ const catalog = [2];");
+  await apply();
+  expect(proposal().textContent).toContain("Changes applied.");
+  expect(proposal().textContent).toContain("+ const catalog = [2];");
+  expect(
+    app
+      .root("lesson")
+      .children.filter((element) => element.dataset.proposal === "catalog"),
+  ).toHaveLength(1);
+  expect(app.server.workspace.changes).toHaveLength(1);
+  expect(
+    find(
+      proposal(),
+      (element) =>
+        element.tag === "button" && element.textContent === "Apply changes",
+    ),
+  ).toBeUndefined();
+  const restored = await browser({
+    storage: app.storage,
+    workspace: true,
+    prepared: ["catalog"],
+  });
+  expect(restored.root("lesson").textContent).toContain("Changes applied.");
+  expect(restored.root("lesson").textContent).toContain(
+    "+ const catalog = [2];",
+  );
+});
+
+it("keeps a proposal unapplied across reload and lets a failed preview be retried", async () => {
+  const app = await browser({ phase: "catalog", workspace: true });
+  const restored = await browser({ storage: app.storage, workspace: true });
+  expect(restored.server.workspace.prepared).toEqual([]);
+  expect(restored.root("lesson").textContent).not.toContain("Changes applied.");
+  restored.server.checkpointError = true;
+  restored.server.revision = "changed";
+  await restored.poll();
+  expect(restored.root("lesson").textContent).toContain(
+    "Progress storage is temporarily unavailable",
+  );
+  restored.server.checkpointError = false;
+  await find(
+    restored.root("lesson"),
+    (element) =>
+      element.tag === "button" && element.textContent === "Retry preview",
+  )!.onclick!();
+  expect(restored.server.workspace.prepared).toEqual([]);
+  expect(
+    find(
+      restored.root("lesson"),
+      (element) =>
+        element.tag === "button" && element.textContent === "Apply changes",
+    ),
+  ).toBeDefined();
+});
+
 it("only prepares attended lessons, retains preparation on reload, and retries failed progress saves", async () => {
   const app = await browser({ phase: "catalog", workspace: true });
   const prepare = find(
     app.root("lesson"),
     (element) =>
-      element.tag === "button" &&
-      element.textContent === "Yes, make these edits",
+      element.tag === "button" && element.textContent === "Apply changes",
   )!;
   expect(
-    app.calls.filter((call) => call.path === "/tutorial-workspace"),
+    app.calls.filter(
+      (call) =>
+        call.path === "/tutorial-workspace" && call.body?.action === "prepare",
+    ),
   ).toEqual([]);
   await prepare.onclick!();
   expect(app.server.workspace.prepared).toEqual(["catalog"]);
@@ -679,27 +795,25 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
     find(
       app.root("lesson"),
       (element) =>
-        element.tag === "button" &&
-        element.textContent === "Yes, make these edits",
+        element.tag === "button" && element.textContent === "Apply changes",
     ),
   ).toBeUndefined();
   expect(
-    app.calls.filter((call) => call.path === "/tutorial-workspace"),
+    app.calls.filter(
+      (call) =>
+        call.path === "/tutorial-workspace" && call.body?.action === "prepare",
+    ),
   ).toHaveLength(1);
   const restored = await browser({
     storage: app.storage,
     workspace: true,
     prepared: ["catalog"],
   });
-  expect(restored.root("lesson").textContent).toContain(
-    "Yes, make these edits.",
-  );
+  expect(restored.root("lesson").textContent).toContain("Apply changes.");
   expect(restored.root("lesson").textContent).toContain(
     "I’ve added the supporting code",
   );
-  expect(restored.root("lesson").textContent).toContain(
-    "May I make these supporting edits?",
-  );
+  expect(restored.root("lesson").textContent).toContain("Changes applied.");
   const order = await browser({
     phase: "order",
     workspace: true,
@@ -729,8 +843,7 @@ it("retains the preparation explanation when failure progresses to recovery", as
   const prepare = find(
     app.root("lesson"),
     (element) =>
-      element.tag === "button" &&
-      element.textContent === "Yes, make these edits",
+      element.tag === "button" && element.textContent === "Apply changes",
   )!;
   await prepare.onclick!();
   const explanation = PHASES.find((phase) => phase.id === "fail")!.preparation!;
@@ -764,9 +877,7 @@ it("shows attributed diffs for Milo and learner edits once, and retains them acr
   app.server.workspace.prepared.push("catalog");
   app.server.workspace.changes.push(milo);
   await app.poll();
-  expect(app.root("lesson").textContent).toContain(
-    "Here are the edits I made.",
-  );
+  expect(app.root("lesson").textContent).toContain("Changes applied.");
   expect(app.root("lesson").textContent).toContain("- const catalog = [];");
   expect(app.root("lesson").textContent).toContain("+ const catalog = [1];");
   app.server.workspace.changes.push({
@@ -800,9 +911,7 @@ it("shows attributed diffs for Milo and learner edits once, and retains them acr
   expect(reloaded.root("lesson").textContent).toContain(
     "+ return $.response.status(200).json(catalog);",
   );
-  expect(reloaded.root("lesson").textContent).toContain(
-    "Here are the edits I made.",
-  );
+  expect(reloaded.root("lesson").textContent).toContain("Changes applied.");
 });
 
 it("records cart actions with quantities and retains them after reload", async () => {

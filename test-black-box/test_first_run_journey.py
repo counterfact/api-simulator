@@ -662,8 +662,21 @@ def coffee_order(journey, product_id, quantity):
 
 def coffee_workspace(journey, action, phase):
     info = journey.request("get", "/tutorial-info").json()
-    response = journey.request("post", "/tutorial-workspace", json={"action": action, "phaseId": phase, "sessionId": info["sessionId"]})
+    payload = {"action": action, "phaseId": phase, "sessionId": info["sessionId"]}
+    files = []
+    if action == "prepare":
+        paths = ["routes/products.ts", "routes/orders.ts", "routes/_.context.ts", "scenarios/index.ts"]
+        before = {path: (journey.output / path).read_text() for path in paths}
+        preview = journey.request("post", "/tutorial-workspace", json={**payload, "action": "preview"})
+        assert preview.status_code == 200 and preview.json()["ok"], preview.text
+        assert {path: (journey.output / path).read_text() for path in paths} == before
+        assert journey.request("get", "/tutorial-info").json()["state"] == info["state"]
+        files = preview.json().get("files", [])
+        payload["revision"] = preview.json().get("revision")
+    response = journey.request("post", "/tutorial-workspace", json=payload)
     assert response.status_code == 200 and response.json()["ok"], response.text
+    for file in files:
+        assert (journey.output / file["file"]).read_text() == file["after"]
 
 
 def edit_coffee(journey, filename, before, after):

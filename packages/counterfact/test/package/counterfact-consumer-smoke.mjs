@@ -367,6 +367,18 @@ try {
   assert.deepEqual(info.state, { catalog: null, inventory: null });
   assert.equal(check.ok, false);
   assert.match(check.message, /random product stub/);
+  const workspace = async (action, phaseId, revision) => (await fetch(origin + "/tutorial-workspace", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, phaseId, revision, sessionId: info.sessionId }),
+  })).json();
+  assert.equal((await workspace("checkpoint", "explore")).ok, true);
+  const proposal = await workspace("preview", "catalog");
+  assert.equal(proposal.ok, true);
+  assert.equal(proposal.files.length, 1);
+  assert.match(proposal.files[0].after, /const catalog/);
+  assert.equal((await (await fetch(origin + "/tutorial-info")).json()).revision, info.revision);
+  const applied = await workspace("prepare", "catalog", proposal.revision);
+  assert.equal(applied.ok, true);
+  assert.deepEqual(applied.changes.find(change => change.actor === "milo").files, proposal.files);
   const milestone = await fetch(origin + "/tutorial-event", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "opened", phaseId: "explore" }),
   });

@@ -12,3 +12,5 @@ Record explicit shop actions and their observed results in the conversation, inc
 Attach collapsed HTTP request/response snapshots to refresh, order, and retry turns, including handler-file links. Retain each exchange across later actions and reloads, and keep malformed or missing responses visible for diagnosis.
 
 Include submitted REPL input as learner turns alongside file edits and shop actions. Keep repeated commands and reload history, while leaving command evaluation and lesson verification separate and excluding raw input from telemetry.
+
+Show Milo’s exact proposed file diff before saving. Apply changes writes only the reviewed edit, then updates the same proposal bubble to Changes applied. Refresh stale previews for review and preserve learner saves made in the meantime.

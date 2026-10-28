@@ -99,6 +99,55 @@ export function runCoffeeShopWalkthrough(
     exchanges?: HttpExchange[];
     command?: string;
   };
+  type Proposal = {
+    files?: FileChange[];
+    revision?: string;
+    sourceRevision: string;
+    error?: string;
+    applying?: boolean;
+  };
+  const proposals = new Map<string, Proposal>();
+  async function loadProposal(phaseId: string, force = false) {
+    const candidate = phases.find((candidate) => candidate.id === phaseId)!;
+    if (
+      !candidate.preparation ||
+      !info?.workspace?.enabled ||
+      info.workspace.prepared.includes(phaseId) ||
+      completed.has(phaseId) ||
+      missing()
+    )
+      return;
+    if (!force && proposals.get(phaseId)?.sourceRevision === info.revision)
+      return;
+    if (!force && proposals.get(phaseId)?.applying) return;
+    const sourceRevision = info.revision;
+    try {
+      const { value: result } = await json<{
+        ok: boolean;
+        message: string;
+        files?: FileChange[];
+        revision?: string;
+      }>("/tutorial-workspace", {
+        action: "preview",
+        phaseId,
+        sessionId: info.sessionId,
+      });
+      proposals.set(phaseId, {
+        sourceRevision,
+        files: result.files,
+        revision: result.revision,
+        error: result.ok ? undefined : result.message,
+      });
+    } catch (error) {
+      proposals.set(phaseId, {
+        sourceRevision,
+        error:
+          "Could not preview the changes: " +
+          (error instanceof Error ? error.message : String(error)),
+      });
+    }
+    renderLesson();
+  }
   let seenChanges = new Set<number>();
   let seenReplSubmissions = new Set<string>();
   let turns: Turn[] = [];
@@ -676,7 +725,7 @@ export function runCoffeeShopWalkthrough(
       ),
       node(
         "p",
-        "We’ll take turns. I’ll explain the supporting edits I want to make, and you’ll click ‘Yes, make these edits’ to approve them. Then I’ll guide you through a small edit of your own in your editor. You’ll try it in the shop or terminal, and we’ll compare what actually happened before moving on.",
+        "We’ll take turns. I’ll explain the supporting edits and show you the proposed diff. Click ‘Apply changes’ to save them. Then I’ll guide you through a small edit of your own in your editor. You’ll try it in the shop or terminal, and we’ll compare what actually happened before moving on.",
       ),
       node(
         "p",
@@ -700,65 +749,91 @@ export function runCoffeeShopWalkthrough(
       }
       heading.append(node("h3", revealed.title), explanation);
       lesson.append(heading);
+      const phaseTurns = turns.filter((turn) => turn.phaseId === revealed.id);
+      const appliedEdit = phaseTurns.find(
+        (turn) => turn.role === "tutor" && turn.files?.length,
+      );
       if (revealed.preparation) {
         const proposal = bubble(
           "tutor",
           "Here’s what I’d like to change: " + revealed.preparation,
         );
+        const preview = proposals.get(revealed.id);
+        const applied = prepared || !!appliedEdit;
+        proposal.dataset.proposal = revealed.id;
         proposal.append(
           node(
             "p",
-            "May I make these supporting edits? You’ll be able to review the diff here before making your part of the change.",
+            applied
+              ? "Changes applied."
+              : "Review this diff. Apply changes saves these edits to your files.",
+            applied ? "step-complete" : "",
           ),
         );
+        for (const file of appliedEdit?.files ?? preview?.files ?? [])
+          proposal.append(renderDiff(file));
         if (
           active &&
-          !prepared &&
+          !applied &&
           !finished &&
           info?.workspace?.enabled &&
           !missing()
         ) {
-          const approve = button("Yes, make these edits", async () => {
-            approve.disabled = true;
-            record("you", "Yes, make these edits.");
-            try {
-              const { value: result } = await json<{
-                ok: boolean;
-                message: string;
-                changes?: EditEvent[];
-              }>("/tutorial-workspace", {
-                action: "prepare",
-                phaseId: revealed.id,
-                sessionId: info.sessionId,
-              });
-              if (result.ok) {
-                info.workspace!.prepared.push(revealed.id);
-                checkedPhase = "";
-                syncChanges(result.changes);
-                record(
-                  "tutor",
-                  "I’ve added the supporting code. Review that diff. Now it’s your turn.",
-                );
-              } else
-                record(
-                  "tutor",
-                  "I couldn’t apply that edit: " + result.message,
-                );
-            } catch (error) {
-              record(
-                "tutor",
-                "I couldn’t apply that edit: " +
-                  (error instanceof Error ? error.message : String(error)),
-              );
-            }
-            renderLesson();
-            await checkFiles();
-          });
-          proposal.append(approve);
+          if (preview?.error)
+            proposal.append(node("p", preview.error, "error"));
+          if (preview?.revision && preview.files?.length) {
+            const approve = button(
+              preview.applying ? "Applying changes…" : "Apply changes",
+              async () => {
+                preview.applying = true;
+                record("you", "Apply changes.");
+                renderLesson();
+                try {
+                  const { value: result } = await json<{
+                    ok: boolean;
+                    message: string;
+                    changes?: EditEvent[];
+                  }>("/tutorial-workspace", {
+                    action: "prepare",
+                    phaseId: revealed.id,
+                    sessionId: info.sessionId,
+                    revision: preview.revision,
+                  });
+                  if (result.ok) {
+                    if (!info.workspace!.prepared.includes(revealed.id))
+                      info.workspace!.prepared.push(revealed.id);
+                    checkedPhase = "";
+                    syncChanges(result.changes);
+                    record(
+                      "tutor",
+                      "I’ve added the supporting code. Now it’s your turn.",
+                    );
+                  } else {
+                    await loadProposal(revealed.id, true);
+                    proposals.get(revealed.id)!.error =
+                      "I couldn’t apply that edit: " + result.message;
+                  }
+                } catch (error) {
+                  preview.error =
+                    "I couldn’t apply that edit: " +
+                    (error instanceof Error ? error.message : String(error));
+                } finally {
+                  preview.applying = false;
+                }
+                renderLesson();
+                await checkFiles();
+              },
+            );
+            approve.disabled = preview.applying === true;
+            proposal.append(approve);
+          } else if (preview?.error)
+            proposal.append(
+              button("Retry preview", () => loadProposal(revealed.id, true)),
+            );
+          else proposal.append(node("p", "Preparing the proposed diff…"));
         }
         lesson.append(proposal);
       }
-      const phaseTurns = turns.filter((turn) => turn.phaseId === revealed.id);
       // The approval exchange precedes the exercise; observations and replies follow it.
       const approvalEnd = phaseTurns.findIndex(
         (turn) => turn.role === "tutor" && turn.text.startsWith("I’ve added"),
@@ -774,7 +849,9 @@ export function runCoffeeShopWalkthrough(
         : preparationEnd < 0 && !prepared
           ? phaseTurns
           : phaseTurns.slice(0, preparationEnd + 1);
-      for (const turn of before) lesson.append(turnBubble(turn, openHints));
+      for (const turn of before)
+        if (!(turn.role === "tutor" && turn.files?.length))
+          lesson.append(turnBubble(turn, openHints));
       if (
         revealed.preparation &&
         !prepared &&
@@ -819,7 +896,8 @@ export function runCoffeeShopWalkthrough(
         );
       lesson.append(exercise);
       for (const turn of phaseTurns.slice(before.length))
-        lesson.append(turnBubble(turn, openHints));
+        if (!(turn.role === "tutor" && turn.files?.length))
+          lesson.append(turnBubble(turn, openHints));
       if (active && current.id === "observe" && !finished) renderQuestion();
       if (active && finished) {
         const done = node("p", "✓ Lesson complete", "step-complete");
@@ -1288,6 +1366,8 @@ export function runCoffeeShopWalkthrough(
       info = latest;
       const changed = syncChanges(info.workspace?.changes);
       if (syncReplSubmissions(info.replSubmissions) || changed) renderLesson();
+      if (phase().id !== requestedId) return;
+      await loadProposal(requestedId);
       if (phase().id !== requestedId) return;
       if (
         phase().check &&

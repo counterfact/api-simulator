@@ -1,5 +1,6 @@
 /* eslint-disable security/detect-non-literal-fs-filename -- Only fixed lesson paths inside an explicitly created demo are editable. */
 import fs from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { join, resolve } from "node:path";
 import { format } from "prettier";
 import ts from "typescript";
@@ -219,7 +220,14 @@ async function readEditable(root: string, file: string) {
   return fs.readFile(path, "utf8");
 }
 /** Visible scaffolding only; no scenario is executed and the learner supplies the key behavior. */
-export async function prepareWalkthroughStep(root: string, phaseId: string) {
+export async function previewWalkthroughStep(root: string, phaseId: string) {
+  return prepareWalkthroughStep(root, phaseId, { preview: true });
+}
+export async function prepareWalkthroughStep(
+  root: string,
+  phaseId: string,
+  options: { preview?: boolean; revision?: string } = {},
+) {
   return serial(root, async () => {
     const state = await readState(root);
     if (!state?.baseline)
@@ -239,10 +247,15 @@ export async function prepareWalkthroughStep(root: string, phaseId: string) {
       throw new Error(
         "Complete the preceding lesson before preparing this step. Previews never change files.",
       );
-    await captureChanges(root, state, "you");
+    const originals = new Map<string, string>();
+    const read = async (file: string) => {
+      const text = await readEditable(root, file);
+      originals.set(file, text);
+      return text;
+    };
     const changes: [string, string][] = [];
     if (phaseId === "catalog") {
-      const text = await readEditable(root, "routes/products.ts");
+      const text = await read("routes/products.ts");
       const parsed = source(text);
       if (
         parsed.statements.some(
@@ -267,7 +280,7 @@ export async function prepareWalkthroughStep(root: string, phaseId: string) {
           text.slice(position),
       ]);
     } else if (phaseId === "fail") {
-      let text = await readEditable(root, "routes/orders.ts");
+      let text = await read("routes/orders.ts");
       if (/\bordersAvailable\b/u.test(text))
         throw new Error(
           "ordersAvailable already exists. Preparation will not replace your code.",
@@ -282,7 +295,7 @@ export async function prepareWalkthroughStep(root: string, phaseId: string) {
         "const ordersAvailable = true;\n" + text,
       ]);
     } else if (phaseId === "context") {
-      const text = await readEditable(root, "routes/_.context.ts");
+      const text = await read("routes/_.context.ts");
       if (
         contextClass(text).members.some(
           (member) => !ts.isConstructorDeclaration(member),
@@ -302,8 +315,8 @@ export async function prepareWalkthroughStep(root: string, phaseId: string) {
         ),
       ]);
     } else if (phaseId === "seed") {
-      const text = await readEditable(root, "routes/_.context.ts");
-      const scenarios = await readEditable(root, "scenarios/index.ts");
+      const text = await read("routes/_.context.ts");
+      const scenarios = await read("scenarios/index.ts");
       const parsed = source(scenarios);
       // Replace only the generated no-op startup; preserve help and unrelated exports.
       const startup = parsed.statements.find(
@@ -365,7 +378,7 @@ export async function prepareWalkthroughStep(root: string, phaseId: string) {
           scenarios.slice(startup.end),
       ]);
     } else if (phaseId === "rules") {
-      const text = await readEditable(root, "routes/_.context.ts");
+      const text = await read("routes/_.context.ts");
       changes.push([
         "routes/_.context.ts",
         addContextMethods(text, STOCK_METHODS, [
@@ -375,7 +388,7 @@ export async function prepareWalkthroughStep(root: string, phaseId: string) {
         ]),
       ]);
     } else if (phaseId === "reduce") {
-      let text = await readEditable(root, "routes/orders.ts");
+      let text = await read("routes/orders.ts");
       if (/\breduceInventory\b/u.test(text))
         throw new Error(
           "reduceInventory already exists. Preparation will not replace your implementation.",
@@ -399,7 +412,7 @@ export async function prepareWalkthroughStep(root: string, phaseId: string) {
           text,
       ]);
     } else if (phaseId === "scenario") {
-      const text = await readEditable(root, "scenarios/index.ts");
+      const text = await read("scenarios/index.ts");
       if (/\brestockDarkRoast\b/u.test(text))
         throw new Error(
           "restockDarkRoast already exists. Keep your implementation and complete the exercise directly.",
@@ -421,9 +434,35 @@ export async function prepareWalkthroughStep(root: string, phaseId: string) {
       ),
     );
     for (const [file] of formatted) {
-      if ((await readEditable(root, file)) !== state.snapshots[file])
+      if ((await readEditable(root, file)) !== originals.get(file))
         throw new Error(
           "This file changed while I was preparing the edit. Review your changes and try again.",
+        );
+    }
+    const files = formatted.map(([file, after]) => ({
+      file,
+      before: originals.get(file)!,
+      after,
+    }));
+    const revision = createHash("sha256")
+      .update(JSON.stringify({ phaseId, files }))
+      .digest("hex");
+    if (options.preview)
+      return {
+        ok: true,
+        message: "Review these changes before applying them.",
+        files,
+        revision,
+      };
+    if (options.revision !== undefined && options.revision !== revision)
+      throw new Error(
+        "Your files changed since this preview. Review the updated diff, then apply it again.",
+      );
+    await captureChanges(root, state, "you");
+    for (const [file] of formatted) {
+      if ((await readEditable(root, file)) !== originals.get(file))
+        throw new Error(
+          "Your files changed while applying this edit. Review the updated diff and try again.",
         );
     }
     for (const [file, text] of formatted)

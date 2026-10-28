@@ -66,8 +66,9 @@ The twelve steps build on the code you have already written:
 
 Each phase explains the Counterfact facility being used and names the file to edit.
 Milo, a coffee-shop owner and your Counterfact tutor, proposes the supporting
-edits before making them. Click **Yes, make these edits** to approve his proposal. Review
-that change in your IDE, then make the small edit supplied under **Show code**.
+edits before making them and shows the proposed diff in his chat bubble. Review
+the diff, then click **Apply changes** to save it. The same bubble updates to
+**Changes applied** and keeps the diff visible. Then make the small edit supplied under **Show code**.
 You keep your existing file and change only the indicated return statement, branch,
 method body, or assignment. Counterfact prepares the surrounding structure and
 data; you connect the behavior. Preparation never runs a scenario or resets state. **Open in VSCode** and **Copy file
@@ -101,9 +102,12 @@ Earlier exchanges stay attached to their own actions when new requests arrive.
 
 ## Follow changes in the conversation
 
-When you approve Milo’s proposed edit, his next chat turn shows a diff of the
-files he changed. Green lines with `+` were added; red lines with `-` were removed.
+Milo shows each proposed edit as a diff before changing any files. Green lines
+with `+` will be added; red lines with `-` will be removed. **Apply changes**
+saves the reviewed edit and marks that same proposal bubble **Changes applied**.
 Each diff names its file and can be expanded or collapsed.
+If you save a file after the preview, Milo refreshes the diff and asks you to
+apply it again. He preserves your save instead of applying an outdated proposal.
 
 Make your part of the change in your editor and save. A **Your saved changes**
 turn appears automatically with your diff, even if the edit is incomplete or has

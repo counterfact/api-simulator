@@ -117,7 +117,11 @@ export const SHOP_DOCUMENT = {
                 type: "object",
                 required: ["action", "phaseId", "sessionId"],
                 properties: {
-                  action: { type: "string", enum: ["prepare", "checkpoint"] },
+                  action: {
+                    type: "string",
+                    enum: ["preview", "prepare", "checkpoint"],
+                  },
+                  revision: { type: "string" },
                   phaseId: {
                     type: "string",
                     enum: PHASES.map((phase) => phase.id),
@@ -278,8 +282,13 @@ export const POST: HTTP_POST = async function ($) {
       throw new Error("Workspace changes must come from this walkthrough's origin.");
     const info = await (await helpers).walkthroughInfo(${project}, $.context);
     if ($.body.sessionId !== info.sessionId) throw new Error("Reload the walkthrough before changing its workspace.");
-    const action = $.body.action === "prepare" ? (await workspace).prepareWalkthroughStep : (await workspace).checkpointWalkthroughStep;
-    return $.response.status(200).json(await action(${project}, $.body.phaseId));
+    const module = await workspace;
+    const result = $.body.action === "preview"
+      ? await module.previewWalkthroughStep(${project}, $.body.phaseId)
+      : $.body.action === "prepare"
+        ? await module.prepareWalkthroughStep(${project}, $.body.phaseId, { revision: $.body.revision })
+        : await module.checkpointWalkthroughStep(${project}, $.body.phaseId);
+    return $.response.status(200).json(result);
   } catch (error) {
     const result = { ok: false, message: error instanceof Error ? error.message : String(error) };
     return $.response.status(200).json(result);

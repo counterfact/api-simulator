@@ -14,6 +14,7 @@ import {
 import {
   checkpointWalkthroughStep as checkpoint,
   prepareWalkthroughStep as prepare,
+  previewWalkthroughStep as preview,
   walkthroughWorkspace as workspace,
 } from "../../src/coffee-shop/coffee-shop-workspace.js";
 import { PHASES } from "../../src/coffee-shop/coffee-shop-lessons.js";
@@ -33,6 +34,30 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     const tour = await prepareTour($.path("."), "demo");
     await generate(tour.destination, tour.source);
     const root = tour.destination;
+    const previewAndApply = async (phaseId: string) => {
+      const lessonFiles = [
+        "routes/products.ts",
+        "routes/orders.ts",
+        "routes/_.context.ts",
+        "scenarios/index.ts",
+      ];
+      const before = await Promise.all(
+        lessonFiles.map((file) => $.read("demo/" + file)),
+      );
+      const beforeState = await $.read(
+        "demo/.counterfact-walkthrough-state.json",
+      );
+      const proposal = await preview(root, phaseId);
+      expect(
+        await Promise.all(lessonFiles.map((file) => $.read("demo/" + file))),
+      ).toEqual(before);
+      expect(await $.read("demo/.counterfact-walkthrough-state.json")).toBe(
+        beforeState,
+      );
+      await prepare(root, phaseId, { revision: proposal.revision });
+      for (const file of proposal.files!)
+        expect(await $.read("demo/" + file.file)).toBe(file.after);
+    };
     await workspace(root);
     expect((await workspace(root)).changes).toEqual([]);
     await expect($.read("demo/.git/HEAD")).rejects.toMatchObject({
@@ -40,17 +65,43 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     });
     await expect(prepare(root, "context")).rejects.toThrow("preceding lesson");
     await checkpoint(root, "explore");
-    await prepare(root, "catalog");
+    const original = await $.read("demo/routes/products.ts");
+    const originalState = await $.read(
+      "demo/.counterfact-walkthrough-state.json",
+    );
+    const proposal = await preview(root, "catalog");
+    expect(proposal.files).toEqual([
+      {
+        file: "routes/products.ts",
+        before: original,
+        after: expect.stringContaining("const catalog"),
+      },
+    ]);
+    expect(await $.read("demo/routes/products.ts")).toBe(original);
+    expect(await $.read("demo/.counterfact-walkthrough-state.json")).toBe(
+      originalState,
+    );
+    // A save made after review invalidates the proposal instead of being overwritten.
+    await $.add("demo/routes/products.ts", original + "\n// Keep my save.\n");
+    await expect(
+      prepare(root, "catalog", { revision: proposal.revision }),
+    ).rejects.toThrow("changed since this preview");
+    expect(await $.read("demo/routes/products.ts")).toContain("Keep my save.");
+    const updated = await preview(root, "catalog");
+    await prepare(root, "catalog", { revision: updated.revision });
+    expect(await $.read("demo/routes/products.ts")).toBe(
+      updated.files![0]!.after,
+    );
     expect(await $.read("demo/routes/products.ts")).toContain(".random()");
     const prepared = (await workspace(root)).changes!;
-    expect(prepared).toHaveLength(1);
-    expect(prepared[0]).toMatchObject({
+    expect(prepared).toHaveLength(2);
+    expect(prepared[1]).toMatchObject({
       actor: "milo",
       phaseId: "catalog",
       files: [{ file: "routes/products.ts" }],
     });
-    expect(prepared[0]!.files[0]!.before).not.toContain("const catalog");
-    expect(prepared[0]!.files[0]!.after).toContain("const catalog");
+    expect(prepared[1]!.files[0]!.before).not.toContain("const catalog");
+    expect(prepared[1]!.files[0]!.after).toContain("const catalog");
     // Apply exactly the small edits displayed by each lesson, leaving imports and other code alone.
     const replace = async (file: string, before: string, after: string) => {
       const text = await $.read("demo/" + file);
@@ -74,21 +125,21 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     );
     await checkpoint(root, "catalog");
     const observed = (await workspace(root)).changes!;
-    expect(observed).toHaveLength(2);
-    expect(observed[1]).toMatchObject({
+    expect(observed).toHaveLength(3);
+    expect(observed[2]).toMatchObject({
       actor: "you",
       files: [{ file: "routes/products.ts" }],
     });
-    expect(observed[1]!.files[0]!.before).toContain(".random()");
-    expect(observed[1]!.files[0]!.after).toContain(".json(catalog)");
-    expect((await workspace(root)).changes).toHaveLength(2);
+    expect(observed[2]!.files[0]!.before).toContain(".random()");
+    expect(observed[2]!.files[0]!.after).toContain(".json(catalog)");
+    expect((await workspace(root)).changes).toHaveLength(3);
     await replace(
       "routes/orders.ts",
       "return $.response.status(201).random();",
       PHASES.find((p) => p.id === "order")!.edits[0]!.code,
     );
     await checkpoint(root, "order");
-    await prepare(root, "fail");
+    await previewAndApply("fail");
     await replace(
       "routes/orders.ts",
       "ordersAvailable = true",
@@ -103,7 +154,7 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
       "ordersAvailable = true",
     );
     await checkpoint(root, "retry");
-    await prepare(root, "context");
+    await previewAndApply("context");
     expect((await checkWalkthroughSave(root, "context")).ok).toBe(false);
     await replace(
       "routes/_.context.ts",
@@ -121,7 +172,7 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     );
     await checkpoint(root, "context");
     await append("scenarios/index.ts", 'export const myNote = "keep this";');
-    await prepare(root, "seed");
+    await previewAndApply("seed");
     expect(await $.read("demo/scenarios/index.ts")).toContain(
       'myNote = "keep this"',
     );
@@ -146,7 +197,7 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     );
     await checkpoint(root, "connect");
     await checkpoint(root, "decaf");
-    await prepare(root, "rules");
+    await previewAndApply("rules");
     await replace(
       "routes/orders.ts",
       "return $.response.status(201)",
@@ -155,7 +206,7 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     );
     expect((await checkWalkthroughSave(root, "rules")).ok).toBe(true);
     await checkpoint(root, "rules");
-    await prepare(root, "reduce");
+    await previewAndApply("reduce");
     expect((await checkWalkthroughSave(root, "reduce")).ok).toBe(false);
     await replace(
       "routes/orders.ts",
@@ -165,7 +216,7 @@ it("prepares focused changes, preserves learner edits, and records all twelve le
     expect((await checkWalkthroughSave(root, "reduce")).ok).toBe(true);
     await checkpoint(root, "reduce");
     await checkpoint(root, "restock");
-    await prepare(root, "scenario");
+    await previewAndApply("scenario");
     await replace(
       "scenarios/index.ts",
       "// TODO: set Dark Roast inventory to 5.",
