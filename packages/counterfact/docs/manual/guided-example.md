@@ -27,8 +27,13 @@ Long explanations arrive in smaller messages. Click **Okay** to reveal the next
 part; the messages already revealed stay visible. Reloading keeps your place.
 **Okay** reveals text without applying changes or completing an exercise.
 Each user action reveals at most one new Milo message. When he has more to say,
-**Okay** remains available between messages, including between the final part of
-an explanation and the next instruction. Background checks do not advance it.
+**Okay** continues the explanation. When he asks you to edit a file, approve a
+proposal, run a scenario, or try the shop, the instructions stay visible while
+he waits for that action. **Okay** does not appear as a substitute for doing the
+exercise. Saved edits and API results determine when he responds and when the
+lesson is complete.
+Open the demo folder using its link or your editor, then click **Folder is open**
+to confirm that external step. Background checks do not advance reading pauses.
 New Milo messages type out progressively as the conversation scrolls smoothly
 to keep them in view. Messages already seen do not replay their typing effect on
 reload. Reduced-motion preferences show the text immediately and use instant

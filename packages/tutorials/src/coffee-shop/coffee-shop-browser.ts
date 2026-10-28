@@ -124,10 +124,10 @@ export function runCoffeeShopWalkthrough(
     result.className = className;
     return result;
   };
-  const button = (text: string, action: () => unknown) => {
+  const button = (text: string, action: () => unknown, advances = true) => {
     const result = node("button", text, "secondary") as HTMLButtonElement;
     result.onclick = () => {
-      acknowledgeVisibleMessages();
+      if (advances) acknowledgeVisibleMessages();
       return action();
     };
     return result;
@@ -192,6 +192,7 @@ export function runCoffeeShopWalkthrough(
     exchanges?: HttpExchange[];
     command?: string;
     verificationRevision?: string;
+    waitForAction?: boolean;
   };
   type Proposal = {
     files?: FileChange[];
@@ -204,6 +205,7 @@ export function runCoffeeShopWalkthrough(
   const revealedMessages: Record<string, number> = {};
   const displayedMessages = new Set<string>();
   let messageAllowance = 1;
+  let folderOpened = false;
   let typing: { id: string; shown: number } | undefined;
   let typingTimer: ReturnType<typeof setTimeout> | undefined;
   const reducedMotion = () =>
@@ -252,8 +254,8 @@ export function runCoffeeShopWalkthrough(
   let seenChanges = new Set<number>();
   let seenReplSubmissions = new Set<string>();
   let turns: Turn[] = [];
-  function record(role: Turn["role"], text: string) {
-    const turn: Turn = { phaseId: phase().id, role, text };
+  function record(role: Turn["role"], text: string, waitForAction = false) {
+    const turn: Turn = { phaseId: phase().id, role, text, waitForAction };
     turns.push(turn);
     save();
     return turn;
@@ -281,6 +283,7 @@ export function runCoffeeShopWalkthrough(
       seenChanges.add(edit.id);
       const phaseId = edit.phaseId ?? phase().id;
       if (!phases.some((candidate) => candidate.id === phaseId)) continue;
+      if (edit.actor === "you") acknowledgeVisibleMessages();
       turns.push({
         phaseId,
         role: edit.actor === "milo" ? "tutor" : "you",
@@ -300,6 +303,7 @@ export function runCoffeeShopWalkthrough(
     for (const entry of entries) {
       if (seenReplSubmissions.has(entry.id)) continue;
       seenReplSubmissions.add(entry.id);
+      acknowledgeVisibleMessages();
       turns.push({
         phaseId: phase().id,
         role: "you",
@@ -338,6 +342,7 @@ export function runCoffeeShopWalkthrough(
           diffStates,
           revealedMessages,
           displayedMessages: [...displayedMessages],
+          folderOpened,
         }),
       );
     } catch {
@@ -552,11 +557,12 @@ export function runCoffeeShopWalkthrough(
       }
     }
     message = completionMessage;
-    record("tutor", "That worked. " + completionMessage);
+    const next = phases[index + 1];
+    if (!next || next.lesson !== phase().lesson)
+      record("tutor", "That worked. " + completionMessage);
     completed.add(phase().id);
     report("phase_completed");
     save();
-    const next = phases[index + 1];
     if (next && next.lesson === phase().lesson) move(index + 1);
     else {
       if (index === phases.length - 1) report("finished");
@@ -868,6 +874,11 @@ export function runCoffeeShopWalkthrough(
   }
   function turnBubble(turn: Turn, openHints: Set<string>) {
     const result = bubble(turn.role, turn.text, turn.phaseId);
+    if (turn.waitForAction || turn.verificationRevision) {
+      result.dataset.action = "true";
+      if (turn.phaseId === phase().id && !completed.has(turn.phaseId))
+        result.dataset.waitForAction = "true";
+    }
     if (turn.command !== undefined) result.append(node("pre", turn.command));
     for (const file of turn.files ?? [])
       result.append(
@@ -895,6 +906,7 @@ export function runCoffeeShopWalkthrough(
     const lesson = byId("lesson");
     const visible: HTMLElement[] = [];
     let waiting = false;
+    let waitingForAction = false;
     const elements = Array.from(lesson.children) as HTMLElement[];
     messages: for (const [elementIndex, element] of elements.entries()) {
       if (!element.className.split(" ").includes("tutor-turn")) {
@@ -908,6 +920,11 @@ export function runCoffeeShopWalkthrough(
         .join(" ")
         .split(/\s+/u).length;
       const phaseId = element.dataset.phase ?? phase().id;
+      const phaseIndex = phases.findIndex(
+        (candidate) => candidate.id === phaseId,
+      );
+      const historical =
+        phaseIndex >= 0 && (phaseIndex < index || completed.has(phaseId));
       const key = JSON.stringify([
         phaseId,
         paragraphs[0]?.dataset.prose ?? paragraphs[0]?.textContent,
@@ -915,7 +932,8 @@ export function runCoffeeShopWalkthrough(
       const groups: HTMLElement[][] = [];
       let group: HTMLElement[] = [];
       let hasParagraph = false;
-      for (const child of words > 60 ? contents : []) {
+      const action = element.dataset.action === "true";
+      for (const child of words > 60 && !action ? contents : []) {
         if (child.tagName !== "P") {
           group.push(child);
           continue;
@@ -931,12 +949,15 @@ export function runCoffeeShopWalkthrough(
           hasParagraph = true;
         }
       }
-      if (words <= 60) group = contents;
+      if (words <= 60 || action) group = contents;
       if (group.length) groups.push(group);
       const acknowledged = revealedMessages[key] ?? 1;
-      const revealed = Math.min(groups.length, acknowledged);
+      const revealed = historical
+        ? groups.length
+        : Math.min(groups.length, acknowledged);
       for (const [partIndex, children] of groups.slice(0, revealed).entries()) {
         const id = JSON.stringify([key, partIndex]);
+        if (historical) displayedMessages.add(id);
         if (!displayedMessages.has(id)) {
           if (!messageAllowance) {
             const previous = visible
@@ -945,7 +966,9 @@ export function runCoffeeShopWalkthrough(
               .find((candidate) =>
                 candidate.className.split(" ").includes("tutor-turn"),
               );
-            previous?.append(button("Okay", () => renderLesson()));
+            waitingForAction = previous?.dataset.waitForAction === "true";
+            if (!waitingForAction)
+              previous?.append(button("Okay", () => renderLesson()));
             waiting = true;
             break messages;
           }
@@ -957,6 +980,11 @@ export function runCoffeeShopWalkthrough(
         message.dataset.messageId = id;
         message.dataset.pacingKey = key;
         message.dataset.pacingPart = String(partIndex);
+        if (
+          element.dataset.waitForAction === "true" ||
+          children.some((child) => child.dataset.waitForAction === "true")
+        )
+          message.dataset.waitForAction = "true";
         if (partIndex === 0) message.id = element.id;
         if (partIndex === groups.length - 1 && element.dataset.proposal)
           message.dataset.proposal = element.dataset.proposal;
@@ -971,17 +999,20 @@ export function runCoffeeShopWalkthrough(
             .some((name) => name === "tutor-turn" || name === "learner-turn"),
         );
       if (
-        revealed < groups.length ||
-        (acknowledged <= groups.length &&
-          nextMessage?.className.split(" ").includes("tutor-turn"))
+        !historical &&
+        (revealed < groups.length ||
+          (acknowledged <= groups.length &&
+            nextMessage?.className.split(" ").includes("tutor-turn")))
       ) {
-        visible.at(-1)!.append(
-          button("Okay", () => {
-            revealedMessages[key] = revealed + 1;
-            save();
-            renderLesson();
-          }),
-        );
+        waitingForAction = visible.at(-1)!.dataset.waitForAction === "true";
+        if (!waitingForAction)
+          visible.at(-1)!.append(
+            button("Okay", () => {
+              revealedMessages[key] = revealed + 1;
+              save();
+              renderLesson();
+            }),
+          );
         waiting = true;
         break;
       }
@@ -989,7 +1020,8 @@ export function runCoffeeShopWalkthrough(
     lesson.replaceChildren(...visible);
     if (waiting) {
       (byId("continue") as HTMLButtonElement).hidden = true;
-      (byId("check-progress") as HTMLButtonElement).hidden = true;
+      if (!waitingForAction)
+        (byId("check-progress") as HTMLButtonElement).hidden = true;
     }
   }
   function acknowledgeVisibleMessages() {
@@ -1091,7 +1123,15 @@ export function runCoffeeShopWalkthrough(
     lesson.replaceChildren();
     const welcome = bubble("tutor", "", "welcome");
     const demoFolder = node("p", "Open this demo folder in your editor: ");
+    if (!folderOpened) demoFolder.dataset.waitForAction = "true";
     demoFolder.append(fileLink("", projectPath), node("span", "."));
+    if (!folderOpened)
+      demoFolder.append(
+        button("Folder is open", () => {
+          folderOpened = true;
+          renderLesson();
+        }),
+      );
     welcome.append(
       node("h2", "Hi, I’m Milo."),
       node(
@@ -1121,6 +1161,8 @@ export function runCoffeeShopWalkthrough(
             ? "Resume at lesson " + next.lesson + ": " + next.title + "."
             : "You’ve completed the walkthrough. Resume to keep experimenting with your API."),
       );
+      handoff.dataset.action = "true";
+      handoff.dataset.waitForAction = "true";
       handoff.append(
         node(
           "p",
@@ -1136,12 +1178,6 @@ export function runCoffeeShopWalkthrough(
           resumeCheckpoint = undefined;
           entryState = JSON.parse(JSON.stringify(info.state));
           record("you", "Resume this project.");
-          record(
-            "tutor",
-            next
-              ? "We’ll continue from your saved lesson progress."
-              : "Your completed lessons are preserved. Keep experimenting with your API.",
-          );
           renderLesson();
           renderShop();
           await checkFiles();
@@ -1177,8 +1213,10 @@ export function runCoffeeShopWalkthrough(
         link.href = origin;
         explanation.append(link, node("span", "."));
       }
-      introduction.append(explanation);
-      lesson.append(introduction);
+      if (revealed.id === "explore") {
+        introduction.append(explanation);
+        lesson.append(introduction);
+      }
       if (revealed.id === "explore")
         lesson.append(
           bubble(
@@ -1193,7 +1231,11 @@ export function runCoffeeShopWalkthrough(
           !(turn.role === "you" && turn.text === "Apply changes.") &&
           !(
             turn.role === "tutor" &&
-            turn.text === "I’ve added the supporting code. Now it’s your turn."
+            [
+              "I’ve added the supporting code. Now it’s your turn.",
+              "We’ll continue from your saved lesson progress.",
+              "Your completed lessons are preserved. Keep experimenting with your API.",
+            ].includes(turn.text)
           ),
       );
       const appliedEdit =
@@ -1204,14 +1246,21 @@ export function runCoffeeShopWalkthrough(
           (edit) => edit.actor === "milo" && edit.phaseId === revealed.id,
         );
       if (revealed.preparation) {
-        const proposal = bubble(
-          "tutor",
-          "Here’s what I’d like to change: " + revealed.preparation,
-          revealed.id,
+        const proposal = bubble("tutor", "", revealed.id);
+        proposal.append(
+          explanation,
+          fileText(
+            "p",
+            "Here’s what I’d like to change: " + revealed.preparation,
+            revealed.id,
+          ),
         );
         const preview = proposals.get(revealed.id);
         const applied = prepared || !!appliedEdit;
         proposal.dataset.proposal = revealed.id;
+        proposal.dataset.action = "true";
+        if (active && !applied && !finished && info?.workspace?.enabled)
+          proposal.dataset.waitForAction = "true";
         proposal.append(
           node(
             "p",
@@ -1302,6 +1351,10 @@ export function runCoffeeShopWalkthrough(
       )
         continue;
       const exercise = bubble("tutor", "", revealed.id);
+      exercise.dataset.action = "true";
+      if (active && !finished) exercise.dataset.waitForAction = "true";
+      if (!revealed.preparation && revealed.id !== "explore")
+        exercise.append(explanation);
       exercise.append(fileText("p", revealed.instruction, revealed.id));
       for (const edit of revealed.edits) {
         const file = schemaFile(edit.file);
@@ -1312,15 +1365,19 @@ export function runCoffeeShopWalkthrough(
             "Open in VSCode",
             editLine(edit.file, revealed.id),
           ),
-          button("Copy file path", async () => {
-            try {
-              await navigator.clipboard.writeText(projectPath + "/" + file);
-              message = "File path copied.";
-            } catch {
-              message = "Open or copy this file: " + projectPath + "/" + file;
-            }
-            renderStatus();
-          }),
+          button(
+            "Copy file path",
+            async () => {
+              try {
+                await navigator.clipboard.writeText(projectPath + "/" + file);
+                message = "File path copied.";
+              } catch {
+                message = "Open or copy this file: " + projectPath + "/" + file;
+              }
+              renderStatus();
+            },
+            false,
+          ),
         );
         exercise.append(fileText("p", edit.instruction, revealed.id), actions);
       }
@@ -1331,11 +1388,13 @@ export function runCoffeeShopWalkthrough(
         entryState?.inventory?.["dark-roast"] === 3 &&
         !finished
       ) {
-        const recovery = bubble(
-          "tutor",
-          "Startup has already applied the baseline in this session. To observe reset changing state, set Dark Roast to 0 in the REPL and click Check my work. Then run `.scenario reset` and check again.",
+        exercise.append(
+          fileText(
+            "p",
+            "Startup has already applied the baseline in this session. To observe reset changing state, set Dark Roast to 0 in the REPL and click Check my work. Then run the reset scenario and check again.",
+            revealed.id,
+          ),
         );
-        lesson.append(recovery);
       }
       for (const turn of phaseTurns.slice(before.length))
         if (!(turn.role === "tutor" && turn.files?.length))
@@ -1587,7 +1646,7 @@ export function runCoffeeShopWalkthrough(
       else {
         message =
           "The catalog is in place. Click Refresh products once more and compare the two responses in the chat.";
-        record("tutor", message);
+        record("tutor", message, true);
         renderLesson();
       }
     }
@@ -1703,7 +1762,7 @@ export function runCoffeeShopWalkthrough(
         else {
           message =
             "Click Add to cart on House Blend, then Place order again. Compare the order IDs in the two HTTP responses.";
-          record("tutor", message);
+          record("tutor", message, true);
         }
       }
       if (
@@ -1726,7 +1785,7 @@ export function runCoffeeShopWalkthrough(
         rejectionSeen = true;
         message =
           "The oversized order was rejected. Click Empty cart, restore Dark Roast inventory to 3 in the terminal’s REPL, then click Refresh products.";
-        record("tutor", message);
+        record("tutor", message, true);
       }
       const quantity = items
         .filter((item) => item.productId === "dark-roast")
@@ -1813,9 +1872,17 @@ export function runCoffeeShopWalkthrough(
         window.location.reload();
         return;
       }
+      const locationsChanged =
+        JSON.stringify(info?.workspace?.locations) !==
+        JSON.stringify(latest.workspace?.locations);
       info = latest;
       const changed = syncChanges(info.workspace?.changes);
-      if (syncReplSubmissions(info.replSubmissions) || changed) renderLesson();
+      if (
+        syncReplSubmissions(info.replSubmissions) ||
+        changed ||
+        locationsChanged
+      )
+        renderLesson();
       if (phase().id !== requestedId) return;
       if (resumeCheckpoint !== undefined) return;
       await loadProposal(requestedId);
@@ -1857,6 +1924,7 @@ export function runCoffeeShopWalkthrough(
             : "";
         if (
           ready &&
+          (force || changed || changedAfterCheck) &&
           !completed.has(requestedId) &&
           !turns.some(
             (turn) =>
@@ -1867,6 +1935,7 @@ export function runCoffeeShopWalkthrough(
           const feedback = record(
             "tutor",
             phase().verification ?? checked.message,
+            true,
           );
           feedback.verificationRevision = revision;
           renderLesson();
@@ -1998,6 +2067,7 @@ export function runCoffeeShopWalkthrough(
         saved.sessionId === info.sessionId
       ) {
         restored = true;
+        folderOpened = saved.folderOpened === true;
         if (Array.isArray(saved.displayedMessages)) {
           typing = undefined;
           displayedMessages.clear();

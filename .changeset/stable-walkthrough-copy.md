@@ -52,3 +52,5 @@ Make the divider between the conversation and coffee shop draggable, with keyboa
 Require a user action between every new tutor message, including the boundary between the final part of an explanation and the next instruction. Each Okay click reveals exactly one bubble, so the OpenAPI background cannot be skipped by automatic follow-up rendering.
 
 Track actually displayed messages separately from acknowledged sections so saved progress cannot reveal multiple new welcome or handoff bubbles at once. Animate new Milo text and smoothly follow it while preserving links, respecting reduced motion, and leaving previously read messages unanimated.
+
+Reserve Okay for explanatory text. Keep action instructions visible while waiting for approval, saved code, REPL input, or a shop experiment, and keep Check my work available. Combine short explanations with their actions, use an explicit folder-open confirmation, and respond to real saved changes rather than reading acknowledgments.

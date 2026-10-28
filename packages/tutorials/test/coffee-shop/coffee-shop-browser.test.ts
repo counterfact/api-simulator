@@ -348,7 +348,9 @@ async function browser(
     for (let step = 0; step < 200; step++) {
       const okay = find(
         root("lesson"),
-        (element) => element.tag === "button" && element.textContent === "Okay",
+        (element) =>
+          element.tag === "button" &&
+          ["Okay", "Folder is open"].includes(element.textContent),
       );
       if (!okay) return;
       await okay.onclick!();
@@ -356,9 +358,9 @@ async function browser(
     throw new Error("Conversation did not finish revealing its messages.");
   }
   await acknowledge();
-  const click = async (id: string) => {
+  const click = async (id: string, continueReading = true) => {
     await root(id).onclick!();
-    await acknowledge();
+    if (continueReading) await acknowledge();
   };
   return {
     root,
@@ -378,10 +380,10 @@ async function browser(
         await acknowledge();
       },
     },
-    async poll() {
+    async poll(continueReading = true) {
       await poll!();
       await new Promise((resolve) => setImmediate(resolve));
-      await acknowledge();
+      if (continueReading) await acknowledge();
     },
     add(id = "house-blend") {
       const card = find(
@@ -410,6 +412,54 @@ async function browser(
     },
   };
 }
+
+it("waits for approval, a saved edit, and live requests instead of offering Okay for the exercise", async () => {
+  const app = await browser({ phase: "catalog", workspace: true });
+  const okay = () =>
+    find(
+      app.root("lesson"),
+      (element) => element.tag === "button" && element.textContent === "Okay",
+    );
+  expect(okay()).toBeUndefined();
+  expect(app.server.workspace.prepared).toEqual([]);
+  await app.poll(false);
+  expect(app.server.workspace.prepared).toEqual([]);
+  const apply = find(
+    app.root("lesson"),
+    (element) =>
+      element.tag === "button" && element.textContent === "Apply changes",
+  )!;
+  await apply.onclick!();
+  expect(app.root("lesson").textContent).toContain(
+    "replace .random() with .json(catalog)",
+  );
+  expect(okay()).toBeUndefined();
+  expect(app.root("check-progress").hidden).toBe(false);
+  expect(app.completed()).not.toContain("catalog");
+  app.server.checkOk = true;
+  app.server.revision = "user-saved-catalog";
+  app.server.workspace.changes.push({
+    id: 2,
+    actor: "you",
+    phaseId: "catalog",
+    files: [{ file: "routes/products.ts", before: "random", after: "catalog" }],
+  });
+  await app.poll(false);
+  expect(app.root("lesson").textContent).toContain(
+    "Great job! You replaced the default random response",
+  );
+  expect(okay()).toBeUndefined();
+  expect(app.completed()).not.toContain("catalog");
+  await app.click("refresh-products", false);
+  expect(app.root("lesson").textContent).toContain(
+    "Click Refresh products once more",
+  );
+  expect(okay()).toBeUndefined();
+  expect(app.completed()).not.toContain("catalog");
+  await app.click("refresh-products", false);
+  expect(app.completed()).toContain("catalog");
+  expect(app.root("continue").hidden).toBe(false);
+});
 
 it("resizes the panels by dragging, clamps their widths, and restores the split on reload", async () => {
   const app = await browser();
@@ -463,7 +513,9 @@ it("reveals long explanations a message at a time and keeps the pause across rel
   );
   const okay = find(
     app.root("lesson"),
-    (element) => element.tag === "button" && element.textContent === "Okay",
+    (element) =>
+      element.tag === "button" &&
+      ["Okay", "Folder is open"].includes(element.textContent),
   )!;
   await okay.onclick!();
   expect(app.root("lesson").textContent).toContain("We’ll take turns.");
@@ -479,13 +531,17 @@ it("reveals long explanations a message at a time and keeps the pause across rel
   expect(restored.root("check-progress").hidden).toBe(true);
   let next = find(
     restored.root("lesson"),
-    (element) => element.tag === "button" && element.textContent === "Okay",
+    (element) =>
+      element.tag === "button" &&
+      ["Okay", "Folder is open"].includes(element.textContent),
   );
   for (let count = 0; next && count < 30; count++) {
     await next.onclick!();
     next = find(
       restored.root("lesson"),
-      (element) => element.tag === "button" && element.textContent === "Okay",
+      (element) =>
+        element.tag === "button" &&
+        ["Okay", "Folder is open"].includes(element.textContent),
     );
   }
   expect(next).toBeUndefined();
@@ -512,7 +568,9 @@ it("requires a user action between every Milo message, including the final OpenA
   for (let step = 0; step < 30; step++) {
     const okay = find(
       app.root("lesson"),
-      (element) => element.tag === "button" && element.textContent === "Okay",
+      (element) =>
+        element.tag === "button" &&
+        ["Okay", "Folder is open"].includes(element.textContent),
     );
     if (!okay) break;
     const before = tutorCount();
@@ -552,7 +610,9 @@ it("pauses between the demo-folder message, file-change explanation, and welcome
       ).length;
     const okay = find(
       app.root("lesson"),
-      (element) => element.tag === "button" && element.textContent === "Okay",
+      (element) =>
+        element.tag === "button" &&
+        ["Okay", "Folder is open"].includes(element.textContent),
     )!;
     await okay.onclick!();
     expect(
@@ -918,6 +978,7 @@ it("keeps earlier turns visible and reveals the next lesson only after the learn
 
 it("does not reveal the recovery edit before the observed failure, then retries the original cart", async () => {
   const app = await browser({ phase: "fail", checkOk: true });
+  await app.click("check-progress");
   const guidance = app
     .root("lesson")
     .children.find(
@@ -1062,12 +1123,6 @@ it("uses each lesson’s current edit line in prose and editor actions", async (
   expect(links).toHaveLength(2);
   for (const link of links) expect(link.href).toMatch(/openapi\.yaml:47$/u);
   app.server.workspace.locations["name-example"]!["openapi.yaml"] = 52;
-  app.server.workspace.changes.push({
-    id: 1,
-    actor: "you",
-    phaseId: "name-example",
-    files: [{ file: "openapi.yaml", before: "{}", after: "\n{}" }],
-  });
   await app.poll();
   const updated = app
     .root("lesson")
@@ -1167,6 +1222,7 @@ it.each(PHASES.filter((phase) => phase.check))(
   "puts feedback for $id in Milo’s conversation once per verified save",
   async (phase) => {
     const app = await browser({ phase: phase.id, checkOk: true });
+    await app.click("check-progress");
     const opening = phase.verification!.split(". ")[0]!;
     const feedback = app
       .root("lesson")
@@ -1196,6 +1252,14 @@ it("waits for a successful saved-code check before congratulating the learner", 
   expect(app.root("lesson").textContent).not.toContain(feedback);
   app.server.checkOk = true;
   app.server.revision = "catalog-implemented";
+  app.server.workspace.changes.push({
+    id: 1,
+    actor: "you",
+    phaseId: "catalog",
+    files: [
+      { file: "routes/products.ts", before: "old", after: "saved catalog" },
+    ],
+  });
   await app.poll();
   expect(app.root("lesson").textContent).toContain(feedback);
   expect(app.completed()).not.toContain("catalog");
