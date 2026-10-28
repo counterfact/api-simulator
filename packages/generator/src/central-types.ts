@@ -10,6 +10,7 @@ import {
   unknownType,
 } from "./ast.js";
 import { pathJoin } from "./forward-slash-path.js";
+import { helperTypeExports } from "./scenario-file-generator.js";
 import { READ_ONLY_COMMENTS } from "./read-only-comments.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
 import { ResponseTypeCoder } from "./response-type-coder.js";
@@ -112,8 +113,17 @@ class CentralTypes {
   public constructor(repository: Repository) {
     this.script = repository.get("types/index.ts");
     this.script.comments.push(...READ_ONLY_COMMENTS);
-    this.script.reservedNames = new Set(["Routes", "Components", "Schemas"]);
+    this.script.reservedNames = new Set([
+      "Routes",
+      "Components",
+      "Schemas",
+      "Context$",
+      "Scenario",
+      "Scenario$",
+      "Middleware",
+    ]);
     this.script.statementBuilders.set("api-types", () => [
+      helperTypeExports(),
       typeAlias(
         "Routes",
         typeLiteral(

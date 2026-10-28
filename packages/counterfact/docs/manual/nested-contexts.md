@@ -44,7 +44,7 @@ export class Context {
 import type { Schemas } from "../../types/index.js";
 
 type Payment = Schemas["Payment"];
-import type { Context$ } from "../../types/_.context.js";
+import type { Context$ } from "../../types/index.js";
 
 export class Context {
   private payments = new Map<string, Payment>();

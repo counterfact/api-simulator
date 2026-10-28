@@ -75,7 +75,7 @@ Two things:
 
 1. **`routes/`** — one `.ts` file per path in your OpenAPI spec. Each file exports a named function per HTTP method. By default they return random, schema-valid responses.
 
-2. **`types/`** — TypeScript interfaces for every request and response defined in the spec, including path params, query params, headers, and request/response bodies. The central `types/index.ts` exports `Routes`, `Components`, and `Schemas`; see [central type exports](./features/generated-code.md#central-type-exports).
+2. **`types/`** — TypeScript interfaces for every request and response defined in the spec, including path params, query params, headers, and request/response bodies. The central `types/index.ts` exports `Routes`, `Components`, `Schemas`, `Context$`, `Scenario`, `Scenario$`, and `Middleware`; see [central type exports](./features/generated-code.md#central-type-exports).
 
 ---
 

@@ -35,6 +35,7 @@ import type { HTTP_GET as Route12_GET } from "./paths/user/logout.types.js";
 import type { HTTP_GET as Route13_GET } from "./paths/user/{username}.types.js";
 import type { HTTP_PUT as Route13_PUT } from "./paths/user/{username}.types.js";
 import type { HTTP_DELETE as Route13_DELETE } from "./paths/user/{username}.types.js";
+export type { Context$, Scenario, Scenario$, Middleware } from "./helpers.js";
 export type Routes = {
   "/pet": { POST: Route1_POST; PUT: Route1_PUT };
   "/pet/findByStatus": { GET: Route2_GET };
@@ -1496,6 +1497,7 @@ import type { HTTP_GET as Route23_GET } from "./paths/stream/events.types.js";
 import type { HTTP_GET as Route24_GET } from "./paths/search.types.js";
 import type { HTTP_GET as Route25_GET } from "./paths/type-edge-cases.types.js";
 import type { HTTP_GET as Route26_GET } from "./paths/schema-accuracy.types.js";
+export type { Context$, Scenario, Scenario$, Middleware } from "./helpers.js";
 export type Routes = {
   "/": { GET: Route1_GET };
   "/count": { GET: Route2_GET };

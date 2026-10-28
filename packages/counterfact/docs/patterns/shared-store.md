@@ -89,7 +89,7 @@ generated `Context$` type imports the concrete `Store` type from `_.store.ts`:
 
 ```ts
 // api/customers/routes/_.context.ts
-import type { Context$ } from "../types/_.context.js";
+import type { Context$ } from "../types/index.js";
 
 export class Context {
   private readonly store: Context$["store"];
@@ -107,7 +107,7 @@ export class Context {
 
 ```ts
 // api/orders/routes/_.context.ts
-import type { Context$ } from "../types/_.context.js";
+import type { Context$ } from "../types/index.js";
 
 export class Context {
   private readonly store: Context$["store"];

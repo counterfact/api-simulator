@@ -22,7 +22,10 @@ The individual operation and component modules remain generator implementation
 and compatibility surfaces. Internal coders continue importing dependencies
 directly. `central-types.ts` registers operations and all declared components,
 then emits the central maps after the repository has resolved their types.
-Context, scenario, and middleware helpers retain their dedicated entry points.
+The central entry point also re-exports `Context$`, `Scenario`, `Scenario$`, and
+the directory-indexed `Middleware` map from `types/helpers.ts`. Helper generation
+and context watching own that module; OpenAPI generation owns the API maps.
+Both writers serialize helper updates without rewriting each other's exports.
 
 ## Files
 

@@ -25,7 +25,7 @@ The output directory is called `basePath` in library options and `destination` i
 │   └── store/
 │       └── order.ts
 └── types/
-    ├── index.ts              # Routes, Components, and Schemas
+    ├── index.ts              # public generated types
     └── paths/
         ├── pet.types.ts
         ├── pet/
@@ -106,13 +106,65 @@ Direct imports from generated operation and component modules are deprecated.
 Import `Routes`, `Components`, and `Schemas` from `types/index.js` in new and
 updated code. Existing deep imports continue to work for compatibility;
 regeneration does not rewrite existing handler annotations to the new style.
-Context, scenario, and middleware helper types still use their dedicated files.
+`Context$`, `Scenario`, and `Scenario$` are direct exports of the same central
+entry point. `Middleware` is a directory-indexed map: use `Middleware["/"]`
+or `Middleware["/admin"]` for the matching route directory. Dedicated helper
+imports are also deprecated and remain available for compatibility.
 New route handlers use `Routes`; regeneration preserves existing handlers and
 imports. Each configured API group has its own central entry point. For versions
 in the same group, `Routes` uses the shared version-aware handler contracts and a
 component with the same name in multiple versions is the union of those types.
 Version-specific files remain compatibility surfaces; the central component maps
 expose unions across versions.
+
+## Context, scenario, and middleware types
+
+Use the same central import for constructor helpers and scenarios:
+
+```ts
+// routes/_.context.ts
+import type { Context$ } from "../types/index.js";
+
+export class Context {
+  constructor($: Context$) {
+    void $;
+  }
+}
+```
+
+```ts
+// scenarios/index.ts
+import type { Scenario, Scenario$ } from "../types/index.js";
+
+function initialize($: Scenario$): void {
+  void $;
+}
+
+export const startup: Scenario = function ($) {
+  initialize($);
+};
+```
+
+These types are shared within an API group. `Context$` includes typed
+`loadContext()` overloads, `readJson()`, and the shared `store` when configured.
+`Scenario$` includes the root context, context lookups, and route-builder helpers.
+It does not expose the shared store directly.
+
+Middleware types vary by directory because each directory can have a different
+nearest context. Select its directory path from `Middleware`:
+
+```ts
+// routes/admin/_.middleware.ts
+import type { Middleware } from "../../types/index.js";
+
+export const middleware: Middleware["/admin"] = async function ($, respondTo) {
+  return respondTo($);
+};
+```
+
+Use `Middleware["/"]` at the root. The map contains entries for directories in
+the route tree and follows inherited contexts. Directory changes refresh the
+map; editing a context updates the referenced type. See [middleware](./middleware.md).
 
 ## Multi-version APIs
 

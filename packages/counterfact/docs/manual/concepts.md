@@ -71,9 +71,9 @@ The same parameter name appears in several kinds of function, but their capabili
 | Operation handler   | Request data, response builders, delay/proxy helpers, nearest context           | `Routes["/path"]["GET"]`, etc. |
 | Context constructor | `loadContext`, `readJson`, and the optional shared store                        | `Context$`                     |
 | Scenario            | `context`, `loadContext`, `route`, and `routes`                                 | `Scenario` / `Scenario$`       |
-| Route middleware    | Typed request data and nearest context, plus a separate `respondTo($)` callback | `Middleware`                   |
+| Route middleware    | Typed request data and nearest context, plus a separate `respondTo($)` callback | `Middleware["/admin"]`, etc.   |
 
-Import `Routes`, `Components`, and `Schemas` from `types/index.js`. Import context, scenario, and middleware helper types from their matching files under `types/`. Only the context constructor receives `store` directly. Handlers and middleware delegate shared behavior to context methods. The scenario's `routes` collection is also available as `routes` in the REPL. See the [state reference](../api/state.md) for the arguments each function receives.
+Import all generated types from `types/index.js`: `Routes`, `Components`, `Schemas`, `Context$`, `Scenario`, `Scenario$`, and `Middleware`. Select middleware by its directory, such as `Middleware["/admin"]`. Only the context constructor receives `store` directly. Handlers and middleware delegate shared behavior to context methods. The scenario's `routes` collection is also available as `routes` in the REPL. See the [state reference](../api/state.md) for the arguments each function receives.
 
 ## API groups, versions, and URL prefixes
 

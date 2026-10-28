@@ -21,6 +21,7 @@ import {
   pathRelative,
   pathDirname,
 } from "./forward-slash-path.js";
+import { writeHelperTypes } from "./scenario-file-generator.js";
 import { Script } from "./script.js";
 import { escapePathForWindows } from "./windows-escape.js";
 
@@ -229,6 +230,7 @@ export class Repository {
     if (routes) {
       await this.createDefaultContextFile(destination);
     }
+    if (types) await writeHelperTypes(destination, destination, true);
   }
 
   /**
@@ -284,7 +286,7 @@ export class Repository {
     await fs.writeFile(
       contextFilePath,
       await formatStatements([
-        importDeclaration("Context$", "../types/_.context.js", true),
+        importDeclaration("Context$", "../types/index.js", true),
         context,
       ]),
     );
@@ -623,7 +625,14 @@ export class Repository {
    * @param path - Repository-relative path to start from.
    */
   public nearestContextFile(destination: string, path: string): string {
-    const directory = pathDirname(path).replace("types/paths", "routes");
+    const parts = pathDirname(path)
+      .split("/")
+      .filter((part) => part !== ".");
+    const pathsIndex = parts[0] === "types" ? parts.indexOf("paths") : -1;
+    const directory =
+      pathsIndex === 1 || pathsIndex === 2
+        ? ["routes", ...parts.slice(pathsIndex + 1)].join("/")
+        : parts.join("/");
 
     const candidate = nodePath.join(destination, directory, "_.context.ts");
 

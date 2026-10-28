@@ -177,12 +177,15 @@ await new ScenarioFileGenerator(${JSON.stringify(outputPath)}).generate();
     await $.add(
       "consumer.ts",
       `
-import type { Components, Routes, Schemas } from ${JSON.stringify(path.join(outputPath, "types/index.js"))};
+import type { Components, Routes, Schemas, Context$, Scenario, Scenario$, Middleware } from ${JSON.stringify(path.join(outputPath, "types/index.js"))};
 type Same<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 const alias: Same<Schemas, Components["schemas"]> = true;
 const model: Schemas["HealthStatus"] = "healthy";
 const same: Components["schemas"]["HealthStatus"] = model;
 const handler: Routes["/health"]["GET"] = ($) => $.response.status(204).empty();
+const startup: Scenario = ($) => { const arg: Scenario$ = $; void arg.context; };
+const middleware: Middleware["/"] = ($, next) => next($);
+function constructorHelper($: Context$) { const json: Promise<unknown> = $.readJson("seed.json"); }
 // @ts-expect-error HealthStatus is a string.
 const invalid: Schemas["HealthStatus"] = 123;
 `,

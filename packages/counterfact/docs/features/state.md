@@ -119,7 +119,7 @@ typed access:
 
 ```ts
 // customers/routes/_.context.ts
-import type { Context$ } from "../types/_.context.js";
+import type { Context$ } from "../types/index.js";
 
 export class Context {
   readonly store: Context$["store"];

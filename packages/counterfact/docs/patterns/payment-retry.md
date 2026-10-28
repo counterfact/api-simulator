@@ -112,7 +112,7 @@ export const GET: Routes["/orders/{orderId}"]["GET"] = function ($) {
 Create `api/scenarios/index.ts`:
 
 ```ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const declinedPayment: Scenario = ($) => {
   $.context.paymentOutcome = "declined";

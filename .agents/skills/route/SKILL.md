@@ -18,8 +18,8 @@ Implement or update route behavior in generated route files.
 - Import `Routes` from the generated `types/index.js` entry point and use
   `Routes["/path"]["METHOD"]` for handler annotations. Import `Schemas` or
   `Components` from that same entry point for component types. Deep imports
-  from generated operation and component modules are deprecated. Context,
-  middleware, and scenario helpers retain their dedicated imports.
+  from generated operation and component modules are deprecated. Use the same entry point for `Context$`, `Scenario`, `Scenario$`, and the
+  directory-indexed `Middleware` map; dedicated helper imports are deprecated.
 
 - Always prefer function expressions with a block body and explicit `return`
   for route handlers: `export const GET: Routes["/pet/{petId}"]["GET"] = function ($) { ... };`.

@@ -278,7 +278,7 @@ export const POST: Routes["/tutorial-check"]["POST"] = async ($) => $.response[2
     "routes/_.context.ts": SHOP_CONTEXT,
     "routes/products.ts": SHOP_PRODUCTS,
     "routes/orders.ts": SHOP_ORDERS,
-    "scenarios/index.ts": `import type { Scenario } from "../types/_.context.js";
+    "scenarios/index.ts": `import type { Scenario } from "../types/index.js";
 
 // A deliberately small catalog makes availability and selling out easy to see.
 export const startup: Scenario = ($) => {

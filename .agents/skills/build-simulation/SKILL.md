@@ -163,7 +163,7 @@ have the route call it. Handler arguments do not expose `loadContext`.
 
 ```ts
 // api/routes/payments/_.context.ts
-import type { Context$ } from "../../types/_.context.js";
+import type { Context$ } from "../../types/index.js";
 import type { Context as UsersContext } from "../users/_.context.js";
 
 export class Context {
@@ -282,7 +282,7 @@ without any manual REPL commands.
 
 ```ts
 // api/scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const startup: Scenario = ($) => {
   $.context.add({ name: "Fluffy", status: "available", photoUrls: [] });
@@ -295,7 +295,7 @@ file stays focused and the helpers can also be called from the REPL:
 
 ```ts
 // api/scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 import { addPets } from "./pets.js";
 import { addOrders } from "./orders.js";
 
@@ -307,7 +307,7 @@ export const startup: Scenario = ($) => {
 
 ```ts
 // api/scenarios/pets.ts
-import type { Scenario$ } from "../types/_.context.js";
+import type { Scenario$ } from "../types/index.js";
 
 export function addPets($: Scenario$, count: number, species: string) {
   for (let i = 0; i < count; i++) {
