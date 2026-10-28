@@ -418,6 +418,13 @@ it("starts with a coffee order to learn the tutorial before inspecting or editin
   expect(app.root("lesson").textContent).toContain("GET /shop/products");
   expect(app.root("lesson").textContent).toContain("POST /shop/orders");
   expect(app.root("lesson").textContent).not.toContain("/tutorial/*");
+  expect(app.root("lesson").textContent).not.toContain("We’ll take turns");
+  expect(app.root("lesson").textContent).not.toContain(
+    "You’ll try it in the shop or terminal",
+  );
+  expect(app.root("lesson").textContent).not.toContain(
+    "Whenever either of us changes",
+  );
   expect(app.root("lesson").textContent).toContain(
     "Click Add to cart on any coffee with stock, then click Place order",
   );
@@ -651,11 +658,16 @@ it("pauses between the introductory explanation and welcome-back handoff", async
   };
   for (
     let step = 0;
-    step < 15 && !app.root("lesson").textContent.includes("Whenever either");
+    step < 15 &&
+    !app
+      .root("lesson")
+      .textContent.includes("The shop uses GET /shop/products");
     step++
   )
     await acknowledgeOne();
-  expect(app.root("lesson").textContent).toContain("Whenever either");
+  expect(app.root("lesson").textContent).toContain(
+    "The shop uses GET /shop/products",
+  );
   expect(app.root("lesson").textContent).not.toContain("Welcome back");
   await app.poll();
   expect(app.root("lesson").textContent).not.toContain("Welcome back");
@@ -997,7 +1009,7 @@ it("keeps earlier turns visible and reveals the next lesson only after the learn
   expect(history.indexOf("Inspect the generated stub")).toBeLessThan(
     history.indexOf("That worked."),
   );
-  expect(history.match(/show the diff here/g)).toHaveLength(1);
+  expect(history.match(/Hi, I’m Milo\./g)).toHaveLength(1);
   const restored = await browser({ storage: app.storage });
   expect(restored.root("lesson").textContent).toContain(
     "Next Lesson: Give generated names a coffee example",

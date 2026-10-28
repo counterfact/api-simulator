@@ -1153,15 +1153,7 @@ export function runCoffeeShopWalkthrough(
             ),
           ]
         : []),
-      node(
-        "p",
-        "We’ll take turns. I’ll explain the supporting edits and show you the proposed diff. Click ‘Apply changes’ to save them. Then I’ll guide you through a small edit of your own in your editor. You’ll try it in the shop or terminal, and we’ll compare what actually happened before moving on.",
-      ),
       ...(walkthroughVersion < 4 ? [demoFolder] : []),
-      node(
-        "p",
-        "Whenever either of us changes a lesson file, I’ll show the diff here in our conversation: green lines were added and red lines were removed. Your saved edits appear automatically, so we can follow exactly how the API gains behavior.",
-      ),
     );
     lesson.append(welcome);
     if (resumeCheckpoint !== undefined) {
