@@ -46,6 +46,7 @@ it("keeps tracking the JSON spec in an existing version 3 demo", async () => {
       await $.read("demo/.counterfact-walkthrough-state.json"),
     );
     delete state.schemaFile;
+    state.version = 3;
     await $.add(
       "demo/.counterfact-walkthrough-state.json",
       JSON.stringify(state),
@@ -98,6 +99,7 @@ it("prepares focused changes, preserves learner edits, and records all current l
       code: "ENOENT",
     });
     await expect(prepare(root, "context")).rejects.toThrow("preceding lesson");
+    await checkpoint(root, "orientation");
     await checkpoint(root, "explore");
     const document = parse(await $.read("demo/openapi.yaml"));
     document.components.schemas.Product.properties.name.example = "House Blend";
@@ -282,8 +284,6 @@ it("prepares focused changes, preserves learner edits, and records all current l
         $.path("demo/routes/products.ts"),
         $.path("demo/routes/orders.ts"),
         $.path("demo/scenarios/index.ts"),
-        $.path("demo/routes/tutorial-workspace.ts"),
-        $.path("demo/routes/tutorial-info.ts"),
       ],
       {
         noEmit: true,
@@ -347,6 +347,7 @@ it("never touches an existing project or overwrites conflicting learner code", a
     await generate(tour.destination, tour.source);
     await workspace(tour.destination);
     expect(await $.read(".git/index")).toBe("parent index must not change");
+    await checkpoint(tour.destination, "orientation");
     await checkpoint(tour.destination, "explore");
     await checkpoint(tour.destination, "name-example");
     await $.add(
@@ -366,6 +367,7 @@ it("records learner edits before tutor edits, including deletions and reversions
     const tour = await prepareTour($.path("."), "demo");
     await generate(tour.destination, tour.source);
     await workspace(tour.destination);
+    await checkpoint(tour.destination, "orientation");
     await checkpoint(tour.destination, "explore");
     await checkpoint(tour.destination, "name-example");
     const original = await $.read("demo/routes/orders.ts");

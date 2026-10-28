@@ -8,6 +8,7 @@ import { usingTemporaryFiles } from "using-temporary-files";
 
 import * as app from "../src/app";
 import { ApiRunner } from "../src/api-runner";
+import { prepareTour } from "@counterfact/tutorials";
 import {
   ContextRegistry,
   ScenarioRegistry,
@@ -40,6 +41,40 @@ async function waitUntil(predicate: () => boolean): Promise<void> {
 }
 
 describe("counterfact", () => {
+  it("hosts tutorial HTTP separately while only shop operations enter simulation dispatch", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const tour = await prepareTour($.path("."), "demo");
+      const simulator = await app.counterfact({
+        basePath: tour.destination,
+        openApiPath: tour.source,
+        port: 0,
+        startRepl: false,
+      });
+      const { stop } = await simulator.start();
+      try {
+        const origin = `http://127.0.0.1:${simulator.status().address!.port}`;
+        expect((await fetch(origin + "/shop/products")).status).toBe(200);
+        expect((await fetch(origin + "/products")).status).toBe(404);
+        expect((await fetch(origin + "/tutorial/")).status).toBe(200);
+        const info = await (await fetch(origin + "/tutorial/info")).json();
+        expect(info.walkthroughVersion).toBe(4);
+        expect(simulator.registry.exists("GET", "/products")).toBe(true);
+        expect(simulator.registry.exists("GET", "/tutorial/info")).toBe(false);
+        expect(simulator.registry.exists("POST", "/tutorial/check")).toBe(
+          false,
+        );
+        await $.add("demo/routes/products.ts", "export const GET = ;");
+        expect((await fetch(origin + "/tutorial/")).status).toBe(200);
+        expect((await fetch(origin + "/tutorial/info")).status).toBe(200);
+        await expect(
+          $.read("demo/routes/tutorial-info.ts"),
+        ).rejects.toMatchObject({ code: "ENOENT" });
+      } finally {
+        await stop();
+      }
+    });
+  });
+
   it("merges a startup port override with configured defaults and reports the listening port", async () => {
     await usingTemporaryFiles(async ($) => {
       const first = await app.counterfact({

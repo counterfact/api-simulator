@@ -32,6 +32,7 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 ## Existing conventions to follow
 
+- For managed tutorial projects, serve tutorial HTTP through the tutorials-owned native handler before the simulator callback. Do not send controls through route dispatch, validation, proxying, or shop lifecycle gating, and do not add them to the shop spec. Normal APIs and legacy tutorials retain their existing listeners and prefixes.
 - Keep orchestration in `app.ts` / `ApiRunner`; avoid leaking server details into generator modules.
 - Keep subsystems separated (`registry`, `context-registry`, `module-loader`, `dispatcher`) and connected through explicit constructor interfaces.
 - Preserve hot-reload expectations: route/module changes should apply without restart and context should survive reloads. Compare reloaded object/array initializers structurally against the cached declaration, not by identity or against live state; otherwise an unchanged initializer can erase scenario seeds, request mutations, or REPL edits. Test both preserved live state and intentional initializer changes.

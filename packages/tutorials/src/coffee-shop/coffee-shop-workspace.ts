@@ -102,7 +102,7 @@ async function captureChanges(
   phaseId?: string,
 ) {
   const files: FileChange[] = [];
-  for (const file of state.version === 3
+  for (const file of (state.version ?? 2) >= 3
     ? [...baseLessonFiles, state.schemaFile ?? "openapi.json"]
     : baseLessonFiles) {
     let after = "";
@@ -151,7 +151,7 @@ export async function walkthroughWorkspace(root: string) {
         changes: [],
       };
     if (!state.baseline) {
-      for (const file of state.version === 3
+      for (const file of (state.version ?? 2) >= 3
         ? [...baseLessonFiles, state.schemaFile ?? "openapi.json"]
         : baseLessonFiles)
         state.snapshots[file] = await readEditable(root, file);

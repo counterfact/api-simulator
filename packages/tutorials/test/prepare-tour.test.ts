@@ -1,6 +1,5 @@
 import { parse } from "yaml";
 import { expect, it } from "@jest/globals";
-import { check } from "prettier";
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { findTourDirectory, prepareTour } from "../src/index.js";
@@ -14,7 +13,7 @@ it("creates a restartable offline shop without touching an existing project", as
     expect(await prepareTour($.path("."), directory)).toEqual({
       source: $.path(`${directory}/openapi.yaml`),
       destination: $.path(directory),
-      walkthroughPath: "/walkthrough",
+      walkthroughPath: "/tutorial/",
     });
     expect(await $.read("counterfact-demo/keep.txt")).toBe("user edits");
     const spec = parse(await $.read(`${directory}/openapi.yaml`));
@@ -36,22 +35,18 @@ it("creates a restartable offline shop without touching an existing project", as
     await expect(
       $.read(`${directory}/scenarios/index.ts`),
     ).rejects.toMatchObject({ code: "ENOENT" });
-    expect(await $.read(`${directory}/routes/walkthrough.ts`)).toContain(
-      "Counterfact Coffee",
-    );
+    expect(spec.servers).toEqual([{ url: "/shop" }]);
+    expect(Object.keys(spec.paths)).toEqual(["/products", "/orders"]);
     for (const file of [
       "routes/tutorial-info.ts",
       "routes/tutorial-check.ts",
       "routes/tutorial-event.ts",
       "routes/tutorial-workspace.ts",
       "routes/walkthrough.ts",
-    ]) {
-      expect(
-        await check(await $.read(`${directory}/${file}`), {
-          parser: "typescript",
-        }),
-      ).toBe(true);
-    }
+    ])
+      await expect($.read(`${directory}/${file}`)).rejects.toMatchObject({
+        code: "ENOENT",
+      });
     await expect(prepareTour($.path("."), directory)).rejects.toMatchObject({
       code: "EEXIST",
     });
@@ -66,6 +61,6 @@ it("rejects an unknown tour before creating its directory", async () => {
     // A rejected request must leave this name available for a valid tour.
     await expect(
       prepareTour($.path("."), "example", "coffee-shop"),
-    ).resolves.toHaveProperty("walkthroughPath", "/walkthrough");
+    ).resolves.toHaveProperty("walkthroughPath", "/tutorial/");
   });
 });

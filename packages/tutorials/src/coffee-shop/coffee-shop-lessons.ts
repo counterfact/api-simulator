@@ -183,7 +183,7 @@ const edit = (file: string, instruction: string) => ({
   file,
   instruction,
 });
-export const WALKTHROUGH_VERSION = 3;
+export const WALKTHROUGH_VERSION = 4;
 export const PHASES_V2: LessonPhase[] = [
   {
     id: "explore",
@@ -428,7 +428,7 @@ export const PHASES_V2: LessonPhase[] = [
     check: true,
   },
 ];
-export const PHASES: LessonPhase[] = [
+export const PHASES_V3: LessonPhase[] = [
   PHASES_V2[0]!,
   {
     id: "name-example",
@@ -453,7 +453,29 @@ export const PHASES: LessonPhase[] = [
     lesson: phase.lesson + 1,
   })),
 ];
+export const PHASES: LessonPhase[] = [
+  {
+    id: "orientation",
+    lesson: 1,
+    title: "Try the coffee shop",
+    explanation:
+      "Let’s get comfortable with the tutorial before editing code. The coffee shop on the right sends requests to the simulated shop API; our conversation on the left shows what happened.",
+    instruction:
+      "Click Add to cart on any coffee with stock, then click Place order. Expand the HTTP details in your order message to inspect the request and response. The starting API generates its responses, so the confirmation may not match your cart yet. For this first lesson, just try ordering and see how the shop and conversation work together. If every coffee is sold out, click Refresh products to generate another catalog.",
+    edits: [],
+  },
+  ...PHASES_V3.map((phase) => ({
+    ...phase,
+    lesson: phase.lesson + 1,
+    explanation: phase.explanation
+      .replaceAll("GET /products", "GET /shop/products")
+      .replaceAll("POST /orders", "POST /shop/orders"),
+    instruction: phase.instruction
+      .replaceAll("GET /products", "GET /shop/products")
+      .replaceAll("POST /orders", "POST /shop/orders"),
+  })),
+];
 export function phasesForVersion(version: number) {
-  return version === 3 ? PHASES : PHASES_V2;
+  return version === 4 ? PHASES : version === 3 ? PHASES_V3 : PHASES_V2;
 }
 export const LESSON_COUNT = Math.max(...PHASES.map((phase) => phase.lesson));

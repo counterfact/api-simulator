@@ -169,11 +169,11 @@ async function browser(
     example: "House Blend",
     nextId: 1,
   };
-  if (options.phase)
+  if (options.phase || (!options.storage && !options.checkpoints?.length))
     storage.set(
-      "counterfact-coffee-v3",
+      "counterfact-coffee-v4",
       JSON.stringify({
-        version: 3,
+        version: 4,
         sessionId: server.sessionId,
         index: phaseIndex,
         completed: options.preview
@@ -237,7 +237,7 @@ async function browser(
       calls.push({ path, body });
       let status = 200,
         value: unknown;
-      if (path === "/tutorial-info")
+      if (path === "/tutorial/info")
         value = {
           workspace: structuredClone(server.workspace),
           sessionId: server.sessionId,
@@ -245,7 +245,7 @@ async function browser(
           state: structuredClone(server.state),
           replSubmissions: structuredClone(server.replSubmissions),
         };
-      else if (path === "/tutorial-workspace") {
+      else if (path === "/tutorial/workspace") {
         const stale =
           body?.action === "prepare" &&
           body.revision !== server.previewRevision;
@@ -278,7 +278,7 @@ async function browser(
               ? structuredClone(server.workspace.changes)
               : undefined,
         };
-      } else if (path === "/tutorial-check")
+      } else if (path === "/tutorial/check")
         value = {
           revision: server.revision,
           ok: server.checkOk,
@@ -288,8 +288,8 @@ async function browser(
             ? "Saved implementation verified."
             : "Expected an explicit implementation.",
         };
-      else if (path === "/tutorial-event") value = { ok: true };
-      else if (path === "/products") {
+      else if (path === "/tutorial/event") value = { ok: true };
+      else if (path === "/shop/products") {
         if (server.productMode === "offline")
           throw new Error("Disconnected. Click Refresh products to retry.");
         value =
@@ -332,7 +332,7 @@ async function browser(
         json: async () => value,
         headers: new Map([["content-type", "application/json"]]),
         text: async () =>
-          path === "/orders" && server.orderMode === "malformed"
+          path === "/shop/orders" && server.orderMode === "malformed"
             ? "{broken JSON"
             : JSON.stringify(value),
       };
@@ -405,13 +405,36 @@ async function browser(
     },
     completed() {
       return (
-        JSON.parse(storage.get("counterfact-coffee-v3")!) as {
+        JSON.parse(storage.get("counterfact-coffee-v4")!) as {
           completed: string[];
         }
       ).completed;
     },
   };
 }
+
+it("starts with a coffee order to learn the tutorial before inspecting or editing code", async () => {
+  const app = await browser({ phase: "orientation" });
+  expect(app.root("lesson").textContent).toContain("GET /shop/products");
+  expect(app.root("lesson").textContent).toContain("POST /shop/orders");
+  expect(app.root("lesson").textContent).toContain("/tutorial/*");
+  expect(app.root("lesson").textContent).toContain(
+    "Click Add to cart on any coffee with stock, then click Place order",
+  );
+  expect(app.root("lesson").textContent).not.toContain(
+    "Open routes/products.ts",
+  );
+  await app.click("refresh-products", false);
+  expect(app.completed()).not.toContain("orientation");
+  app.add();
+  await app.click("checkout", false);
+  expect(app.completed()).toContain("orientation");
+  expect(app.root("continue").textContent).toBe(
+    "Next Lesson: Explore your generated API",
+  );
+  expect(app.calls.some((call) => call.path === "/shop/orders")).toBe(true);
+  expect(app.calls.some((call) => call.body?.action === "prepare")).toBe(false);
+});
 
 it("waits for approval, a saved edit, and live requests instead of offering Okay for the exercise", async () => {
   const app = await browser({ phase: "catalog", workspace: true });
@@ -518,7 +541,9 @@ it("reveals long explanations a message at a time and keeps the pause across rel
       ["Okay", "Folder is open"].includes(element.textContent),
   )!;
   await okay.onclick!();
-  expect(app.root("lesson").textContent).toContain("We’ll take turns.");
+  expect(app.root("lesson").textContent).toContain(
+    "The shop uses GET /shop/products",
+  );
   expect(app.root("lesson").textContent).not.toContain(
     "You’ll try it in the shop or terminal",
   );
@@ -552,7 +577,7 @@ it("reveals long explanations a message at a time and keeps the pause across rel
   expect(
     restored.calls.filter(
       (call) =>
-        call.path === "/tutorial-workspace" && call.body?.action === "prepare",
+        call.path === "/tutorial/workspace" && call.body?.action === "prepare",
     ),
   ).toHaveLength(0);
 });
@@ -562,8 +587,11 @@ it("requires a user action between every Milo message, including the final OpenA
   const tutorCount = () =>
     app
       .root("lesson")
-      .children.filter((turn) => turn.className === "chat-turn tutor-turn")
-      .length;
+      .children.filter(
+        (turn) =>
+          turn.className === "chat-turn tutor-turn" &&
+          turn.dataset.phase !== "orientation",
+      ).length;
   let foundSource = false;
   for (let step = 0; step < 30; step++) {
     const okay = find(
@@ -596,7 +624,7 @@ it("requires a user action between every Milo message, including the final OpenA
   expect(restored.root("lesson").textContent).toBe(visible);
 });
 
-it("pauses between the demo-folder message, file-change explanation, and welcome-back handoff", async () => {
+it("pauses between the introductory explanation and welcome-back handoff", async () => {
   const app = await browser({
     acknowledge: false,
     workspace: true,
@@ -623,15 +651,10 @@ it("pauses between the demo-folder message, file-change explanation, and welcome
   };
   for (
     let step = 0;
-    step < 15 &&
-    !app.root("lesson").textContent.includes("Open this demo folder");
+    step < 15 && !app.root("lesson").textContent.includes("Whenever either");
     step++
   )
     await acknowledgeOne();
-  expect(app.root("lesson").textContent).toContain("Open this demo folder");
-  expect(app.root("lesson").textContent).not.toContain("Whenever either");
-  expect(app.root("lesson").textContent).not.toContain("Welcome back");
-  await acknowledgeOne();
   expect(app.root("lesson").textContent).toContain("Whenever either");
   expect(app.root("lesson").textContent).not.toContain("Welcome back");
   await app.poll();
@@ -733,7 +756,7 @@ it("retains submitted REPL commands once and orders them before a following shop
     transcript.indexOf("Refreshed products"),
   );
   expect(transcript.match(/Submitted in the REPL/g)).toHaveLength(3);
-  const turns = JSON.parse(app.storage.get("counterfact-coffee-v3")!).turns as {
+  const turns = JSON.parse(app.storage.get("counterfact-coffee-v4")!).turns as {
     command?: string;
   }[];
   expect(
@@ -830,7 +853,9 @@ it("renders arbitrary product IDs safely and refreshes only on explicit actions"
   expect(app.root("cart").textContent).toContain("Random coffee × 1");
   await app.poll();
   await app.poll();
-  expect(app.calls.filter((call) => call.path === "/products")).toHaveLength(1);
+  expect(
+    app.calls.filter((call) => call.path === "/shop/products"),
+  ).toHaveLength(1);
   app.server.products[0]!.name = "Another response";
   await app.click("refresh-products");
   expect(app.root("cart").textContent).toContain("empty");
@@ -838,7 +863,7 @@ it("renders arbitrary product IDs safely and refreshes only on explicit actions"
   expect(app.root("products").textContent).toContain("Another response");
   expect(app.completed()).toContain("explore");
   expect(app.root("lesson").textContent).toContain(
-    "http://localhost:3100/products",
+    "http://localhost:3100/shop/products",
   );
 });
 
@@ -890,11 +915,13 @@ it("requires both a saved name example and an explicit matching generated respon
       },
     ],
   });
-  const before = app.calls.filter((call) => call.path === "/products").length;
+  const before = app.calls.filter(
+    (call) => call.path === "/shop/products",
+  ).length;
   await app.poll();
-  expect(app.calls.filter((call) => call.path === "/products")).toHaveLength(
-    before,
-  );
+  expect(
+    app.calls.filter((call) => call.path === "/shop/products"),
+  ).toHaveLength(before);
   expect(app.root("lesson").textContent).toContain("openapi.yaml");
   expect(app.completed()).not.toContain("name-example");
   app.server.products[0]!.name = "old spec response";
@@ -933,11 +960,12 @@ it("renders a distinct heading outside tutor bubbles once per lesson", async () 
     .root("lesson")
     .children.filter((element) => element.className === "lesson-heading");
   expect(headings.map((heading) => heading.textContent)).toEqual([
-    "Lesson 1Explore your generated API",
-    "Lesson 2Give generated names a coffee example",
-    "Lesson 3Replace random products",
-    "Lesson 4Respond to the order you received",
-    "Lesson 5Add failure and recovery",
+    "Lesson 1Try the coffee shop",
+    "Lesson 2Explore your generated API",
+    "Lesson 3Give generated names a coffee example",
+    "Lesson 4Replace random products",
+    "Lesson 5Respond to the order you received",
+    "Lesson 6Add failure and recovery",
   ]);
   for (const heading of headings) {
     expect(heading.tag).toBe("header");
@@ -1291,9 +1319,7 @@ it("starts a new lesson session without trusting old session observations when p
     storage: app.storage,
     sessionId: "new-server-session",
   });
-  expect(restarted.root("lesson").textContent).toContain(
-    "Explore your generated API",
-  );
+  expect(restarted.root("lesson").textContent).toContain("Try the coffee shop");
   expect(restarted.completed()).toEqual([]);
 });
 
@@ -1327,11 +1353,11 @@ it("resumes completed projects from durable checkpoints instead of replaying inc
   );
   expect(
     waiting.calls
-      .filter((call) => call.path === "/tutorial-check")
+      .filter((call) => call.path === "/tutorial/check")
       .map((call) => call.body?.phaseId),
   ).not.toContain("catalog");
   expect(
-    waiting.calls.filter((call) => call.path === "/tutorial-workspace"),
+    waiting.calls.filter((call) => call.path === "/tutorial/workspace"),
   ).toEqual([]);
 });
 
@@ -1578,7 +1604,7 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
   expect(
     app.calls.filter(
       (call) =>
-        call.path === "/tutorial-workspace" && call.body?.action === "prepare",
+        call.path === "/tutorial/workspace" && call.body?.action === "prepare",
     ),
   ).toEqual([]);
   await prepare.onclick!();
@@ -1598,10 +1624,10 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
   expect(
     app.calls.filter(
       (call) =>
-        call.path === "/tutorial-workspace" && call.body?.action === "prepare",
+        call.path === "/tutorial/workspace" && call.body?.action === "prepare",
     ),
   ).toHaveLength(1);
-  const saved = JSON.parse(app.storage.get("counterfact-coffee-v3")!);
+  const saved = JSON.parse(app.storage.get("counterfact-coffee-v4")!);
   expect(
     saved.turns.some(
       (turn: { text: string }) => turn.text === "Apply changes.",
@@ -1615,7 +1641,7 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
       text: "I’ve added the supporting code. Now it’s your turn.",
     },
   );
-  app.storage.set("counterfact-coffee-v3", JSON.stringify(saved));
+  app.storage.set("counterfact-coffee-v4", JSON.stringify(saved));
   const restored = await browser({
     storage: app.storage,
     workspace: true,
@@ -1766,10 +1792,10 @@ it("records explicit refreshes and their outcomes without treating background re
   expect(app.root("lesson").textContent).not.toContain("Refreshed products.");
   await app.click("refresh-products");
   expect(app.root("lesson").textContent).not.toContain(
-    "GET /products returned HTTP 200 with 3 products.",
+    "GET /shop/products returned HTTP 200 with 3 products.",
   );
   expect(app.root("lesson").textContent).toContain(
-    "HTTP · GET /products → 200",
+    "HTTP · GET /shop/products → 200",
   );
   await app.poll();
   await app.poll();
@@ -1792,10 +1818,10 @@ it("records order contents, failure, retry, and the actual response in chronolog
   await app.api.placeOrder();
   const history = app.root("lesson").textContent;
   const placed = history.indexOf("Placed an order: 1 × House Blend.");
-  const failed = history.indexOf("HTTP · POST /orders → 503");
+  const failed = history.indexOf("HTTP · POST /shop/orders → 503");
   const retried = history.indexOf("Retried the order: 1 × House Blend.");
-  const succeeded = history.indexOf("HTTP · POST /orders → 201");
-  expect(history).not.toContain("POST /orders returned HTTP");
+  const succeeded = history.indexOf("HTTP · POST /shop/orders → 201");
+  expect(history).not.toContain("POST /shop/orders returned HTTP");
   expect(placed).toBeGreaterThan(-1);
   expect(placed).toBeLessThan(failed);
   expect(failed).toBeLessThan(retried);
@@ -1803,7 +1829,9 @@ it("records order contents, failure, retry, and the actual response in chronolog
   expect(history).not.toContain("Refreshed products.");
   const reloaded = await browser({ storage: app.storage });
   expect(
-    reloaded.root("lesson").textContent.match(/HTTP · POST \/orders → 503/g),
+    reloaded
+      .root("lesson")
+      .textContent.match(/HTTP · POST \/shop\/orders → 503/g),
   ).toHaveLength(1);
   expect(
     reloaded.root("lesson").textContent.match(/Retried the order:/g),
@@ -1822,7 +1850,9 @@ it("attaches collapsed HTTP exchanges and handler links to their own action turn
   expect(
     find(first, (element) => element.className === "http-headers")!.open,
   ).toBe(false);
-  expect(first.textContent).toContain("GET http://localhost:3100/products");
+  expect(first.textContent).toContain(
+    "GET http://localhost:3100/shop/products",
+  );
   expect(find(first, (element) => element.tag === "a")!.href).toContain(
     "/routes/products.ts",
   );
@@ -1840,7 +1870,7 @@ it("attaches collapsed HTTP exchanges and handler links to their own action turn
   app.server.orderMode = "echo";
   await app.api.placeOrder();
   const transcript = JSON.parse(
-    app.storage.get("counterfact-coffee-v3")!,
+    app.storage.get("counterfact-coffee-v4")!,
   ).turns;
   const failed = transcript.find((turn: { text: string }) =>
     turn.text.startsWith("Placed an order:"),
@@ -1867,10 +1897,10 @@ it("attaches collapsed HTTP exchanges and handler links to their own action turn
   });
   const reloaded = await browser({ storage: app.storage });
   expect(reloaded.root("lesson").textContent).toContain(
-    "HTTP · POST /orders → 503",
+    "HTTP · POST /shop/orders → 503",
   );
   expect(reloaded.root("lesson").textContent).toContain(
-    "HTTP · POST /orders → 201",
+    "HTTP · POST /shop/orders → 201",
   );
 });
 
@@ -1880,7 +1910,7 @@ it("retains malformed and missing responses without inventing an HTTP result", a
   app.add();
   await app.api.placeOrder();
   const malformed = JSON.parse(
-    app.storage.get("counterfact-coffee-v3")!,
+    app.storage.get("counterfact-coffee-v4")!,
   ).turns.find((turn: { exchanges?: unknown }) => turn.exchanges);
   expect(malformed.exchanges[0]).toMatchObject({
     status: 201,
@@ -1890,7 +1920,7 @@ it("retains malformed and missing responses without inventing an HTTP result", a
   app.server.orderMode = "offline";
   await app.api.placeOrder();
   const attempts = JSON.parse(
-    app.storage.get("counterfact-coffee-v3")!,
+    app.storage.get("counterfact-coffee-v4")!,
   ).turns.filter((turn: { exchanges?: unknown }) => turn.exchanges);
   expect(attempts[1].exchanges[0].status).toBeUndefined();
   expect(attempts[1].exchanges[0].error).toContain("No confirmation");
@@ -1904,7 +1934,7 @@ it("keeps each refresh snapshot immutable and marks an interrupted exchange on r
   await app.click("refresh-products");
   app.server.products[0]!.stock = 2;
   await app.click("refresh-products");
-  const saved = JSON.parse(app.storage.get("counterfact-coffee-v3")!);
+  const saved = JSON.parse(app.storage.get("counterfact-coffee-v4")!);
   const refreshes = saved.turns.filter(
     (turn: { text: string }) => turn.text === "Refreshed products.",
   );
@@ -1914,15 +1944,15 @@ it("keeps each refresh snapshot immutable and marks an interrupted exchange on r
   delete refreshes[1].exchanges[0].status;
   delete refreshes[1].exchanges[0].responseBody;
   delete refreshes[1].exchanges[0].responseText;
-  app.storage.set("counterfact-coffee-v3", JSON.stringify(saved));
+  app.storage.set("counterfact-coffee-v4", JSON.stringify(saved));
   const reloaded = await browser({ storage: app.storage });
   expect(reloaded.root("lesson").textContent).toContain(
     "The page reloaded before a response was recorded",
   );
   expect(reloaded.root("lesson").textContent).toContain(
-    "HTTP · GET /products → no response",
+    "HTTP · GET /shop/products → no response",
   );
   expect(
-    reloaded.calls.filter((call) => call.path === "/products"),
+    reloaded.calls.filter((call) => call.path === "/shop/products"),
   ).toHaveLength(1);
 });

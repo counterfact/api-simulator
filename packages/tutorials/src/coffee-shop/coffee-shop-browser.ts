@@ -8,7 +8,7 @@ export function runCoffeeShopWalkthrough(
   phases: LessonPhase[],
   restartDirectory: string,
   restartCommand: string,
-  walkthroughVersion = 3,
+  walkthroughVersion = 4,
 ) {
   type Product = {
     id: string;
@@ -366,6 +366,12 @@ export function runCoffeeShopWalkthrough(
     const controller = new AbortController(),
       timer = setTimeout(() => controller.abort(), 4000);
     const shopRequest = path === "/products" || path === "/orders";
+    const requestPath =
+      walkthroughVersion >= 4
+        ? shopRequest
+          ? "/shop" + path
+          : path.replace("/tutorial-", "/tutorial/")
+        : path;
     const snapshot = (value: unknown) =>
       value === undefined ? undefined : JSON.parse(JSON.stringify(value));
     let exchange: HttpExchange | undefined;
@@ -374,7 +380,7 @@ export function runCoffeeShopWalkthrough(
       exchange = {
         id: turns.indexOf(action) + ":" + action.exchanges.length,
         method: body === undefined ? "GET" : "POST",
-        url: origin + path,
+        url: origin + requestPath,
         handler:
           path === "/products" ? "routes/products.ts" : "routes/orders.ts",
         requestHeaders:
@@ -388,7 +394,7 @@ export function runCoffeeShopWalkthrough(
       renderLesson();
     }
     try {
-      const response = await fetch(path, {
+      const response = await fetch(requestPath, {
         signal: controller.signal,
         ...(body === undefined
           ? {}
@@ -1138,11 +1144,20 @@ export function runCoffeeShopWalkthrough(
         "p",
         "I run this little coffee shop. Let’s build its local API together, one behavior at a time.",
       ),
+      ...(walkthroughVersion >= 4
+        ? [
+            fileText(
+              "p",
+              "The shop uses `GET /shop/products` to load coffee and `POST /shop/orders` to place an order. Counterfact governs these responses. The `/tutorial/*` endpoints run the conversation, progress tracking, and exercise checks separately.",
+              "welcome",
+            ),
+          ]
+        : []),
       node(
         "p",
         "We’ll take turns. I’ll explain the supporting edits and show you the proposed diff. Click ‘Apply changes’ to save them. Then I’ll guide you through a small edit of your own in your editor. You’ll try it in the shop or terminal, and we’ll compare what actually happened before moving on.",
       ),
-      demoFolder,
+      ...(walkthroughVersion < 4 ? [demoFolder] : []),
       node(
         "p",
         "Whenever either of us changes a lesson file, I’ll show the diff here in our conversation: green lines were added and red lines were removed. Your saved edits appear automatically, so we can follow exactly how the API gains behavior.",
@@ -1355,6 +1370,11 @@ export function runCoffeeShopWalkthrough(
       if (active && !finished) exercise.dataset.waitForAction = "true";
       if (!revealed.preparation && revealed.id !== "explore")
         exercise.append(explanation);
+      if (revealed.id === "explore" && walkthroughVersion >= 4) {
+        const folder = node("p", "Open this demo folder in your editor: ");
+        folder.append(fileLink("", projectPath), node("span", "."));
+        exercise.append(folder);
+      }
       exercise.append(fileText("p", revealed.instruction, revealed.id));
       for (const edit of revealed.edits) {
         const file = schemaFile(edit.file);
@@ -1749,6 +1769,16 @@ export function runCoffeeShopWalkthrough(
       }
       await refreshProducts("order", orderAction);
       if (phase().id !== currentId || missing()) return;
+      if (
+        currentId === "orientation" &&
+        response.status === 201 &&
+        Number.isInteger(value?.orderId)
+      ) {
+        report("started", "orientation");
+        finish(
+          "You’ve tried the shop and seen its request and response in the conversation. Next we’ll inspect the API that produced them.",
+        );
+      }
       const after = inventoryOf();
       const accepted = response.status === 201 && equal(value?.items, items);
       if (currentId === "order" && ready && accepted) finish();

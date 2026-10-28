@@ -514,7 +514,7 @@ def correct_port(journey):
 def existing_unchanged(journey):
     assert (journey.project / "counterfact-demo/keep.txt").read_text() == "user content"
     assert set((journey.project / "counterfact-demo").iterdir()) == {journey.project / "counterfact-demo/keep.txt"}
-    products = journey.request("get", "/products").json()
+    products = journey.request("get", "/shop/products").json()
     assert len(products) == 3
     assert all(0 <= product["stock"] <= 20 for product in products)
 
@@ -597,7 +597,7 @@ def test_coffee_shop_purchase():
 
 @then("the coffee shop renders schema-generated products and order responses")
 def coffee_shop_purchase(journey):
-    page = journey.request("get", "/walkthrough")
+    page = journey.request("get", "/tutorial/")
     assert page.status_code == 200
     assert "text/html" in page.headers["Content-Type"]
     assert "Counterfact Coffee" in page.text
@@ -606,24 +606,30 @@ def coffee_shop_purchase(journey):
     assert "Latest API requests and responses" not in page.text
     # The walkthrough snapshots the generated baseline without requiring Git.
     assert not (journey.output / ".git").exists()
-    info = journey.request("get", "/tutorial-info")
+    info = journey.request("get", "/tutorial/info")
     assert info.status_code == 200, info.text
     assert os.path.realpath(info.json()["projectPath"]) == os.path.realpath(journey.output)
-    assert info.json()["walkthroughVersion"] == 3
+    assert info.json()["walkthroughVersion"] == 4
     assert "example" not in yaml.safe_load((journey.output / "openapi.yaml").read_text())["components"]["schemas"]["Product"]["properties"]["name"]
     assert info.json()["workspace"]["changes"] == []
     assert info.json()["state"] == {"catalog": None, "inventory": None}
     for route in ["products", "orders"]:
         assert ".random()" in (journey.output / f"routes/{route}.ts").read_text()
-    products = journey.request("get", "/products").json()
+    products = journey.request("get", "/shop/products").json()
     assert len(products) == 3
     for product in products:
         assert isinstance(product["id"], str)
         assert 500 <= product["price"] <= 2500
         assert 0 <= product["stock"] <= 20
-    order = journey.request("post", "/orders", json={"items": [{"productId": products[0]["id"], "quantity": 1}]})
+    order = journey.request("post", "/shop/orders", json={"items": [{"productId": products[0]["id"], "quantity": 1}]})
     assert order.status_code == 201, order.text
     assert isinstance(order.json()["orderId"], int)
+    coffee_workspace(journey, "checkpoint", "orientation")
+    contract = yaml.safe_load(journey.request("get", "/counterfact/openapi").text)
+    assert set(contract["paths"]) == {"/products", "/orders"}
+    assert journey.request("get", "/products").status_code == 404
+    assert not list((journey.output / "routes").glob("tutorial*.ts"))
+    assert not (journey.output / "routes/walkthrough.ts").exists()
 
 
 @TERMINAL_ONLY
@@ -645,7 +651,7 @@ def apply_coffee_scenario(journey, name):
     while time.monotonic() < deadline:
         transcript = journey.terminal.command(".scenario " + name)
         if "Applied " + name in transcript:
-            submissions = journey.request("get", "/tutorial-info").json()["replSubmissions"]
+            submissions = journey.request("get", "/tutorial/info").json()["replSubmissions"]
             assert any(entry["command"] == ".scenario " + name for entry in submissions)
             return
         time.sleep(0.1)
@@ -653,29 +659,29 @@ def apply_coffee_scenario(journey, name):
 
 
 def coffee_stock(journey, product_id):
-    response = journey.request("get", "/products")
+    response = journey.request("get", "/shop/products")
     assert response.status_code == 200, response.text
     return next(product["stock"] for product in response.json() if product["id"] == product_id)
 
 
 def coffee_order(journey, product_id, quantity):
-    return journey.request("post", "/orders", json={"items": [{"productId": product_id, "quantity": quantity}]})
+    return journey.request("post", "/shop/orders", json={"items": [{"productId": product_id, "quantity": quantity}]})
 
 
 def coffee_workspace(journey, action, phase):
-    info = journey.request("get", "/tutorial-info").json()
+    info = journey.request("get", "/tutorial/info").json()
     payload = {"action": action, "phaseId": phase, "sessionId": info["sessionId"]}
     files = []
     if action == "prepare":
         paths = ["routes/products.ts", "routes/orders.ts", "routes/_.context.ts", "scenarios/index.ts"]
         before = {path: (journey.output / path).read_text() for path in paths}
-        preview = journey.request("post", "/tutorial-workspace", json={**payload, "action": "preview"})
+        preview = journey.request("post", "/tutorial/workspace", json={**payload, "action": "preview"})
         assert preview.status_code == 200 and preview.json()["ok"], preview.text
         assert {path: (journey.output / path).read_text() for path in paths} == before
-        assert journey.request("get", "/tutorial-info").json()["state"] == info["state"]
+        assert journey.request("get", "/tutorial/info").json()["state"] == info["state"]
         files = preview.json().get("files", [])
         payload["revision"] = preview.json().get("revision")
-    response = journey.request("post", "/tutorial-workspace", json=payload)
+    response = journey.request("post", "/tutorial/workspace", json=payload)
     assert response.status_code == 200 and response.json()["ok"], response.text
     for file in files:
         assert (journey.output / file["file"]).read_text() == file["after"]
@@ -700,12 +706,12 @@ def add_coffee_name_example(journey):
 
 @then("generated products use the name example without changing their handler")
 def generated_name_example(journey):
-    journey.wait_for_http("/products", lambda response: response.status_code == 200 and len(response.json()) == 3 and all(product["name"] == "House Blend" for product in response.json()))
+    journey.wait_for_http("/shop/products", lambda response: response.status_code == 200 and len(response.json()) == 3 and all(product["name"] == "House Blend" for product in response.json()))
     assert (journey.output / "routes/products.ts").read_text() == journey.product_stub_before_example
     assert ".random()" in journey.product_stub_before_example
-    check = journey.request("post", "/tutorial-check", json={"phaseId": "name-example"}).json()
+    check = journey.request("post", "/tutorial/check", json={"phaseId": "name-example"}).json()
     assert check["ok"] and check["example"] == "House Blend", check
-    info = journey.request("get", "/tutorial-info").json()
+    info = journey.request("get", "/tutorial/info").json()
     assert info["state"] == {"catalog": None, "inventory": None}
     assert any(file["file"] == "openapi.yaml" and 'example: House Blend' in file["after"] for change in info["workspace"]["changes"] for file in change["files"])
     coffee_workspace(journey, "checkpoint", "name-example")
@@ -716,17 +722,17 @@ def replace_coffee_stubs(journey):
     coffee_workspace(journey, "checkpoint", "explore")
     coffee_workspace(journey, "prepare", "catalog")
     edit_coffee(journey, "routes/products.ts", "return $.response.status(200).random();", "return $.response.status(200).json(catalog);")
-    journey.wait_for_http("/products", lambda response: response.status_code == 200 and response.json() == COFFEE_CATALOG)
+    journey.wait_for_http("/shop/products", lambda response: response.status_code == 200 and response.json() == COFFEE_CATALOG)
     coffee_workspace(journey, "checkpoint", "catalog")
     edit_coffee(journey, "routes/orders.ts", "return $.response.status(201).random();", "return $.response.status(201).json({ orderId: 1, items: $.body.items });")
 
 
 @then("repeated product responses are stable and confirmations echo the order")
 def explicit_coffee_responses(journey):
-    journey.wait_for_http("/products", lambda response: response.status_code == 200 and response.json() == COFFEE_CATALOG)
-    assert journey.request("get", "/products").json() == COFFEE_CATALOG
+    journey.wait_for_http("/shop/products", lambda response: response.status_code == 200 and response.json() == COFFEE_CATALOG)
+    assert journey.request("get", "/shop/products").json() == COFFEE_CATALOG
     items = [{"productId": "house-blend", "quantity": 2}]
-    journey.wait_for_http("/orders", lambda response: response.status_code == 201 and response.json().get("items") == items and response.json()["orderId"] == 1, method="post", json={"items": items})
+    journey.wait_for_http("/shop/orders", lambda response: response.status_code == 201 and response.json().get("items") == items and response.json()["orderId"] == 1, method="post", json={"items": items})
     assert coffee_stock(journey, "house-blend") == 5
     coffee_workspace(journey, "checkpoint", "order")
 
@@ -735,29 +741,29 @@ def explicit_coffee_responses(journey):
 def introduce_coffee_context(journey):
     coffee_workspace(journey, "prepare", "context")
     edit_coffee(journey, "routes/_.context.ts", "orderId: 0", "orderId: this.nextOrderId++")
-    unfinished = journey.request("post", "/tutorial-check", json={"phaseId": "context"}).json()
+    unfinished = journey.request("post", "/tutorial/check", json={"phaseId": "context"}).json()
     assert unfinished["ok"] is False and "Implement listProducts()" in unfinished["message"], unfinished
-    journey.wait_for_http("/tutorial-info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"] == {})
+    journey.wait_for_http("/tutorial/info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"] == {})
     edit_coffee(journey, "routes/_.context.ts", "return [];", "return this.catalog.map(product => ({ ...product, stock: this.inventory[product.id] ?? 0 }));")
-    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "context"})
+    journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "context"})
     coffee_workspace(journey, "checkpoint", "context")
     coffee_workspace(journey, "prepare", "seed")
     path = journey.output / "scenarios/index.ts"
     path.write_text(path.read_text() + "\nexport const startup: Scenario = reset;\n")
-    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "seed"})
-    journey.wait_for_http("/tutorial-info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"] == {})
+    journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "seed"})
+    journey.wait_for_http("/tutorial/info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"] == {})
     apply_coffee_scenario(journey, "reset")
-    journey.wait_for_http("/tutorial-info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"].get("dark-roast") == 3)
+    journey.wait_for_http("/tutorial/info", lambda response: response.status_code == 200 and response.json()["state"]["inventory"].get("dark-roast") == 3)
     coffee_workspace(journey, "checkpoint", "seed")
     edit_coffee(journey, "routes/products.ts", "return $.response.status(200).json(catalog);", "return $.response.status(200).json($.context.listProducts());")
     edit_coffee(journey, "routes/orders.ts", "{ orderId: 1, items: $.body.items }", "$.context.confirmOrder($.body.items)")
-    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "connect"})
+    journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "connect"})
 
 
 @then("the handlers read the initialized context and return successive order IDs")
 def connected_coffee_handlers(journey):
-    assert journey.request("get", "/products").json() == COFFEE_CATALOG
-    first = journey.wait_for_http("/orders", lambda response: response.status_code == 201 and response.json()["orderId"] >= 2, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]}).json()["orderId"]
+    assert journey.request("get", "/shop/products").json() == COFFEE_CATALOG
+    first = journey.wait_for_http("/shop/orders", lambda response: response.status_code == 201 and response.json()["orderId"] >= 2, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]}).json()["orderId"]
     second = coffee_order(journey, "house-blend", 1).json()["orderId"]
     assert second == first + 1
     assert coffee_stock(journey, "house-blend") == 5
@@ -767,7 +773,7 @@ def connected_coffee_handlers(journey):
 @when("I make Decaf available through the running REPL")
 def edit_decaf(journey):
     journey.terminal.command('context.inventory["decaf"] = 5')
-    submissions = journey.request("get", "/tutorial-info").json()["replSubmissions"]
+    submissions = journey.request("get", "/tutorial/info").json()["replSubmissions"]
     assert submissions[-1]["command"] == 'context.inventory["decaf"] = 5'
     assert len({entry["id"] for entry in submissions}) == len(submissions)
 
@@ -785,7 +791,7 @@ def unavailable_orders(journey):
     coffee_workspace(journey, "prepare", "fail")
     path = journey.output / "routes/orders.ts"
     path.write_text(path.read_text().replace("const ordersAvailable = true;", "const ordersAvailable = false;"))
-    journey.wait_for_http("/orders", lambda response: response.status_code == 503, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]})
+    journey.wait_for_http("/shop/orders", lambda response: response.status_code == 503, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]})
 
 
 @then("an unsuccessful order preserves inventory and a retry succeeds")
@@ -795,7 +801,7 @@ def retry_orders(journey):
     assert coffee_stock(journey, "house-blend") == before
     path = journey.output / "routes/orders.ts"
     path.write_text(path.read_text().replace("const ordersAvailable = false;", "const ordersAvailable = true;"))
-    journey.wait_for_http("/orders", lambda response: response.status_code == 201, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]})
+    journey.wait_for_http("/shop/orders", lambda response: response.status_code == 201, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]})
 
     coffee_workspace(journey, "checkpoint", "retry")
 
@@ -805,13 +811,13 @@ def add_coffee_stock_rules(journey):
     coffee_workspace(journey, "prepare", "rules")
     path = journey.output / "routes/orders.ts"
     path.write_text(path.read_text().replace('  return $.response.status(201)', '  if (!$.context.canFulfill($.body.items)) return $.response.status(409).json({ error: "Not enough stock", shortages: $.context.getShortages($.body.items) });\n  return $.response.status(201)'))
-    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "rules"})
+    journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "rules"})
 
 
 @then("oversized and duplicate-item orders are rejected without changing inventory")
 def reject_coffee_shortages(journey):
-    journey.wait_for_http("/orders", lambda response: response.status_code == 409, method="post", json={"items": [{"productId": "dark-roast", "quantity": 4}]})
-    duplicate = journey.request("post", "/orders", json={"items": [{"productId": "dark-roast", "quantity": 2}, {"productId": "dark-roast", "quantity": 2}]})
+    journey.wait_for_http("/shop/orders", lambda response: response.status_code == 409, method="post", json={"items": [{"productId": "dark-roast", "quantity": 4}]})
+    duplicate = journey.request("post", "/shop/orders", json={"items": [{"productId": "dark-roast", "quantity": 2}, {"productId": "dark-roast", "quantity": 2}]})
     assert duplicate.status_code == 409
     assert duplicate.json()["shortages"] == [{"productId": "dark-roast", "requested": 4, "available": 3}]
     assert coffee_stock(journey, "dark-roast") == 3
@@ -822,7 +828,7 @@ def reject_coffee_shortages(journey):
 def update_order_context(journey):
     coffee_workspace(journey, "prepare", "reduce")
     edit_coffee(journey, "routes/orders.ts", "// TODO: For each item, subtract its quantity from inventory[item.productId].", "for (const item of items) { inventory[item.productId] -= item.quantity; }")
-    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "reduce"})
+    journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "reduce"})
 
 
 @then("buying coffee reduces the inventory returned by the products API")
@@ -859,19 +865,19 @@ def restock_and_purchase(journey):
     assert coffee_order(journey, "dark-roast", 1).status_code == 201
     assert coffee_stock(journey, "dark-roast") == 4
     coffee_workspace(journey, "checkpoint", "restock")
-    session = journey.request("get", "/tutorial-info").json()["sessionId"]
+    session = journey.request("get", "/tutorial/info").json()["sessionId"]
     for filename in ["routes/products.ts", "routes/_.context.ts"]:
         path = journey.output / filename
         path.write_text(path.read_text() + "\n// Keep the running inventory across hot reload.\n")
-    journey.wait_for_http("/products", lambda response: response.status_code == 200 and next(product["stock"] for product in response.json() if product["id"] == "dark-roast") == 4)
-    assert journey.request("get", "/tutorial-info").json()["sessionId"] == session
+    journey.wait_for_http("/shop/products", lambda response: response.status_code == 200 and next(product["stock"] for product in response.json() if product["id"] == "dark-roast") == 4)
+    assert journey.request("get", "/tutorial/info").json()["sessionId"] == session
 
 
 @when("I save and apply a focused Dark Roast restock scenario")
 def reusable_coffee_restock(journey):
     coffee_workspace(journey, "prepare", "scenario")
     edit_coffee(journey, "scenarios/index.ts", "// TODO: set Dark Roast inventory to 5.", '$.context.inventory["dark-roast"] = 5;')
-    journey.wait_for_http("/tutorial-check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "scenario"})
+    journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "scenario"})
     journey.coffee_order_id = coffee_order(journey, "house-blend", 1).json()["orderId"]
     apply_coffee_scenario(journey, "restockDarkRoast")
 
@@ -883,10 +889,10 @@ def coffee_restock_composes(journey):
     assert coffee_stock(journey, "house-blend") == 4
     assert coffee_order(journey, "house-blend", 1).json()["orderId"] == journey.coffee_order_id + 1
     coffee_workspace(journey, "checkpoint", "scenario")
-    info = journey.request("get", "/tutorial-info").json()
-    assert info["workspace"]["checkpoints"] == list(range(1, 14))
+    info = journey.request("get", "/tutorial/info").json()
+    assert info["workspace"]["checkpoints"] == list(range(1, 15))
     assert not (journey.output / ".git").exists()
-    denied = journey.request("get", "/tutorial-info", headers={"Origin": "https://unrelated.example"})
+    denied = journey.request("get", "/tutorial/info", headers={"Origin": "https://unrelated.example"})
     assert denied.status_code == 403, denied.text
     assert "Your saved changes" not in denied.text
     changes = info["workspace"]["changes"]
@@ -897,7 +903,7 @@ def coffee_restock_composes(journey):
 
 @when("I restart the guided API")
 def restart_guided_coffee(journey):
-    journey.coffee_previous_session = journey.request("get", "/tutorial-info").json()["sessionId"]
+    journey.coffee_previous_session = journey.request("get", "/tutorial/info").json()["sessionId"]
     journey.terminal.close()
     journey.terminal = None
     port = journey.allocate_port()
@@ -907,11 +913,11 @@ def restart_guided_coffee(journey):
 
 @then("startup restores the explicit baseline without overwriting my handlers")
 def coffee_startup_baseline(journey):
-    assert journey.request("get", "/products").json() == COFFEE_CATALOG
+    assert journey.request("get", "/shop/products").json() == COFFEE_CATALOG
     assert coffee_order(journey, "house-blend", 1).json()["orderId"] == 1
     assert coffee_stock(journey, "house-blend") == 4
-    assert journey.request("get", "/tutorial-info").json()["sessionId"] != journey.coffee_previous_session
-    assert journey.request("get", "/tutorial-info").json()["workspace"]["checkpoints"] == list(range(1, 14))
+    assert journey.request("get", "/tutorial/info").json()["sessionId"] != journey.coffee_previous_session
+    assert journey.request("get", "/tutorial/info").json()["workspace"]["checkpoints"] == list(range(1, 15))
     journey.terminal.command("context.inventory.decaf")
-    submissions = journey.request("get", "/tutorial-info").json()["replSubmissions"]
+    submissions = journey.request("get", "/tutorial/info").json()["replSubmissions"]
     assert [entry["command"] for entry in submissions] == ["context.inventory.decaf"]

@@ -21,6 +21,13 @@ An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) colle
 
 Each specification entry accepts `source`, `group`, optional `version`, optional `prefix`, and optional `overlays`. Only `prefix` changes request URLs. Groups select generated directories and state; versions in a group share contexts and scenarios.
 
+For a version 4 managed tutorial project, the facade mounts the shop simulator
+under `/shop` and hosts the tutorials package's HTTP handler at `/tutorial/*` on
+the same listener. Tutorial requests bypass the simulator's Koa callback,
+dispatch, validation, and proxying. Tutorial controls are absent from the shop's
+OpenAPI document and generated route registry. Ordinary projects and older
+generated tutorials retain their existing startup behavior.
+
 ## Simulator members
 
 | Property                     | Type                                 | Description                                                                                                                     |

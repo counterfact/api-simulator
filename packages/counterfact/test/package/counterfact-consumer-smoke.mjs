@@ -358,30 +358,31 @@ try {
   const page = await fetch(origin + prepared.walkthroughPath);
   assert.equal(page.status, 200);
   assert.match(await page.text(), /Counterfact Coffee/);
-  const info = await (await fetch(origin + "/tutorial-info")).json();
+  const info = await (await fetch(origin + "/tutorial/info")).json();
   assert.match(info.revision, /^[a-f0-9]{64}$/);
-  const check = await (await fetch(origin + "/tutorial-check", {
+  const check = await (await fetch(origin + "/tutorial/check", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phaseId: "catalog" }),
   })).json();
-  assert.equal(info.walkthroughVersion, 3);
+  assert.equal(info.walkthroughVersion, 4);
   assert.deepEqual(info.state, { catalog: null, inventory: null });
   assert.equal(check.ok, false);
   assert.match(check.message, /random product stub/);
-  const workspace = async (action, phaseId, revision) => (await fetch(origin + "/tutorial-workspace", {
+  const workspace = async (action, phaseId, revision) => (await fetch(origin + "/tutorial/workspace", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, phaseId, revision, sessionId: info.sessionId }),
   })).json();
+  assert.equal((await workspace("checkpoint", "orientation")).ok, true);
   assert.equal((await workspace("checkpoint", "explore")).ok, true);
   assert.equal((await workspace("checkpoint", "name-example")).ok, true);
   const proposal = await workspace("preview", "catalog");
   assert.equal(proposal.ok, true);
   assert.equal(proposal.files.length, 1);
   assert.match(proposal.files[0].after, /const catalog/);
-  assert.equal((await (await fetch(origin + "/tutorial-info")).json()).revision, info.revision);
+  assert.equal((await (await fetch(origin + "/tutorial/info")).json()).revision, info.revision);
   const applied = await workspace("prepare", "catalog", proposal.revision);
   assert.equal(applied.ok, true);
   assert.deepEqual(applied.changes.find(change => change.actor === "milo").files, proposal.files);
-  const milestone = await fetch(origin + "/tutorial-event", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "opened", phaseId: "explore" }),
+  const milestone = await fetch(origin + "/tutorial/event", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "opened", phaseId: "orientation" }),
   });
   assert.equal(milestone.status, 200);
   assert.deepEqual(await milestone.json(), { ok: true });

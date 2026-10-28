@@ -32,16 +32,16 @@ proposal, run a scenario, or try the shop, the instructions stay visible while
 he waits for that action. **Okay** does not appear as a substitute for doing the
 exercise. Saved edits and API results determine when he responds and when the
 lesson is complete.
-Open the demo folder using its link or your editor, then click **Folder is open**
-to confirm that external step. Background checks do not advance reading pauses.
+Background checks do not advance reading pauses. The first lesson needs no editor;
+open the demo folder from its link when the next lesson asks you to inspect the handler.
 New Milo messages type out progressively as the conversation scrolls smoothly
 to keep them in view. Messages already seen do not replay their typing effect on
 reload. Reduced-motion preferences show the text immediately and use instant
 scrolling.
 Your action bubbles contain the HTTP results. Milo adds lesson feedback and
 guidance rather than repeating routine request summaries.
-The welcome message shows the demo folder’s full path and links to open it in VS Code.
-The first lesson links to your actual local API address, normally
+The introduction names the shop endpoints and explains that the tutorial has its
+own HTTP endpoints. The API inspection lesson links to your actual local address, normally
 `http://localhost:3100`.
 
 Before inspecting the starting handler, Milo explains OpenAPI and schemas and
@@ -56,6 +56,23 @@ loses contact with the server, an alert explains how to restart Counterfact from
 the original directory on the same port. The page retries automatically and clears
 the alert when the server responds. A restarted server offers **Resume this
 project** using your saved lesson checkpoints.
+
+## Try the tutorial before editing code
+
+The browser opens at `/tutorial/`. The shop calls `GET /shop/products` to load
+coffee and `POST /shop/orders` to place orders. Counterfact governs those two
+shop operations through the bundled OpenAPI document.
+
+The `/tutorial/*` endpoints serve the conversation, progress, file history,
+checks, and edit proposals. They run outside simulation dispatch and are absent
+from the shop spec and generated route files. A broken shop handler does not
+break the tutorial page.
+
+In the first lesson, click **Add to cart** on a coffee with stock, then click
+**Place order**. Expand the **HTTP** details in your order message to inspect its
+request and response. This introduces the storefront and conversation before
+asking you to edit code. A generated confirmation does not yet have to match
+your cart; the later lessons connect that behavior.
 
 ## Start with the generated behavior
 
@@ -91,23 +108,24 @@ business rule. The next lesson replaces the response with three explicit coffees
 
 ## Add one behavior at a time
 
-The thirteen steps build on the code you have already written:
+The fourteen lessons start with using the tutorial, then build on your code:
 
 | Step | What you add                                                             | What to observe                                                                                          |
 | ---- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| 1    | Inspect and refresh the generated API                                    | The handler generates each response from its schema.                                                     |
-| 2    | A name-property example in `openapi.yaml`                                | The existing `.random()` handler uses readable coffee names; IDs, prices, and stock are still generated. |
-| 3    | An explicit product response                                             | Repeated requests return the same three coffees.                                                         |
-| 4    | An order response using `$.body.items`                                   | The confirmation reflects the submitted cart.                                                            |
-| 5    | A 503 branch and recovery switch                                         | A rejected order keeps its cart; restoring the handler lets the same request succeed.                    |
-| 6    | An empty Context class with catalog, inventory, and confirmation methods | You can inspect the running object in the REPL before routes use it.                                     |
-| 7    | A baseline `reset` scenario and `startup` export                         | Nothing is seeded until you explicitly run `.scenario reset`.                                            |
-| 8    | Handlers calling context methods                                         | Products read shared state and successive orders receive successive IDs.                                 |
-| 9    | A Decaf inventory assignment in the REPL                                 | The next product request reads the changed quantity.                                                     |
-| 10   | Stock validation and shortage methods                                    | Oversized orders return HTTP 409 with requested and available quantities.                                |
-| 11   | `reduceInventory(items, inventory)`                                      | Successful purchases now change the quantity returned by later product requests.                         |
-| 12   | Requests that sell out and REPL commands that restock                    | The same handlers produce different responses as shared state evolves.                                   |
-| 13   | A focused `restockDarkRoast` scenario                                    | A reusable setup changes one product while preserving other inventory and order IDs.                     |
+| 1    | Place an order without editing code                                      | Learn the shop, cart, and HTTP details in the conversation.                                              |
+| 2    | Inspect and refresh the generated API                                    | The handler generates each response from its schema.                                                     |
+| 3    | A name-property example in `openapi.yaml`                                | The existing `.random()` handler uses readable coffee names; IDs, prices, and stock are still generated. |
+| 4    | An explicit product response                                             | Repeated requests return the same three coffees.                                                         |
+| 5    | An order response using `$.body.items`                                   | The confirmation reflects the submitted cart.                                                            |
+| 6    | A 503 branch and recovery switch                                         | A rejected order keeps its cart; restoring the handler lets the same request succeed.                    |
+| 7    | An empty Context class with catalog, inventory, and confirmation methods | You can inspect the running object in the REPL before routes use it.                                     |
+| 8    | A baseline `reset` scenario and `startup` export                         | Nothing is seeded until you explicitly run `.scenario reset`.                                            |
+| 9    | Handlers calling context methods                                         | Products read shared state and successive orders receive successive IDs.                                 |
+| 10   | A Decaf inventory assignment in the REPL                                 | The next product request reads the changed quantity.                                                     |
+| 11   | Stock validation and shortage methods                                    | Oversized orders return HTTP 409 with requested and available quantities.                                |
+| 12   | `reduceInventory(items, inventory)`                                      | Successful purchases now change the quantity returned by later product requests.                         |
+| 13   | Requests that sell out and REPL commands that restock                    | The same handlers produce different responses as shared state evolves.                                   |
+| 14   | A focused `restockDarkRoast` scenario                                    | A reusable setup changes one product while preserving other inventory and order IDs.                     |
 
 Each phase explains the Counterfact facility being used and names the file to edit.
 Milo, a coffee-shop owner and your Counterfact tutor, proposes the supporting

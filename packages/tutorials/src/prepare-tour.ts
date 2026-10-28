@@ -2,10 +2,9 @@
 import fs from "node:fs/promises";
 import { join, resolve } from "node:path";
 
-import { format } from "prettier";
 import { stringify } from "yaml";
 
-import { coffeeShopFiles, SHOP_DOCUMENT } from "./coffee-shop/coffee-shop.js";
+import { SHOP_DOCUMENT } from "./coffee-shop/coffee-shop.js";
 
 import {
   initializeWalkthroughWorkspace,
@@ -38,18 +37,11 @@ export async function prepareTour(
     join(destination, "openapi.yaml"),
     stringify(SHOP_DOCUMENT),
   );
-  for (const [file, contents] of Object.entries(coffeeShopFiles(destination))) {
-    await fs.mkdir(join(destination, file, ".."), { recursive: true });
-    await fs.writeFile(
-      join(destination, file),
-      await format(contents, { parser: "typescript" }),
-    );
-  }
   await initializeWalkthroughWorkspace(destination);
   return {
     source: join(destination, "openapi.yaml"),
     destination,
-    walkthroughPath: "/walkthrough",
+    walkthroughPath: "/tutorial/",
   };
 }
 
