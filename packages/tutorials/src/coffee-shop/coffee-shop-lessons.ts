@@ -593,7 +593,7 @@ export const PHASES: LessonPhase[] = [
     introduction:
       "The class in routes/_.context.ts describes your shop’s shared state and methods. Counterfact creates one running instance. Inside a route, `$.context` refers to that instance. In the terminal, `context` refers to the same instance. The ⬣> prompt is a REPL—a read–eval–print loop where you enter JavaScript and see its result while Counterfact keeps running.",
     explanation:
-      "Connecting the handlers to this shared object lets HTTP requests read the state you change in the REPL. The collections are still empty.",
+      "Connecting the handlers to this shared object lets HTTP requests read the state you change in the REPL. The fields start empty in a fresh context; any data you’ve already added to this running session is kept.",
     verification:
       "Your handlers now use the shared context. Next, change that same object from the REPL and observe it through the shop.",
   },
