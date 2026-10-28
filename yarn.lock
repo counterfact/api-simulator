@@ -1124,6 +1124,7 @@ __metadata:
     "@counterfact/runtime": "npm:0.3.1"
     prettier: "npm:3.9.10"
     typescript: "npm:6.0.3"
+    yaml: "npm:^2.9.0"
   languageName: unknown
   linkType: soft
 

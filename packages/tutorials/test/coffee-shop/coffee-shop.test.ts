@@ -103,4 +103,6 @@ it("ships valid browser code with escaped paths", () => {
     () => new vm.Script(page.split("<script>")[1]!.split("</script>")[0]!),
   ).not.toThrow();
   expect(page).not.toContain("/tmp/coffee</script>shop");
+  expect(page).not.toContain("Latest API requests and responses");
+  expect(page).not.toContain('id="request-trace"');
 });

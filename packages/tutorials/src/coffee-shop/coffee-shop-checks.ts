@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Transpiler } from "@counterfact/runtime";
+import { parse } from "yaml";
 import { CATALOG, PHASES } from "./coffee-shop-lessons.js";
 
 import { walkthroughWorkspace } from "./coffee-shop-workspace.js";
@@ -17,7 +18,7 @@ const paths = [
   "routes/orders.ts",
   "routes/_.context.ts",
   "scenarios/index.ts",
-  "openapi.json",
+  "openapi.yaml",
 ];
 const require = createRequire(import.meta.url);
 type Item = { productId: string; quantity: number };
@@ -47,7 +48,17 @@ async function snapshot(root: string) {
       try {
         return await readFile(join(root, path), "utf8");
       } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === "ENOENT") return "";
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+          if (path === "openapi.yaml") {
+            try {
+              return await readFile(join(root, "openapi.json"), "utf8");
+            } catch (legacyError) {
+              if ((legacyError as NodeJS.ErrnoException).code !== "ENOENT")
+                throw legacyError;
+            }
+          }
+          return "";
+        }
         throw error;
       }
     }),
@@ -165,19 +176,19 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
     if (phaseId === "name-example") {
       let document;
       try {
-        document = JSON.parse(sources[4] ?? "");
+        document = parse(sources[4] ?? "");
       } catch {
         throw new Error(
-          "Fix the JSON syntax in openapi.json before checking the name example.",
+          "Fix the YAML syntax in openapi.yaml before checking the name example.",
         );
       }
       const example =
-        document.components?.schemas?.Product?.properties?.name?.example;
+        document?.components?.schemas?.Product?.properties?.name?.example;
       ensure(
         typeof example === "string" &&
           example.trim().length > 0 &&
           example.length <= 40,
-        "Add a readable string example to components.schemas.Product.properties.name in openapi.json.",
+        "Add a readable string example to components.schemas.Product.properties.name in openapi.yaml.",
       );
       ensure(
         (await products(request())).random === true,
@@ -187,8 +198,7 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
         ok: true,
         revision,
         example,
-        message:
-          "The name example is saved. Refresh products to observe it in the generated response.",
+        message: PHASES.find((phase) => phase.id === phaseId)!.verification!,
       };
     }
     if (phaseId === "catalog") {
@@ -350,7 +360,8 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
       revision,
       ok: true,
       message:
-        "Saved implementation verified. Now try it against your running API.",
+        PHASES.find((phase) => phase.id === phaseId)?.verification ??
+        "Your saved code passed the checks.",
     };
   } catch (error) {
     return {

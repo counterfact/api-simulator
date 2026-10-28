@@ -1,3 +1,4 @@
+import { parse } from "yaml";
 import { expect, it } from "@jest/globals";
 import { check } from "prettier";
 import { usingTemporaryFiles } from "using-temporary-files";
@@ -11,12 +12,16 @@ it("creates a restartable offline shop without touching an existing project", as
     const directory = await findTourDirectory($.path("."));
     expect(directory).toBe("counterfact-demo-3");
     expect(await prepareTour($.path("."), directory)).toEqual({
-      source: $.path(`${directory}/openapi.json`),
+      source: $.path(`${directory}/openapi.yaml`),
       destination: $.path(directory),
       walkthroughPath: "/walkthrough",
     });
     expect(await $.read("counterfact-demo/keep.txt")).toBe("user edits");
-    const spec = JSON.parse(await $.read(`${directory}/openapi.json`));
+    const spec = parse(await $.read(`${directory}/openapi.yaml`));
+    expect(await $.read(`${directory}/openapi.yaml`)).toMatch(/^openapi:/u);
+    await expect($.read(`${directory}/openapi.json`)).rejects.toMatchObject({
+      code: "ENOENT",
+    });
     expect(spec.paths["/products"].get.responses["200"]).toBeDefined();
     expect(spec.paths["/orders"].post.responses["503"]).toBeDefined();
     await expect(

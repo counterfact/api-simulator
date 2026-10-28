@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { join, resolve } from "node:path";
 import { format } from "prettier";
 import ts from "typescript";
+import { lessonLocations } from "./coffee-shop-locations.js";
 import {
   BASELINE_SCENARIO,
   CATALOG,
@@ -33,6 +34,7 @@ const baseLessonFiles = [
 ];
 type State = {
   version?: number;
+  schemaFile?: string;
   prepared: string[];
   checkpoints: number[];
   baseline: boolean;
@@ -101,7 +103,7 @@ async function captureChanges(
 ) {
   const files: FileChange[] = [];
   for (const file of state.version === 3
-    ? [...baseLessonFiles, "openapi.json"]
+    ? [...baseLessonFiles, state.schemaFile ?? "openapi.json"]
     : baseLessonFiles) {
     let after = "";
     try {
@@ -129,6 +131,7 @@ export async function initializeWalkthroughWorkspace(root: string) {
   );
   await writeState(root, {
     version: WALKTHROUGH_VERSION,
+    schemaFile: "openapi.yaml",
     prepared: [],
     checkpoints: [],
     baseline: false,
@@ -149,7 +152,7 @@ export async function walkthroughWorkspace(root: string) {
       };
     if (!state.baseline) {
       for (const file of state.version === 3
-        ? [...baseLessonFiles, "openapi.json"]
+        ? [...baseLessonFiles, state.schemaFile ?? "openapi.json"]
         : baseLessonFiles)
         state.snapshots[file] = await readEditable(root, file);
       state.baseline = true;
@@ -157,10 +160,15 @@ export async function walkthroughWorkspace(root: string) {
     await writeState(root, state);
     return {
       version: state.version ?? 2,
+      schemaFile: state.schemaFile ?? "openapi.json",
       enabled: true,
       prepared: state.prepared,
       checkpoints: state.checkpoints,
       changes: state.changes,
+      locations: lessonLocations(
+        state.snapshots,
+        phasesForVersion(state.version ?? 2),
+      ),
     };
   });
 }

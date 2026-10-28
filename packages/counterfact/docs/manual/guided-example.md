@@ -19,8 +19,31 @@ directories are preserved by choosing a new numbered name.
 The walkthrough opens in your browser. Instructions stay on the left and the
 working shop stays on the right. Use a desktop browser at least 1100px wide. Keep
 Counterfact running in its terminal and make the edits in your own editor.
+Drag the divider between the panels left or right to resize them. You can also
+focus it with Tab and use the arrow keys, or Home and End. Reloading preserves
+your chosen split.
+The conversation scrolls to the latest message as replies and saved edits arrive.
+Long explanations arrive in smaller messages. Click **Okay** to reveal the next
+part; the messages already revealed stay visible. Reloading keeps your place.
+**Okay** reveals text without applying changes or completing an exercise.
+Your action bubbles contain the HTTP results. Milo adds lesson feedback and
+guidance rather than repeating routine request summaries.
+The welcome message shows the demo folder’s full path and links to open it in VS Code.
 The first lesson links to your actual local API address, normally
 `http://localhost:3100`.
+
+Before inspecting the starting handler, Milo explains OpenAPI and schemas and
+links to your demo’s `openapi.yaml`. Counterfact bundles this coffee-shop API
+description and saves a copy in the demo folder, then generates the starting
+handlers and TypeScript types from it.
+File links open at the relevant line in VS Code. Lesson links follow the current
+saved file as your edits move code; diff links open at the first changed line.
+
+Keep the terminal application running while using the walkthrough. If the browser
+loses contact with the server, an alert explains how to restart Counterfact from
+the original directory on the same port. The page retries automatically and clears
+the alert when the server responds. A restarted server offers **Resume this
+project** using your saved lesson checkpoints.
 
 ## Start with the generated behavior
 
@@ -41,23 +64,14 @@ polling. Refreshing a random catalog clears its previous cart because IDs and
 prices may change. Invalid responses or duplicate product IDs produce an
 explanation and can be retried with **Refresh products**.
 
-Expand **Latest API requests and responses** to inspect the actual GET and POST
-traffic: the URL, request body, response status, and response body. The shop does
+Expand the **HTTP** details attached to your action in the chat to inspect the
+URL, request body, response status, and response body. The shop does
 not substitute a working catalog or silently install backend implementations.
 
-Before replacing the handler, add an example to the name property in
-`openapi.json`, under `components.schemas.Product.properties.name`:
-
-```json
-{
-  "type": "string",
-  "minLength": 1,
-  "maxLength": 40,
-  "example": "House Blend"
-}
-```
-
-Add only the `example` property to the existing schema. Save and click **Refresh
+Before replacing the handler, find the name property in `openapi.yaml`, under
+`components.schemas.Product.properties.name`. Give it an `example` value of
+House Blend while preserving its existing type and length limits.
+Save and click **Refresh
 products**. Counterfact reloads the spec while your product handler keeps calling
 `.random()`. Each generated name now uses the example; IDs, prices, and stock
 remain generated. An example is a generation hint, not a fixed catalog or a
@@ -70,7 +84,7 @@ The thirteen steps build on the code you have already written:
 | Step | What you add                                                             | What to observe                                                                                          |
 | ---- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
 | 1    | Inspect and refresh the generated API                                    | The handler generates each response from its schema.                                                     |
-| 2    | A name-property example in `openapi.json`                                | The existing `.random()` handler uses readable coffee names; IDs, prices, and stock are still generated. |
+| 2    | A name-property example in `openapi.yaml`                                | The existing `.random()` handler uses readable coffee names; IDs, prices, and stock are still generated. |
 | 3    | An explicit product response                                             | Repeated requests return the same three coffees.                                                         |
 | 4    | An order response using `$.body.items`                                   | The confirmation reflects the submitted cart.                                                            |
 | 5    | A 503 branch and recovery switch                                         | A rejected order keeps its cart; restoring the handler lets the same request succeed.                    |
@@ -87,7 +101,13 @@ Each phase explains the Counterfact facility being used and names the file to ed
 Milo, a coffee-shop owner and your Counterfact tutor, proposes the supporting
 edits before making them and shows the proposed diff in his chat bubble. Review
 the diff, then click **Apply changes** to save it. The same bubble updates to
-**Changes applied** and keeps the diff visible. Then make the small edit supplied under **Show code**.
+**Changes applied** and keeps the diff visible. Then implement the behavior
+described in the exercise. For example, the catalog lesson asks you to replace
+`.random()` with `.json(catalog)` while keeping the existing status and imports.
+Exercises explain where to edit and what the result should do, without supplying
+solution snippets or prepared REPL commands.
+The proposal’s status confirms the edit; applying it does not add separate
+approval or acknowledgment messages to the conversation.
 You keep your existing file and change only the indicated return statement, branch,
 method body, or assignment. Counterfact prepares the surrounding structure and
 data; you connect the behavior. Preparation never runs a scenario or resets state. **Open in VSCode** and **Copy file
@@ -97,14 +117,16 @@ the initial product and order stubs, context, and default scenario file.
 
 The guide is a conversation with Milo. You take turns: he explains what he wants
 to edit, you approve it, then he directs your own small edit and an API experiment.
-After the result is verified, reply **I’m ready. What’s next?** to continue.
+After the result is verified, click the button naming the next lesson, such as
+**Next Lesson: Replace random products**, to continue.
+Each lesson starts with a distinct heading outside Milo’s chat bubbles.
 Earlier turns stay visible so you can scroll back without changing the current
-exercise. Your approvals, quiz replies, and Milo’s explanations survive a reload
+exercise. Applied proposal statuses, quiz replies, and Milo’s explanations survive a reload
 within the same running API session. Shop actions join that history too: product
 refreshes, cart changes, order attempts, retries, and restoring a failed cart.
-Milo records the actual refresh result or order response after your action, so
-you can follow what happened in order. These turns survive reloads alongside
-your code diffs. There are no Back or preview controls.
+Each action includes its actual HTTP result, so you can follow what happened in
+order. Milo adds feedback when it helps explain the behavior. These turns survive
+reloads alongside your code diffs. There are no Back or preview controls.
 
 Commands you submit in the REPL also appear as your own turns, with the input in
 a code block. This includes context inspections, assignments, and `.scenario`
@@ -147,6 +169,10 @@ they do not consume the running shop’s inventory or its order IDs. Missing met
 and incomplete implementations produce guidance. Fix the code and save again, or
 click **Check my work** to retry.
 
+When your saved code passes, Milo adds feedback to the conversation that names
+the behavior you implemented and suggests the next experiment. Repeated checks
+of the same saved code do not repeat that message.
+
 A passing saved-file check is only part of an exercise. Follow the instructions
 to refresh products, place orders, or run a command against the live API. Handler
 and context reloads are asynchronous; if the old behavior is still visible just
@@ -165,6 +191,11 @@ rejection. Empty it and restore stock before continuing. Missing confirmations
 are described as unknown; inspect the request and inventory before retrying.
 During the failure/recovery lesson, **Restore original cart** brings back the
 original failed order if you have changed its items.
+To exercise the 503 response, save the unavailable switch, click **Add to cart**
+on House Blend, then click **Place order**. Expand the order’s **HTTP** details
+in the chat to check the 503 response and confirm that House Blend stays in the
+cart. After restoring availability in your handler, click **Try again** with the
+same cart and check for a 201 response and an empty cart.
 
 ## Make state changes explicit
 
@@ -174,11 +205,8 @@ types Counterfact generated from the bundled OpenAPI document. There are no
 duplicate model type definitions in your context file. The baseline
 scenario contains the example catalog and starting quantities; `startup`
 delegates to that scenario on subsequent server starts. Saving a scenario does
-not apply it to an already running session. Run it explicitly:
-
-```text
-.scenario reset
-```
+not apply it to an already running session. Use the REPL’s `.scenario` command to
+run the named `reset` scenario explicitly.
 
 This restores the entire shop baseline, including order IDs. A focused scenario
 such as `restockDarkRoast` changes only its named condition. It preserves other

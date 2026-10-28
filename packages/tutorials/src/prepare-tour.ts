@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 import { format } from "prettier";
+import { stringify } from "yaml";
 
 import { coffeeShopFiles, SHOP_DOCUMENT } from "./coffee-shop/coffee-shop.js";
 
@@ -34,8 +35,8 @@ export async function prepareTour(
   // Exclusive creation also protects an existing file, directory, or symlink.
   await fs.mkdir(destination);
   await fs.writeFile(
-    join(destination, "openapi.json"),
-    JSON.stringify(SHOP_DOCUMENT, null, 2),
+    join(destination, "openapi.yaml"),
+    stringify(SHOP_DOCUMENT),
   );
   for (const [file, contents] of Object.entries(coffeeShopFiles(destination))) {
     await fs.mkdir(join(destination, file, ".."), { recursive: true });
@@ -46,7 +47,7 @@ export async function prepareTour(
   }
   await initializeWalkthroughWorkspace(destination);
   return {
-    source: join(destination, "openapi.json"),
+    source: join(destination, "openapi.yaml"),
     destination,
     walkthroughPath: "/walkthrough",
   };

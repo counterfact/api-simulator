@@ -1,3 +1,4 @@
+import { parse, stringify } from "yaml";
 import { expect, it } from "@jest/globals";
 import {
   CodeGenerator,
@@ -20,6 +21,8 @@ import {
 import {
   PHASES,
   LESSON_COUNT,
+  INVENTORY_LOOP,
+  RULES_ORDERS,
 } from "../../src/coffee-shop/coffee-shop-lessons.js";
 
 async function generate(root: string, source: string) {
@@ -32,6 +35,33 @@ async function generate(root: string, source: string) {
   await scenarios.generate();
 }
 
+it("keeps tracking the JSON spec in an existing version 3 demo", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const tour = await prepareTour($.path("."), "demo");
+    await generate(tour.destination, tour.source);
+    const spec = parse(await $.read("demo/openapi.yaml"));
+    await $.add("demo/openapi.json", JSON.stringify(spec, null, 2));
+    await $.remove("demo/openapi.yaml");
+    const state = JSON.parse(
+      await $.read("demo/.counterfact-walkthrough-state.json"),
+    );
+    delete state.schemaFile;
+    await $.add(
+      "demo/.counterfact-walkthrough-state.json",
+      JSON.stringify(state),
+    );
+    const initial = await workspace(tour.destination);
+    expect(initial.schemaFile).toBe("openapi.json");
+    spec.components.schemas.Product.properties.name.example = "House Blend";
+    await $.add("demo/openapi.json", JSON.stringify(spec, null, 2));
+    const updated = await workspace(tour.destination);
+    expect(updated.changes.at(-1)?.files[0]?.file).toBe("openapi.json");
+    expect(
+      (await checkWalkthroughSave(tour.destination, "name-example")).ok,
+    ).toBe(true);
+  });
+});
+
 it("prepares focused changes, preserves learner edits, and records all current lessons in a attributed file history without Git", async () => {
   await usingTemporaryFiles(async ($) => {
     const tour = await prepareTour($.path("."), "demo");
@@ -43,7 +73,7 @@ it("prepares focused changes, preserves learner edits, and records all current l
         "routes/orders.ts",
         "routes/_.context.ts",
         "scenarios/index.ts",
-        "openapi.json",
+        "openapi.yaml",
       ];
       const before = await Promise.all(
         lessonFiles.map((file) => $.read("demo/" + file)),
@@ -69,9 +99,9 @@ it("prepares focused changes, preserves learner edits, and records all current l
     });
     await expect(prepare(root, "context")).rejects.toThrow("preceding lesson");
     await checkpoint(root, "explore");
-    const document = JSON.parse(await $.read("demo/openapi.json"));
+    const document = parse(await $.read("demo/openapi.yaml"));
     document.components.schemas.Product.properties.name.example = "House Blend";
-    await $.add("demo/openapi.json", JSON.stringify(document, null, 2));
+    await $.add("demo/openapi.yaml", stringify(document));
     expect((await checkWalkthroughSave(root, "name-example")).ok).toBe(true);
     await checkpoint(root, "name-example");
 
@@ -112,7 +142,7 @@ it("prepares focused changes, preserves learner edits, and records all current l
     });
     expect(prepared[2]!.files[0]!.before).not.toContain("const catalog");
     expect(prepared[2]!.files[0]!.after).toContain("const catalog");
-    // Apply exactly the small edits displayed by each lesson, leaving imports and other code alone.
+    // Implement each instructed behavior independently, leaving imports and other code alone.
     const replace = async (file: string, before: string, after: string) => {
       const text = await $.read("demo/" + file);
       expect(text).toContain(before);
@@ -123,7 +153,7 @@ it("prepares focused changes, preserves learner edits, and records all current l
     await replace(
       "routes/products.ts",
       "return $.response.status(200).random();",
-      PHASES.find((p) => p.id === "catalog")!.edits[0]!.code,
+      "return $.response.status(200).json(catalog);",
     );
     await append("routes/products.ts", "// Keep my note.");
     await prepare(root, "catalog");
@@ -146,7 +176,7 @@ it("prepares focused changes, preserves learner edits, and records all current l
     await replace(
       "routes/orders.ts",
       "return $.response.status(201).random();",
-      PHASES.find((p) => p.id === "order")!.edits[0]!.code,
+      "return $.response.status(201).json({ orderId: 1, items: $.body.items });",
     );
     await checkpoint(root, "order");
     await previewAndApply("fail");
@@ -200,12 +230,12 @@ it("prepares focused changes, preserves learner edits, and records all current l
     await replace(
       "routes/products.ts",
       "return $.response.status(200).json(catalog);",
-      PHASES.find((p) => p.id === "connect")!.edits[0]!.code,
+      "return $.response.status(200).json($.context.listProducts());",
     );
     await replace(
       "routes/orders.ts",
       "return $.response.status(201).json({ orderId: 1, items: $.body.items });",
-      PHASES.find((p) => p.id === "connect")!.edits[1]!.code,
+      "return $.response.status(201).json($.context.confirmOrder($.body.items));",
     );
     await checkpoint(root, "connect");
     await checkpoint(root, "decaf");
@@ -213,8 +243,10 @@ it("prepares focused changes, preserves learner edits, and records all current l
     await replace(
       "routes/orders.ts",
       "return $.response.status(201)",
-      PHASES.find((p) => p.id === "rules")!.edits[0]!.code +
-        "return $.response.status(201)",
+      RULES_ORDERS.slice(
+        RULES_ORDERS.indexOf("  if (!$.context.canFulfill"),
+        RULES_ORDERS.indexOf("  return $.response.status(201)"),
+      ) + "return $.response.status(201)",
     );
     expect((await checkWalkthroughSave(root, "rules")).ok).toBe(true);
     await checkpoint(root, "rules");
@@ -223,7 +255,7 @@ it("prepares focused changes, preserves learner edits, and records all current l
     await replace(
       "routes/orders.ts",
       "// TODO: For each item, subtract its quantity from inventory[item.productId].",
-      PHASES.find((p) => p.id === "reduce")!.edits[0]!.code,
+      INVENTORY_LOOP,
     );
     expect((await checkWalkthroughSave(root, "reduce")).ok).toBe(true);
     await checkpoint(root, "reduce");
@@ -232,7 +264,7 @@ it("prepares focused changes, preserves learner edits, and records all current l
     await replace(
       "scenarios/index.ts",
       "// TODO: set Dark Roast inventory to 5.",
-      PHASES.find((p) => p.id === "scenario")!.edits[0]!.code,
+      '$.context.inventory["dark-roast"] = 5;',
     );
     expect((await checkWalkthroughSave(root, "scenario")).ok).toBe(true);
     await checkpoint(root, "scenario");

@@ -8,6 +8,7 @@ import time
 from urllib.parse import urlsplit
 
 import pytest
+import yaml
 from pytest_bdd import given, scenario, then, when
 
 from support.journey import PROMPT, STARTUP_TIMEOUT
@@ -602,14 +603,14 @@ def coffee_shop_purchase(journey):
     assert "Counterfact Coffee" in page.text
     assert "Walkthrough instructions" in page.text
     assert "Refresh products" in page.text
-    assert "Latest API requests and responses" in page.text
+    assert "Latest API requests and responses" not in page.text
     # The walkthrough snapshots the generated baseline without requiring Git.
     assert not (journey.output / ".git").exists()
     info = journey.request("get", "/tutorial-info")
     assert info.status_code == 200, info.text
     assert os.path.realpath(info.json()["projectPath"]) == os.path.realpath(journey.output)
     assert info.json()["walkthroughVersion"] == 3
-    assert "example" not in json.loads((journey.output / "openapi.json").read_text())["components"]["schemas"]["Product"]["properties"]["name"]
+    assert "example" not in yaml.safe_load((journey.output / "openapi.yaml").read_text())["components"]["schemas"]["Product"]["properties"]["name"]
     assert info.json()["workspace"]["changes"] == []
     assert info.json()["state"] == {"catalog": None, "inventory": None}
     for route in ["products", "orders"]:
@@ -691,10 +692,10 @@ def edit_coffee(journey, filename, before, after):
 def add_coffee_name_example(journey):
     coffee_workspace(journey, "checkpoint", "explore")
     journey.product_stub_before_example = (journey.output / "routes/products.ts").read_text()
-    spec = journey.output / "openapi.json"
-    document = json.loads(spec.read_text())
+    spec = journey.output / "openapi.yaml"
+    document = yaml.safe_load(spec.read_text())
     document["components"]["schemas"]["Product"]["properties"]["name"]["example"] = "House Blend"
-    spec.write_text(json.dumps(document, indent=2))
+    spec.write_text(yaml.safe_dump(document, sort_keys=False))
 
 
 @then("generated products use the name example without changing their handler")
@@ -706,7 +707,7 @@ def generated_name_example(journey):
     assert check["ok"] and check["example"] == "House Blend", check
     info = journey.request("get", "/tutorial-info").json()
     assert info["state"] == {"catalog": None, "inventory": None}
-    assert any(file["file"] == "openapi.json" and '"example": "House Blend"' in file["after"] for change in info["workspace"]["changes"] for file in change["files"])
+    assert any(file["file"] == "openapi.yaml" and 'example: House Blend' in file["after"] for change in info["workspace"]["changes"] for file in change["files"])
     coffee_workspace(journey, "checkpoint", "name-example")
 
 
@@ -900,7 +901,7 @@ def restart_guided_coffee(journey):
     journey.terminal.close()
     journey.terminal = None
     port = journey.allocate_port()
-    journey.start_cli(journey.output / "openapi.json", journey.output, "--port", port, "--no-update-check", terminal=True)
+    journey.start_cli(journey.output / "openapi.yaml", journey.output, "--port", port, "--no-update-check", terminal=True)
     journey.terminal.wait_for("⬣>", STARTUP_TIMEOUT)
 
 

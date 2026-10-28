@@ -18,3 +18,33 @@ Show Milo’s exact proposed file diff before saving. Apply changes writes only 
 Offer Resume this project from durable lesson checkpoints after restart or a new browser visit, while clearing transient cart and quiz observations. Verify listProducts against populated isolated state before crediting the context lesson. Preserve collapsed file diffs across transcript updates and reloads, and wrap arbitrary generated product names and descriptions within their cards.
 
 Add an early OpenAPI lesson that makes generated product names readable through a property example while keeping the handler random. Show spec edits as learner diffs and require the changed HTTP response to complete the lesson. Version new progress and telemetry as walkthrough 3 while preserving version 2 project numbering, helpers, and journals.
+
+Show the demo folder’s full path in the welcome message with a link to open it in VS Code.
+
+Introduce OpenAPI, schemas, and the bundled coffee-shop API description in a separate tutor message before inspecting the generated handler. Link to the demo’s openapi.yaml and render inline code and code examples with HTML code elements.
+
+Show an accessible offline alert when the walkthrough cannot reach the server, with the terminal restart command and original port. Retry automatically, including interrupted initialization, and clear the alert when the server responds without treating expected HTTP errors as outages.
+
+Include line numbers in all walkthrough file links. Resolve lesson edit destinations from the current saved source, link the schema exercise directly to Product.name, and open diffs at their first changed line.
+
+Generate the coffee-shop OpenAPI document as YAML. Use YAML in the schema exercise, restart instructions, live schema checks, and editor destinations while retaining support for existing JSON demos.
+
+Scroll the conversation to its latest content when messages arrive, including saved-file and REPL updates, while keeping the reading position during unchanged background checks.
+
+Keep routine request and response summaries in the learner’s action bubble instead of repeating them as Milo messages. Preserve lesson feedback, failure guidance, and explanations of cart changes.
+
+Replace copyable exercise solutions and prepared REPL commands with instructions that explain the intended behavior and edit location. Ask learners to replace .random() with .json(catalog) in the catalog lesson, and keep implementation choices with the learner throughout the walkthrough.
+
+Label the continuation button with the next lesson’s name. Give each lesson a prominent standalone heading outside Milo’s conversation bubbles, showing one heading for lessons with multiple phases.
+
+Celebrate successful saved-code checks in Milo’s conversation with feedback specific to each lesson and its next experiment. Preserve that feedback across reloads and avoid repeating it for the same saved revision.
+
+Keep edit approval feedback on the proposal’s Changes applied status. Remove the redundant learner approval and tutor acknowledgment bubbles, including when displaying older saved conversations.
+
+Remove the coffee shop’s duplicate API request log. Keep request and response details attached to their initiating actions in the conversation, and direct lesson instructions there.
+
+Make each live exercise explicit about the next shop or terminal action and the expected result. Guide the 503 check from adding House Blend to clicking Place order and observing the preserved cart; give conversational follow-ups for repeated refreshes, sequential orders, and stock-rejection cleanup.
+
+Break long tutor explanations into smaller messages and reveal each next part through an Okay button. Preserve the reading position across reloads, keep completed lessons readable, and keep acknowledgment separate from applying edits and completing exercises.
+
+Make the divider between the conversation and coffee shop draggable, with keyboard resizing, minimum panel widths, and a saved split across reloads. Let the product cards adapt to the resized shop.

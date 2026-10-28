@@ -1,3 +1,4 @@
+import { stringify } from "yaml";
 import { expect, it } from "@jest/globals";
 import { usingTemporaryFiles } from "using-temporary-files";
 import {
@@ -123,8 +124,8 @@ it("checks the OpenAPI name example while requiring the actual product stub", as
     expect((await checkWalkthroughSave(root, "name-example")).ok).toBe(false);
     const before = (await walkthroughInfo(root, {})).revision;
     await $.add(
-      "openapi.json",
-      JSON.stringify({
+      "openapi.yaml",
+      stringify({
         components: {
           schemas: {
             Product: {
@@ -144,10 +145,10 @@ it("checks the OpenAPI name example while requiring the actual product stub", as
       ok: false,
       message: expect.stringContaining(".random()"),
     });
-    await $.add("openapi.json", "{");
+    await $.add("openapi.yaml", "{");
     expect(
       (await checkWalkthroughSave(root, "name-example")).message,
-    ).toContain("JSON syntax");
+    ).toContain("YAML syntax");
   });
 });
 

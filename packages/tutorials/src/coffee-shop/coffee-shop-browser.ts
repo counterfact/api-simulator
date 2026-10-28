@@ -24,6 +24,8 @@ export function runCoffeeShopWalkthrough(
       prepared: string[];
       checkpoints: number[];
       changes?: EditEvent[];
+      locations?: Record<string, Record<string, number>>;
+      schemaFile?: string;
     };
     replSubmissions?: ReplSubmission[];
     sessionId: string;
@@ -32,9 +34,93 @@ export function runCoffeeShopWalkthrough(
   };
   type Observation = { before: number; after: number; quantity: number };
   const byId = (id: string) => document.getElementById(id)!;
+  function setupPanelDivider() {
+    const layout = byId("walkthrough-layout");
+    const divider = byId("panel-divider");
+    const storageKey = "counterfact-coffee-panel-split";
+    let share = 0.5;
+    let pointer: number | undefined;
+    function resize(requested: number) {
+      const width = layout.getBoundingClientRect().width - 12;
+      const minimum = Math.min(0.5, 360 / Math.max(1, width));
+      share = Math.max(minimum, Math.min(1 - minimum, requested));
+      layout.style.setProperty("--guide-share", String(share));
+      divider.setAttribute("aria-valuemin", String(Math.round(minimum * 100)));
+      divider.setAttribute(
+        "aria-valuemax",
+        String(Math.round((1 - minimum) * 100)),
+      );
+      divider.setAttribute("aria-valuenow", String(Math.round(share * 100)));
+      divider.setAttribute(
+        "aria-valuetext",
+        "Chat panel " + Math.round(share * 100) + "%",
+      );
+    }
+    function remember() {
+      try {
+        sessionStorage.setItem(storageKey, String(share));
+      } catch {
+        /* Resizing also works when storage is unavailable. */
+      }
+    }
+    try {
+      const saved = sessionStorage.getItem(storageKey);
+      if (saved !== null && Number.isFinite(Number(saved)))
+        share = Number(saved);
+    } catch {
+      /* Use the default split when storage is unavailable. */
+    }
+    resize(share);
+    divider.onpointerdown = (event) => {
+      if (
+        event.button !== 0 ||
+        event.isPrimary === false ||
+        pointer !== undefined
+      )
+        return;
+      pointer = event.pointerId;
+      layout.dataset.resizing = "true";
+      divider.setPointerCapture(pointer);
+      event.preventDefault();
+    };
+    divider.onpointermove = (event) => {
+      if (event.pointerId !== pointer) return;
+      const bounds = layout.getBoundingClientRect();
+      resize(
+        (event.clientX - bounds.left - 6) / Math.max(1, bounds.width - 12),
+      );
+    };
+    const stop = (event: PointerEvent) => {
+      if (event.pointerId !== pointer) return;
+      const captured = pointer;
+      pointer = undefined;
+      delete layout.dataset.resizing;
+      if (captured !== undefined && divider.hasPointerCapture(captured))
+        divider.releasePointerCapture(captured);
+      remember();
+    };
+    divider.onpointerup = stop;
+    divider.onpointercancel = stop;
+    divider.onlostpointercapture = stop;
+    divider.onkeydown = (event) => {
+      const step = event.shiftKey ? 0.1 : 0.02;
+      if (event.key === "ArrowLeft") resize(share - step);
+      else if (event.key === "ArrowRight") resize(share + step);
+      else if (event.key === "Home") resize(0);
+      else if (event.key === "End") resize(1);
+      else return;
+      event.preventDefault();
+      remember();
+    };
+    window.addEventListener("resize", () => resize(share));
+  }
   const node = (tag: string, text = "", className = "") => {
     const result = document.createElement(tag);
-    result.textContent = text;
+    if (tag === "pre") {
+      const code = document.createElement("code");
+      code.textContent = text;
+      result.append(code);
+    } else result.textContent = text;
     result.className = className;
     return result;
   };
@@ -102,6 +188,7 @@ export function runCoffeeShopWalkthrough(
     files?: FileChange[];
     exchanges?: HttpExchange[];
     command?: string;
+    verificationRevision?: string;
   };
   type Proposal = {
     files?: FileChange[];
@@ -111,6 +198,7 @@ export function runCoffeeShopWalkthrough(
     applying?: boolean;
   };
   const proposals = new Map<string, Proposal>();
+  const revealedMessages: Record<string, number> = {};
   async function loadProposal(phaseId: string, force = false) {
     const candidate = phases.find((candidate) => candidate.id === phaseId)!;
     if (
@@ -214,7 +302,6 @@ export function runCoffeeShopWalkthrough(
     if (changed) save();
     return changed;
   }
-  const traces: Record<string, unknown> = {};
   const reported = new Set<string>();
   function save() {
     if (!info) return;
@@ -240,6 +327,7 @@ export function runCoffeeShopWalkthrough(
           rejectionSeen,
           resumeCheckpoint,
           diffStates,
+          revealedMessages,
         }),
       );
     } catch {
@@ -294,7 +382,11 @@ export function runCoffeeShopWalkthrough(
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(body),
             }),
+      }).catch((error: unknown) => {
+        showConnectionAlert(true);
+        throw error;
       });
+      showConnectionAlert(false);
       if (exchange) {
         exchange.status = response.status;
         exchange.responseHeaders = {};
@@ -319,16 +411,6 @@ export function runCoffeeShopWalkthrough(
         }
       } else value = (await response.json()) as T;
       if (exchange) exchange.responseBody = snapshot(value);
-      if (shopRequest) {
-        traces[path] = {
-          method: body === undefined ? "GET" : "POST",
-          url: origin + path,
-          ...(body === undefined ? {} : { request: body }),
-          status: response.status,
-          response: value,
-        };
-        byId("request-trace").textContent = JSON.stringify(traces, null, 2);
-      }
       return { response, value };
     } catch (error) {
       if (exchange)
@@ -343,7 +425,27 @@ export function runCoffeeShopWalkthrough(
       }
     }
   }
-  function fileLink(file: string, label = file) {
+  function showConnectionAlert(offline: boolean) {
+    const alert = byId("connection-alert");
+    alert.hidden = !offline;
+    if (!offline || alert.children.length) return;
+    alert.append(
+      node("strong", "The walkthrough server is offline or unreachable."),
+      node(
+        "p",
+        "You may have stopped Counterfact in the terminal. Check that terminal for errors. If it stopped, restart it with the command below. Keep this page open; it will reconnect automatically when the server returns.",
+      ),
+      node("p", "Run this from " + restartDirectory + ":"),
+      node(
+        "pre",
+        restartCommand.replace("openapi.yaml", schemaFile("openapi.yaml")) +
+          " --port " +
+          (window.location.port || "3100"),
+      ),
+    );
+  }
+  function fileLink(file: string, label = file, line = 1) {
+    file = schemaFile(file);
     const result = node("a", label) as HTMLAnchorElement;
     const base = new URL("vscode://file/");
     base.pathname =
@@ -352,30 +454,60 @@ export function runCoffeeShopWalkthrough(
         : "/") +
       projectPath.replace(/\\/gu, "/") +
       "/";
-    result.href = new URL(file, base).href;
-    result.title = "Open in VSCode";
+    result.href = new URL(file, base).href + (file ? ":" + line : "");
+    result.title = "Open in VSCode" + (file ? " at line " + line : "");
     return result;
   }
-  function fileText(tag: string, text: string) {
+  function editLine(file: string, phaseId = phase().id) {
+    return info?.workspace?.locations?.[phaseId]?.[schemaFile(file)] ?? 1;
+  }
+  function schemaFile(file: string) {
+    return file === "openapi.yaml"
+      ? (info?.workspace?.schemaFile ?? file)
+      : file;
+  }
+  function fileText(tag: string, text: string, phaseId = phase().id) {
+    text = text.replaceAll("openapi.yaml", schemaFile("openapi.yaml"));
     const result = node(tag);
+    result.dataset.prose = text;
+    result.dataset.phase = phaseId;
     const files = [
       "routes/_.context.ts",
       "routes/products.ts",
       "routes/orders.ts",
       "scenarios/index.ts",
+      "openapi.yaml",
       "openapi.json",
     ];
     while (text) {
+      const inline = /`(?<code>[^`]+)`/u.exec(text);
       const match = files
         .map((file) => ({ file, index: text.indexOf(file) }))
         .filter((candidate) => candidate.index >= 0)
         .sort((a, b) => a.index - b.index)[0];
+      if (inline && (!match || inline.index <= match.index)) {
+        if (inline.index)
+          result.append(node("span", text.slice(0, inline.index)));
+        const code = node("code");
+        if (files.includes(inline[1]!))
+          code.append(
+            fileLink(inline[1]!, inline[1]!, editLine(inline[1]!, phaseId)),
+          );
+        else code.textContent = inline[1]!;
+        result.append(code);
+        text = text.slice(inline.index + inline[0].length);
+        continue;
+      }
       if (!match) {
         result.append(node("span", text));
         break;
       }
       if (match.index) result.append(node("span", text.slice(0, match.index)));
-      result.append(fileLink(match.file));
+      const code = node("code");
+      code.append(
+        fileLink(match.file, match.file, editLine(match.file, phaseId)),
+      );
+      result.append(code);
       text = text.slice(match.index + match.file.length);
     }
     return result;
@@ -443,7 +575,6 @@ export function runCoffeeShopWalkthrough(
     rejectionSeen = false;
     save();
     renderLesson();
-    byId("current-turn")?.scrollIntoView?.({ block: "start" });
     void checkFiles();
   }
   function renderQuestion() {
@@ -505,12 +636,13 @@ export function runCoffeeShopWalkthrough(
     }
     byId("lesson").append(panel);
   }
-  function bubble(role: "you" | "tutor", text = "") {
+  function bubble(role: "you" | "tutor", text = "", phaseId = phase().id) {
     const result = node(
       "article",
       "",
       "chat-turn " + (role === "you" ? "learner-turn" : "tutor-turn"),
     );
+    result.dataset.phase = phaseId;
     result.append(
       node(
         "div",
@@ -518,7 +650,7 @@ export function runCoffeeShopWalkthrough(
         "speaker",
       ),
     );
-    if (text) result.append(fileText("p", text));
+    if (text) result.append(fileText("p", text, phaseId));
     return result;
   }
   function renderDiff(change: FileChange, key: string) {
@@ -531,10 +663,7 @@ export function runCoffeeShopWalkthrough(
         save();
       }
     };
-    details.append(
-      node("summary", change.file),
-      fileLink(change.file, "Open file"),
-    );
+    details.append(node("summary", change.file));
     const before = change.before.split("\n"),
       after = change.after.split("\n");
     if (before.at(-1) === "") before.pop();
@@ -549,6 +678,13 @@ export function runCoffeeShopWalkthrough(
       rows.push({ kind: "context", text: before[prefix]! });
       prefix++;
     }
+    details.append(
+      fileLink(
+        change.file,
+        "Open file",
+        Math.min(prefix + 1, Math.max(1, after.length)),
+      ),
+    );
     let oldEnd = before.length,
       newEnd = after.length;
     while (
@@ -596,6 +732,8 @@ export function runCoffeeShopWalkthrough(
     for (const text of before.slice(oldEnd))
       rows.push({ kind: "context", text });
     const pre = node("pre");
+    const code = node("code");
+    pre.replaceChildren(code);
     let omitted = false;
     rows.forEach((row, index) => {
       const nearEdit = rows
@@ -603,12 +741,12 @@ export function runCoffeeShopWalkthrough(
         .some((candidate) => candidate.kind !== "context");
       if (!nearEdit) {
         if (!omitted)
-          pre.append(node("span", "  …\n", "diff-line diff-context"));
+          code.append(node("span", "  …\n", "diff-line diff-context"));
         omitted = true;
         return;
       }
       omitted = false;
-      pre.append(
+      code.append(
         node(
           "span",
           (row.kind === "add" ? "+ " : row.kind === "remove" ? "- " : "  ") +
@@ -638,7 +776,13 @@ export function runCoffeeShopWalkthrough(
       ),
     );
     if (exchange.reason) details.append(node("p", exchange.reason));
-    details.append(fileLink(exchange.handler, "Handler: " + exchange.handler));
+    details.append(
+      fileLink(
+        exchange.handler,
+        "Handler: " + exchange.handler,
+        editLine(exchange.handler, "explore"),
+      ),
+    );
     const headers = (values: Record<string, string> = {}) =>
       Object.entries(values)
         .map(([name, value]) => name + ": " + value)
@@ -713,7 +857,7 @@ export function runCoffeeShopWalkthrough(
     return details;
   }
   function turnBubble(turn: Turn, openHints: Set<string>) {
-    const result = bubble(turn.role, turn.text);
+    const result = bubble(turn.role, turn.text, turn.phaseId);
     if (turn.command !== undefined) result.append(node("pre", turn.command));
     for (const file of turn.files ?? [])
       result.append(
@@ -722,6 +866,109 @@ export function runCoffeeShopWalkthrough(
     for (const exchange of turn.exchanges ?? [])
       result.append(renderExchange(exchange, openHints));
     return result;
+  }
+  let renderedConversation = "";
+  function messageParts(text: string) {
+    const parts: string[] = [];
+    let part = "";
+    for (const sentence of text.split(/(?<=[.!?])\s+(?=[A-Z“‘])/u)) {
+      if (part && (part + " " + sentence).split(/\s+/u).length > 45) {
+        parts.push(part);
+        part = "";
+      }
+      part += (part ? " " : "") + sentence;
+    }
+    if (part) parts.push(part);
+    return parts;
+  }
+  function paceConversation() {
+    const lesson = byId("lesson");
+    const visible: HTMLElement[] = [];
+    let waiting = false;
+    for (const element of Array.from(lesson.children) as HTMLElement[]) {
+      if (!element.className.split(" ").includes("tutor-turn")) {
+        visible.push(element);
+        continue;
+      }
+      const contents = Array.from(element.children).slice(1) as HTMLElement[];
+      const paragraphs = contents.filter((child) => child.tagName === "P");
+      const words = paragraphs
+        .map((child) => child.textContent ?? "")
+        .join(" ")
+        .split(/\s+/u).length;
+      if (words <= 60) {
+        visible.push(element);
+        continue;
+      }
+      const phaseId = element.dataset.phase ?? phase().id;
+      const key = JSON.stringify([
+        phaseId,
+        paragraphs[0]?.dataset.prose ?? paragraphs[0]?.textContent,
+      ]);
+      const groups: HTMLElement[][] = [];
+      let group: HTMLElement[] = [];
+      let hasParagraph = false;
+      for (const child of contents) {
+        if (child.tagName !== "P") {
+          group.push(child);
+          continue;
+        }
+        const text = child.dataset.prose ?? child.textContent ?? "";
+        const parts = messageParts(text);
+        for (const part of parts) {
+          if (hasParagraph) {
+            groups.push(group);
+            group = [];
+          }
+          group.push(parts.length === 1 ? child : fileText("p", part, phaseId));
+          hasParagraph = true;
+        }
+      }
+      if (group.length) groups.push(group);
+      const historical =
+        completed.has(phaseId) ||
+        (phases.findIndex((candidate) => candidate.id === phaseId) >= 0 &&
+          phases.findIndex((candidate) => candidate.id === phaseId) < index);
+      const revealed = historical
+        ? groups.length
+        : Math.min(groups.length, revealedMessages[key] ?? 1);
+      for (const [partIndex, children] of groups.slice(0, revealed).entries()) {
+        const message = bubble("tutor", "", phaseId);
+        if (partIndex === 0) message.id = element.id;
+        if (partIndex === groups.length - 1 && element.dataset.proposal)
+          message.dataset.proposal = element.dataset.proposal;
+        message.append(...children);
+        visible.push(message);
+      }
+      if (revealed < groups.length) {
+        visible.at(-1)!.append(
+          button("Okay", () => {
+            revealedMessages[key] = revealed + 1;
+            save();
+            renderLesson();
+          }),
+        );
+        waiting = true;
+        break;
+      }
+    }
+    lesson.replaceChildren(...visible);
+    if (waiting) {
+      (byId("continue") as HTMLButtonElement).hidden = true;
+      (byId("check-progress") as HTMLButtonElement).hidden = true;
+    }
+  }
+  function scrollToLatestMessage() {
+    paceConversation();
+    const lesson = byId("lesson");
+    const content = lesson.textContent ?? "";
+    const end = node("div", "", "conversation-end");
+    end.id = "conversation-end";
+    end.setAttribute("aria-hidden", "true");
+    lesson.append(end);
+    if (content !== renderedConversation)
+      end.scrollIntoView?.({ block: "end" });
+    renderedConversation = content;
   }
   function renderLesson() {
     const current = phase(),
@@ -736,7 +983,9 @@ export function runCoffeeShopWalkthrough(
         .filter((hint): hint is string => typeof hint === "string"),
     );
     lesson.replaceChildren();
-    const welcome = bubble("tutor");
+    const welcome = bubble("tutor", "", "welcome");
+    const demoFolder = node("p", "Open this demo folder in your editor: ");
+    demoFolder.append(fileLink("", projectPath), node("span", "."));
     welcome.append(
       node("h2", "Hi, I’m Milo."),
       node(
@@ -747,9 +996,10 @@ export function runCoffeeShopWalkthrough(
         "p",
         "We’ll take turns. I’ll explain the supporting edits and show you the proposed diff. Click ‘Apply changes’ to save them. Then I’ll guide you through a small edit of your own in your editor. You’ll try it in the shop or terminal, and we’ll compare what actually happened before moving on.",
       ),
+      demoFolder,
       node(
         "p",
-        "Open this demo folder in your editor. Whenever either of us changes a lesson file, I’ll show the diff here in our conversation: green lines were added and red lines were removed. Your saved edits appear automatically, so we can follow exactly how the API gains behavior.",
+        "Whenever either of us changes a lesson file, I’ll show the diff here in our conversation: green lines were added and red lines were removed. Your saved edits appear automatically, so we can follow exactly how the API gains behavior.",
       ),
     );
     lesson.append(welcome);
@@ -789,14 +1039,12 @@ export function runCoffeeShopWalkthrough(
           renderLesson();
           renderShop();
           await checkFiles();
-          (byId("step-completion") ?? byId("current-turn"))?.scrollIntoView?.({
-            block: "start",
-          });
         }),
       );
       lesson.append(handoff);
       (byId("continue") as HTMLButtonElement).hidden = true;
       (byId("check-progress") as HTMLButtonElement).hidden = true;
+      scrollToLatestMessage();
       return;
     }
     for (const [phaseIndex, revealed] of phases.entries()) {
@@ -804,18 +1052,44 @@ export function runCoffeeShopWalkthrough(
       const active = revealed.id === current.id;
       const prepared = !!info?.workspace?.prepared.includes(revealed.id);
       const finished = completed.has(revealed.id);
-      const heading = bubble("tutor");
-      if (active) heading.id = "current-turn";
-      heading.append(node("div", "Lesson " + revealed.lesson, "eyebrow"));
-      const explanation = fileText("p", revealed.explanation);
+      if (
+        phaseIndex === 0 ||
+        phases[phaseIndex - 1]!.lesson !== revealed.lesson
+      ) {
+        const heading = node("header", "", "lesson-heading");
+        heading.append(
+          node("div", "Lesson " + revealed.lesson, "eyebrow"),
+          node("h2", revealed.title),
+        );
+        lesson.append(heading);
+      }
+      const introduction = bubble("tutor", "", revealed.id);
+      if (active) introduction.id = "current-turn";
+      const explanation = fileText("p", revealed.explanation, revealed.id);
       if (revealed.id === "explore") {
         const link = node("a", origin) as HTMLAnchorElement;
         link.href = origin;
         explanation.append(link, node("span", "."));
       }
-      heading.append(node("h3", revealed.title), explanation);
-      lesson.append(heading);
-      const phaseTurns = turns.filter((turn) => turn.phaseId === revealed.id);
+      introduction.append(explanation);
+      lesson.append(introduction);
+      if (revealed.id === "explore")
+        lesson.append(
+          bubble(
+            "tutor",
+            "Before we inspect the handler, here’s where this API starts. OpenAPI, formerly Swagger, is a format for describing an HTTP API: its endpoints, the requests they accept, and the responses they return. A schema describes the shape of data, including its properties, types, and limits. Counterfact includes a coffee-shop API description with this walkthrough and saved a copy as openapi.yaml in your demo folder. It used that file to generate your starting handlers and TypeScript types. Open it to see the product and order schemas that the generated responses follow.",
+            revealed.id,
+          ),
+        );
+      const phaseTurns = turns.filter(
+        (turn) =>
+          turn.phaseId === revealed.id &&
+          !(turn.role === "you" && turn.text === "Apply changes.") &&
+          !(
+            turn.role === "tutor" &&
+            turn.text === "I’ve added the supporting code. Now it’s your turn."
+          ),
+      );
       const appliedEdit =
         phaseTurns.find(
           (turn) => turn.role === "tutor" && turn.files?.length,
@@ -827,6 +1101,7 @@ export function runCoffeeShopWalkthrough(
         const proposal = bubble(
           "tutor",
           "Here’s what I’d like to change: " + revealed.preparation,
+          revealed.id,
         );
         const preview = proposals.get(revealed.id);
         const applied = prepared || !!appliedEdit;
@@ -858,7 +1133,6 @@ export function runCoffeeShopWalkthrough(
               preview.applying ? "Applying changes…" : "Apply changes",
               async () => {
                 preview.applying = true;
-                record("you", "Apply changes.");
                 renderLesson();
                 try {
                   const { value: result } = await json<{
@@ -876,10 +1150,6 @@ export function runCoffeeShopWalkthrough(
                       info.workspace!.prepared.push(revealed.id);
                     checkedPhase = "";
                     syncChanges(result.changes);
-                    record(
-                      "tutor",
-                      "I’ve added the supporting code. Now it’s your turn.",
-                    );
                   } else {
                     await loadProposal(revealed.id, true);
                     proposals.get(revealed.id)!.error =
@@ -906,16 +1176,10 @@ export function runCoffeeShopWalkthrough(
         }
         lesson.append(proposal);
       }
-      // The approval exchange precedes the exercise; observations and replies follow it.
-      const approvalEnd = phaseTurns.findIndex(
-        (turn) => turn.role === "tutor" && turn.text.startsWith("I’ve added"),
+      // Preparation precedes the exercise; observations and replies follow it.
+      const preparationEnd = phaseTurns.findIndex(
+        (turn) => turn.role === "tutor" && turn.files?.length,
       );
-      const preparationEnd =
-        approvalEnd >= 0
-          ? approvalEnd
-          : phaseTurns.findIndex(
-              (turn) => turn.role === "tutor" && turn.files?.length,
-            );
       const before = !revealed.preparation
         ? []
         : preparationEnd < 0 && !prepared
@@ -931,41 +1195,29 @@ export function runCoffeeShopWalkthrough(
         info?.workspace?.enabled
       )
         continue;
-      const exercise = bubble("tutor");
-      exercise.append(fileText("p", revealed.instruction));
-      for (const [editIndex, edit] of revealed.edits.entries()) {
+      const exercise = bubble("tutor", "", revealed.id);
+      exercise.append(fileText("p", revealed.instruction, revealed.id));
+      for (const edit of revealed.edits) {
+        const file = schemaFile(edit.file);
         const actions = node("div", "", "file-actions");
         actions.append(
-          fileLink(edit.file, "Open in VSCode"),
+          fileLink(
+            edit.file,
+            "Open in VSCode",
+            editLine(edit.file, revealed.id),
+          ),
           button("Copy file path", async () => {
             try {
-              await navigator.clipboard.writeText(
-                projectPath + "/" + edit.file,
-              );
+              await navigator.clipboard.writeText(projectPath + "/" + file);
               message = "File path copied.";
             } catch {
-              message =
-                "Open or copy this file: " + projectPath + "/" + edit.file;
+              message = "Open or copy this file: " + projectPath + "/" + file;
             }
             renderStatus();
           }),
         );
-        const hint = node("details", "", "code-hint") as HTMLDetailsElement;
-        hint.dataset.hint = revealed.id + ":" + editIndex;
-        hint.open = openHints.has(hint.dataset.hint);
-        hint.append(
-          node("summary", "Show code: " + edit.file),
-          node("p", edit.instruction),
-          fileLink(edit.file, projectPath + "/" + edit.file),
-          node("pre", edit.code),
-        );
-        exercise.append(actions, hint);
+        exercise.append(fileText("p", edit.instruction, revealed.id), actions);
       }
-      if (revealed.commands)
-        exercise.append(
-          node("p", "In Counterfact’s terminal (⬣>):"),
-          node("pre", revealed.commands.join("\n")),
-        );
       lesson.append(exercise);
       if (
         active &&
@@ -975,9 +1227,8 @@ export function runCoffeeShopWalkthrough(
       ) {
         const recovery = bubble(
           "tutor",
-          "Startup has already applied the baseline in this session. To observe reset changing state, set Dark Roast to 0 in the REPL and click Check my work. Then run .scenario reset and check again.",
+          "Startup has already applied the baseline in this session. To observe reset changing state, set Dark Roast to 0 in the REPL and click Check my work. Then run `.scenario reset` and check again.",
         );
-        recovery.append(node("pre", 'context.inventory["dark-roast"] = 0'));
         lesson.append(recovery);
       }
       for (const turn of phaseTurns.slice(before.length))
@@ -1010,8 +1261,12 @@ export function runCoffeeShopWalkthrough(
     }
     if (checkpointRetry)
       lesson.append(button("Retry saving progress", checkpointRetry));
-    (byId("continue") as HTMLButtonElement).hidden =
-      !completed.has(current.id) || index === phases.length - 1;
+    const next = phases[index + 1];
+    const nextButton = byId("continue") as HTMLButtonElement;
+    nextButton.textContent = next
+      ? "Next Lesson: " + next.title
+      : "Walkthrough complete";
+    nextButton.hidden = !completed.has(current.id) || !next;
     (byId("check-progress") as HTMLButtonElement).hidden = !!(
       current.preparation &&
       info?.workspace?.enabled &&
@@ -1019,6 +1274,7 @@ export function runCoffeeShopWalkthrough(
       !completed.has(current.id)
     );
     renderStatus();
+    scrollToLatestMessage();
   }
   function renderStatus() {
     byId("guide-status").textContent = message;
@@ -1096,7 +1352,7 @@ export function runCoffeeShopWalkthrough(
         node(
           "p",
           fresh
-            ? "The API returned an empty catalog. Inspect the response below."
+            ? "The API returned an empty catalog. Inspect the response in the chat."
             : "Refresh products to load the catalog.",
         ),
       );
@@ -1200,7 +1456,9 @@ export function runCoffeeShopWalkthrough(
     const id = phase().id;
     if (id === "explore" && source === "manual") {
       report("started", phases[0]!.id);
-      finish(message || "Generated response refreshed.");
+      finish(
+        "Compare the returned products with the schemas in openapi.yaml to see how the API description shapes its data.",
+      );
     }
     if (id === "name-example" && ready && source === "manual") {
       if (
@@ -1209,7 +1467,7 @@ export function runCoffeeShopWalkthrough(
         products.every((product) => product.name === expectedNameExample)
       )
         finish(
-          "The generated response now uses your OpenAPI name example. The product handler still calls .random().",
+          "The generated response now uses your OpenAPI name example. The product handler still calls `.random()`.",
         );
       else
         message =
@@ -1220,9 +1478,12 @@ export function runCoffeeShopWalkthrough(
       catalogReads = current === lastCatalog ? catalogReads + 1 : 1;
       lastCatalog = current;
       if (catalogReads >= 2) finish();
-      else
+      else {
         message =
-          "Explicit catalog received. Refresh once more to compare responses.";
+          "The catalog is in place. Click Refresh products once more and compare the two responses in the chat.";
+        record("tutor", message);
+        renderLesson();
+      }
     }
     if (
       id === "rules" &&
@@ -1247,7 +1508,7 @@ export function runCoffeeShopWalkthrough(
       );
       if (!response.ok || !validProducts(value))
         throw new Error(
-          "The products response is invalid or contains duplicate IDs. Inspect it below, fix the handler or refresh again.",
+          "The products response is invalid or contains duplicate IDs. Inspect it in the chat, fix the handler or refresh again.",
         );
       if (
         !completed.has("catalog") &&
@@ -1258,23 +1519,11 @@ export function runCoffeeShopWalkthrough(
         cart.clear();
         message =
           "Refreshing random products clears the previous cart because product IDs and prices may change.";
+        record("tutor", message);
       }
       products = value;
       fresh = true;
-      if (source === "manual") {
-        record(
-          "tutor",
-          "GET /products returned HTTP " +
-            response.status +
-            " with " +
-            products.length +
-            " products." +
-            (message.startsWith("Refreshing random products clears")
-              ? " " + message
-              : ""),
-        );
-        renderLesson();
-      }
+      if (source === "manual") renderLesson();
       renderShop();
       observeProducts(source);
       return true;
@@ -1318,27 +1567,14 @@ export function runCoffeeShopWalkthrough(
         shortages?: { requested: number; available: number }[];
       }>("/orders", { items }, orderAction);
       const original = failedItems;
-      record(
-        "tutor",
-        "POST /orders returned HTTP " +
-          response.status +
-          (response.status === 201 && Number.isInteger(value?.orderId)
-            ? " with order ID " + value.orderId + "."
-            : value?.error
-              ? ": " +
-                value.error +
-                (/[.!?]$/u.test(value.error) ? " " : ". ") +
-                "The cart has been kept."
-              : "."),
-      );
       if (response.status === 201 && Number.isInteger(value?.orderId)) {
         cart.clear();
         failedItems = undefined;
         byId("shop-notice").textContent =
-          "HTTP 201 received. Inspect the request and response below.";
+          "HTTP 201 received. Inspect the request and response in the chat.";
       } else if (response.ok)
         throw new Error(
-          "The confirmation has no integer orderId. Inspect POST /orders below before retrying; the order may have been accepted.",
+          "The confirmation has no integer orderId. Inspect POST /orders in the chat before retrying; the order may have been accepted.",
         );
       else {
         failedItems = items;
@@ -1357,8 +1593,11 @@ export function runCoffeeShopWalkthrough(
         orderIds.push(value.orderId!);
         if (orderIds.length >= 2 && orderIds.at(-1) === orderIds.at(-2)! + 1)
           finish();
-        else
-          message = "Order confirmed. Place another order and compare its ID.";
+        else {
+          message =
+            "Click Add to cart on House Blend, then Place order again. Compare the order IDs in the two HTTP responses.";
+          record("tutor", message);
+        }
       }
       if (
         currentId === "decaf" &&
@@ -1379,7 +1618,8 @@ export function runCoffeeShopWalkthrough(
       ) {
         rejectionSeen = true;
         message =
-          "Stock rejection observed. Empty your cart, restore Dark Roast to 3 in the REPL, then refresh products.";
+          "The oversized order was rejected. Click Empty cart, restore Dark Roast inventory to 3 in the terminal’s REPL, then click Refresh products.";
+        record("tutor", message);
       }
       const quantity = items
         .filter((item) => item.productId === "dark-roast")
@@ -1503,11 +1743,27 @@ export function runCoffeeShopWalkthrough(
         if (requestedId === "name-example")
           expectedNameExample = checked.example;
         checkMessage = ready
-          ? checked.message
+          ? ""
           : force ||
               (checkedPhase === requestedId && checkedRevision !== revision)
             ? "Check: " + checked.message
             : "";
+        if (
+          ready &&
+          !completed.has(requestedId) &&
+          !turns.some(
+            (turn) =>
+              turn.phaseId === requestedId &&
+              turn.verificationRevision === revision,
+          )
+        ) {
+          const feedback = record(
+            "tutor",
+            phase().verification ?? checked.message,
+          );
+          feedback.verificationRevision = revision;
+          renderLesson();
+        }
         if (checkedRevision !== revision) {
           catalogReads = 0;
           lastCatalog = "";
@@ -1558,7 +1814,7 @@ export function runCoffeeShopWalkthrough(
             finish();
           else
             message =
-              "Run .scenario restockDarkRoast after changing Dark Roast below 5, then refresh and check progress. Other inventory should stay unchanged.";
+              "Run `.scenario restockDarkRoast` after changing Dark Roast below 5, then refresh and check progress. Other inventory should stay unchanged.";
         }
       }
       save();
@@ -1602,9 +1858,10 @@ export function runCoffeeShopWalkthrough(
     renderShop();
   };
   byId("continue").onclick = async () => {
-    if (completed.has(phase().id)) {
+    const next = phases[index + 1];
+    if (completed.has(phase().id) && next) {
       await checkFiles();
-      record("you", "I’m ready. What’s next?");
+      record("you", "Next Lesson: " + next.title);
       move(index + 1);
     }
   };
@@ -1631,6 +1888,13 @@ export function runCoffeeShopWalkthrough(
         saved.sessionId === info.sessionId
       ) {
         restored = true;
+        if (
+          saved.revealedMessages &&
+          typeof saved.revealedMessages === "object"
+        )
+          for (const [key, count] of Object.entries(saved.revealedMessages))
+            if (Number.isSafeInteger(count) && (count as number) > 0)
+              revealedMessages[key] = count as number;
         if (saved.diffStates && typeof saved.diffStates === "object")
           for (const [key, open] of Object.entries(saved.diffStates))
             if (typeof open === "boolean") diffStates[key] = open;
@@ -1731,15 +1995,31 @@ export function runCoffeeShopWalkthrough(
     renderLesson();
     await checkFiles();
     await refreshProducts("initial");
-    setInterval(() => {
-      if (!document.hidden && !busy) void checkFiles();
-    }, 1000);
     return { refreshProducts, placeOrder, checkFiles };
   }
+  let initialized = false;
+  let initializing = false;
+  async function initialize() {
+    initializing = true;
+    try {
+      const api = await start();
+      initialized = true;
+      return api;
+    } catch {
+      message =
+        "Could not initialize the walkthrough. Check Counterfact’s terminal; this page will retry automatically.";
+      renderStatus();
+    } finally {
+      initializing = false;
+    }
+  }
+  setupPanelDivider();
+  showConnectionAlert(false);
   renderLesson();
-  return start().catch(() => {
-    message =
-      "Could not initialize the walkthrough. Check Counterfact’s terminal, then click Refresh products to reconnect.";
-    renderStatus();
-  });
+  setInterval(() => {
+    if (document.hidden || busy || initializing) return;
+    if (initialized) void checkFiles();
+    else void initialize();
+  }, 1000);
+  return initialize();
 }

@@ -9,6 +9,44 @@ import {
 } from "../../src/coffee-shop/coffee-shop-lessons.js";
 
 class Element {
+  attributes: Record<string, string> = {};
+  private styles = new Map<string, string>();
+  style = {
+    setProperty: (name: string, value: string) => this.styles.set(name, value),
+    getPropertyValue: (name: string) => this.styles.get(name),
+  };
+  bounds = { left: 0, width: 1200 };
+  getBoundingClientRect() {
+    return this.bounds;
+  }
+  capturedPointer: number | undefined;
+  setPointerCapture(id: number) {
+    this.capturedPointer = id;
+  }
+  hasPointerCapture(id: number) {
+    return this.capturedPointer === id;
+  }
+  releasePointerCapture() {
+    this.capturedPointer = undefined;
+  }
+  onpointerdown:
+    | ((event: {
+        pointerId: number;
+        button: number;
+        preventDefault: () => void;
+      }) => unknown)
+    | undefined;
+  onpointermove:
+    ((event: { pointerId: number; clientX: number }) => unknown) | undefined;
+  onpointerup: ((event: { pointerId: number }) => unknown) | undefined;
+  onpointercancel: ((event: { pointerId: number }) => unknown) | undefined;
+  onkeydown:
+    | ((event: {
+        key: string;
+        shiftKey?: boolean;
+        preventDefault: () => void;
+      }) => unknown)
+    | undefined;
   id = "";
   href = "";
   className = "";
@@ -17,10 +55,17 @@ class Element {
   open = false;
   dataset: Record<string, string> = {};
   children: Element[] = [];
+  scrolls: unknown[] = [];
+  scrollIntoView(options: unknown) {
+    this.scrolls.push(options);
+  }
   onclick: (() => unknown) | undefined;
   ontoggle: (() => unknown) | undefined;
   private text = "";
   constructor(readonly tag: string) {}
+  get tagName() {
+    return this.tag.toUpperCase();
+  }
   set textContent(value: string) {
     this.text = value;
     this.children = [];
@@ -36,6 +81,7 @@ class Element {
     this.children = children;
   }
   setAttribute(name: string, value: string) {
+    this.attributes[name] = value;
     if (name === "id") this.id = value;
   }
   querySelectorAll(selector = "details[open]") {
@@ -80,6 +126,9 @@ async function browser(
     sessionId?: string;
     checkpoints?: number[];
     state?: { catalog: unknown; inventory: Record<string, number> | null };
+    offline?: boolean;
+    locations?: Record<string, Record<string, number>>;
+    acknowledge?: boolean;
   } = {},
 ) {
   const storage = options.storage ?? new Map<string, string>();
@@ -102,8 +151,10 @@ async function browser(
       prepared: options.prepared ?? [],
       checkpoints: options.checkpoints ?? [],
       changes: [] as EditEvent[],
+      locations: options.locations ?? {},
     },
     checkpointError: false,
+    offline: options.offline ?? false,
     revision: "initial",
     sessionId: options.sessionId ?? "same-session",
     checkOk: options.checkOk ?? false,
@@ -155,6 +206,7 @@ async function browser(
       getElementById: root,
     },
     window: {
+      addEventListener: () => undefined,
       location: {
         reload: () => {
           reloaded = true;
@@ -177,6 +229,7 @@ async function browser(
       setItem: (key: string, value: string) => storage.set(key, value),
     },
     fetch: async (path: string, request: { body?: string } = {}) => {
+      if (server.offline) throw new TypeError("Failed to fetch");
       const body = request.body
         ? (JSON.parse(request.body) as Record<string, unknown>)
         : undefined;
@@ -289,8 +342,22 @@ async function browser(
     placeOrder: () => Promise<void>;
     checkFiles: (force?: boolean) => Promise<void>;
   };
+  async function acknowledge() {
+    if (options.acknowledge === false) return;
+    for (let step = 0; step < 200; step++) {
+      const okay = find(
+        root("lesson"),
+        (element) => element.tag === "button" && element.textContent === "Okay",
+      );
+      if (!okay) return;
+      await okay.onclick!();
+    }
+    throw new Error("Conversation did not finish revealing its messages.");
+  }
+  await acknowledge();
   const click = async (id: string) => {
     await root(id).onclick!();
+    await acknowledge();
   };
   return {
     root,
@@ -299,10 +366,21 @@ async function browser(
     storage,
     wasReloaded: () => reloaded,
     click,
-    api,
+    acknowledge,
+    api: {
+      async placeOrder() {
+        await api.placeOrder();
+        await acknowledge();
+      },
+      async checkFiles(force?: boolean) {
+        await api.checkFiles(force);
+        await acknowledge();
+      },
+    },
     async poll() {
       await poll!();
       await new Promise((resolve) => setImmediate(resolve));
+      await acknowledge();
     },
     add(id = "house-blend") {
       const card = find(
@@ -320,6 +398,7 @@ async function browser(
         root("inventory-question"),
         (element) => element.tag === "button" && element.textContent === label,
       )!.onclick!();
+      await acknowledge();
     },
     completed() {
       return (
@@ -330,6 +409,154 @@ async function browser(
     },
   };
 }
+
+it("resizes the panels by dragging, clamps their widths, and restores the split on reload", async () => {
+  const app = await browser();
+  const divider = app.root("panel-divider");
+  const layout = app.root("walkthrough-layout");
+  divider.onpointermove!({ pointerId: 1, clientX: 800 });
+  expect(layout.style.getPropertyValue("--guide-share")).toBe("0.5");
+  divider.onpointerdown!({ pointerId: 1, button: 0, preventDefault() {} });
+  expect(divider.capturedPointer).toBe(1);
+  divider.onpointermove!({ pointerId: 2, clientX: 500 });
+  expect(layout.style.getPropertyValue("--guide-share")).toBe("0.5");
+  divider.onpointermove!({ pointerId: 1, clientX: 719 });
+  expect(divider.attributes["aria-valuenow"]).toBe("60");
+  divider.onpointerup!({ pointerId: 1 });
+  expect(divider.capturedPointer).toBeUndefined();
+  expect(layout.dataset.resizing).toBeUndefined();
+  const restored = await browser({ storage: app.storage });
+  expect(restored.root("panel-divider").attributes["aria-valuenow"]).toBe("60");
+  divider.onpointerdown!({ pointerId: 3, button: 0, preventDefault() {} });
+  divider.onpointermove!({ pointerId: 3, clientX: 9999 });
+  expect(Number(layout.style.getPropertyValue("--guide-share"))).toBeCloseTo(
+    (1188 - 360) / 1188,
+  );
+  divider.onpointercancel!({ pointerId: 3 });
+  expect(layout.dataset.resizing).toBeUndefined();
+});
+
+it("supports resizing the panels with arrow keys and Home/End", async () => {
+  const app = await browser();
+  const divider = app.root("panel-divider");
+  divider.onkeydown!({ key: "ArrowRight", preventDefault() {} });
+  expect(divider.attributes["aria-valuenow"]).toBe("52");
+  divider.onkeydown!({ key: "ArrowLeft", preventDefault() {} });
+  expect(divider.attributes["aria-valuenow"]).toBe("50");
+  divider.onkeydown!({ key: "Home", preventDefault() {} });
+  expect(divider.attributes["aria-valuenow"]).toBe(
+    divider.attributes["aria-valuemin"],
+  );
+  divider.onkeydown!({ key: "End", preventDefault() {} });
+  expect(divider.attributes["aria-valuenow"]).toBe(
+    divider.attributes["aria-valuemax"],
+  );
+});
+
+it("reveals long explanations a message at a time and keeps the pause across reloads", async () => {
+  const app = await browser({ acknowledge: false });
+  expect(app.root("lesson").textContent).toContain("Hi, I’m Milo.");
+  expect(app.root("lesson").textContent).not.toContain("We’ll take turns.");
+  expect(app.root("lesson").textContent).not.toContain(
+    "Explore your generated API",
+  );
+  const okay = find(
+    app.root("lesson"),
+    (element) => element.tag === "button" && element.textContent === "Okay",
+  )!;
+  await okay.onclick!();
+  expect(app.root("lesson").textContent).toContain("We’ll take turns.");
+  expect(app.root("lesson").textContent).not.toContain(
+    "You’ll try it in the shop or terminal",
+  );
+  const visible = app.root("lesson").textContent;
+  await app.poll();
+  expect(app.root("lesson").textContent).toBe(visible);
+  const restored = await browser({ storage: app.storage, acknowledge: false });
+  expect(restored.root("lesson").textContent).toBe(visible);
+  expect(restored.root("continue").hidden).toBe(true);
+  expect(restored.root("check-progress").hidden).toBe(true);
+  let next = find(
+    restored.root("lesson"),
+    (element) => element.tag === "button" && element.textContent === "Okay",
+  );
+  for (let count = 0; next && count < 30; count++) {
+    await next.onclick!();
+    next = find(
+      restored.root("lesson"),
+      (element) => element.tag === "button" && element.textContent === "Okay",
+    );
+  }
+  expect(next).toBeUndefined();
+  expect(restored.root("lesson").textContent).toContain(
+    "The generated starting handler",
+  );
+  expect(restored.completed()).not.toContain("explore");
+  expect(
+    restored.calls.filter(
+      (call) =>
+        call.path === "/tutorial-workspace" && call.body?.action === "prepare",
+    ),
+  ).toHaveLength(0);
+});
+
+it("scrolls to new conversation messages without scrolling on unchanged polling", async () => {
+  const app = await browser();
+  await app.click("empty-cart");
+  expect(app.root("conversation-end").scrolls).toEqual([{ block: "end" }]);
+  await app.poll();
+  expect(app.root("conversation-end").scrolls).toEqual([{ block: "end" }]);
+  app.server.workspace.changes.push({
+    id: 1,
+    actor: "you",
+    files: [{ file: "routes/products.ts", before: "old", after: "new" }],
+  });
+  await app.poll();
+  expect(app.root("conversation-end").scrolls).toEqual([{ block: "end" }]);
+  await app.poll();
+  expect(app.root("conversation-end").scrolls).toEqual([{ block: "end" }]);
+});
+
+it("alerts when the server stops and reconnects when it returns", async () => {
+  const app = await browser({ origin: "http://localhost:4123" });
+  const alert = app.root("connection-alert");
+  expect(alert.hidden).toBe(true);
+  app.server.offline = true;
+  await app.poll();
+  expect(alert.hidden).toBe(false);
+  expect(alert.textContent).toContain(
+    "You may have stopped Counterfact in the terminal",
+  );
+  expect(alert.textContent).toContain(
+    "npx counterfact ./coffee shop#1?/openapi.yaml ./coffee shop#1? --port 4123",
+  );
+  expect(
+    find(alert, (element) => element.tag === "pre")?.children[0]?.tag,
+  ).toBe("code");
+  const children = alert.children.length;
+  await app.poll();
+  expect(alert.children).toHaveLength(children);
+  app.server.offline = false;
+  await app.poll();
+  expect(alert.hidden).toBe(true);
+});
+
+it("retries automatically when the server is unavailable during initialization", async () => {
+  const app = await browser({ offline: true });
+  expect(app.root("connection-alert").hidden).toBe(false);
+  app.server.offline = false;
+  await app.poll();
+  expect(app.root("connection-alert").hidden).toBe(true);
+  expect(app.root("products").textContent).toContain("House Blend");
+});
+
+it("keeps expected HTTP failures separate from a server outage", async () => {
+  const app = await browser({ phase: "fail" });
+  app.server.orderMode = "unavailable";
+  app.add();
+  await app.api.placeOrder();
+  expect(app.root("connection-alert").hidden).toBe(true);
+});
 
 it("retains submitted REPL commands once and orders them before a following shop action", async () => {
   const app = await browser({ phase: "decaf" });
@@ -380,6 +607,56 @@ it.each(["http://localhost:3100", "http://localhost:4123"])(
   },
 );
 
+it("introduces the bundled OpenAPI document before the handler and renders code semantically", async () => {
+  const app = await browser();
+  const lesson = app.root("lesson");
+  const background = lesson.children.find((turn) =>
+    turn.textContent.includes("OpenAPI, formerly Swagger"),
+  )!;
+  expect(background.textContent).toContain(
+    "A schema describes the shape of data",
+  );
+  const schemaSource = lesson.children.find((turn) =>
+    turn.textContent.includes("saved a copy as openapi.yaml"),
+  )!;
+  expect(find(schemaSource, (element) => element.tag === "a")?.href).toBe(
+    "vscode://file/tmp/coffee%20shop%231%3F/openapi.yaml:1",
+  );
+  const instruction = lesson.children.find((turn) =>
+    turn.textContent.includes("The generated starting handler"),
+  )!;
+  expect(lesson.children.indexOf(background)).toBeLessThan(
+    lesson.children.indexOf(instruction),
+  );
+  expect(
+    find(
+      instruction,
+      (element) =>
+        element.tag === "code" &&
+        element.textContent === "$.response.status(200).random()",
+    ),
+  ).toBeDefined();
+  expect(find(lesson, (element) => element.tag === "pre")).toBeUndefined();
+  expect(lesson.textContent).not.toContain("`$.response");
+});
+
+it.each(PHASES.map((phase) => phase.id))(
+  "gives instructions without solution snippets or prepared commands in %s",
+  async (phase) => {
+    const app = await browser({ phase });
+    expect(
+      find(app.root("lesson"), (element) => element.tag === "pre"),
+    ).toBeUndefined();
+    expect(app.root("lesson").textContent).not.toContain("Show code:");
+    expect(
+      PHASES.find((candidate) => candidate.id === phase),
+    ).not.toHaveProperty("commands");
+    for (const edit of PHASES.find((candidate) => candidate.id === phase)!
+      .edits)
+      expect(edit).not.toHaveProperty("code");
+  },
+);
+
 it("renders arbitrary product IDs safely and refreshes only on explicit actions", async () => {
   const app = await browser({
     products: [
@@ -400,12 +677,10 @@ it("renders arbitrary product IDs safely and refreshes only on explicit actions"
   app.server.products[0]!.name = "Another response";
   await app.click("refresh-products");
   expect(app.root("cart").textContent).toContain("empty");
-  expect(app.root("guide-status").textContent).toContain(
-    "clears the previous cart",
-  );
+  expect(app.root("lesson").textContent).toContain("clears the previous cart");
   expect(app.root("products").textContent).toContain("Another response");
   expect(app.completed()).toContain("explore");
-  expect(app.root("request-trace").textContent).toContain(
+  expect(app.root("lesson").textContent).toContain(
     "http://localhost:3100/products",
   );
 });
@@ -437,7 +712,7 @@ it("does not credit a random confirmation or a catalog before a passing saved ch
   app.add();
   await app.api.placeOrder();
   expect(app.completed()).toContain("order");
-  expect(app.root("request-trace").textContent).toContain('"request"');
+  expect(app.root("lesson").textContent).toContain('"items"');
 });
 
 it("requires both a saved name example and an explicit matching generated response", async () => {
@@ -452,9 +727,9 @@ it("requires both a saved name example and an explicit matching generated respon
     actor: "you",
     files: [
       {
-        file: "openapi.json",
-        before: '"maxLength": 40',
-        after: '"maxLength": 40, "example": "House Blend"',
+        file: "openapi.yaml",
+        before: "maxLength: 40",
+        after: "maxLength: 40\nexample: House Blend",
       },
     ],
   });
@@ -463,7 +738,7 @@ it("requires both a saved name example and an explicit matching generated respon
   expect(app.calls.filter((call) => call.path === "/products")).toHaveLength(
     before,
   );
-  expect(app.root("lesson").textContent).toContain("openapi.json");
+  expect(app.root("lesson").textContent).toContain("openapi.yaml");
   expect(app.completed()).not.toContain("name-example");
   app.server.products[0]!.name = "old spec response";
   await app.click("refresh-products");
@@ -473,6 +748,47 @@ it("requires both a saved name example and an explicit matching generated respon
   expect(app.completed()).toContain("name-example");
   await app.click("continue");
   expect(app.root("lesson").textContent).toContain("Replace random products");
+});
+
+it("names the next lesson on the button and records that choice in the conversation", async () => {
+  const app = await browser();
+  expect(app.root("continue").hidden).toBe(true);
+  expect(app.root("continue").textContent).toBe(
+    "Next Lesson: Give generated names a coffee example",
+  );
+  await app.click("refresh-products");
+  expect(app.root("continue").hidden).toBe(false);
+  await app.click("continue");
+  expect(app.root("continue").textContent).toBe(
+    "Next Lesson: Replace random products",
+  );
+  expect(app.root("continue").hidden).toBe(true);
+  expect(app.root("lesson").textContent).toContain(
+    "Next Lesson: Give generated names a coffee example",
+  );
+  const finalLesson = await browser({ phase: "scenario" });
+  expect(finalLesson.root("continue").hidden).toBe(true);
+});
+
+it("renders a distinct heading outside tutor bubbles once per lesson", async () => {
+  const app = await browser({ phase: "retry" });
+  const headings = app
+    .root("lesson")
+    .children.filter((element) => element.className === "lesson-heading");
+  expect(headings.map((heading) => heading.textContent)).toEqual([
+    "Lesson 1Explore your generated API",
+    "Lesson 2Give generated names a coffee example",
+    "Lesson 3Replace random products",
+    "Lesson 4Respond to the order you received",
+    "Lesson 5Add failure and recovery",
+  ]);
+  for (const heading of headings) {
+    expect(heading.tag).toBe("header");
+    expect(find(heading, (element) => element.tag === "h2")).toBeDefined();
+    expect(
+      find(heading, (element) => element.className === "speaker"),
+    ).toBeUndefined();
+  }
 });
 
 it("keeps earlier turns visible and reveals the next lesson only after the learner replies", async () => {
@@ -486,7 +802,9 @@ it("keeps earlier turns visible and reveals the next lesson only after the learn
   expect(app.root("lesson").textContent).toContain(
     "Explore your generated API",
   );
-  expect(app.root("lesson").textContent).toContain("I’m ready. What’s next?");
+  expect(app.root("lesson").textContent).toContain(
+    "Next Lesson: Give generated names a coffee example",
+  );
   expect(app.root("lesson").textContent).toContain(
     "Give generated names a coffee example",
   );
@@ -497,18 +815,33 @@ it("keeps earlier turns visible and reveals the next lesson only after the learn
   expect(history.match(/show the diff here/g)).toHaveLength(1);
   const restored = await browser({ storage: app.storage });
   expect(restored.root("lesson").textContent).toContain(
-    "I’m ready. What’s next?",
+    "Next Lesson: Give generated names a coffee example",
   );
 });
 
 it("does not reveal the recovery edit before the observed failure, then retries the original cart", async () => {
   const app = await browser({ phase: "fail", checkOk: true });
+  const guidance = app
+    .root("lesson")
+    .children.find(
+      (turn) =>
+        turn.className === "chat-turn tutor-turn" &&
+        turn.textContent.includes(
+          "Your saved handler now produces an unavailable response",
+        ),
+    )!;
+  expect(guidance.textContent).toContain(
+    "click Add to cart on House Blend, then click Place order",
+  );
+  expect(guidance.textContent).toContain("response should be 503");
+  expect(guidance.textContent).toContain("remain in your cart");
+  expect(app.root("cart").textContent).toContain("empty");
   expect(app.root("lesson").textContent).not.toContain(
     "Change ordersAvailable to true",
   );
   app.server.orderMode = "unavailable";
   app.add();
-  await app.api.placeOrder();
+  await app.click("checkout");
   expect(app.root("lesson").textContent).toContain(
     "Change ordersAvailable to true",
   );
@@ -547,7 +880,9 @@ it("waits for an explicit seed command instead of completing from a saved scenar
 
 it("keeps the inventory edit hidden through a wrong answer and reload, then reveals it after retry", async () => {
   const app = await browser({ phase: "observe" });
-  expect(app.root("lesson").textContent).not.toContain("replace only its TODO");
+  expect(app.root("lesson").textContent).not.toContain(
+    "Implement reduceInventory so it visits every ordered item",
+  );
   app.add("dark-roast");
   await app.api.placeOrder();
   expect(app.root("inventory-question").textContent).toContain("3 → 3");
@@ -555,7 +890,9 @@ it("keeps the inventory edit hidden through a wrong answer and reload, then reve
   expect(app.root("inventory-question").textContent).toContain(
     "separate operations",
   );
-  expect(app.root("lesson").textContent).not.toContain("replace only its TODO");
+  expect(app.root("lesson").textContent).not.toContain(
+    "Implement reduceInventory so it visits every ordered item",
+  );
   const restored = await browser({ storage: app.storage });
   expect(restored.root("inventory-question").textContent).toContain("3 → 3");
   expect(restored.root("lesson").textContent).toContain(
@@ -564,9 +901,9 @@ it("keeps the inventory edit hidden through a wrong answer and reload, then reve
   await restored.answer("Try again");
   await restored.answer("No, stock stayed the same");
   expect(restored.root("lesson").textContent).toContain(
-    "replace only its TODO",
+    "Implement reduceInventory so it visits every ordered item",
   );
-  expect(restored.root("lesson").textContent).toContain(
+  expect(restored.root("lesson").textContent).not.toContain(
     "inventory[item.productId] -= item.quantity",
   );
   expect(restored.completed()).toContain("observe");
@@ -607,25 +944,69 @@ it("keeps the cart on unknown confirmation and disables orders on stale product 
   expect(app.root("checkout").disabled).toBe(true); // Random refresh explicitly cleared the old cart.
 });
 
-it("keeps code hints open across a save check and uses escaped editor links", async () => {
+it("uses each lesson’s current edit line in prose and editor actions", async () => {
+  const app = await browser({
+    phase: "name-example",
+    locations: {
+      explore: { "routes/products.ts": 12, "openapi.yaml": 1 },
+      "name-example": { "openapi.yaml": 47 },
+    },
+  });
+  const links: Element[] = [];
+  function collect(element: Element) {
+    if (element.tag === "a" && element.href.includes("openapi.yaml"))
+      links.push(element);
+    element.children.forEach(collect);
+  }
+  for (const turn of app
+    .root("lesson")
+    .children.filter((element) => element.dataset.phase === "name-example"))
+    collect(turn);
+  expect(links).toHaveLength(2);
+  for (const link of links) expect(link.href).toMatch(/openapi\.yaml:47$/u);
+  app.server.workspace.locations["name-example"]!["openapi.yaml"] = 52;
+  app.server.workspace.changes.push({
+    id: 1,
+    actor: "you",
+    phaseId: "name-example",
+    files: [{ file: "openapi.yaml", before: "{}", after: "\n{}" }],
+  });
+  await app.poll();
+  const updated = app
+    .root("lesson")
+    .children.find((turn) =>
+      turn.textContent.includes(
+        "find components.schemas.Product.properties.name",
+      ),
+    )!;
+  expect(find(updated, (element) => element.tag === "a")?.href).toMatch(
+    /openapi\.yaml:52$/u,
+  );
+});
+
+it("keeps escaped editor links after a save check without exposing solutions", async () => {
   const app = await browser({ phase: "catalog" });
-  const hint = find(
-    app.root("lesson"),
-    (element) => element.tag === "details",
-  )!;
-  hint.open = true;
-  expect(
+  const editorLink = () =>
     find(
       app.root("lesson"),
       (element) =>
         element.tag === "a" && element.textContent === "Open in VSCode",
-    )!.href,
-  ).toBe("vscode://file/tmp/coffee%20shop%231%3F/routes/products.ts");
+    );
+  expect(editorLink()?.href).toBe(
+    "vscode://file/tmp/coffee%20shop%231%3F/routes/products.ts:1",
+  );
+  expect(app.root("lesson").textContent).toContain(
+    "replace .random() with .json(catalog)",
+  );
+  expect(app.root("lesson").textContent).not.toContain("Show code:");
+  expect(
+    find(app.root("lesson"), (element) => element.tag === "pre"),
+  ).toBeUndefined();
   app.server.revision = "saved";
   await app.poll();
-  expect(
-    find(app.root("lesson"), (element) => element.tag === "details")!.open,
-  ).toBe(true);
+  expect(editorLink()?.href).toBe(
+    "vscode://file/tmp/coffee%20shop%231%3F/routes/products.ts:1",
+  );
 });
 
 it("requires two observed sequential confirmations to connect the shared context", async () => {
@@ -633,6 +1014,9 @@ it("requires two observed sequential confirmations to connect the shared context
   app.add();
   await app.api.placeOrder();
   expect(app.completed()).not.toContain("connect");
+  expect(app.root("lesson").textContent).toContain(
+    "Click Add to cart on House Blend, then Place order again.",
+  );
   app.add();
   await app.api.placeOrder();
   expect(app.completed()).toContain("connect");
@@ -648,6 +1032,9 @@ it("waits for stock rejection, an emptied cart, and explicit restoration before 
   await app.api.placeOrder();
   expect(app.completed()).not.toContain("rules");
   expect(app.root("cart").textContent).toContain("Dark Roast × 2");
+  expect(app.root("lesson").textContent).toContain(
+    "Click Empty cart, restore Dark Roast inventory to 3",
+  );
   await app.click("empty-cart");
   app.server.products.find((product) => product.id === "dark-roast")!.stock = 3;
   await app.click("refresh-products");
@@ -677,6 +1064,44 @@ it("does not complete the focused scenario until its live change preserves other
   expect(app.root("lesson").textContent).toContain(
     "Restarting keeps your code",
   );
+});
+
+it.each(PHASES.filter((phase) => phase.check))(
+  "puts feedback for $id in Milo’s conversation once per verified save",
+  async (phase) => {
+    const app = await browser({ phase: phase.id, checkOk: true });
+    const opening = phase.verification!.split(". ")[0]!;
+    const feedback = app
+      .root("lesson")
+      .children.filter((turn) => turn.textContent.includes(opening));
+    expect(feedback).toHaveLength(1);
+    expect(feedback[0]?.className).toBe("chat-turn tutor-turn");
+    expect(app.root("save-check").textContent).toBe("");
+    expect(app.root("lesson").textContent).not.toContain(
+      "Saved implementation verified.",
+    );
+    await app.api.checkFiles(true);
+    await app.poll();
+    const restored = await browser({ storage: app.storage, checkOk: true });
+    expect(
+      restored
+        .root("lesson")
+        .children.filter((turn) => turn.textContent.includes(opening)),
+    ).toHaveLength(1);
+  },
+);
+
+it("waits for a successful saved-code check before congratulating the learner", async () => {
+  const app = await browser({ phase: "catalog", checkOk: false });
+  const feedback = PHASES.find(
+    (phase) => phase.id === "catalog",
+  )!.verification!;
+  expect(app.root("lesson").textContent).not.toContain(feedback);
+  app.server.checkOk = true;
+  app.server.revision = "catalog-implemented";
+  await app.poll();
+  expect(app.root("lesson").textContent).toContain(feedback);
+  expect(app.completed()).not.toContain("catalog");
 });
 
 it("a newly saved invalid handler cannot earn progress through the previously checked implementation", async () => {
@@ -734,6 +1159,7 @@ it("resumes completed projects from durable checkpoints instead of replaying inc
     (element) =>
       element.tag === "button" && element.textContent === "Resume this project",
   )!.onclick!();
+  await waiting.acknowledge();
   expect(waiting.completed()).toEqual(PHASES.map((phase) => phase.id));
   expect(waiting.root("lesson").textContent).toContain(
     "We’ve built the shop’s behavior together",
@@ -768,6 +1194,7 @@ it("resumes the next unfinished lesson with fresh cart and quiz observations aft
     (element) =>
       element.tag === "button" && element.textContent === "Resume this project",
   )!.onclick!();
+  await app.acknowledge();
   expect(app.root("lesson").textContent).toContain(
     "Does accepting an order also subtract stock?",
   );
@@ -795,6 +1222,7 @@ it("lets a resumed seed lesson demonstrate reset even when startup already appli
     (element) =>
       element.tag === "button" && element.textContent === "Resume this project",
   )!.onclick!();
+  await app.acknowledge();
   expect(app.root("lesson").textContent).toContain(
     "Startup has already applied the baseline",
   );
@@ -914,7 +1342,7 @@ it("shows the diff before applying, refreshes stale proposals, and marks the sam
   expect(proposal().textContent).not.toContain("Changes applied.");
   expect(app.server.workspace.prepared).toEqual([]);
   expect(app.root("lesson").textContent).not.toContain(
-    "replace only the return statement",
+    "replace .random() with .json(catalog)",
   );
   app.server.previewRevision = "proposal-v2";
   app.server.previewFiles[0]!.after =
@@ -994,9 +1422,11 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
   ).toEqual([]);
   await prepare.onclick!();
   expect(app.server.workspace.prepared).toEqual(["catalog"]);
-  expect(app.root("lesson").textContent).toContain(
+  expect(app.root("lesson").textContent).not.toContain(
     "I’ve added the supporting code",
   );
+  expect(app.root("lesson").textContent).not.toContain("Apply changes.");
+  expect(app.root("lesson").textContent).toContain("Changes applied.");
   expect(
     find(
       app.root("lesson"),
@@ -1010,13 +1440,28 @@ it("only prepares attended lessons, retains preparation on reload, and retries f
         call.path === "/tutorial-workspace" && call.body?.action === "prepare",
     ),
   ).toHaveLength(1);
+  const saved = JSON.parse(app.storage.get("counterfact-coffee-v3")!);
+  expect(
+    saved.turns.some(
+      (turn: { text: string }) => turn.text === "Apply changes.",
+    ),
+  ).toBe(false);
+  saved.turns.push(
+    { phaseId: "catalog", role: "you", text: "Apply changes." },
+    {
+      phaseId: "catalog",
+      role: "tutor",
+      text: "I’ve added the supporting code. Now it’s your turn.",
+    },
+  );
+  app.storage.set("counterfact-coffee-v3", JSON.stringify(saved));
   const restored = await browser({
     storage: app.storage,
     workspace: true,
     prepared: ["catalog"],
   });
-  expect(restored.root("lesson").textContent).toContain("Apply changes.");
-  expect(restored.root("lesson").textContent).toContain(
+  expect(restored.root("lesson").textContent).not.toContain("Apply changes.");
+  expect(restored.root("lesson").textContent).not.toContain(
     "I’ve added the supporting code",
   );
   expect(restored.root("lesson").textContent).toContain("Changes applied.");
@@ -1052,7 +1497,9 @@ it("retains the preparation explanation when failure progresses to recovery", as
       element.tag === "button" && element.textContent === "Apply changes",
   )!;
   await prepare.onclick!();
-  const explanation = PHASES.find((phase) => phase.id === "fail")!.preparation!;
+  const explanation = PHASES.find(
+    (phase) => phase.id === "fail",
+  )!.preparation!.replaceAll("`", "");
   app.server.orderMode = "unavailable";
   app.add();
   await app.api.placeOrder();
@@ -1156,8 +1603,11 @@ it("records explicit refreshes and their outcomes without treating background re
   const app = await browser();
   expect(app.root("lesson").textContent).not.toContain("Refreshed products.");
   await app.click("refresh-products");
-  expect(app.root("lesson").textContent).toContain(
+  expect(app.root("lesson").textContent).not.toContain(
     "GET /products returned HTTP 200 with 3 products.",
+  );
+  expect(app.root("lesson").textContent).toContain(
+    "HTTP · GET /products → 200",
   );
   await app.poll();
   await app.poll();
@@ -1180,11 +1630,10 @@ it("records order contents, failure, retry, and the actual response in chronolog
   await app.api.placeOrder();
   const history = app.root("lesson").textContent;
   const placed = history.indexOf("Placed an order: 1 × House Blend.");
-  const failed = history.indexOf("POST /orders returned HTTP 503");
+  const failed = history.indexOf("HTTP · POST /orders → 503");
   const retried = history.indexOf("Retried the order: 1 × House Blend.");
-  const succeeded = history.indexOf(
-    "POST /orders returned HTTP 201 with order ID 1.",
-  );
+  const succeeded = history.indexOf("HTTP · POST /orders → 201");
+  expect(history).not.toContain("POST /orders returned HTTP");
   expect(placed).toBeGreaterThan(-1);
   expect(placed).toBeLessThan(failed);
   expect(failed).toBeLessThan(retried);
@@ -1192,9 +1641,7 @@ it("records order contents, failure, retry, and the actual response in chronolog
   expect(history).not.toContain("Refreshed products.");
   const reloaded = await browser({ storage: app.storage });
   expect(
-    reloaded
-      .root("lesson")
-      .textContent.match(/POST \/orders returned HTTP 503/g),
+    reloaded.root("lesson").textContent.match(/HTTP · POST \/orders → 503/g),
   ).toHaveLength(1);
   expect(
     reloaded.root("lesson").textContent.match(/Retried the order:/g),
