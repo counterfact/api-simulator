@@ -25,6 +25,7 @@ The output directory is called `basePath` in library options and `destination` i
 │   └── store/
 │       └── order.ts
 └── types/
+    ├── index.ts              # Routes, Components, and Schemas
     └── paths/
         ├── pet.types.ts
         ├── pet/
@@ -61,6 +62,52 @@ For a concrete change, expected diagnostic, and CI command, follow [Catch a cont
 ## Explore a contract while designing it
 
 Run `npx counterfact@latest openapi.yaml api --watch --serve` while editing a local contract. New required fields appear in generated sample responses; optional fields may be omitted unless `--always-fake-optionals` is enabled. Update fixed handlers and run an explicit TypeScript check after regeneration. The server continuing to run does not establish that custom handlers still match the contract.
+
+## Central type exports
+
+Import generated API types from `types/index.ts`:
+
+```ts
+// routes/pet/{petId}.ts
+import type { Components, Routes, Schemas } from "../../types/index.js";
+
+type Pet = Schemas["Pet"];
+type SamePet = Components["schemas"]["Pet"];
+
+export const GET: Routes["/pet/{petId}"]["GET"] = async ($) => {
+  return $.response.status(200).random();
+};
+```
+
+`Routes` maps the paths in your spec to their uppercase HTTP methods. Each entry
+is the existing Counterfact handler contract, including typed inputs, context,
+and response builders. Paths retain their original spelling, including trailing
+slashes; generated route filenames still use Counterfact's normalized paths.
+
+`Components` maps the original OpenAPI component categories and names. `Schemas`
+is an alias of `Components["schemas"]`. All declared components are included,
+even when no operation references them. Absent categories are empty maps.
+
+| Category                               | Generated representation                                                                                                                 |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `schemas`                              | The schema's data type                                                                                                                   |
+| `parameters`, `headers`                | The value's schema type, or its content map when it uses `content`                                                                       |
+| `responses`                            | Counterfact's response contract: `headers`, `requiredHeaders`, `content`, and `examples`; media entries expose their data under `schema` |
+| `requestBodies`, `mediaTypes`          | The definition's structure, with embedded `schema` and `itemSchema` fields replaced by data types                                        |
+| `examples`, `securitySchemes`, `links` | The definition's literal structure                                                                                                       |
+| `callbacks`, `pathItems`               | The definition's structure, with embedded schemas replaced by data types                                                                 |
+
+For example, access a JSON response body through
+`Components["responses"]["NotFound"]["content"]["application/json"]["schema"]`.
+Component maps describe types; they do not export runtime values or configure
+server authentication, callbacks, or links.
+
+The individual files under `types/` remain available for existing imports.
+New route handlers use `Routes`; regeneration preserves existing handlers and
+imports. Each configured API group has its own central entry point. For versions
+in the same group, `Routes` uses the shared version-aware handler contracts and a
+component with the same name in multiple versions is the union of those types.
+Version-specific files remain available when you need one version's component.
 
 ## Multi-version APIs
 

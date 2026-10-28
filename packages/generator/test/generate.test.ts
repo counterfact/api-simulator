@@ -175,6 +175,7 @@ describe("OpenAPI paths with trailing slashes", () => {
         "routes/customers/{id}.ts",
         "routes/index.ts",
         "routes/subscriptions/{id}/cancel.ts",
+        "types/index.ts",
         "types/paths/customers.types.ts",
         "types/paths/customers/{id}.types.ts",
         "types/paths/index.types.ts",

@@ -439,7 +439,10 @@ export class Repository {
 
     const newImports: ts.ImportDeclaration[] = [];
     const handlers: ts.Statement[] = [];
-    const generatedImports = script.importStatements();
+    const generatedImports = [
+      ...script.importStatements(),
+      ...script.externalImportStatements(),
+    ];
     for (const statement of script.exportStatements()) {
       if (!ts.isVariableStatement(statement)) continue;
       const declaration = statement.declarationList.declarations[0];
@@ -456,16 +459,19 @@ export class Repository {
             ": a local binding already exists in " +
             fullPath,
         );
+      let rootType = declaration.type;
+      while (rootType && ts.isIndexedAccessTypeNode(rootType))
+        rootType = rootType.objectType;
       if (
-        !declaration.type ||
-        !ts.isTypeReferenceNode(declaration.type) ||
-        !ts.isIdentifier(declaration.type.typeName)
+        !rootType ||
+        !ts.isTypeReferenceNode(rootType) ||
+        !ts.isIdentifier(rootType.typeName)
       ) {
         throw new Error(
           "Generated handler lacks a named type: " + declaration.name.text,
         );
       }
-      let localType = declaration.type.typeName.text;
+      let localType = rootType.typeName.text;
       const originalType = localType;
       const imported = generatedImports.flatMap((item) => {
         const named = item.importClause?.namedBindings;
@@ -505,7 +511,7 @@ export class Repository {
               declaration,
               declaration.name,
               declaration.exclamationToken,
-              typeReference(localType),
+              renameTypeRoot(declaration.type!, localType),
               declaration.initializer,
             ),
           ]),
@@ -632,4 +638,14 @@ export class Repository {
 
     return this.nearestContextFile(destination, nodePath.join(path, ".."));
   }
+}
+
+function renameTypeRoot(type: ts.TypeNode, name: string): ts.TypeNode {
+  return ts.isIndexedAccessTypeNode(type)
+    ? ts.factory.updateIndexedAccessTypeNode(
+        type,
+        renameTypeRoot(type.objectType, name),
+        type.indexType,
+      )
+    : typeReference(name);
 }

@@ -57,7 +57,7 @@ describe("AST route regeneration", () => {
       await new ScenarioFileGenerator($.path("")).generate();
       const route = await $.read("routes/thing.ts");
       const contract = await $.read("types/paths/thing.types.ts");
-      expect(route).toContain("export const GET: HTTP_GET");
+      expect(route).toContain('export const GET: Routes["/thing"]["GET"]');
       expect(route).not.toContain("GET2");
       expect(contract).toContain("export type HTTP_GET =");
       expect(contract).toContain("v1: HTTP_GET_$_v1");
@@ -112,7 +112,9 @@ describe("AST route regeneration", () => {
         const content = await $.read("routes/thing.ts");
         for (const line of original.trim().split("\n"))
           expect(content).toContain(line);
-        expect(content).toContain("export const POST: HTTP_POST");
+        expect(content).toContain(
+          'export const POST: Routes["/thing"]["POST"]',
+        );
         await generator.generate();
         expect(await $.read("routes/thing.ts")).toBe(content);
       });
@@ -135,7 +137,7 @@ describe("AST route regeneration", () => {
           types: true,
         }).generate();
         expect(await $.read("routes/thing.ts")).toContain(
-          "export const POST: HTTP_POST",
+          'export const POST: Routes["/thing"]["POST"]',
         );
       });
     },
@@ -205,9 +207,9 @@ describe("AST route regeneration", () => {
   it("inserts after complete multiline imports and comments, and aliases a conflicting type", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("openapi.json", JSON.stringify(specification));
-      await $.add("routes/other.ts", "export type HTTP_POST = string;");
+      await $.add("routes/other.ts", "export type Routes = string;");
       const original =
-        'import type {\n  HTTP_POST,\n} from "./other.js"; /* first line\nsecond line */\n' +
+        'import type {\n  Routes,\n} from "./other.js"; /* first line\nsecond line */\n' +
         'export function GET() { return { nested: { text: "};" } }; }\n';
       await $.add("routes/thing.ts", original);
       const generator = new CodeGenerator($.path("openapi.json"), $.path(""), {
@@ -217,9 +219,9 @@ describe("AST route regeneration", () => {
       await generator.generate();
       const content = await $.read("routes/thing.ts");
       expect(content).toContain(
-        "second line */\nimport type { HTTP_POST as HTTP_POST2 }",
+        "second line */\nimport type { Routes as Routes2 }",
       );
-      expect(content).toContain("export const POST: HTTP_POST2");
+      expect(content).toContain('export const POST: Routes2["/thing"]["POST"]');
       expect(content).toContain(
         'export function GET() { return { nested: { text: "};" } }; }',
       );

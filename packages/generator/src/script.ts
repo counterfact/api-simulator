@@ -47,6 +47,8 @@ export class Script {
   public imports = new Map<string, ImportEntry>();
   public externalImport = new Map<string, ExternalImportEntry>();
   public cache = new Map<string, string>();
+  public reservedNames = new Set<string>();
+  public statementBuilders = new Map<string, () => ts.Statement[]>();
 
   public constructor(
     repository: Repository,
@@ -70,8 +72,10 @@ export class Script {
   ): string {
     for (const name of coder.names()) {
       if (
+        !this.reservedNames.has(name) &&
         (!this.imports.has(name) ||
           (this.imports.get(name)!.id === coder.exportId &&
+            this.imports.get(name)!.script.path === coder.modulePath() &&
             this.imports.get(name)!.isType === isType &&
             this.imports.get(name)!.isDefault === isDefault)) &&
         (!this.exports.has(name) ||
@@ -125,12 +129,28 @@ export class Script {
     this.export(coder, isType, true);
   }
 
-  public import(coder: Coder, isType = false, isDefault = false): string {
+  public import(
+    coder: Coder,
+    isType = false,
+    isDefault = false,
+    preferredName?: string,
+  ): string {
     const modulePath = coder.modulePath();
     const key = `${coder.id}@${modulePath}:${isType}:${isDefault}`;
     if (this.cache.has(key)) return this.cache.get(key)!;
     if (modulePath === this.path) return this.export(coder, isType, isDefault);
-    const name = this.firstUniqueName(coder, isType, isDefault);
+    let name: string;
+    if (preferredName) {
+      name = preferredName;
+      let suffix = 2;
+      while (
+        this.imports.has(name) ||
+        this.exports.has(name) ||
+        this.externalImport.has(name) ||
+        this.reservedNames.has(name)
+      )
+        name = preferredName + suffix++;
+    } else name = this.firstUniqueName(coder, isType, isDefault);
     this.cache.set(key, name);
     const script = this.repository.get(modulePath);
     const exportedName = script.export(coder, isType, isDefault);
@@ -145,8 +165,8 @@ export class Script {
     return name;
   }
 
-  public importType(coder: Coder): string {
-    return this.import(coder, true);
+  public importType(coder: Coder, preferredName?: string): string {
+    return this.import(coder, true, false, preferredName);
   }
   public importDefault(coder: Coder, isType = false): string {
     return this.import(coder, isType, true);
@@ -353,6 +373,7 @@ export class Script {
         ...this.importStatements(),
         ...this.versionsTypeStatements(),
         ...this.exportStatements(),
+        ...[...this.statementBuilders.values()].flatMap((build) => build()),
       ],
       this.comments,
     );
