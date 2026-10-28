@@ -66,3 +66,5 @@ Start the OpenAPI 3.1 coffee-shop schema with ten readable name examples. Explai
 Keep API status and inspection instructions out of the storefront, using customer-facing order and empty-catalog feedback instead. Place Refresh products at the top right with a decorative refresh icon and its existing accessible label.
 
 Remove the redundant Update area beneath the conversation. Keep completion and follow-up feedback in Milo’s messages, preserve progress-save errors alongside the retry action, and show copy feedback on its button.
+
+Remove the duplicate editor-link and copy-path controls beneath exercises. Keep the inline file links in Milo’s messages, including their current edit line numbers.

@@ -842,6 +842,8 @@ it.each(PHASES.map((phase) => phase.id))(
       find(app.root("lesson"), (element) => element.tag === "pre"),
     ).toBeUndefined();
     expect(app.root("lesson").textContent).not.toContain("Show code:");
+    expect(app.root("lesson").textContent).not.toContain("Open in VSCode");
+    expect(app.root("lesson").textContent).not.toContain("Copy file path");
     expect(
       PHASES.find((candidate) => candidate.id === phase),
     ).not.toHaveProperty("commands");
@@ -1147,7 +1149,7 @@ it("keeps the cart on unknown confirmation and disables orders on stale product 
   expect(app.root("checkout").disabled).toBe(true); // Random refresh explicitly cleared the old cart.
 });
 
-it("uses each lesson’s current edit line in prose and editor actions", async () => {
+it("uses each lesson’s current edit line in its inline file link", async () => {
   const app = await browser({
     phase: "description-example",
     locations: {
@@ -1167,7 +1169,7 @@ it("uses each lesson’s current edit line in prose and editor actions", async (
       (element) => element.dataset.phase === "description-example",
     ))
     collect(turn);
-  expect(links).toHaveLength(2);
+  expect(links).toHaveLength(1);
   for (const link of links) expect(link.href).toMatch(/openapi\.yaml:47$/u);
   app.server.workspace.locations["description-example"]!["openapi.yaml"] = 52;
   await app.poll();
@@ -1192,7 +1194,7 @@ it("keeps escaped editor links after a save check without exposing solutions", a
     find(
       app.root("lesson"),
       (element) =>
-        element.tag === "a" && element.textContent === "Open in VSCode",
+        element.tag === "a" && element.textContent === "routes/products.ts",
     );
   expect(editorLink()?.href).toBe(
     "vscode://file/tmp/coffee%20shop%231%3F/routes/products.ts:1",
@@ -1201,6 +1203,8 @@ it("keeps escaped editor links after a save check without exposing solutions", a
     "replace .random() with .json(catalog)",
   );
   expect(app.root("lesson").textContent).not.toContain("Show code:");
+  expect(app.root("lesson").textContent).not.toContain("Open in VSCode");
+  expect(app.root("lesson").textContent).not.toContain("Copy file path");
   expect(
     find(app.root("lesson"), (element) => element.tag === "pre"),
   ).toBeUndefined();

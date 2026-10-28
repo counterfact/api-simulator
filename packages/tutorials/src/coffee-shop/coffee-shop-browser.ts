@@ -1375,31 +1375,6 @@ export function runCoffeeShopWalkthrough(
         lesson.append(folderPrompt);
       }
       exercise.append(fileText("p", revealed.instruction, revealed.id));
-      for (const edit of revealed.edits) {
-        const file = schemaFile(edit.file);
-        const actions = node("div", "", "file-actions");
-        const copyPath = button(
-          "Copy file path",
-          async () => {
-            try {
-              await navigator.clipboard.writeText(projectPath + "/" + file);
-              copyPath.textContent = "Copied!";
-            } catch {
-              copyPath.textContent = "Couldn’t copy path";
-            }
-          },
-          false,
-        );
-        actions.append(
-          fileLink(
-            edit.file,
-            "Open in VSCode",
-            editLine(edit.file, revealed.id),
-          ),
-          copyPath,
-        );
-        exercise.append(actions);
-      }
       lesson.append(exercise);
       for (const turn of phaseTurns.slice(before.length))
         if (!(turn.role === "tutor" && turn.files?.length))
