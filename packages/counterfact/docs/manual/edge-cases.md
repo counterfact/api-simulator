@@ -7,7 +7,9 @@ Use controlled responses to see what the client does when an API is slow, return
 Change the relevant handler to return a deterministic body. For a collection operation, an empty collection can exercise an empty screen:
 
 ```ts
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../types/index.js";
+
+export const GET: Routes["/pets"]["GET"] = function ($) {
   return $.response.status(200).json([]);
 };
 ```
@@ -17,7 +19,9 @@ Choose a body that matches your operation's schema. For an error, choose a statu
 ## Add a delay
 
 ```ts
-export const GET: HTTP_GET = async function ($) {
+import type { Routes } from "../types/index.js";
+
+export const GET: Routes["/pets"]["GET"] = async function ($) {
   await $.delay(1500);
   return $.response.status(200).random();
 };
@@ -42,9 +46,9 @@ Read those flags in the route handler. The OpenAPI operation must declare the sh
 
 ```ts
 // api/routes/payments/{paymentId}.ts
-import type { HTTP_GET } from "../../types/paths/payments/{paymentId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/payments/{paymentId}"]["GET"] = function ($) {
   if ($.context.isRateLimited)
     return $.response.status(429).text("Too Many Requests");
   if ($.context.isBroken)
@@ -73,7 +77,9 @@ Internal Server Error
 To simulate intermittent failures, use a counter or a random function:
 
 ```ts
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../../types/index.js";
+
+export const GET: Routes["/payments/{paymentId}"]["GET"] = function ($) {
   $.context.callCount += 1;
   if ($.context.callCount % 3 === 0) {
     return $.response.status(503).text("Flaky error");
@@ -85,7 +91,9 @@ export const GET: HTTP_GET = function ($) {
 Or vary the response probabilistically:
 
 ```ts
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../../types/index.js";
+
+export const GET: Routes["/payments/{paymentId}"]["GET"] = function ($) {
   if (Math.random() < 0.2) {
     return $.response.status(503).text("Flaky error");
   }
@@ -108,7 +116,9 @@ export class Context {
 
 ```ts
 // api/routes/pet/{petId}.ts
-export const GET: HTTP_GET = async function ($) {
+import type { Routes } from "../../types/index.js";
+
+export const GET: Routes["/pet/{petId}"]["GET"] = async function ($) {
   await $.delay($.context.latencyMs);
   const pet = $.context.get($.path.petId);
   return pet

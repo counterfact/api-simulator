@@ -43,7 +43,9 @@ available when those routes hot-reload.
 
 ```ts
 // api/routes/_.context.ts
-import type { Pet } from "../types/components/schemas/Pet.js";
+import type { Schemas } from "../types/index.js";
+
+type Pet = Schemas["Pet"];
 
 export class Context {
   private pets = new Map<number, Pet>();
@@ -66,18 +68,18 @@ Then use it in the generated `POST /pet` and `GET /pet/{petId}` handlers:
 
 ```ts
 // api/routes/pet.ts
-import type { HTTP_POST } from "../types/paths/pet.types.js";
+import type { Routes } from "../types/index.js";
 
-export const POST: HTTP_POST = function ($) {
+export const POST: Routes["/pet"]["POST"] = function ($) {
   return $.response.status(200).json($.context.add($.body));
 };
 ```
 
 ```ts
 // api/routes/pet/{petId}.ts
-import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   return pet
     ? $.response.status(200).json(pet)

@@ -6,10 +6,12 @@ Counterfact generates handlers that return sample data from the response schema.
 
 Start Counterfact with your specification and inspect an operation's route file:
 
-Keep the generated `HTTP_GET` import in your route file. Counterfact supplies the handler’s `$` argument, including its response builder; see [handler arguments](../api/handlers.md).
+Keep the generated `Routes` import and select your operation by path and method. These examples use `GET /pet/{petId}`; use the path declared in your own spec. Counterfact supplies the handler’s `$` argument, including its response builder; see [handler arguments](../api/handlers.md).
 
 ```ts
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../../types/index.js";
+
+export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
   return $.response.status(200).random();
 };
 ```
@@ -43,7 +45,9 @@ responses:
 This is an operation fragment, not a complete OpenAPI document. Regenerate types, then select the key under `examples` by name:
 
 ```ts
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../../types/index.js";
+
+export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
   return $.response.status(200).example("successResponse");
 };
 ```

@@ -102,46 +102,42 @@ For example, access a JSON response body through
 Component maps describe types; they do not export runtime values or configure
 server authentication, callbacks, or links.
 
-The individual files under `types/` remain available for existing imports.
+Direct imports from generated operation and component modules are deprecated.
+Import `Routes`, `Components`, and `Schemas` from `types/index.js` in new and
+updated code. Existing deep imports continue to work for compatibility;
+regeneration does not rewrite existing handler annotations to the new style.
+Context, scenario, and middleware helper types still use their dedicated files.
 New route handlers use `Routes`; regeneration preserves existing handlers and
 imports. Each configured API group has its own central entry point. For versions
 in the same group, `Routes` uses the shared version-aware handler contracts and a
 component with the same name in multiple versions is the union of those types.
-Version-specific files remain available when you need one version's component.
+Version-specific files remain compatibility surfaces; the central component maps
+expose unions across versions.
 
 ## Multi-version APIs
 
-First [configure versions in the same API group](./multiple-versions.md). Handlers import a shared operation type; it describes the possible request/response contracts and lets `$.minVersion()` select the applicable versions. The generated type below illustrates how that works; you do not need to author it.
+First [configure versions in the same API group](./multiple-versions.md). Select the shared handler contract through `Routes`; it describes the possible request/response contracts and lets `$.minVersion()` select the applicable versions. The following handler assumes `GET /pets` declares a 200 response in v1 and v2.
 
-When two or more versioned specs share the same operation path (e.g. `GET /pets`), Counterfact emits a **version-mapped handler type** in the shared `types/paths/` file instead of a flat type.
+When two or more versioned specs share an operation, its `Routes` entry describes
+the supported versions. The import and annotation stay the same as for an
+unversioned API:
 
 ```ts
-// types/paths/pets.types.ts  (generated — do not edit)
+// routes/pets.ts
+import type { Routes } from "../types/index.js";
 
-import type { Versioned } from "../versions.js";
-import type {
-  MaybePromise,
-  COUNTERFACT_RESPONSE,
-} from "../../counterfact-types/index.js";
-import type { HTTP_GET_$_v1 } from "../v1/paths/pets.types.js";
-import type { HTTP_GET_$_v2 } from "../v2/paths/pets.types.js";
-
-type HTTP_GET_$_Versions = { v1: HTTP_GET_$_v1; v2: HTTP_GET_$_v2 };
-
-export type HTTP_GET = (
-  $: Versioned<HTTP_GET_$_Versions>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+export const GET: Routes["/pets"]["GET"] = function ($) {
+  if ($.minVersion("v2")) {
+    return $.response.status(200).random();
+  }
+  return $.response.status(200).random();
+};
 ```
 
-Each version's strongly-typed `$` argument lives in its own subdirectory
-(`types/v1/paths/pets.types.ts`, `types/v2/paths/pets.types.ts`). The shared
-file imports and combines them via `Versioned<T>`, which resolves to the union
-of the selected version argument types, with `version` and `minVersion()`
-metadata. Use `$.minVersion("v2")` to narrow `$` to versions at or after `v2`
-in the configured version order and access their version-specific fields.
-
-When only a single (unversioned) spec is configured the output is unchanged
-from the flat-type format.
+Counterfact combines each version's request arguments behind this entry point.
+Use `$.minVersion("v2")` to narrow `$` to versions at or after `v2` in the
+configured order and access their version-specific fields. You do not need to
+import the internal versioned operation modules.
 
 ## See also
 

@@ -126,7 +126,9 @@ Handlers stay small and do not receive the store directly:
 
 ```ts
 // api/orders/routes/orders.ts
-export const POST: HTTP_POST = function ($) {
+import type { Routes } from "../types/index.js";
+
+export const POST: Routes["/orders"]["POST"] = function ($) {
   return $.response.status(201).json($.context.createOrder($.body));
 };
 ```

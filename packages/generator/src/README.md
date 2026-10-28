@@ -10,6 +10,20 @@ Fortunately, we _do_ have pretty much all the information we need to generate _t
 
 We can also use those types on the _client_ side, assuming the client is written in TypeScript.
 
+## Public generated types
+
+Generated projects expose `Routes`, `Components`, and `Schemas` through
+`types/index.ts`. Routes import `Routes` from that entry point and use
+`Routes["/hello-world"]["GET"]`; model consumers use `Schemas["Message"]`
+or `Components["schemas"]["Message"]`. Direct imports of operation and
+component types are deprecated for consumers.
+
+The individual operation and component modules remain generator implementation
+and compatibility surfaces. Internal coders continue importing dependencies
+directly. `central-types.ts` registers operations and all declared components,
+then emits the central maps after the repository has resolved their types.
+Context, scenario, and middleware helpers retain their dedicated entry points.
+
 ## Files
 
 | File                             | Description                                                                                                                                                                                                          |
@@ -21,6 +35,7 @@ We can also use those types on the _client_ side, assuming the client is written
 | `script.ts`                      | `Script` class: manages code generation for a single output file — imports, exports, deduplication, and Prettier formatting                                                                                          |
 | `coder.ts`                       | Abstract `Coder` base class: defines the Template Method pattern used by all code-generating components                                                                                                              |
 | `type-coder.ts`                  | Abstract `TypeCoder` base class (extends `Coder`): specialises `Coder` for type-generating components                                                                                                                |
+| `central-types.ts`               | Assembles the public `Routes`, `Components`, and `Schemas` maps, preserving logical paths and combining component versions                                                                                           |
 | `operation-coder.ts`             | `OperationCoder`: generates the route handler function for an OpenAPI operation                                                                                                                                      |
 | `operation-type-coder.ts`        | `OperationTypeCoder`: generates the TypeScript type for a route handler, including parameters and response builder                                                                                                   |
 | `parameters-type-coder.ts`       | `ParametersTypeCoder`: generates the typed object for path/query/header parameters of an operation                                                                                                                   |
@@ -29,7 +44,7 @@ We can also use those types on the _client_ side, assuming the client is written
 | `response-type-coder.ts`         | `ResponseTypeCoder`: generates the type for a single HTTP response, including headers, content, and named examples                                                                                                   |
 | `schema-type-coder.ts`           | `SchemaTypeCoder`: converts an OpenAPI schema definition to a TypeScript type (objects, arrays, unions, enums)                                                                                                       |
 | `schema-coder.ts`                | `SchemaCoder`: generates a JSON Schema representation of an OpenAPI schema for use in runtime validation                                                                                                             |
-| `ast.ts`                         | TypeScript AST construction and printing helpers                                                                                                                                                                    |
+| `ast.ts`                         | TypeScript AST construction and printing helpers                                                                                                                                                                     |
 | `read-only-comments.ts`          | Standard warning comments inserted into generated type files to discourage manual edits                                                                                                                              |
 
 ## Architecture
@@ -136,14 +151,20 @@ paths:
               type: string
 ```
 
-Our goal is to produce a file at `/routes/hello.ts` that exports a function named `GET` (1). Our implementation will depend on a type for the `GET` function which lives in `/routes/types-hello.ts` (2). That type, in turn, will depend on a type named `Message` which lives in `/components/message.ts` (3).
+Our goal is to produce `routes/hello-world.ts`, exporting a `GET` handler typed
+as `Routes["/hello-world"]["GET"]`, and a reusable model available as
+`Schemas["Message"]`.
 
-(1) We kick off the process by iterating over the paths. (In our simple example there's only one path, at `/hello`.) In our model, each path is represented as a `Requirement`. We give each path / `Requirement` to an `OperationCoder` who will write the code. We ask the repository for a `Script` and then hand the `Script` our `OperationCoder` instance and ask it to create an export.
-
-(2a) The `OperationCoder` knows that the function has to have a type, but it doesn't know to create that type. So it recruits an `OperationTypeCoder` and hands it the `Requirement`. It then asks the `Script` to _import_ a type, passing along the `OperationTypeCoder`. The `Script` returns the name of the variable to which the imported type will be assigned. That name is all the `OperationCoder` needs to know to continue writing its portion of the code. The `OperationCoder` continues on, writing the `GET` function. Depending on what it finds in the `Requirement`, it will break off parts and delegate some of the work to other `Coder`s.
-
-(2b) The `Script` has promised that it will import the type from `/types/paths/hello.type.ts` so it needs to make sure that file exists and has a matching export. It goes to the repository to get another `Script` and asks it to _export_ the type, passing along the `OperationTypeCoder` in the process. It's a little tricky here because `OperationTypeCoder`'s `Requirement` may not have the information it needs to proceed. It might have a `$ref` pointer to some _other_ requirement that might be in a different file. So before asking for the export, it asks the `OperationTypeCoder` to give it _another_ `OperationTypeCoder` that definitely has the requirement. Because the other requirement may be in another file that the `Repository` hasn't loaded yet, this part happens asynchronously.
-
-(2c) When it's ready, the `Script` asks the `OperationTypeCoder` which definitely has an immediately usable requirement to write the export for the `Script` at `/types/paths/hello.types.ts`.
-
-(3) The `OperationTypeCoder` needs the help of a `SchemaCoder` so it asks the `Script` at `/types/paths/hello.types.ts` for an export...
+1. `CodeGenerator` registers every declared component with the central index,
+   including unused schemas. It traverses path operations and exports each
+   `OperationCoder` to its route script.
+2. `OperationCoder.typeDeclaration()` registers its `OperationTypeCoder` with
+   the central index and imports `Routes` into the route. The index imports the
+   handler contract from its existing operation module. Versioned operations
+   still register each version's argument type on the shared operation script.
+3. The operation contract uses other coders for parameters, responses, and
+   schemas. `Script.importType()` resolves their exports through `Repository`,
+   keeping those internal imports direct and collision-safe.
+4. After all types resolve, the central script emits `Routes`, `Components`,
+   and `Schemas = Components["schemas"]` through a deferred statement builder.
+   `Repository` writes regenerated types and preserves user-edited route text.

@@ -74,9 +74,9 @@ export class Context {
 
 ```ts
 // api/routes/v1/customers/{customerId}.ts
-import type { HTTP_GET } from "../../../types/paths/v1/customers/{customerId}.types.js";
+import type { Routes } from "../../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/v1/customers/{customerId}"]["GET"] = function ($) {
   if ($.context.rateLimited) {
     return $.response.status(429).json({
       error: { type: "rate_limit_error", message: "Try again shortly" },
