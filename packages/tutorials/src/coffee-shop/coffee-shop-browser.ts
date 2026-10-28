@@ -1148,7 +1148,7 @@ export function runCoffeeShopWalkthrough(
         ? [
             fileText(
               "p",
-              "The shop uses `GET /shop/products` to load coffee and `POST /shop/orders` to place an order. Counterfact governs these responses. The `/tutorial/*` endpoints run the conversation, progress tracking, and exercise checks separately.",
+              "The shop uses `GET /shop/products` to load coffee and `POST /shop/orders` to place an order. Counterfact governs these responses.",
               "welcome",
             ),
           ]

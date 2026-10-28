@@ -417,7 +417,7 @@ it("starts with a coffee order to learn the tutorial before inspecting or editin
   const app = await browser({ phase: "orientation" });
   expect(app.root("lesson").textContent).toContain("GET /shop/products");
   expect(app.root("lesson").textContent).toContain("POST /shop/orders");
-  expect(app.root("lesson").textContent).toContain("/tutorial/*");
+  expect(app.root("lesson").textContent).not.toContain("/tutorial/*");
   expect(app.root("lesson").textContent).toContain(
     "Click Add to cart on any coffee with stock, then click Place order",
   );
