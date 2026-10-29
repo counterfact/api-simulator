@@ -1,3 +1,4 @@
+import { currentPhases } from "./coffee-shop-curriculum.js";
 /** Lesson recipes and focused learner edits. Preparation is explicit and never runs in previews. */
 export const CATALOG = [
   {
@@ -174,6 +175,13 @@ export type LessonPhase = {
   title: string;
   explanation: string;
   introduction?: string;
+  background?: string[];
+  question?: {
+    prompt: string;
+    answers: { label: string; value: boolean }[];
+    retryExplanation: { reduced: string; unchanged: string };
+    hints: { answer: string; retry: string };
+  };
   instruction: string;
   edits: { file: string; instruction: string }[];
   preparation?: string;
@@ -581,45 +589,9 @@ export const PHASES_V5: LessonPhase[] = PHASES_V4.map((phase) =>
       }
     : phase,
 ).map((phase) => ({ ...phase, ...PHASE_HINTS[phase.id] }));
-const beforeScenarios = PHASES_V5.findIndex((phase) => phase.id === "seed");
-const contextConnection = PHASES_V5.find((phase) => phase.id === "connect")!;
-const scenarioInitialization = PHASES_V5.find((phase) => phase.id === "seed")!;
-export const PHASES: LessonPhase[] = [
-  ...PHASES_V5.slice(0, beforeScenarios),
-  {
-    ...contextConnection,
-    lesson: 8,
-    title: "Connect routes and the REPL",
-    introduction:
-      "The class in routes/_.context.ts describes your shop’s shared state and methods. Counterfact creates one running instance. Inside a route, `$.context` refers to that instance. In the terminal, `context` refers to the same instance. The ⬣> prompt is a REPL—a read–eval–print loop where you enter JavaScript and see its result while Counterfact keeps running.",
-    explanation:
-      "Connecting the handlers to this shared object lets HTTP requests read the state you change in the REPL. The fields start empty in a fresh context; any data you’ve already added to this running session is kept.",
-    verification:
-      "Your handlers now use the shared context. Next, change that same object from the REPL and observe it through the shop.",
-  },
-  {
-    id: "context-repl",
-    lesson: 8,
-    title: "Connect routes and the REPL",
-    explanation:
-      "Your handlers now use the shared object you can access as `context` at the terminal’s ⬣> prompt. A change there affects the next request without editing or restarting a route.",
-    instruction:
-      "In the REPL, add one coffee with ID practice-coffee to `context.catalog` and give it a quantity of 5 in `context.inventory`, then click Refresh products.",
-    hint: "At the ⬣> prompt in the terminal running Counterfact, use the `push` method on `context.catalog` to add one object. Give it `id` practice-coffee, `name` Practice Coffee, `description` Chocolate and caramel, and `price` 1400. Stock belongs separately in `context.inventory`: assign 5 to its practice-coffee entry. Press Enter after each expression, then click Refresh products in the browser.",
-    edits: [],
-  },
-  {
-    ...scenarioInitialization,
-    lesson: 9,
-    title: "Initialize context with scenarios",
-    explanation:
-      "You’ve changed the running context directly in the REPL. A scenario saves a setup as a function so you can repeat it. The reset scenario installs a complete baseline; startup tells Counterfact to apply that baseline when the server starts. Saving its file alone does not apply it to this session.",
-  },
-  ...PHASES_V5.slice(beforeScenarios + 1).filter(
-    (phase) => phase.id !== "connect",
-  ),
-];
+export const PHASES: LessonPhase[] = currentPhases;
 export function phasesForVersion(version: number) {
+  if (version === 6) return PHASES;
   const phases =
     version === 6
       ? PHASES

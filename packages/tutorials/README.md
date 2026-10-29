@@ -36,6 +36,7 @@ The independent tutorial HTTP handler owns:
 - `GET /tutorial/`: the browser UI.
 - `GET /tutorial/info`: session identity, current state, source revision, and local history.
 - `POST /tutorial/check`: isolated checks of saved learner code.
+- `POST /tutorial/lesson`: evaluate a shop, REPL-state, or quiz observation through the current lesson graph.
 - `POST /tutorial/workspace`: review, explicit apply, and checkpoint operations.
 - `POST /tutorial/event`: allowlisted milestone reporting.
 
@@ -80,27 +81,45 @@ handler link. Background checks do not generate shopping traffic or learner
 messages. Missing, malformed, and rejected responses remain inspectable without
 inventing successful outcomes.
 
-## Workflow orchestration
+## Read and change the workflow
 
-The native tutorial handler runs a compiled LangGraph `StateGraph` for each
-learner event. Its nodes load the project journal, preview or apply a proposal,
-validate saved code, save a checkpoint, and select the next transition. Explicit
-wait states end each invocation at approval, editing, experiment, or next-lesson
-boundaries. Preview and check requests cannot apply edits or advance lessons.
-Applying changes requires the revision of the reviewed proposal.
+Start at [the curriculum](./src/coffee-shop/coffee-shop-curriculum.ts#L1). It lists
+phases in learner order. Each file under `src/coffee-shop/lessons/` contains that
+phase's script, instructions, hints, and executable LangGraph `StateGraph`.
+For example, [the catalog lesson](./src/coffee-shop/lessons/catalog.ts#L1) explains
+the proposed edit, waits for approval, calls Milo's edit tool, asks for the
+learner's saved edit, and compares two explicit product responses. Its conditional
+edges distinguish an incomplete observation from lesson completion.
 
-The browser renders the conversation and observes shop and REPL experiments.
-For managed projects, it follows the graph's completion and next-lesson decisions.
-Presentation pacing, typing, hints, and experiment evidence stay in the browser;
-**Okay** does not invoke a workflow transition. Unmanaged legacy demos retain
-their existing local progression.
+[The generated diagrams](./WORKFLOW.md) show those same graphs. After building
+this package, regenerate them from the repository root:
 
-Each invocation reads durable progress from the existing project journal. There
-is no second progress database or in-memory graph checkpoint that could disagree
-with saved project progress after restart. Graph state contains the request,
-checkpoint numbers, and operation result; it does not copy the journal's file
-history. The workflow is deterministic and requires no model API key or hosted
-LangGraph service.
+```sh
+node scripts/describe-tutorial-workflow.mjs > packages/tutorials/WORKFLOW.md
+```
+
+The shared `lessons/runtime.ts` provides state types and the small node helpers.
+`propose`, `apply`, and `checkSaved` invoke workspace tools for the corresponding
+explicit action. Rendering a proposal or reporting an observation does not write
+files. File transformations and isolated code checks remain ordinary tools in
+`coffee-shop-workspace.ts` and `coffee-shop-checks.ts`.
+
+The native HTTP handler routes approvals and checks into the phase graph. The
+browser sends receipts for product responses, orders, state changes, and quiz
+answers to `/tutorial/lesson`. The graph returns feedback, observation updates,
+and whether its completion evidence is satisfied. The browser presents these
+results with the existing message pacing, typing, and disclosure controls.
+**Okay** only reveals text; it does not invoke a workflow transition.
+
+`coffee-shop-workflow.ts` coordinates durable completion and transitions between
+phases: continue within the lesson, wait for **Next Lesson**, or finish. Each
+invocation reads durable progress from the project journal. There is no second
+progress database or in-memory checkpoint store to disagree after restart.
+Browser session observations remain separate from durable lesson completion.
+
+Current version 6 lessons come from these graphs. Older protocols retain their
+original lesson definitions and browser rules for existing generated projects.
+The workflow is deterministic and requires no model API key or hosted service.
 
 ## Local history and compatibility
 

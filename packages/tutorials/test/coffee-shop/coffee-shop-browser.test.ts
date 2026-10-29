@@ -1,3 +1,5 @@
+import { observeLesson } from "../../src/coffee-shop/coffee-shop-curriculum.js";
+import type { LessonInput } from "../../src/coffee-shop/lessons/runtime.js";
 import vm from "node:vm";
 import { expect, it } from "@jest/globals";
 import { coffeeShopPage } from "../../src/coffee-shop/coffee-shop-page.js";
@@ -302,6 +304,11 @@ async function browser(
               ? structuredClone(server.workspace.changes)
               : undefined,
         };
+      } else if (path === "/tutorial/lesson") {
+        value = await observeLesson(
+          String(body?.phaseId),
+          body?.input as LessonInput,
+        );
       } else if (path === "/tutorial/check")
         value = {
           revision: server.revision,

@@ -15,6 +15,7 @@
     "dist",
     "examples",
     "README.md",
+    "WORKFLOW.md",
     "License.md"
   ],
   "sideEffects": false,

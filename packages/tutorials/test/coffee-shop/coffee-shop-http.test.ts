@@ -4,6 +4,8 @@ import type { AddressInfo } from "node:net";
 import { expect, it } from "@jest/globals";
 import { usingTemporaryFiles } from "using-temporary-files";
 import { prepareTour, createTourRequestHandler } from "../../src/index.js";
+import { emptyInput } from "../../src/coffee-shop/lessons/runtime.js";
+import { CATALOG } from "../../src/coffee-shop/coffee-shop-lessons.js";
 
 it("serves tutorial controls outside simulation dispatch without generated tutorial handlers", async () => {
   await usingTemporaryFiles(async ($) => {
@@ -114,6 +116,39 @@ it("serves tutorial controls outside simulation dispatch without generated tutor
         ok: false,
         flow: { status: "await_edit" },
       });
+      expect(
+        await post("/tutorial/lesson", {
+          phaseId: "orientation",
+          input: {
+            ...emptyInput(),
+            event: "order",
+            status: 201,
+            response: { orderId: 1 },
+          },
+        }),
+      ).toMatchObject({ complete: true });
+      const productsBefore = await $.read("demo/routes/products.ts");
+      const unapproved = await post("/tutorial/lesson", {
+        phaseId: "catalog",
+        input: {
+          ...emptyInput(),
+          event: "products",
+          source: "manual",
+          ready: true,
+          prepared: true,
+          products: CATALOG,
+          catalogReads: 1,
+          lastCatalog: JSON.stringify(CATALOG),
+        },
+      });
+      expect(unapproved.complete).not.toBe(true);
+      expect(await $.read("demo/routes/products.ts")).toBe(productsBefore);
+      expect(
+        await post("/tutorial/lesson", {
+          phaseId: "catalog",
+          input: { event: "unknown" },
+        }),
+      ).toMatchObject({ ok: false });
       expect(simulatedRequests).toBe(0);
       expect((await fetch(origin + "/shop/products")).status).toBe(418);
       expect(simulatedRequests).toBe(1);

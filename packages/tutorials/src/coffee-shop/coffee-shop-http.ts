@@ -14,6 +14,60 @@ import {
   walkthroughWorkspace,
 } from "./coffee-shop-workspace.js";
 import { reportWalkthroughEvent } from "./coffee-shop-telemetry.js";
+import { observeLesson } from "./coffee-shop-curriculum.js";
+import type { LessonInput } from "./lessons/runtime.js";
+import { CATALOG } from "./coffee-shop-lessons.js";
+import { z } from "zod";
+
+const item = z.object({ productId: z.string(), quantity: z.number() });
+const shopState = z.object({
+  catalog: z.unknown(),
+  inventory: z.record(z.string(), z.number()).nullable(),
+});
+const observation = z.object({
+  before: z.number(),
+  after: z.number(),
+  quantity: z.number(),
+});
+const lessonReceipt = z.object({
+  event: z.enum(["products", "order", "poll", "answer"]),
+  ready: z.boolean(),
+  prepared: z.boolean(),
+  source: z.string().optional(),
+  products: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      description: z.string(),
+      price: z.number(),
+      stock: z.number(),
+    }),
+  ),
+  state: shopState,
+  entryState: shopState.optional(),
+  cartSize: z.number(),
+  expectedExamples: z.array(z.string()).optional(),
+  catalogReads: z.number(),
+  lastCatalog: z.string(),
+  rejectionSeen: z.boolean(),
+  before: z.record(z.string(), z.number()).optional(),
+  items: z.array(item).optional(),
+  original: z.array(item).optional(),
+  status: z.number().optional(),
+  response: z
+    .object({
+      orderId: z.number().optional(),
+      items: z.array(item).optional(),
+      shortages: z
+        .array(z.object({ requested: z.number(), available: z.number() }))
+        .optional(),
+    })
+    .optional(),
+  observation: observation.optional(),
+  answer: z.boolean().optional(),
+  announceSave: z.boolean().optional(),
+  stateChanged: z.boolean().optional(),
+});
 
 async function readBody(
   request: IncomingMessage,
@@ -111,9 +165,12 @@ export async function createTourRequestHandler(
         return true;
       }
       if (
-        !["/tutorial/check", "/tutorial/workspace", "/tutorial/event"].includes(
-          path,
-        )
+        ![
+          "/tutorial/check",
+          "/tutorial/workspace",
+          "/tutorial/event",
+          "/tutorial/lesson",
+        ].includes(path)
       ) {
         json(404, { error: "Unknown tutorial endpoint." });
         return true;
@@ -139,6 +196,25 @@ export async function createTourRequestHandler(
         throw new Error(
           "Reload the walkthrough before changing its workspace.",
         );
+      if (path === "/tutorial/lesson") {
+        if (version !== 6)
+          throw new Error("This project keeps its original lesson workflow.");
+        const receipt = lessonReceipt.parse(body.input);
+        json(
+          200,
+          await observeLesson(phaseId, {
+            ...receipt,
+            baseline: CATALOG,
+            prepared:
+              !info.workspace.enabled ||
+              !phasesForVersion(version).find((phase) => phase.id === phaseId)
+                ?.preparation ||
+              info.workspace.prepared.some((prepared) => prepared === phaseId),
+            state: info.state,
+          } as LessonInput),
+        );
+        return true;
+      }
       if (
         !["preview", "prepare", "checkpoint", "advance"].includes(
           String(body.action),

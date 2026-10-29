@@ -1,3 +1,4 @@
+import type { LessonInput, LessonEffect } from "./lessons/runtime.js";
 import type { ReplSubmission } from "./coffee-shop-repl.js";
 import type { EditEvent, FileChange } from "./coffee-shop-workspace.js";
 import type { LessonPhase } from "./coffee-shop-lessons.js";
@@ -649,14 +650,20 @@ export function runCoffeeShopWalkthrough(
           observation.quantity +
           ".",
       ),
-      node("p", "Does accepting an order also subtract stock?"),
+      node(
+        "p",
+        phase().question?.prompt ??
+          "Does accepting an order also subtract stock?",
+      ),
     );
     const reduced =
       observation.after === observation.before - observation.quantity;
     if (quizWrong) {
-      const explanation = reduced
-        ? "Stock decreased because your current handler already subtracts the purchased quantities."
-        : "The order succeeded, but stock stayed the same. Returning a confirmation and changing context are separate operations. Your handler must explicitly subtract the purchased quantities.";
+      const explanation =
+        phase().question?.retryExplanation[reduced ? "reduced" : "unchanged"] ??
+        (reduced
+          ? "Stock decreased because your current handler already subtracts the purchased quantities."
+          : "The order succeeded, but stock stayed the same. Returning a confirmation and changing context are separate operations. Your handler must explicitly subtract the purchased quantities.");
       const feedback = node("p", explanation);
       feedback.setAttribute("role", "status");
       panel.append(
@@ -669,13 +676,17 @@ export function runCoffeeShopWalkthrough(
         }),
       );
     } else {
-      for (const [label, answer] of [
-        ["Yes, stock decreased", true],
-        ["No, stock stayed the same", false],
-      ] as const) {
+      for (const { label, value: answer } of phase().question?.answers ?? [
+        { label: "Yes, stock decreased", value: true },
+        { label: "No, stock stayed the same", value: false },
+      ]) {
         panel.append(
-          button(label, () => {
+          button(label, async () => {
             record("you", label);
+            if (walkthroughVersion >= 6) {
+              await followLesson({ event: "answer", answer });
+              return;
+            }
             if (answer !== reduced) {
               quizWrong = true;
               record(
@@ -1132,42 +1143,6 @@ export function runCoffeeShopWalkthrough(
       "At the terminal’s ⬣> prompt, run `reset` through the `.scenario` command."
     );
   }
-  function practiceSetupHint() {
-    const catalog = info?.state.catalog;
-    if (!Array.isArray(catalog) || catalog.length === 0)
-      return phase().hint ?? phase().instruction;
-    const practiceIndex = catalog.findIndex(
-      (coffee) => coffee?.id === "practice-coffee",
-    );
-    const keep = practiceIndex < 0 ? 0 : practiceIndex;
-    const extras = catalog
-      .map((_, index) => index)
-      .filter((index) => index !== keep)
-      .reverse();
-    if (extras.length)
-      return (
-        "Your running catalog has " +
-        catalog.length +
-        " entries; this exercise needs one. Keep the coffee at zero-based index " +
-        keep +
-        ". In the REPL, use the `splice` method on `context.catalog` to remove the extra entries at indices " +
-        extras.join(", ") +
-        " in that order. For each removal, pass its index and a count of 1. Then click Refresh products."
-      );
-    const coffee = catalog[0];
-    if (
-      practiceIndex < 0 ||
-      typeof coffee?.name !== "string" ||
-      typeof coffee?.description !== "string" ||
-      !Number.isInteger(coffee?.price) ||
-      coffee.price < 500 ||
-      coffee.price > 2500
-    )
-      return "A coffee already exists in `context.catalog`; edit that entry instead of appending another. At the REPL, update the object at index 0: its `id` should be practice-coffee, `name` Practice Coffee, `description` Chocolate and caramel, and numeric `price` 1400. Then click Refresh products.";
-    if (info.state.inventory?.["practice-coffee"] !== 5)
-      return "The practice coffee already exists. In the REPL, assign 5 to the practice-coffee entry in `context.inventory`, then click Refresh products.";
-    return "The practice coffee and its stock are already in the running context. Click Refresh products to observe them through the shop.";
-  }
   function currentHint() {
     const prompt = (Array.from(byId("lesson").children) as HTMLElement[])
       .filter((element) => element.className.split(" ").includes("tutor-turn"))
@@ -1179,24 +1154,35 @@ export function runCoffeeShopWalkthrough(
     if (checkpointRetry)
       text =
         "Your API experiment succeeded, but saving its lesson checkpoint failed. Click Retry saving progress in the conversation to save that checkpoint without repeating the order.";
-    else if (phase().id === "seed" && ready && !hasBaseline(info.state))
+    else if (
+      walkthroughVersion >= 6 &&
+      !quiz &&
+      !prompt.dataset.proposal &&
+      lessonHint?.phaseId === phase().id &&
+      lessonHint.text
+    )
+      text = lessonHint.text;
+    else if (
+      walkthroughVersion < 6 &&
+      phase().id === "seed" &&
+      ready &&
+      !hasBaseline(info.state)
+    )
       text = baselineRecovery(info.state);
     else if (
+      walkthroughVersion < 6 &&
       phase().id === "seed" &&
       ready &&
       hasBaseline(info.state) &&
       !hasBaseline(entryState)
     )
       return;
-    else if (phase().id === "context-repl")
-      text =
-        !ready && checkedPhase === "context-repl"
-          ? phases.find((candidate) => candidate.id === "connect")!.hint!
-          : practiceSetupHint();
     else if (quiz)
-      text = quizWrong
-        ? "Click Try again below the inventory question. Compare the stock before and after the order: unchanged stock means the order did not subtract it; a decrease by the purchased quantity means it did."
-        : "Compare the before and after stock counts shown with the question. Choose No if stock stayed the same, or Yes if it fell by the purchased quantity.";
+      text =
+        phase().question?.hints[quizWrong ? "retry" : "answer"] ??
+        (quizWrong
+          ? "Click Try again below the inventory question. Compare the stock before and after the order: unchanged stock means the order did not subtract it; a decrease by the purchased quantity means it did."
+          : "Compare the before and after stock counts shown with the question. Choose No if stock stayed the same, or Yes if it fell by the purchased quantity.");
     return {
       prompt,
       text,
@@ -1440,14 +1426,13 @@ export function runCoffeeShopWalkthrough(
         introduction.append(explanation);
         lesson.append(introduction);
       }
-      if (revealed.id === "explore")
-        lesson.append(
-          bubble(
-            "tutor",
-            "Before we inspect the handler, here’s where this API starts. OpenAPI, formerly Swagger, is a format for describing an HTTP API: its endpoints, the requests they accept, and the responses they return. A schema describes the shape of data, including its properties, types, and limits. Counterfact includes a coffee-shop API description with this walkthrough and saved a copy as openapi.yaml in your demo folder. It used that file to generate your starting handlers and TypeScript types.",
-            revealed.id,
-          ),
-        );
+      for (const background of revealed.background ??
+        (walkthroughVersion < 6 && revealed.id === "explore"
+          ? [
+              "Before we inspect the handler, here’s where this API starts. OpenAPI, formerly Swagger, is a format for describing an HTTP API: its endpoints, the requests they accept, and the responses they return. A schema describes the shape of data, including its properties, types, and limits. Counterfact includes a coffee-shop API description with this walkthrough and saved a copy as openapi.yaml in your demo folder. It used that file to generate your starting handlers and TypeScript types.",
+            ]
+          : []))
+        lesson.append(bubble("tutor", background, revealed.id));
       const phaseTurns = turns.filter(
         (turn) =>
           turn.phaseId === revealed.id &&
@@ -1816,8 +1801,110 @@ export function runCoffeeShopWalkthrough(
     }
     save();
   }
-  function observeProducts(source: string) {
+  let lessonHint: { phaseId: string; text?: string } | undefined;
+  let lessonObservation: Promise<void> = Promise.resolve();
+  function followLesson(
+    event: Partial<LessonInput> & Pick<LessonInput, "event">,
+  ): Promise<void> {
+    const requestedId = phase().id;
+    const run = lessonObservation.then(async () => {
+      if (
+        phase().id !== requestedId ||
+        resumeCheckpoint !== undefined ||
+        missing() ||
+        completed.has(requestedId)
+      )
+        return;
+      const input: LessonInput = {
+        ready,
+        prepared:
+          !info.workspace?.enabled ||
+          !phase().preparation ||
+          info.workspace.prepared.includes(requestedId),
+        products,
+        state: info.state,
+        entryState,
+        baseline: baselineProducts,
+        cartSize: cart.size,
+        expectedExamples,
+        catalogReads,
+        lastCatalog,
+        rejectionSeen,
+        observation,
+        ...event,
+      };
+      const { response, value: effect } = await json<LessonEffect>(
+        "/tutorial-lesson",
+        { phaseId: requestedId, sessionId: info.sessionId, input },
+      );
+      if (!response.ok)
+        throw new Error(
+          "Could not follow the lesson. Check Counterfact’s terminal and retry the action.",
+        );
+      if (phase().id !== requestedId) return;
+      const hintChanged =
+        lessonHint?.phaseId !== requestedId || lessonHint?.text !== effect.hint;
+      lessonHint = { phaseId: requestedId, text: effect.hint };
+      if (effect.catalogReads !== undefined) catalogReads = effect.catalogReads;
+      if (effect.lastCatalog !== undefined) lastCatalog = effect.lastCatalog;
+      if (effect.rejectionSeen !== undefined)
+        rejectionSeen = effect.rejectionSeen;
+      if (effect.entryState) entryState = effect.entryState;
+      if (effect.observation) observation = effect.observation;
+      if (effect.quizWrong !== undefined) quizWrong = effect.quizWrong;
+      for (const reply of effect.replies ?? []) {
+        if (
+          reply.unique &&
+          turns.some(
+            (turn) => turn.phaseId === requestedId && turn.text === reply.text,
+          )
+        )
+          continue;
+        if (
+          reply.verification &&
+          turns.some(
+            (turn) =>
+              turn.phaseId === requestedId &&
+              turn.verificationRevision === info.revision,
+          )
+        )
+          continue;
+        const turn = record(
+          "tutor",
+          reply.text,
+          reply.waitForAction,
+          reply.hint,
+        );
+        if (reply.verification) turn.verificationRevision = info.revision;
+      }
+      if (effect.complete) {
+        if (effect.started)
+          report(
+            "started",
+            phase().id === "orientation" ? "orientation" : phases[0]!.id,
+          );
+        await finish(effect.completionMessage);
+      }
+      save();
+      if (
+        hintChanged ||
+        effect.complete ||
+        effect.observation ||
+        effect.quizWrong !== undefined ||
+        effect.replies?.length
+      )
+        renderLesson();
+      return undefined;
+    });
+    lessonObservation = run.catch(() => undefined);
+    return run;
+  }
+  async function observeProducts(source: string) {
     if (resumeCheckpoint !== undefined || missing() || !fresh) return;
+    if (walkthroughVersion >= 6) {
+      await followLesson({ event: "products", source });
+      return;
+    }
     const id = phase().id;
     if (id === "explore" && source === "manual") {
       report("started", phases[0]!.id);
@@ -1964,7 +2051,7 @@ export function runCoffeeShopWalkthrough(
       fresh = true;
       if (source === "manual") renderLesson();
       renderShop();
-      observeProducts(source);
+      await observeProducts(source);
       return true;
     } catch (error) {
       fresh = false;
@@ -2023,6 +2110,17 @@ export function runCoffeeShopWalkthrough(
       }
       await refreshProducts("order", orderAction);
       if (phase().id !== currentId || missing()) return;
+      if (walkthroughVersion >= 6) {
+        await followLesson({
+          event: "order",
+          before,
+          items,
+          original,
+          status: response.status,
+          response: value,
+        });
+        return;
+      }
       if (
         currentId === "orientation" &&
         response.status === 201 &&
@@ -2162,6 +2260,7 @@ export function runCoffeeShopWalkthrough(
   async function runCheckFiles(force: boolean) {
     const requestedId = phase().id;
     let announcedSave = false;
+    let announceCurrentSave = false;
     try {
       const { response, value: latest } = await json<Info>("/tutorial-info");
       if (
@@ -2232,7 +2331,20 @@ export function runCoffeeShopWalkthrough(
               (checkedPhase === requestedId && checkedRevision !== revision)
             ? "Check: " + checked.message
             : "";
+        announceCurrentSave =
+          ready &&
+          (force ||
+            changed ||
+            changedAfterCheck ||
+            checkedPhase !== requestedId) &&
+          !completed.has(requestedId) &&
+          !turns.some(
+            (turn) =>
+              turn.phaseId === requestedId &&
+              turn.verificationRevision === revision,
+          );
         if (
+          walkthroughVersion < 6 &&
           ready &&
           (force ||
             changed ||
@@ -2288,7 +2400,13 @@ export function runCoffeeShopWalkthrough(
         checkedPhase = requestedId;
         if (requestedId === "context-repl") renderLesson();
       }
-      if (!missing() && ready && !completed.has(requestedId)) {
+      if (walkthroughVersion >= 6) {
+        await followLesson({
+          event: "poll",
+          announceSave: announceCurrentSave,
+          stateChanged,
+        });
+      } else if (!missing() && ready && !completed.has(requestedId)) {
         const leftBaseline =
           requestedId === "seed" &&
           hasBaseline(entryState) &&

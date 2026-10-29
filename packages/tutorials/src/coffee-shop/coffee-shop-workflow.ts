@@ -1,6 +1,7 @@
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
 import type { LessonPhase } from "./coffee-shop-lessons.js";
 import type { FileChange, EditEvent } from "./coffee-shop-workspace.js";
+import { currentPhases, runLessonOperation } from "./coffee-shop-curriculum.js";
 
 export type WorkflowRequest = {
   action: "preview" | "prepare" | "check" | "checkpoint" | "advance";
@@ -59,6 +60,24 @@ export function createWalkthroughWorkflow(
     return phase;
   };
   const nextFor = (id: string) => phases[phases.indexOf(phaseFor(id)) + 1];
+  const operate = (
+    action: "preview" | "prepare" | "check",
+    request: WorkflowRequest,
+  ) =>
+    phases === currentPhases
+      ? runLessonOperation(
+          request.phaseId,
+          action,
+          operations,
+          request.revision,
+        )
+      : action === "preview"
+        ? operations.preview(request.phaseId)
+        : action === "prepare"
+          ? operations.prepare(request.phaseId, request.revision)
+          : operations.check(
+              request.phaseId === "context-repl" ? "connect" : request.phaseId,
+            );
   const wait =
     (status: NonNullable<WorkflowResult["flow"]>["status"]) =>
     (state: typeof WorkflowState.State) => ({
@@ -78,19 +97,17 @@ export function createWalkthroughWorkflow(
       return { workspace: { enabled, checkpoints } };
     })
     .addNode("preview", async ({ request }) => ({
-      result: await operations.preview(request.phaseId),
+      result: await operate("preview", request),
     }))
     .addNode("prepare", async ({ request }) => {
       if (!request.revision)
         throw new Error("Review the proposed diff before applying changes.");
       return {
-        result: await operations.prepare(request.phaseId, request.revision),
+        result: await operate("prepare", request),
       };
     })
     .addNode("check", async ({ request }) => ({
-      result: await operations.check(
-        request.phaseId === "context-repl" ? "connect" : request.phaseId,
-      ),
+      result: await operate("check", request),
     }))
     .addNode("checkpoint", async ({ request }) => ({
       result: await operations.checkpoint(request.phaseId),
