@@ -196,6 +196,10 @@ describe("central helper exports", () => {
           () => $.read("api/types/_.context.ts"),
           (content) => content.includes("AdminContext"),
         );
+        await waitForContents(
+          () => $.read("api/types/admin/_.middleware.ts"),
+          (content) => content.includes("routes/admin/_.context"),
+        );
         await $.add(
           "consumer.ts",
           `import type { Middleware, Scenario } from "./api/types/index.js";

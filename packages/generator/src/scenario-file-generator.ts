@@ -445,6 +445,30 @@ async function collectGeneratedMiddlewareTypeFiles(
   return files;
 }
 
+/** Readers must see a complete module while watcher events are queued. */
+async function writeGeneratedType(
+  filePath: string,
+  content: string,
+): Promise<void> {
+  const previous = await fs
+    .readFile(filePath, "utf8")
+    .catch((error: NodeJS.ErrnoException) => {
+      if (error.code !== "ENOENT") throw error;
+      return undefined;
+    });
+  if (previous === content) return;
+  const temporaryDirectory = await fs.mkdtemp(
+    nodePath.join(nodePath.dirname(filePath), ".counterfact-type-"),
+  );
+  try {
+    const temporaryFile = nodePath.join(temporaryDirectory, "contents.tmp");
+    await fs.writeFile(temporaryFile, content, "utf8");
+    await fs.rename(temporaryFile, filePath);
+  } finally {
+    await fs.rm(temporaryDirectory, { recursive: true, force: true });
+  }
+}
+
 async function writeMiddlewareTypes(
   destination: string,
   routeDirectories: RouteDirectoryInfo[],
@@ -460,10 +484,9 @@ async function writeMiddlewareTypes(
     );
     expectedFiles.add(nodePath.resolve(filePath));
     await fs.mkdir(nodePath.dirname(filePath), { recursive: true });
-    await fs.writeFile(
+    await writeGeneratedType(
       filePath,
       await buildMiddlewareTypeContent(destination, routeDirectory),
-      "utf8",
     );
   }
 
@@ -511,7 +534,7 @@ async function writeScenarioContextType(
   );
 
   await fs.mkdir(typesDir, { recursive: true });
-  await fs.writeFile(filePath, content, "utf8");
+  await writeGeneratedType(filePath, content);
 }
 
 // OpenAPI generation knows the group directory but not the application's root.
@@ -624,10 +647,9 @@ export async function writeHelperTypes(
       );
     });
     declarations.push(typeAlias("Middleware", typeLiteral(properties)));
-    await fs.writeFile(
+    await writeGeneratedType(
       nodePath.join(destination, "types/helpers.ts"),
       await formatStatements(declarations, [GENERATED_FILE_COMMENT.slice(3)]),
-      "utf8",
     );
     // Spec-free projects can generate helpers independently of the OpenAPI index.
     await fs

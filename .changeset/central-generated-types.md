@@ -13,3 +13,5 @@ Expose `Context$`, `Scenario`, `Scenario$`, and directory-indexed `Middleware` t
 Fix versioned handler narrowing after `minVersion()` checks, including early returns, negated conditions, and explicit else branches. Literal checks narrow both request and response contracts; dynamic union thresholds use a boolean overload to avoid incorrectly excluding possible versions.
 
 Organize `Routes` as a tree of slash-prefixed path segments. Select `/hello/world` with `Routes["/hello"]["/world"]`; parent operations and child branches coexist, and generated handlers and documentation use the nested indexes.
+
+Write watched helper modules atomically and skip unchanged content so TypeScript readers do not observe empty modules during regeneration.
