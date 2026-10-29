@@ -27,7 +27,7 @@ helpers.
 
 ```ts
 // Path is relative to the scenarios directory at the generated project root.
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const startup: Scenario = ($) => {
   $.context.createThing({ name: "example" });
