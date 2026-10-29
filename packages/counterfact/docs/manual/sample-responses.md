@@ -11,7 +11,7 @@ Keep the generated `Routes` import and select your operation by path and method.
 ```ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   return $.response.status(200).random();
 };
 ```
@@ -47,7 +47,7 @@ This is an operation fragment, not a complete OpenAPI document. Regenerate types
 ```ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   return $.response.status(200).example("successResponse");
 };
 ```

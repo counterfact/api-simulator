@@ -10,6 +10,7 @@ import {
   unknownType,
 } from "./ast.js";
 import { pathJoin } from "./forward-slash-path.js";
+import { routesType } from "./route-type-tree.js";
 import { helperTypeExports } from "./scenario-file-generator.js";
 import { READ_ONLY_COMMENTS } from "./read-only-comments.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
@@ -124,21 +125,7 @@ class CentralTypes {
     ]);
     this.script.statementBuilders.set("api-types", () => [
       helperTypeExports(),
-      typeAlias(
-        "Routes",
-        typeLiteral(
-          [...this.routes].map(([path, methods]) =>
-            typeProperty(
-              path,
-              typeLiteral(
-                [...methods].map(([method, type]) =>
-                  typeProperty(method, type),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+      typeAlias("Routes", routesType(this.routes)),
       typeAlias(
         "Components",
         typeLiteral(

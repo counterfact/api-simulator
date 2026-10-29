@@ -140,14 +140,14 @@ export const POST: Routes["/pet"]["POST"] = function ($) {
 import type { Routes } from "../../types/index.js";
 
 // api/routes/pet/{petId}.ts
-export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   return pet
     ? $.response.status(200).json(pet)
     : $.response.status(404).text(`Pet ${$.path.petId} not found`);
 };
 
-export const DELETE: Routes["/pet/{petId}"]["DELETE"] = function ($) {
+export const DELETE: Routes["/pet"]["/{petId}"]["DELETE"] = function ($) {
   $.context.remove($.path.petId);
   return $.response.status(200);
 };
@@ -189,7 +189,7 @@ again after adding the context files so the typed `/users` overload is present.
 // api/routes/payments/{paymentId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/payments/{paymentId}"]["GET"] = function ($) {
+export const GET: Routes["/payments"]["/{paymentId}"]["GET"] = function ($) {
   const payment = $.context.getWithUser($.path.paymentId);
   return payment
     ? $.response.status(200).json(payment)
@@ -365,7 +365,7 @@ export class Context {
 import type { Routes } from "../../types/index.js";
 
 // api/routes/pet/{petId}.ts
-export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   if ($.context.isDown)
     return $.response.status(500).text("Service unavailable");
   if ($.context.isRateLimited)

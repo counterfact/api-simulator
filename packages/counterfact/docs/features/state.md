@@ -17,7 +17,7 @@ export const POST: Routes["/pet"]["POST"] = function ($) {
 // routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   if (pet === undefined) return $.response.status(404).empty();
   return $.response.status(200).json(pet);

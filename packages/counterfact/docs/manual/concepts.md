@@ -36,7 +36,7 @@ Counterfact calls each handler with one object conventionally named `$`. It supp
 // api/routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   return $.response.status(200).json({
     id: $.path.petId,
     name: "Fluffy",
@@ -46,7 +46,7 @@ export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
 };
 ```
 
-`Routes["/pet/{petId}"]["GET"]` selects that operation's generated contract. `$.path.petId` is the URL parameter, and `$.response.status(200).json(...)` builds its response. The `$` name is an ordinary function parameter; the generated type determines which members are available. See [route handlers](../features/routes.md).
+`Routes["/pet"]["/{petId}"]["GET"]` selects that operation's generated contract. `$.path.petId` is the URL parameter, and `$.response.status(200).json(...)` builds its response. The `$` name is an ordinary function parameter; the generated type determines which members are available. See [route handlers](../features/routes.md).
 
 ## Context: state shared by nearby routes
 

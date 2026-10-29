@@ -11,3 +11,5 @@ Deprecate deep imports of generated operation and component types. Use the centr
 Expose `Context$`, `Scenario`, `Scenario$`, and directory-indexed `Middleware` through the central entry point. New context and scenario starters use central imports; context watching refreshes the helper module and middleware directory map. Dedicated helper imports remain compatible but deprecated.
 
 Fix versioned handler narrowing after `minVersion()` checks, including early returns, negated conditions, and explicit else branches. Literal checks narrow both request and response contracts; dynamic union thresholds use a boolean overload to avoid incorrectly excluding possible versions.
+
+Organize `Routes` as a tree of slash-prefixed path segments. Select `/hello/world` with `Routes["/hello"]["/world"]`; parent operations and child branches coexist, and generated handlers and documentation use the nested indexes.

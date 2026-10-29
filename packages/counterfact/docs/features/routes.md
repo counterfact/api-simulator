@@ -124,17 +124,18 @@ This example assumes a generated `POST /groups/{groupName}/search` operation wit
 // api/routes/groups/{groupName}/search.ts
 import type { Routes } from "../../../types/index.js";
 
-export const POST: Routes["/groups/{groupName}/search"]["POST"] = function ($) {
-  if ($.headers["x-token"] !== "super-secret") {
-    return $.response.status(401).text("Unauthorized");
-  }
+export const POST: Routes["/groups"]["/{groupName}"]["/search"]["POST"] =
+  function ($) {
+    if ($.headers["x-token"] !== "super-secret") {
+      return $.response.status(401).text("Unauthorized");
+    }
 
-  const content =
-    `Results for "${$.query.keyword}" in ${$.path.groupName}` +
-    ` with tags: ${$.body.tags.join(", ")}`;
+    const content =
+      `Results for "${$.query.keyword}" in ${$.path.groupName}` +
+      ` with tags: ${$.body.tags.join(", ")}`;
 
-  return $.response.status(200).text(content);
-};
+    return $.response.status(200).text(content);
+  };
 ```
 
 All four properties are typed from your OpenAPI spec, so autocomplete works for parameter names and values. GET and HEAD handlers receive no body; put their inputs in path, query, or header parameters.

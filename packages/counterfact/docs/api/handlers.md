@@ -1,14 +1,13 @@
 # Handler arguments
 
 Export one function per HTTP method from a file under `routes/`. Import `Routes`
-from the generated `types/index.js` entry point and select the operation by its
-OpenAPI path and uppercase method:
+from the generated `types/index.js` entry point and select each slash-prefixed path segment followed by the uppercase method:
 
 ```ts
 // api/routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   return $.response.status(200).random();
 };
 ```
@@ -20,7 +19,7 @@ derive it from the same contract:
 ```ts
 import type { Routes } from "./api/types/index.js";
 
-type GetPet = Routes["/pet/{petId}"]["GET"];
+type GetPet = Routes["/pet"]["/{petId}"]["GET"];
 type GetPetPath = Parameters<GetPet>[0]["path"];
 ```
 

@@ -142,13 +142,13 @@ describe("central generated types", () => {
         const callback: Components["callbacks"]["Done"]["{$request.query.callback}"]["post"]["requestBody"]["content"]["application/json"]["schema"] = "done";
         const path: Components["pathItems"]["Health"]["get"]["responses"]["204"]["description"] = "Healthy";
         const media: Components["mediaTypes"]["Json"]["schema"] = "ok";
-        const handler: Routes["/pets/{id}"]["GET"] = ($) => $.response.status(204).empty();
+        const handler: Routes["/pets"]["/{id}"]["GET"] = ($) => $.response.status(204).empty();
         // @ts-expect-error The id is required.
         const missing: Schemas["pet-record"] = {};
         // @ts-expect-error Parameters retain their value types.
         const wrong: Components["parameters"]["Limit"] = "ten";
         // @ts-expect-error Only declared methods exist.
-        type Missing = Routes["/pets/{id}"]["POST"];
+        type Missing = Routes["/pets"]["/{id}"]["POST"];
       `,
       );
       expect(diagnostics($.path("consumer.ts"))).toEqual([]);
@@ -220,7 +220,7 @@ describe("central generated types", () => {
         const second: Schemas["Value"] = 1;
         // @ts-expect-error Neither version accepts a boolean.
         const wrong: Schemas["Value"] = true;
-        const handler: Routes["/pets/{id}"]["GET"] = ($) => $.response.status(204).empty();
+        const handler: Routes["/pets"]["/{id}"]["GET"] = ($) => $.response.status(204).empty();
       `,
       );
       expect(diagnostics($.path("consumer.ts"))).toEqual([]);
@@ -251,10 +251,10 @@ describe("central generated types", () => {
       await $.add(
         "consumer.ts",
         `import type { Routes } from "./api/types/index.js";
-        const get: Routes["/health/"]["GET"] = ($) => $.response.status(204).empty();
+        const get: Routes["/health"]["/"]["GET"] = ($) => $.response.status(204).empty();
         const query: Routes["/custom"]["QUERY"] = ($) => $.response.status(204).empty();
         // @ts-expect-error Map keys preserve the original trailing slash.
-        type Normalized = Routes["/health"];
+        type Normalized = Routes["/health"]["GET"];
       `,
       );
       expect(diagnostics($.path("consumer.ts"))).toEqual([]);
@@ -290,6 +290,150 @@ describe("central generated types", () => {
         const handler: Routes["/route124"]["GET"] = ($) => $.response.status(204).empty();`,
       );
       expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+    });
+  });
+  it.each([
+    ["forward", (entries: [string, unknown][]) => entries],
+    ["reverse", (entries: [string, unknown][]) => entries.toReversed()],
+  ] as const)(
+    "merges parent methods and child branches in %s declaration order",
+    async (_order, arrange) => {
+      await usingTemporaryFiles(async ($) => {
+        const greeting = {
+          responses: {
+            200: {
+              description: "Greeting",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["message"],
+                    properties: { message: { type: "string" } },
+                  },
+                },
+              },
+            },
+          },
+        };
+        const empty = { responses: { 204: { description: "Empty" } } };
+        const paths = {
+          "/hello/world": { get: greeting },
+          "/hello": { post: empty },
+          "/hello/v1.0/{item-id}/messages": {
+            get: {
+              ...greeting,
+              parameters: [
+                {
+                  in: "path",
+                  name: "item-id",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+            },
+          },
+          "/hello/archive/": { get: empty },
+          "/hello/POST": { get: empty },
+          "/": { get: empty },
+        };
+        const entries = Object.entries(paths);
+        await $.add(
+          "spec.json",
+          JSON.stringify({
+            openapi: "3.0.3",
+            info: spec.info,
+            paths: Object.fromEntries(arrange(entries)),
+          }),
+        );
+        const generator = new CodeGenerator(
+          $.path("spec.json"),
+          $.path("api"),
+          { routes: true, types: true },
+        );
+        await generator.generate();
+        await $.add(
+          "consumer.ts",
+          `import type { Routes } from "./api/types/index.js";
+        const world: Routes["/hello"]["/world"]["GET"] = ($) => $.response.status(200).json({ message: "hello" });
+        const parent: Routes["/hello"]["POST"] = ($) => $.response.status(204).empty();
+        const root: Routes["/"]["GET"] = ($) => $.response.status(204).empty();
+        const trailing: Routes["/hello"]["/archive"]["/"]["GET"] = ($) => $.response.status(204).empty();
+        const namedLikeMethod: Routes["/hello"]["/POST"]["GET"] = ($) => $.response.status(204).empty();
+        const parameterized: Routes["/hello"]["/v1.0"]["/{item-id}"]["/messages"]["GET"] = ($) => {
+          const id: string = $.path["item-id"];
+          return $.response.status(200).json({ message: id });
+        };
+        const child: keyof Routes["/hello"] = "/world";
+        const method: keyof Routes["/hello"] = "POST";
+        // @ts-expect-error Full-path aliases are not emitted.
+        type Flat = Routes["/hello/world"];
+        // @ts-expect-error A parent directory does not invent an operation.
+        type Missing = Routes["/hello"]["GET"];
+        // @ts-expect-error The parameterized branch is not itself an endpoint.
+        type BranchOnly = Routes["/hello"]["/v1.0"]["/{item-id}"]["GET"];
+        // @ts-expect-error A terminal slash is preserved as its own segment.
+        type NoTrailingSlash = Routes["/hello"]["/archive"]["GET"];
+      `,
+        );
+        expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+        expect(diagnostics($.path("api/routes/hello/world.ts"))).toEqual([]);
+        expect(
+          diagnostics($.path("api/routes/hello/v1.0/{item-id}/messages.ts")),
+        ).toEqual([]);
+        expect(await $.read("api/routes/hello/world.ts")).toContain(
+          'Routes["/hello"]["/world"]["GET"]',
+        );
+        const index = await $.read("api/types/index.ts");
+        await generator.generate();
+        expect(await $.read("api/types/index.ts")).toBe(index);
+      });
+    },
+  );
+
+  it("preserves edited handlers while adding a nested handler with an aliased central import", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "spec.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: spec.info,
+          paths: {
+            "/hello/world": {
+              get: {
+                responses: {
+                  200: {
+                    description: "Greeting",
+                    content: {
+                      "application/json": { schema: { type: "string" } },
+                    },
+                  },
+                },
+              },
+              post: { responses: { 204: { description: "Empty" } } },
+            },
+          },
+        }),
+      );
+      const original = `import type { HTTP_GET } from "../../types/paths/hello/world.types.js";
+const Routes = "keep this local binding";
+// Keep the handler text and the compatibility import.
+export const GET: HTTP_GET = ($) => $.response.status(200).json(Routes);
+`;
+      await $.add("api/routes/hello/world.ts", original);
+      const generator = new CodeGenerator($.path("spec.json"), $.path("api"), {
+        routes: true,
+        types: true,
+      });
+      await generator.generate();
+      const content = await $.read("api/routes/hello/world.ts");
+      expect(content).toContain("Routes as Routes2");
+      expect(content).toContain('Routes2["/hello"]["/world"]["POST"]');
+      expect(content).toContain(
+        original.slice(original.indexOf("const Routes")),
+      );
+      expect(diagnostics($.path("api/routes/hello/world.ts"))).toEqual([]);
+      await generator.generate();
+      expect(await $.read("api/routes/hello/world.ts")).toBe(content);
     });
   });
 });

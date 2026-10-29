@@ -144,6 +144,11 @@ paths:
       responses:
         "204":
           description: Healthy
+  /health/check:
+    get:
+      responses:
+        "204":
+          description: Check complete
 components:
   schemas:
     HealthStatus:
@@ -183,6 +188,9 @@ const alias: Same<Schemas, Components["schemas"]> = true;
 const model: Schemas["HealthStatus"] = "healthy";
 const same: Components["schemas"]["HealthStatus"] = model;
 const handler: Routes["/health"]["GET"] = ($) => $.response.status(204).empty();
+const child: Routes["/health"]["/check"]["GET"] = ($) => $.response.status(204).empty();
+// @ts-expect-error Nested paths use one index per segment.
+type Flat = Routes["/health/check"];
 const startup: Scenario = ($) => { const arg: Scenario$ = $; void arg.context; };
 const middleware: Middleware["/"] = ($, next) => next($);
 function constructorHelper($: Context$) { const json: Promise<unknown> = $.readJson("seed.json"); }

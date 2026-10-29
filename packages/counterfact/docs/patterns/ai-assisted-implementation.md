@@ -23,7 +23,7 @@ The agent sees the fully typed `$` parameter, the spec-derived response types, a
 // api/routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet/{petId}"]["GET"] = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   return pet
     ? $.response.status(200).json(pet)

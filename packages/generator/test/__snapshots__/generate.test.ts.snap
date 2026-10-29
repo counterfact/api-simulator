@@ -37,22 +37,35 @@ import type { HTTP_PUT as Route13_PUT } from "./paths/user/{username}.types.js";
 import type { HTTP_DELETE as Route13_DELETE } from "./paths/user/{username}.types.js";
 export type { Context$, Scenario, Scenario$, Middleware } from "./helpers.js";
 export type Routes = {
-  "/pet": { POST: Route1_POST; PUT: Route1_PUT };
-  "/pet/findByStatus": { GET: Route2_GET };
-  "/pet/findByTags": { GET: Route3_GET };
-  "/pet/{petId}": { GET: Route4_GET; POST: Route4_POST; DELETE: Route4_DELETE };
-  "/pet/{petId}/uploadImage": { POST: Route5_POST };
-  "/store/inventory": { GET: Route6_GET };
-  "/store/order": { POST: Route7_POST };
-  "/store/order/{orderId}": { GET: Route8_GET; DELETE: Route8_DELETE };
-  "/user": { POST: Route9_POST };
-  "/user/createWithList": { POST: Route10_POST };
-  "/user/login": { GET: Route11_GET };
-  "/user/logout": { GET: Route12_GET };
-  "/user/{username}": {
-    GET: Route13_GET;
-    PUT: Route13_PUT;
-    DELETE: Route13_DELETE;
+  "/pet": {
+    POST: Route1_POST;
+    PUT: Route1_PUT;
+    "/findByStatus": { GET: Route2_GET };
+    "/findByTags": { GET: Route3_GET };
+    "/{petId}": {
+      GET: Route4_GET;
+      POST: Route4_POST;
+      DELETE: Route4_DELETE;
+      "/uploadImage": { POST: Route5_POST };
+    };
+  };
+  "/store": {
+    "/inventory": { GET: Route6_GET };
+    "/order": {
+      POST: Route7_POST;
+      "/{orderId}": { GET: Route8_GET; DELETE: Route8_DELETE };
+    };
+  };
+  "/user": {
+    POST: Route9_POST;
+    "/createWithList": { POST: Route10_POST };
+    "/login": { GET: Route11_GET };
+    "/logout": { GET: Route12_GET };
+    "/{username}": {
+      GET: Route13_GET;
+      PUT: Route13_PUT;
+      DELETE: Route13_DELETE;
+    };
   };
 };
 export type Components = {
@@ -419,7 +432,7 @@ export type HTTP_PUT_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 16`] = `
 "routes/pet/findByStatus.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/pet/findByStatus"]["GET"] = async ($) => {
+export const GET: Routes["/pet"]["/findByStatus"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -489,7 +502,7 @@ export type HTTP_GET_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 18`] = `
 "routes/pet/findByTags.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/pet/findByTags"]["GET"] = async ($) => {
+export const GET: Routes["/pet"]["/findByTags"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -559,13 +572,13 @@ export type HTTP_GET_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 20`] = `
 "routes/pet/{petId}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/pet/{petId}"]["GET"] = async ($) => {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
-export const POST: Routes["/pet/{petId}"]["POST"] = async ($) => {
+export const POST: Routes["/pet"]["/{petId}"]["POST"] = async ($) => {
   return $.response.status(405).empty();
 };
-export const DELETE: Routes["/pet/{petId}"]["DELETE"] = async ($) => {
+export const DELETE: Routes["/pet"]["/{petId}"]["DELETE"] = async ($) => {
   return $.response.status(400).empty();
 };
 "
@@ -715,7 +728,9 @@ export type HTTP_DELETE_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 22`] = `
 "routes/pet/{petId}/uploadImage.ts:import type { Routes } from "../../../types/index.js";
-export const POST: Routes["/pet/{petId}/uploadImage"]["POST"] = async ($) => {
+export const POST: Routes["/pet"]["/{petId}"]["/uploadImage"]["POST"] = async (
+  $,
+) => {
   return $.response.status(200).random();
 };
 "
@@ -779,7 +794,7 @@ export type HTTP_POST_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 24`] = `
 "routes/store/inventory.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/store/inventory"]["GET"] = async ($) => {
+export const GET: Routes["/store"]["/inventory"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -833,7 +848,7 @@ export type HTTP_GET_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 26`] = `
 "routes/store/order.ts:import type { Routes } from "../../types/index.js";
-export const POST: Routes["/store/order"]["POST"] = async ($) => {
+export const POST: Routes["/store"]["/order"]["POST"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -894,12 +909,15 @@ export type HTTP_POST_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 28`] = `
 "routes/store/order/{orderId}.ts:import type { Routes } from "../../../types/index.js";
-export const GET: Routes["/store/order/{orderId}"]["GET"] = async ($) => {
+export const GET: Routes["/store"]["/order"]["/{orderId}"]["GET"] = async (
+  $,
+) => {
   return $.response.status(200).random();
 };
-export const DELETE: Routes["/store/order/{orderId}"]["DELETE"] = async ($) => {
-  return $.response.status(400).empty();
-};
+export const DELETE: Routes["/store"]["/order"]["/{orderId}"]["DELETE"] =
+  async ($) => {
+    return $.response.status(400).empty();
+  };
 "
 `;
 
@@ -1073,7 +1091,7 @@ export type HTTP_POST_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 32`] = `
 "routes/user/createWithList.ts:import type { Routes } from "../../types/index.js";
-export const POST: Routes["/user/createWithList"]["POST"] = async ($) => {
+export const POST: Routes["/user"]["/createWithList"]["POST"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -1141,7 +1159,7 @@ export type HTTP_POST_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 34`] = `
 "routes/user/login.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/user/login"]["GET"] = async ($) => {
+export const GET: Routes["/user"]["/login"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -1214,7 +1232,7 @@ export type HTTP_GET_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 36`] = `
 "routes/user/logout.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/user/logout"]["GET"] = async ($) => {
+export const GET: Routes["/user"]["/logout"]["GET"] = async ($) => {
   return $.response.status(200).empty();
 };
 "
@@ -1262,13 +1280,13 @@ export type HTTP_GET_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 38`] = `
 "routes/user/{username}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/user/{username}"]["GET"] = async ($) => {
+export const GET: Routes["/user"]["/{username}"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
-export const PUT: Routes["/user/{username}"]["PUT"] = async ($) => {
+export const PUT: Routes["/user"]["/{username}"]["PUT"] = async ($) => {
   return $.response.status(200).empty();
 };
-export const DELETE: Routes["/user/{username}"]["DELETE"] = async ($) => {
+export const DELETE: Routes["/user"]["/{username}"]["DELETE"] = async ($) => {
   return $.response.status(400).empty();
 };
 "
@@ -1501,36 +1519,42 @@ export type { Context$, Scenario, Scenario$, Middleware } from "./helpers.js";
 export type Routes = {
   "/": { GET: Route1_GET };
   "/count": { GET: Route2_GET };
-  "/hello/kitty": { GET: Route3_GET };
-  "/hello/{name}": { GET: Route4_GET };
+  "/hello": { "/kitty": { GET: Route3_GET }; "/{name}": { GET: Route4_GET } };
   "/path-one": { GET: Route5_GET };
-  "/weird/path/with:colon": { GET: Route6_GET };
-  "/users": { GET: Route7_GET; POST: Route7_POST };
-  "/users/{userId}": {
-    GET: Route8_GET;
-    PUT: Route8_PUT;
-    PATCH: Route8_PATCH;
-    DELETE: Route8_DELETE;
+  "/weird": { "/path": { "/with:colon": { GET: Route6_GET } } };
+  "/users": {
+    GET: Route7_GET;
+    POST: Route7_POST;
+    "/{userId}": {
+      GET: Route8_GET;
+      PUT: Route8_PUT;
+      PATCH: Route8_PATCH;
+      DELETE: Route8_DELETE;
+    };
   };
   "/events": { POST: Route9_POST };
-  "/products/{productId}": { GET: Route10_GET };
+  "/products": { "/{productId}": { GET: Route10_GET } };
   "/uploads": { POST: Route11_POST };
-  "/legacy/items": { GET: Route12_GET };
-  "/reports/{reportId}": { GET: Route13_GET };
+  "/legacy": { "/items": { GET: Route12_GET } };
+  "/reports": { "/{reportId}": { GET: Route13_GET } };
   "/ping": { GET: Route14_GET };
   "/metadata": { PUT: Route15_PUT };
-  "/xml/book": { GET: Route16_GET };
-  "/xml/note": { GET: Route17_GET };
-  "/xml/snippet": { GET: Route18_GET };
-  "/xml/secret": { GET: Route19_GET };
-  "/xml/playlist": { GET: Route20_GET };
-  "/relationships/{targetId}": {
-    GET: Route21_GET;
-    LINK: Route21_LINK;
-    UNLINK: Route21_UNLINK;
+  "/xml": {
+    "/book": { GET: Route16_GET };
+    "/note": { GET: Route17_GET };
+    "/snippet": { GET: Route18_GET };
+    "/secret": { GET: Route19_GET };
+    "/playlist": { GET: Route20_GET };
+  };
+  "/relationships": {
+    "/{targetId}": {
+      GET: Route21_GET;
+      LINK: Route21_LINK;
+      UNLINK: Route21_UNLINK;
+    };
   };
   "/explodable-parameters": { GET: Route22_GET };
-  "/stream/events": { GET: Route23_GET };
+  "/stream": { "/events": { GET: Route23_GET } };
   "/search": { GET: Route24_GET };
   "/type-edge-cases": { GET: Route25_GET };
   "/schema-accuracy": { GET: Route26_GET };
@@ -2168,7 +2192,7 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 41`] = `
 "routes/hello/kitty.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/hello/kitty"]["GET"] = async ($) => {
+export const GET: Routes["/hello"]["/kitty"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2225,7 +2249,7 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 43`] = `
 "routes/hello/{name}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/hello/{name}"]["GET"] = async ($) => {
+export const GET: Routes["/hello"]["/{name}"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2359,7 +2383,9 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 47`] = `
 "routes/weird/path/with:colon.ts:import type { Routes } from "../../../types/index.js";
-export const GET: Routes["/weird/path/with:colon"]["GET"] = async ($) => {
+export const GET: Routes["/weird"]["/path"]["/with:colon"]["GET"] = async (
+  $,
+) => {
   return $.response.status(200).random();
 };
 "
@@ -2539,16 +2565,16 @@ export type HTTP_POST_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 51`] = `
 "routes/users/{userId}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/users/{userId}"]["GET"] = async ($) => {
+export const GET: Routes["/users"]["/{userId}"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
-export const PUT: Routes["/users/{userId}"]["PUT"] = async ($) => {
+export const PUT: Routes["/users"]["/{userId}"]["PUT"] = async ($) => {
   return $.response.status(200).random();
 };
-export const PATCH: Routes["/users/{userId}"]["PATCH"] = async ($) => {
+export const PATCH: Routes["/users"]["/{userId}"]["PATCH"] = async ($) => {
   return $.response.status(200).random();
 };
-export const DELETE: Routes["/users/{userId}"]["DELETE"] = async ($) => {
+export const DELETE: Routes["/users"]["/{userId}"]["DELETE"] = async ($) => {
   return $.response.status(204).empty();
 };
 "
@@ -2795,7 +2821,7 @@ export type HTTP_POST_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 55`] = `
 "routes/products/{productId}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/products/{productId}"]["GET"] = async ($) => {
+export const GET: Routes["/products"]["/{productId}"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2921,7 +2947,7 @@ export type HTTP_POST_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 59`] = `
 "routes/legacy/items.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/legacy/items"]["GET"] = async ($) => {
+export const GET: Routes["/legacy"]["/items"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2977,7 +3003,7 @@ export type HTTP_GET_Cookie = { session_id?: string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 61`] = `
 "routes/reports/{reportId}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/reports/{reportId}"]["GET"] = async ($) => {
+export const GET: Routes["/reports"]["/{reportId}"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3147,7 +3173,7 @@ export type HTTP_PUT_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 67`] = `
 "routes/xml/book.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/xml/book"]["GET"] = async ($) => {
+export const GET: Routes["/xml"]["/book"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3204,7 +3230,7 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 69`] = `
 "routes/xml/note.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/xml/note"]["GET"] = async ($) => {
+export const GET: Routes["/xml"]["/note"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3261,7 +3287,7 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 71`] = `
 "routes/xml/snippet.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/xml/snippet"]["GET"] = async ($) => {
+export const GET: Routes["/xml"]["/snippet"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3318,7 +3344,7 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 73`] = `
 "routes/xml/secret.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/xml/secret"]["GET"] = async ($) => {
+export const GET: Routes["/xml"]["/secret"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3375,7 +3401,7 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 75`] = `
 "routes/xml/playlist.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/xml/playlist"]["GET"] = async ($) => {
+export const GET: Routes["/xml"]["/playlist"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3432,13 +3458,17 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 77`] = `
 "routes/relationships/{targetId}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/relationships/{targetId}"]["GET"] = async ($) => {
+export const GET: Routes["/relationships"]["/{targetId}"]["GET"] = async (
+  $,
+) => {
   return $.response.status(200).random();
 };
-export const LINK: Routes["/relationships/{targetId}"]["LINK"] = async ($) => {
+export const LINK: Routes["/relationships"]["/{targetId}"]["LINK"] = async (
+  $,
+) => {
   return $.response.status(200).random();
 };
-export const UNLINK: Routes["/relationships/{targetId}"]["UNLINK"] = async (
+export const UNLINK: Routes["/relationships"]["/{targetId}"]["UNLINK"] = async (
   $,
 ) => {
   return $.response.status(200).random();
@@ -3619,7 +3649,7 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 81`] = `
 "routes/stream/events.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/stream/events"]["GET"] = async ($) => {
+export const GET: Routes["/stream"]["/events"]["GET"] = async ($) => {
   async function* items() {
     // yield items here
   }

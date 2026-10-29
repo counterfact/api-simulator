@@ -13,7 +13,9 @@ We can also use those types on the _client_ side, assuming the client is written
 ## Public generated types
 
 Generated projects expose `Routes`, `Components`, and `Schemas` through
-`types/index.ts`. Routes import `Routes` from that entry point and use
+`types/index.ts`. `Routes` is a tree of slash-prefixed segments: an operation on
+`/hello/world` uses `Routes["/hello"]["/world"]["GET"]`. Parent operations and
+child paths can share one branch. Routes import `Routes` from that entry point and use
 `Routes["/hello-world"]["GET"]`; model consumers use `Schemas["Message"]`
 or `Components["schemas"]["Message"]`. Direct imports of operation and
 component types are deprecated for consumers.

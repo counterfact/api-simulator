@@ -74,15 +74,34 @@ import type { Components, Routes, Schemas } from "../../types/index.js";
 type Pet = Schemas["Pet"];
 type SamePet = Components["schemas"]["Pet"];
 
-export const GET: Routes["/pet/{petId}"]["GET"] = async ($) => {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 ```
 
-`Routes` maps the paths in your spec to their uppercase HTTP methods. Each entry
-is the existing Counterfact handler contract, including typed inputs, context,
-and response builders. Paths retain their original spelling, including trailing
-slashes; generated route filenames still use Counterfact's normalized paths.
+`Routes` is a tree of path segments. Each segment keeps its leading `/`, and
+uppercase HTTP methods select the handler contract at that branch. A branch can
+contain both operations on its own path and child branches: `/hello` and
+`/hello/world` share the `Routes["/hello"]` branch.
+
+For GET operations, the indexes are:
+
+| OpenAPI path    | Handler type                             |
+| --------------- | ---------------------------------------- |
+| `/hello`        | `Routes["/hello"]["GET"]`                |
+| `/hello/world`  | `Routes["/hello"]["/world"]["GET"]`      |
+| `/pets/{petId}` | `Routes["/pets"]["/{petId}"]["GET"]`     |
+| `/`             | `Routes["/"]["GET"]`                     |
+| `/hello/world/` | `Routes["/hello"]["/world"]["/"]["GET"]` |
+
+Each handler retains its typed inputs, context, and response builders. Parameter
+segments use their literal names, such as `/{petId}`. A terminal slash is an
+empty `/` segment, preserving the spec's original spelling; generated route
+filenames still use Counterfact's normalized paths.
+
+For an existing full-path annotation, split the path into segment indexes.
+Regeneration preserves existing handler text, so update those annotations in
+your code when adopting the tree.
 
 `Components` maps the original OpenAPI component categories and names. `Schemas`
 is an alias of `Components["schemas"]`. All declared components are included,

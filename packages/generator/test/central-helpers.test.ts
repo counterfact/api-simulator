@@ -110,7 +110,7 @@ describe("central helper exports", () => {
         const scenarioModel: Schemas["Scenario"] = 1;
         const scenarioArgModel: Schemas["Scenario$"] = true;
         const contextModel: Schemas["Context$"] = "ok";
-        const handler: Routes["/admin/reports/events"]["GET"] = ($) => $.response.status(204).empty();
+        const handler: Routes["/admin"]["/reports"]["/events"]["GET"] = ($) => $.response.status(204).empty();
       `,
       );
       expect(diagnostics($.path("consumer.ts"))).toEqual([]);

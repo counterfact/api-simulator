@@ -102,7 +102,7 @@ export const POST: Routes["/orders"]["POST"] = function ($) {
 // api/routes/orders/{orderId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/orders/{orderId}"]["GET"] = function ($) {
+export const GET: Routes["/orders"]["/{orderId}"]["GET"] = function ($) {
   return $.context.hasOrder($.path.orderId)
     ? $.response.status(200).json({ id: $.path.orderId })
     : $.response.status(404).empty();

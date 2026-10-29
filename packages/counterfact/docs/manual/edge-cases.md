@@ -48,7 +48,7 @@ Read those flags in the route handler. The OpenAPI operation must declare the sh
 // api/routes/payments/{paymentId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/payments/{paymentId}"]["GET"] = function ($) {
+export const GET: Routes["/payments"]["/{paymentId}"]["GET"] = function ($) {
   if ($.context.isRateLimited)
     return $.response.status(429).text("Too Many Requests");
   if ($.context.isBroken)
@@ -79,7 +79,7 @@ To simulate intermittent failures, use a counter or a random function:
 ```ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/payments/{paymentId}"]["GET"] = function ($) {
+export const GET: Routes["/payments"]["/{paymentId}"]["GET"] = function ($) {
   $.context.callCount += 1;
   if ($.context.callCount % 3 === 0) {
     return $.response.status(503).text("Flaky error");
@@ -93,7 +93,7 @@ Or vary the response probabilistically:
 ```ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/payments/{paymentId}"]["GET"] = function ($) {
+export const GET: Routes["/payments"]["/{paymentId}"]["GET"] = function ($) {
   if (Math.random() < 0.2) {
     return $.response.status(503).text("Flaky error");
   }
@@ -118,7 +118,7 @@ export class Context {
 // api/routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet/{petId}"]["GET"] = async function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = async function ($) {
   await $.delay($.context.latencyMs);
   const pet = $.context.get($.path.petId);
   return pet
