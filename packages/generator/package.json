@@ -54,7 +54,7 @@
   "dependencies": {
     "@counterfact/openapi": "0.1.6",
     "@counterfact/types": "0.2.0",
-    "chokidar": "5.0.0",
+    "chokidar": "6.0.0",
     "debug": "4.4.3",
     "prettier": "3.9.10",
     "typescript": "6.0.3"
