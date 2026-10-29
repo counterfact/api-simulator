@@ -367,19 +367,27 @@ try {
   assert.deepEqual(info.state, { catalog: null, inventory: null });
   assert.equal(check.ok, false);
   assert.match(check.message, /random product stub/);
+  assert.equal(check.flow.status, "await_edit");
   const workspace = async (action, phaseId, revision) => (await fetch(origin + "/tutorial/workspace", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, phaseId, revision, sessionId: info.sessionId }),
   })).json();
-  assert.equal((await workspace("checkpoint", "orientation")).ok, true);
+  const completedOrientation = await workspace("checkpoint", "orientation");
+  assert.equal(completedOrientation.ok, true);
+  assert.equal(completedOrientation.flow.status, "await_next_lesson");
+  const nextLesson = await workspace("advance", "orientation");
+  assert.equal(nextLesson.flow.status, "advance");
+  assert.equal(nextLesson.flow.nextPhaseId, "explore");
   assert.equal((await workspace("checkpoint", "explore")).ok, true);
   assert.equal((await workspace("checkpoint", "description-example")).ok, true);
   const proposal = await workspace("preview", "catalog");
   assert.equal(proposal.ok, true);
+  assert.equal(proposal.flow.status, "await_approval");
   assert.equal(proposal.files.length, 1);
   assert.match(proposal.files[0].after, /const catalog/);
   assert.equal((await (await fetch(origin + "/tutorial/info")).json()).revision, info.revision);
   const applied = await workspace("prepare", "catalog", proposal.revision);
   assert.equal(applied.ok, true);
+  assert.equal(applied.flow.status, "await_edit");
   assert.deepEqual(applied.changes.find(change => change.actor === "milo").files, proposal.files);
   const milestone = await fetch(origin + "/tutorial/event", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "opened", phaseId: "orientation" }),

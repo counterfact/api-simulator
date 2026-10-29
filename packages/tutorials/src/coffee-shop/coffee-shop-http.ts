@@ -4,10 +4,14 @@ import { join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { coffeeShopPage } from "./coffee-shop-page.js";
 import { checkWalkthroughSave, walkthroughInfo } from "./coffee-shop-checks.js";
+import { phasesForVersion } from "./coffee-shop-lessons.js";
+import { createWalkthroughWorkflow } from "./coffee-shop-workflow.js";
+import type { WorkflowRequest } from "./coffee-shop-workflow.js";
 import {
   checkpointWalkthroughStep,
   prepareWalkthroughStep,
   previewWalkthroughStep,
+  walkthroughWorkspace,
 } from "./coffee-shop-workspace.js";
 import { reportWalkthroughEvent } from "./coffee-shop-telemetry.js";
 
@@ -50,6 +54,14 @@ export async function createTourRequestHandler(
   if (marker.version !== 4 && marker.version !== 5 && marker.version !== 6)
     return;
   const version = marker.version;
+  const workflow = createWalkthroughWorkflow(phasesForVersion(version), {
+    workspace: () => walkthroughWorkspace(root),
+    preview: (phaseId) => previewWalkthroughStep(root, phaseId),
+    prepare: (phaseId, revision) =>
+      prepareWalkthroughStep(root, phaseId, { revision }),
+    check: (phaseId) => checkWalkthroughSave(root, phaseId),
+    checkpoint: (phaseId) => checkpointWalkthroughStep(root, phaseId),
+  });
   return async (
     request: IncomingMessage,
     response: ServerResponse,
@@ -114,7 +126,7 @@ export async function createTourRequestHandler(
       const body = await readBody(request);
       const phaseId = typeof body.phaseId === "string" ? body.phaseId : "";
       if (path === "/tutorial/check") {
-        json(200, await checkWalkthroughSave(root, phaseId));
+        json(200, await workflow.invoke({ action: "check", phaseId }));
         return true;
       }
       const info = await walkthroughInfo(root, context());
@@ -127,17 +139,17 @@ export async function createTourRequestHandler(
         throw new Error(
           "Reload the walkthrough before changing its workspace.",
         );
-      const result =
-        body.action === "preview"
-          ? await previewWalkthroughStep(root, phaseId)
-          : body.action === "prepare"
-            ? await prepareWalkthroughStep(root, phaseId, {
-                revision:
-                  typeof body.revision === "string" ? body.revision : undefined,
-              })
-            : body.action === "checkpoint"
-              ? await checkpointWalkthroughStep(root, phaseId)
-              : { ok: false, message: "Unknown workspace action." };
+      if (
+        !["preview", "prepare", "checkpoint", "advance"].includes(
+          String(body.action),
+        )
+      )
+        throw new Error("Unknown workspace action.");
+      const result = await workflow.invoke({
+        action: body.action as WorkflowRequest["action"],
+        phaseId,
+        revision: typeof body.revision === "string" ? body.revision : undefined,
+      });
       json(200, result);
     } catch (error) {
       json(400, {

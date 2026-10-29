@@ -80,6 +80,28 @@ handler link. Background checks do not generate shopping traffic or learner
 messages. Missing, malformed, and rejected responses remain inspectable without
 inventing successful outcomes.
 
+## Workflow orchestration
+
+The native tutorial handler runs a compiled LangGraph `StateGraph` for each
+learner event. Its nodes load the project journal, preview or apply a proposal,
+validate saved code, save a checkpoint, and select the next transition. Explicit
+wait states end each invocation at approval, editing, experiment, or next-lesson
+boundaries. Preview and check requests cannot apply edits or advance lessons.
+Applying changes requires the revision of the reviewed proposal.
+
+The browser renders the conversation and observes shop and REPL experiments.
+For managed projects, it follows the graph's completion and next-lesson decisions.
+Presentation pacing, typing, hints, and experiment evidence stay in the browser;
+**Okay** does not invoke a workflow transition. Unmanaged legacy demos retain
+their existing local progression.
+
+Each invocation reads durable progress from the existing project journal. There
+is no second progress database or in-memory graph checkpoint that could disagree
+with saved project progress after restart. Graph state contains the request,
+checkpoint numbers, and operation result; it does not copy the journal's file
+history. The workflow is deterministic and requires no model API key or hosted
+LangGraph service.
+
 ## Local history and compatibility
 
 The journal watches only `openapi.yaml`, `routes/products.ts`, `routes/orders.ts`,

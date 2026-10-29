@@ -266,7 +266,23 @@ async function browser(
             files: structuredClone(server.previewFiles),
           });
         }
+        const currentIndex = phaseList.findIndex(
+          (phase) => phase.id === body?.phaseId,
+        );
+        const currentPhase = phaseList[currentIndex]!;
+        const nextPhase = phaseList[currentIndex + 1];
         value = {
+          flow: {
+            phaseId: body?.phaseId,
+            nextPhaseId: nextPhase?.id,
+            status:
+              body?.action === "advance" ||
+              nextPhase?.lesson === currentPhase.lesson
+                ? "advance"
+                : nextPhase
+                  ? "await_next_lesson"
+                  : "finished",
+          },
           ok: !server.checkpointError && !stale,
           message: stale
             ? "Your files changed since this preview."
@@ -451,6 +467,30 @@ it("starts with a coffee order to learn the tutorial before inspecting or editin
   );
   expect(app.calls.some((call) => call.path === "/shop/orders")).toBe(true);
   expect(app.calls.some((call) => call.body?.action === "prepare")).toBe(false);
+});
+
+it("keeps a completed lesson visible when starting the next lesson fails, then allows retry", async () => {
+  const app = await browser({ phase: "orientation", workspace: true });
+  app.add();
+  await app.click("checkout");
+  await new Promise((resolve) => setImmediate(resolve));
+  await app.acknowledge();
+  expect(app.completed()).toContain("orientation");
+  app.server.checkpointError = true;
+  await app.click("continue");
+  expect(app.root("lesson").textContent).toContain(
+    "Could not start the next lesson",
+  );
+  expect(app.root("continue").textContent).toContain(
+    "Explore your generated API",
+  );
+  expect(app.completed()).toContain("orientation");
+  app.server.checkpointError = false;
+  await app.click("continue");
+  expect(app.root("lesson").textContent).toContain("Open this demo folder");
+  expect(
+    app.calls.filter((call) => call.body?.action === "advance"),
+  ).toHaveLength(2);
 });
 
 it("waits for approval, a saved edit, and live requests instead of offering Okay for the exercise", async () => {

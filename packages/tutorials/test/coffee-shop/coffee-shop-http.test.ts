@@ -16,7 +16,7 @@ it("serves tutorial controls outside simulation dispatch without generated tutor
     ])
       await $.add("demo/" + file, "export {};\n");
     const context = { inventory: { "house-blend": 5 } };
-    const tutorial = await createTourRequestHandler(
+    let tutorial = await createTourRequestHandler(
       tour.destination,
       () => context,
     );
@@ -65,6 +65,22 @@ it("serves tutorial controls outside simulation dispatch without generated tutor
         }),
       });
       expect((await denied.json()).message).toContain("Reload");
+      const post = async (path: string, body: Record<string, unknown>) =>
+        (
+          await fetch(origin + path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId: info.sessionId, ...body }),
+          })
+        ).json();
+      expect(
+        (
+          await post("/tutorial/workspace", {
+            action: "advance",
+            phaseId: "orientation",
+          })
+        ).message,
+      ).toContain("Complete this lesson");
       const checkpoint = await fetch(origin + "/tutorial/workspace", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -74,7 +90,30 @@ it("serves tutorial controls outside simulation dispatch without generated tutor
           sessionId: info.sessionId,
         }),
       });
-      expect((await checkpoint.json()).ok).toBe(true);
+      expect(await checkpoint.json()).toMatchObject({
+        ok: true,
+        flow: { status: "await_next_lesson", nextPhaseId: "explore" },
+      });
+      // Recreate the graph as on a server restart: progress comes from disk.
+      tutorial = await createTourRequestHandler(
+        tour.destination,
+        () => context,
+      );
+      expect(
+        await post("/tutorial/workspace", {
+          action: "advance",
+          phaseId: "orientation",
+        }),
+      ).toMatchObject({
+        ok: true,
+        flow: { status: "advance", nextPhaseId: "explore" },
+      });
+      expect(
+        await post("/tutorial/check", { phaseId: "catalog" }),
+      ).toMatchObject({
+        ok: false,
+        flow: { status: "await_edit" },
+      });
       expect(simulatedRequests).toBe(0);
       expect((await fetch(origin + "/shop/products")).status).toBe(418);
       expect(simulatedRequests).toBe(1);

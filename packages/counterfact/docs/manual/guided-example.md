@@ -165,6 +165,9 @@ The guide is a conversation with Milo. You take turns: he explains what he wants
 to edit, you approve it, then he directs your own small edit and an API experiment.
 After the result is verified, click the button naming the next lesson, such as
 **Next Lesson: Replace random products**, to continue.
+The next lesson opens after your current lesson's progress has been saved. If
+starting it fails, Milo keeps the completed lesson visible and explains the
+problem. Click **Next Lesson** again to retry.
 Each lesson starts with a distinct heading outside Milo’s chat bubbles.
 Earlier turns stay visible so you can scroll back without changing the current
 exercise. Applied proposal statuses, quiz replies, and Milo’s explanations survive a reload

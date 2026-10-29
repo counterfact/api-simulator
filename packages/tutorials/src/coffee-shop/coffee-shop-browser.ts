@@ -1,6 +1,7 @@
 import type { ReplSubmission } from "./coffee-shop-repl.js";
 import type { EditEvent, FileChange } from "./coffee-shop-workspace.js";
 import type { LessonPhase } from "./coffee-shop-lessons.js";
+import type { WorkflowResult } from "./coffee-shop-workflow.js";
 
 /** Serialized into the page; keep all browser dependencies inside this function. */
 export function runCoffeeShopWalkthrough(
@@ -552,10 +553,13 @@ export function runCoffeeShopWalkthrough(
   async function finish(completionMessage = "Observed behavior verified.") {
     if (missing() || completed.has(phase().id) || finishing || checkpointRetry)
       return;
+    // Unmanaged legacy demos retain their original local progression. Managed
+    // projects obtain the transition from the server's LangGraph workflow.
+    let transition: WorkflowResult["flow"];
     if (info?.workspace?.enabled) {
       finishing = true;
       try {
-        const { value: result } = await json<{ ok: boolean; message: string }>(
+        const { value: result } = await json<WorkflowResult>(
           "/tutorial-workspace",
           {
             action: "checkpoint",
@@ -564,6 +568,11 @@ export function runCoffeeShopWalkthrough(
           },
         );
         if (!result.ok) throw new Error(result.message);
+        if (!result.flow || result.flow.phaseId !== phase().id)
+          throw new Error(
+            "The tutorial returned no lesson transition. Reload and retry saving progress.",
+          );
+        transition = result.flow;
         // Completion is recorded separately from file-change history.
         checkpointRetry = undefined;
       } catch (error) {
@@ -582,12 +591,21 @@ export function runCoffeeShopWalkthrough(
       }
     }
     const next = phases[index + 1];
-    if (!next || next.lesson !== phase().lesson)
-      record("tutor", "That worked. " + completionMessage);
+    const advance = transition
+      ? transition.status === "advance"
+      : next?.lesson === phase().lesson;
+    if (!advance) record("tutor", "That worked. " + completionMessage);
     completed.add(phase().id);
     report("phase_completed");
     save();
-    if (next && next.lesson === phase().lesson) move(index + 1);
+    if (advance)
+      move(
+        transition
+          ? phases.findIndex(
+              (candidate) => candidate.id === transition!.nextPhaseId,
+            )
+          : index + 1,
+      );
     else {
       if (index === phases.length - 1) report("finished");
       renderLesson();
@@ -2396,13 +2414,53 @@ export function runCoffeeShopWalkthrough(
     if (phase().id !== "retry") failedItems = undefined;
     renderShop();
   };
+  let advancing = false;
   byId("continue").onclick = async () => {
+    if (advancing) return;
     acknowledgeVisibleMessages();
     const next = phases[index + 1];
     if (completed.has(phase().id) && next) {
-      await checkFiles();
-      record("you", "Next Lesson: " + next.title);
-      move(index + 1);
+      advancing = true;
+      const currentId = phase().id;
+      try {
+        await checkFiles();
+        if (phase().id !== currentId) return;
+        let destination = index + 1;
+        if (info.workspace?.enabled) {
+          const { value: result } = await json<WorkflowResult>(
+            "/tutorial-workspace",
+            {
+              action: "advance",
+              phaseId: currentId,
+              sessionId: info.sessionId,
+            },
+          );
+          if (!result.ok) throw new Error(result.message);
+          if (
+            result.flow?.status !== "advance" ||
+            result.flow.nextPhaseId !== next.id
+          )
+            throw new Error(
+              "Could not determine the next lesson. Reload and try again.",
+            );
+          destination = phases.findIndex(
+            (candidate) => candidate.id === result.flow!.nextPhaseId,
+          );
+        }
+        record("you", "Next Lesson: " + next.title);
+        move(destination);
+      } catch (error) {
+        record(
+          "tutor",
+          "Could not start the next lesson: " +
+            (error instanceof Error ? error.message : String(error)) +
+            " Click Next Lesson to retry.",
+          true,
+        );
+        renderLesson();
+      } finally {
+        advancing = false;
+      }
     }
   };
   async function start() {
