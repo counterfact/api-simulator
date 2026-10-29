@@ -645,17 +645,17 @@ COFFEE_CATALOG = [
 ]
 
 
-def apply_coffee_scenario(journey, name):
+def apply_coffee_scenario(journey, name, expected_state=None):
     deadline = time.monotonic() + STARTUP_TIMEOUT
     transcript = ""
     while time.monotonic() < deadline:
         transcript = journey.terminal.command(".scenario " + name)
-        if "Applied " + name in transcript:
+        if "Applied " + name in transcript and (expected_state is None or expected_state()):
             submissions = journey.request("get", "/tutorial/info").json()["replSubmissions"]
             assert any(entry["command"] == ".scenario " + name for entry in submissions)
             return
         time.sleep(0.1)
-    raise AssertionError("Scenario did not become available after saving: " + transcript)
+    raise AssertionError("Scenario did not become available or reach the expected state after saving: " + transcript)
 
 
 def coffee_stock(journey, product_id):
@@ -889,7 +889,9 @@ def reusable_coffee_restock(journey):
     edit_coffee(journey, "scenarios/index.ts", "// TODO: set Dark Roast inventory to 5.", '$.context.inventory["dark-roast"] = 5;')
     journey.wait_for_http("/tutorial/check", lambda response: response.status_code == 200 and response.json()["ok"], method="post", json={"phaseId": "scenario"})
     journey.coffee_order_id = coffee_order(journey, "house-blend", 1).json()["orderId"]
-    apply_coffee_scenario(journey, "restockDarkRoast")
+    # The old TODO scenario is already registered; dispatch success alone does
+    # not show that the saved implementation has reached the running REPL.
+    apply_coffee_scenario(journey, "restockDarkRoast", lambda: coffee_stock(journey, "dark-roast") == 5)
 
 
 @then("the restock preserves other inventory and order IDs")

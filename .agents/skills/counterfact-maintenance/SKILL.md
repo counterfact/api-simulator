@@ -132,7 +132,7 @@ Each scenario should describe a coherent developer journey and preserve every di
 Python under `test-black-box/` is limited to pytest-bdd scenario bindings, step glue, and lifecycle support; do not add standalone pytest test functions as a second behavioral inventory.
 Create contracts and configurations inside the scenario's temporary project instead of relying on mutable state or shared checked-in fixtures.
 Reuse one generated project and server within a scenario, but never share mutable state between scenarios.
-Use dynamic ports, deterministic named examples, bounded polling with complete process diagnostics, and teardown that terminates every child process.
+Use dynamic ports, deterministic named examples, bounded polling with complete process diagnostics, and teardown that terminates every child process. After editing an already registered scenario, successful REPL dispatch alone does not prove the saved body is loaded; wait for its expected observable state before continuing.
 
 Allowed observation and control surfaces are:
 
