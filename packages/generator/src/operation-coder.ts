@@ -2,7 +2,7 @@ import { STREAMING_CONTENT_TYPES } from "@counterfact/types/streaming-content-ty
 
 import { pathJoin } from "./forward-slash-path.js";
 import ts from "typescript";
-import { parameter } from "./ast.js";
+import { literalType, parameter, typeReference } from "./ast.js";
 import { routeTypeReference } from "./route-type-tree.js";
 import { centralTypes } from "./central-types.js";
 import { Coder } from "./coder.js";
@@ -188,7 +188,11 @@ export class OperationCoder extends Coder {
       "Routes",
       pathJoin(script.relativePathToBase, "types/index.js"),
     );
-    return routeTypeReference(routes, routePath, this.requestMethod);
+    script.localTypes.set("Route", routeTypeReference(routes, routePath));
+    return ts.factory.createIndexedAccessTypeNode(
+      typeReference("Route"),
+      literalType(this.requestMethod.toUpperCase()),
+    );
   }
 
   public override modulePath(): string {

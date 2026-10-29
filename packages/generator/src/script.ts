@@ -48,6 +48,7 @@ export class Script {
   public externalImport = new Map<string, ExternalImportEntry>();
   public cache = new Map<string, string>();
   public reservedNames = new Set<string>();
+  public localTypes = new Map<string, ts.TypeNode>();
   public statementBuilders = new Map<string, () => ts.Statement[]>();
 
   public constructor(
@@ -372,6 +373,9 @@ export class Script {
         ...this.externalImportStatements(contextPath),
         ...this.importStatements(),
         ...this.versionsTypeStatements(),
+        ...[...this.localTypes].map(([name, type]) =>
+          typeAlias(name, type, false),
+        ),
         ...this.exportStatements(),
         ...[...this.statementBuilders.values()].flatMap((build) => build()),
       ],

@@ -15,3 +15,5 @@ Fix versioned handler narrowing after `minVersion()` checks, including early ret
 Organize `Routes` as a tree of slash-prefixed path segments. Select `/hello/world` with `Routes["/hello"]["/world"]`; parent operations and child branches coexist, and generated handlers and documentation use the nested indexes.
 
 Write watched helper modules atomically and skip unchanged content so TypeScript readers do not observe empty modules during regeneration.
+
+Declare a local `Route` alias once per generated route file and annotate handlers with `Route["GET"]`, `Route["POST"]`, and other method keys. Regeneration reuses matching aliases and avoids existing local names while preserving user code.

@@ -381,7 +381,7 @@ describe("central generated types", () => {
           diagnostics($.path("api/routes/hello/v1.0/{item-id}/messages.ts")),
         ).toEqual([]);
         expect(await $.read("api/routes/hello/world.ts")).toContain(
-          'Routes["/hello"]["/world"]["GET"]',
+          'type Route = Routes["/hello"]["/world"];',
         );
         const index = await $.read("api/types/index.ts");
         await generator.generate();
@@ -427,7 +427,8 @@ export const GET: HTTP_GET = ($) => $.response.status(200).json(Routes);
       await generator.generate();
       const content = await $.read("api/routes/hello/world.ts");
       expect(content).toContain("Routes as Routes2");
-      expect(content).toContain('Routes2["/hello"]["/world"]["POST"]');
+      expect(content).toContain('type Route = Routes2["/hello"]["/world"];');
+      expect(content).toContain('export const POST: Route["POST"]');
       expect(content).toContain(
         original.slice(original.indexOf("const Routes")),
       );
@@ -436,4 +437,54 @@ export const GET: HTTP_GET = ($) => $.response.status(200).json(Routes);
       expect(await $.read("api/routes/hello/world.ts")).toBe(content);
     });
   });
+  it.each([
+    { declarations: 'type Route = API["/hello"]["/world"];', alias: "Route" },
+    {
+      declarations: 'type Endpoint = API["/hello"]["/world"];',
+      alias: "Endpoint",
+    },
+    {
+      declarations: 'type Route = string; const Route2 = "keep";',
+      alias: "Route3",
+    },
+  ])(
+    "reuses a matching alias or avoids occupied names: $alias",
+    async ({ declarations, alias }) => {
+      await usingTemporaryFiles(async ($) => {
+        await $.add(
+          "spec.json",
+          JSON.stringify({
+            openapi: "3.0.3",
+            info: spec.info,
+            paths: {
+              "/hello/world": {
+                get: { responses: { 204: { description: "Empty" } } },
+                post: { responses: { 204: { description: "Empty" } } },
+              },
+            },
+          }),
+        );
+        const original =
+          'import type { Routes as API } from "../../types/index.js";\n' +
+          declarations +
+          "\n";
+        await $.add("api/routes/hello/world.ts", original);
+        const generator = new CodeGenerator(
+          $.path("spec.json"),
+          $.path("api"),
+          { routes: true, types: true },
+        );
+        await generator.generate();
+        const content = await $.read("api/routes/hello/world.ts");
+        expect(content).toContain(declarations);
+        expect(content).toContain(`export const GET: ${alias}["GET"]`);
+        expect(content).toContain(`export const POST: ${alias}["POST"]`);
+        expect(content.match(/import type/g)).toHaveLength(1);
+        expect(content).toContain(`type ${alias} = API["/hello"]["/world"];`);
+        expect(diagnostics($.path("api/routes/hello/world.ts"))).toEqual([]);
+        await generator.generate();
+        expect(await $.read("api/routes/hello/world.ts")).toBe(content);
+      });
+    },
+  );
 });

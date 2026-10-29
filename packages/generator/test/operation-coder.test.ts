@@ -32,7 +32,7 @@ describe("an OperationCoder", () => {
 
     const script = new Repository().get("routes/hello.ts");
     expect(printNode(coder.typeDeclaration(undefined, script))).toBe(
-      'Routes["hello"]["GET"]',
+      'Route["GET"]',
     );
   });
 

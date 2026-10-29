@@ -71,13 +71,21 @@ Import generated API types from `types/index.ts`:
 // routes/pet/{petId}.ts
 import type { Components, Routes, Schemas } from "../../types/index.js";
 
+type Route = Routes["/pet"]["/{petId}"];
 type Pet = Schemas["Pet"];
 type SamePet = Components["schemas"]["Pet"];
 
-export const GET: Routes["/pet"]["/{petId}"]["GET"] = async ($) => {
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 ```
+
+New route files declare a local `Route` alias for their path, even when they
+contain only one operation. Each handler selects its method with `Route["GET"]`,
+`Route["POST"]`, and so on. The alias is local to the file and is not exported.
+Existing handler text is preserved during regeneration; newly added methods reuse
+a matching local alias, or receive a new alias with a numeric suffix if `Route`
+is already taken.
 
 `Routes` is a tree of path segments. Each segment keeps its leading `/`, and
 uppercase HTTP methods select the handler contract at that branch. A branch can

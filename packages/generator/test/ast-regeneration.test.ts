@@ -57,7 +57,7 @@ describe("AST route regeneration", () => {
       await new ScenarioFileGenerator($.path("")).generate();
       const route = await $.read("routes/thing.ts");
       const contract = await $.read("types/paths/thing.types.ts");
-      expect(route).toContain('export const GET: Routes["/thing"]["GET"]');
+      expect(route).toContain('export const GET: Route["GET"]');
       expect(route).not.toContain("GET2");
       expect(contract).toContain("export type HTTP_GET =");
       expect(contract).toContain("v1: HTTP_GET_$_v1");
@@ -112,9 +112,7 @@ describe("AST route regeneration", () => {
         const content = await $.read("routes/thing.ts");
         for (const line of original.trim().split("\n"))
           expect(content).toContain(line);
-        expect(content).toContain(
-          'export const POST: Routes["/thing"]["POST"]',
-        );
+        expect(content).toContain('export const POST: Route["POST"]');
         await generator.generate();
         expect(await $.read("routes/thing.ts")).toBe(content);
       });
@@ -137,7 +135,7 @@ describe("AST route regeneration", () => {
           types: true,
         }).generate();
         expect(await $.read("routes/thing.ts")).toContain(
-          'export const POST: Routes["/thing"]["POST"]',
+          'export const POST: Route["POST"]',
         );
       });
     },
@@ -221,7 +219,7 @@ describe("AST route regeneration", () => {
       expect(content).toContain(
         "second line */\nimport type { Routes as Routes2 }",
       );
-      expect(content).toContain('export const POST: Routes2["/thing"]["POST"]');
+      expect(content).toContain('export const POST: Route["POST"]');
       expect(content).toContain(
         'export function GET() { return { nested: { text: "};" } }; }',
       );

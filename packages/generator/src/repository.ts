@@ -11,6 +11,7 @@ import {
   formatStatements,
   importDeclaration,
   parameter,
+  typeAlias,
   typeReference,
   withJsDoc,
 } from "./ast.js";
@@ -440,6 +441,34 @@ export class Repository {
     }
 
     const newImports: ts.ImportDeclaration[] = [];
+    const newAliases: ts.TypeAliasDeclaration[] = [];
+    const aliases = new Map<string, string>();
+    const typeKey = (node: ts.TypeNode): string | undefined => {
+      const keys: string[] = [];
+      while (ts.isIndexedAccessTypeNode(node)) {
+        if (
+          !ts.isLiteralTypeNode(node.indexType) ||
+          !ts.isStringLiteral(node.indexType.literal)
+        )
+          return undefined;
+        keys.unshift(node.indexType.literal.text);
+        node = node.objectType;
+      }
+      return ts.isTypeReferenceNode(node) &&
+        ts.isIdentifier(node.typeName) &&
+        !node.typeArguments?.length
+        ? JSON.stringify([node.typeName.text, ...keys])
+        : undefined;
+    };
+    for (const statement of source.statements) {
+      if (
+        ts.isTypeAliasDeclaration(statement) &&
+        !statement.typeParameters?.length
+      ) {
+        const key = typeKey(statement.type);
+        if (key) aliases.set(key, statement.name.text);
+      }
+    }
     const handlers: ts.Statement[] = [];
     const generatedImports = [
       ...script.importStatements(),
@@ -461,7 +490,20 @@ export class Repository {
             ": a local binding already exists in " +
             fullPath,
         );
-      let rootType = declaration.type;
+      let handlerType = declaration.type!;
+      const generatedAlias =
+        ts.isIndexedAccessTypeNode(handlerType) &&
+        ts.isTypeReferenceNode(handlerType.objectType) &&
+        ts.isIdentifier(handlerType.objectType.typeName)
+          ? script.localTypes.get(handlerType.objectType.typeName.text)
+          : undefined;
+      if (generatedAlias && ts.isIndexedAccessTypeNode(handlerType)) {
+        handlerType = ts.factory.createIndexedAccessTypeNode(
+          generatedAlias,
+          handlerType.indexType,
+        );
+      }
+      let rootType: ts.TypeNode | undefined = handlerType;
       while (rootType && ts.isIndexedAccessTypeNode(rootType))
         rootType = rootType.objectType;
       if (
@@ -490,6 +532,11 @@ export class Repository {
       const module = imported.item.moduleSpecifier.text;
       const exportedType =
         imported.element.propertyName?.text ?? imported.element.name.text;
+      const matchingImport = [...imports].find(
+        ([, entry]) =>
+          entry.module === module && entry.exported === exportedType,
+      );
+      if (matchingImport) localType = matchingImport[0];
       const existingImport = imports.get(localType);
       if (
         !existingImport ||
@@ -504,6 +551,23 @@ export class Repository {
         imports.set(localType, { module, exported: exportedType });
         bindings.add(localType);
       }
+      handlerType = renameTypeRoot(handlerType, localType);
+      if (generatedAlias && ts.isIndexedAccessTypeNode(handlerType)) {
+        const key = typeKey(handlerType.objectType)!;
+        let alias = aliases.get(key);
+        if (!alias) {
+          alias = "Route";
+          let suffix = 2;
+          while (bindings.has(alias)) alias = "Route" + suffix++;
+          newAliases.push(typeAlias(alias, handlerType.objectType, false));
+          aliases.set(key, alias);
+          bindings.add(alias);
+        }
+        handlerType = ts.factory.createIndexedAccessTypeNode(
+          typeReference(alias),
+          handlerType.indexType,
+        );
+      }
       handlers.push(
         ts.factory.updateVariableStatement(
           statement,
@@ -513,7 +577,7 @@ export class Repository {
               declaration,
               declaration.name,
               declaration.exclamationToken,
-              renameTypeRoot(declaration.type!, localType),
+              handlerType,
               declaration.initializer,
             ),
           ]),
@@ -589,12 +653,12 @@ export class Repository {
       }
     }
     let updated = existing;
-    if (newImports.length > 0) {
+    if (newImports.length > 0 || newAliases.length > 0) {
       const prefix = existing.slice(0, insertAt);
       updated =
         prefix +
         (prefix !== "" && !prefix.endsWith("\n") ? "\n" : "") +
-        (await formatStatements(newImports)) +
+        (await formatStatements([...newImports, ...newAliases])) +
         existing.slice(insertAt);
     }
     updated +=

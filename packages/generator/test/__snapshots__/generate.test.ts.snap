@@ -311,10 +311,11 @@ exports[`end-to-end test generates the same code for pet store that it did on th
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 14`] = `
 "routes/pet.ts:import type { Routes } from "../types/index.js";
-export const POST: Routes["/pet"]["POST"] = async ($) => {
+type Route = Routes["/pet"];
+export const POST: Route["POST"] = async ($) => {
   return $.response.status(200).random();
 };
-export const PUT: Routes["/pet"]["PUT"] = async ($) => {
+export const PUT: Route["PUT"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -432,7 +433,8 @@ export type HTTP_PUT_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 16`] = `
 "routes/pet/findByStatus.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/pet"]["/findByStatus"]["GET"] = async ($) => {
+type Route = Routes["/pet"]["/findByStatus"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -502,7 +504,8 @@ export type HTTP_GET_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 18`] = `
 "routes/pet/findByTags.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/pet"]["/findByTags"]["GET"] = async ($) => {
+type Route = Routes["/pet"]["/findByTags"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -572,13 +575,14 @@ export type HTTP_GET_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 20`] = `
 "routes/pet/{petId}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/pet"]["/{petId}"]["GET"] = async ($) => {
+type Route = Routes["/pet"]["/{petId}"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
-export const POST: Routes["/pet"]["/{petId}"]["POST"] = async ($) => {
+export const POST: Route["POST"] = async ($) => {
   return $.response.status(405).empty();
 };
-export const DELETE: Routes["/pet"]["/{petId}"]["DELETE"] = async ($) => {
+export const DELETE: Route["DELETE"] = async ($) => {
   return $.response.status(400).empty();
 };
 "
@@ -728,9 +732,8 @@ export type HTTP_DELETE_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 22`] = `
 "routes/pet/{petId}/uploadImage.ts:import type { Routes } from "../../../types/index.js";
-export const POST: Routes["/pet"]["/{petId}"]["/uploadImage"]["POST"] = async (
-  $,
-) => {
+type Route = Routes["/pet"]["/{petId}"]["/uploadImage"];
+export const POST: Route["POST"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -794,7 +797,8 @@ export type HTTP_POST_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 24`] = `
 "routes/store/inventory.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/store"]["/inventory"]["GET"] = async ($) => {
+type Route = Routes["/store"]["/inventory"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -848,7 +852,8 @@ export type HTTP_GET_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 26`] = `
 "routes/store/order.ts:import type { Routes } from "../../types/index.js";
-export const POST: Routes["/store"]["/order"]["POST"] = async ($) => {
+type Route = Routes["/store"]["/order"];
+export const POST: Route["POST"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -909,15 +914,13 @@ export type HTTP_POST_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 28`] = `
 "routes/store/order/{orderId}.ts:import type { Routes } from "../../../types/index.js";
-export const GET: Routes["/store"]["/order"]["/{orderId}"]["GET"] = async (
-  $,
-) => {
+type Route = Routes["/store"]["/order"]["/{orderId}"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
-export const DELETE: Routes["/store"]["/order"]["/{orderId}"]["DELETE"] =
-  async ($) => {
-    return $.response.status(400).empty();
-  };
+export const DELETE: Route["DELETE"] = async ($) => {
+  return $.response.status(400).empty();
+};
 "
 `;
 
@@ -1032,7 +1035,8 @@ export type HTTP_DELETE_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 30`] = `
 "routes/user.ts:import type { Routes } from "../types/index.js";
-export const POST: Routes["/user"]["POST"] = async ($) => {
+type Route = Routes["/user"];
+export const POST: Route["POST"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -1091,7 +1095,8 @@ export type HTTP_POST_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 32`] = `
 "routes/user/createWithList.ts:import type { Routes } from "../../types/index.js";
-export const POST: Routes["/user"]["/createWithList"]["POST"] = async ($) => {
+type Route = Routes["/user"]["/createWithList"];
+export const POST: Route["POST"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -1159,7 +1164,8 @@ export type HTTP_POST_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 34`] = `
 "routes/user/login.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/user"]["/login"]["GET"] = async ($) => {
+type Route = Routes["/user"]["/login"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -1232,7 +1238,8 @@ export type HTTP_GET_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 36`] = `
 "routes/user/logout.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/user"]["/logout"]["GET"] = async ($) => {
+type Route = Routes["/user"]["/logout"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).empty();
 };
 "
@@ -1280,13 +1287,14 @@ export type HTTP_GET_Headers = { api_key: string };
 
 exports[`end-to-end test generates the same code for pet store that it did on the last test run 38`] = `
 "routes/user/{username}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/user"]["/{username}"]["GET"] = async ($) => {
+type Route = Routes["/user"]["/{username}"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
-export const PUT: Routes["/user"]["/{username}"]["PUT"] = async ($) => {
+export const PUT: Route["PUT"] = async ($) => {
   return $.response.status(200).empty();
 };
-export const DELETE: Routes["/user"]["/{username}"]["DELETE"] = async ($) => {
+export const DELETE: Route["DELETE"] = async ($) => {
   return $.response.status(400).empty();
 };
 "
@@ -2079,7 +2087,8 @@ exports[`end-to-end test generates the same code for the example that it did on 
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 37`] = `
 "routes/index.ts:import type { Routes } from "../types/index.js";
-export const GET: Routes["/"]["GET"] = async ($) => {
+type Route = Routes["/"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2136,7 +2145,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 39`] = `
 "routes/count.ts:import type { Routes } from "../types/index.js";
-export const GET: Routes["/count"]["GET"] = async ($) => {
+type Route = Routes["/count"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2192,7 +2202,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 41`] = `
 "routes/hello/kitty.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/hello"]["/kitty"]["GET"] = async ($) => {
+type Route = Routes["/hello"]["/kitty"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2249,7 +2260,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 43`] = `
 "routes/hello/{name}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/hello"]["/{name}"]["GET"] = async ($) => {
+type Route = Routes["/hello"]["/{name}"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2329,7 +2341,8 @@ export type HTTP_GET_Headers = {
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 45`] = `
 "routes/path-one.ts:import type { Routes } from "../types/index.js";
-export const GET: Routes["/path-one"]["GET"] = async ($) => {
+type Route = Routes["/path-one"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2383,9 +2396,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 47`] = `
 "routes/weird/path/with:colon.ts:import type { Routes } from "../../../types/index.js";
-export const GET: Routes["/weird"]["/path"]["/with:colon"]["GET"] = async (
-  $,
-) => {
+type Route = Routes["/weird"]["/path"]["/with:colon"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2436,10 +2448,11 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 49`] = `
 "routes/users.ts:import type { Routes } from "../types/index.js";
-export const GET: Routes["/users"]["GET"] = async ($) => {
+type Route = Routes["/users"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
-export const POST: Routes["/users"]["POST"] = async ($) => {
+export const POST: Route["POST"] = async ($) => {
   return $.response.status(201).random();
 };
 "
@@ -2565,16 +2578,17 @@ export type HTTP_POST_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 51`] = `
 "routes/users/{userId}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/users"]["/{userId}"]["GET"] = async ($) => {
+type Route = Routes["/users"]["/{userId}"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
-export const PUT: Routes["/users"]["/{userId}"]["PUT"] = async ($) => {
+export const PUT: Route["PUT"] = async ($) => {
   return $.response.status(200).random();
 };
-export const PATCH: Routes["/users"]["/{userId}"]["PATCH"] = async ($) => {
+export const PATCH: Route["PATCH"] = async ($) => {
   return $.response.status(200).random();
 };
-export const DELETE: Routes["/users"]["/{userId}"]["DELETE"] = async ($) => {
+export const DELETE: Route["DELETE"] = async ($) => {
   return $.response.status(204).empty();
 };
 "
@@ -2760,7 +2774,8 @@ export type HTTP_DELETE_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 53`] = `
 "routes/events.ts:import type { Routes } from "../types/index.js";
-export const POST: Routes["/events"]["POST"] = async ($) => {
+type Route = Routes["/events"];
+export const POST: Route["POST"] = async ($) => {
   return $.response.status(202).empty();
 };
 "
@@ -2821,7 +2836,8 @@ export type HTTP_POST_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 55`] = `
 "routes/products/{productId}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/products"]["/{productId}"]["GET"] = async ($) => {
+type Route = Routes["/products"]["/{productId}"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -2876,7 +2892,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 57`] = `
 "routes/uploads.ts:import type { Routes } from "../types/index.js";
-export const POST: Routes["/uploads"]["POST"] = async ($) => {
+type Route = Routes["/uploads"];
+export const POST: Route["POST"] = async ($) => {
   return $.response.status(201).random();
 };
 "
@@ -2947,7 +2964,8 @@ export type HTTP_POST_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 59`] = `
 "routes/legacy/items.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/legacy"]["/items"]["GET"] = async ($) => {
+type Route = Routes["/legacy"]["/items"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3003,7 +3021,8 @@ export type HTTP_GET_Cookie = { session_id?: string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 61`] = `
 "routes/reports/{reportId}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/reports"]["/{reportId}"]["GET"] = async ($) => {
+type Route = Routes["/reports"]["/{reportId}"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3069,7 +3088,8 @@ export type HTTP_GET_Headers = {
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 63`] = `
 "routes/ping.ts:import type { Routes } from "../types/index.js";
-export const GET: Routes["/ping"]["GET"] = async ($) => {
+type Route = Routes["/ping"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(204).empty();
 };
 "
@@ -3119,7 +3139,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 65`] = `
 "routes/metadata.ts:import type { Routes } from "../types/index.js";
-export const PUT: Routes["/metadata"]["PUT"] = async ($) => {
+type Route = Routes["/metadata"];
+export const PUT: Route["PUT"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3173,7 +3194,8 @@ export type HTTP_PUT_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 67`] = `
 "routes/xml/book.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/xml"]["/book"]["GET"] = async ($) => {
+type Route = Routes["/xml"]["/book"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3230,7 +3252,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 69`] = `
 "routes/xml/note.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/xml"]["/note"]["GET"] = async ($) => {
+type Route = Routes["/xml"]["/note"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3287,7 +3310,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 71`] = `
 "routes/xml/snippet.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/xml"]["/snippet"]["GET"] = async ($) => {
+type Route = Routes["/xml"]["/snippet"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3344,7 +3368,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 73`] = `
 "routes/xml/secret.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/xml"]["/secret"]["GET"] = async ($) => {
+type Route = Routes["/xml"]["/secret"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3401,7 +3426,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 75`] = `
 "routes/xml/playlist.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/xml"]["/playlist"]["GET"] = async ($) => {
+type Route = Routes["/xml"]["/playlist"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3458,19 +3484,14 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 77`] = `
 "routes/relationships/{targetId}.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/relationships"]["/{targetId}"]["GET"] = async (
-  $,
-) => {
+type Route = Routes["/relationships"]["/{targetId}"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
-export const LINK: Routes["/relationships"]["/{targetId}"]["LINK"] = async (
-  $,
-) => {
+export const LINK: Route["LINK"] = async ($) => {
   return $.response.status(200).random();
 };
-export const UNLINK: Routes["/relationships"]["/{targetId}"]["UNLINK"] = async (
-  $,
-) => {
+export const UNLINK: Route["UNLINK"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3590,7 +3611,8 @@ export type HTTP_UNLINK_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 79`] = `
 "routes/explodable-parameters.ts:import type { Routes } from "../types/index.js";
-export const GET: Routes["/explodable-parameters"]["GET"] = async ($) => {
+type Route = Routes["/explodable-parameters"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3649,7 +3671,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 81`] = `
 "routes/stream/events.ts:import type { Routes } from "../../types/index.js";
-export const GET: Routes["/stream"]["/events"]["GET"] = async ($) => {
+type Route = Routes["/stream"]["/events"];
+export const GET: Route["GET"] = async ($) => {
   async function* items() {
     // yield items here
   }
@@ -3708,7 +3731,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 83`] = `
 "routes/search.ts:import type { Routes } from "../types/index.js";
-export const GET: Routes["/search"]["GET"] = async ($) => {
+type Route = Routes["/search"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3777,7 +3801,8 @@ export type HTTP_GET_Querystring = {
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 85`] = `
 "routes/type-edge-cases.ts:import type { Routes } from "../types/index.js";
-export const GET: Routes["/type-edge-cases"]["GET"] = async ($) => {
+type Route = Routes["/type-edge-cases"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "
@@ -3834,7 +3859,8 @@ export type HTTP_GET_Headers = { "x-api-key": string };
 
 exports[`end-to-end test generates the same code for the example that it did on the last test run 87`] = `
 "routes/schema-accuracy.ts:import type { Routes } from "../types/index.js";
-export const GET: Routes["/schema-accuracy"]["GET"] = async ($) => {
+type Route = Routes["/schema-accuracy"];
+export const GET: Route["GET"] = async ($) => {
   return $.response.status(200).random();
 };
 "

@@ -22,12 +22,8 @@ export function routeTypeSegments(path: string): string[] {
     : [path];
 }
 
-export function routeTypeReference(
-  name: string,
-  path: string,
-  method: string,
-): ts.TypeNode {
-  return [...routeTypeSegments(path), method.toUpperCase()].reduce<ts.TypeNode>(
+export function routeTypeReference(name: string, path: string): ts.TypeNode {
+  return routeTypeSegments(path).reduce<ts.TypeNode>(
     (type, key) =>
       ts.factory.createIndexedAccessTypeNode(type, literalType(key)),
     typeReference(name),
