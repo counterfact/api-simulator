@@ -3,6 +3,8 @@ import ts from "typescript";
 import {
   formatStatements,
   literalType,
+  neverType,
+  stringType,
   parameter,
   typeAlias,
   typeLiteral,
@@ -27,10 +29,11 @@ const VERSIONED_DESCRIPTION = `The type of the \u0060$\u0060 argument in a versi
 @typeParam V - The union of currently active version keys; defaults to all keys of \u0060T\u0060.
 
 An instance of \u0060Versioned<T, V>\u0060 exposes:
-- All properties of the intersection \u0060T[V]\u0060 (request data, response builders, etc.)
+- A discriminated union of the active version arguments (request data, response builders, etc.)
 - \u0060version\u0060 — the version string for the current request (e.g. \u0060"v2"\u0060).
 - \u0060minVersion(min)\u0060 — type predicate that returns \u0060true\u0060 when the current version
-  is at or after \u0060min\u0060 in the declared version order and narrows \u0060$\u0060 accordingly.`;
+  is at or after \u0060min\u0060 in the declared version order. A literal threshold narrows
+  both branches; a dynamic union threshold returns boolean without narrowing.`;
 
 export async function generateVersionsTsContent(
   versions: readonly string[],
@@ -53,7 +56,7 @@ export async function generateVersionsTsContent(
     ts.factory.createThisTypeNode(),
     typeReference("Versioned", [
       typeReference("T"),
-      typeReference("Extract", [typeReference("V"), activeVersionMap]),
+      typeReference("Extract", [activeKeys(), activeVersionMap]),
     ]),
   );
   const minVersion = ts.factory.createMethodSignature(
@@ -61,7 +64,15 @@ export async function generateVersionsTsContent(
     "minVersion",
     undefined,
     [ts.factory.createTypeParameterDeclaration(undefined, "M", activeKeys())],
-    [parameter("min", typeReference("M"))],
+    [
+      parameter(
+        "min",
+        ts.factory.createIntersectionTypeNode([
+          typeReference("M"),
+          typeReference("SingleVersion", [typeReference("M")]),
+        ]),
+      ),
+    ],
     narrowing,
   );
   return formatStatements(
@@ -95,19 +106,83 @@ export async function generateVersionsTsContent(
         ]),
         false,
       ),
+      // Distribute over a threshold's possible values. Only a single literal
+      // can safely exclude versions from a guard's false branch.
+      typeAlias(
+        "SingleVersion",
+        ts.factory.createConditionalTypeNode(
+          stringType(),
+          typeReference("V"),
+          neverType(),
+          ts.factory.createConditionalTypeNode(
+            typeReference("V"),
+            typeReference("All"),
+            ts.factory.createConditionalTypeNode(
+              ts.factory.createTupleTypeNode([typeReference("All")]),
+              ts.factory.createTupleTypeNode([typeReference("V")]),
+              typeReference("V"),
+              neverType(),
+            ),
+            neverType(),
+          ),
+        ),
+        false,
+        [
+          ts.factory.createTypeParameterDeclaration(undefined, "V"),
+          ts.factory.createTypeParameterDeclaration(
+            undefined,
+            "All",
+            undefined,
+            typeReference("V"),
+          ),
+        ],
+      ),
       withJsDoc(
         typeAlias(
           "Versioned",
-          ts.factory.createIntersectionTypeNode([
-            ts.factory.createIndexedAccessTypeNode(
-              typeReference("T"),
-              typeReference("V"),
+          ts.factory.createIndexedAccessTypeNode(
+            ts.factory.createMappedTypeNode(
+              undefined,
+              ts.factory.createTypeParameterDeclaration(
+                undefined,
+                "K",
+                typeReference("V"),
+              ),
+              undefined,
+              undefined,
+              ts.factory.createIntersectionTypeNode([
+                ts.factory.createIndexedAccessTypeNode(
+                  typeReference("T"),
+                  typeReference("K"),
+                ),
+                typeLiteral(
+                  [
+                    typeProperty("version", typeReference("K")),
+                    minVersion,
+                    ts.factory.createMethodSignature(
+                      undefined,
+                      "minVersion",
+                      undefined,
+                      [
+                        ts.factory.createTypeParameterDeclaration(
+                          undefined,
+                          "M",
+                          activeKeys(),
+                        ),
+                      ],
+                      [parameter("min", typeReference("M"))],
+                      ts.factory.createKeywordTypeNode(
+                        ts.SyntaxKind.BooleanKeyword,
+                      ),
+                    ),
+                  ],
+                  true,
+                ),
+              ]),
+              undefined,
             ),
-            typeLiteral(
-              [typeProperty("version", typeReference("V")), minVersion],
-              true,
-            ),
-          ]),
+            typeReference("V"),
+          ),
           true,
           [
             ts.factory.createTypeParameterDeclaration(

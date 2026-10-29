@@ -206,6 +206,35 @@ export const GET: Routes["/items/{itemId}"]["GET"] = function ($) {
 
 This narrowing is powered by the `Versioned<T, V>` type in `types/versions.ts`. You do not need to import or use it directly — the operation contracts selected through `Routes` already use it as the type of `$`.
 
+### Early returns narrow the remaining versions
+
+A literal threshold narrows both outcomes. If v1 returns `{ message: string }`
+and v2 requires an additional `locale` field, this handler is fully typed:
+
+```ts
+// routes/greeting.ts
+import type { Routes } from "../types/index.js";
+
+export const GET: Routes["/greeting"]["GET"] = async ($) => {
+  if ($.minVersion("v2")) {
+    return $.response.status(200).json({ message: "x", locale: "en" });
+  }
+
+  return $.response.status(200).json({ message: "x" });
+};
+```
+
+After the v2 branch returns, `$` and its response builder describe v1. Negated
+checks and explicit `else` branches narrow the same way. With more versions,
+checking newer versions first lets successive early returns narrow the
+remaining contracts.
+
+When the threshold itself has a union type, such as `"v2" | "v3"`,
+`minVersion()` returns a boolean without narrowing. The runtime comparison still
+works, but the compiler cannot use one fixed boundary to exclude versions from
+the other branch. Use literal checks when you need version-specific inputs or
+response shapes.
+
 ### The `Versioned` type
 
 `Versioned<T, V>` is the type of the `$` argument in a versioned handler. It has two generic parameters:
@@ -217,9 +246,9 @@ This narrowing is powered by the `Versioned<T, V>` type in `types/versions.ts`. 
 
 It exposes:
 
-- **All properties of `T[V]`** — the intersection of properties available in the current version.
+- **A discriminated union of `T[V]`** — each selected version retains its own inputs and response builders.
 - **`version: V`** — the current version string at runtime.
-- **`minVersion<M>(min: M): this is Versioned<T, Extract<V, VersionsGTE[M]>>`** — type predicate that narrows `$` to versions ≥ `min`.
+- **`minVersion(min)`** — a literal threshold narrows `$` to versions at or after `min` when true and the remaining versions when false. A dynamic union threshold uses the boolean overload.
 
 ---
 
