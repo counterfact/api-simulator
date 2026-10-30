@@ -33,6 +33,8 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 
 ## Existing conventions to follow
 
+- Chokidar 6 normalizes watcher errors with `instanceof Error`, which loses filesystem error codes across Jest VM realms. Preserve the root Yarn patch using `types.isNativeError` and the optional-path regression test when refreshing that dependency branch. Align consuming package engines with Chokidar's Node minimum and verify packed consumers after engine changes.
+
 - Root `go:*` launchers that use package-relative fixture paths must delegate to the package's script so the working directory matches those paths. Keep multi-API and multi-version demo output directories separate to avoid stale generated handlers crossing between examples.
 - Write user docs as direct instructions with concrete examples. Introduce OpenAPI with a brief mention of its former name, Swagger, then use “spec” naturally. Prefer “your code” or “a class you write” over “authored behavior.” Explain limitations where they affect the task; avoid repeated disclaimers, abstract process language, and unsupported marketing claims. Choose headings for the subject rather than repeating a fixed template on every guide.
 

@@ -54,7 +54,7 @@
     "swagger-tools"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=22.22"
   },
   "bin": "bin/counterfact.js",
   "files": [

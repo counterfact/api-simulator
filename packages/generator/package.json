@@ -40,7 +40,7 @@
     "testing"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=22.22"
   },
   "publishConfig": {
     "access": "public"

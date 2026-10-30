@@ -4083,6 +4083,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chokidar@patch:chokidar@npm%3A6.0.0#~/.yarn/patches/chokidar-npm-6.0.0-53be5debd5.patch":
+  version: 6.0.0
+  resolution: "chokidar@patch:chokidar@npm%3A6.0.0#~/.yarn/patches/chokidar-npm-6.0.0-53be5debd5.patch::version=6.0.0&hash=42418b"
+  dependencies:
+    readdirp: "npm:^5.1.1"
+  checksum: 10c0/78e7ed6348f70928b656bdcced233e0a0acbcda70e0bde3770e943a56f2a328e825829b627ffc93f047745055afc5b558d2e20610896b1d00e5e6b852a7bed8f
+  languageName: node
+  linkType: hard
+
 "chownr@npm:^3.0.0":
   version: 3.0.0
   resolution: "chownr@npm:3.0.0"
