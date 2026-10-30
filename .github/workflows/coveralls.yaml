@@ -15,7 +15,9 @@ jobs:
           node-version: 26.x
 
       - name: Enable Corepack
-        run: corepack enable
+        run: |
+          npm install --global corepack
+          corepack enable
 
       - name: Install Packages
         run: yarn install --immutable

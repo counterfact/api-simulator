@@ -58,7 +58,9 @@ jobs:
           node-version: 26.x
       - name: Enable Corepack
         if: steps.docs-only.outputs.docs_only != 'true'
-        run: corepack enable
+        run: |
+          npm install --global corepack
+          corepack enable
       - name: Install Packages
         if: steps.docs-only.outputs.docs_only != 'true'
         run: yarn install --immutable
