@@ -1,0 +1,30 @@
+diff --git a/index.js b/index.js
+index 0c179fb13c136dfa43e53c8a82177b9443dfa6ef..35deeae602132b3f8397fad60fb2c32050a55e79 100644
+--- a/index.js
++++ b/index.js
+@@ -3,6 +3,7 @@ import { EventEmitter } from 'node:events';
+ import { realpathSync } from 'node:fs';
+ import { readdir } from 'node:fs/promises';
+ import * as sp from 'node:path';
++import { types } from 'node:util';
+ import { readdirp, ReaddirpStream } from 'readdirp';
+ import { selectBackend } from './backend.js';
+ import { EventPolicy } from './policy.js';
+@@ -187,7 +188,7 @@ export class FSWatcher extends EventEmitter {
+                 this.queueReady();
+         }, (error) => {
+             if (!this.closed)
+-                this.handleError(error instanceof Error ? error : new Error(String(error)));
++                this.handleError(types.isNativeError(error) ? error : new Error(String(error)));
+         });
+         this.tree = new TreeState(() => !this.options.backendCapabilities.polling);
+         this.reconciliation = new ReconciliationQueue(this.lifecycle);
+@@ -436,7 +437,7 @@ export class FSWatcher extends EventEmitter {
+     handleError(error) {
+         if (this.closed)
+             return;
+-        const normalized = error instanceof Error ? error : new Error(String(error));
++        const normalized = types.isNativeError(error) ? error : new Error(String(error));
+         if (!isMissingError(normalized) &&
+             (!this.options.ignorePermissionErrors || !isPermissionError(normalized))) {
+             this.emit(EV.ERROR, normalized);
