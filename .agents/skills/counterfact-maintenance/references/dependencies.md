@@ -15,3 +15,5 @@ Paths and commands below are relative to the repository root.
 - Renovate security-fix ingestion also requires the installed GitHub app to have read access to Dependabot alerts; repository configuration alone does not establish that permission.
 
 - Before overriding a transitive native dependency outside its parent's declared range, verify the published package declares its platform bindings and validate a clean install plus the consuming build. Prefer the parent's supported range when an override is no longer needed.
+
+- Chokidar 6 normalizes watcher errors with `instanceof Error`, which loses filesystem error codes across Jest VM realms. Preserve the root Yarn patch using `types.isNativeError` and the optional-path regression test when refreshing that dependency branch. Align consuming package engines with Chokidar's Node minimum and verify packed consumers after engine changes.
