@@ -13,3 +13,5 @@ Paths and commands below are relative to the repository root.
 - Keep Renovate `gitIgnoredAuthors` aligned with the author used by the Changesets workflow so automated release-metadata commits do not mark dependency PRs as manually edited.
 
 - Renovate security-fix ingestion also requires the installed GitHub app to have read access to Dependabot alerts; repository configuration alone does not establish that permission.
+
+- Before overriding a transitive native dependency outside its parent's declared range, verify the published package declares its platform bindings and validate a clean install plus the consuming build. Prefer the parent's supported range when an override is no longer needed.

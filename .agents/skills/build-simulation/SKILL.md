@@ -97,7 +97,9 @@ Place one `_.context.ts` at the root of the routes tree:
 
 ```ts
 // api/routes/_.context.ts
-import type { Pet } from "../types/components/schemas/Pet.js";
+import type { Schemas } from "../types/index.js";
+
+type Pet = Schemas["Pet"];
 
 export class Context {
   private pets = new Map<number, Pet>();
@@ -132,32 +134,29 @@ Then wire the context into each handler, retaining the generated imports:
 
 ```ts
 // api/routes/pet.ts
-import type { HTTP_GET, HTTP_POST } from "../types/paths/pet.types.js";
+import type { Routes } from "../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/pet"]["GET"] = function ($) {
   return $.response.status(200).json($.context.list($.query.status));
 };
 
-export const POST: HTTP_POST = function ($) {
+export const POST: Routes["/pet"]["POST"] = function ($) {
   return $.response.status(200).json($.context.add($.body));
 };
 ```
 
 ```ts
 // api/routes/pet/{petId}.ts
-import type {
-  HTTP_DELETE,
-  HTTP_GET,
-} from "../../types/paths/pet/{petId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   return pet
     ? $.response.status(200).json(pet)
     : $.response.status(404).text(`Pet ${$.path.petId} not found`);
 };
 
-export const DELETE: HTTP_DELETE = function ($) {
+export const DELETE: Routes["/pet"]["/{petId}"]["DELETE"] = function ($) {
   $.context.remove($.path.petId);
   return $.response.status(200).empty();
 };
@@ -173,7 +172,7 @@ have the route call it. Handler arguments do not expose `loadContext`.
 
 ```ts
 // api/routes/payments/_.context.ts
-import type { Context$ } from "../../types/_.context.js";
+import type { Context$ } from "../../types/index.js";
 import type { Context as UsersContext } from "../users/_.context.js";
 
 export class Context {
@@ -197,9 +196,9 @@ again after adding the context files so the typed `/users` overload is present.
 
 ```ts
 // api/routes/payments/{paymentId}.ts
-import type { HTTP_GET } from "../../types/paths/payments/{paymentId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/payments"]["/{paymentId}"]["GET"] = function ($) {
   const payment = $.context.getWithUser($.path.paymentId);
   return payment
     ? $.response.status(200).json(payment)
@@ -308,7 +307,7 @@ without any manual REPL commands.
 
 ```ts
 // api/scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const startup: Scenario = ($) => {
   $.context.add({ name: "Fluffy", status: "available", photoUrls: [] });
@@ -321,7 +320,7 @@ file stays focused and the helpers can also be called from the REPL:
 
 ```ts
 // api/scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 import { addPets } from "./pets.js";
 import { addOrders } from "./orders.js";
 
@@ -333,7 +332,7 @@ export const startup: Scenario = ($) => {
 
 ```ts
 // api/scenarios/pets.ts
-import type { Scenario$ } from "../types/_.context.js";
+import type { Scenario$ } from "../types/index.js";
 
 export function addPets($: Scenario$, count: number, species: string) {
   for (let i = 0; i < count; i++) {
@@ -353,7 +352,7 @@ service, a full inventory. Run them from the REPL whenever you need them:
 
 ```ts
 // api/scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const soldOut: Scenario = ($) => {
   $.context.markAllSold();
@@ -389,8 +388,9 @@ export class Context {
 
 ```ts
 // api/routes/pet/{petId}.ts
-// Alternative GET implementation; retain the generated HTTP_GET import.
-export const GET: HTTP_GET = function ($) {
+// Alternative GET implementation.
+import type { Routes } from "../../types/index.js";
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   if ($.context.isDown)
     return $.response.status(500).text("Service unavailable");
   if ($.context.isRateLimited)

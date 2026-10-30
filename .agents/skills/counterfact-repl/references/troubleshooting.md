@@ -172,7 +172,9 @@ mean the server is old or absent.
 Example route handler:
 
 ```typescript
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../types/index.js";
+
+export const GET: Routes["/pets"]["GET"] = function ($) {
   return $.response.status(200).json($.context.pets);
 };
 ```

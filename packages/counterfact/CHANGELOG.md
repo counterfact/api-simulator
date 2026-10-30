@@ -1,5 +1,16 @@
 # counterfact
 
+## 3.0.1
+
+### Patch Changes
+
+- 9871d4c: Print distinct Swagger UI links for versioned APIs and serve the selected version's OpenAPI document and request prefix instead of always showing the first version in the group.
+- Updated dependencies [ad9068d]
+- Updated dependencies [9871d4c]
+  - @counterfact/runtime@0.3.1
+  - @counterfact/repl@0.1.8
+  - @counterfact/tutorials@0.2.1
+
 ## 3.0.0
 
 ### Major Changes

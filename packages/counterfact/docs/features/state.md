@@ -6,12 +6,18 @@ These examples extend the [first-ten-minutes pet workflow](../first-10-minutes.m
 
 ```ts
 // routes/pet.ts
-export const POST: HTTP_POST = function ($) {
+import type { Routes } from "../types/index.js";
+
+export const POST: Routes["/pet"]["POST"] = function ($) {
   return $.response.status(200).json($.context.add($.body));
 };
+```
 
+```ts
 // routes/pet/{petId}.ts
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../../types/index.js";
+
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   if (pet === undefined) return $.response.status(404).empty();
   return $.response.status(200).json(pet);
@@ -22,7 +28,9 @@ Customize `_.context.ts` to hold whatever state and business logic your mock nee
 
 ```ts
 // api/routes/_.context.ts
-import type { Pet } from "../types/components/schemas/Pet.js";
+import type { Schemas } from "../types/index.js";
+
+type Pet = Schemas["Pet"];
 
 export class Context {
   private pets = new Map<number, Pet>();
@@ -111,7 +119,7 @@ typed access:
 
 ```ts
 // customers/routes/_.context.ts
-import type { Context$ } from "../types/_.context.js";
+import type { Context$ } from "../types/index.js";
 
 export class Context {
   readonly store: Context$["store"];

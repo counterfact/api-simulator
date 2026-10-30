@@ -75,7 +75,7 @@ Make important starting states explicit with [scenarios](./scenario-scripts.md):
 
 ```ts
 // api/scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const startup: Scenario = ($) => $.context.reset();
 
