@@ -30,14 +30,9 @@ describe("an OperationCoder", () => {
       "get",
     );
 
-    const script = {
-      importType() {
-        return "HTTP_GET";
-      },
-    };
-
+    const script = new Repository().get("routes/hello.ts");
     expect(printNode(coder.typeDeclaration(undefined, script))).toBe(
-      "HTTP_GET",
+      'Route["GET"]',
     );
   });
 
@@ -54,9 +49,10 @@ describe("an OperationCoder", () => {
     const script = repository.get("routes/hello.ts");
 
     // Spy on importType to capture the version that is passed through
-    const originalImportType = script.importType.bind(script);
+    const types = repository.get("types/index.ts");
+    const originalImportType = types.importType.bind(types);
 
-    script.importType = (operationTypeCoder) => {
+    types.importType = (operationTypeCoder) => {
       nestedCoderVersion = operationTypeCoder.version;
       return originalImportType(operationTypeCoder);
     };

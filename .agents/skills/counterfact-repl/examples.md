@@ -189,8 +189,10 @@ I've set the pet service to simulate a failure. However, for this to work, your 
 Here's an example of how your route handler should be updated:
 
 ```typescript
+import type { Routes } from "../types/index.js";
+
 // routes/pets.ts
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/pets"]["GET"] = function ($) {
   if (!$.context.serviceAvailable) {
     return $.response.status(503).json({
       error: $.context.errorMessage || "Service unavailable"
@@ -450,7 +452,9 @@ Your pagination endpoints can use these to return:
 
 Example route handler:
 ```typescript
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../types/index.js";
+
+export const GET: Routes["/users"]["GET"] = function ($) {
   const page = parseInt($.query.page) || 1;
   const size = $.context.pageSize || 10;
   const start = (page - 1) * size;
