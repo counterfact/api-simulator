@@ -121,6 +121,10 @@ export class Context {
   remove(id: number): boolean {
     return this.pets.delete(id);
   }
+
+  markAllSold(): void {
+    for (const pet of this.pets.values()) pet.status = "sold";
+  }
 }
 ```
 
@@ -141,7 +145,10 @@ export const POST: HTTP_POST = function ($) {
 
 ```ts
 // api/routes/pet/{petId}.ts
-import type { HTTP_DELETE, HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
+import type {
+  HTTP_DELETE,
+  HTTP_GET,
+} from "../../types/paths/pet/{petId}.types.js";
 
 export const GET: HTTP_GET = function ($) {
   const pet = $.context.get($.path.petId);
@@ -258,6 +265,17 @@ describe("Context", () => {
     context.remove(pet.id);
     expect(context.get(pet.id)).toBeUndefined();
   });
+
+  it("marks existing pets sold without replacing them", () => {
+    const pet = context.add({
+      name: "Rex",
+      status: "available",
+      photoUrls: [],
+    });
+    context.markAllSold();
+    expect(context.get(pet.id)).toBe(pet);
+    expect(pet.status).toBe("sold");
+  });
 });
 ```
 
@@ -276,6 +294,10 @@ Scenario scripts are TypeScript files in the `scenarios/` directory. Each
 file exports named functions that receive a `$` argument giving access to live
 context and a route builder. Run them from the REPL with `.scenario`, or have
 one run automatically at startup.
+
+Follow the [scenario skill](../scenario/SKILL.md) for composition, prerequisite
+state, explicit destructive names, and baseline ownership. Named conditions
+should preserve unrelated state and earlier compatible scenario effects.
 
 ### The startup scenario
 
@@ -331,10 +353,10 @@ service, a full inventory. Run them from the REPL whenever you need them:
 
 ```ts
 // api/scenarios/index.ts
+import type { Scenario } from "../types/_.context.js";
+
 export const soldOut: Scenario = ($) => {
-  $.context.list().forEach((p) => {
-    p.status = "sold";
-  });
+  $.context.markAllSold();
 };
 ```
 
@@ -369,10 +391,14 @@ export class Context {
 // api/routes/pet/{petId}.ts
 // Alternative GET implementation; retain the generated HTTP_GET import.
 export const GET: HTTP_GET = function ($) {
-  if ($.context.isDown) return $.response.status(500).text("Service unavailable");
-  if ($.context.isRateLimited) return $.response.status(429).text("Too many requests");
+  if ($.context.isDown)
+    return $.response.status(500).text("Service unavailable");
+  if ($.context.isRateLimited)
+    return $.response.status(429).text("Too many requests");
   const pet = $.context.get($.path.petId);
-  return pet ? $.response.status(200).json(pet) : $.response.status(404).text("Not found");
+  return pet
+    ? $.response.status(200).json(pet)
+    : $.response.status(404).text("Not found");
 };
 ```
 
@@ -402,14 +428,14 @@ it is not a parsed `{ status, body }` object.
 | ------------------------------------------- | --------------------------------------------------------------------- |
 | Getting started                             | https://counterfact.dev/docs/getting-started.html                     |
 | Full usage guide                            | https://counterfact.dev/docs/usage.html                               |
-| Reference (`$` param, CLI flags)            | https://counterfact.dev/docs/api                           |
+| Reference (`$` param, CLI flags)            | https://counterfact.dev/docs/api                                      |
 | State / context objects                     | https://counterfact.dev/docs/features/state.html                      |
 | REPL                                        | https://counterfact.dev/docs/features/repl.html                       |
-| Pattern: Mock with Dummy Data               | https://counterfact.dev/docs/manual/sample-responses       |
-| Pattern: Federated Context Files            | https://counterfact.dev/docs/manual/nested-contexts          |
+| Pattern: Mock with Dummy Data               | https://counterfact.dev/docs/manual/sample-responses                  |
+| Pattern: Federated Context Files            | https://counterfact.dev/docs/manual/nested-contexts                   |
 | Pattern: Test the Context, Not the Handlers | https://counterfact.dev/docs/patterns/test-context-not-handlers.html  |
 | Pattern: Scenario Scripts                   | https://counterfact.dev/docs/patterns/scenario-scripts.html           |
-| Pattern: Simulate Failures and Edge Cases   | https://counterfact.dev/docs/manual/edge-cases          |
+| Pattern: Simulate Failures and Edge Cases   | https://counterfact.dev/docs/manual/edge-cases                        |
 | Pattern: AI-Assisted Implementation         | https://counterfact.dev/docs/patterns/ai-assisted-implementation.html |
 | Petstore example                            | https://github.com/counterfact/example-petstore                       |
 
@@ -426,4 +452,5 @@ Work through these steps in order:
 - [ ] Write context unit tests and focused HTTP checks for observable adapter behavior
 - [ ] Export a `startup` function from `scenarios/index.ts` that seeds realistic data
 - [ ] Add named scenario exports for useful non-default states (empty, error, edge cases)
+- [ ] Apply compatible scenarios together and verify both effects and unrelated state survive
 - [ ] Verify the server starts with realistic data by running it and checking the REPL

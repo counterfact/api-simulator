@@ -52,18 +52,18 @@ is the authority for current commands.
 
 ## Essential commands
 
-| Task                          | Command                          |
-| ----------------------------- | -------------------------------- |
-| Install dependencies          | `yarn install --immutable`       |
-| Build                         | `yarn build`                     |
-| Type-check                    | `yarn typecheck`                 |
-| Unit tests                    | `yarn test`                      |
-| Product black-box tests       | `yarn test:black-box`            |
-| Installed package smoke test  | `yarn test:packed-consumer`      |
-| TypeScript type tests         | `yarn build && yarn test:tsd`    |
-| Lint (check)                  | `yarn lint`                      |
-| Lint (auto-fix)               | `yarn lint:fix`                  |
-| Run against Petstore          | `yarn go:petstore`               |
+| Task                         | Command                       |
+| ---------------------------- | ----------------------------- |
+| Install dependencies         | `yarn install --immutable`    |
+| Build                        | `yarn build`                  |
+| Type-check                   | `yarn typecheck`              |
+| Unit tests                   | `yarn test`                   |
+| Product black-box tests      | `yarn test:black-box`         |
+| Installed package smoke test | `yarn test:packed-consumer`   |
+| TypeScript type tests        | `yarn build && yarn test:tsd` |
+| Lint (check)                 | `yarn lint`                   |
+| Lint (auto-fix)              | `yarn lint:fix`               |
+| Run against Petstore         | `yarn go:petstore`            |
 
 ## Development container
 
