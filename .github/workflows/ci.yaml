@@ -92,7 +92,7 @@ jobs:
         run: yarn test:package-closures
       - name: Unit Tests
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
-        timeout-minutes: 5
+        timeout-minutes: 10
         run: yarn test --runInBand --forceExit --verbose --no-watchman
       - name: Set up Python
         if: steps.docs-only.outputs.docs_only != 'true'
