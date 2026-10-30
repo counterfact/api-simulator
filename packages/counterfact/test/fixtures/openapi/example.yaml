@@ -1147,8 +1147,10 @@ components:
 
     # Recursive / self-referential schema
     Recursive:
-      oneOf:
-        - $ref: "#/components/schemas/Recursive"
+      type: object
+      properties:
+        child:
+          $ref: "#/components/schemas/Recursive"
 
     # User domain
     User:

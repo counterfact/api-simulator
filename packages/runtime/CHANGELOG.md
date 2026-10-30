@@ -1,5 +1,12 @@
 # @counterfact/runtime
 
+## 0.3.1
+
+### Patch Changes
+
+- ad9068d: Use Swagger UI 5.32.0 so documentation pages render OpenAPI 3.0.4 and 3.2.0 documents instead of reporting an invalid version field.
+- 9871d4c: Print distinct Swagger UI links for versioned APIs and serve the selected version's OpenAPI document and request prefix instead of always showing the first version in the group.
+
 ## 0.3.0
 
 ### Minor Changes

@@ -4,11 +4,22 @@ Start with [Getting Started](./getting-started.md) to run the API and make a
 browser request. Next, make the API remember a pet you create, return it when
 requested, and simulate a failure.
 
-## Install a pinned version
+<span id="install-a-pinned-version"></span>
+
+## Install in a project
 
 Stop the Getting Started server with Ctrl+C in its terminal before continuing. This lesson uses a separate project and a pinned Petstore document so its request fields and examples stay consistent. The new `api/` directory will not reuse the trial’s custom handlers.
 
-Complete the [pinned source setup](./patterns/lifecycle-setup.md#run-examples-from-the-current-source) and stay in its `counterfact-exercise/` directory. The handlers below use APIs from `main` that are not in the published 2.17.0 package. Download the contract and start that source build:
+Create a project directory, then follow the [project installation setup](./patterns/lifecycle-setup.md) to install the latest Counterfact release:
+
+```sh
+mkdir counterfact-exercise
+cd counterfact-exercise
+npm init -y
+npm install --save-dev counterfact@latest
+```
+
+Download the contract and start the installed CLI:
 
 ```sh
 curl --fail --location \
@@ -17,7 +28,7 @@ curl --fail --location \
 npx --no-install counterfact ./openapi.yaml api
 ```
 
-Keep the server running in this terminal and use your editor and browser for the following steps. Keep the source checkout, contract, and edited files when revisiting the exercise.
+Keep the server running in this terminal and use your editor and browser for the following steps. Keep the project, lockfile, contract, and edited files when revisiting the exercise.
 
 The command writes editable routes and generated types, then starts the API at
 `http://localhost:3100`. The generated responses work now; the next sections
@@ -32,7 +43,9 @@ available when those routes hot-reload.
 
 ```ts
 // api/routes/_.context.ts
-import type { Pet } from "../types/components/schemas/Pet.js";
+import type { Schemas } from "../types/index.js";
+
+type Pet = Schemas["Pet"];
 
 export class Context {
   private pets = new Map<number, Pet>();
@@ -55,18 +68,18 @@ Then use it in the generated `POST /pet` and `GET /pet/{petId}` handlers:
 
 ```ts
 // api/routes/pet.ts
-import type { HTTP_POST } from "../types/paths/pet.types.js";
+import type { Routes } from "../types/index.js";
 
-export const POST: HTTP_POST = function ($) {
+export const POST: Routes["/pet"]["POST"] = function ($) {
   return $.response.status(200).json($.context.add($.body));
 };
 ```
 
 ```ts
 // api/routes/pet/{petId}.ts
-import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   return pet
     ? $.response.status(200).json(pet)

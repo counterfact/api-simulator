@@ -1,6 +1,6 @@
 # Nested and connected contexts
 
-The examples on this page follow the current source. Use the [pinned source setup](../patterns/lifecycle-setup.md#run-examples-from-the-current-source) to run them with matching generated types and runtime APIs.
+Use the [project installation setup](../patterns/lifecycle-setup.md) to run these examples with Counterfact 3 or newer.
 
 Use nested contexts when separate route areas need their own state or behavior. A route uses the nearest `_.context.ts` in its directory or a parent directory.
 
@@ -10,13 +10,15 @@ For example, put pet behavior in `routes/pets/_.context.ts` and user behavior in
 
 ## Connect contexts explicitly
 
-This example assumes your OpenAPI document defines `components/schemas/User` with a numeric `id`, and `components/schemas/Payment` with a string `id` and numeric `userId`. The operations reference those schemas so Counterfact generates the imported types. The payment GET operation also declares the enriched JSON response and a text `404` response.
+This example assumes your OpenAPI document defines `components/schemas/User` with a numeric `id`, and `components/schemas/Payment` with a string `id` and numeric `userId`. Counterfact includes those schemas in `Schemas` even if no operation references them. The payment GET operation also declares the enriched JSON response and a text `404` response.
 
 Give each domain its own context:
 
 ```ts
 // api/routes/users/_.context.ts
-import type { User } from "../../types/components/schemas/User.js";
+import type { Schemas } from "../../types/index.js";
+
+type User = Schemas["User"];
 
 export class Context {
   private users = new Map<number, User>();
@@ -39,8 +41,10 @@ export class Context {
 
 ```ts
 // api/routes/payments/_.context.ts
-import type { Payment } from "../../types/components/schemas/Payment.js";
-import type { Context$ } from "../../types/_.context.js";
+import type { Schemas } from "../../types/index.js";
+
+type Payment = Schemas["Payment"];
+import type { Context$ } from "../../types/index.js";
 
 export class Context {
   private payments = new Map<string, Payment>();
@@ -73,9 +77,9 @@ The payments context uses the injected helper when a request needs user data. Lo
 
 ```ts
 // api/routes/payments/{paymentId}.ts
-import type { HTTP_GET } from "../../types/paths/payments/{paymentId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/payments"]["/{paymentId}"]["GET"] = function ($) {
   const payment = $.context.getWithUser($.path.paymentId);
   if (!payment) return $.response.status(404).text("Payment not found");
   return $.response.status(200).json(payment);

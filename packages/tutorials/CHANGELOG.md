@@ -1,5 +1,13 @@
 # @counterfact/tutorials
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [ad9068d]
+- Updated dependencies [9871d4c]
+  - @counterfact/runtime@0.3.1
+
 ## 0.2.0
 
 ### Minor Changes
