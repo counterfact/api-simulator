@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": "^22.11 || ^24 || >=26",
+    "node": "^22.22 || ^24 || >=26",
     "yarn": ">=4.5.2"
   },
   "scripts": {
@@ -103,6 +103,7 @@
   "resolutions": {
     "@typescript-eslint/utils": "^8.58.0",
     "qs@npm:6.15.1": "6.16.1",
-    "koa-proxies/uuid": "14.0.3"
+    "koa-proxies/uuid": "14.0.3",
+    "chokidar@npm:6.0.0": "patch:chokidar@npm%3A6.0.0#~/.yarn/patches/chokidar-npm-6.0.0-53be5debd5.patch"
   }
 }

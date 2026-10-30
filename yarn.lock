@@ -1064,7 +1064,7 @@ __metadata:
   dependencies:
     "@counterfact/openapi": "npm:0.1.6"
     "@counterfact/types": "npm:0.2.0"
-    chokidar: "npm:5.0.0"
+    chokidar: "npm:6.0.0"
     debug: "npm:4.4.3"
     prettier: "npm:3.9.10"
     typescript: "npm:6.0.3"
@@ -1078,7 +1078,7 @@ __metadata:
     "@apidevtools/json-schema-ref-parser": "npm:16.0.5"
     "@types/json-schema": "npm:7.0.15"
     js-yaml: "npm:5.5.0"
-    jsonpath-plus: "npm:11.2.1"
+    jsonpath-plus: "npm:11.2.2"
     node-fetch: "npm:3.3.2"
   languageName: unknown
   linkType: soft
@@ -1103,7 +1103,7 @@ __metadata:
     "@types/koa-bodyparser": "npm:4.3.13"
     "@types/koa-proxy": "npm:1.0.8"
     ajv: "npm:8.20.0"
-    chokidar: "npm:5.0.0"
+    chokidar: "npm:6.0.0"
     debug: "npm:4.4.3"
     js-yaml: "npm:5.5.0"
     json-schema-faker: "npm:0.6.3"
@@ -1963,7 +1963,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jsep-plugin/assignment@npm:^1.3.0":
+"@jsep-plugin/assignment@npm:^1.4.0":
   version: 1.4.0
   resolution: "@jsep-plugin/assignment@npm:1.4.0"
   peerDependencies:
@@ -1972,7 +1972,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jsep-plugin/regex@npm:^1.0.4":
+"@jsep-plugin/regex@npm:^1.1.0":
   version: 1.1.0
   resolution: "@jsep-plugin/regex@npm:1.1.0"
   peerDependencies:
@@ -4074,12 +4074,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chokidar@npm:5.0.0":
-  version: 5.0.0
-  resolution: "chokidar@npm:5.0.0"
+"chokidar@npm:6.0.0":
+  version: 6.0.0
+  resolution: "chokidar@npm:6.0.0"
   dependencies:
-    readdirp: "npm:^5.0.0"
-  checksum: 10c0/42fc907cb2a7ff5c9e220f84dae75380a77997f851c2a5e7865a2cf9ae45dd407a23557208cdcdbf3ac8c93341135a1748e4c48c31855f3bfa095e5159b6bdec
+    readdirp: "npm:^5.1.1"
+  checksum: 10c0/75651391e81b0cf7efa8ec373b68afaf1ad13283e8cae01737976bd0ff72fcb5afac75942ac3c07393d414269737229eb7648d74d32a1373764ecd0711b626b9
+  languageName: node
+  linkType: hard
+
+"chokidar@patch:chokidar@npm%3A6.0.0#~/.yarn/patches/chokidar-npm-6.0.0-53be5debd5.patch":
+  version: 6.0.0
+  resolution: "chokidar@patch:chokidar@npm%3A6.0.0#~/.yarn/patches/chokidar-npm-6.0.0-53be5debd5.patch::version=6.0.0&hash=42418b"
+  dependencies:
+    readdirp: "npm:^5.1.1"
+  checksum: 10c0/78e7ed6348f70928b656bdcced233e0a0acbcda70e0bde3770e943a56f2a328e825829b627ffc93f047745055afc5b558d2e20610896b1d00e5e6b852a7bed8f
   languageName: node
   linkType: hard
 
@@ -4382,7 +4391,7 @@ __metadata:
     http-terminator: "npm:3.2.0"
     js-yaml: "npm:5.5.0"
     open: "npm:11.0.4"
-    posthog-node: "npm:5.57.1"
+    posthog-node: "npm:5.57.2"
     typescript: "npm:6.0.3"
   bin:
     counterfact: bin/counterfact.js
@@ -7499,7 +7508,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsep@npm:^1.4.0":
+"jsep@npm:^1.6.0":
   version: 1.6.0
   resolution: "jsep@npm:1.6.0"
   checksum: 10c0/68b706c9f8873599ecf9c408b063ce661d1f53e5bceb6c25bf59448c73b1b8d4906ee40f892ccf32d83c6dba70b3aae495f00f3855fa0049025a07eadcd672ea
@@ -7599,17 +7608,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonpath-plus@npm:11.2.1":
-  version: 11.2.1
-  resolution: "jsonpath-plus@npm:11.2.1"
+"jsonpath-plus@npm:11.2.2":
+  version: 11.2.2
+  resolution: "jsonpath-plus@npm:11.2.2"
   dependencies:
-    "@jsep-plugin/assignment": "npm:^1.3.0"
-    "@jsep-plugin/regex": "npm:^1.0.4"
-    jsep: "npm:^1.4.0"
+    "@jsep-plugin/assignment": "npm:^1.4.0"
+    "@jsep-plugin/regex": "npm:^1.1.0"
+    jsep: "npm:^1.6.0"
   bin:
     jsonpath: ./bin/jsonpath-cli.js
     jsonpath-plus: ./bin/jsonpath-cli.js
-  checksum: 10c0/54a607e4bcc2d62337377483182887f76295bde1eb0709f20ca7a48125e55f41b535f0ebf0798ca9dc7ac4dec40d1c2a6e26b622aa1cb6f556e20aa2fb5d48d8
+  checksum: 10c0/52ca47072c8d9ae90a58a03b3bfb80ce00160efc94fb8e4f88d6c21d9212093c123e111c3122c17edad9a4579a3e6f72f820edb40eb0d8cf9e9e8c8b6259fe5f
   languageName: node
   linkType: hard
 
@@ -8777,9 +8786,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-node@npm:5.57.1":
-  version: 5.57.1
-  resolution: "posthog-node@npm:5.57.1"
+"posthog-node@npm:5.57.2":
+  version: 5.57.2
+  resolution: "posthog-node@npm:5.57.2"
   dependencies:
     "@posthog/core": "npm:^1.60.1"
   peerDependencies:
@@ -8790,7 +8799,7 @@ __metadata:
       optional: true
     rxjs:
       optional: true
-  checksum: 10c0/896730d11037e60283a1f7c08c9fe508c31161204f29a22f8d688239f3c52708ef7102f6ff9c84380699a1f7162acd76d9bd2dce0205ea90a03f73fd92f6ec04
+  checksum: 10c0/c0c99aae1ebd6ec6d501508002027b8bf733daff300bb5fadbc6b3a2c708da9e17dd36f29d6f7fe84989d1a246fa92aaa668cbf981c2fd022e86c8507ab64c68
   languageName: node
   linkType: hard
 
@@ -9045,7 +9054,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readdirp@npm:^5.0.0":
+"readdirp@npm:^5.1.1":
   version: 5.1.1
   resolution: "readdirp@npm:5.1.1"
   checksum: 10c0/5e99755684b9104761e48801828f4d2614efa33b1698629929c5985184dc63a7f8233c827832c40dc7be16b00cc871d303cf9de396d2fb74b9465ee2aa2424a1
