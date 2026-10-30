@@ -75,7 +75,7 @@ Two things:
 
 1. **`routes/`** — one `.ts` file per path in your OpenAPI spec. Each file exports a named function per HTTP method. By default they return random, schema-valid responses.
 
-2. **`types/`** — TypeScript interfaces for every request and response defined in the spec, including path params, query params, headers, and request/response bodies.
+2. **`types/`** — TypeScript interfaces for every request and response defined in the spec, including path params, query params, headers, and request/response bodies. The central `types/index.ts` exports `Routes`, `Components`, `Schemas`, `Context$`, `Scenario`, `Scenario$`, and `Middleware`; see [central type exports](./features/generated-code.md#central-type-exports).
 
 ---
 
@@ -102,7 +102,9 @@ route is just a function, so it can return a deterministic response or use a
 small shared context:
 
 ```ts
-export const POST: HTTP_POST = function ($) {
+import type { Routes } from "../types/index.js";
+
+export const POST: Routes["/pet"]["POST"] = function ($) {
   if (!$.body.name) return $.response.status(400).text("name is required");
   const pet = $.context.add($.body);
   return $.response.status(200).json(pet);

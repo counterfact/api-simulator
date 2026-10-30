@@ -67,13 +67,13 @@ server is running.
 ## Customize a response
 
 When a screen needs a specific case, replace the generated response in the
-corresponding handler. Counterfact supplies `$`: `$.path` contains URL parameters and `$.response` builds the HTTP response. The imported `HTTP_GET` type comes from the generated contract:
+corresponding handler. Counterfact supplies `$`: `$.path` contains URL parameters and `$.response` builds the HTTP response. `Routes["/pet"]["/{petId}"]["GET"]` selects the generated contract for this operation:
 
 ```ts
 // api/routes/pet/{petId}.ts
-import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   return $.response.status(200).json({
     id: $.path.petId,
     name: "Fluffy",

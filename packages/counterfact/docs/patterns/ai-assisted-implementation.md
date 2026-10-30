@@ -13,7 +13,7 @@ Generated types help a coding agent use the right inputs and response shapes. As
 After generating the project, point an AI agent at a handler file and ask it to implement the route:
 
 ```
-Given the TypeScript types in api/types/, implement the GET handler in api/routes/pet/{petId}.ts
+Given Routes and Schemas from api/types/index.ts, implement the GET handler in api/routes/pet/{petId}.ts
 to look up a pet from context by path parameter and return 200 with the pet or 404 if not found.
 ```
 
@@ -21,7 +21,9 @@ The agent sees the fully typed `$` parameter, the spec-derived response types, a
 
 ```ts
 // api/routes/pet/{petId}.ts
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../../types/index.js";
+
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   return pet
     ? $.response.status(200).json(pet)

@@ -4,7 +4,7 @@ For definitions of contexts, scenarios, and API groups, read [how state fits tog
 
 ## Context modules
 
-Export `class Context` from `routes/_.context.ts` or a nested `_.context.ts`. Routes use the nearest context as `$.context`. Constructors receive helpers; import the generated `Context$` type from the corresponding `types/_.context.js` file.
+Export `class Context` from `routes/_.context.ts` or a nested `_.context.ts`. Routes use the nearest context as `$.context`. Constructors receive helpers; import the generated `Context$` type from the generated `types/index.js` entry point.
 
 | Constructor member  | Purpose                                                  |
 | ------------------- | -------------------------------------------------------- |
@@ -38,4 +38,4 @@ See [scenario scripts](../patterns/scenario-scripts.md) for function selection a
 
 ## Middleware
 
-Export `middleware` from a route subtree's `_.middleware.ts`, using its generated `Middleware` type. Its signature is `async ($, respondTo) => response`. Return an early response or call and await `respondTo($)` to continue through the subtree. See [middleware](../features/middleware.md).
+Export `middleware` from a route subtree's `_.middleware.ts`, using `Middleware["/directory"]` from the generated `types/index.js` entry point (`Middleware["/"]` at the root). Its signature is `async ($, respondTo) => response`. Return an early response or call and await `respondTo($)` to continue through the subtree. See [middleware](../features/middleware.md).
