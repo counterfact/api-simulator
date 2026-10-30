@@ -4031,14 +4031,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"catchmydrift@npm:0.1.0":
-  version: 0.1.0
-  resolution: "catchmydrift@npm:0.1.0"
+"catchmydrift@npm:0.2.0":
+  version: 0.2.0
+  resolution: "catchmydrift@npm:0.2.0"
   dependencies:
     minimatch: "npm:10.2.6"
+    semver: "npm:7.8.5"
   bin:
     catchmydrift: index.js
-  checksum: 10c0/2dd5c5495dce0d8258eb10c04fe1cc1fe0ed495992c03d46eed8e017fc11e1c92568fd25161de2a91e301bc998b356c82c75779ce3add8b9a91a62a723b595f4
+  checksum: 10c0/ade22917d5f9b9b3a67e549cfdbd4daa35e52183704c405b5d206730cf8ffaa91ed901500a42b4620408a7bcaa47c678f71daf0cbd8e92d25612d5e94c58a6a4
   languageName: node
   linkType: hard
 
@@ -4335,7 +4336,7 @@ __metadata:
     "@types/node": "npm:22"
     "@typescript-eslint/eslint-plugin": "npm:8.72.1"
     "@typescript-eslint/parser": "npm:8.72.1"
-    catchmydrift: "npm:0.1.0"
+    catchmydrift: "npm:0.2.0"
     copyfiles: "npm:2.4.1"
     eslint: "npm:10.13.0"
     eslint-formatter-github-annotations: "npm:0.1.0"
@@ -9383,21 +9384,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"semver@npm:7.8.5, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.3, semver@npm:^7.7.1, semver@npm:^7.7.2, semver@npm:^7.7.3, semver@npm:^7.8.1, semver@npm:~7.8.0":
+  version: 7.8.5
+  resolution: "semver@npm:7.8.5"
+  bin:
+    semver: bin/semver.js
+  checksum: 10c0/b1f3127a5be8125a94f37188b361c212466c292c6910adce3ec106cff5dc211ccaedc4739c11bb70fda59d6fc1f040a9bca289f4e093451521a2372e5231fe0c
+  languageName: node
+  linkType: hard
+
 "semver@npm:^6.3.1":
   version: 6.3.1
   resolution: "semver@npm:6.3.1"
   bin:
     semver: bin/semver.js
   checksum: 10c0/e3d79b609071caa78bcb6ce2ad81c7966a46a7431d9d58b8800cfa9cb6a63699b3899a0e4bcce36167a284578212d9ae6942b6929ba4aa5015c079a67751d42d
-  languageName: node
-  linkType: hard
-
-"semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.3, semver@npm:^7.7.1, semver@npm:^7.7.2, semver@npm:^7.7.3, semver@npm:^7.8.1, semver@npm:~7.8.0":
-  version: 7.8.5
-  resolution: "semver@npm:7.8.5"
-  bin:
-    semver: bin/semver.js
-  checksum: 10c0/b1f3127a5be8125a94f37188b361c212466c292c6910adce3ec106cff5dc211ccaedc4739c11bb70fda59d6fc1f040a9bca289f4e093451521a2372e5231fe0c
   languageName: node
   linkType: hard
 
