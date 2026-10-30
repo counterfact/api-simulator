@@ -4391,7 +4391,7 @@ __metadata:
     http-terminator: "npm:3.2.0"
     js-yaml: "npm:5.5.0"
     open: "npm:11.0.4"
-    posthog-node: "npm:5.57.1"
+    posthog-node: "npm:5.57.2"
     typescript: "npm:6.0.3"
   bin:
     counterfact: bin/counterfact.js
@@ -8786,9 +8786,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-node@npm:5.57.1":
-  version: 5.57.1
-  resolution: "posthog-node@npm:5.57.1"
+"posthog-node@npm:5.57.2":
+  version: 5.57.2
+  resolution: "posthog-node@npm:5.57.2"
   dependencies:
     "@posthog/core": "npm:^1.60.1"
   peerDependencies:
@@ -8799,7 +8799,7 @@ __metadata:
       optional: true
     rxjs:
       optional: true
-  checksum: 10c0/896730d11037e60283a1f7c08c9fe508c31161204f29a22f8d688239f3c52708ef7102f6ff9c84380699a1f7162acd76d9bd2dce0205ea90a03f73fd92f6ec04
+  checksum: 10c0/c0c99aae1ebd6ec6d501508002027b8bf733daff300bb5fadbc6b3a2c708da9e17dd36f29d6f7fe84989d1a246fa92aaa668cbf981c2fd022e86c8507ab64c68
   languageName: node
   linkType: hard
 
