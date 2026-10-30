@@ -74,20 +74,21 @@ export class Context {
 
 ```ts
 // api/routes/v1/customers/{customerId}.ts
-import type { HTTP_GET } from "../../../types/paths/v1/customers/{customerId}.types.js";
+import type { Routes } from "../../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
-  if ($.context.rateLimited) {
-    return $.response.status(429).json({
-      error: { type: "rate_limit_error", message: "Try again shortly" },
+export const GET: Routes["/v1"]["/customers"]["/{customerId}"]["GET"] =
+  function ($) {
+    if ($.context.rateLimited) {
+      return $.response.status(429).json({
+        error: { type: "rate_limit_error", message: "Try again shortly" },
+      });
+    }
+    return $.response.status(200).json({
+      id: $.path.customerId,
+      object: "customer",
+      email: "juniper@example.test",
     });
-  }
-  return $.response.status(200).json({
-    id: $.path.customerId,
-    object: "customer",
-    email: "juniper@example.test",
-  });
-};
+  };
 ```
 
 Start the local server and REPL in the same directory:

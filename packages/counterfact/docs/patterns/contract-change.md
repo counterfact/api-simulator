@@ -38,8 +38,8 @@ npx counterfact status.yaml api --generate --no-update-check
 
 ```ts
 // api/routes/status.ts
-import type { HTTP_GET } from "../types/paths/status.types.js";
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../types/index.js";
+export const GET: Routes["/status"]["GET"] = function ($) {
   return $.response.status(200).json({ status: "ready" });
 };
 ```
@@ -76,7 +76,9 @@ The edited handler stays intact while its generated type changes. TypeScript sho
 Update the handler:
 
 ```ts
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../types/index.js";
+
+export const GET: Routes["/status"]["GET"] = function ($) {
   return $.response.status(200).json({
     status: "ready",
     message: "Accepting requests",

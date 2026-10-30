@@ -214,13 +214,14 @@ export const SHOP_CONTEXT = `export class Context {
 }
 `;
 
-export const SHOP_PRODUCTS = `import type { HTTP_GET } from "../types/paths/products.types.js";
+export const SHOP_PRODUCTS = `import type { Routes } from "../types/index.js";
+type Route = Routes["/products"];
 
 // Lesson: change Decaf's starting stock from 0 to 5, then save and watch the shop update.
 // The changed setting is applied once; later requests read the running inventory.
 const decafStock = 0;
 
-export const GET: HTTP_GET = ($) => {
+export const GET: Route["GET"] = ($) => {
   $.context.setDecafStock(decafStock);
   return $.response[200].json([
     { id: "house-blend", name: "House Blend", description: "Chocolate, caramel, and a gentle finish.", price: 1400, stock: $.context.inventory["house-blend"] },
@@ -230,12 +231,13 @@ export const GET: HTTP_GET = ($) => {
 };
 `;
 
-export const SHOP_ORDERS = `import type { HTTP_POST } from "../types/paths/orders.types.js";
+export const SHOP_ORDERS = `import type { Routes } from "../types/index.js";
+type Route = Routes["/orders"];
 
 // Lesson: set this to false to try the shop's error and retry behavior.
 const ordersAvailable = true;
 
-export const POST: HTTP_POST = ($) => {
+export const POST: Route["POST"] = ($) => {
   if (!ordersAvailable) {
     return $.response[503].json({ error: "Ordering is temporarily unavailable." });
   }
@@ -257,37 +259,41 @@ export const POST: HTTP_POST = ($) => {
 
 export function coffeeShopFiles(projectPath: string): Record<string, string> {
   return {
-    "routes/tutorial-info.ts": `import type { HTTP_GET } from "../types/paths/tutorial-info.types.js";
+    "routes/tutorial-info.ts": `import type { Routes } from "../types/index.js";
+type Route = Routes["/tutorial-info"];
 // Keep native ESM import when Counterfact compiles this route to CommonJS.
 const helpers = new Function("url", "return import(url)")(${JSON.stringify(validationModule)});
-export const GET: HTTP_GET = async ($) => $.response[200].json({ projectPath: ${JSON.stringify(projectPath)}, sessionId: $.context.sessionId, revision: await (await helpers).shopRevision(${JSON.stringify(projectPath)}) });
+export const GET: Route["GET"] = async ($) => $.response[200].json({ projectPath: ${JSON.stringify(projectPath)}, sessionId: $.context.sessionId, revision: await (await helpers).shopRevision(${JSON.stringify(projectPath)}) });
 `,
-    "routes/tutorial-event.ts": `import type { HTTP_POST } from "../types/paths/tutorial-event.types.js";
+    "routes/tutorial-event.ts": `import type { Routes } from "../types/index.js";
+type Route = Routes["/tutorial-event"];
 // Keep native ESM import when Counterfact compiles this route to CommonJS.
 const helpers = new Function("url", "return import(url)")(${JSON.stringify(telemetryModule)});
-export const POST: HTTP_POST = async ($) => {
+export const POST: Route["POST"] = async ($) => {
   try { (await helpers).reportCoffeeShopEvent($.context.sessionId, $.body.event, $.body.step); } catch { /* Reporting never blocks learning. */ }
   return $.response[200].json({ ok: true });
 };
 `,
-    "routes/tutorial-check.ts": `import type { HTTP_POST } from "../types/paths/tutorial-check.types.js";
+    "routes/tutorial-check.ts": `import type { Routes } from "../types/index.js";
+type Route = Routes["/tutorial-check"];
 // Keep native ESM import when Counterfact compiles this route to CommonJS.
 const helpers = new Function("url", "return import(url)")(${JSON.stringify(validationModule)});
-export const POST: HTTP_POST = async ($) => $.response[200].json(await (await helpers).checkShopSave(${JSON.stringify(projectPath)}, $.body.step));
+export const POST: Route["POST"] = async ($) => $.response[200].json(await (await helpers).checkShopSave(${JSON.stringify(projectPath)}, $.body.step));
 `,
     "routes/_.context.ts": SHOP_CONTEXT,
     "routes/products.ts": SHOP_PRODUCTS,
     "routes/orders.ts": SHOP_ORDERS,
-    "scenarios/index.ts": `import type { Scenario } from "../types/_.context.js";
+    "scenarios/index.ts": `import type { Scenario } from "../types/index.js";
 
 // A deliberately small catalog makes availability and selling out easy to see.
 export const startup: Scenario = ($) => {
   $.context.inventory = { "house-blend": 5, "dark-roast": 3, "decaf": 0 };
 };
 `,
-    "routes/walkthrough.ts": `import type { HTTP_GET } from "../types/paths/walkthrough.types.js";
+    "routes/walkthrough.ts": `import type { Routes } from "../types/index.js";
+type Route = Routes["/walkthrough"];
 
-export const GET: HTTP_GET = ($) => $.response[200].html(${JSON.stringify(coffeeShopPage(projectPath))});
+export const GET: Route["GET"] = ($) => $.response[200].html(${JSON.stringify(coffeeShopPage(projectPath))});
 `,
   };
 }
