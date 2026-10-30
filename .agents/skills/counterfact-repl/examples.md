@@ -25,6 +25,13 @@ live route mutations intact. Prefer scenarios/context methods in the REPL
 when preserving domain methods matters. Before confirming any setup or reset,
 read back the affected contexts and test the routes that consume them.
 
+Before each mutation, inspect the context implementation and consuming route.
+The JSON mutation examples here assume plain-object contexts with routes that
+already implement the demonstrated behavior. For class-backed contexts, use
+their existing context/scenario methods through the interactive REPL. If that
+interface is unavailable, report the limitation before changing state. Posting
+a failure flag alone cannot implement a failure response.
+
 ## Example 1: Discovering and Inspecting State
 
 **User:** "What data is currently in the pet store mock?"
@@ -184,7 +191,10 @@ Content-Type: application/json
 **Agent Response:**
 
 ````
-I've set the pet service to simulate a failure. However, for this to work, your route handler needs to check the `serviceAvailable` flag.
+After confirming the existing handler checks `serviceAvailable`, reading back
+the updated context, and observing GET /pets return 503, report that failure
+simulation is active. If the handler lacks this behavior, explain the needed
+change before treating the simulation as ready.
 
 Here's an example of how your route handler should be updated:
 
@@ -745,7 +755,8 @@ mutations. Use REPL context/scenario methods when these limitations matter.
 
 ### 4. Verify Changes
 
-After updates, fetch context or test endpoint to confirm changes took effect.
+After updates, fetch the context and test the affected endpoint before
+confirming the result. Context shape alone does not establish route behavior.
 
 ### 5. Document State Shape
 

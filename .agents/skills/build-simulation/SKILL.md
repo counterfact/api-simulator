@@ -20,7 +20,9 @@ applyTo:
 Guide an AI agent through the full workflow of turning a bare OpenAPI spec into
 a realistic, stateful API simulation using Counterfact. This skill covers every
 step: generation, research, context implementation, testing, and scenario setup.
-The examples below use a single-API workspace.
+The examples below use the checked-in [pet-shop contract](assets/pet-shop.openapi.yaml)
+and a single-API workspace. This small teaching contract differs from the public
+Petstore API; use the target API's own generated inputs and responses when adapting it.
 
 ---
 
@@ -32,10 +34,12 @@ Run Counterfact against the spec to produce a working server immediately:
 npx counterfact@latest <spec-url-or-path> <output-directory>
 ```
 
-Example:
+To reproduce this skill's examples from the repository root, build the current
+checkout, then generate from its matching contract:
 
 ```sh
-npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
+yarn build
+node packages/counterfact/bin/counterfact.js .agents/skills/build-simulation/assets/pet-shop.openapi.yaml api
 ```
 
 This creates:
@@ -58,8 +62,9 @@ work that follows replaces these defaults with realistic, stateful behaviour.
 
 ## Step 2 — Research the real API
 
-Because the spec describes a well-known public API, look up official
-documentation before writing any simulation code. Understanding what the real
+For a public API, look up official documentation before writing simulation
+code. For a private API, use the supplied contract and available product
+documentation, and label assumptions that need verification. Understanding what the real
 API actually does is what separates a useful simulation from a pretty type stub.
 
 Do at least the following:
@@ -92,7 +97,7 @@ Place one `_.context.ts` at the root of the routes tree:
 
 ```ts
 // api/routes/_.context.ts
-import type { Pet } from "../types/components/pet.types.js";
+import type { Pet } from "../types/components/schemas/Pet.js";
 
 export class Context {
   private pets = new Map<number, Pet>();
@@ -119,10 +124,12 @@ export class Context {
 }
 ```
 
-Then wire the context into each handler:
+Then wire the context into each handler, retaining the generated imports:
 
 ```ts
 // api/routes/pet.ts
+import type { HTTP_GET, HTTP_POST } from "../types/paths/pet.types.js";
+
 export const GET: HTTP_GET = function ($) {
   return $.response.status(200).json($.context.list($.query.status));
 };
@@ -134,6 +141,8 @@ export const POST: HTTP_POST = function ($) {
 
 ```ts
 // api/routes/pet/{petId}.ts
+import type { HTTP_DELETE, HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
+
 export const GET: HTTP_GET = function ($) {
   const pet = $.context.get($.path.petId);
   return pet
@@ -143,7 +152,7 @@ export const GET: HTTP_GET = function ($) {
 
 export const DELETE: HTTP_DELETE = function ($) {
   $.context.remove($.path.petId);
-  return $.response.status(200);
+  return $.response.status(200).empty();
 };
 ```
 
@@ -252,9 +261,10 @@ describe("Context", () => {
 });
 ```
 
-**Do not test handler files.** Handlers are intentionally thin, freely
-editable, and contain no logic worth automating against. Only the context class
-needs tests.
+Test domain logic directly through the context class. Use HTTP integration
+tests when response mapping, request parsing, status selection, or serialization
+carries behavior that context tests cannot establish. Keep those checks focused
+on the responses a consumer observes.
 
 > **Docs:** [Pattern: Test the Context, Not the Handlers](https://counterfact.dev/docs/patterns/test-context-not-handlers.html)
 
@@ -357,6 +367,7 @@ export class Context {
 
 ```ts
 // api/routes/pet/{petId}.ts
+// Alternative GET implementation; retain the generated HTTP_GET import.
 export const GET: HTTP_GET = function ($) {
   if ($.context.isDown) return $.response.status(500).text("Service unavailable");
   if ($.context.isRateLimited) return $.response.status(429).text("Too many requests");
@@ -412,7 +423,7 @@ Work through these steps in order:
 - [ ] Read the real API's documentation and note key business rules and data shapes
 - [ ] Implement a `_.context.ts` with typed methods for all CRUD operations
 - [ ] Update each handler to delegate to the context instead of calling `.random()`
-- [ ] Write unit tests for the context class (not the handlers)
+- [ ] Write context unit tests and focused HTTP checks for observable adapter behavior
 - [ ] Export a `startup` function from `scenarios/index.ts` that seeds realistic data
 - [ ] Add named scenario exports for useful non-default states (empty, error, edge cases)
 - [ ] Verify the server starts with realistic data by running it and checking the REPL

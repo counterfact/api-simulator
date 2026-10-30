@@ -25,24 +25,30 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 
 ```text
 packages/
-  counterfact/                # Published package workspace
+  counterfact/                # Published application and CLI
     src/
       app.ts                  # Main entry point; generation + server + REPL orchestration
-      server/                 # Koa server, dispatcher, registry, hot-reload internals
-      typescript-generator/   # OpenAPI parsing and TypeScript generation
-      repl/                   # Interactive terminal for runtime state control
+      cli/                    # Options, startup, telemetry, first-run selection
       migrate/                # Helpers for migrating generated route files
       util/                   # Shared utilities
     bin/counterfact.js        # CLI entry point
     test/                     # Jest unit tests
-    templates/                # Generator scaffold templates
     docs/                     # Canonical user documentation
+  runtime/                    # Koa server, dispatch, registries, hot reload
+  generator/                  # OpenAPI-to-TypeScript generation and file writing
+  openapi/                    # Specification loading, source classification, overlays
+  client/                     # Typed request builder and route catalog
+  repl/                       # Interactive terminal and completion
   tutorials/                  # Guided tours, exercise preparation, and lesson checks
   types/src/                  # Shared types copied into generated projects
 test-black-box/               # Gherkin journeys with Python harness and step glue
 examples/                     # Checked consumer examples
 site/                         # Documentation website
 ```
+
+Each workspace keeps its implementation in `src/` and its focused tests in
+`test/`. Root `jest.config.js` selects the shared unit-test roots; `package.json`
+is the authority for current commands.
 
 ## Essential commands
 

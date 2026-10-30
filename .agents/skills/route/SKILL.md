@@ -32,9 +32,9 @@ Implement or update route behavior in generated route files.
 - Route handlers must stay thin.
 - Business logic must be delegated to a context class in an appropriate
   `_.context.ts` file.
-- Do **not** create unit tests in this skill; routes are HTTP adapters and
-  behavior should be validated through context tests and black-box/integration
-  flows when available.
+- Test domain logic directly through context methods. Validate request parsing,
+  response mapping, status selection, and serialization through focused HTTP
+  integration or product black-box tests when those behaviors change.
 
 ## Step-by-step
 

@@ -5,6 +5,8 @@ description: >
   generated file writing behavior without regressing regeneration guarantees.
 applyTo:
   - "packages/generator/src/**/*.ts"
+  - "packages/openapi/src/**/*.ts"
+  - "packages/openapi/test/**/*.test.ts"
   - "packages/runtime/src/server/openapi-document.ts"
   - "packages/runtime/src/server/load-openapi-document.ts"
   - "packages/generator/test/**/*.test.ts"
@@ -24,6 +26,7 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - `packages/generator/src/requirement.ts`
 - `packages/generator/src/repository.ts`
 - `packages/generator/src/schema-type-coder.ts`
+- `packages/openapi/src/load-openapi-document.ts` and `packages/openapi/src/openapi-source.ts` for loading, overlays, and source classification
 
 ## Existing conventions to follow
 

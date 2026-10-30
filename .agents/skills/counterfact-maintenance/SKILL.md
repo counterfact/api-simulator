@@ -5,10 +5,13 @@ description: >
   black-box test boundaries, release/versioning workflow, documentation
   requirements, and compatibility.
 applyTo:
-  - "packages/counterfact/src/**/*.ts"
-  - "packages/counterfact/test/**/*.ts"
+  - "packages/*/src/**/*.ts"
+  - "packages/*/test/**"
   - "packages/counterfact/docs/**/*.md"
   - "test-black-box/**/*.py"
+  - "test-black-box/**/*.feature"
+  - ".agents/skills/**"
+  - "AGENTS.md"
   - "docs/**/*.md"
   - "site/**"
   - ".changeset/*.md"
@@ -29,7 +32,7 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - `packages/counterfact/docs/api.md`
 - `packages/counterfact/docs/faq.md`
 - `.changeset/*.md` (format examples)
-- `packages/counterfact/test/**/*` for existing patterns/fixtures
+- The affected workspace's `test/` directory for existing patterns/fixtures
 
 ## Existing conventions to follow
 
@@ -65,7 +68,7 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - Execute substantial documentation recipes against the exact published version or commit they instruct readers to use. A source package version can match npm while exposing unreleased APIs; verify public method availability and mark source-only recipes with a reproducible checkout setup. Verify externally linked contracts at their pinned URL, and exercise both the failing and repaired steps of typecheck examples.
 - Validate copyable handler examples against generated imports and the actual HTTP method's inputs, not only TypeScript syntax. For linked onboarding lessons, make the running-process, project-directory, and contract handoff explicit; an independently runnable command may still fail when followed immediately after the preceding lesson.
 - User documentation ships in the npm package as well as the site. Keep the package `files` allowlist and `test/package/fixtures/pack-files.json` aligned with new pages; inspect inventory changes and run the packed-consumer check after adding documentation paths.
-- Keep introductory walkthroughs in a linked manual chapter, with setup and discovery rules in `docs/api/cli.md`; preserve the direct OpenAPI quick start when integrating older onboarding changes.
+- Keep introductory walkthroughs in a linked manual chapter, with setup and discovery rules in `packages/counterfact/docs/api/cli.md`; preserve the direct OpenAPI quick start when integrating older onboarding changes.
 - The documentation has a feature-based manual and a separate API reference. Keep `site/src/data/navigation.json`, the Markdown manual/reference indexes, and the home-page feature count aligned when adding chapters. Reuse canonical Markdown pages rather than duplicating existing guides, preserve published documentation URLs through the site redirect map when retiring redundant Markdown sources, and check rendered anchors as well as page destinations after restructuring.
 - When rebuilding documentation navigation, compare removed content with the previous site as well as checking URLs. Preserve privacy disclosures, project resources, task indexes, and externally configured client examples; verify retained guides have incoming links from the new navigation. A successful link check cannot detect removed information or orphaned pages.
 - Documentation is also rendered as site pages. Link repository-only examples
@@ -92,7 +95,7 @@ Use this skill when finalizing contributor-facing changes that affect tests, dia
 - Package-boundary export checks validate public subpaths across conditions;
   they do not replace installed-consumer tests for runtime resolution. Keep
   regression coverage for null exclusions and overlapping export patterns.
-- Keep tests focused by subsystem (`packages/counterfact/test/cli`, `packages/counterfact/test/server`, `packages/counterfact/test/typescript-generator`, `packages/counterfact/test/util`).
+- Keep tests beside their owning workspace: CLI/application tests in `packages/counterfact/test/`, server tests in `packages/runtime/test/`, generator tests in `packages/generator/test/`, and the corresponding `test/` directory for client, OpenAPI, REPL, and tutorials.
 - Preserve documented behavior promises (e.g., regen preserves route edits; types are regenerated).
 - When terminal output displays an HTTP message, split its head and body at the first `\r\n\r\n` separator only: multipart bodies contain additional separators that must remain visible.
 - Documentation pages can be direct entry points. Introduce Counterfact-specific terms before using them, linking to `packages/counterfact/docs/manual/concepts.md` for shared definitions. State example prerequisites before snippets, distinguish generated helpers from authored context methods, and explain group/version/prefix and handler/constructor/scenario argument boundaries consistently. Extend current canonical pages rather than restoring retired guides.

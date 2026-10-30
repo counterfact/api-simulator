@@ -230,6 +230,14 @@ Content-Type: application/json
 
 **Use when:** Adding data, modifying state, simulating conditions.
 
+**Before any context mutation:** inspect the context implementation and the
+routes that consume it. A JSON readback cannot tell you whether a class has
+prototype methods. Use existing context/scenario methods through the interactive
+REPL for class-backed contexts or domain operations; this HTTP interface cannot
+invoke those methods. If terminal access is unavailable, report that limitation
+instead of substituting a JSON update. The JSON mutation examples below assume
+plain-object contexts whose routes read the posted fields directly.
+
 **Important:** JSON updates do not preserve class prototype methods. The
 registry adopts the posted object's prototype, so methods on class contexts
 can be lost. Use scenario/context methods through the interactive REPL for
@@ -423,16 +431,18 @@ Currently in the pet store:
 **Agent workflow:**
 
 ```
-1. GET /_counterfact/api/contexts/pets
+1. Inspect the context implementation and route; follow the mutation decision above
+
+2. GET /_counterfact/api/contexts/pets
    → Get current pets
 
-2. Append new pet to array
+3. Append new pet to array
 
-3. POST /_counterfact/api/contexts/pets
+4. POST /_counterfact/api/contexts/pets
    Body: { "pets": [...existingPets, newPet] }
    → Update context
 
-4. Verify by GETting /pets endpoint
+5. Read back the context and GET /pets
    → Confirm change visible in API
 ```
 
@@ -445,13 +455,13 @@ Currently in the pet store:
 **Agent workflow:**
 
 ```
-1. POST /_counterfact/api/contexts/users
+1. Inspect the context and handler; confirm an existing serviceAvailable flag controls failure
+
+2. POST /_counterfact/api/contexts/users
    Body: { "serviceAvailable": false }
    → Set failure flag
 
-2. Explain that route handlers should check this flag
-
-3. Optionally: Test GET /users to verify error
+3. Read back the context and GET /users to verify the expected error
 ```
 
 **Note:** The route handler must be coded to check `context.serviceAvailable`. The skill sets the flag, but behavior depends on route implementation.
