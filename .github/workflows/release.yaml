@@ -30,7 +30,7 @@ jobs:
           node-version: 26.x
       - name: Enable Corepack
         run: |
-          npm install --global corepack
+          npm install --global --force corepack
           corepack enable
       - name: Install trusted-publishing toolchain
         run: npm install --global npm@11.18.0
@@ -68,7 +68,7 @@ jobs:
           node-version: 26.x
       - name: Enable Corepack
         run: |
-          npm install --global corepack
+          npm install --global --force corepack
           corepack enable
       - name: Install trusted-publishing toolchain
         run: npm install --global npm@11.18.0

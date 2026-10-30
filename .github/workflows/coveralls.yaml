@@ -16,7 +16,7 @@ jobs:
 
       - name: Enable Corepack
         run: |
-          npm install --global corepack
+          npm install --global --force corepack
           corepack enable
 
       - name: Install Packages

@@ -59,7 +59,7 @@ jobs:
       - name: Enable Corepack
         if: steps.docs-only.outputs.docs_only != 'true'
         run: |
-          npm install --global corepack
+          npm install --global --force corepack
           corepack enable
       - name: Install Packages
         if: steps.docs-only.outputs.docs_only != 'true'
