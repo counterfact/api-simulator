@@ -14,6 +14,7 @@
     "check:publishable": "node scripts/check-publishable.mjs",
     "test": "yarn workspace counterfact test",
     "test:coverage": "yarn test --coverage",
+    "test:typesafe": "node --test scripts/typesafe/development.test.mjs",
     "test:build": "node --test scripts/build.test.mjs",
     "test:boundaries": "node --test scripts/check-package-boundaries.test.mjs",
     "test:client": "yarn workspace @counterfact/client test",

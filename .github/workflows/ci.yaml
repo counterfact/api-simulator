@@ -96,6 +96,9 @@ jobs:
       - name: Build Runner Tests
         if: matrix.check == 'Build-runner tests'
         run: yarn test:build
+      - name: TypeSafe helper tests (offline)
+        if: matrix.check == 'Build-runner tests'
+        run: yarn test:typesafe
       - name: Package Boundary Tests
         if: matrix.check == 'Static checks'
         run: yarn test:boundaries
