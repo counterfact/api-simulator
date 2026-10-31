@@ -1,4 +1,5 @@
 /* eslint-disable security/detect-non-literal-fs-filename -- Only fixed lesson paths inside an explicitly created demo are editable. */
+import { tutorialGuidance } from "./coffee-shop-errors.js";
 import fs from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { join, resolve } from "node:path";
@@ -85,7 +86,7 @@ async function readState(root: string): Promise<State | undefined> {
     } catch (legacyError) {
       if ((legacyError as NodeJS.ErrnoException).code !== "ENOENT")
         throw legacyError;
-      throw new Error(
+      throw tutorialGuidance(
         "The walkthrough's saved state is missing. Start a new demo; your files have been kept.",
         { cause: legacyError },
       );
@@ -185,7 +186,7 @@ function source(text: string) {
     (parsed as ts.SourceFile & { parseDiagnostics: readonly unknown[] })
       .parseDiagnostics.length
   )
-    throw new Error(
+    throw tutorialGuidance(
       "Fix the TypeScript syntax errors before preparing this step.",
     );
   return parsed;
@@ -195,7 +196,9 @@ function contextClass(text: string) {
     (node) => ts.isClassDeclaration(node) && node.name?.text === "Context",
   );
   if (!found || !ts.isClassDeclaration(found))
-    throw new Error("Keep the exported Context class in routes/_.context.ts.");
+    throw tutorialGuidance(
+      "Keep the exported Context class in routes/_.context.ts.",
+    );
   return found;
 }
 function addContextMethods(text: string, methods: string, names: string[]) {
@@ -205,7 +208,7 @@ function addContextMethods(text: string, methods: string, names: string[]) {
       names.includes(member.name?.getText() ?? ""),
     )
   )
-    throw new Error(
+    throw tutorialGuidance(
       "A method for this step already exists. Keep your edits and complete the exercise directly; preparation will not overwrite it.",
     );
   const position = declaration.end - 1;
@@ -220,7 +223,7 @@ function orderBody(text: string) {
       ),
   );
   if (!statement || !ts.isVariableStatement(statement))
-    throw new Error("Keep the generated POST handler declaration.");
+    throw tutorialGuidance("Keep the generated POST handler declaration.");
   const initializer = statement.declarationList.declarations.find(
     (decl) => decl.name.getText() === "POST",
   )?.initializer;
@@ -231,7 +234,7 @@ function orderBody(text: string) {
     ) ||
     !ts.isBlock(initializer.body)
   )
-    throw new Error(
+    throw tutorialGuidance(
       "Keep the POST handler's function body so preparation can add its supporting code.",
     );
   return initializer.body;
@@ -241,7 +244,7 @@ async function readEditable(root: string, file: string) {
   const realRoot = await fs.realpath(root);
   const realFile = await fs.realpath(path);
   if (resolve(realFile) !== resolve(realRoot, file))
-    throw new Error(
+    throw tutorialGuidance(
       "Preparation will not follow a symlink outside its lesson file.",
     );
   return fs.readFile(path, "utf8");
@@ -258,21 +261,21 @@ export async function prepareWalkthroughStep(
   return serial(root, async () => {
     const state = await readState(root);
     if (!state?.baseline)
-      throw new Error(
+      throw tutorialGuidance(
         "Open the walkthrough to establish its generated baseline first.",
       );
     const phases = phasesForVersion(state.version ?? 2);
     const phase = phases.find(
       (candidate) => candidate.id === phaseId && candidate.preparation,
     );
-    if (!phase) throw new Error("This phase needs no preparation.");
+    if (!phase) throw tutorialGuidance("This phase needs no preparation.");
     if (state.prepared.includes(phaseId))
       return {
         ok: true,
         message: "Already prepared; your edits have been kept.",
       };
     if (phase.lesson > 1 && !state.checkpoints.includes(phase.lesson - 1))
-      throw new Error(
+      throw tutorialGuidance(
         "Complete the preceding lesson before preparing this step. Previews never change files.",
       );
     const originals = new Map<string, string>();
@@ -294,7 +297,7 @@ export async function prepareWalkthroughStep(
             ),
         )
       )
-        throw new Error(
+        throw tutorialGuidance(
           "A catalog already exists. Preparation will not replace your code.",
         );
       const position =
@@ -310,7 +313,7 @@ export async function prepareWalkthroughStep(
     } else if (phaseId === "fail") {
       let text = await read("routes/orders.ts");
       if (/\bordersAvailable\b/u.test(text))
-        throw new Error(
+        throw tutorialGuidance(
           "ordersAvailable already exists. Preparation will not replace your code.",
         );
       const body = orderBody(text);
@@ -329,7 +332,7 @@ export async function prepareWalkthroughStep(
           (member) => !ts.isConstructorDeclaration(member),
         )
       )
-        throw new Error(
+        throw tutorialGuidance(
           "Context already has your code. Preparation will not replace it.",
         );
       changes.push([
@@ -373,7 +376,7 @@ export async function prepareWalkthroughStep(
             ),
         )
       )
-        throw new Error(
+        throw tutorialGuidance(
           "startup already has behavior. Preparation will not replace it.",
         );
       if (
@@ -385,7 +388,7 @@ export async function prepareWalkthroughStep(
             ),
         )
       )
-        throw new Error(
+        throw tutorialGuidance(
           "reset already exists. Preparation will not replace it.",
         );
       changes.push([
@@ -415,7 +418,7 @@ export async function prepareWalkthroughStep(
     } else if (phaseId === "reduce") {
       let text = await read("routes/orders.ts");
       if (/\breduceInventory\b/u.test(text))
-        throw new Error(
+        throw tutorialGuidance(
           "reduceInventory already exists. Preparation will not replace your implementation.",
         );
       const statement = orderBody(text).statements.find(
@@ -423,7 +426,7 @@ export async function prepareWalkthroughStep(
           ts.isReturnStatement(node) && node.getText().includes("status(201)"),
       );
       if (!statement)
-        throw new Error(
+        throw tutorialGuidance(
           "Keep the successful 201 return after your stock checks.",
         );
       const position = statement.getStart();
@@ -439,7 +442,7 @@ export async function prepareWalkthroughStep(
     } else if (phaseId === "scenario") {
       const text = await read("scenarios/index.ts");
       if (/\brestockDarkRoast\b/u.test(text))
-        throw new Error(
+        throw tutorialGuidance(
           "restockDarkRoast already exists. Keep your implementation and complete the exercise directly.",
         );
       changes.push([
@@ -460,7 +463,7 @@ export async function prepareWalkthroughStep(
     );
     for (const [file] of formatted) {
       if ((await readEditable(root, file)) !== originals.get(file))
-        throw new Error(
+        throw tutorialGuidance(
           "This file changed while I was preparing the edit. Review your changes and try again.",
         );
     }
@@ -480,13 +483,13 @@ export async function prepareWalkthroughStep(
         revision,
       };
     if (options.revision !== undefined && options.revision !== revision)
-      throw new Error(
+      throw tutorialGuidance(
         "Your files changed since this preview. Review the updated diff, then apply it again.",
       );
     await captureChanges(root, state, "you");
     for (const [file] of formatted) {
       if ((await readEditable(root, file)) !== originals.get(file))
-        throw new Error(
+        throw tutorialGuidance(
           "Your files changed while applying this edit. Review the updated diff and try again.",
         );
     }
@@ -512,7 +515,7 @@ export async function checkpointWalkthroughStep(root: string, phaseId: string) {
       };
     const phases = phasesForVersion(state.version ?? 2);
     const phase = phases.find((candidate) => candidate.id === phaseId);
-    if (!phase) throw new Error("Unknown phase.");
+    if (!phase) throw tutorialGuidance("Unknown phase.");
     const next = phases[phases.indexOf(phase) + 1];
     if (next?.lesson === phase.lesson)
       return {
@@ -521,7 +524,7 @@ export async function checkpointWalkthroughStep(root: string, phaseId: string) {
       };
     if (!state.checkpoints.includes(phase.lesson)) {
       if (phase.lesson > 1 && !state.checkpoints.includes(phase.lesson - 1))
-        throw new Error("Complete the preceding lesson first.");
+        throw tutorialGuidance("Complete the preceding lesson first.");
       await captureChanges(root, state, "you");
       state.checkpoints.push(phase.lesson);
       await writeState(root, state);

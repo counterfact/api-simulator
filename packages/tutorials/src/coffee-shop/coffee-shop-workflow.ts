@@ -1,3 +1,4 @@
+import { tutorialGuidance } from "./coffee-shop-errors.js";
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
 import type { LessonPhase } from "./coffee-shop-lessons.js";
 import type { FileChange, EditEvent } from "./coffee-shop-workspace.js";
@@ -56,7 +57,7 @@ export function createWalkthroughWorkflow(
 ): { invoke(request: WorkflowRequest): Promise<WorkflowResult> } {
   const phaseFor = (id: string) => {
     const phase = phases.find((candidate) => candidate.id === id);
-    if (!phase) throw new Error("Unknown phase.");
+    if (!phase) throw tutorialGuidance("Unknown phase.");
     return phase;
   };
   const nextFor = (id: string) => phases[phases.indexOf(phaseFor(id)) + 1];
@@ -101,7 +102,9 @@ export function createWalkthroughWorkflow(
     }))
     .addNode("prepare", async ({ request }) => {
       if (!request.revision)
-        throw new Error("Review the proposed diff before applying changes.");
+        throw tutorialGuidance(
+          "Review the proposed diff before applying changes.",
+        );
       return {
         result: await operate("prepare", request),
       };
@@ -115,7 +118,9 @@ export function createWalkthroughWorkflow(
     .addNode("next_lesson", ({ request, workspace }) => {
       const phase = phaseFor(request.phaseId);
       if (workspace.enabled && !workspace.checkpoints.includes(phase.lesson))
-        throw new Error("Complete this lesson before starting the next one.");
+        throw tutorialGuidance(
+          "Complete this lesson before starting the next one.",
+        );
       return { result: { ok: true, message: "Continue to the next lesson." } };
     })
     .addNode("await_approval", wait("await_approval"))
@@ -140,7 +145,7 @@ export function createWalkthroughWorkflow(
           case "advance":
             return "next_lesson";
           default:
-            throw new Error("Unknown workspace action.");
+            throw tutorialGuidance("Unknown workspace action.");
         }
       },
       ["preview", "prepare", "check", "checkpoint", "next_lesson"],

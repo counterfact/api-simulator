@@ -1,10 +1,11 @@
 /* eslint-disable security/detect-non-literal-fs-filename -- Only the managed demo marker is read here. */
+import { tutorialGuidance, tutorialFailure } from "./coffee-shop-errors.js";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { coffeeShopPage } from "./coffee-shop-page.js";
 import { checkWalkthroughSave, walkthroughInfo } from "./coffee-shop-checks.js";
-import { phasesForVersion } from "./coffee-shop-lessons.js";
+import { phasesForVersion, CATALOG } from "./coffee-shop-lessons.js";
 import { createWalkthroughWorkflow } from "./coffee-shop-workflow.js";
 import type { WorkflowRequest } from "./coffee-shop-workflow.js";
 import {
@@ -16,7 +17,6 @@ import {
 import { reportWalkthroughEvent } from "./coffee-shop-telemetry.js";
 import { observeLesson } from "./coffee-shop-curriculum.js";
 import type { LessonInput } from "./lessons/runtime.js";
-import { CATALOG } from "./coffee-shop-lessons.js";
 import { z } from "zod";
 
 const item = z.object({ productId: z.string(), quantity: z.number() });
@@ -84,10 +84,15 @@ async function readBody(
     }
     chunks.push(bytes);
   }
-  if (tooLarge) throw new Error("Tutorial request is too large.");
-  const body: unknown = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  if (tooLarge) throw tutorialGuidance("Tutorial request is too large.");
+  let body: unknown;
+  try {
+    body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } catch {
+    throw tutorialGuidance("Send a valid JSON object.");
+  }
   if (!body || typeof body !== "object" || Array.isArray(body))
-    throw new Error("Expected a JSON object.");
+    throw tutorialGuidance("Expected a JSON object.");
   return body as Record<string, unknown>;
 }
 
@@ -193,13 +198,18 @@ export async function createTourRequestHandler(
         return true;
       }
       if (body.sessionId !== info.sessionId)
-        throw new Error(
+        throw tutorialGuidance(
           "Reload the walkthrough before changing its workspace.",
         );
       if (path === "/tutorial/lesson") {
         if (version !== 6)
-          throw new Error("This project keeps its original lesson workflow.");
-        const receipt = lessonReceipt.parse(body.input);
+          throw tutorialGuidance(
+            "This project keeps its original lesson workflow.",
+          );
+        const parsedReceipt = lessonReceipt.safeParse(body.input);
+        if (!parsedReceipt.success)
+          throw tutorialGuidance("Send a valid lesson observation.");
+        const receipt = parsedReceipt.data;
         json(
           200,
           await observeLesson(phaseId, {
@@ -220,7 +230,7 @@ export async function createTourRequestHandler(
           String(body.action),
         )
       )
-        throw new Error("Unknown workspace action.");
+        throw tutorialGuidance("Unknown workspace action.");
       const result = await workflow.invoke({
         action: body.action as WorkflowRequest["action"],
         phaseId,
@@ -230,7 +240,10 @@ export async function createTourRequestHandler(
     } catch (error) {
       json(400, {
         ok: false,
-        message: error instanceof Error ? error.message : String(error),
+        message: tutorialFailure(
+          error,
+          "Could not complete the tutorial request. Check the server terminal for details and try again.",
+        ),
       });
     }
     return true;

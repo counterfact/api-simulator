@@ -52,6 +52,10 @@ context through an accessor, so it sees the current instance after reload/reset.
 It does not enter Counterfact route dispatch, validation, proxying, or generated
 types. `/walkthrough` redirects to `/tutorial/` for existing links.
 
+Authored validation feedback remains visible in tutorial responses. Unexpected
+request and saved-code failures return recovery instructions; their original
+diagnostics are logged in the server terminal, never serialized to the browser.
+
 ## Learning flow
 
 Fourteen lessons start with placing a coffee order to learn the shop and chat.

@@ -30,6 +30,12 @@ For CLI integration, read [CLI runtime](../counterfact-cli-runtime/SKILL.md).
 
 - Browser observations must compare real API snapshots rather than predict mutations or claim specific code executed. Serialize product refreshes with purchases, mark stale/invalid inventory explicitly, distinguish an unknown order confirmation from a rejected order, and preserve the cart for recovery. Render response data as text. Test automatic refresh and failure recovery with controlled responses as well as real CLI journeys.
 
+- At tutorial HTTP and saved-code boundaries, expose only deliberately authored
+  guidance registered with `tutorialGuidance`. Never register messages derived
+  from caught exceptions or learner code. Unexpected errors (including non-Error
+  throws) must return fixed recovery text and retain diagnostics in the server
+  terminal. Cover both the HTTP catch and serialized saved-check results.
+
 Tutorial milestone reporting uses the `counterfact:walkthrough` diagnostics
 channel; the CLI owns transport and opt-out handling. Coordinate changes to
 that boundary with the CLI skill.

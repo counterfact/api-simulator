@@ -1,5 +1,5 @@
 import { stringify } from "yaml";
-import { expect, it } from "@jest/globals";
+import { expect, it, jest } from "@jest/globals";
 import { usingTemporaryFiles } from "using-temporary-files";
 import {
   checkWalkthroughSave,
@@ -234,4 +234,51 @@ it("checks description examples without mistaking supplied name examples for lea
       );
     }
   });
+});
+
+it("keeps runtime diagnostics out of saved-check results while preserving learner guidance", async () => {
+  const diagnostics = jest.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("routes/_.context.ts", "export class Context {}");
+      await $.add("routes/orders.ts", ECHO_ORDERS);
+      for (const source of [
+        'import "./missing-private-module.js"; export const GET = () => {};',
+        'export const GET = () => { throw new Error("/private/server/secret.ts\\nRequire stack: internal-loader"); };',
+        'export const GET = () => { throw "/private/server/secret.ts\\nRequire stack: internal-loader"; };',
+      ]) {
+        await $.add("routes/products.ts", source);
+        const result = await checkWalkthroughSave($.path("."), "catalog");
+        expect(result).toMatchObject({
+          ok: false,
+          message: expect.stringContaining("server terminal"),
+        });
+        expect(JSON.stringify(result)).not.toMatch(
+          /private|Require stack|missing-private-module|compiled|\.cjs/u,
+        );
+        expect(diagnostics).toHaveBeenCalledWith(
+          "Tutorial operation failed:",
+          expect.anything(),
+        );
+      }
+      expect(
+        diagnostics.mock.calls.some((call) =>
+          String(call[1]).includes("Require stack"),
+        ),
+      ).toBe(true);
+      diagnostics.mockClear();
+      await $.add(
+        "routes/products.ts",
+        "export const GET = $ => $.response.status(200).random();",
+      );
+      expect(await checkWalkthroughSave($.path("."), "catalog")).toMatchObject({
+        ok: false,
+        message:
+          "Replace the random product stub with a JSON product response.",
+      });
+      expect(diagnostics).not.toHaveBeenCalled();
+    });
+  } finally {
+    diagnostics.mockRestore();
+  }
 });

@@ -1,3 +1,4 @@
+import { tutorialGuidance } from "../coffee-shop-errors.js";
 import { Annotation } from "@langchain/langgraph";
 import type { LessonPhase } from "../coffee-shop-lessons.js";
 import type { RunnableConfig } from "@langchain/core/runnables";
@@ -111,7 +112,7 @@ function tools(config?: RunnableConfig): LessonOperations {
   const operations = config?.configurable?.operations as
     LessonOperations | undefined;
   if (!operations)
-    throw new Error("This lesson action requires workspace tools.");
+    throw tutorialGuidance("This lesson action requires workspace tools.");
   return operations;
 }
 export const apply =
@@ -119,7 +120,9 @@ export const apply =
   async ({ input }: State, config?: RunnableConfig) => {
     if (input.event !== "prepare") return {};
     if (!input.revision)
-      throw new Error("Review the proposed diff before applying changes.");
+      throw tutorialGuidance(
+        "Review the proposed diff before applying changes.",
+      );
     const operation = await tools(config).prepare(lesson.id, input.revision);
     return { operation, input: { ...input, prepared: operation.ok } };
   };

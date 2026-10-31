@@ -1,4 +1,5 @@
 /* eslint-disable security/detect-non-literal-fs-filename -- Fixed tutorial files are copied into an isolated snapshot for checks. */
+import { tutorialGuidance, tutorialFailure } from "./coffee-shop-errors.js";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -93,7 +94,7 @@ export async function walkthroughInfo(
 const equal = (left: unknown, right: unknown) =>
   JSON.stringify(left) === JSON.stringify(right);
 function ensure(condition: unknown, message: string): asserts condition {
-  if (!condition) throw new Error(message);
+  if (!condition) throw tutorialGuidance(message);
 }
 
 /** Run learner functions against fresh state, never the running shop's context. */
@@ -181,7 +182,7 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
       try {
         document = parse(sources[4] ?? "");
       } catch {
-        throw new Error(
+        throw tutorialGuidance(
           "Fix the YAML syntax in openapi.yaml before checking the " +
             property +
             " examples.",
@@ -416,7 +417,10 @@ export async function checkWalkthroughSave(root: string, phaseId: string) {
     return {
       revision,
       ok: false,
-      message: error instanceof Error ? error.message : String(error),
+      message: tutorialFailure(
+        error,
+        "Could not check your saved code. Check the server terminal for details, fix your code, and save again.",
+      ),
     };
   } finally {
     for (const file of loaded) delete require.cache[file];

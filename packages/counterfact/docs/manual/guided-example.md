@@ -5,6 +5,10 @@ bundled coffee shop starts against the same random handlers Counterfact generate
 for your own OpenAPI document. OpenAPI, formerly Swagger, describes the requests
 and responses; your handlers add the behavior.
 
+If a saved-code check or tutorial request fails unexpectedly, inspect the server
+terminal for diagnostics, fix the problem, and try again. The browser shows
+lesson guidance and recovery instructions without internal exception details.
+
 ## Start the example
 
 ```sh

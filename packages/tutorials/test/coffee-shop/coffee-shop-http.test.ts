@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
-import { expect, it } from "@jest/globals";
+import { expect, it, jest } from "@jest/globals";
 import { usingTemporaryFiles } from "using-temporary-files";
 import { prepareTour, createTourRequestHandler } from "../../src/index.js";
 import { emptyInput } from "../../src/coffee-shop/lessons/runtime.js";
@@ -177,4 +177,120 @@ it("does not install a native tutorial handler for ordinary or legacy projects",
       await createTourRequestHandler($.path("."), () => ({})),
     ).toBeUndefined();
   });
+});
+
+it("returns safe HTTP failures and saved-check results while retaining authored guidance", async () => {
+  const diagnostics = jest.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    await usingTemporaryFiles(async ($) => {
+      const tour = await prepareTour($.path("."), "demo");
+      for (const file of [
+        "routes/_.context.ts",
+        "routes/products.ts",
+        "routes/orders.ts",
+        "scenarios/index.ts",
+      ])
+        await $.add("demo/" + file, "export {};\n");
+      let failure: unknown;
+      const tutorial = await createTourRequestHandler(tour.destination, () => {
+        if (failure !== undefined) throw failure;
+        return {};
+      });
+      const server = createServer((request, response) => {
+        void tutorial!(request, response);
+      }).listen(0, "127.0.0.1");
+      try {
+        await once(server, "listening");
+        const origin =
+          "http://127.0.0.1:" + (server.address() as AddressInfo).port;
+        const post = (path: string, body: string) =>
+          fetch(origin + path, { method: "POST", body });
+        for (const error of [
+          new Error(
+            "/private/server/secret.ts\\nRequire stack: internal-loader",
+          ),
+          "/private/server/secret.ts\\nRequire stack: internal-loader",
+          { message: "/private/server/secret.ts", stack: "internal-loader" },
+        ]) {
+          failure = error;
+          const response = await fetch(origin + "/tutorial/info");
+          expect(response.status).toBe(400);
+          expect(await response.json()).toEqual({
+            ok: false,
+            message:
+              "Could not complete the tutorial request. Check the server terminal for details and try again.",
+          });
+          expect(diagnostics).toHaveBeenLastCalledWith(
+            "Tutorial operation failed:",
+            error,
+          );
+        }
+        failure = undefined;
+        diagnostics.mockClear();
+        for (const [body, message] of [
+          ['{"private-secret":', "Send a valid JSON object."],
+          ["[]", "Expected a JSON object."],
+          [" ".repeat(65537), "Tutorial request is too large."],
+        ]) {
+          expect(
+            await (await post("/tutorial/check", body)).json(),
+          ).toMatchObject({ ok: false, message });
+        }
+        expect(
+          await (
+            await post(
+              "/tutorial/workspace",
+              JSON.stringify({ sessionId: "stale" }),
+            )
+          ).json(),
+        ).toMatchObject({
+          message: "Reload the walkthrough before changing its workspace.",
+        });
+        expect(diagnostics).not.toHaveBeenCalled();
+        await $.add("demo/routes/_.context.ts", "export class Context {}");
+        await $.add(
+          "demo/routes/products.ts",
+          'import "./missing-private-module.js"; export const GET = () => {};',
+        );
+        await $.add("demo/routes/orders.ts", "export const POST = () => {};");
+        const checked = await post(
+          "/tutorial/check",
+          JSON.stringify({ phaseId: "catalog" }),
+        );
+        expect(checked.status).toBe(200);
+        const result = await checked.json();
+        expect(result).toMatchObject({
+          ok: false,
+          message: expect.stringContaining("server terminal"),
+        });
+        expect(JSON.stringify(result)).not.toMatch(
+          /Require stack|missing-private-module|compiled|\.cjs/u,
+        );
+        expect(diagnostics).toHaveBeenCalled();
+        await $.add(
+          "demo/routes/products.ts",
+          "export const GET = $ => $.response.status(200).random();",
+        );
+        expect(
+          await (
+            await post(
+              "/tutorial/check",
+              JSON.stringify({ phaseId: "catalog" }),
+            )
+          ).json(),
+        ).toMatchObject({
+          ok: false,
+          message:
+            "Replace the random product stub with a JSON product response.",
+        });
+      } finally {
+        server.closeAllConnections();
+        await new Promise<void>((resolve, reject) =>
+          server.close((error) => (error ? reject(error) : resolve())),
+        );
+      }
+    });
+  } finally {
+    diagnostics.mockRestore();
+  }
 });
