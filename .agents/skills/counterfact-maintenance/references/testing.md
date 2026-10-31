@@ -29,7 +29,7 @@ Paths and commands below are relative to the repository root.
   they do not replace installed-consumer tests for runtime resolution. Keep
   regression coverage for null exclusions and overlapping export patterns.
 
-- Keep tests beside their owning workspace: CLI/application tests in `packages/counterfact/test/`, server tests in `packages/runtime/test/`, generator tests in `packages/generator/test/`, and the corresponding `test/` directory for client, OpenAPI, REPL, and tutorials.
+- Keep tests beside their owning workspace: CLI/application tests in `packages/counterfact/test/`, server tests in `packages/runtime/test/`, generator tests in `packages/generator/test/`, and the corresponding `test/` directory for client, OpenAPI, and REPL.
 
 - Use OS-assigned ephemeral ports for tests that start network servers; fixed high ports can collide on shared CI hosts.
 

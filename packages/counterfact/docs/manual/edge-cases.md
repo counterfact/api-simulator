@@ -9,7 +9,9 @@ Change the relevant handler to return a deterministic body. For a collection ope
 ```ts
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/pets"]["GET"] = function ($) {
+type Route = Routes["/pets"];
+
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).json([]);
 };
 ```
@@ -21,7 +23,9 @@ Choose a body that matches your operation's schema. For an error, choose a statu
 ```ts
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/pets"]["GET"] = async function ($) {
+type Route = Routes["/pets"];
+
+export const GET: Route["GET"] = async function ($) {
   await $.delay(1500);
   return $.response.status(200).random();
 };
@@ -48,7 +52,9 @@ Read those flags in the route handler. The OpenAPI operation must declare the sh
 // api/routes/payments/{paymentId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/payments"]["/{paymentId}"]["GET"] = function ($) {
+type Route = Routes["/payments"]["/{paymentId}"];
+
+export const GET: Route["GET"] = function ($) {
   if ($.context.isRateLimited)
     return $.response.status(429).text("Too Many Requests");
   if ($.context.isBroken)
@@ -79,7 +85,9 @@ To simulate intermittent failures, use a counter or a random function:
 ```ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/payments"]["/{paymentId}"]["GET"] = function ($) {
+type Route = Routes["/payments"]["/{paymentId}"];
+
+export const GET: Route["GET"] = function ($) {
   $.context.callCount += 1;
   if ($.context.callCount % 3 === 0) {
     return $.response.status(503).text("Flaky error");
@@ -93,7 +101,9 @@ Or vary the response probabilistically:
 ```ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/payments"]["/{paymentId}"]["GET"] = function ($) {
+type Route = Routes["/payments"]["/{paymentId}"];
+
+export const GET: Route["GET"] = function ($) {
   if (Math.random() < 0.2) {
     return $.response.status(503).text("Flaky error");
   }
@@ -118,7 +128,9 @@ export class Context {
 // api/routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet"]["/{petId}"]["GET"] = async function ($) {
+type Route = Routes["/pet"]["/{petId}"];
+
+export const GET: Route["GET"] = async function ($) {
   await $.delay($.context.latencyMs);
   const pet = $.context.get($.path.petId);
   return pet

@@ -12,7 +12,6 @@ Use declared package entry points. Each package's README contains public-import 
 | `@counterfact/runtime/koa`                   | Koa HTTP adapter.                                                                                            |
 | `@counterfact/runtime/msw`                   | MSW adapter interfaces.                                                                                      |
 | `@counterfact/repl`                          | Embeddable REPL.                                                                                             |
-| `@counterfact/tutorials`                     | Guided tours, editable exercise preparation, and lesson checks.                                              |
 | `@counterfact/types`                         | Shared contracts for generated code and package integration.                                                 |
 | `@counterfact/types/streaming-content-types` | Runtime constants identifying streaming media types.                                                         |
 
@@ -43,8 +42,7 @@ OpenAPI spec (YAML or JSON, local or URL)
 ```
 
 The facade coordinates generation, runtime, and optional REPL startup. The Koa
-adapter owns HTTP handling; terminal and tutorial behavior live in their own
-packages.
+adapter owns HTTP handling; the REPL owns terminal behavior.
 
 ## Package-level examples
 
