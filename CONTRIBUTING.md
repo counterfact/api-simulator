@@ -26,6 +26,11 @@ yarn lint
 yarn test
 ```
 
+Unit tests use two workers and skip coverage collection for faster feedback.
+Run `yarn test:coverage` to collect coverage and enforce the same thresholds as
+CI. Focused commands such as `yarn test:generator` also skip coverage unless you
+add `--coverage`.
+
 The [code generator](./packages/generator/README.md) and [server runtime](./packages/runtime/README.md) are separate workspace packages. The `counterfact` package composes them with the CLI, client, and REPL. Guided tours live in [`packages/tutorials`](./packages/tutorials/README.md); add future chapter tours there. Root scripts coordinate builds and checks, so contributors do not need to change directories for the standard workflow.
 
 ### Try the guided tour from a checkout

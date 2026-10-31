@@ -91,7 +91,7 @@ jobs:
       - name: Unit Tests
         if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
         timeout-minutes: 10
-        run: yarn test --runInBand --forceExit --verbose --no-watchman
+        run: yarn test:coverage --forceExit --verbose --no-watchman
       - name: Set up Python
         if: steps.docs-only.outputs.docs_only != 'true'
         uses: actions/setup-python@v7
