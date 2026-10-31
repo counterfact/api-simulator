@@ -31,6 +31,16 @@ For work on generated API simulations, load the relevant product skill:
 
 Keep this file focused on cross-cutting rules that are not already covered by those skills.
 
+## Optional Jev development judgments
+
+For bounded classification or evidence checks that would help development, load
+`.agents/skills/typesafe-development/SKILL.md`. Patrick has authorized routine
+TypeSafe/Jev development use with public Counterfact repository code and
+synthetic examples; do not ask again within that scope. Use provider-side budget
+controls. Keep credentials, ignored/local private files, personal data, and
+unrelated content out of requests. Ordinary builds, tests, and Counterfact
+runtime stay offline with respect to TypeSafe.
+
 ## Isolated change workspaces
 
 When implementing a new set of changes, create and use a dedicated branch in a separate Git worktree. Keep the original checkout available for integration work rather than making the changes there.
