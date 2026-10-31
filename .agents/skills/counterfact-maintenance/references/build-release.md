@@ -15,6 +15,13 @@ Paths and commands below are relative to the repository root.
   Finish all builds and packs before running consumers concurrently, and await
   all active consumers before cleaning up after a failure.
 
+- Black-box CI should build once in its isolated job and use
+  `yarn test:black-box:run` against that output. Keep `yarn test:black-box`
+  self-contained for local use. Cache dependency downloads rather than installed
+  environments or workspace build output, and retain immutable Yarn installation
+  and Python dependency installation on cache hits. Use pytest duration reporting
+  to distinguish scenario costs from installation and build overhead.
+
 - Run package packing/prepack checks separately from unit and product suites that consume workspace `dist` output. Prepack rebuilds can remove those files while another suite is loading them, causing false missing-module failures. Finish the package check before starting those suites.
 
 - Quote glob arguments in package scripts when the receiving tool accepts the pattern.
