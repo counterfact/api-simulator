@@ -67,13 +67,15 @@ server is running.
 ## Customize a response
 
 When a screen needs a specific case, replace the generated response in the
-corresponding handler. Counterfact supplies `$`: `$.path` contains URL parameters and `$.response` builds the HTTP response. `Routes["/pet"]["/{petId}"]["GET"]` selects the generated contract for this operation:
+corresponding handler. Counterfact supplies `$`: `$.path` contains URL parameters and `$.response` builds the HTTP response. The local `Route` alias selects the path, and `Route["GET"]` selects the generated contract for this operation:
 
 ```ts
 // api/routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
+type Route = Routes["/pet"]["/{petId}"];
+
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).json({
     id: $.path.petId,
     name: "Fluffy",
@@ -91,7 +93,6 @@ For a project or CI workflow, install Counterfact as a development dependency an
 
 ## Next steps
 
-- [Try the guided coffee shop](./manual/guided-example.md) — learn by changing real handlers beside a working storefront; no document required.
 - [First 10 minutes](./first-10-minutes.md) — create a pet, fetch it, and test an error response.
 - [Find your workflow](./usage.md) — find a guide for what you’re working on.
 - [Custom responses](./features/routes.md), [state](./features/state.md), [failures](manual/edge-cases.md), and [proxying](./features/proxy.md) — add capabilities only when the workflow needs them.

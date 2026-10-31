@@ -200,10 +200,10 @@ def unattended_intro(journey):
     journey.run_cli(timeout=10)
 
 
-@then("the intro offers a guided example, my own document, and documentation")
+@then("the intro offers my own document and documentation")
 def intro_options(journey):
     transcript = journey.transcript()
-    assert "Try a guided example (recommended)" in transcript
+    assert "guided example" not in transcript
     assert "Use my OpenAPI document" in transcript
     assert "Open documentation" in transcript
     assert "Looking for local" not in transcript
@@ -227,13 +227,13 @@ def type_and_wait(journey, keys, expected):
 @when("I choose my OpenAPI document")
 def choose_own_document(journey):
     type_and_wait(journey, b"invalid\r", "Choose one of the listed numbers")
-    type_and_wait(journey, b"2\r", "Choose a document: ")
+    type_and_wait(journey, b"\r", "Choose a document: ")
 
 
 @when("I select the nested contract and an available server port")
 def choose_nested_contract(journey):
     if "Choose a document:" not in journey.transcript():
-        type_and_wait(journey, b"2\r", "Choose a document: ")
+        type_and_wait(journey, b"1\r", "Choose a document: ")
     match = re.search(r"(\d+)\) contracts/nested/service.json", journey.transcript())
     assert match is not None, journey.logs()
     type_and_wait(journey, f"{match.group(1)}\r".encode(), "Output directory [api] (b: back): ")
@@ -245,7 +245,7 @@ def choose_nested_contract(journey):
 
 @when("I select the contract whose filename looks like a URL")
 def choose_scheme_filename(journey):
-    type_and_wait(journey, b"2\r", "Choose a document: ")
+    type_and_wait(journey, b"1\r", "Choose a document: ")
     match = re.search(r"(\d+)\) http:spec\.json", journey.transcript())
     assert match is not None, journey.logs()
     type_and_wait(journey, f"{match.group(1)}\r".encode(), "Output directory [api] (b: back): ")
@@ -305,15 +305,9 @@ def cancel_control_d(journey):
 
 @when("I cancel the intro using q at the destination")
 def cancel_destination(journey):
-    type_and_wait(journey, b"2\r", "Choose a document: ")
+    type_and_wait(journey, b"1\r", "Choose a document: ")
     type_and_wait(journey, b"p\r", "OpenAPI path or URL")
     type_and_wait(journey, b"./openapi.json\r", "Output directory [api] (b: back): ")
-    os.write(journey.terminal.terminal, b"q\r")
-
-
-@when("I cancel the intro using q before starting example")
-def cancel_tour(journey):
-    type_and_wait(journey, b"\r", "Start [Enter]")
     os.write(journey.terminal.terminal, b"q\r")
 
 
@@ -342,7 +336,7 @@ def exits_without_files(journey):
 
 @when("I choose documentation")
 def choose_documentation(journey):
-    type_and_wait(journey, b"3\r", "Documentation: ")
+    type_and_wait(journey, b"2\r", "Documentation: ")
 
 
 @then("the documentation URL is handed to the browser without generating files")
@@ -425,105 +419,21 @@ def explicit_generation_works(journey):
     assert (journey.project / "explicit-output/routes/hello.ts").exists()
 
 
-
-
-
-
-@TERMINAL_ONLY
-@scenario("features/first_run.feature", "Preserve an existing example and choose an available port")
-def test_tutorial_existing_directory():
-    """Protect existing files and recover from a port conflict."""
-
-
 @TERMINAL_ONLY
 @scenario("features/first_run.feature", "Enter a contract path and return from document selection")
 def test_enter_contract():
     """Use explicit document entry and back navigation."""
 
 
-@when("I start the guided example on an available port")
-def start_example(journey):
-    type_and_wait(journey, b"\r", "Start [Enter]")
-    type_and_wait(journey, b"p\r", "Server port [3100]: ")
-    type_and_wait(journey, f"{journey.allocate_port()}\r".encode(), "Start [Enter]")
-    journey.output = journey.project / "counterfact-demo"
-    os.write(journey.terminal.terminal, b"\r")
-    journey.terminal.wait_for("Coffee shop walkthrough", STARTUP_TIMEOUT)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@given("an existing example directory and an occupied server port")
-def existing_example(journey):
-    import socket
-    empty_directory(journey)
-    journey.write_text("counterfact-demo/keep.txt", "user content")
-    with socket.socket() as listener:
-        listener.bind(("", 0))
-        listener.listen()
-        journey.occupied_port = listener.getsockname()[1]
-        yield
-
-
-@when("I return from example setup to the opening menu")
-def back_from_example(journey):
-    type_and_wait(journey, b"\r", "Start [Enter]")
-    assert "counterfact-demo-2/" in journey.transcript()
-    type_and_wait(journey, b"b\r", "Choose [1]: ")
-    assert not (journey.project / "counterfact-demo-2").exists()
-
-
-@when("I start the example after correcting an occupied port")
-def correct_port(journey):
-    type_and_wait(journey, b"\r", "Start [Enter]")
-    type_and_wait(journey, b"p\r", "Server port [3100]: ")
-    type_and_wait(journey, f"{journey.occupied_port}\r".encode(), "already in use")
-    type_and_wait(journey, f"{journey.allocate_port()}\r".encode(), "Start [Enter]")
-    journey.output = journey.project / "counterfact-demo-2"
-    os.write(journey.terminal.terminal, b"\r")
-    journey.terminal.wait_for("Coffee shop walkthrough", STARTUP_TIMEOUT)
-
-
-@then("the existing example is unchanged and the new example runs")
-def existing_unchanged(journey):
-    assert (journey.project / "counterfact-demo/keep.txt").read_text() == "user content"
-    assert set((journey.project / "counterfact-demo").iterdir()) == {journey.project / "counterfact-demo/keep.txt"}
-    assert journey.request("get", "/products").json()[2]["stock"] == 0
-
-
 @when("I return from document selection to the opening menu")
 def back_from_documents(journey):
-    type_and_wait(journey, b"2\r", "Choose a document: ")
+    type_and_wait(journey, b"1\r", "Choose a document: ")
     type_and_wait(journey, b"b\r", "Choose [1]: ")
 
 
 @when("I enter the contract path and choose an available server port")
 def enter_contract_path(journey):
-    type_and_wait(journey, b"2\r", "Choose a document: ")
+    type_and_wait(journey, b"1\r", "Choose a document: ")
     type_and_wait(journey, b"p\r", "OpenAPI path or URL")
     type_and_wait(journey, b"contracts/nested/service.json\r", "Output directory [api] (b: back): ")
     type_and_wait(journey, b"\r", "Server port [3100]: ")
@@ -577,149 +487,9 @@ def served_contract(journey):
 
 @when("I enter the contract URL and choose an available server port")
 def enter_contract_url(journey):
-    type_and_wait(journey, b"2\r", "Choose a document: ")
+    type_and_wait(journey, b"1\r", "Choose a document: ")
     type_and_wait(journey, b"p\r", "OpenAPI path or URL")
     type_and_wait(journey, f"{journey.contract_url}\r".encode(), "Output directory [api] (b: back): ")
     type_and_wait(journey, b"\r", "Server port [3100]: ")
     journey.output = journey.project / "api"
     os.write(journey.terminal.terminal, f"{journey.allocate_port()}\r".encode())
-
-
-@TERMINAL_ONLY
-@scenario("features/first_run.feature", "Shop for coffee against the generated Counterfact API")
-def test_coffee_shop_purchase():
-    """The generated project serves the app and its real shopping API."""
-
-
-@then("the coffee shop serves products and accepts a demo purchase")
-def coffee_shop_purchase(journey):
-    page = journey.request("get", "/walkthrough")
-    assert page.status_code == 200
-    assert "text/html" in page.headers["Content-Type"]
-    assert "Counterfact Coffee" in page.text
-    assert "Walkthrough instructions" in page.text
-    info = journey.request("get", "/tutorial-info")
-    assert info.status_code == 200, info.text
-    assert os.path.realpath(info.json()["projectPath"]) == os.path.realpath(journey.output)
-    assert info.json()["sessionId"]
-    assert "sessionStorage" in page.text
-    assert "Open in VSCode" in page.text
-    assert "vscode://file/" in page.text
-    assert "Repeat instructions" not in page.text
-    products = journey.request("get", "/products").json()
-    assert [product["id"] for product in products] == ["house-blend", "dark-roast", "decaf"]
-    assert products[2]["stock"] == 0
-    order = journey.request("post", "/orders", json={"items": [{"productId": "house-blend", "quantity": 1}]})
-    assert order.status_code == 201, order.text
-    assert order.json()["orderId"] == 1
-    impossible = journey.request("post", "/orders", json={"items": [{"productId": "dark-roast", "quantity": 4}]})
-    assert impossible.status_code == 409
-
-
-@TERMINAL_ONLY
-@scenario("features/first_run.feature", "Update coffee inventory in a handler and restock through the REPL")
-def test_coffee_shop_inventory():
-    """Editor changes and REPL mutations affect the same running inventory."""
-
-
-def coffee_stock(journey, product_id):
-    response = journey.request("get", "/products")
-    assert response.status_code == 200, response.text
-    return next(product["stock"] for product in response.json() if product["id"] == product_id)
-
-
-def coffee_order(journey, product_id, quantity):
-    return journey.request("post", "/orders", json={"items": [{"productId": product_id, "quantity": quantity}]})
-
-
-@when("I make Decaf available by editing its product handler")
-def edit_decaf(journey):
-    path = journey.output / "routes/products.ts"
-    path.write_text(path.read_text().replace("const decafStock = 0;", "const decafStock = 5;"))
-
-
-@then("the coffee API returns the changed stock and accepts a Decaf order")
-def decaf_available(journey):
-    journey.wait_for_http("/products", lambda response: response.status_code == 200 and response.json()[2]["stock"] == 5)
-    assert coffee_order(journey, "decaf", 1).status_code == 201
-    assert coffee_stock(journey, "decaf") == 5
-
-
-@when("I make ordering unavailable and then restore it")
-def unavailable_orders(journey):
-    path = journey.output / "routes/orders.ts"
-    path.write_text(path.read_text().replace("const ordersAvailable = true;", "const ordersAvailable = false;"))
-    journey.wait_for_http("/orders", lambda response: response.status_code == 503, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]})
-
-
-@then("an unsuccessful order preserves inventory and a retry succeeds")
-def retry_orders(journey):
-    before = coffee_stock(journey, "house-blend")
-    assert coffee_order(journey, "house-blend", 1).status_code == 503
-    assert coffee_stock(journey, "house-blend") == before
-    path = journey.output / "routes/orders.ts"
-    path.write_text(path.read_text().replace("const ordersAvailable = false;", "const ordersAvailable = true;"))
-    journey.wait_for_http("/orders", lambda response: response.status_code == 201, method="post", json={"items": [{"productId": "house-blend", "quantity": 1}]})
-
-
-@when("I add the inventory mutation to the successful order handler")
-def update_order_context(journey):
-    path = journey.output / "routes/orders.ts"
-    path.write_text(path.read_text().replace("// TODO: decrease the quantity of each item in $.context.inventory.", "$.context.inventory[item.productId] -= item.quantity;"))
-
-
-@then("buying coffee reduces the inventory returned by the products API")
-def purchase_updates_inventory(journey):
-    # A request made before the hot reload may still use the old handler. It
-    # has no inventory mutation; retry only until one order visibly changes it.
-    deadline = time.monotonic() + STARTUP_TIMEOUT
-    while time.monotonic() < deadline:
-        assert coffee_order(journey, "dark-roast", 1).status_code == 201
-        if coffee_stock(journey, "dark-roast") == 2:
-            break
-        time.sleep(0.1)
-    assert coffee_stock(journey, "dark-roast") == 2, journey.logs()
-    assert coffee_stock(journey, "decaf") == 5
-
-
-@when("I purchase the remaining Dark Roast stock")
-def purchase_remaining(journey):
-    assert coffee_order(journey, "dark-roast", 2).status_code == 201
-
-
-@then("Dark Roast is sold out and another order is rejected")
-def sold_out(journey):
-    assert coffee_stock(journey, "dark-roast") == 0
-    assert coffee_order(journey, "dark-roast", 1).status_code == 409
-    assert coffee_stock(journey, "dark-roast") == 0
-
-
-@when("I restock Dark Roast through the running REPL")
-def repl_restock(journey):
-    output = journey.terminal.command('context.inventory["dark-roast"]')
-    assert "0" in output
-    journey.terminal.command('context.inventory["dark-roast"] = 5')
-
-
-@then("the products API shows five bags and the next purchase leaves four")
-def restock_and_purchase(journey):
-    assert coffee_stock(journey, "dark-roast") == 5
-    assert coffee_order(journey, "dark-roast", 1).status_code == 201
-    assert coffee_stock(journey, "dark-roast") == 4
-    assert coffee_order(journey, "dark-roast", 5).status_code == 409
-    duplicate = journey.request("post", "/orders", json={"items": [{"productId": "dark-roast", "quantity": 3}, {"productId": "dark-roast", "quantity": 3}]})
-    assert duplicate.status_code == 409
-    assert duplicate.json()["shortages"] == [{"productId": "dark-roast", "requested": 6, "available": 4}]
-    assert coffee_stock(journey, "dark-roast") == 4
-    path = journey.output / "routes/products.ts"
-    path.write_text(path.read_text() + "\n// Preserve running inventory across route reloads.\n")
-    journey.wait_for_http("/products", lambda response: response.status_code == 200 and response.json()[1]["stock"] == 4)
-
-    session = journey.request("get", "/tutorial-info").json()["sessionId"]
-    context_path = journey.output / "routes/_.context.ts"
-    context_path.write_text(context_path.read_text() + "\n// Reload context without changing the inventory declaration.\n")
-    journey.wait_for_http("/tutorial-info", lambda response: response.status_code == 200 and response.json()["sessionId"] != session)
-    assert coffee_stock(journey, "dark-roast") == 4
-    assert coffee_stock(journey, "house-blend") == 5
-    assert coffee_order(journey, "house-blend", 1).status_code == 201
-    assert coffee_stock(journey, "house-blend") == 4

@@ -70,7 +70,9 @@ Then use it in the generated `POST /pet` and `GET /pet/{petId}` handlers:
 // api/routes/pet.ts
 import type { Routes } from "../types/index.js";
 
-export const POST: Routes["/pet"]["POST"] = function ($) {
+type Route = Routes["/pet"];
+
+export const POST: Route["POST"] = function ($) {
   return $.response.status(200).json($.context.add($.body));
 };
 ```
@@ -79,7 +81,9 @@ export const POST: Routes["/pet"]["POST"] = function ($) {
 // api/routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
+type Route = Routes["/pet"]["/{petId}"];
+
+export const GET: Route["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   return pet
     ? $.response.status(200).json(pet)

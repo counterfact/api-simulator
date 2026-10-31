@@ -14,22 +14,7 @@ test("shared verification rejects an omitted published document", () =>
         pack: {
           files: packFiles.slice(1).map((path) => ({ path })),
         },
-        tutorialsPack: { files: [] },
       }),
       { code: "ERR_ASSERTION", operator: "deepStrictEqual" },
-    );
-  }));
-
-test("shared verification rejects a missing compiled tutorial asset", () =>
-  usingTemporaryFiles(async ($) => {
-    await assert.rejects(
-      verifyPackedConsumer({
-        consumerDirectory: $.path("."),
-        pack: { files: packFiles.map((path) => ({ path })) },
-        tutorialsPack: {
-          files: [{ path: "dist/index.js" }, { path: "dist/prepare-tour.js" }],
-        },
-      }),
-      /Missing tutorial file: dist\/coffee-shop\/coffee-shop-page.js/u,
     );
   }));

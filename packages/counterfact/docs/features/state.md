@@ -8,7 +8,9 @@ These examples extend the [first-ten-minutes pet workflow](../first-10-minutes.m
 // routes/pet.ts
 import type { Routes } from "../types/index.js";
 
-export const POST: Routes["/pet"]["POST"] = function ($) {
+type Route = Routes["/pet"];
+
+export const POST: Route["POST"] = function ($) {
   return $.response.status(200).json($.context.add($.body));
 };
 ```
@@ -17,7 +19,9 @@ export const POST: Routes["/pet"]["POST"] = function ($) {
 // routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
+type Route = Routes["/pet"]["/{petId}"];
+
+export const GET: Route["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   if (pet === undefined) return $.response.status(404).empty();
   return $.response.status(200).json(pet);
