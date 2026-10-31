@@ -65,7 +65,7 @@ jobs:
           - { check: Public type tests, os: ubuntu-latest, build: true }
           - { check: Public type tests, os: windows-latest, build: true }
           - { check: Unit tests, os: ubuntu-latest, build: true }
-          - { check: Packaging, os: ubuntu-latest, build: true }
+          - { check: Packaging, os: ubuntu-latest, build: false }
           - { check: Black-box tests, os: ubuntu-latest, build: true }
           - { check: Black-box tests, os: windows-latest, build: true }
     steps:
@@ -96,15 +96,22 @@ jobs:
       - name: TypeScript
         if: matrix.check == 'TypeScript'
         run: yarn typecheck
-      # Packing and product scripts rebuild workspace output. Keep them isolated
-      # from other checks, and run both packaging checks sequentially here.
-      - name: Packed Consumer Test
+      # One lifecycle build and shared tarballs, isolated from other CI jobs.
+      - name: Cache packaging downloads
         if: matrix.check == 'Packaging'
-        timeout-minutes: 5
-        run: yarn test:packed-consumer
-      - name: Exact Package Closure Tests
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/counterfact-package-npm-cache
+          key: package-npm-${{ runner.os }}-${{ hashFiles('yarn.lock', 'packages/*/package.json') }}
+          restore-keys: package-npm-${{ runner.os }}-
+      - name: Packaging Runner Tests
         if: matrix.check == 'Packaging'
-        timeout-minutes: 15
+        run: yarn test:packaging-runner
+      - name: Package Consumer Tests
+        if: matrix.check == 'Packaging'
+        timeout-minutes: 20
+        env:
+          COUNTERFACT_PACKAGE_CACHE: ${{ runner.temp }}/counterfact-package-npm-cache
         run: yarn test:package-closures
       - name: Unit Tests
         if: matrix.check == 'Unit tests'

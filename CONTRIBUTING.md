@@ -92,6 +92,9 @@ bash .devcontainer/verify.sh
 Use a separate Git worktree and branch for each task. Install dependencies with
 `yarn install --immutable`, then use the root scripts for the affected packages.
 Run `yarn lint`, `yarn typecheck`, and appropriate tests before submitting a PR.
+For installed-package verification, run `yarn test:package-closures`; it includes
+the Counterfact packed-consumer checks. See [package verification](./docs/development/package-verification.md)
+for coverage, cache settings, and standalone commands.
 Build required workspace dependencies before tests that consume their `dist`
 output, and finish packing/prepack checks before running those tests.
 Use `.devcontainer/verify.sh` for the complete Linux verification sequence.
