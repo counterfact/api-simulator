@@ -10,7 +10,7 @@ yarn lint
 yarn typecheck
 yarn test:packed-consumer
 yarn test:package-closures
-yarn test --runInBand --forceExit --verbose --no-watchman
+yarn test:coverage --forceExit --verbose --no-watchman
 
 venv_path="${COUNTERFACT_VENV_PATH:-/tmp/counterfact-venv}"
 if [[ ! -x "$venv_path/bin/python" ]]; then
