@@ -23,8 +23,8 @@ const spec = {
   },
 };
 
-function diagnostics(file: string): string[] {
-  const program = ts.createProgram([file], {
+function diagnostics(...files: string[]): string[] {
+  const program = ts.createProgram(files, {
     strict: true,
     noEmit: true,
     skipLibCheck: true,
@@ -113,11 +113,13 @@ describe("central helper exports", () => {
         const handler: Routes["/admin"]["/reports"]["/events"]["GET"] = ($) => $.response.status(204).empty();
       `,
       );
-      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
-      expect(diagnostics($.path("api/routes/_.context.ts"))).toEqual([]);
-      expect(diagnostics($.path("api/routes/admin/reports/events.ts"))).toEqual(
-        [],
-      );
+      expect(
+        diagnostics(
+          $.path("consumer.ts"),
+          $.path("api/routes/_.context.ts"),
+          $.path("api/routes/admin/reports/events.ts"),
+        ),
+      ).toEqual([]);
     });
   });
 
