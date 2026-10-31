@@ -58,6 +58,15 @@ because generated lesson checks load its tutorial helpers. The [guided-example
 chapter](./packages/counterfact/docs/manual/guided-example.md) describes the
 exercise, restart behavior, and follow-up guides.
 
+### Black-box test timings
+
+Run `yarn test:black-box` to build the application and execute every product
+journey. After an existing build, `yarn test:black-box:run` executes the same
+suite without rebuilding; CI uses this command after its workspace build.
+Both commands report the ten slowest pytest setup, call, or teardown phases.
+CI caches Yarn and pip downloads, while still installing dependencies into each
+fresh job and enforcing the Yarn lockfile.
+
 ### Build feedback
 
 Run `yarn build` from the repository root to build the development workspaces.
