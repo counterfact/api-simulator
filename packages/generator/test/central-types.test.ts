@@ -91,8 +91,8 @@ const spec = {
   },
 };
 
-function diagnostics(file: string): string[] {
-  const program = ts.createProgram([file], {
+function diagnostics(...files: string[]): string[] {
+  const program = ts.createProgram(files, {
     strict: true,
     noEmit: true,
     skipLibCheck: true,
@@ -151,8 +151,9 @@ describe("central generated types", () => {
         type Missing = Routes["/pets"]["/{id}"]["POST"];
       `,
       );
-      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
-      expect(diagnostics($.path("api/routes/pets/{id}.ts"))).toEqual([]);
+      expect(
+        diagnostics($.path("consumer.ts"), $.path("api/routes/pets/{id}.ts")),
+      ).toEqual([]);
       const index = await $.read("api/types/index.ts");
       await generator.generate();
       expect(await $.read("api/types/index.ts")).toBe(index);
@@ -257,9 +258,13 @@ describe("central generated types", () => {
         type Normalized = Routes["/health"]["GET"];
       `,
       );
-      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
-      expect(diagnostics($.path("api/routes/health.ts"))).toEqual([]);
-      expect(diagnostics($.path("api/routes/custom.ts"))).toEqual([]);
+      expect(
+        diagnostics(
+          $.path("consumer.ts"),
+          $.path("api/routes/health.ts"),
+          $.path("api/routes/custom.ts"),
+        ),
+      ).toEqual([]);
     });
   });
 
@@ -375,10 +380,12 @@ describe("central generated types", () => {
         type NoTrailingSlash = Routes["/hello"]["/archive"]["GET"];
       `,
         );
-        expect(diagnostics($.path("consumer.ts"))).toEqual([]);
-        expect(diagnostics($.path("api/routes/hello/world.ts"))).toEqual([]);
         expect(
-          diagnostics($.path("api/routes/hello/v1.0/{item-id}/messages.ts")),
+          diagnostics(
+            $.path("consumer.ts"),
+            $.path("api/routes/hello/world.ts"),
+            $.path("api/routes/hello/v1.0/{item-id}/messages.ts"),
+          ),
         ).toEqual([]);
         expect(await $.read("api/routes/hello/world.ts")).toContain(
           'type Route = Routes["/hello"]["/world"];',
