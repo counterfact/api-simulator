@@ -2,6 +2,8 @@
 
 Paths and commands below are relative to the repository root.
 
+- On Node 25 and later, install Corepack explicitly before enabling Yarn in CI; Node no longer bundles it, and a runner may otherwise select a preinstalled Yarn 1. Verify the effective Yarn version on both operating systems.
+
 - Root `go:*` launchers that use package-relative fixture paths must delegate to the package's script so the working directory matches those paths. Keep multi-API and multi-version demo output directories separate to avoid stale generated handlers crossing between examples.
 
 - When spawning Yarn from a package script, use the Yarn command on PATH with Windows command-shim handling. Yarn 4 can set `npm_execpath` to a shell wrapper; passing that path to Node treats shell code as JavaScript. Validate the runner with `yarn test:build` on both CI operating systems.
