@@ -4,10 +4,9 @@ description: >
   Understand Counterfact architecture and generated project structure before
   editing generated API simulation code.
 applyTo:
-  - "**/*.{yaml,yml,json}"
   - "**/routes/**/*.{ts,js}"
   - "**/scenarios/**/*.{ts,js}"
-  - "**/*context.{ts,js}"
+  - "**/_.context.{ts,js}"
 ---
 
 # Counterfact Skill

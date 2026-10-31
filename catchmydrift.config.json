@@ -666,7 +666,7 @@
       "include": [
         ".github/workflows/manual-acceptance-tests.yaml",
         ".github/pull_request_template.md",
-        ".agents/skills/**"
+        ".agents/skills/counterfact-pr-creation/SKILL.md"
       ]
     },
     "tutorials": {
@@ -676,6 +676,51 @@
         "packages/tutorials/test/**",
         "packages/tutorials/examples/**",
         "packages/tutorials/tsconfig.json"
+      ]
+    },
+    "maintenance-guidance": {
+      "include": [
+        ".agents/skills/counterfact-maintenance/references/black-box-testing.md",
+        ".agents/skills/counterfact-maintenance/references/build-release.md",
+        ".agents/skills/counterfact-maintenance/references/dependencies.md",
+        ".agents/skills/counterfact-maintenance/references/documentation-site.md",
+        ".agents/skills/counterfact-maintenance/references/historical-audits.md",
+        ".agents/skills/counterfact-maintenance/references/testing.md"
+      ]
+    },
+    "admin-control-guidance": {
+      "include": [
+        ".agents/skills/counterfact-repl/references/admin-api.md",
+        ".agents/skills/counterfact-repl/references/troubleshooting.md",
+        ".agents/skills/counterfact-repl/examples.md"
+      ]
+    },
+    "dependency-maintenance": {
+      "include": [
+        "renovate.json",
+        "package.json",
+        "packages/*/package.json",
+        "yarn.lock",
+        "site/package.json",
+        "site/package-lock.json",
+        "examples/first-10-minutes/package.json",
+        "examples/first-10-minutes/package-lock.json"
+      ]
+    },
+    "historical-audit-methods": {
+      "include": [
+        "site/study/**",
+        "site/scripts/*audit*",
+        "site/scripts/*experiment*",
+        "site/package.json"
+      ]
+    },
+    "product-black-box-tests": {
+      "include": ["test-black-box/**", "package.json"]
+    },
+    "simulation-example": {
+      "include": [
+        ".agents/skills/build-simulation/assets/pet-shop.openapi.yaml"
       ]
     }
   },
@@ -690,18 +735,7 @@
     },
     {
       "include": [".agents/skills/counterfact-maintenance/SKILL.md"],
-      "groups": [
-        "counterfact",
-        "client",
-        "generator",
-        "openapi",
-        "repl",
-        "runtime",
-        "types",
-        "contributor-tooling",
-        "release",
-        "site-maintenance"
-      ]
+      "groups": ["maintenance-guidance", "release"]
     },
     {
       "include": [".agents/skills/counterfact-pr-creation/SKILL.md"],
@@ -717,7 +751,8 @@
         "repl",
         "runtime",
         "types",
-        "contributor-tooling"
+        "contributor-tooling",
+        "tutorials"
       ]
     },
     {
@@ -1065,7 +1100,8 @@
         "dispatch",
         "responses",
         "types",
-        "first-run-example"
+        "first-run-example",
+        "simulation-example"
       ]
     },
     {
@@ -1074,7 +1110,7 @@
     },
     {
       "include": [".agents/skills/counterfact-repl/SKILL.md"],
-      "groups": ["admin-api", "dispatch", "responses"]
+      "groups": ["admin-api", "admin-control-guidance"]
     },
     {
       "include": [".agents/skills/counterfact-repl/examples.md"],
@@ -1114,6 +1150,61 @@
     {
       "include": ["packages/counterfact/docs/manual/guided-example.md"],
       "groups": ["tutorials", "cli", "application"]
+    },
+    {
+      "include": [".agents/skills/counterfact-tutorials/SKILL.md"],
+      "groups": ["tutorials", "cli", "telemetry"]
+    },
+    {
+      "include": [
+        ".agents/skills/counterfact-maintenance/references/build-release.md"
+      ],
+      "groups": ["contributor-tooling", "release", "package-contracts"]
+    },
+    {
+      "include": [
+        ".agents/skills/counterfact-maintenance/references/documentation-site.md"
+      ],
+      "groups": ["site-maintenance", "guide-index", "contributor-tooling"]
+    },
+    {
+      "include": [
+        ".agents/skills/counterfact-maintenance/references/dependencies.md"
+      ],
+      "groups": ["dependency-maintenance", "release", "first-run-example"]
+    },
+    {
+      "include": [
+        ".agents/skills/counterfact-maintenance/references/testing.md"
+      ],
+      "groups": [
+        "test-conventions",
+        "contributor-tooling",
+        "request-builder",
+        "package-contracts"
+      ]
+    },
+    {
+      "include": [
+        ".agents/skills/counterfact-maintenance/references/black-box-testing.md"
+      ],
+      "groups": ["product-black-box-tests"]
+    },
+    {
+      "include": [
+        ".agents/skills/counterfact-maintenance/references/historical-audits.md"
+      ],
+      "groups": ["historical-audit-methods"]
+    },
+    {
+      "include": [".agents/skills/counterfact-repl/references/admin-api.md"],
+      "groups": ["admin-api"]
+    },
+    {
+      "include": [
+        ".agents/skills/counterfact-repl/references/troubleshooting.md"
+      ],
+      "groups": ["admin-api", "proxy", "contexts"]
     }
   ]
 }
