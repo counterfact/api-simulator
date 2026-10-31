@@ -11,6 +11,12 @@ fields and existing route behavior. Use existing context/scenario methods in the
 interactive REPL for class-backed contexts. If that interface is unavailable,
 report the limitation before changing state.
 
+Use the exact registered owner from `GET /contexts` as the JSON update target.
+The examples assume `/pets`, `/users`, and other named targets are registered.
+A GET at an unregistered descendant can return parent state, while a POST there
+creates a separate override. Use existing REPL/context methods for root state;
+POST `/contexts/` relative to the Admin API base returns 404.
+
 After every mutation, read back the affected context/configuration and exercise
 the affected endpoint. Report only the state and behavior observed. Setting a
 flag or posting a collection cannot implement missing handler behavior.

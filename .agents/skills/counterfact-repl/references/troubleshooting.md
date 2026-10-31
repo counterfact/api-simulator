@@ -28,6 +28,12 @@ GET /_counterfact/api/contexts/nonexistent
 
 Note: Contexts are hierarchical. If `/api/users` doesn't exist, it returns parent context.
 
+That fallback applies to reads. Before posting, use the path inventory from
+`GET /_counterfact/api/contexts`: posting to an unregistered descendant creates
+a new context there rather than updating its parent. POST to `/contexts/`
+relative to the Admin API base returns 404; use existing REPL/context methods
+for root state. See the [control workflow](../SKILL.md) for mutation selection.
+
 ### Invalid JSON
 
 If request body is malformed:

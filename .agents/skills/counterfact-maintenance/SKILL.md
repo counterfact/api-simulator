@@ -59,14 +59,17 @@ For lesson progression, saved-handler checks, or tutorial UI behavior, use
 - Guidance/prose only: check diffs, local links and paths, and skill metadata
   where applicable. Execute changed copyable recipes against their stated
   contract/version. Product suites are needed when a product contract changes.
-- Source or behavior changes: run focused tests first, then `yarn lint`,
-  `yarn build`, and `yarn test`. Apply formatting or lint fixes to task-owned
-  paths; inspect their diff before broadening the change.
+- Source or behavior changes: build required workspace dependencies before
+  focused tests that consume their `dist` output. Then run focused tests,
+  `yarn lint`, `yarn build`, and `yarn test`. Apply formatting or lint fixes to
+  task-owned paths; inspect their diff before broadening the change.
 - Server startup or CLI behavior: also run `yarn test:black-box`; use the
   black-box reference when adding or changing journeys.
 - Published file/dependency/export changes: run the affected packed-consumer or
-  package-closure checks. Finish builds and packing before suites that consume
-  workspace `dist`; see the build reference for the shared-output constraint.
+  package-closure checks. Whenever builds or pack/prepack checks are needed,
+  finish them before suites that consume workspace `dist` and run them
+  separately from those suites; see the build reference for the shared-output
+  constraint.
 - Site rendering/navigation changes: run the relevant emitted-output, link,
   whitespace, and browser checks described in the documentation reference.
 

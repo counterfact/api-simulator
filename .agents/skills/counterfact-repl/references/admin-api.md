@@ -102,6 +102,10 @@ GET /_counterfact/api/contexts/pets
 
 **Use when:** Inspecting state for a specific API path.
 
+The returned `data.path` is the requested path. The context can come from a
+parent when that path is not registered; use the path inventory from
+`GET /_counterfact/api/contexts` to identify the exact registered owner.
+
 ---
 
 ### Update Context
@@ -147,6 +151,14 @@ Content-Type: application/json
 ```
 
 **Use when:** Adding data, modifying state, simulating conditions.
+
+Target an exact registered path from the context inventory unless creating an
+override is intentional. A POST to an unregistered descendant creates a context
+at that exact path; it does not update the parent that a GET there can return.
+With only `/` registered, GET `/contexts/users` reads root state, while POST
+`/contexts/users` creates `/users` and leaves the root unchanged. These paths are
+relative to the configured Admin API base. POST `/contexts/` returns 404; change
+root state through existing REPL/context methods.
 
 **Before any context mutation:** inspect the context implementation and the
 routes that consume it. A JSON readback cannot tell you whether a class has

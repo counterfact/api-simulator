@@ -1,13 +1,10 @@
 ---
 name: context
 description: >
-  Add and evolve Counterfact context classes in _.context.ts files, including
-  required unit test coverage for context behavior.
+  Add and evolve _.context.ts classes in generated Counterfact simulations,
+  including required unit test coverage for context behavior.
 applyTo:
   - "**/_.context.{ts,js}"
-  - "**/routes/**/_.context.ts"
-  - "**/*context.{ts,js}"
-  - "packages/counterfact/test/**/*.test.ts"
 ---
 
 # Context Skill

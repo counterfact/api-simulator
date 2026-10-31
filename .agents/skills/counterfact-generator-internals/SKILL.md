@@ -68,5 +68,5 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 ## How to validate the change
 
 - Run: `yarn lint`, `yarn build`, `yarn test`.
-- Run focused generator tests first (affected coder + integration/snapshot tests in `packages/generator/test/`).
+- After required workspace dependency builds finish, run focused generator tests before the full suite (affected coder + integration/snapshot tests in `packages/generator/test/`).
 - If behavior changes for generated artifacts, verify snapshots and relevant docs (`packages/counterfact/docs/features/generated-code.md`, `packages/counterfact/docs/faq.md`).

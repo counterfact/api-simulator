@@ -5,12 +5,9 @@ description: >
   Generate the initial scaffold, research the real API's behaviour, implement
   stateful context classes, write tests for those classes, and configure
   scenario scripts (including a startup scenario) so the mock server is
-  immediately useful without manual setup.
-applyTo:
-  - "**/*.{yaml,yml,json}"
-  - "**/routes/**/*.{ts,js}"
-  - "**/*context.{ts,js}"
-  - "**/scenarios/**/*.{ts,js}"
+  immediately useful without manual setup. Use for creating a simulation from
+  a spec; routine edits to existing routes, contexts, or scenarios use their
+  focused skills.
 ---
 
 # Build-Simulation Skill
@@ -315,18 +312,17 @@ export const startup: Scenario = ($) => {
 };
 ```
 
-For large startup sets, delegate to helper functions in separate files so each
-file stays focused and the helpers can also be called from the REPL:
+For a larger pet collection, use this alternative startup with a helper in a
+separate file. Both files use the same teaching contract and root context as
+the example above:
 
 ```ts
 // api/scenarios/index.ts
 import type { Scenario } from "../types/index.js";
 import { addPets } from "./pets.js";
-import { addOrders } from "./orders.js";
 
 export const startup: Scenario = ($) => {
   addPets($, 20, "dog");
-  addOrders($, 5);
 };
 ```
 

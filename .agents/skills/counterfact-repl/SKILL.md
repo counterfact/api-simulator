@@ -48,7 +48,9 @@ restarting. An HTTP error alone does not establish that the simulator is stopped
 
 For exact payloads and responses, read the
 [endpoint reference](references/admin-api.md). Context paths are hierarchical:
-lookups can select a parent context, so inspect the owning file before editing.
+lookups can select a parent context. `GET /contexts/{path}` echoes the requested
+path even when it returns a parent's context. Discover registered paths with
+`GET /contexts` and inspect the owning file before editing.
 
 ## Choose the mutation interface before changing state
 
@@ -60,6 +62,12 @@ readback does not expose prototype methods or prove a route uses a posted flag.
   the limitation before changing state.
 - Use `POST /contexts/{path}` only when plain-object JSON update semantics fit
   the context and the consuming routes already support the intended behavior.
+  Target an exact registered path from `GET /contexts` unless creating an
+  override is intentional: a POST to an unregistered descendant creates a new
+  context there, while a GET at that path can return its parent. For example,
+  with only `/` registered, GET `/contexts/users` reads root state but POST to
+  that URL creates `/users` and leaves `/` unchanged. POST `/contexts/` returns
+  404; use existing REPL/context methods to change the root context.
   JSON updates can remove class prototype methods. The first update to an unseen
   registry path can replace its context; subsequent updates compare against
   cached inputs. Equal cached scalar values can leave live route mutations
