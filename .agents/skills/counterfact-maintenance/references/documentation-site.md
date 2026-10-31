@@ -9,6 +9,11 @@ Paths and commands below are relative to the repository root.
   source, configuration, and tests, and record a review only after checking
   those relationships and the document's claims.
 
+- When tightening a drift threshold, inspect the newly flagged documents and
+  their source relationships in the same change. Correct stale guidance and
+  record verified reviews for accurate documents; evaluate CI enforcement
+  separately from the reminder's sensitivity.
+
 - Write user docs as direct instructions with concrete examples. Introduce OpenAPI with a brief mention of its former name, Swagger, then use “spec” naturally. Prefer “your code” or “a class you write” over “authored behavior.” Explain limitations where they affect the task; avoid repeated disclaimers, abstract process language, and unsupported marketing claims. Choose headings for the subject rather than repeating a fixed template on every guide.
 
 - Keep `catchmydrift.config.json` document-specific: connect each selected document
