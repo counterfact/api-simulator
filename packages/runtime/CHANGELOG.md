@@ -1,5 +1,15 @@
 # @counterfact/runtime
 
+## 0.3.2
+
+### Patch Changes
+
+- 40656be: Require Node 22.22 or later for Chokidar 6 compatibility.
+- 93944c6: Updated dependency `chokidar` in `@counterfact/generator` to `6.0.0`.
+  Updated dependency `chokidar` in `@counterfact/runtime` to `6.0.0`.
+- Updated dependencies [1f340b6]
+  - @counterfact/openapi@0.1.7
+
 ## 0.3.1
 
 ### Patch Changes
