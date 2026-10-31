@@ -14,6 +14,11 @@ Paths and commands below are relative to the repository root.
 
 - Use `usingTemporaryFiles()` for filesystem-heavy tests.
 
+- When compiler-checking multiple files in one unchanged generated fixture,
+  pass all root files to one TypeScript program rather than creating a fresh
+  program for each file. Keep separate compiler checks across fixture mutations
+  so regeneration and watcher tests validate the updated files.
+
 - In file-watching tests, register the expected event listener before writing the file, then await the saved promise. Close watchers in test teardown so Jest timeouts cannot skip cleanup; restore any changed working directory there as well.
 
 - For source or tsconfig analysis in repository tooling, use the existing

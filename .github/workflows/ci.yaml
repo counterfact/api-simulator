@@ -78,6 +78,18 @@ jobs:
         run: |
           npm install --global --force corepack
           corepack enable
+      - name: Locate Yarn download cache
+        if: matrix.check == 'Black-box tests'
+        id: yarn-cache
+        shell: bash
+        run: echo "path=$(yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+      - name: Cache black-box Yarn downloads
+        if: matrix.check == 'Black-box tests'
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.yarn-cache.outputs.path }}
+          key: black-box-yarn-${{ runner.os }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+          restore-keys: black-box-yarn-${{ runner.os }}-
       - name: Install Packages
         run: yarn install --immutable
       - name: Build Workspaces
@@ -118,7 +130,7 @@ jobs:
       - name: Unit Tests
         if: matrix.check == 'Unit tests'
         timeout-minutes: 10
-        run: yarn test:coverage --forceExit --verbose --no-watchman
+        run: yarn test:coverage --maxWorkers=4 --forceExit --verbose --no-watchman
       - name: Coveralls
         if: matrix.check == 'Unit tests' && github.event_name != 'merge_group'
         uses: coverallsapp/github-action@v2.3.8
@@ -130,13 +142,16 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: "3.x"
+          cache: pip
+          cache-dependency-path: test-black-box/requirements.txt
       - name: Install Python dependencies
         if: matrix.check == 'Black-box tests'
         run: pip install -r test-black-box/requirements.txt
       - name: Black Box Tests
         if: matrix.check == 'Black-box tests'
         timeout-minutes: 5
-        run: yarn test:black-box
+        # Build Workspaces already compiled this job's isolated checkout.
+        run: yarn test:black-box:run
       - name: Type Tests
         if: matrix.check == 'Public type tests'
         timeout-minutes: 2
