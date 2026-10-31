@@ -1,0 +1,139 @@
+openapi: 3.0.3
+info:
+  title: Skill example pet shop
+  version: 1.0.0
+paths:
+  /pet:
+    get:
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [available, pending, sold]
+      responses:
+        "200":
+          description: Matching pets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pet"
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewPet"
+      responses:
+        "200":
+          description: Created pet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+  /pet/{petId}:
+    parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      responses:
+        "200":
+          description: Pet found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+        "404":
+          $ref: "#/components/responses/TextError"
+        "429":
+          $ref: "#/components/responses/TextError"
+        "500":
+          $ref: "#/components/responses/TextError"
+    delete:
+      responses:
+        "200":
+          description: Pet removed
+  /payments/{paymentId}:
+    get:
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Payment with optional user
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, userId]
+                properties:
+                  id:
+                    type: string
+                  userId:
+                    type: string
+                  user:
+                    $ref: "#/components/schemas/User"
+        "404":
+          $ref: "#/components/responses/TextError"
+  /users/{userId}:
+    get:
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+components:
+  schemas:
+    NewPet:
+      type: object
+      required: [name, status, photoUrls]
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [available, pending, sold]
+        photoUrls:
+          type: array
+          items:
+            type: string
+    Pet:
+      allOf:
+        - $ref: "#/components/schemas/NewPet"
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: integer
+    User:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+  responses:
+    TextError:
+      description: Request failed
+      content:
+        text/plain:
+          schema:
+            type: string

@@ -1,6 +1,6 @@
 # Install Counterfact for automated workflows
 
-The examples in this manual use Counterfact 3 or newer, including `response.status(...)` and generated handler types such as `HTTP_GET`. Use Node.js 22 or newer. Install Counterfact in the project that owns the contract, custom handlers, and tests:
+The examples in this manual use Counterfact 3 or newer, including `response.status(...)` and central generated types such as `Routes["/pet"]["/{petId}"]["GET"]`. Use Node.js 22 or newer. Install Counterfact in the project that owns the contract, custom handlers, and tests:
 
 <span id="run-examples-from-the-current-source"></span>
 

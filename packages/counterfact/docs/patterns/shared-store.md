@@ -89,7 +89,7 @@ generated `Context$` type imports the concrete `Store` type from `_.store.ts`:
 
 ```ts
 // api/customers/routes/_.context.ts
-import type { Context$ } from "../types/_.context.js";
+import type { Context$ } from "../types/index.js";
 
 export class Context {
   private readonly store: Context$["store"];
@@ -107,7 +107,7 @@ export class Context {
 
 ```ts
 // api/orders/routes/_.context.ts
-import type { Context$ } from "../types/_.context.js";
+import type { Context$ } from "../types/index.js";
 
 export class Context {
   private readonly store: Context$["store"];
@@ -126,7 +126,9 @@ Handlers stay small and do not receive the store directly:
 
 ```ts
 // api/orders/routes/orders.ts
-export const POST: HTTP_POST = function ($) {
+import type { Routes } from "../types/index.js";
+
+export const POST: Routes["/orders"]["POST"] = function ($) {
   return $.response.status(201).json($.context.createOrder($.body));
 };
 ```

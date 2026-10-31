@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": "^22.11 || ^24 || >=26",
+    "node": "^22.22 || ^24 || >=26",
     "yarn": ">=4.5.2"
   },
   "scripts": {
@@ -68,9 +68,9 @@
     "@types/koa-proxy": "1.0.8",
     "@types/koa-static": "4.0.4",
     "@types/node": "22",
-    "@typescript-eslint/eslint-plugin": "8.72.0",
-    "@typescript-eslint/parser": "8.72.0",
-    "catchmydrift": "0.1.0",
+    "@typescript-eslint/eslint-plugin": "8.72.1",
+    "@typescript-eslint/parser": "8.72.1",
+    "catchmydrift": "0.2.0",
     "copyfiles": "2.4.1",
     "eslint": "10.13.0",
     "eslint-formatter-github-annotations": "0.1.0",
@@ -103,6 +103,7 @@
   "resolutions": {
     "@typescript-eslint/utils": "^8.58.0",
     "qs@npm:6.15.1": "6.16.1",
-    "koa-proxies/uuid": "11.1.1"
+    "koa-proxies/uuid": "11.1.1",
+    "chokidar@npm:6.0.0": "patch:chokidar@npm%3A6.0.0#~/.yarn/patches/chokidar-npm-6.0.0-53be5debd5.patch"
   }
 }

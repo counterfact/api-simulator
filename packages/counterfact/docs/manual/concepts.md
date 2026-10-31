@@ -34,9 +34,9 @@ Counterfact calls each handler with one object conventionally named `$`. It supp
 
 ```ts
 // api/routes/pet/{petId}.ts
-import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
   return $.response.status(200).json({
     id: $.path.petId,
     name: "Fluffy",
@@ -46,7 +46,7 @@ export const GET: HTTP_GET = function ($) {
 };
 ```
 
-`HTTP_GET` is generated from that operation's contract. `$.path.petId` is the URL parameter, and `$.response.status(200).json(...)` builds its response. The `$` name is an ordinary function parameter; the generated type determines which members are available. See [route handlers](../features/routes.md).
+`Routes["/pet"]["/{petId}"]["GET"]` selects that operation's generated contract. `$.path.petId` is the URL parameter, and `$.response.status(200).json(...)` builds its response. The `$` name is an ordinary function parameter; the generated type determines which members are available. See [route handlers](../features/routes.md).
 
 ## Context: state shared by nearby routes
 
@@ -66,14 +66,14 @@ The **REPL** (read–eval–print loop) is the JavaScript prompt in the terminal
 
 The same parameter name appears in several kinds of function, but their capabilities differ:
 
-| Function            | What Counterfact supplies                                                       | Generated type                |
-| ------------------- | ------------------------------------------------------------------------------- | ----------------------------- |
-| Operation handler   | Request data, response builders, delay/proxy helpers, nearest context           | `HTTP_GET`, `HTTP_POST`, etc. |
-| Context constructor | `loadContext`, `readJson`, and the optional shared store                        | `Context$`                    |
-| Scenario            | `context`, `loadContext`, `route`, and `routes`                                 | `Scenario` / `Scenario$`      |
-| Route middleware    | Typed request data and nearest context, plus a separate `respondTo($)` callback | `Middleware`                  |
+| Function            | What Counterfact supplies                                                       | Generated type                 |
+| ------------------- | ------------------------------------------------------------------------------- | ------------------------------ |
+| Operation handler   | Request data, response builders, delay/proxy helpers, nearest context           | `Routes["/path"]["GET"]`, etc. |
+| Context constructor | `loadContext`, `readJson`, and the optional shared store                        | `Context$`                     |
+| Scenario            | `context`, `loadContext`, `route`, and `routes`                                 | `Scenario` / `Scenario$`       |
+| Route middleware    | Typed request data and nearest context, plus a separate `respondTo($)` callback | `Middleware["/admin"]`, etc.   |
 
-Import these types from the matching files under `types/`. Only the context constructor receives `store` directly. Handlers and middleware delegate shared behavior to context methods. The scenario's `routes` collection is also available as `routes` in the REPL. See the [state reference](../api/state.md) for the arguments each function receives.
+Import all generated types from `types/index.js`: `Routes`, `Components`, `Schemas`, `Context$`, `Scenario`, `Scenario$`, and `Middleware`. Select middleware by its directory, such as `Middleware["/admin"]`. Only the context constructor receives `store` directly. Handlers and middleware delegate shared behavior to context methods. The scenario's `routes` collection is also available as `routes` in the REPL. See the [state reference](../api/state.md) for the arguments each function receives.
 
 ## API groups, versions, and URL prefixes
 
