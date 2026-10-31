@@ -5,7 +5,7 @@ Feature: Find a useful starting point on the first run
   Scenario: Start a discovered nested contract
     Given a first-run directory with a nested OpenAPI contract and unrelated files
     When I run Counterfact without arguments in a terminal
-    Then the intro offers a guided example, my own document, and documentation
+    Then the intro offers my own document and documentation
     When I choose my OpenAPI document
     Then only supported local contracts are offered
     When I select the nested contract and an available server port
@@ -23,7 +23,6 @@ Feature: Find a useful starting point on the first run
       | Ctrl+C               |
       | Ctrl+D               |
       | q at the destination |
-      | q before starting example    |
 
   Scenario: Read documentation without starting a project
     Given an empty first-run directory with a browser launcher
@@ -72,13 +71,6 @@ Feature: Find a useful starting point on the first run
     When I change the selected contract's response example
     Then the running API reloads the local contract change
 
-  Scenario: Preserve an existing example and choose an available port
-    Given an existing example directory and an occupied server port
-    When I run Counterfact without arguments in a terminal
-    And I return from example setup to the opening menu
-    And I start the example after correcting an occupied port
-    Then the existing example is unchanged and the new example runs
-
   Scenario: Enter a contract path and return from document selection
     Given an empty first-run directory with a local contract
     When I run Counterfact without arguments in a terminal
@@ -99,25 +91,3 @@ Feature: Find a useful starting point on the first run
     When I run Counterfact without arguments in a terminal
     And I enter the contract URL and choose an available server port
     Then the generated API and Swagger UI work and the REPL accepts requests
-
-  Scenario: Shop for coffee against the generated Counterfact API
-    Given an empty first-run directory
-    When I run Counterfact without arguments in a terminal
-    And I start the guided example on an available port
-    Then the coffee shop serves products and accepts a demo purchase
-
-  Scenario: Update coffee inventory in a handler and restock through the REPL
-    Given an empty first-run directory
-    When I run Counterfact without arguments in a terminal
-    And I start the guided example on an available port
-    Then the coffee shop serves products and accepts a demo purchase
-    When I make Decaf available by editing its product handler
-    Then the coffee API returns the changed stock and accepts a Decaf order
-    When I make ordering unavailable and then restore it
-    Then an unsuccessful order preserves inventory and a retry succeeds
-    When I add the inventory mutation to the successful order handler
-    Then buying coffee reduces the inventory returned by the products API
-    When I purchase the remaining Dark Roast stock
-    Then Dark Roast is sold out and another order is rejected
-    When I restock Dark Roast through the running REPL
-    Then the products API shows five bags and the next purchase leaves four

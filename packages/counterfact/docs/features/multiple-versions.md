@@ -107,7 +107,7 @@ For each group with at least one versioned spec, Counterfact generates the follo
 Key points:
 
 - **`routes/`** is shared. A single handler file serves every version.
-- **`types/index.ts`** exports `Routes`, `Components`, and `Schemas`. Import `Routes` and select an operation with `Routes["/items"]["/{itemId}"]["GET"]`; the entry combines all versions of that handler. Same-named components across versions are unions in `Components` and `Schemas`.
+- **`types/index.ts`** exports `Routes`, `Components`, and `Schemas`. Import `Routes`, define `type Route = Routes["/items"]["/{itemId}"]`, and select an operation with `Route["GET"]`; the entry combines all versions of that handler. Same-named components across versions are unions in `Components` and `Schemas`.
 - **`types/paths/`** and **`types/<version>/paths/`** hold internal shared and per-version operation definitions. Direct imports from these modules are deprecated; use the central entry point.
 - **`types/versions.ts`** exports `Versions`, `VersionsGTE`, and `Versioned`. It is generated once per group and re-generated whenever the set of versions changes.
 
@@ -134,7 +134,9 @@ This handler assumes a catalog context you write with `findById(id)`, returning 
 // catalog/routes/items/{itemId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/items"]["/{itemId}"]["GET"] = function ($) {
+type Route = Routes["/items"]["/{itemId}"];
+
+export const GET: Route["GET"] = function ($) {
   const item = $.context.findById($.path.itemId);
   if (!item) return $.response.status(404).text("Item not found");
 
@@ -190,7 +192,9 @@ includes it in the JSON response. `$.minVersion()` is a TypeScript type predicat
 ```ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/items"]["/{itemId}"]["GET"] = function ($) {
+type Route = Routes["/items"]["/{itemId}"];
+
+export const GET: Route["GET"] = function ($) {
   if ($.minVersion("v2")) {
     // $ is typed as the v2 (and later) $ arg — v2-only fields are available here
     return $.response.status(200).json({
@@ -215,7 +219,9 @@ and v2 requires an additional `locale` field, this handler is fully typed:
 // routes/greeting.ts
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/greeting"]["GET"] = async ($) => {
+type Route = Routes["/greeting"];
+
+export const GET: Route["GET"] = async ($) => {
   if ($.minVersion("v2")) {
     return $.response.status(200).json({ message: "x", locale: "en" });
   }

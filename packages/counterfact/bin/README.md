@@ -30,7 +30,6 @@ configured separately by the application/runtime layer.
 
 The [CLI source guide](../src/cli/README.md) describes option/config resolution,
 first-run selection, startup progress, migrations, and telemetry ownership.
-Tutorial content and lesson progression belong to `@counterfact/tutorials`.
 
 Use the canonical [CLI reference](../docs/api/cli.md) for options, configuration
 keys, action defaults, and precedence. Run `npx counterfact@latest --help` for

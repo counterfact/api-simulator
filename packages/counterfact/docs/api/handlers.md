@@ -1,13 +1,16 @@
 # Handler arguments
 
 Export one function per HTTP method from a file under `routes/`. Import `Routes`
-from the generated `types/index.js` entry point and select each slash-prefixed path segment followed by the uppercase method:
+from the generated `types/index.js` entry point and define a local `Route` alias for the slash-prefixed path segments. Select the
+uppercase method from that alias:
 
 ```ts
 // api/routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
+type Route = Routes["/pet"]["/{petId}"];
+
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).random();
 };
 ```
@@ -19,7 +22,9 @@ derive it from the same contract:
 ```ts
 import type { Routes } from "./api/types/index.js";
 
-type GetPet = Routes["/pet"]["/{petId}"]["GET"];
+type Route = Routes["/pet"]["/{petId}"];
+
+type GetPet = Route["GET"];
 type GetPetPath = Parameters<GetPet>[0]["path"];
 ```
 

@@ -205,7 +205,9 @@ unversioned API:
 // routes/pets.ts
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/pets"]["GET"] = function ($) {
+type Route = Routes["/pets"];
+
+export const GET: Route["GET"] = function ($) {
   if ($.minVersion("v2")) {
     return $.response.status(200).random();
   }

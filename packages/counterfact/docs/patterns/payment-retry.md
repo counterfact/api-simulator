@@ -90,7 +90,9 @@ Replace the generated handlers:
 // api/routes/orders.ts
 import type { Routes } from "../types/index.js";
 
-export const POST: Routes["/orders"]["POST"] = function ($) {
+type Route = Routes["/orders"];
+
+export const POST: Route["POST"] = function ($) {
   const outcome = $.context.placeOrder($.body.id);
   if (outcome === "forbidden") return $.response.status(403).empty();
   if (outcome === "declined") return $.response.status(402).empty();
@@ -102,7 +104,9 @@ export const POST: Routes["/orders"]["POST"] = function ($) {
 // api/routes/orders/{orderId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/orders"]["/{orderId}"]["GET"] = function ($) {
+type Route = Routes["/orders"]["/{orderId}"];
+
+export const GET: Route["GET"] = function ($) {
   return $.context.hasOrder($.path.orderId)
     ? $.response.status(200).json({ id: $.path.orderId })
     : $.response.status(404).empty();
