@@ -8,7 +8,7 @@ yarn test:boundaries
 yarn check:boundaries
 yarn lint
 yarn typecheck
-yarn test:packed-consumer
+yarn test:packaging-runner
 yarn test:package-closures
 yarn test:coverage --forceExit --verbose --no-watchman
 

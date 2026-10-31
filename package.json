@@ -28,6 +28,7 @@
     "test:repl-packed": "yarn workspace @counterfact/repl test:packed-consumer",
     "test:black-box": "yarn workspace counterfact build && python3 -m pytest test-black-box/ -vv --gherkin-terminal-reporter",
     "test:packed-consumer": "yarn workspace counterfact test:packed-consumer",
+    "test:packaging-runner": "node --test scripts/packed-consumer.test.mjs",
     "test:package-closures": "node scripts/test-package-closures.mjs",
     "test:tsd": "tsd --typings ./packages/types/dist/index.d.ts --files \"./packages/types/test/**/*.test-d.ts\"",
     "build": "node scripts/build.mjs",
