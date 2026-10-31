@@ -9,6 +9,8 @@ coverage
 .stryker-tmp
 reports
 out
+counterfact-demo
+counterfact-demo-*
 
 # Python test artifacts
 __pycache__

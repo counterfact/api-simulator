@@ -1,0 +1,284 @@
+import { stringify } from "yaml";
+import { expect, it, jest } from "@jest/globals";
+import { usingTemporaryFiles } from "using-temporary-files";
+import {
+  checkWalkthroughSave,
+  walkthroughInfo,
+} from "../../src/coffee-shop/coffee-shop-checks.js";
+import {
+  BASELINE_SCENARIO,
+  CONNECTED_ORDERS,
+  CONNECTED_PRODUCTS,
+  CONTEXT,
+  ECHO_ORDERS,
+  FAILURE_ORDERS,
+  FIXED_PRODUCTS,
+  INVENTORY_LOOP,
+  INVENTORY_TODO,
+  REDUCE_ORDERS,
+  RESTOCK_SCENARIO,
+  RULES_CONTEXT,
+  RULES_ORDERS,
+  SEEDED_CONTEXT,
+} from "../../src/coffee-shop/coffee-shop-lessons.js";
+
+it("checks every documented edit from generated stubs without touching live state", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const root = $.path(".");
+    await $.add("routes/_.context.ts", "export class Context {}\n");
+    await $.add(
+      "routes/products.ts",
+      "export const GET = ($) => $.response.status(200).random();",
+    );
+    await $.add(
+      "routes/orders.ts",
+      "export const POST = ($) => $.response.status(201).random();",
+    );
+    const info = await walkthroughInfo(root, {});
+    expect(info.state).toEqual({ catalog: null, inventory: null });
+    expect((await walkthroughInfo(root, {})).sessionId).toBe(info.sessionId);
+    expect((await checkWalkthroughSave(root, "catalog")).ok).toBe(false);
+    expect((await checkWalkthroughSave(root, "order")).ok).toBe(false);
+    await $.add("routes/products.ts", FIXED_PRODUCTS);
+    expect((await checkWalkthroughSave(root, "catalog")).ok).toBe(true);
+    await $.add("routes/orders.ts", ECHO_ORDERS);
+    expect((await checkWalkthroughSave(root, "order")).ok).toBe(true);
+    await $.add("routes/orders.ts", FAILURE_ORDERS);
+    expect((await checkWalkthroughSave(root, "fail")).ok).toBe(true);
+    await $.add(
+      "routes/orders.ts",
+      FAILURE_ORDERS.replace(
+        "ordersAvailable = false",
+        "ordersAvailable = true",
+      ),
+    );
+    expect((await checkWalkthroughSave(root, "retry")).ok).toBe(true);
+    await $.add("routes/_.context.ts", CONTEXT);
+    await $.add(
+      "routes/_.context.ts",
+      CONTEXT.replace(
+        "return this.catalog.map(product => ({ ...product, stock: this.inventory[product.id] ?? 0 }));",
+        "return [];",
+      ),
+    );
+    const unfinished = await checkWalkthroughSave(root, "context");
+    expect(unfinished.ok).toBe(false);
+    expect(unfinished.message).toContain("Implement listProducts()");
+    await $.add(
+      "routes/_.context.ts",
+      CONTEXT.replace("stock: this.inventory[product.id] ?? 0", "stock: 0"),
+    );
+    expect((await checkWalkthroughSave(root, "context")).ok).toBe(false);
+    await $.add("routes/_.context.ts", CONTEXT);
+    expect((await checkWalkthroughSave(root, "context")).ok).toBe(true);
+    await $.add("routes/_.context.ts", SEEDED_CONTEXT);
+    await $.add("scenarios/index.ts", BASELINE_SCENARIO);
+    expect((await checkWalkthroughSave(root, "seed")).ok).toBe(true);
+    await $.add("routes/products.ts", CONNECTED_PRODUCTS);
+    await $.add("routes/orders.ts", CONNECTED_ORDERS);
+    expect((await checkWalkthroughSave(root, "connect")).ok).toBe(true);
+    await $.add("routes/_.context.ts", RULES_CONTEXT);
+    await $.add("routes/orders.ts", RULES_ORDERS);
+    expect((await checkWalkthroughSave(root, "rules")).ok).toBe(true);
+    await $.add("routes/orders.ts", REDUCE_ORDERS);
+    expect((await checkWalkthroughSave(root, "reduce")).ok).toBe(false);
+    await $.add(
+      "routes/orders.ts",
+      REDUCE_ORDERS.replace(
+        INVENTORY_TODO,
+        INVENTORY_LOOP.replace("item.quantity", "1"),
+      ),
+    );
+    expect((await checkWalkthroughSave(root, "reduce")).ok).toBe(false);
+    await $.add(
+      "routes/orders.ts",
+      REDUCE_ORDERS.replace(INVENTORY_TODO, INVENTORY_LOOP),
+    );
+    expect((await checkWalkthroughSave(root, "reduce")).ok).toBe(true);
+    expect((await checkWalkthroughSave(root, "reduce")).ok).toBe(true);
+    await $.add("scenarios/index.ts", BASELINE_SCENARIO + RESTOCK_SCENARIO);
+    expect((await checkWalkthroughSave(root, "scenario")).ok).toBe(true);
+    const live = { catalog: [], inventory: { untouched: 19 } };
+    expect((await walkthroughInfo(root, live)).state.inventory).toEqual({
+      untouched: 19,
+    });
+    expect(live.inventory.untouched).toBe(19);
+    expect((await walkthroughInfo(root, live)).revision).not.toBe(
+      info.revision,
+    );
+  });
+});
+
+it("checks the OpenAPI name example while requiring the actual product stub", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const root = $.path(".");
+    await $.add("routes/_.context.ts", "export class Context {}");
+    await $.add(
+      "routes/products.ts",
+      "export const GET = $ => $.response.status(200).random();",
+    );
+    await $.add(
+      "routes/orders.ts",
+      "export const POST = $ => $.response.status(201).random();",
+    );
+    expect((await checkWalkthroughSave(root, "name-example")).ok).toBe(false);
+    const before = (await walkthroughInfo(root, {})).revision;
+    await $.add(
+      "openapi.yaml",
+      stringify({
+        components: {
+          schemas: {
+            Product: {
+              properties: { name: { type: "string", example: "Dark Roast" } },
+            },
+          },
+        },
+      }),
+    );
+    expect((await walkthroughInfo(root, {})).revision).not.toBe(before);
+    expect(await checkWalkthroughSave(root, "name-example")).toMatchObject({
+      ok: true,
+      example: "Dark Roast",
+    });
+    await $.add("routes/products.ts", FIXED_PRODUCTS);
+    expect(await checkWalkthroughSave(root, "name-example")).toMatchObject({
+      ok: false,
+      message: expect.stringContaining(".random()"),
+    });
+    await $.add("openapi.yaml", "{");
+    expect(
+      (await checkWalkthroughSave(root, "name-example")).message,
+    ).toContain("YAML syntax");
+  });
+});
+
+it("reports missing methods, invalid phases, broken files, and destructive restock scenarios", async () => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add("routes/_.context.ts", "export class Context {}\n");
+    await $.add("routes/products.ts", FIXED_PRODUCTS);
+    await $.add("routes/orders.ts", ECHO_ORDERS);
+    const root = $.path(".");
+    expect((await checkWalkthroughSave(root, "context")).message).toContain(
+      "Add catalog",
+    );
+    expect((await checkWalkthroughSave(root, "not-a-phase")).ok).toBe(false);
+    await $.add("routes/_.context.ts", RULES_CONTEXT);
+    await $.add(
+      "scenarios/index.ts",
+      BASELINE_SCENARIO +
+        RESTOCK_SCENARIO.replace(
+          '$.context.inventory["dark-roast"] = 5;',
+          '$.context.reset(); $.context.inventory["dark-roast"] = 5;',
+        ),
+    );
+    expect((await checkWalkthroughSave(root, "scenario")).ok).toBe(false);
+    await $.add("routes/products.ts", "export const GET = (((;");
+    expect((await checkWalkthroughSave(root, "catalog")).ok).toBe(false);
+  });
+});
+
+it("checks description examples without mistaking supplied name examples for learner work", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const root = $.path(".");
+    await $.add("routes/_.context.ts", "export class Context {}");
+    await $.add(
+      "routes/products.ts",
+      "export const GET = $ => $.response.status(200).random();",
+    );
+    await $.add(
+      "routes/orders.ts",
+      "export const POST = $ => $.response.status(201).random();",
+    );
+    const document = {
+      components: {
+        schemas: {
+          Product: {
+            properties: {
+              name: { type: "string", examples: ["House Blend", "Dark Roast"] },
+              description: {
+                type: "string",
+                maxLength: 120,
+                examples: [] as unknown[],
+              },
+            },
+          },
+        },
+      },
+    };
+    await $.add("openapi.yaml", stringify(document));
+    expect((await checkWalkthroughSave(root, "description-example")).ok).toBe(
+      false,
+    );
+    document.components.schemas.Product.properties.description.examples = [
+      "Chocolate and caramel.",
+      "Rich cocoa and a bold finish.",
+    ];
+    await $.add("openapi.yaml", stringify(document));
+    expect(
+      await checkWalkthroughSave(root, "description-example"),
+    ).toMatchObject({
+      ok: true,
+      examples: ["Chocolate and caramel.", "Rich cocoa and a bold finish."],
+    });
+    for (const invalid of [
+      ["Only one"],
+      ["", "Readable"],
+      [123, "Readable"],
+      ["x".repeat(121), "Readable"],
+    ]) {
+      document.components.schemas.Product.properties.description.examples =
+        invalid;
+      await $.add("openapi.yaml", stringify(document));
+      expect((await checkWalkthroughSave(root, "description-example")).ok).toBe(
+        false,
+      );
+    }
+  });
+});
+
+it("keeps runtime diagnostics out of saved-check results while preserving learner guidance", async () => {
+  const diagnostics = jest.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("routes/_.context.ts", "export class Context {}");
+      await $.add("routes/orders.ts", ECHO_ORDERS);
+      for (const source of [
+        'import "./missing-private-module.js"; export const GET = () => {};',
+        'export const GET = () => { throw new Error("/private/server/secret.ts\\nRequire stack: internal-loader"); };',
+        'export const GET = () => { throw "/private/server/secret.ts\\nRequire stack: internal-loader"; };',
+      ]) {
+        await $.add("routes/products.ts", source);
+        const result = await checkWalkthroughSave($.path("."), "catalog");
+        expect(result).toMatchObject({
+          ok: false,
+          message: expect.stringContaining("server terminal"),
+        });
+        expect(JSON.stringify(result)).not.toMatch(
+          /private|Require stack|missing-private-module|compiled|\.cjs/u,
+        );
+        expect(diagnostics).toHaveBeenCalledWith(
+          "Tutorial operation failed:",
+          expect.anything(),
+        );
+      }
+      expect(
+        diagnostics.mock.calls.some((call) =>
+          String(call[1]).includes("Require stack"),
+        ),
+      ).toBe(true);
+      diagnostics.mockClear();
+      await $.add(
+        "routes/products.ts",
+        "export const GET = $ => $.response.status(200).random();",
+      );
+      expect(await checkWalkthroughSave($.path("."), "catalog")).toMatchObject({
+        ok: false,
+        message:
+          "Replace the random product stub with a JSON product response.",
+      });
+      expect(diagnostics).not.toHaveBeenCalled();
+    });
+  } finally {
+    diagnostics.mockRestore();
+  }
+});

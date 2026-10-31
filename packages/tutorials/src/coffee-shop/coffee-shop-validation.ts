@@ -12,7 +12,6 @@ const require = createRequire(import.meta.url);
 
 type ShopContext = {
   inventory: Record<string, number>;
-  nextOrderId: number;
 };
 type Result = { status: number; body: unknown };
 type Handler = (request: {
@@ -69,7 +68,6 @@ export async function checkShopSave(root: string, step: number) {
     const { Context } = load("_.context");
     const context = new (Context as new () => ShopContext)();
     context.inventory = { "house-blend": 5, "dark-roast": 3, decaf: 0 };
-    context.nextOrderId = 1;
     const products = load("products").GET as Handler;
     const orders = load("orders").POST as Handler;
     const response = Object.fromEntries(

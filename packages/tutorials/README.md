@@ -1,10 +1,11 @@
 # @counterfact/tutorials
 
-Guided, hands-on tours for Counterfact. This package owns tour projects, browser instructions and storefronts, lesson progression, and saved-handler checks. The coffee shop is the first tour; future chapter tours belong in this package too.
+Guided, hands-on tours for Counterfact. This package owns the coffee-shop UI,
+conversation, lesson progression, local file journal, checks, and tutorial HTTP
+handler. The CLI owns menu and port selection, simulator lifecycle, browser
+launch, and telemetry transport.
 
-Counterfact installs this package as a regular dependency, so the first-run example works offline after installation. The CLI owns its menu, port selection, simulator lifecycle, and browser launch. This package prepares editable files and returns the locations the caller needs; it does not start a server or REPL.
-
-## Prepare a tour
+## Prepare and host a tour
 
 ```js
 import { findTourDirectory, prepareTour } from "@counterfact/tutorials";
@@ -12,52 +13,172 @@ import { findTourDirectory, prepareTour } from "@counterfact/tutorials";
 const root = process.cwd();
 const directory = await findTourDirectory(root);
 const tour = await prepareTour(root, directory, "coffee-shop");
-// tour.source: absolute OpenAPI document path
-// tour.destination: absolute project directory
-// tour.walkthroughPath: HTTP path to open after the simulator starts
 ```
 
-`findTourDirectory(root)` proposes an unused `counterfact-demo` name, adding a numeric suffix when needed. It does not reserve the name. `prepareTour(root, directory, tourId?)` creates that directory exclusively and rejects an existing file, directory, or symlink. It defaults to `coffee-shop` and rejects unknown IDs before writing files. The root must already exist. A concurrent creator can still claim the proposed name; handle `EEXIST` by choosing again.
+`prepareTour` exclusively creates the demo directory and writes `openapi.yaml`
+and the hidden walkthrough state. It rejects existing files, directories, and
+symlinks. `findTourDirectory` proposes an unused numbered name without reserving
+it. The root directory must exist.
 
-Start Counterfact with the returned document and project directory, then open the returned walkthrough path on its bound HTTP origin. The [CLI guided-example chapter](https://counterfact.dev/docs/manual/guided-example) describes the reader experience.
+Start Counterfact with `tour.source` and `tour.destination`. The facade recognizes
+a managed version 4, 5, or 6 marker, mounts the simulated API under `/shop`, and hosts
+`createTourRequestHandler` before the simulator's HTTP callback. After generation,
+`finalizeTour(tour.destination)` captures the baseline. The CLI does this and opens
+`tour.walkthroughPath`, `/tutorial/`, on the bound HTTP origin.
 
-The generated project contains ordinary routes, context, and a startup scenario. Its lesson-check routes load helpers from this package's installed location. Keep that installation available when restarting the project; the generated exercise is editable but is not a standalone distribution of the tutorial system. Handler checks use separate temporary inventory and leave the running shop untouched.
+The shop spec contains only `/products` and `/orders`, with `/shop` as its server
+base. Counterfact generates their random handlers, the empty context, default
+scenario, and schema types. There are no generated tutorial handlers or tutorial
+operations in the shop spec.
 
-## Walkthrough milestones
+New route scaffolds import `Routes` from `types/index.ts`, declare a local
+`Route` alias, and annotate handlers with `Route["GET"]` or `Route["POST"]`.
+Prepared context and inventory helpers use `Schemas` from that entry point for
+their `Product` and `OrderItem` aliases; scenarios use its `Scenario` export.
+Preparation preserves existing handler imports and annotations in resumed demos.
 
-The generated `/tutorial-event` route accepts only milestone names and phase numbers.
-It publishes bounded events on Node's `counterfact:walkthrough` diagnostics channel.
-The CLI subscribes and applies its existing telemetry transport and opt-out settings;
-this package does not depend on an analytics SDK or send external requests.
-A temporary random session ID connects milestones, while server-side deduplication
-prevents browser reloads, polling, and lesson revisits from inflating counts.
-Reaching the last screen records completed phases separately from skipped lessons.
-`walkthrough_completed` fires once all ten phases have been completed, including
-when the learner returns to previously skipped lessons.
+The independent tutorial HTTP handler owns:
 
-The event schema is:
+- `GET /tutorial/`: the browser UI.
+- `GET /tutorial/info`: session identity, current state, source revision, and local history.
+- `POST /tutorial/check`: isolated checks of saved learner code.
+- `POST /tutorial/lesson`: evaluate a shop, REPL-state, or quiz observation through the current lesson graph.
+- `POST /tutorial/workspace`: review, explicit apply, and checkpoint operations.
+- `POST /tutorial/event`: allowlisted milestone reporting.
 
-| Event | Trigger |
-| --- | --- |
-| `walkthrough_opened` | Browser walkthrough initializes |
-| `walkthrough_started` | Learner clicks Start shopping |
-| `walkthrough_phase_completed` | Existing progress checks observe the required behavior |
-| `walkthrough_lesson_skipped` | Learner clicks Skip lesson |
-| `walkthrough_finished` | Final screen is first shown, with `completedPhases` and `allExercisesCompleted` |
-| `walkthrough_completed` | All ten exercise phases have been observed, regardless of navigation order |
+Tutorial requests are checked against the page's origin, JSON bodies are bounded,
+and workspace changes require the current tutorial session. The handler reads
+context through an accessor, so it sees the current instance after reload/reset.
+It does not enter Counterfact route dispatch, validation, proxying, or generated
+types. `/walkthrough` redirects to `/tutorial/` for existing links.
 
-Events contain `tour: "coffee-shop"` and elapsed whole seconds since the first
-reported milestone. Browser milestones also contain `phase`: 0 is the introduction;
-1 is the first purchase; 2–3 edit and purchase Decaf; 4–5 disable ordering and retry;
-6 observes unchanged stock; 7 verifies inventory subtraction; 8 sells out;
-9–10 restock and purchase; 11 is the final screen. The CLI adds its version and
-standard platform properties. The temporary session ID is the PostHog distinct ID,
-so funnels can connect events within one run without a persistent user identity.
+Authored validation feedback remains visible in tutorial responses. Unexpected
+request and saved-code failures return recovery instructions; their original
+diagnostics are logged in the server terminal, never serialized to the browser.
 
-## Add another tour
+## Learning flow
 
-Keep tour-specific files under their own directory in `src/`, alongside `src/coffee-shop/`. Add preparation/selection in `src/prepare-tour.ts` and expose caller-facing capabilities through `src/index.ts`. Keep browser presentation, lesson progression, and checks in this package; use ordinary Counterfact routes and documented runtime exports for the exercises. Extend shared machinery when a second tour demonstrates the need.
+Fourteen lessons start with placing a coffee order to learn the shop and chat.
+The introduction explains `GET /shop/products` and `POST /shop/orders`. The next lesson inspects the generated
+handler and bundled OpenAPI 3.1 schema. Names start with ten coffee examples,
+while descriptions start as random strings. Lesson three adds description
+examples; subsequent lessons add explicit responses, shared
+state, stock rules, and reusable scenarios.
 
-This package depends only on public runtime exports. It must not import the CLI facade or CLI internals. The CLI consumes the package root export; coffee-shop internals are not public entry points.
+Milo proposes supporting edits as exact diffs before writing them. **Apply
+changes** saves a reviewed proposal, and its status changes to **Changes applied**.
+Learners implement their part from instructions, without solution snippets or
+prepared REPL commands. Stale proposals require a new review and never replace a
+learner save. Preparation is idempotent and does not run scenarios or seed live
+state.
 
-Run `yarn test:tutorials` from the repository root. The isolated package-closure check runs [the preparation example](./examples/prepare-coffee-shop.mjs); the facade's packed-consumer check starts an installed tour and exercises its browser and saved-handler endpoints.
+**Okay** only continues an explanation. Action prompts wait for real approval,
+saves, REPL submissions, or shop experiments. A **Hint** button appears while
+waiting for learner work and reveals precise instructions for that particular
+action. Revealing a hint does not approve edits, run requests, or complete lessons;
+revealed hints remain in the conversation across reloads. Practice setup hints reflect existing or duplicate catalog entries. Correct context methods can complete with exploratory live data intact; reset completion requires the full baseline catalog and inventory. Each prompt ends at its instruction,
+with necessary context and expected results before it. Editing prompts stop at
+saving; a verified save reveals the shop or REPL test. Completion is detected
+automatically from verified saves and the running state, without a manual check
+button. Refreshes and responses
+unlock subsequent order, cleanup, and quiz steps. Live requests still earn the
+required observations.
+**Next Lesson** names the next concept. The divider resizes the panels; new text
+types out and scrolling follows it, respecting reduced-motion preferences.
+
+Each explicit shop action keeps its own collapsed request/response snapshot and
+handler link. Background checks do not generate shopping traffic or learner
+messages. Missing, malformed, and rejected responses remain inspectable without
+inventing successful outcomes.
+
+## Read and change the workflow
+
+Start at [the curriculum](./src/coffee-shop/coffee-shop-curriculum.ts#L1). It lists
+phases in learner order. Each file under `src/coffee-shop/lessons/` contains that
+phase's script, instructions, hints, and executable LangGraph `StateGraph`.
+For example, [the catalog lesson](./src/coffee-shop/lessons/catalog.ts#L1) explains
+the proposed edit, waits for approval, calls Milo's edit tool, asks for the
+learner's saved edit, and compares two explicit product responses. Its conditional
+edges distinguish an incomplete observation from lesson completion.
+
+[The generated diagrams](./WORKFLOW.md) show those same graphs. After building
+this package, regenerate them from the repository root:
+
+```sh
+node scripts/describe-tutorial-workflow.mjs > packages/tutorials/WORKFLOW.md
+```
+
+The shared `lessons/runtime.ts` provides state types and the small node helpers.
+`propose`, `apply`, and `checkSaved` invoke workspace tools for the corresponding
+explicit action. Rendering a proposal or reporting an observation does not write
+files. File transformations and isolated code checks remain ordinary tools in
+`coffee-shop-workspace.ts` and `coffee-shop-checks.ts`.
+
+The native HTTP handler routes approvals and checks into the phase graph. The
+browser sends receipts for product responses, orders, state changes, and quiz
+answers to `/tutorial/lesson`. The graph returns feedback, observation updates,
+and whether its completion evidence is satisfied. The browser presents these
+results with the existing message pacing, typing, and disclosure controls.
+**Okay** only reveals text; it does not invoke a workflow transition.
+
+`coffee-shop-workflow.ts` coordinates durable completion and transitions between
+phases: continue within the lesson, wait for **Next Lesson**, or finish. Each
+invocation reads durable progress from the project journal. There is no second
+progress database or in-memory checkpoint store to disagree after restart.
+Browser session observations remain separate from durable lesson completion.
+
+Current version 6 lessons come from these graphs. Older protocols retain their
+original lesson definitions and browser rules for existing generated projects.
+The workflow is deterministic and requires no model API key or hosted service.
+
+## Local history and compatibility
+
+The journal watches only `openapi.yaml`, `routes/products.ts`, `routes/orders.ts`,
+`routes/_.context.ts`, and `scenarios/index.ts`. It records attributed before/after
+text, including incomplete edits, deletions, and reversions. Changes elsewhere
+are not collected. No Git initialization or commits are required.
+
+Contiguous project checkpoints survive server restarts through **Resume this
+project**. Cart, HTTP, quiz, and experiment observations belong to the current
+server session. Browser storage preserves revealed messages and disclosure
+choices across reloads without completing exercises. Saved checks use isolated
+snapshots, never the running shop's inventory or order counter.
+
+Version 6 connects routes to context and introduces the terminal REPL in lesson
+eight, before scenarios in lesson nine. The learner changes the shared context
+in the REPL and observes that state through a real shop request. Version 5
+started with ten coffee-name examples and teaches description examples
+in lesson three. Version 4 added the orientation lesson and independent tutorial
+HTTP. Existing version 2, 3, 4, and 5 projects retain their lesson inventory, saved
+helpers, and milestone interpretation; their generated pages and handlers remain unchanged.
+New projects need the installed tutorials package available when restarting.
+
+## Milestones and REPL history
+
+`/tutorial/event` accepts bounded event names and stable phase IDs and publishes
+on Node's `counterfact:walkthrough` diagnostics channel. The CLI owns transport,
+consent, and opt-outs. This package sends no external analytics requests.
+Version 4, 5, and 6 events include the tour, walkthrough version, phase ID, lesson number,
+and elapsed seconds. Session identities are opaque and temporary; reporting is
+deduplicated. Paths, source, request/response bodies, carts, and context snapshots
+are excluded from telemetry.
+
+`walkthrough_started` follows the first coffee order. Phase completion depends on
+source and live observations; finishing and completing all phases are distinct
+milestones. Earlier numeric and version 2/3 callers retain their original meaning.
+
+For managed demos, `createTourReplObserver` records submitted input as local learner
+turns. It does not evaluate commands, collect their output, or credit completion.
+Repeated submissions remain distinct. The observer detaches on REPL exit, and raw
+input is never sent through telemetry.
+
+## Package boundaries and verification
+
+Tutorial code depends only on public runtime exports and never imports the CLI
+facade. Counterfact consumes this package's root exports. Future tours belong in
+this package, alongside the coffee shop.
+
+Run `yarn test:tutorials` for browser, progression, file, and native HTTP checks.
+The package-closure check runs [the preparation example](./examples/prepare-coffee-shop.mjs).
+The facade's packed-consumer check starts an installed demo and verifies the
+independent tutorial endpoints and shop simulation.

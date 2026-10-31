@@ -2,7 +2,14 @@ import { randomUUID } from "node:crypto";
 import { channel } from "node:diagnostics_channel";
 import { afterEach, expect, it } from "@jest/globals";
 
-import { reportCoffeeShopEvent } from "../../src/coffee-shop/coffee-shop-telemetry.js";
+import {
+  PHASES,
+  PHASES_V2,
+} from "../../src/coffee-shop/coffee-shop-lessons.js";
+import {
+  reportCoffeeShopEvent,
+  reportWalkthroughEvent,
+} from "../../src/coffee-shop/coffee-shop-telemetry.js";
 
 const events = channel("counterfact:walkthrough");
 let received: unknown[] = [];
@@ -97,4 +104,50 @@ it("does not forward the simulator local session identifier", () => {
     event: "walkthrough_lesson_skipped",
     properties: { phase: 7 },
   });
+});
+
+it("keeps version 2 lesson numbering and rejects new lessons for older callers", () => {
+  events.subscribe(collect);
+  const session = randomUUID();
+  reportWalkthroughEvent(session, "phase_completed", "catalog");
+  expect(received.at(-1)).toMatchObject({
+    properties: {
+      walkthroughVersion: 2,
+      lesson: PHASES_V2.find((phase) => phase.id === "catalog")!.lesson,
+    },
+  });
+  const count = received.length;
+  reportWalkthroughEvent(session, "phase_completed", "name-example");
+  expect(received).toHaveLength(count);
+  reportWalkthroughEvent(session, "phase_completed", "catalog", 3);
+  expect(received.at(-1)).toMatchObject({
+    properties: { walkthroughVersion: 3, lesson: 3 },
+  });
+});
+
+it("versions stable lesson phases and derives completion from the current lesson inventory", () => {
+  events.subscribe(collect);
+  const session = randomUUID();
+  for (const phase of PHASES) {
+    reportWalkthroughEvent(session, "phase_completed", phase.id, 6);
+    reportWalkthroughEvent(session, "phase_completed", phase.id, 6);
+  }
+  reportWalkthroughEvent(session, "finished", PHASES.at(-1)!.id, 6);
+  expect(
+    received.filter(
+      (event) => (event as { event: string }).event === "walkthrough_completed",
+    ),
+  ).toHaveLength(1);
+  expect(received.at(-1)).toMatchObject({
+    properties: {
+      walkthroughVersion: 6,
+      completedPhases: PHASES.length,
+      allExercisesCompleted: true,
+    },
+  });
+  const count = received.length;
+  reportWalkthroughEvent(session, "phase_completed", "private-path-or-unknown");
+  reportWalkthroughEvent(session, "opened", "reduce");
+  expect(received).toHaveLength(count);
+  expect(JSON.stringify(received)).not.toContain("private-path-or-unknown");
 });

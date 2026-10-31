@@ -2,9 +2,14 @@
 import fs from "node:fs/promises";
 import { join, resolve } from "node:path";
 
-import { format } from "prettier";
+import { stringify } from "yaml";
 
-import { coffeeShopFiles, SHOP_DOCUMENT } from "./coffee-shop/coffee-shop.js";
+import { SHOP_DOCUMENT } from "./coffee-shop/coffee-shop.js";
+
+import {
+  initializeWalkthroughWorkspace,
+  walkthroughWorkspace,
+} from "./coffee-shop/coffee-shop-workspace.js";
 
 export async function findTourDirectory(root: string): Promise<string> {
   for (let suffix = 1; ; suffix++) {
@@ -29,19 +34,18 @@ export async function prepareTour(
   // Exclusive creation also protects an existing file, directory, or symlink.
   await fs.mkdir(destination);
   await fs.writeFile(
-    join(destination, "openapi.json"),
-    JSON.stringify(SHOP_DOCUMENT, null, 2),
+    join(destination, "openapi.yaml"),
+    stringify(SHOP_DOCUMENT),
   );
-  for (const [file, contents] of Object.entries(coffeeShopFiles(destination))) {
-    await fs.mkdir(join(destination, file, ".."), { recursive: true });
-    await fs.writeFile(
-      join(destination, file),
-      await format(contents, { parser: "typescript" }),
-    );
-  }
+  await initializeWalkthroughWorkspace(destination);
   return {
-    source: join(destination, "openapi.json"),
+    source: join(destination, "openapi.yaml"),
     destination,
-    walkthroughPath: "/walkthrough",
+    walkthroughPath: "/tutorial/",
   };
+}
+
+/** Snapshot normal generator output before inviting the learner to edit it. */
+export async function finalizeTour(destination: string): Promise<void> {
+  await walkthroughWorkspace(destination);
 }

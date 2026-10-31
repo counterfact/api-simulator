@@ -4,7 +4,7 @@ import {
   SHOP_CONTEXT,
   SHOP_ORDERS,
   SHOP_PRODUCTS,
-} from "../../src/coffee-shop/coffee-shop.js";
+} from "../fixtures/legacy-coffee-shop.js";
 import {
   checkShopSave,
   shopRevision,
@@ -42,8 +42,8 @@ it("checks saved functions using separate inventory and fresh modules after each
     await $.add(
       "routes/orders.ts",
       SHOP_ORDERS.replace(
-        "// TODO: decrease the quantity of each item in $.context.inventory.",
-        "$.context.inventory[item.productId] -= item.quantity;",
+        "// TODO: For each item, subtract its quantity from inventory[item.productId].",
+        "for (const item of items) { inventory[item.productId] -= item.quantity; }",
       ),
     );
     expect((await checkShopSave(root, 7)).ok).toBe(true);
@@ -59,8 +59,8 @@ it("reports broken handlers, wrong arithmetic, missing files, and thrown errors"
     await $.add(
       "routes/orders.ts",
       SHOP_ORDERS.replace(
-        "// TODO: decrease the quantity of each item in $.context.inventory.",
-        "$.context.inventory[item.productId] -= 1;",
+        "// TODO: For each item, subtract its quantity from inventory[item.productId].",
+        "for (const item of items) { inventory[item.productId] -= 1; }",
       ),
     );
     expect((await checkShopSave($.path("."), 7)).message).toContain(

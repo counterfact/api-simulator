@@ -36,3 +36,5 @@ Paths and commands below are relative to the repository root.
   request entity.
 
 Keep focused unit/type tests even when a broader product journey covers the same behavior. Package-consumer coverage and packed-artifact coverage establish different guarantees.
+
+- Test-support objects carrying process environments must omit those mappings from diagnostic representations so assertion failures cannot print inherited credentials.

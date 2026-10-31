@@ -1,6 +1,6 @@
 import { once } from "node:events";
 import fs from "node:fs/promises";
-import type { Server } from "node:http";
+import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import nodePath from "node:path";
 
@@ -19,6 +19,7 @@ import {
 } from "@counterfact/runtime";
 import { createKoaApp } from "@counterfact/runtime/koa";
 import { startRepl as startReplServer } from "@counterfact/repl";
+import { createTourRequestHandler } from "@counterfact/tutorials";
 
 import { ApiRunner } from "./api-runner.js";
 import { sendTelemetry } from "./cli/telemetry.js";
@@ -293,6 +294,12 @@ export async function counterfact<TStore = unknown>(
     ...options,
     basePath: nodePath.resolve(options.basePath),
   };
+  const tutorial = await createTourRequestHandler(
+    config.basePath,
+    () =>
+      (runners[0]?.contextRegistry.find("/") ?? {}) as Record<string, unknown>,
+  );
+  if (tutorial) config.prefix = "/shop";
   const normalizedSpecs = normalizeSpecs(
     { openApiPath: config.openApiPath, prefix: config.prefix },
     specs,
@@ -598,9 +605,20 @@ export async function counterfact<TStore = unknown>(
 
       stateUnavailable = false;
       phase = "running";
-      const server = koaApp.listen({
-        port: options.port,
-      });
+      const callback = koaApp.callback();
+      const server = tutorial
+        ? createServer((request, response) => {
+            void tutorial(request, response)
+              .then((handled) => {
+                if (!handled) return callback(request, response);
+                return undefined;
+              })
+              .catch(() => {
+                if (!response.headersSent) response.writeHead(500);
+                response.end("Tutorial request failed.");
+              });
+          }).listen({ port: options.port })
+        : koaApp.listen({ port: options.port });
 
       httpServer = server;
       httpTerminator = createHttpTerminator({

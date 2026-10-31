@@ -1,5 +1,5 @@
+import { parse } from "yaml";
 import { expect, it } from "@jest/globals";
-import { check } from "prettier";
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { findTourDirectory, prepareTour } from "../src/index.js";
@@ -11,39 +11,52 @@ it("creates a restartable offline shop without touching an existing project", as
     const directory = await findTourDirectory($.path("."));
     expect(directory).toBe("counterfact-demo-3");
     expect(await prepareTour($.path("."), directory)).toEqual({
-      source: $.path(`${directory}/openapi.json`),
+      source: $.path(`${directory}/openapi.yaml`),
       destination: $.path(directory),
-      walkthroughPath: "/walkthrough",
+      walkthroughPath: "/tutorial/",
     });
     expect(await $.read("counterfact-demo/keep.txt")).toBe("user edits");
-    const spec = JSON.parse(await $.read(`${directory}/openapi.json`));
+    const spec = parse(await $.read(`${directory}/openapi.yaml`));
+    expect(await $.read(`${directory}/openapi.yaml`)).toMatch(/^openapi:/u);
+    await expect($.read(`${directory}/openapi.json`)).rejects.toMatchObject({
+      code: "ENOENT",
+    });
     expect(spec.paths["/products"].get.responses["200"]).toBeDefined();
     expect(spec.paths["/orders"].post.responses["503"]).toBeDefined();
-    expect(await $.read(`${directory}/routes/_.context.ts`)).toContain(
-      "inventory",
+    await expect(
+      $.read(`${directory}/routes/_.context.ts`),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(
+      $.read(`${directory}/routes/products.ts`),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    await expect($.read(`${directory}/routes/orders.ts`)).rejects.toMatchObject(
+      { code: "ENOENT" },
     );
-    expect(await $.read(`${directory}/scenarios/index.ts`)).toContain(
-      '"dark-roast": 3',
+    await expect(
+      $.read(`${directory}/scenarios/index.ts`),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    expect(spec.openapi).toBe("3.1.0");
+    const names = spec.components.schemas.Product.properties.name.examples;
+    expect(names).toHaveLength(10);
+    expect(new Set(names).size).toBe(10);
+    expect(names).toEqual(
+      expect.arrayContaining(["House Blend", "Dark Roast", "Decaf"]),
     );
-    expect(await $.read(`${directory}/routes/walkthrough.ts`)).toContain(
-      "Counterfact Coffee",
-    );
+    expect(
+      spec.components.schemas.Product.properties.description.examples,
+    ).toBeUndefined();
+    expect(spec.servers).toEqual([{ url: "/shop" }]);
+    expect(Object.keys(spec.paths)).toEqual(["/products", "/orders"]);
     for (const file of [
-      "routes/products.ts",
-      "routes/orders.ts",
-      "routes/_.context.ts",
       "routes/tutorial-info.ts",
       "routes/tutorial-check.ts",
       "routes/tutorial-event.ts",
+      "routes/tutorial-workspace.ts",
       "routes/walkthrough.ts",
-      "scenarios/index.ts",
-    ]) {
-      expect(
-        await check(await $.read(`${directory}/${file}`), {
-          parser: "typescript",
-        }),
-      ).toBe(true);
-    }
+    ])
+      await expect($.read(`${directory}/${file}`)).rejects.toMatchObject({
+        code: "ENOENT",
+      });
     await expect(prepareTour($.path("."), directory)).rejects.toMatchObject({
       code: "EEXIST",
     });
@@ -58,6 +71,6 @@ it("rejects an unknown tour before creating its directory", async () => {
     // A rejected request must leave this name available for a valid tour.
     await expect(
       prepareTour($.path("."), "example", "coffee-shop"),
-    ).resolves.toHaveProperty("walkthroughPath", "/walkthrough");
+    ).resolves.toHaveProperty("walkthroughPath", "/tutorial/");
   });
 });

@@ -51,3 +51,8 @@ Use this skill for CLI flags, option precedence, config file loading, startup di
 - Run: `yarn lint`, `yarn build`, `yarn test`.
 - Run CLI-focused tests: `packages/counterfact/test/cli/run.test.ts`, `packages/counterfact/test/cli/telemetry.test.ts`, `packages/counterfact/test/cli/check-for-updates.test.ts`.
 - For user-facing CLI behavior changes, update docs under `packages/counterfact/docs/` and add a changeset.
+
+## Managed tutorial integration
+
+- Managed tutorial controls stay outside the shop OpenAPI document and generated handlers. Host version 4, 5, and 6 `/tutorial/*` requests before simulation dispatch and mount only shop operations under `/shop`; preserve that separation on restart and in installed-consumer checks.
+- Keep local tutorial command history separate from telemetry. Observe submitted REPL input only for managed demos, preserve ordinary evaluation and dot-command behavior, detach listeners on exit, and verify app state independently of submitted text. Cover the connection through real-terminal CLI journeys, including an explicit restart of a generated demo.

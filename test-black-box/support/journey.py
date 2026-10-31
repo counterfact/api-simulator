@@ -134,7 +134,7 @@ class JourneyWorld:
     temporary_project: tempfile.TemporaryDirectory
     project: Path
     output: Path
-    environment: dict[str, str]
+    environment: dict[str, str] = field(repr=False)
     port: int | None = None
     base_url: str | None = None
     process: subprocess.Popen | None = None

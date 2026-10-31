@@ -59,3 +59,5 @@ If the required terminal facility is unavailable on an operating system, skip ex
 Keep that operating-system skip scoped to the real-terminal scenario so non-interactive journeys continue to run cross-platform.
 
 Keep pytest's supported major range compatible with pytest-bdd in `test-black-box/requirements.txt`; pytest-bdd uses pytest fixture internals, so verify dependency upgrades by executing a Gherkin scenario rather than collection alone.
+
+After editing an already registered scenario, successful REPL dispatch alone does not prove the saved body is loaded. Wait for its expected observable state before continuing.
