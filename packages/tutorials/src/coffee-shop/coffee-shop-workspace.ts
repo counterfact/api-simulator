@@ -7,6 +7,8 @@ import ts from "typescript";
 import { lessonLocations } from "./coffee-shop-locations.js";
 import {
   BASELINE_SCENARIO,
+  SCENARIO_IMPORT,
+  ORDER_ITEM_TYPES,
   CATALOG,
   CONTEXT,
   INVENTORY_TODO,
@@ -390,10 +392,7 @@ export async function prepareWalkthroughStep(
         "routes/_.context.ts",
         addContextMethods(text, RESET_METHOD, ["reset"]),
       ]);
-      const baseline = BASELINE_SCENARIO.replace(
-        'import type { Scenario } from "../types/_.context.js";',
-        "",
-      ).replace(
+      const baseline = BASELINE_SCENARIO.replace(SCENARIO_IMPORT, "").replace(
         "export const startup: Scenario = reset;",
         "// Add the startup export after inspecting this baseline.",
       );
@@ -434,7 +433,7 @@ export async function prepareWalkthroughStep(
         text.slice(position);
       changes.push([
         "routes/orders.ts",
-        `import type { OrderItem } from "../types/components/schemas/OrderItem.js";\nfunction reduceInventory(items: OrderItem[], inventory: Record<string, number>) {\n${INVENTORY_TODO}\n}\n` +
+        `${ORDER_ITEM_TYPES}\nfunction reduceInventory(items: OrderItem[], inventory: Record<string, number>) {\n${INVENTORY_TODO}\n}\n` +
           text,
       ]);
     } else if (phaseId === "scenario") {

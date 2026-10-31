@@ -6,6 +6,7 @@ export const lesson: LessonPhase = {
   id: "explore",
   background: [
     "Before we inspect the handler, here’s where this API starts. OpenAPI, formerly Swagger, is a format for describing an HTTP API: its endpoints, the requests they accept, and the responses they return. A schema describes the shape of data, including its properties, types, and limits. Counterfact includes a coffee-shop API description with this walkthrough and saved a copy as openapi.yaml in your demo folder. It used that file to generate your starting handlers and TypeScript types.",
+    'New handlers import `Routes` from `types/index.ts`. The local `Route` alias selects this endpoint, and `Route["GET"]` describes its GET handler. These types let your editor check requests and responses. Existing handler annotations can stay in place; the exercise changes the response body.',
   ],
   lesson: 2,
   title: "Explore your generated API",

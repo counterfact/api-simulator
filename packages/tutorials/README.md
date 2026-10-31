@@ -31,6 +31,12 @@ base. Counterfact generates their random handlers, the empty context, default
 scenario, and schema types. There are no generated tutorial handlers or tutorial
 operations in the shop spec.
 
+New route scaffolds import `Routes` from `types/index.ts`, declare a local
+`Route` alias, and annotate handlers with `Route["GET"]` or `Route["POST"]`.
+Prepared context and inventory helpers use `Schemas` from that entry point for
+their `Product` and `OrderItem` aliases; scenarios use its `Scenario` export.
+Preparation preserves existing handler imports and annotations in resumed demos.
+
 The independent tutorial HTTP handler owns:
 
 - `GET /tutorial/`: the browser UI.

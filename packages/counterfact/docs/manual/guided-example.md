@@ -161,6 +161,14 @@ path** help you find the file. File names in the prose also open in VSCode.
 Counterfact formats the supplied walkthrough infrastructure; the generator creates
 the initial product and order stubs, context, and default scenario file.
 
+New handlers import `Routes` from `types/index.ts` and declare a local `Route`
+alias for their endpoint. The product handler uses `Route["GET"]`; the order
+handler uses `Route["POST"]`. Context and inventory helpers select `Product` and
+`OrderItem` from `Schemas`, and scenarios import `Scenario` from the same entry
+point. These generated types come from the OpenAPI document; keep them generated
+and make the lesson edits in your own handlers, context, and scenarios. Existing
+handler annotations remain valid when resuming an older demo.
+
 The guide is a conversation with Milo. You take turns: he explains what he wants
 to edit, you approve it, then he directs your own small edit and an API experiment.
 After the result is verified, click the button naming the next lesson, such as

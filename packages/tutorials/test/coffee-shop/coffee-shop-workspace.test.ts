@@ -114,6 +114,14 @@ it("prepares focused changes, preserves learner edits, and records all current l
     await checkpoint(root, "description-example");
 
     const original = await $.read("demo/routes/products.ts");
+    expect(original).toContain(
+      'import type { Routes } from "../types/index.js"',
+    );
+    expect(original).toContain('type Route = Routes["/products"]');
+    expect(original).toContain('GET: Route["GET"]');
+    expect(await $.read("demo/routes/orders.ts")).toContain(
+      'POST: Route["POST"]',
+    );
     const originalState = await $.read(
       "demo/.counterfact-walkthrough-state.json",
     );
@@ -293,6 +301,28 @@ it("prepares focused changes, preserves learner edits, and records all current l
       code: "ENOENT",
     });
     // Compile the final exercises against the real generated schema/handler types.
+    const finalProducts = await $.read("demo/routes/products.ts");
+    const finalOrders = await $.read("demo/routes/orders.ts");
+    const finalContext = await $.read("demo/routes/_.context.ts");
+    const finalScenarios = await $.read("demo/scenarios/index.ts");
+    expect(finalProducts).toContain('GET: Route["GET"]');
+    expect(finalOrders).toContain('POST: Route["POST"]');
+    expect(finalOrders).toContain('OrderItem = Schemas["OrderItem"]');
+    expect(finalContext).toContain('Product = Schemas["Product"]');
+    expect(finalContext).toContain('OrderItem = Schemas["OrderItem"]');
+    expect(finalScenarios).toContain(
+      'import type { Scenario } from "../types/index.js"',
+    );
+    for (const text of [
+      finalProducts,
+      finalOrders,
+      finalContext,
+      finalScenarios,
+    ]) {
+      expect(text).not.toContain("../types/paths/");
+      expect(text).not.toContain("../types/components/");
+      expect(text).not.toContain("../types/_.context.js");
+    }
     const program = ts.createProgram(
       [
         $.path("demo/routes/_.context.ts"),
@@ -476,5 +506,30 @@ it("uses the generated Product return type to catch inventory instead of stock",
     expect(diagnostics()).toEqual([
       expect.stringContaining("Property 'stock' is missing"),
     ]);
+  });
+});
+
+it("preserves existing handler annotations while preparing a resumed demo", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const tour = await prepareTour($.path("."), "resumed");
+    await generate(tour.destination, tour.source);
+    const legacy =
+      'import type { HTTP_GET } from "../types/paths/products.types.js";\nexport const GET: HTTP_GET = function ($) {\n  return $.response.status(200).random();\n};\n// Keep this learner note.\n';
+    await $.add("resumed/routes/products.ts", legacy);
+    await workspace(tour.destination);
+    for (const phase of PHASES) {
+      if (phase.id === "catalog") break;
+      await checkpoint(tour.destination, phase.id);
+    }
+    const proposal = await preview(tour.destination, "catalog");
+    expect(proposal.files?.[0]?.before).toBe(legacy);
+    await prepare(tour.destination, "catalog", { revision: proposal.revision });
+    const prepared = await $.read("resumed/routes/products.ts");
+    expect(prepared).toContain(
+      'import type { HTTP_GET } from "../types/paths/products.types.js"',
+    );
+    expect(prepared).toContain("GET: HTTP_GET");
+    expect(prepared).toContain("Keep this learner note.");
+    expect(prepared).toContain("const catalog");
   });
 });

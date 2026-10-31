@@ -24,18 +24,18 @@ export const CATALOG = [
   },
 ];
 const productImport =
-  'import type { HTTP_GET } from "../types/paths/products.types.js";';
+  'import type { Routes } from "../types/index.js";\ntype Route = Routes["/products"];';
 const orderImport =
-  'import type { HTTP_POST } from "../types/paths/orders.types.js";';
+  'import type { Routes } from "../types/index.js";\ntype Route = Routes["/orders"];';
 export const FIXED_PRODUCTS = `${productImport}
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).json(${JSON.stringify(CATALOG, null, 2)});
 };
 `;
 export const ECHO_ORDERS = `${orderImport}
 
-export const POST: HTTP_POST = function ($) {
+export const POST: Route["POST"] = function ($) {
   return $.response.status(201).json({ orderId: 1, items: $.body.items });
 };
 `;
@@ -43,15 +43,17 @@ export const FAILURE_ORDERS = `${orderImport}
 
 const ordersAvailable = false;
 
-export const POST: HTTP_POST = function ($) {
+export const POST: Route["POST"] = function ($) {
   if (!ordersAvailable) {
     return $.response.status(503).json({ error: "Ordering is temporarily unavailable." });
   }
   return $.response.status(201).json({ orderId: 1, items: $.body.items });
 };
 `;
-export const CONTEXT = `import type { OrderItem } from "../types/components/schemas/OrderItem.js";
-import type { Product } from "../types/components/schemas/Product.js";
+export const ORDER_ITEM_TYPES = `import type { Schemas } from "../types/index.js";
+type OrderItem = Schemas["OrderItem"];`;
+export const CONTEXT = `${ORDER_ITEM_TYPES}
+type Product = Schemas["Product"];
 
 export class Context {
   catalog: Omit<Product, "stock">[] = [];
@@ -101,7 +103,9 @@ export const RULES_CONTEXT = SEEDED_CONTEXT.replace(
   /\}\s*$/u,
   STOCK_METHODS + "}\n",
 );
-export const BASELINE_SCENARIO = `import type { Scenario } from "../types/_.context.js";
+export const SCENARIO_IMPORT =
+  'import type { Scenario } from "../types/index.js";';
+export const BASELINE_SCENARIO = `${SCENARIO_IMPORT}
 
 // Reset the whole shop to this baseline. Three coffees keep selling out easy to observe.
 export const reset: Scenario = function ($) {
@@ -126,7 +130,7 @@ export const restockDarkRoast: Scenario = function ($) {
 `;
 export const CONNECTED_PRODUCTS = `${productImport}
 
-export const GET: HTTP_GET = function ($) {
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).json($.context.listProducts());
 };
 `;
@@ -134,7 +138,7 @@ export const CONNECTED_ORDERS = `${orderImport}
 
 const ordersAvailable = true;
 
-export const POST: HTTP_POST = function ($) {
+export const POST: Route["POST"] = function ($) {
   if (!ordersAvailable) {
     return $.response.status(503).json({ error: "Ordering is temporarily unavailable." });
   }
@@ -157,7 +161,7 @@ export const INVENTORY_LOOP =
   "for (const item of items) {\n  inventory[item.productId] -= item.quantity;\n}";
 export const REDUCE_ORDERS = RULES_ORDERS.replace(
   "\nconst ordersAvailable",
-  `\nimport type { OrderItem } from "../types/components/schemas/OrderItem.js";
+  `\n${ORDER_ITEM_TYPES}
 
 function reduceInventory(items: OrderItem[], inventory: Record<string, number>) {
   ${INVENTORY_TODO}

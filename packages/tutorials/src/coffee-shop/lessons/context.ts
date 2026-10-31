@@ -15,7 +15,7 @@ export const lesson: LessonPhase = {
   verification:
     "Great job! Your context methods combine product descriptions with stock and give each confirmation a successive order ID. The fields start empty in a fresh context; data you’ve added to this running session is kept.",
   preparation:
-    "Add empty `catalog` and `inventory` fields, the order counter, and two method stubs to routes/_.context.ts. `Product` and `OrderItem` come from Counterfact’s generated types, matching the OpenAPI schemas. The `Product[]` return type on `listProducts` lets your editor check that each returned coffee includes `stock`.",
+    "Add empty `catalog` and `inventory` fields, the order counter, and two method stubs to routes/_.context.ts. `Product` and `OrderItem` select their matching OpenAPI types from `Schemas`, imported through `types/index.ts`. The `Product[]` return type on `listProducts` lets your editor check that each returned coffee includes `stock`.",
   lesson: 7,
   title: "Introduce shared context",
   explanation:
