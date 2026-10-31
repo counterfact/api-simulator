@@ -58,6 +58,7 @@ is the authority for current commands.
 | Build                        | `yarn build`                  |
 | Type-check                   | `yarn typecheck`              |
 | Unit tests                   | `yarn test`                   |
+| Unit tests with coverage     | `yarn test:coverage`          |
 | Product black-box tests      | `yarn test:black-box`         |
 | Installed package smoke test | `yarn test:packed-consumer`   |
 | TypeScript type tests        | `yarn build && yarn test:tsd` |

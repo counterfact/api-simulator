@@ -109,7 +109,7 @@ jobs:
       - name: Unit Tests
         if: matrix.check == 'Unit tests'
         timeout-minutes: 10
-        run: yarn test --runInBand --forceExit --verbose --no-watchman
+        run: yarn test:coverage --forceExit --verbose --no-watchman
       - name: Coveralls
         if: matrix.check == 'Unit tests' && github.event_name != 'merge_group'
         uses: coverallsapp/github-action@v2.3.8
