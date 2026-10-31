@@ -20,6 +20,14 @@ Paths and commands below are relative to the repository root.
 
 - Keep the `npm-publish` environment name, OIDC permission, and provenance setting aligned with the npm trusted-publisher configuration.
 
+- When splitting CI into independent jobs, use separate workspaces for commands
+  that rebuild output and tests that read it. Aggregate required checks must
+  reject failed/canceled change classification and unexpected skipped jobs;
+  accept skipped heavy checks only after successful docs-only classification.
+  Preserve existing required status names or coordinate the ruleset migration.
+  Root ESLint also needs built workspace exports to resolve package examples;
+  run the build before lint in a fresh checkout.
+
 - When a status check is required by a merge-queue ruleset, configure its workflow to run on `merge_group` with `checks_requested`; a `pull_request`-only workflow leaves the queue's synthetic commit without that check and eventually times out.
 
 - When a pull-request workflow's decision depends on labels, include `labeled` and `unlabeled` activity types so a label change refreshes the required status rather than leaving a stale result.

@@ -2,28 +2,28 @@ name: CI Checks
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   merge_group:
     types: [checks_requested]
+  push:
+    branches: [main]
   workflow_dispatch:
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  ci-checks:
-    name: CI Checks
-    strategy:
-      matrix:
-        os: [windows-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+  changes:
+    name: Classify changes
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.docs-only.outputs.docs_only }}
     steps:
-      - name: Debug
-        run: echo "${{ matrix.os }}"
-      - name: Check Out Repo
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - name: Detect docs-only pull request
         id: docs-only
         uses: actions/github-script@v9
@@ -49,62 +49,118 @@ jobs:
             const docsOnly = files.every((file) => file.filename.toLowerCase().endsWith(".md"));
             core.setOutput("docs_only", docsOnly ? "true" : "false");
 
-      - name: Skip heavy checks for docs-only changes
-        if: steps.docs-only.outputs.docs_only == 'true'
-        run: echo "Markdown-only pull request detected. Skipping lint/type/tests while keeping required checks green."
+  checks:
+    name: ${{ matrix.check }} (${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { check: Static checks, os: ubuntu-latest, build: true }
+          - { check: Build-runner tests, os: ubuntu-latest, build: false }
+          - { check: Build-runner tests, os: windows-latest, build: false }
+          - { check: TypeScript, os: ubuntu-latest, build: true }
+          - { check: Public type tests, os: ubuntu-latest, build: true }
+          - { check: Public type tests, os: windows-latest, build: true }
+          - { check: Unit tests, os: ubuntu-latest, build: true }
+          - { check: Packaging, os: ubuntu-latest, build: true }
+          - { check: Black-box tests, os: ubuntu-latest, build: true }
+          - { check: Black-box tests, os: windows-latest, build: true }
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v7
       - uses: actions/setup-node@v7
-        if: steps.docs-only.outputs.docs_only != 'true'
         with:
           node-version: 24.x
       - name: Enable Corepack
-        if: steps.docs-only.outputs.docs_only != 'true'
         run: corepack enable
       - name: Install Packages
-        if: steps.docs-only.outputs.docs_only != 'true'
         run: yarn install --immutable
-      - name: Build Runner Tests
-        if: steps.docs-only.outputs.docs_only != 'true'
-        run: yarn test:build
       - name: Build Workspaces
-        if: steps.docs-only.outputs.docs_only != 'true'
+        if: matrix.build
         run: yarn build
+      - name: Build Runner Tests
+        if: matrix.check == 'Build-runner tests'
+        run: yarn test:build
       - name: Package Boundary Tests
-        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        if: matrix.check == 'Static checks'
         run: yarn test:boundaries
       - name: Package Boundaries
-        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        if: matrix.check == 'Static checks'
         run: yarn check:boundaries
-      - name: ESlint
-        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+      - name: ESLint
+        if: matrix.check == 'Static checks'
         run: yarn eslint -f github-annotations .
       - name: TypeScript
-        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        if: matrix.check == 'TypeScript'
         run: yarn typecheck
+      # Packing and product scripts rebuild workspace output. Keep them isolated
+      # from other checks, and run both packaging checks sequentially here.
       - name: Packed Consumer Test
-        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        if: matrix.check == 'Packaging'
         timeout-minutes: 5
         run: yarn test:packed-consumer
       - name: Exact Package Closure Tests
-        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        if: matrix.check == 'Packaging'
         timeout-minutes: 15
         run: yarn test:package-closures
       - name: Unit Tests
-        if: steps.docs-only.outputs.docs_only != 'true' && matrix.os != 'windows-latest'
+        if: matrix.check == 'Unit tests'
         timeout-minutes: 10
         run: yarn test --runInBand --forceExit --verbose --no-watchman
+      - name: Coveralls
+        if: matrix.check == 'Unit tests' && github.event_name != 'merge_group'
+        uses: coverallsapp/github-action@v2.3.8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-error: false
       - name: Set up Python
-        if: steps.docs-only.outputs.docs_only != 'true'
+        if: matrix.check == 'Black-box tests'
         uses: actions/setup-python@v7
         with:
           python-version: "3.x"
       - name: Install Python dependencies
-        if: steps.docs-only.outputs.docs_only != 'true'
+        if: matrix.check == 'Black-box tests'
         run: pip install -r test-black-box/requirements.txt
       - name: Black Box Tests
-        if: steps.docs-only.outputs.docs_only != 'true'
+        if: matrix.check == 'Black-box tests'
         timeout-minutes: 5
         run: yarn test:black-box
       - name: Type Tests
-        if: steps.docs-only.outputs.docs_only != 'true'
+        if: matrix.check == 'Public type tests'
         timeout-minutes: 2
-        run: yarn build && yarn test:tsd
+        run: yarn test:tsd
+
+  # Preserve the existing required check names, including their OS suffixes.
+  ci-checks:
+    name: CI Checks
+    needs: [changes, checks]
+    if: always()
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Verify all required checks
+        uses: actions/github-script@v9
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          DOCS_ONLY: ${{ needs.changes.outputs.docs_only }}
+          CHECKS_RESULT: ${{ needs.checks.result }}
+        with:
+          script: |
+            const { CHANGES_RESULT, DOCS_ONLY, CHECKS_RESULT } = process.env;
+            if (CHANGES_RESULT !== 'success') {
+              core.setFailed(`Change classification did not succeed: ${CHANGES_RESULT}`);
+              return;
+            }
+            const expected = DOCS_ONLY === 'true' ? 'skipped' : 'success';
+            if (CHECKS_RESULT !== expected) {
+              core.setFailed(`Required checks: expected ${expected}, got ${CHECKS_RESULT}`);
+              return;
+            }
+            core.info(DOCS_ONLY === 'true'
+              ? 'Markdown-only pull request: heavy checks intentionally skipped.'
+              : 'All required checks passed.');
