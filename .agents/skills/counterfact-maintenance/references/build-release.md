@@ -8,6 +8,13 @@ Paths and commands below are relative to the repository root.
 
 - Keep the root development build stages aligned with `packages/counterfact/package.json` build order and commands. Preserve the self-contained workspace build for packaging; repository-only progress scripts must not become required files in published packages.
 
+- `yarn test:package-closures` includes the Counterfact packed-consumer assertions.
+  Prefer it over running both suites: it exercises the Counterfact prepack
+  lifecycle once and shares tarballs across fresh consumers. Only the npm
+  download cache is reused (`COUNTERFACT_PACKAGE_CACHE` overrides its location).
+  Finish all builds and packs before running consumers concurrently, and await
+  all active consumers before cleaning up after a failure.
+
 - Run package packing/prepack checks separately from unit and product suites that consume workspace `dist` output. Prepack rebuilds can remove those files while another suite is loading them, causing false missing-module failures. Finish the package check before starting those suites.
 
 - Quote glob arguments in package scripts when the receiving tool accepts the pattern.
@@ -19,6 +26,14 @@ Paths and commands below are relative to the repository root.
 - A push to `main` with no remaining changesets publishes the merged package versions automatically; a manual Release workflow dispatch is the retry and recovery path.
 
 - Keep the `npm-publish` environment name, OIDC permission, and provenance setting aligned with the npm trusted-publisher configuration.
+
+- When splitting CI into independent jobs, use separate workspaces for commands
+  that rebuild output and tests that read it. Aggregate required checks must
+  reject failed/canceled change classification and unexpected skipped jobs;
+  accept skipped heavy checks only after successful docs-only classification.
+  Preserve existing required status names or coordinate the ruleset migration.
+  Root ESLint also needs built workspace exports to resolve package examples;
+  run the build before lint in a fresh checkout.
 
 - When a status check is required by a merge-queue ruleset, configure its workflow to run on `merge_group` with `checks_requested`; a `pull_request`-only workflow leaves the queue's synthetic commit without that check and eventually times out.
 

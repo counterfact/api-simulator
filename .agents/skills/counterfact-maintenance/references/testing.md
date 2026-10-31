@@ -2,6 +2,16 @@
 
 Paths and commands below are relative to the repository root.
 
+- Use `yarn test` for routine unit tests and `yarn test:coverage` to collect
+  coverage and enforce the existing thresholds. Both use two workers by default;
+  CI must use the coverage command. Focused package test commands also omit
+  coverage unless explicitly enabled with `--coverage`.
+
+- Await completed work, watcher events, or server shutdown instead of adding
+  fixed sleeps. `Transpiler.watch()` waits for its initial transpilation before
+  resolving. Explicitly control environment variables and mock external network
+  calls in unit tests; do not assume Jest sets `CI`.
+
 - Use `usingTemporaryFiles()` for filesystem-heavy tests.
 
 - In file-watching tests, register the expected event listener before writing the file, then await the saved promise. Close watchers in test teardown so Jest timeouts cannot skip cleanup; restore any changed working directory there as well.

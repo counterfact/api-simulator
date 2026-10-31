@@ -4,9 +4,12 @@ This package contains the dependency-light TypeScript contracts shared by the
 Counterfact generator, runtime, middleware, and generated route handlers. It
 has no runtime dependencies on another Counterfact package.
 
-Counterfact continues copying these source files into each generated project as
-`counterfact-types/`, so existing generated imports remain self-contained and
-do not require this package to be installed.
+Counterfact copies the generated-handler-compatible source contracts into each
+generated project as `counterfact-types/`. Generated type files use those local
+contracts, keeping projects self-contained without an installed
+`@counterfact/types` dependency. Runtime streaming media constants are exported
+separately from `@counterfact/types/streaming-content-types` and excluded from
+the copied templates.
 
 ## Files
 
@@ -16,8 +19,10 @@ do not require this package to be installed.
 | `cookie-options.ts`           | `CookieOptions` — options for setting an HTTP cookie (domain, path, maxAge, etc.)                                                                                                                                                                                                    |
 | `counterfact-response.ts`     | `COUNTERFACT_RESPONSE` — the terminal branded type returned by a completed response builder                                                                                                                                                                                          |
 | `example.ts`                  | `Example` — a named example entry from an OpenAPI document (summary, description, value)                                                                                                                                                                                             |
+| `example-names.ts`            | `ExampleNames<Response>` — the allowed names for the response builder's `.example(name)` method                                                                                                                                                                                      |
 | `example-names.ts`            | `ExampleNames<Response>` — extracts the union of named example keys from an OpenAPI response                                                                                                                                                                                         |
 | `generic-response-builder.ts` | `GenericResponseBuilderInner<Response>` and `GenericResponseBuilder<Response>` — the strongly-typed fluent response builder generated for each route handler, along with its internal helper types (`NeverIfEmpty`, `SchemasOf`, `MaybeShortcut`, `MatchFunction`, `HeaderFunction`) |
+| `http-status-code.ts`         | `HttpStatusCode` — the standard numeric HTTP status codes                                                                                                                                                                                                                            |
 | `http-status-code.ts`         | `HttpStatusCode` — union of all standard HTTP status code numbers                                                                                                                                                                                                                    |
 | `if-has-key.ts`               | `IfHasKey<SomeObject, Keys, Yes, No>` — conditional type that resolves to `Yes` when `SomeObject` has a key matching any string in `Keys`                                                                                                                                            |
 | `maybe-promise.ts`            | `MaybePromise<T>` — a value that is either `T` or `Promise<T>`                                                                                                                                                                                                                       |
@@ -32,9 +37,10 @@ do not require this package to be installed.
 | `open-api-response.ts`        | `OpenApiResponse` and `OpenApiResponses` — a single HTTP response definition and a map of status codes to responses                                                                                                                                                                  |
 | `random-function.ts`          | `RandomFunction` — the type of the `.random()` method on the response builder                                                                                                                                                                                                        |
 | `response-builder.ts`         | `ResponseBuilder` — a loosely-typed chainable response builder for non-generated contexts                                                                                                                                                                                            |
-| `response-builder-factory.ts` | `ResponseBuilderFactory<Responses>` — maps status codes to their `GenericResponseBuilder` instances                                                                                                                                                                                  |
+| `response-builder-factory.ts` | `ResponseBuilderFactory<Responses>` — selects the typed response builder with `.status(code)`; supplies header and cookie methods before selection                                                                                                                                   |
 | `wide-operation-argument.ts`  | `WideOperationArgument` — the loosely-typed argument object for wide (catch-all) route handlers                                                                                                                                                                                      |
 | `wide-response-builder.ts`    | `WideResponseBuilder` — a loosely-typed response builder for wide route handlers                                                                                                                                                                                                     |
+| `streaming-content-types.ts`  | `STREAMING_CONTENT_TYPES` — runtime streaming media constants exposed through the dedicated package subpath                                                                                                                                                                          |
 
 ## Usage
 
@@ -44,9 +50,16 @@ Focused-package consumers can import the shared contracts directly:
 import type { Middleware, ResponseBuilder } from "@counterfact/types";
 ```
 
-Generated Counterfact projects should keep using their local
-`counterfact-types/` imports unless they deliberately choose a different
-dependency model.
+In generated projects, import contract-specific types and helpers from the
+project's generated `types/index.js` entrypoint. This includes `Routes`,
+`Schemas`, `Components`, `Context$`, `Scenario`, `Scenario$`, and the
+directory-indexed `Middleware` map. Use the relative path appropriate to the
+authored file. See the [generated-code guide](../counterfact/docs/features/generated-code.md)
+for complete handler examples.
+
+The generated files continue to use local `counterfact-types/` contracts
+internally. Those shared implementation types do not replace the project's
+schema-aware route and component types.
 
 See [`examples/middleware.ts`](./examples/middleware.ts) for a complete
 public-import example that is type-checked by the package-closure harness.

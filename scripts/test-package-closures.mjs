@@ -13,6 +13,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 
+import { verifyPackedConsumer } from "../packages/counterfact/test/package/counterfact-consumer-smoke.mjs";
+
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..");
 const packagesRoot = path.join(repositoryRoot, "packages");
@@ -43,6 +45,7 @@ function executable(name) {
 }
 
 async function run(command, args, cwd, env = process.env) {
+  const started = performance.now();
   const result = await new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd,
@@ -71,6 +74,16 @@ async function run(command, args, cwd, env = process.env) {
     );
   }
 
+  process.stdout.write(
+    `${path.basename(command)} ${args
+      .slice(0, 2)
+      .map((argument) =>
+        path.isAbsolute(argument) ? path.basename(argument) : argument,
+      )
+      .join(
+        " ",
+      )} (${path.basename(cwd)}): ${((performance.now() - started) / 1000).toFixed(1)}s\n`,
+  );
   return result;
 }
 
@@ -173,12 +186,17 @@ function parsePackOutput(stdout) {
   return metadata;
 }
 
-async function packWorkspace(workspace, tarballDirectory, cacheDirectory) {
+async function packWorkspace(
+  workspace,
+  tarballDirectory,
+  cacheDirectory,
+  lifecycle = false,
+) {
   const result = await run(
     executable("npm"),
     [
       "pack",
-      "--ignore-scripts",
+      ...(lifecycle ? [] : ["--ignore-scripts"]),
       "--json",
       "--pack-destination",
       tarballDirectory,
@@ -188,7 +206,7 @@ async function packWorkspace(workspace, tarballDirectory, cacheDirectory) {
     workspace.root,
   );
   const metadata = parsePackOutput(result.stdout);
-  return path.join(tarballDirectory, metadata.filename);
+  return { metadata, path: path.join(tarballDirectory, metadata.filename) };
 }
 
 function exportSpecifiers(manifest) {
@@ -346,7 +364,7 @@ async function verifyConsumer({
   const closure = dependencyClosure(name, workspaces);
   const closureTarballs = topologicalOrder
     .filter((packageName) => closure.has(packageName))
-    .map((packageName) => tarballs.get(packageName));
+    .map((packageName) => tarballs.get(packageName)?.path);
   assert(
     closureTarballs.every(Boolean),
     `${name} closure has an unpacked package`,
@@ -356,6 +374,7 @@ async function verifyConsumer({
     [
       "install",
       "--ignore-scripts",
+      "--prefer-offline",
       "--no-audit",
       "--no-fund",
       "--package-lock=false",
@@ -390,20 +409,30 @@ async function verifyConsumer({
     : undefined;
   await verifyDeclarations(consumerDirectory, manifest, examplePath);
   await runExample(consumerDirectory, examplePath);
+  if (name === "counterfact") {
+    await verifyPackedConsumer({
+      consumerDirectory,
+      pack: tarballs.get(name).metadata,
+      tutorialsPack: tarballs.get("@counterfact/tutorials").metadata,
+    });
+  }
   process.stdout.write(
     `Verified ${name} with ${closure.size} package tarball(s).\n`,
   );
 }
 
+const suiteStarted = performance.now();
 const temporaryRoot = await mkdtemp(
   path.join(tmpdir(), "counterfact-package-closures-"),
 );
 
 try {
-  const cacheDirectory = path.join(temporaryRoot, "npm-cache");
+  const cacheDirectory =
+    process.env.COUNTERFACT_PACKAGE_CACHE ??
+    path.join(tmpdir(), "counterfact-package-npm-cache");
   const tarballDirectory = path.join(temporaryRoot, "tarballs");
   await Promise.all([
-    mkdir(cacheDirectory),
+    mkdir(cacheDirectory, { recursive: true }),
     mkdir(tarballDirectory),
     mkdir(path.join(temporaryRoot, "consumers")),
   ]);
@@ -415,11 +444,22 @@ try {
     force: true,
     recursive: true,
   });
-  process.stdout.write("Building the monorepo once before packing...\n");
-  await run(executable("npm"), ["run", "build"], repositoryRoot);
+  process.stdout.write(
+    "Packing counterfact with its prepack lifecycle (builds all workspaces)...\n",
+  );
 
   const tarballs = new Map();
+  tarballs.set(
+    "counterfact",
+    await packWorkspace(
+      workspaces.get("counterfact"),
+      tarballDirectory,
+      cacheDirectory,
+      true,
+    ),
+  );
   for (const name of topologicalOrder) {
+    if (name === "counterfact") continue;
     const workspace = workspaces.get(name);
     assert(workspace);
     tarballs.set(
@@ -428,21 +468,36 @@ try {
     );
   }
 
-  for (const name of topologicalOrder) {
-    const workspace = workspaces.get(name);
-    assert(workspace);
-    await verifyConsumer({
-      cacheDirectory,
-      manifest: workspace.manifest,
-      name,
-      tarballs,
-      temporaryRoot,
-      topologicalOrder,
-      workspaces,
-    });
-  }
+  const pending = [...topologicalOrder];
+  // All builds and packs have finished; consumers only read immutable tarballs.
+  // Await both workers even on failure so cleanup cannot race a running consumer.
+  const results = await Promise.allSettled(
+    Array.from({ length: 2 }, async () => {
+      while (pending.length > 0) {
+        const name = pending.shift();
+        const workspace = workspaces.get(name);
+        await verifyConsumer({
+          cacheDirectory,
+          manifest: workspace.manifest,
+          name,
+          tarballs,
+          temporaryRoot,
+          topologicalOrder,
+          workspaces,
+        });
+      }
+    }),
+  );
+  const failures = results.filter((result) => result.status === "rejected");
+  if (failures.length > 0)
+    throw new AggregateError(
+      failures.map((result) => result.reason),
+      "Package consumers failed",
+    );
 
-  process.stdout.write("All isolated package closures passed.\n");
+  process.stdout.write(
+    `All isolated package closures and packed-consumer checks passed (${((performance.now() - suiteStarted) / 1000).toFixed(1)}s).\n`,
+  );
 } finally {
   await rm(temporaryRoot, { force: true, recursive: true });
 }
