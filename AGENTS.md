@@ -34,10 +34,12 @@ Keep this file focused on cross-cutting rules that are not already covered by th
 ## Optional Jev development judgments
 
 For bounded classification or evidence checks that would help development, load
-`.agents/skills/typesafe-development/SKILL.md`. It describes the opt-in helper,
-credential discovery, and task-specific data/budget approval. A key or installed
-TypeSafe integration skill alone does not authorize API calls. Ordinary builds,
-tests, and Counterfact runtime stay offline with respect to TypeSafe.
+`.agents/skills/typesafe-development/SKILL.md`. Patrick has authorized routine
+TypeSafe/Jev development use with public Counterfact repository code and
+synthetic examples; do not ask again within that scope. Use provider-side budget
+controls. Keep credentials, ignored/local private files, personal data, and
+unrelated content out of requests. Ordinary builds, tests, and Counterfact
+runtime stay offline with respect to TypeSafe.
 
 ## Isolated change workspaces
 

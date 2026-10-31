@@ -11,12 +11,9 @@ import {
   loadKey,
   MODEL,
   planRequest,
-  RESERVE_USD,
   runRequest,
-  validateApproval,
 } from "./development.mjs";
 
-const now = new Date("2026-10-31T12:00:00Z");
 const request = {
   model: MODEL,
   state: "Synthetic evidence: the reset restores initial state.",
@@ -27,19 +24,6 @@ const request = {
     },
   },
 };
-const digest = planRequest(request).digest;
-function approval(overrides = {}) {
-  return {
-    taskId: "synthetic-test",
-    authorization: "Synthetic offline test authorization; no live calls.",
-    dataScope: "public-counterfact-and-synthetic",
-    maxUsd: 0.02,
-    maxRequests: 2,
-    requestDigests: [digest],
-    expiresAt: "2026-10-31T23:00:00Z",
-    ...overrides,
-  };
-}
 const result = {
   model: MODEL,
   answers: { supports_reset: { type: "noul", noul: 0.95 } },
@@ -60,98 +44,53 @@ for (const invalid of [
     questions: { test: { type: "choice", instructions: "Choose" } },
   },
 ]) {
-  test("rejects unsupported/unbounded request shape", () => {
-    assert.throws(() => planRequest(invalid));
+  test("rejects unsupported request before credentials or network access", async () => {
+    await assert.rejects(
+      runRequest({
+        request: invalid,
+        getKey: () => assert.fail("invalid request read credentials"),
+        fetchImpl: () => assert.fail("invalid request sent"),
+      }),
+    );
   });
 }
 
-for (const invalid of [
-  { maxUsd: 0 },
-  { maxUsd: 2 },
-  { maxRequests: 0 },
-  { taskId: "../escape" },
-  { requestDigests: ["other"] },
-  { dataScope: "private" },
-  { expiresAt: "2026-10-30T23:00:00Z" },
-  { expiresAt: "2027-10-30T23:00:00Z" },
-]) {
-  test("rejects missing/out-of-scope approval", () => {
-    assert.throws(() => validateApproval(approval(invalid), digest, now));
+test("sends a valid request directly and returns only typed answers and usage", async () => {
+  let calls = 0;
+  const summary = await runRequest({
+    request,
+    getKey: async () => "synthetic-test-key",
+    fetchImpl: async (url, options) => {
+      calls += 1;
+      assert.equal(url, "https://api.typesafe.ai/v1/systemone");
+      assert.equal(options.redirect, "error");
+      assert.equal(options.body, planRequest(request).body);
+      assert.equal(
+        options.headers.Authorization === "Bearer synthetic-test-key",
+        true,
+      );
+      return {
+        ok: true,
+        json: async () => ({ ...result, diagnostic: "must-not-echo" }),
+      };
+    },
   });
-}
-test("stale pricing prevents later live calls", () => {
-  assert.throws(
-    () => validateApproval(approval(), digest, new Date("2026-11-08")),
-    /Recheck official/u,
+  assert.equal(calls, 1);
+  assert.deepEqual(summary, result);
+  assert.doesNotMatch(
+    JSON.stringify(summary),
+    /synthetic-test-key|must-not-echo|Synthetic evidence/u,
   );
 });
 
-offline(
-  "success records usage and strips arbitrary provider fields",
-  async ($) => {
-    const summary = await runRequest({
-      request,
-      approval: approval(),
-      ledgerDirectory: $.path("ledger"),
-      now,
-      getKey: async () => "synthetic-test-key",
-      fetchImpl: async (url, options) => {
-        assert.equal(url, "https://api.typesafe.ai/v1/systemone");
-        assert.equal(options.redirect, "error");
-        assert.equal(options.body, planRequest(request).body);
-        assert.equal(
-          options.headers.Authorization === "Bearer synthetic-test-key",
-          true,
-        );
-        return {
-          ok: true,
-          json: async () => ({ ...result, diagnostic: "must-not-echo" }),
-        };
-      },
-    });
-    assert.deepEqual(summary.answers, result.answers);
-    assert.equal(summary.estimatedUsd, (100 * 0.042) / 1_000_000);
-    assert.equal(summary.taskReservedUsd, RESERVE_USD);
-    const ledger = await $.read("ledger/synthetic-test.json");
-    assert.doesNotMatch(
-      ledger,
-      /synthetic-test-key|must-not-echo|Synthetic evidence/u,
-    );
-    assert.equal(JSON.parse(ledger).attempts[0].outcome, "success");
-  },
-);
-
-offline(
-  "uncertain failure reserves budget and next call stops before credentials/network",
-  async ($) => {
-    let calls = 0;
-    const args = {
-      request,
-      approval: approval({ maxUsd: 0.01, maxRequests: 1 }),
-      ledgerDirectory: $.path("ledger"),
-      now,
-      getKey: async () => "synthetic-test-key",
-      fetchImpl: async () => {
-        calls += 1;
-        throw new Error("sensitive diagnostic");
-      },
-    };
-    await assert.rejects(runRequest(args), /outcome uncertain/u);
-    await assert.rejects(
-      runRequest({
-        ...args,
-        getKey: () => assert.fail("key read after budget exhausted"),
-      }),
-      /limit reached/u,
-    );
-    assert.equal(calls, 1);
-    const ledger = JSON.parse(await $.read("ledger/synthetic-test.json"));
-    assert.equal(ledger.attempts[0].outcome, "uncertain");
-  },
-);
-
 for (const response of [
   { ok: false },
+  {
+    ok: true,
+    json: async () => {
+      throw new Error("private diagnostic");
+    },
+  },
   { ok: true, json: async () => ({ ...result, model: "unexpected" }) },
   {
     ok: true,
@@ -164,58 +103,59 @@ for (const response of [
     ok: true,
     json: async () => ({
       ...result,
-      usage: { input_tokens: 64001, output_tokens: 1 },
+      usage: { input_tokens: -1, output_tokens: 1 },
     }),
   },
 ]) {
-  offline("provider errors never become a judgment or refund", async ($) => {
+  test("provider errors fail safely instead of becoming a judgment", async () => {
+    let calls = 0;
     await assert.rejects(
       runRequest({
         request,
-        approval: approval(),
-        ledgerDirectory: $.path("ledger"),
-        now,
         getKey: async () => "synthetic-test-key",
-        fetchImpl: async () => response,
+        fetchImpl: async () => {
+          calls += 1;
+          return response;
+        },
       }),
-      /outcome uncertain/u,
+      {
+        message:
+          "TypeSafe request failed or had an invalid response. No retry made.",
+      },
     );
-    assert.equal(
-      JSON.parse(await $.read("ledger/synthetic-test.json")).attempts[0]
-        .outcome,
-      "uncertain",
-    );
+    assert.equal(calls, 1);
   });
 }
 
-offline(
-  "existing lock fails closed without key or network access",
-  async ($) => {
-    await $.add("ledger/synthetic-test.json.lock", "");
-    await assert.rejects(
-      runRequest({
-        request,
-        approval: approval(),
-        ledgerDirectory: $.path("ledger"),
-        now,
-        getKey: () => assert.fail("key read with lock held"),
-        fetchImpl: () => assert.fail("network with lock held"),
-      }),
-      { code: "EEXIST" },
-    );
-  },
-);
-
-offline("malformed ledger fails closed", async ($) => {
-  await $.add("ledger/synthetic-test.json", "interrupted write");
+test("network failures suppress diagnostics without retrying", async () => {
+  let calls = 0;
   await assert.rejects(
     runRequest({
       request,
-      approval: approval(),
-      ledgerDirectory: $.path("ledger"),
-      now,
-      getKey: () => assert.fail("key read with invalid ledger"),
+      getKey: async () => "synthetic-test-key",
+      fetchImpl: async () => {
+        calls += 1;
+        throw new Error("private diagnostic");
+      },
     }),
+    {
+      message:
+        "TypeSafe request failed or had an invalid response. No retry made.",
+    },
+  );
+  assert.equal(calls, 1);
+});
+
+test("missing credentials prevent network access", async () => {
+  await assert.rejects(
+    runRequest({
+      request,
+      getKey: async () => {
+        throw new Error("No key");
+      },
+      fetchImpl: () => assert.fail("missing key sent a request"),
+    }),
+    /No key/u,
   );
 });
 
@@ -240,7 +180,17 @@ offline(
 );
 
 offline(
-  "worktrees share the original checkout credential/ledger location",
+  "empty credential files fail without disclosing their contents",
+  async ($) => {
+    await $.add("credentials", "TYPESAFE_API_KEY=\n");
+    if (process.platform !== "win32")
+      execFileSync("chmod", ["600", $.path("credentials")]);
+    await assert.rejects(loadKey($.path("credentials")), /no TypeSafe key/u);
+  },
+);
+
+offline(
+  "worktrees discover the original checkout credential location",
   async ($) => {
     await $.addDirectory("original");
     execFileSync("git", ["init", "--quiet", $.path("original")]);
@@ -279,71 +229,22 @@ offline(
   },
 );
 
-for (const limits of [
-  { maxUsd: 0.01, maxRequests: 2 },
-  { maxUsd: 0.02, maxRequests: 1 },
-]) {
-  offline(
-    "dollar and request caps independently prevent a second send",
-    async ($) => {
-      const args = {
-        request,
-        approval: approval(limits),
-        ledgerDirectory: $.path("ledger"),
-        now,
-        getKey: async () => "synthetic-test-key",
-        fetchImpl: async () => ({ ok: true, json: async () => result }),
-      };
-      await runRequest(args);
-      await assert.rejects(
-        runRequest({
-          ...args,
-          getKey: () => assert.fail("key read after cap"),
-        }),
-        /limit reached/u,
-      );
-    },
+offline("dry-run CLI needs no key, Git checkout, or network", async ($) => {
+  await $.add("request.json", JSON.stringify(request));
+  const script = new URL("./development.mjs", import.meta.url);
+  const output = execFileSync(
+    process.execPath,
+    [
+      fileURLToPath(script),
+      "--request",
+      $.path("request.json"),
+      "--credential-file",
+      $.path("does-not-exist"),
+    ],
+    { cwd: $.path("."), encoding: "utf8" },
   );
-}
-
-offline(
-  "unapproved payload cannot read credentials or create a reservation",
-  async ($) => {
-    await assert.rejects(
-      runRequest({
-        request: { ...request, state: "Changed synthetic evidence" },
-        approval: approval(),
-        ledgerDirectory: $.path("ledger"),
-        now,
-        getKey: () => assert.fail("key read without approval"),
-        fetchImpl: () => assert.fail("unapproved network call"),
-      }),
-      /Need unexpired/u,
-    );
-  },
-);
-
-offline(
-  "dry-run CLI needs no key, approval, Git checkout or network",
-  async ($) => {
-    await $.add("request.json", JSON.stringify(request));
-    const script = new URL("./development.mjs", import.meta.url);
-    const output = execFileSync(
-      process.execPath,
-      [
-        fileURLToPath(script),
-        "--request",
-        $.path("request.json"),
-        "--credential-file",
-        $.path("does-not-exist"),
-      ],
-      { cwd: $.path("."), encoding: "utf8" },
-    );
-    assert.deepEqual(JSON.parse(output), {
-      digest,
-      bytes: planRequest(request).bytes,
-      reservedUsd: RESERVE_USD,
-      sent: false,
-    });
-  },
-);
+  assert.deepEqual(JSON.parse(output), {
+    bytes: planRequest(request).bytes,
+    sent: false,
+  });
+});
