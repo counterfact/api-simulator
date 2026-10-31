@@ -2,6 +2,13 @@
 
 Paths and commands below are relative to the repository root.
 
+- Distinguish maintained guides from dated reports before changing drift
+  mappings. Keep historical counts, conclusions, and prompts scoped to a dated,
+  commit-pinned record; those records should not watch ongoing implementation
+  churn. Keep current contracts and contributor guides tied to their relevant
+  source, configuration, and tests, and record a review only after checking
+  those relationships and the document's claims.
+
 - Write user docs as direct instructions with concrete examples. Introduce OpenAPI with a brief mention of its former name, Swagger, then use “spec” naturally. Prefer “your code” or “a class you write” over “authored behavior.” Explain limitations where they affect the task; avoid repeated disclaimers, abstract process language, and unsupported marketing claims. Choose headings for the subject rather than repeating a fixed template on every guide.
 
 - Keep `catchmydrift.config.json` document-specific: connect each selected document

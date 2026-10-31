@@ -21,7 +21,7 @@ Startup time matters. Hot-reload latency matters. Response time matters. Every i
 ## Simulate Deliberately, Not Faithfully
 
 Counterfact should make client workflows predictable, not reproduce a real
-backend. Deterministic handlers are the default. Contexts, stores, scenarios,
+backend. Prefer deterministic handlers for the workflow being simulated. Contexts, stores, scenarios,
 and the REPL make selected cross-request behavior possible, but the authored
 state model should remain smaller and simpler than production. Prefer explicit,
 client-visible states over databases, background work, and internal service
