@@ -1,92 +1,68 @@
-# `src/server/` — HTTP Server
+# `src/server/` — Runtime Services
 
-This directory contains the request dispatching engine, route registry, module loading system, and all supporting server infrastructure.
+This directory owns dispatch, registries, module loading, validation, state,
+and file watching. The facade composes these services; the runtime accepts
+narrow interfaces rather than importing the facade's `ApiRunner` or `Config`.
+The public entrypoints are described in the
+[`@counterfact/runtime` guide](../../README.md).
 
-A dedicated sub-directory holds every file related to the Koa HTTP layer:
+## Key modules
 
-- **`web-server/`** — Koa application factory and all Koa middleware (see below)
+| File                                                                        | Responsibility                                                                                                                              |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../runtime-config.ts`                                                      | Runtime-owned dispatcher, proxy, Koa, and Admin API interfaces; the facade supplies adapters for product configuration and telemetry policy |
+| `constants.ts`                                                              | Shared Chokidar watcher options, including polling on Windows                                                                               |
+| `dispatcher.ts`                                                             | Route matching, request inputs, handler invocation, content negotiation, and response validation                                            |
+| `registry.ts`                                                               | Registered route modules and their HTTP method handlers                                                                                     |
+| `context-registry.ts`                                                       | Hierarchical context lookup with case-insensitive path matching and state-preserving reload updates                                         |
+| `scenario-registry.ts`                                                      | Loaded scenario modules and exported functions                                                                                              |
+| `store-loader.ts`                                                           | Shared store construction and reload integration                                                                                            |
+| `module-loader.ts`                                                          | Route, context, middleware, and scenario loading plus watcher-driven reloads                                                                |
+| `module-tree.ts` and `module-dependency-graph.ts`                           | Route-directory structure and module dependency relationships used during loading/reload                                                    |
+| `transpiler.ts`                                                             | SWC compilation to cached `.cjs` modules in compiled mode                                                                                   |
+| `uncached-import.ts` and `uncached-require.cjs`                             | Cache-bypassing module loading for hot reload                                                                                               |
+| `determine-module-kind.ts` and `convert-js-extensions-to-cjs.ts`            | Module-format selection and compiled import-path handling                                                                                   |
+| `openapi-document.ts`, `load-openapi-document.ts`, and `openapi-watcher.ts` | Runtime contract access, loading through `@counterfact/openapi`, and spec watching                                                          |
+| `request-validator.ts` and `response-validator.ts`                          | Validation at the handler's HTTP boundary                                                                                                   |
+| `response-builder.ts` and `json-to-xml.ts`                                  | Response construction, cookies, examples/random bodies, streaming, and XML conversion                                                       |
+| `tools.ts`                                                                  | Handler helpers such as `oneOf`, `accepts`, and `randomFromSchema`                                                                          |
+| `is-proxy-enabled-for-path.ts`                                              | Closest-ancestor proxy routing with explicit descendant overrides                                                                           |
+| `update-queue.ts`                                                           | Serialized runtime updates                                                                                                                  |
 
-## Files
+## Koa adapter
 
-| File                              | Description                                                                                                                |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `config.ts`                       | Defines the `Config` interface that holds all runtime configuration (port, paths, proxy settings, feature flags)           |
-| `constants.ts`                    | Exports Chokidar file-watcher options used for platform-specific file monitoring                                           |
-| `dispatcher.ts`                   | Core request router: matches URL paths to route handlers, extracts path/query parameters, and drives the request lifecycle |
-| `registry.ts`                     | In-memory store of all registered routes and their HTTP method handlers                                                    |
-| `context-registry.ts`             | Hierarchical store of context objects; provides path-based lookup and case-insensitive matching                            |
-| `module-loader.ts`                | Dynamically loads compiled route, context, and middleware modules; triggers hot-reload on file changes                     |
-| `module-tree.ts`                  | Organises loaded modules into a tree that mirrors the routes directory structure for efficient path matching               |
-| `module-dependency-graph.ts`      | Tracks inter-module dependencies so that reloading a changed file also reloads its dependents                              |
-| `transpiler.ts`                   | Compiles `.ts` route files to `.cjs` using SWC; watches source files and recompiles on change                              |
-| `uncached-import.ts`              | Imports an ES module bypassing the module cache (used for hot-reload of ESM route files)                                   |
-| `uncached-require.cjs`            | CommonJS wrapper that clears the `require` cache entry before re-importing a module                                        |
-| `determine-module-kind.ts`        | Detects whether a compiled file should be loaded as ESM or CJS based on extension or `package.json`                        |
-| `convert-js-extensions-to-cjs.ts` | Rewrites relative `require()` paths to use `.cjs` extensions for CommonJS compatibility                                    |
-| `response-builder.ts`             | Constructs synthetic response payloads from OpenAPI schemas, handling JSON, XML, and content negotiation                   |
-| `tools.ts`                        | Utility functions injected into route handlers: `randomFromSchema()`, `accepts()`, etc.                                    |
-| `json-to-xml.ts`                  | Converts a JSON value to XML text using schema hints from the OpenAPI document                                             |
-| `is-proxy-enabled-for-path.ts`    | Checks whether a given URL path should be forwarded to the upstream proxy                                                  |
-| `precinct.d.ts`                   | TypeScript declaration for the `precinct` dependency-analysis library                                                      |
+`web-server/create-koa-app.ts` exports
+`createKoaApp({ runners, config, adminApi?, lifecycle? })` through
+`@counterfact/runtime/koa`. It accepts structural `RuntimeRunner[]` views,
+`KoaRuntimeConfig`, and an optional facade-owned `AdminApiAdapter`. An adapter
+is required when `startAdminApi` is enabled. The function returns a configured
+Koa application; binding and simulator lifecycle orchestration belong to the
+facade.
 
-## `web-server/` — Koa HTTP Layer
+| Module                                             | Mount / responsibility                                                                                 |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `web-server/openapi-middleware.ts`                 | `/counterfact/openapi${runner.subdirectory}`; serves the selected contract with its request URL prefix |
+| Swagger UI setup in `web-server/create-koa-app.ts` | `/counterfact/swagger${runner.subdirectory}`; selects the matching version's document                  |
+| `web-server/admin-api-middleware.ts`               | `/_counterfact/api${runner.subdirectory}`; opt-in context/configuration/route inspection and mutation  |
+| `web-server/routes-middleware.ts`                  | `runner.prefix`; dispatches served API requests and applies configured proxy routing                   |
 
-Each middleware constructor takes a **path prefix as its first argument** so that `createKoaApp` makes it immediately clear which paths each middleware handles.
+Documentation/Admin API group subdirectories are separate from the served-route
+prefix. Versioned runners can share a documentation pathname; OpenAPI and
+Swagger selection also considers the version query. Admin API requests require
+the configured bearer token, or a loopback request IP when no token is set.
 
-`createKoaApp` accepts an array of `ApiRunner` instances (`runners: ApiRunner[]`). For each runner it mounts the OpenAPI document endpoint, Swagger UI, Admin API (when enabled), and route-dispatching middleware — all using `runner.subdirectory` to disambiguate paths when multiple specs are in use.
+The adapter also installs body parsing, JSON response serialization, and the
+optional lifecycle admission/drain hooks used during reset. Requests reach the
+dispatcher after the middleware selects the matching runner.
 
-| File                      | Path prefix                                  | Description                                                                                  |
-| ------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `create-koa-app.ts`       | —                                            | Factory that builds and configures the Koa application with all middleware attached          |
-| `openapi-middleware.ts`   | `/counterfact/openapi${runner.subdirectory}` | Serves the OpenAPI specification document (single path) with the current server URL injected |
-| `koa-middleware.ts`       | `runner.prefix`                              | Primary Koa middleware: delegates each request to the Dispatcher and formats the response    |
-| `admin-api-middleware.ts` | `/_counterfact/api${runner.subdirectory}`    | REST API for managing server state (proxy settings, etc.); restricted to loopback clients    |
+## Hot reload
 
-## How It Works
+In compiled mode, the transpiler writes `.cjs` modules under `.cache` and module
+loading follows those outputs. In native TypeScript mode, the loader reads the
+source route modules directly. Watchers and dependency tracking trigger
+cache-bypassing reloads in both modes; ordinary context reloads preserve live
+state. An explicit simulator reset reconstructs state separately.
 
-```
-Incoming HTTP request
-        │
-        ▼
-┌───────────────────┐
-│  Koa Middleware   │  (web-server/)
-│  Chain            │
-│  ┌─────────────┐  │
-│  │ openapi-mw  │  │  Serves /counterfact/openapi
-│  ├─────────────┤  │
-│  │ swagger-ui  │  │  Serves /counterfact/swagger
-│  ├─────────────┤  │
-│  │ admin-api   │  │  Manages state at /_counterfact/api
-│  ├─────────────┤  │
-│  │ koa-mw      │  │  Routes to Dispatcher at prefix
-│  └─────────────┘  │
-└────────┬──────────┘
-         │
-         ▼
-┌────────────────────┐
-│    Dispatcher      │  (dispatcher.ts)
-│                    │
-│  1. Match path     │──▶ Registry (route handlers)
-│  2. Extract params │
-│  3. Call handler   │──▶ ContextRegistry (context objects)
-│  4. Build response │──▶ ResponseBuilder
-└────────────────────┘
-```
-
-### Hot Reload Flow
-
-```
-File saved on disk
-       │
-       ▼
-  Transpiler            (transpiler.ts)
-  recompiles .ts → .cjs
-       │
-       ▼
-  ModuleLoader          (module-loader.ts)
-  clears cache, re-imports module
-       │
-       ▼
-  Registry updated      (registry.ts)
-  New handler available immediately
-```
+Use [`test/server/`](../../test/server/) for focused runtime tests and the
+[runtime architecture skill](../../../../.agents/skills/counterfact-runtime-architecture/SKILL.md)
+for lifecycle and hot-reload invariants.

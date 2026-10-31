@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/catchmydrift/catchmydrift.schema.json",
-  "threshold": 20,
+  "threshold": 10,
   "groups": {
     "counterfact": {
       "include": [
@@ -591,22 +591,6 @@
         "**/test/**/*.yaml"
       ]
     },
-    "lint-policy": {
-      "include": [
-        "eslint.config.js",
-        "package.json",
-        "packages/*/src/**",
-        "packages/*/test/**",
-        "scripts/**"
-      ],
-      "exclude": [
-        "**/*.md",
-        "**/fixtures/**",
-        "**/__snapshots__/**",
-        "**/*.snap",
-        "**/test/**/*.yaml"
-      ]
-    },
     "site-maintenance": {
       "include": [
         "site/astro.config.mjs",
@@ -780,21 +764,6 @@
       ]
     },
     {
-      "include": ["docs/development/ai-assisted-monorepo-migration.md"],
-      "groups": [
-        "counterfact",
-        "client",
-        "generator",
-        "openapi",
-        "repl",
-        "runtime",
-        "types",
-        "package-contracts",
-        "release",
-        "contributor-tooling"
-      ]
-    },
-    {
       "include": ["docs/development/design-principles.md"],
       "groups": [
         "counterfact",
@@ -805,10 +774,6 @@
         "runtime",
         "types"
       ]
-    },
-    {
-      "include": ["docs/development/lint-warning-recommendations.md"],
-      "groups": ["lint-policy"]
     },
     {
       "include": ["docs/development/public-package-contract.md"],
