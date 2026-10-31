@@ -7,6 +7,7 @@ This is the canonical repository guidance for all coding agents.
 Before making changes, load the most relevant skill and follow it as the primary source of detailed guidance:
 
 - `.agents/skills/counterfact-cli-runtime/SKILL.md`
+- `.agents/skills/counterfact-tutorials/SKILL.md`
 - `.agents/skills/counterfact-runtime-architecture/SKILL.md`
 - `.agents/skills/counterfact-generator-internals/SKILL.md`
 - `.agents/skills/counterfact-maintenance/SKILL.md`

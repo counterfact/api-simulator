@@ -1,5 +1,11 @@
 # @counterfact/openapi
 
+## 0.1.7
+
+### Patch Changes
+
+- 1f340b6: Updated dependency `jsonpath-plus` in `@counterfact/openapi` to `11.2.2`.
+
 ## 0.1.6
 
 ### Patch Changes
