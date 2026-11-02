@@ -264,7 +264,7 @@ export class Script {
         typeof entry.modulePath === "string"
           ? entry.modulePath
           : (contextPath ??
-            pathRelative(pathDirname(this.path), "routes/_.context.ts"));
+            pathRelative(pathDirname(this.path), "types/_.context.js"));
       return importDeclaration(
         name,
         modulePath.startsWith(".") || typeof entry.modulePath === "string"

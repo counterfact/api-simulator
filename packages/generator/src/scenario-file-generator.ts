@@ -56,7 +56,7 @@ async function collectContextFiles(
 
   await walkForContextFiles(routesDir, routesDir, results);
   results.sort((a, b) => b.depth - a.depth);
-  const names = new Set<string>();
+  const names = new Set<string>(["ContextFor"]);
   for (const context of results) {
     const base = /^\d/u.test(context.alias)
       ? "_" + context.alias
@@ -240,6 +240,55 @@ function recordType(): ts.TypeNode {
   return typeReference("Record", [stringType(), unknownType()]);
 }
 
+function dynamicContextType(): ts.TypeNode {
+  return typeReference("Record", [
+    stringType(),
+    ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+  ]);
+}
+
+/** Resolve the nearest context from the route file's directory, deepest first. */
+function routeContextType(
+  contextFiles: ContextFileInfo[],
+): ts.TypeAliasDeclaration {
+  let result: ts.TypeNode = dynamicContextType();
+  for (const context of [...contextFiles].reverse()) {
+    if (context.routePath === "/") {
+      result = typeReference(context.alias);
+    } else {
+      result = ts.factory.createConditionalTypeNode(
+        typeReference("Path"),
+        unionType([
+          literalType(context.routePath),
+          ts.factory.createTemplateLiteralType(
+            ts.factory.createTemplateHead(context.routePath + "/"),
+            [
+              ts.factory.createTemplateLiteralTypeSpan(
+                stringType(),
+                ts.factory.createTemplateTail(""),
+              ),
+            ],
+          ),
+        ]),
+        typeReference(context.alias),
+        result,
+      );
+    }
+  }
+  return ts.factory.createTypeAliasDeclaration(
+    [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+    "ContextFor",
+    [
+      ts.factory.createTypeParameterDeclaration(
+        undefined,
+        "Path",
+        stringType(),
+      ),
+    ],
+    result,
+  );
+}
+
 function interfaceDeclaration(
   name: string,
   members: readonly ts.TypeElement[],
@@ -282,11 +331,12 @@ async function buildScenarioContextContent(
     undefined,
     undefined,
     [parameter("path", stringType())],
-    recordType(),
+    dynamicContextType(),
   );
   return formatStatements(
     [
       ...imports,
+      routeContextType(contextFiles),
       interfaceDeclaration(
         "LoadContextDefinitions",
         [...overloads, fallback],
@@ -297,7 +347,9 @@ async function buildScenarioContextContent(
         [
           readonlyProperty(
             "context",
-            rootContext ? typeReference(rootContext.alias) : recordType(),
+            rootContext
+              ? typeReference(rootContext.alias)
+              : dynamicContextType(),
             'Root context, same as loadContext("/")',
           ),
           readonlyProperty(
@@ -398,7 +450,7 @@ async function buildMiddlewareTypeContent(
       "Middleware",
     ),
   ];
-  const arguments_: ts.TypeNode[] = [];
+  const arguments_: ts.TypeNode[] = [dynamicContextType()];
   if (routeDirectory.contextFile !== undefined) {
     const contextPath = ensureRelativeImportPath(
       pathRelative(directory, routeDirectory.contextFile).replace(
@@ -407,7 +459,7 @@ async function buildMiddlewareTypeContent(
       ),
     );
     statements.push(importDeclaration("Context", contextPath, true));
-    arguments_.push(typeReference("Context"));
+    arguments_[0] = typeReference("Context");
   }
   statements.push(
     typeAlias("Middleware", typeReference("MiddlewareFunction", arguments_)),

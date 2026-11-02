@@ -9,7 +9,7 @@ exports[`an OperationTypeCoder falls back to root level produces (OpenAPI 2) 1`]
     headers: never;
     cookie: never;
     body: never;
-    context: ExternalType;
+    context: ExternalType<".">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;
@@ -42,7 +42,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2 wit
     headers: HTTP_GET_Headers;
     cookie: never;
     body: Type;
-    context: ExternalType;
+    context: ExternalType<".">;
     response: ResponseBuilderFactory<
       {
         200: {
@@ -98,7 +98,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2) 1`
     headers: HTTP_GET_Headers;
     cookie: never;
     body: Type;
-    context: ExternalType;
+    context: ExternalType<".">;
     response: ResponseBuilderFactory<
       {
         200: {
@@ -154,7 +154,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2, co
     headers: HTTP_GET_Headers;
     cookie: never;
     body: Type;
-    context: ExternalType;
+    context: ExternalType<".">;
     response: ResponseBuilderFactory<
       {
         200: {
@@ -210,7 +210,7 @@ exports[`an OperationTypeCoder generates a complex post operation 1`] = `
     headers: HTTP_GET_Headers;
     cookie: never;
     body: Type;
-    context: ExternalType;
+    context: ExternalType<".">;
     response: ResponseBuilderFactory<
       {
         200: {
@@ -269,7 +269,7 @@ exports[`an OperationTypeCoder generates a simple get operation (OpenAPI 2) 1`] 
     headers: never;
     cookie: never;
     body: never;
-    context: ExternalType;
+    context: ExternalType<".">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;
@@ -302,7 +302,7 @@ exports[`an OperationTypeCoder generates a simple get operation 1`] = `
     headers: never;
     cookie: never;
     body: never;
-    context: ExternalType;
+    context: ExternalType<".">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;
@@ -335,7 +335,7 @@ exports[`an OperationTypeCoder generates an auth object for basic authentication
     headers: never;
     cookie: never;
     body: never;
-    context: ExternalType;
+    context: ExternalType<".">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;
@@ -368,7 +368,7 @@ exports[`an OperationTypeCoder generates required api key auth and cookie for ap
     headers: never;
     cookie: HTTP_GET_Cookie;
     body: never;
-    context: ExternalType;
+    context: ExternalType<".">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;
@@ -401,7 +401,7 @@ exports[`an OperationTypeCoder generates required api key auth and headers for a
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: ExternalType;
+    context: ExternalType<".">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;

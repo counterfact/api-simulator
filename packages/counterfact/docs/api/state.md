@@ -4,6 +4,10 @@ For definitions of contexts, scenarios, and API groups, read [how state fits tog
 
 ## Context modules
 
+Context files are optional. Without one, routes in an API group share an initially empty `$.context` object typed as `Record<string, any>`. For example, `$.context.count = ($.context.count ?? 0) + 1` keeps a count between requests. Initialize properties before reading them; the loose type does not check names or values.
+
+Add a context class when you want declared properties, methods, initial values, and TypeScript checks. Adding or removing a context file updates generated context types during watching.
+
 Export `class Context` from `routes/_.context.ts` or a nested `_.context.ts`. Routes use the nearest context as `$.context`. Constructors receive helpers; import the generated `Context$` type from the generated `types/index.js` entry point.
 
 | Constructor member  | Purpose                                                  |

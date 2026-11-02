@@ -5,6 +5,20 @@ import {
 } from "../../src/server/context-registry.js";
 
 describe("a context registry", () => {
+  it("shares fallback state across routes and restores it after deleting the root context", () => {
+    const registry = new ContextRegistry();
+    registry.find("/pets").count = 1;
+    expect(registry.find("/orders").count).toBe(1);
+    expect(registry.find("/pets")).toBe(registry.find("/"));
+
+    registry.update("/", { typed: true });
+    registry.remove("/");
+    registry.find("/pets").count = 2;
+    expect(registry.find("/orders")).toEqual({ count: 2 });
+    registry.clear();
+    expect(registry.find("/pets")).toEqual({});
+  });
+
   it("finds a context that exactly matches the path", () => {
     const helloContext = { name: "hello" };
 

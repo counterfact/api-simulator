@@ -122,6 +122,11 @@ export class ContextRegistry extends EventTarget {
 
     this.seen.delete(path);
 
+    if (path === "/") {
+      this.add("/", {});
+      return;
+    }
+
     this.dispatchEvent(new Event("context-changed"));
   }
 

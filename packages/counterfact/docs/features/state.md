@@ -1,6 +1,8 @@
 # State: Context Objects
 
-The `$.context` object is how routes share in-memory state. It's an instance of the `Context` class exported from `_.context.ts` in the same directory (or the nearest parent directory that has one).
+The `$.context` object is how routes share in-memory state. Without a context file, routes in an API group share an initially empty object typed as `Record<string, any>`. Start with a value such as `$.context.count = ($.context.count ?? 0) + 1`. TypeScript allows arbitrary properties, so initialize them before use.
+
+For checked properties and methods, export a `Context` class from `_.context.ts` in the same directory or a parent directory. Routes use the nearest class, and TypeScript checks its declared members.
 
 These examples extend the [first-ten-minutes pet workflow](../first-10-minutes.md). `add`, `get`, and the other context methods below are methods you write; Counterfact supplies `$.context`. Keep the generated handler-type imports in your route files.
 

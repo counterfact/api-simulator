@@ -329,7 +329,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { Pet } from "../components/schemas/Pet.js";
 /**
@@ -343,7 +343,7 @@ export type HTTP_POST = (
     headers: HTTP_POST_Headers;
     cookie: never;
     body: Pet;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -384,7 +384,7 @@ export type HTTP_PUT = (
     headers: HTTP_PUT_Headers;
     cookie: never;
     body: Pet;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -448,7 +448,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Pet } from "../../components/schemas/Pet.js";
 /**
@@ -462,7 +462,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/pet">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -519,7 +519,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Pet } from "../../components/schemas/Pet.js";
 /**
@@ -533,7 +533,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/pet">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -596,7 +596,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Pet } from "../../components/schemas/Pet.js";
 /**
@@ -610,7 +610,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/pet">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -654,7 +654,7 @@ export type HTTP_POST = (
     headers: HTTP_POST_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/pet">;
     response: ResponseBuilderFactory<{
       405: {
         headers: never;
@@ -679,7 +679,7 @@ export type HTTP_DELETE = (
     headers: HTTP_DELETE_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/pet">;
     response: ResponseBuilderFactory<{
       400: {
         headers: never;
@@ -747,7 +747,7 @@ import type { WideOperationArgument } from "../../../../counterfact-types/index.
 import type { OmitValueWhenNever } from "../../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../../counterfact-types/index.ts";
-import type { Context } from "../../../../routes/_.context.ts";
+import type { ContextFor } from "../../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../../counterfact-types/index.ts";
 import type { ApiResponse } from "../../../components/schemas/ApiResponse.js";
 export type HTTP_POST = (
@@ -758,7 +758,7 @@ export type HTTP_POST = (
     headers: HTTP_POST_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/pet/{petId}">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -812,7 +812,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 /**
  * Returns a map of status codes to quantities
@@ -825,7 +825,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/store">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -867,7 +867,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Order } from "../../components/schemas/Order.js";
 /**
@@ -881,7 +881,7 @@ export type HTTP_POST = (
     headers: HTTP_POST_Headers;
     cookie: never;
     body: Order;
-    context: Context;
+    context: ContextFor<"/store">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -932,7 +932,7 @@ import type { WideOperationArgument } from "../../../../counterfact-types/index.
 import type { OmitValueWhenNever } from "../../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../../counterfact-types/index.ts";
-import type { Context } from "../../../../routes/_.context.ts";
+import type { ContextFor } from "../../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../../counterfact-types/index.ts";
 import type { Order } from "../../../components/schemas/Order.js";
 /**
@@ -946,7 +946,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/store/order">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -993,7 +993,7 @@ export type HTTP_DELETE = (
     headers: HTTP_DELETE_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/store/order">;
     response: ResponseBuilderFactory<{
       400: {
         headers: never;
@@ -1050,7 +1050,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../counterfact-types/index.ts";
 import type { User } from "../components/schemas/User.js";
@@ -1065,7 +1065,7 @@ export type HTTP_POST = (
     headers: HTTP_POST_Headers;
     cookie: never;
     body: User;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;
@@ -1110,7 +1110,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 import type { User } from "../../components/schemas/User.js";
@@ -1125,7 +1125,7 @@ export type HTTP_POST = (
     headers: HTTP_POST_Headers;
     cookie: never;
     body: Array<User>;
-    context: Context;
+    context: ContextFor<"/user">;
     response: ResponseBuilderFactory<
       {
         200: {
@@ -1179,7 +1179,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 export type HTTP_GET = (
   $: OmitValueWhenNever<{
@@ -1189,7 +1189,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/user">;
     response: ResponseBuilderFactory<{
       200: {
         headers: {
@@ -1253,7 +1253,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 export type HTTP_GET = (
@@ -1264,7 +1264,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/user">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;
@@ -1308,7 +1308,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 import type { User } from "../../components/schemas/User.js";
@@ -1320,7 +1320,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/user">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -1367,7 +1367,7 @@ export type HTTP_PUT = (
     headers: HTTP_PUT_Headers;
     cookie: never;
     body: User;
-    context: Context;
+    context: ContextFor<"/user">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;
@@ -1395,7 +1395,7 @@ export type HTTP_DELETE = (
     headers: HTTP_DELETE_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/user">;
     response: ResponseBuilderFactory<{
       400: {
         headers: never;
@@ -2102,7 +2102,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../counterfact-types/index.ts";
 /**
@@ -2116,7 +2116,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;
@@ -2160,7 +2160,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { InternalServerError } from "../#/components/responses/InternalServerError.js";
 /**
@@ -2174,7 +2174,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -2217,7 +2217,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 /**
@@ -2231,7 +2231,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/hello">;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
         headers: never;
@@ -2275,7 +2275,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { BadRequest } from "../../#/components/responses/BadRequest.js";
 /**
@@ -2289,7 +2289,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/hello">;
     response: ResponseBuilderFactory<{
       200: {
         headers: {
@@ -2356,7 +2356,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { Recursive } from "../components/schemas/Recursive.js";
 import type { BadRequest } from "../#/components/responses/BadRequest.js";
@@ -2368,7 +2368,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -2411,7 +2411,7 @@ import type { WideOperationArgument } from "../../../../counterfact-types/index.
 import type { OmitValueWhenNever } from "../../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../../counterfact-types/index.ts";
-import type { Context } from "../../../../routes/_.context.ts";
+import type { ContextFor } from "../../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../../counterfact-types/index.ts";
 export type HTTP_GET = (
   $: OmitValueWhenNever<{
@@ -2421,7 +2421,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/weird/path">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -2466,7 +2466,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { UserList } from "../components/schemas/UserList.js";
 import type { BadRequest } from "../#/components/responses/BadRequest.js";
@@ -2486,7 +2486,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       200: {
         headers: {
@@ -2527,7 +2527,7 @@ export type HTTP_POST = (
     headers: HTTP_POST_Headers;
     cookie: never;
     body: CreateUserRequest;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       201: {
         headers: {
@@ -2602,7 +2602,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { User } from "../../components/schemas/User.js";
 import type { NotFound } from "../../#/components/responses/NotFound.js";
@@ -2621,7 +2621,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/users">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -2655,7 +2655,7 @@ export type HTTP_PUT = (
     headers: HTTP_PUT_Headers;
     cookie: never;
     body: CreateUserRequest;
-    context: Context;
+    context: ContextFor<"/users">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -2689,7 +2689,7 @@ export type HTTP_PATCH = (
     headers: HTTP_PATCH_Headers;
     cookie: never;
     body: PatchUserRequest;
-    context: Context;
+    context: ContextFor<"/users">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -2723,7 +2723,7 @@ export type HTTP_DELETE = (
     headers: HTTP_DELETE_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/users">;
     response: ResponseBuilderFactory<{
       204: {
         headers: never;
@@ -2789,7 +2789,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { ClickEvent } from "../components/schemas/ClickEvent.js";
 import type { PurchaseEvent } from "../components/schemas/PurchaseEvent.js";
@@ -2812,7 +2812,7 @@ export type HTTP_POST = (
       | (PurchaseEvent & { type: "purchase" })
       | (SignUpEvent & { type: "signup" })
       | BaseEvent;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       202: {
         headers: never;
@@ -2851,7 +2851,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Product } from "../../components/schemas/Product.js";
 import type { NotFound } from "../../#/components/responses/NotFound.js";
@@ -2863,7 +2863,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/products">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -2907,7 +2907,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { Error } from "../components/schemas/Error.js";
 /**
@@ -2921,7 +2921,7 @@ export type HTTP_POST = (
     headers: HTTP_POST_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       201: {
         headers: never;
@@ -2979,7 +2979,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 /**
  * Deprecated – use /users instead
@@ -2993,7 +2993,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: HTTP_GET_Cookie;
     body: never;
-    context: Context;
+    context: ContextFor<"/legacy">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3036,7 +3036,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { NotFound } from "../../#/components/responses/NotFound.js";
 /**
@@ -3050,7 +3050,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/reports">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3103,7 +3103,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 /**
  * Health-check – returns 204 with no body
@@ -3116,7 +3116,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       204: {
         headers: never;
@@ -3154,7 +3154,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 /**
  * Replace the free-form metadata store
@@ -3167,7 +3167,7 @@ export type HTTP_PUT = (
     headers: HTTP_PUT_Headers;
     cookie: never;
     body: { [key: string]: unknown };
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3209,7 +3209,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { XmlBook } from "../../components/schemas/XmlBook.js";
 /**
@@ -3223,7 +3223,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/xml">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3267,7 +3267,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { XmlNote } from "../../components/schemas/XmlNote.js";
 /**
@@ -3281,7 +3281,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/xml">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3325,7 +3325,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { XmlSnippet } from "../../components/schemas/XmlSnippet.js";
 /**
@@ -3339,7 +3339,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/xml">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3383,7 +3383,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { XmlSecret } from "../../components/schemas/XmlSecret.js";
 /**
@@ -3397,7 +3397,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/xml">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3441,7 +3441,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { XmlPlaylist } from "../../components/schemas/XmlPlaylist.js";
 /**
@@ -3455,7 +3455,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/xml">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3505,7 +3505,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 export type HTTP_GET = (
   $: OmitValueWhenNever<{
@@ -3515,7 +3515,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/relationships">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3546,7 +3546,7 @@ export type HTTP_LINK = (
     headers: HTTP_LINK_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/relationships">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3577,7 +3577,7 @@ export type HTTP_UNLINK = (
     headers: HTTP_UNLINK_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/relationships">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3626,7 +3626,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { Pageable } from "../components/schemas/Pageable.js";
 /**
@@ -3640,7 +3640,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3689,7 +3689,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { Context } from "../../../routes/_.context.ts";
+import type { ContextFor } from "../../_.context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { LogEntry } from "../../components/schemas/LogEntry.js";
 /**
@@ -3704,7 +3704,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/stream">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3746,7 +3746,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { BadRequest } from "../#/components/responses/BadRequest.js";
 /**
@@ -3760,7 +3760,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3816,7 +3816,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { TypeEdgeCases } from "../components/schemas/TypeEdgeCases.js";
 /**
@@ -3830,7 +3830,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;
@@ -3874,7 +3874,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { Context } from "../../routes/_.context.ts";
+import type { ContextFor } from "../_.context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { SchemaAccuracy } from "../components/schemas/SchemaAccuracy.js";
 /**
@@ -3888,7 +3888,7 @@ export type HTTP_GET = (
     headers: HTTP_GET_Headers;
     cookie: never;
     body: never;
-    context: Context;
+    context: ContextFor<"/">;
     response: ResponseBuilderFactory<{
       200: {
         headers: never;

@@ -1,7 +1,7 @@
 import { STREAMING_CONTENT_TYPES } from "@counterfact/types/streaming-content-types";
 
 import { sanitizeIdentifier } from "./sanitize-identifier.js";
-import { pathJoin } from "./forward-slash-path.js";
+import { pathDirname, pathJoin } from "./forward-slash-path.js";
 import ts from "typescript";
 import {
   functionType,
@@ -196,11 +196,14 @@ export class OperationTypeCoder extends TypeCoder {
     return unionType(shapes);
   }
 
-  public override modulePath(): string {
-    const pathString = normalizeOpenApiPath(
+  private routePath(): string {
+    return normalizeOpenApiPath(
       this.requirement.url.split("/").at(-2)!.replaceAll("~1", "/"),
     );
+  }
 
+  public override modulePath(): string {
+    const pathString = this.routePath();
     return `${pathJoin(
       "types/paths",
       pathString === "/" ? "/index" : pathString,
@@ -334,7 +337,7 @@ export class OperationTypeCoder extends TypeCoder {
     script.importSharedType("OmitValueWhenNever");
     script.importSharedType("COUNTERFACT_RESPONSE");
 
-    const contextTypeImportName = script.importExternalType("Context", {
+    const contextTypeImportName = script.importExternalType("ContextFor", {
       context: true,
     });
 
@@ -468,7 +471,12 @@ export class OperationTypeCoder extends TypeCoder {
         typeProperty("headers", headersTypeName),
         typeProperty("cookie", cookieTypeName),
         typeProperty("body", bodyType),
-        typeProperty("context", typeReference(contextTypeImportName)),
+        typeProperty(
+          "context",
+          typeReference(contextTypeImportName, [
+            literalType(pathDirname(this.routePath()) || "/"),
+          ]),
+        ),
         typeProperty("response", responseType),
         typeProperty("x", typeReference(xType)),
         typeProperty("proxy", proxyType),

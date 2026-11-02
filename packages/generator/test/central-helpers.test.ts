@@ -239,8 +239,8 @@ describe("central helper exports", () => {
           "consumer.ts",
           `import type { Middleware } from "./api/types/index.js";
           const inherited: Middleware["/admin"] = ($, next) => {
-            // @ts-expect-error The deleted context is no longer available.
-            $.context.adminOnly;
+            // With no inherited context, arbitrary state is available again.
+            $.context.adminOnly = "dynamic";
             return next($);
           };
           const root: Middleware["/"] = ($, next) => next($);`,

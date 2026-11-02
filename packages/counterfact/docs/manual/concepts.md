@@ -52,7 +52,7 @@ export const GET: Route["GET"] = function ($) {
 
 ## Context: state shared by nearby routes
 
-A **context** is an instance of a `Context` class you export from `_.context.ts`. Put it under `routes/` to share state across that directory and its descendants. A nested context replaces the parent context for its subtree; parent fields are not automatically merged into it.
+A **context** is shared in-memory state. Without a context file, it is an empty object typed as `Record<string, any>`. For typed state, export a `Context` class from `_.context.ts`. Put it under `routes/` to share state across that directory and its descendants. A nested context replaces the parent context for its subtree; parent fields are not automatically merged into it.
 
 The [first ten minutes](../first-10-minutes.md) creates a small pet context with `add(pet)` and `get(id)`. A POST handler calls `$.context.add($.body)` and a later GET calls `$.context.get($.path.petId)`. These methods are application code you write, not built-in Counterfact methods. The [state guide](../features/state.md) extends the example with list, remove, and reset methods.
 

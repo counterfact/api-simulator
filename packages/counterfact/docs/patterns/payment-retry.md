@@ -63,7 +63,7 @@ npx --no-install counterfact orders.yaml api --generate --no-update-check
 
 ## Define the state and HTTP behavior
 
-Replace `api/routes/_.context.ts`:
+Create or update `api/routes/_.context.ts`:
 
 ```ts
 export class Context {

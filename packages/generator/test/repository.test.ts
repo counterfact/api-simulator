@@ -69,14 +69,17 @@ describe("a Repository", () => {
     },
   );
 
-  it("creates the root _.context.ts file", async () => {
+  it("does not scaffold a context file", async () => {
     await usingTemporaryFiles(async ({ path, read }) => {
-      const repository = new Repository();
-
-      await repository.writeFiles(path("."), { routes: true, types: true });
-
-      await expect(read("./routes/_.context.ts")).resolves.toContain(
-        "export class Context",
+      await new Repository().writeFiles(path("."), {
+        routes: true,
+        types: true,
+      });
+      await expect(read("./routes/_.context.ts")).rejects.toThrow(
+        "no such file or directory",
+      );
+      await expect(read("./types/_.context.ts")).resolves.toContain(
+        "Record<string, any>",
       );
     });
   });
@@ -87,7 +90,7 @@ describe("a Repository", () => {
 
       await repository.writeFiles(path("."), { routes: false, types: true });
 
-      await expect(read("./paths/_.context.ts")).rejects.toThrow(
+      await expect(read("./routes/_.context.ts")).rejects.toThrow(
         "no such file or directory",
       );
     });
@@ -98,13 +101,13 @@ describe("a Repository", () => {
       const repository = new Repository();
 
       await add(
-        "./paths/_.context.ts",
+        "./routes/_.context.ts",
         "export class Context { /* do not overwrite me */ }",
       );
 
       await repository.writeFiles(path("."), { routes: true, types: true });
 
-      await expect(read("./paths/_.context.ts")).resolves.toContain(
+      await expect(read("./routes/_.context.ts")).resolves.toContain(
         "do not overwrite me",
       );
     });

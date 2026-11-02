@@ -271,8 +271,8 @@ def documented_artifacts_exist(journey):
     ) < generated.stdout.index("✓ OpenAPI document ready") < generated.stdout.index(
         "→ Generating routes and types…"
     ) < generated.stdout.index("✓ Generated routes and types")
+    assert not (journey.output / "routes" / "_.context.ts").exists()
     expected_artifacts = [
-        journey.output / "routes" / "_.context.ts",
         journey.output / "routes" / "pets.ts",
         journey.output / "routes" / "pets" / "{petId}.ts",
         journey.output / "types" / "_.context.ts",

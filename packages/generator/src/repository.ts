@@ -193,9 +193,7 @@ export class Repository {
 
       async ([path, script]) => {
         const fullPath = resolveDestinationPath(destination, path);
-        const contents = await script.contents(
-          this.findContextPath(destination, path),
-        );
+        const contents = await script.contents();
 
         await ensureDirectoryExists(fullPath);
 
@@ -228,9 +226,6 @@ export class Repository {
 
     await this.copyCoreFiles(destination);
 
-    if (routes) {
-      await this.createDefaultContextFile(destination);
-    }
     if (types) await writeHelperTypes(destination, destination, true);
   }
 

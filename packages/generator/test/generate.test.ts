@@ -645,9 +645,9 @@ describe("_.context type generation", () => {
       await new ScenarioFileGenerator(basePath).generate();
 
       const content = await $.read("types/_.context.ts");
-      expect(content).toContain("readonly context: Record<string, unknown>");
+      expect(content).toContain("readonly context: Record<string, any>");
       expect(content).toContain(
-        "loadContext(path: string): Record<string, unknown>;",
+        "loadContext(path: string): Record<string, any>;",
       );
       expect(content).not.toContain("import type");
       expect(content).toContain(
@@ -690,7 +690,7 @@ describe("_.context type generation", () => {
         'loadContext(path: "/" | `/${string}`): Context;',
       );
       expect(content).toContain(
-        "loadContext(path: string): Record<string, unknown>;",
+        "loadContext(path: string): Record<string, any>;",
       );
     });
   });
@@ -908,7 +908,7 @@ describe("_.middleware type generation", () => {
     });
   });
 
-  it("falls back to an unknown context when no context file exists", async () => {
+  it("falls back to a dynamic context when no context file exists", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("routes/pets.ts", "export const GET = () => {};");
 
@@ -918,7 +918,9 @@ describe("_.middleware type generation", () => {
       expect(content).toContain(
         'import type { Middleware as MiddlewareFunction } from "../counterfact-types/index.js";',
       );
-      expect(content).toContain("export type Middleware = MiddlewareFunction;");
+      expect(content).toContain(
+        "export type Middleware = MiddlewareFunction<Record<string, any>>;",
+      );
       expect(content).not.toContain("import type { Context }");
     });
   });

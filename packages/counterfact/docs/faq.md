@@ -123,7 +123,9 @@ Workflow, Not the Backend](./patterns/model-the-workflow.md).
 
 ## How does state work?
 
-Create a `_.context.ts` file next to your routes. All routes in the same directory (and subdirectories) share the same `Context` instance:
+You can start without a context file: `$.context` is a shared empty object typed as `Record<string, any>`. Initialize values before using them, for example `$.context.count ??= 0`.
+
+For typed state and methods, create a `_.context.ts` file next to your routes. All routes in the same directory (and subdirectories) share the same `Context` instance:
 
 ```ts
 // routes/_.context.ts
