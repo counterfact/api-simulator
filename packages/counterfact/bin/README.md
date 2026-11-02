@@ -33,5 +33,4 @@ first-run selection, startup progress, migrations, and telemetry ownership.
 
 Use the canonical [CLI reference](../docs/api/cli.md) for options, configuration
 keys, action defaults, and precedence. Run `npx counterfact@latest --help` for
-the installed release's option list. From a source checkout,
-`yarn go:first-run` builds and runs that checkout's CLI with no arguments.
+the installed release's option list.
