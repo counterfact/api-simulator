@@ -2,7 +2,7 @@
 
 The `$.context` object is how routes share in-memory state. It's an instance of the `Context` class exported from `_.context.ts` in the same directory (or the nearest parent directory that has one).
 
-These examples extend the [first-ten-minutes pet workflow](../first-10-minutes.md). `add`, `get`, and the other context methods below are methods you write; Counterfact supplies `$.context`. Keep the generated handler-type imports in your route files.
+These examples extend the [stateful Petstore example](../first-10-minutes.md). `add`, `get`, and the other context methods below are methods you write; Counterfact supplies `$.context`. Keep the generated handler-type imports in your route files.
 
 ```ts
 // routes/pet.ts

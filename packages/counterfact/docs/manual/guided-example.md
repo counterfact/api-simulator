@@ -136,5 +136,5 @@ explicitly for scripts, or `_` to start without OpenAPI.
 - [Custom route handlers](../features/routes.md) — use typed requests and explicit responses in your own routes.
 - [Stateful contexts](../features/state.md) and [scenario scripts](../patterns/scenario-scripts.md) — model shared inventory and repeatable startup state.
 - [Interactive REPL](../features/repl.md) — inspect and change a running simulation.
-- [First 10 minutes](../first-10-minutes.md) — build a small create/read workflow.
+- [Stateful Petstore example](../first-10-minutes.md) — build a small create/read workflow.
 - [CLI and configuration](../api/cli.md#first-run-intro) — setup, discovery limits, and unattended startup.

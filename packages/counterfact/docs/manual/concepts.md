@@ -4,7 +4,7 @@ Start with a specification and a running API. Add state, scenarios, or multiple 
 
 ## Specification, route, and handler
 
-**OpenAPI**, formerly Swagger, describes an API’s endpoints, parameters, and responses in YAML or JSON. Give Counterfact that file or its URL to generate a working mock API. The [quick start](../getting-started.md) uses a public Petstore document so you can try Counterfact without supplying your own.
+**OpenAPI**, formerly Swagger, describes an API’s endpoints, parameters, and responses in YAML or JSON. Give Counterfact that file or its URL to generate a working mock API. The [fundamentals walkthrough](../getting-started.md) includes a small counter spec so you can try Counterfact without supplying your own.
 
 A **route** maps a URL path to a file. An **operation** is an HTTP method on that path. A **handler** is the function that implements an operation. For example, `GET /pet/{petId}` uses the `GET` export in `routes/pet/{petId}.ts`.
 
@@ -52,7 +52,7 @@ export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
 
 A **context** is an instance of a `Context` class you export from `_.context.ts`. Put it under `routes/` to share state across that directory and its descendants. A nested context replaces the parent context for its subtree; parent fields are not automatically merged into it.
 
-The [first ten minutes](../first-10-minutes.md) creates a small pet context with `add(pet)` and `get(id)`. A POST handler calls `$.context.add($.body)` and a later GET calls `$.context.get($.path.petId)`. These methods are application code you write, not built-in Counterfact methods. The [state guide](../features/state.md) extends the example with list, remove, and reset methods.
+The [stateful Petstore example](../first-10-minutes.md) creates a small pet context with `add(pet)` and `get(id)`. A POST handler calls `$.context.add($.body)` and a later GET calls `$.context.get($.path.petId)`. These methods are application code you write, not built-in Counterfact methods. The [state guide](../features/state.md) extends the example with list, remove, and reset methods.
 
 A **context registry** is Counterfact's collection of these live objects, looked up by route path. Use `api.loadContext("/")` from test code or `loadContext("/pets")` in the REPL to find the context for a path. Context constructors also receive a `loadContext` helper for connecting subtrees within one API group. See [nested contexts](./nested-contexts.md).
 

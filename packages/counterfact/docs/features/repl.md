@@ -96,7 +96,7 @@ See the [Route Builder guide](./route-builder.md) for full documentation.
 
 ## Inspect and steer a session
 
-These examples use the same pet context’s `add()` and `list()` methods. Start from the [first-ten-minutes handlers](../first-10-minutes.md) so HTTP requests read and write that context.
+These examples use the same pet context’s `add()` and `list()` methods. Start from the [stateful Petstore handlers](../first-10-minutes.md) so HTTP requests read and write that context.
 
 Start the server with the REPL enabled (the default when running via `npx counterfact@latest`). The prompt `⬣>` indicates the REPL is ready.
 

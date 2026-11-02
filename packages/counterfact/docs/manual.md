@@ -4,13 +4,13 @@ Read [How Counterfact fits together](./manual/concepts.md) for specifications, h
 
 Build a useful local API, then add the behavior your client needs. Each chapter shows how to use a feature with examples.
 
-New to Counterfact? Start with [Generate an API from OpenAPI](./getting-started.md), then follow the [first ten minutes](./first-10-minutes.md). For exact signatures and options, use the [API reference](./api.md).
+New to Counterfact? Start with [Counterfact fundamentals](./getting-started.md), a single walkthrough from OpenAPI to shared state and the REPL. For exact signatures and options, use the [API reference](./api.md).
 
 Choose guides by task in [Find your workflow](./usage.md). Additional resources: [FAQ](./faq.md), [comparison](./comparison.md), [TypeScript native mode](./features/typescript-native-mode.md), and [telemetry and privacy](./usage.md#telemetry-and-privacy).
 
 ## Start a working API
 
-- [Generate an API from OpenAPI](./getting-started.md) — Start a local HTTP API from a specification.
+- [Counterfact fundamentals](./getting-started.md) — Generate a server, try Swagger UI, edit handlers, and share state.
 - [Guided coffee shop](./manual/guided-example.md) — Learn by editing a running API beside a working storefront.
 - [Automatic sample responses](./manual/sample-responses.md) — Get schema-derived responses and select named examples.
 - [Build without OpenAPI](./features/without-openapi.md) — Write routes before a specification exists.
