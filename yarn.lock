@@ -4233,7 +4233,7 @@ __metadata:
     eslint-plugin-prettier: "npm:5.5.7"
     eslint-plugin-promise: "npm:7.3.0"
     eslint-plugin-regexp: "npm:3.3.1"
-    eslint-plugin-security: "npm:4.2.0"
+    eslint-plugin-security: "npm:4.2.1"
     eslint-plugin-unused-imports: "npm:4.4.1"
     fs-extra: "npm:11.4.1"
     husky: "npm:9.1.7"
@@ -5259,12 +5259,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-security@npm:4.2.0":
-  version: 4.2.0
-  resolution: "eslint-plugin-security@npm:4.2.0"
+"eslint-plugin-security@npm:4.2.1":
+  version: 4.2.1
+  resolution: "eslint-plugin-security@npm:4.2.1"
   dependencies:
     safe-regex: "npm:^2.1.1"
-  checksum: 10c0/7c47bb486ece3d784936d96148074d8e1f3878b51a4050694d2457a8555847be33cec223ba6d8ed5de5697d276c959ddeb7ac2ba7087742c02d4b15ddf091810
+  checksum: 10c0/f3e217e7a7ca4c64d0899dc0c99c765b9650fcb0fbcb7f0e4e40f92af42a7dfae5bc953eb99bdd4c9c0f9a03b1369b0366d73756c530486cbeec51be466ae45f
   languageName: node
   linkType: hard
 
