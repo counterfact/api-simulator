@@ -189,12 +189,12 @@ describe("pruneTypes", () => {
 
   it("protects context and user-authored type files", async () => {
     await usingTemporaryFiles(async ($) => {
-      await $.add("types/_.context.ts", "// generated elsewhere");
+      await $.add("types/context.ts", "// generated elsewhere");
       await $.add("types/custom.ts", "// user authored");
       await $.add("types/helpers/utility.ts", "// user authored");
 
       expect(await pruneTypes($.path(""), [])).toBe(0);
-      await expect($.read("types/_.context.ts")).resolves.toBe(
+      await expect($.read("types/context.ts")).resolves.toBe(
         "// generated elsewhere",
       );
       await expect($.read("types/custom.ts")).resolves.toBe("// user authored");

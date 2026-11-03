@@ -364,6 +364,10 @@ assert.equal(typeof createMswHandlers, "function");
     ),
     "The generated tree did not preserve the Windows-safe colon path",
   );
+  const generatedFiles = await fileHashes(generatedDirectory);
+  assert(!("routes/_.context.ts" in generatedFiles));
+  assert(!("types/_.context.ts" in generatedFiles));
+  assert("types/context.ts" in generatedFiles);
   await compareOrUpdate(
     expectedGeneratedFilesPath,
     await fileHashes(generatedDirectory),

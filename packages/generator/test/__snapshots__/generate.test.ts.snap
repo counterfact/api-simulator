@@ -329,7 +329,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { Pet } from "../components/schemas/Pet.js";
 /**
@@ -448,7 +448,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Pet } from "../../components/schemas/Pet.js";
 /**
@@ -519,7 +519,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Pet } from "../../components/schemas/Pet.js";
 /**
@@ -596,7 +596,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Pet } from "../../components/schemas/Pet.js";
 /**
@@ -747,7 +747,7 @@ import type { WideOperationArgument } from "../../../../counterfact-types/index.
 import type { OmitValueWhenNever } from "../../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../../_.context.js";
+import type { ContextFor } from "../../../context.js";
 import type { ResponseBuilderFactory } from "../../../../counterfact-types/index.ts";
 import type { ApiResponse } from "../../../components/schemas/ApiResponse.js";
 export type HTTP_POST = (
@@ -812,7 +812,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 /**
  * Returns a map of status codes to quantities
@@ -867,7 +867,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Order } from "../../components/schemas/Order.js";
 /**
@@ -932,7 +932,7 @@ import type { WideOperationArgument } from "../../../../counterfact-types/index.
 import type { OmitValueWhenNever } from "../../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../../_.context.js";
+import type { ContextFor } from "../../../context.js";
 import type { ResponseBuilderFactory } from "../../../../counterfact-types/index.ts";
 import type { Order } from "../../../components/schemas/Order.js";
 /**
@@ -1050,7 +1050,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../counterfact-types/index.ts";
 import type { User } from "../components/schemas/User.js";
@@ -1110,7 +1110,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 import type { User } from "../../components/schemas/User.js";
@@ -1179,7 +1179,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 export type HTTP_GET = (
   $: OmitValueWhenNever<{
@@ -1253,7 +1253,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 export type HTTP_GET = (
@@ -1308,7 +1308,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 import type { User } from "../../components/schemas/User.js";
@@ -2102,7 +2102,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../counterfact-types/index.ts";
 /**
@@ -2160,7 +2160,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { InternalServerError } from "../#/components/responses/InternalServerError.js";
 /**
@@ -2217,7 +2217,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { HttpStatusCode } from "../../../counterfact-types/index.ts";
 /**
@@ -2275,7 +2275,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { BadRequest } from "../../#/components/responses/BadRequest.js";
 /**
@@ -2356,7 +2356,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { Recursive } from "../components/schemas/Recursive.js";
 import type { BadRequest } from "../#/components/responses/BadRequest.js";
@@ -2411,7 +2411,7 @@ import type { WideOperationArgument } from "../../../../counterfact-types/index.
 import type { OmitValueWhenNever } from "../../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../../_.context.js";
+import type { ContextFor } from "../../../context.js";
 import type { ResponseBuilderFactory } from "../../../../counterfact-types/index.ts";
 export type HTTP_GET = (
   $: OmitValueWhenNever<{
@@ -2466,7 +2466,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { UserList } from "../components/schemas/UserList.js";
 import type { BadRequest } from "../#/components/responses/BadRequest.js";
@@ -2602,7 +2602,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { User } from "../../components/schemas/User.js";
 import type { NotFound } from "../../#/components/responses/NotFound.js";
@@ -2789,7 +2789,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { ClickEvent } from "../components/schemas/ClickEvent.js";
 import type { PurchaseEvent } from "../components/schemas/PurchaseEvent.js";
@@ -2851,7 +2851,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { Product } from "../../components/schemas/Product.js";
 import type { NotFound } from "../../#/components/responses/NotFound.js";
@@ -2907,7 +2907,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { Error } from "../components/schemas/Error.js";
 /**
@@ -2979,7 +2979,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 /**
  * Deprecated – use /users instead
@@ -3036,7 +3036,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { NotFound } from "../../#/components/responses/NotFound.js";
 /**
@@ -3103,7 +3103,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 /**
  * Health-check – returns 204 with no body
@@ -3154,7 +3154,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 /**
  * Replace the free-form metadata store
@@ -3209,7 +3209,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { XmlBook } from "../../components/schemas/XmlBook.js";
 /**
@@ -3267,7 +3267,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { XmlNote } from "../../components/schemas/XmlNote.js";
 /**
@@ -3325,7 +3325,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { XmlSnippet } from "../../components/schemas/XmlSnippet.js";
 /**
@@ -3383,7 +3383,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { XmlSecret } from "../../components/schemas/XmlSecret.js";
 /**
@@ -3441,7 +3441,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { XmlPlaylist } from "../../components/schemas/XmlPlaylist.js";
 /**
@@ -3505,7 +3505,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 export type HTTP_GET = (
   $: OmitValueWhenNever<{
@@ -3626,7 +3626,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { Pageable } from "../components/schemas/Pageable.js";
 /**
@@ -3689,7 +3689,7 @@ import type { WideOperationArgument } from "../../../counterfact-types/index.ts"
 import type { OmitValueWhenNever } from "../../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../../counterfact-types/index.ts";
-import type { ContextFor } from "../../_.context.js";
+import type { ContextFor } from "../../context.js";
 import type { ResponseBuilderFactory } from "../../../counterfact-types/index.ts";
 import type { LogEntry } from "../../components/schemas/LogEntry.js";
 /**
@@ -3746,7 +3746,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { BadRequest } from "../#/components/responses/BadRequest.js";
 /**
@@ -3816,7 +3816,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { TypeEdgeCases } from "../components/schemas/TypeEdgeCases.js";
 /**
@@ -3874,7 +3874,7 @@ import type { WideOperationArgument } from "../../counterfact-types/index.ts";
 import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
-import type { ContextFor } from "../_.context.js";
+import type { ContextFor } from "../context.js";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { SchemaAccuracy } from "../components/schemas/SchemaAccuracy.js";
 /**

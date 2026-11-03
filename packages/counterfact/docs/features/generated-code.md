@@ -11,7 +11,7 @@ No OpenAPI document? See [using Counterfact without OpenAPI](./without-openapi.m
 
 ## Generated file structure
 
-The output directory is called `basePath` in library options and `destination` in the CLI YAML config. Counterfact does not generate a `routes/_.context.ts` file. Without a context file, `$.context` is a shared empty object typed as `Record<string, any>`; add a context class when you want stricter typing. The optional context and store files below are custom: a context shares behavior within a route subtree; a [store](../patterns/shared-store.md) shares state across separately configured [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes).
+The output directory is called `basePath` in library options and `destination` in the CLI YAML config. Counterfact does not generate a `routes/_.context.ts` file. Its generated context types live in `types/context.ts`; `_.context.ts` is reserved for the optional class you author. Without a context file, `$.context` is a shared empty object typed as `Record<string, any>`; add a context class when you want stricter typing. The optional context and store files below are custom: a context shares behavior within a route subtree; a [store](../patterns/shared-store.md) shares state across separately configured [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes).
 
 ```
 <output-directory>/

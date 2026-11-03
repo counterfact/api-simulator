@@ -554,7 +554,7 @@ async function writeMiddlewareTypes(
 }
 
 /**
- * Writes the `types/_.context.ts` file, which exports the
+ * Writes the `types/context.ts` file, which exports the
  * `Scenario$` interface used to type scenario functions.
  *
  * The interface is generated from all `_.context.ts` files found under the
@@ -570,7 +570,8 @@ async function writeScenarioContextType(
   preserveStore = false,
 ): Promise<void> {
   const typesDir = nodePath.join(destination, "types");
-  const filePath = nodePath.join(typesDir, "_.context.ts");
+  const filePath = nodePath.join(typesDir, "context.ts");
+  const legacyPath = nodePath.join(typesDir, "_.context.ts");
   const storePath = nodePath.join(rootDestination, "_.store.ts");
 
   const contextFiles = await collectContextFiles(destination);
@@ -578,7 +579,8 @@ async function writeScenarioContextType(
   const storeImportPath = existsSync(storePath)
     ? `${relativeStorePath.startsWith(".") ? "" : "./"}${relativeStorePath.replace(/\.ts$/u, ".js")}`
     : preserveStore
-      ? await existingStoreImport(filePath, typesDir)
+      ? ((await existingStoreImport(filePath, typesDir)) ??
+        (await existingStoreImport(legacyPath, typesDir)))
       : undefined;
   const content = await buildScenarioContextContent(
     contextFiles,
@@ -587,6 +589,32 @@ async function writeScenarioContextType(
 
   await fs.mkdir(typesDir, { recursive: true });
   await writeGeneratedType(filePath, content);
+  const legacyContent = await fs
+    .readFile(legacyPath, "utf8")
+    .catch((error: NodeJS.ErrnoException) => {
+      if (error.code !== "ENOENT") throw error;
+      return undefined;
+    });
+  if (legacyContent?.startsWith(GENERATED_FILE_COMMENT)) {
+    await writeGeneratedType(
+      legacyPath,
+      await formatStatements(
+        [
+          ts.factory.createExportDeclaration(
+            undefined,
+            true,
+            ts.factory.createNamedExports(
+              ["Context$", "ContextFor", "Scenario", "Scenario$"].map((name) =>
+                ts.factory.createExportSpecifier(false, undefined, name),
+              ),
+            ),
+            ts.factory.createStringLiteral("./context.js"),
+          ),
+        ],
+        [GENERATED_FILE_COMMENT.slice(3)],
+      ),
+    );
+  }
 }
 
 // OpenAPI generation knows the group directory but not the application's root.
@@ -682,7 +710,7 @@ export async function writeHelperTypes(
             ts.factory.createExportSpecifier(false, undefined, name),
           ),
         ),
-        ts.factory.createStringLiteral("./_.context.js"),
+        ts.factory.createStringLiteral("./context.js"),
       ),
     ];
     const properties = directories.map((directory, index) => {
@@ -825,14 +853,14 @@ async function writeDefaultScenariosIndex(destination: string): Promise<void> {
 
 /**
  * Encapsulates the generation of scenario-related files:
- * - `types/_.context.ts` — the typed `Scenario$` interface derived from all
+ * - `types/context.ts` — the typed `Scenario$` interface derived from all
  *   `_.context.ts` files found under `routes/`.
  * - `scenarios/index.ts` — the default scenarios entry-point (created only if
  *   it does not already exist).
  *
  * When {@link watch} is called, file-system watchers monitor the `routes/`
  * directory for changes to `_.context.ts` files and the application root's
- * optional `_.store.ts`, automatically regenerating `types/_.context.ts` and
+ * optional `_.store.ts`, automatically regenerating `types/context.ts` and
  * the mirrored `_.middleware.ts` files under `types/`.
  */
 export class ScenarioFileGenerator {
@@ -857,7 +885,7 @@ export class ScenarioFileGenerator {
 
   /**
    * Starts watching route context files and the exact application-root store
-   * path, regenerating `types/_.context.ts` and the mirrored `_.middleware.ts`
+   * path, regenerating `types/context.ts` and the mirrored `_.middleware.ts`
    * files under `types/` on every relevant change.
    *
    * Resolves once the watcher is ready.

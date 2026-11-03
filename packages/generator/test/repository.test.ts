@@ -78,7 +78,8 @@ describe("a Repository", () => {
       await expect(read("./routes/_.context.ts")).rejects.toThrow(
         "no such file or directory",
       );
-      await expect(read("./types/_.context.ts")).resolves.toContain(
+      await expect(read("./types/_.context.ts")).rejects.toThrow();
+      await expect(read("./types/context.ts")).resolves.toContain(
         "Record<string, any>",
       );
     });

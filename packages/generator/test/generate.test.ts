@@ -644,7 +644,7 @@ describe("_.context type generation", () => {
       await codeGenerator.generate(repository);
       await new ScenarioFileGenerator(basePath).generate();
 
-      const content = await $.read("types/_.context.ts");
+      const content = await $.read("types/context.ts");
       expect(content).toContain("readonly context: Record<string, any>");
       expect(content).toContain(
         "loadContext(path: string): Record<string, any>;",
@@ -681,7 +681,7 @@ describe("_.context type generation", () => {
       await codeGenerator.generate(repository);
       await new ScenarioFileGenerator(basePath).generate();
 
-      const content = await $.read("types/_.context.ts");
+      const content = await $.read("types/context.ts");
       expect(content).toContain(
         'import type { Context } from "../routes/_.context";',
       );
@@ -701,7 +701,7 @@ describe("_.context type generation", () => {
 
       await new ScenarioFileGenerator($.path("")).generate();
 
-      const content = await $.read("types/_.context.ts");
+      const content = await $.read("types/context.ts");
       expect(content).toContain('import type { Store } from "../_.store.js";');
       expect(content).toContain("export interface Context$ {");
       expect(content).toContain("  readonly store: Store;");
@@ -723,7 +723,7 @@ describe("_.context type generation", () => {
         $.path(""),
       ).generate();
 
-      const content = await $.read("groups/customers/types/_.context.ts");
+      const content = await $.read("groups/customers/types/context.ts");
       expect(content).toContain(
         'import type { Store } from "../../../_.store.js";',
       );
@@ -743,20 +743,20 @@ describe("_.context type generation", () => {
       await generator.watch();
 
       try {
-        expect(await $.read("customers/types/_.context.ts")).not.toContain(
+        expect(await $.read("customers/types/context.ts")).not.toContain(
           "readonly store: Store;",
         );
 
         await $.add("_.store.ts", "export class Store {}");
         const contentAfterAdd = await waitForGeneratedContent(
-          () => $.read("customers/types/_.context.ts"),
+          () => $.read("customers/types/context.ts"),
           (content) => content.includes("readonly store: Store;"),
         );
         expect(contentAfterAdd).toContain("readonly store: Store;");
 
         await $.remove("_.store.ts");
         const contentAfterDelete = await waitForGeneratedContent(
-          () => $.read("customers/types/_.context.ts"),
+          () => $.read("customers/types/context.ts"),
           (content) => !content.includes("readonly store: Store;"),
         );
         expect(contentAfterDelete).not.toContain("readonly store: Store;");
@@ -782,7 +782,7 @@ describe("_.context type generation", () => {
         .mockImplementation(() => {});
 
       try {
-        await $.remove("customers/types/_.context.ts");
+        await $.remove("customers/types/context.ts");
         await $.remove("customers/types/_.middleware.ts");
         await remove($.path("customers/types"));
         await $.add("customers/types", "blocker");
@@ -823,7 +823,7 @@ describe("_.context type generation", () => {
       await codeGenerator.generate(repository);
       await new ScenarioFileGenerator(basePath).generate();
 
-      const content = await $.read("types/_.context.ts");
+      const content = await $.read("types/context.ts");
       expect(content).toContain(
         'import type { Context } from "../routes/_.context";',
       );
@@ -865,7 +865,7 @@ describe("_.context type generation", () => {
       await codeGenerator.generate(repository);
       await new ScenarioFileGenerator(basePath).generate();
 
-      const content = await $.read("types/_.context.ts");
+      const content = await $.read("types/context.ts");
       expect(content).toContain(
         'import type { Context as PetsPetIdContext } from "../routes/pets/{petId}/_.context";',
       );

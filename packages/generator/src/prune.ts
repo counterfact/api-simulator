@@ -161,7 +161,7 @@ function isGeneratorOwnedTypePath(path: string): boolean {
  * Prunes obsolete files from the OpenAPI generator-owned namespaces below
  * `types/`. Hidden files are included by the recursive directory walk.
  *
- * `types/_.context.ts` and paths outside the known generated namespaces are
+ * `types/context.ts` and paths outside the known generated namespaces are
  * preserved because separate generators or users own them.
  *
  * @param destination - Base destination directory (contains `types/`).

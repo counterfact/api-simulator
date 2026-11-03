@@ -261,7 +261,7 @@ export const GET: HTTP_GET = function ($) {
       await $.add(
         "consumer.ts",
         `
-        import type { Scenario$ } from "./types/_.context.js";
+        import type { Scenario$ } from "./types/context.js";
         function inspect($: Scenario$) {
           const dashed: "dash" = $.loadContext("/foo-bar").kind;
           const underscored: "underscore" = $.loadContext("/foo_bar").kind;

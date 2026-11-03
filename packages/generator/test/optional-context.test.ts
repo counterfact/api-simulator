@@ -72,6 +72,9 @@ it.each(["", "v1"])(
       await expect(
         $.read(`${destination}/routes/_.context.ts`),
       ).rejects.toThrow();
+      await expect(
+        $.read(`${destination}/types/_.context.ts`),
+      ).rejects.toThrow();
       const consumer = (checks: string) => `
       import type { Routes, Scenario, Middleware } from "./${destination}/types/index.js";
       const handler: Routes["/pets"]["/{id}"]["GET"] = ($) => {
@@ -101,7 +104,7 @@ it.each(["", "v1"])(
         const nested = `${destination}/routes/pets/_.context.ts`;
         await $.add(nested, "export class Context { count = 0; }");
         await waitForContent(
-          () => $.read(`${destination}/types/_.context.ts`),
+          () => $.read(`${destination}/types/context.ts`),
           "PetsContext",
         );
         await $.remove("consumer.ts");
@@ -122,12 +125,12 @@ it.each(["", "v1"])(
           "export class Context { root = true; }",
         );
         await waitForContent(
-          () => $.read(`${destination}/types/_.context.ts`),
+          () => $.read(`${destination}/types/context.ts`),
           "readonly context: Context;",
         );
         await $.remove(nested);
         await waitForContent(
-          () => $.read(`${destination}/types/_.context.ts`),
+          () => $.read(`${destination}/types/context.ts`),
           "export type ContextFor<Path extends string> = Context;",
         );
         await waitForContent(
@@ -147,7 +150,7 @@ it.each(["", "v1"])(
 
         await $.remove(`${destination}/routes/_.context.ts`);
         await waitForContent(
-          () => $.read(`${destination}/types/_.context.ts`),
+          () => $.read(`${destination}/types/context.ts`),
           "readonly context: Record<string, any>",
         );
         await $.remove("consumer.ts");

@@ -243,8 +243,8 @@ describe("ApiRunner", () => {
           generate: { routes: false, types: true },
         });
         await runner.generate();
-        // ScenarioFileGenerator writes types/_.context.ts
-        const content = await $.read("types/_.context.ts");
+        // ScenarioFileGenerator writes types/context.ts
+        const content = await $.read("types/context.ts");
         expect(content).toContain("Scenario$");
       });
     });

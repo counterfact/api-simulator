@@ -52,7 +52,7 @@ export class ApiRunner {
   /** Registry of loaded scenario modules (used by the REPL). */
   public readonly scenarioRegistry: ScenarioRegistry;
 
-  /** Generates `types/_.context.ts` and the default `scenarios/index.ts`. */
+  /** Generates `types/context.ts` and the default `scenarios/index.ts`. */
   public readonly scenarioFileGenerator: ScenarioFileGenerator;
 
   /** Reads the OpenAPI spec and writes TypeScript route/type stub files. */
@@ -298,7 +298,7 @@ export class ApiRunner {
    *
    * - Re-generates route stubs when the spec changes (when
    *   `config.watch.routes` or `config.watch.types` is `true`).
-   * - Re-generates `types/_.context.ts` when a `_.context.ts` file changes
+   * - Re-generates `types/context.ts` when a `_.context.ts` file changes
    *   (when `config.watch.types` is `true`).
    */
   public async watch(): Promise<void> {
