@@ -11,9 +11,11 @@ import {
   formatStatements,
   importDeclaration,
   parameter,
+  stringType,
   typeAlias,
   typeReference,
   withJsDoc,
+  withComment,
 } from "./ast.js";
 
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
@@ -260,6 +262,14 @@ export class Repository {
         undefined,
         undefined,
         [
+          withComment(
+            ts.factory.createIndexSignature(
+              undefined,
+              [parameter("key", stringType())],
+              ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+            ),
+            "/* Delete this line to make the context type safe. */",
+          ),
           ts.factory.createConstructorDeclaration(
             undefined,
             [parameter("$", typeReference("Context$"))],
