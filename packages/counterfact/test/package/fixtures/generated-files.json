@@ -28,7 +28,7 @@
   "routes/ping.ts": "c17858bacce22649b5a1722a7b202e4b797dbcf0b59c0061a0f9e30e215035d2",
   "scenarios/index.ts": "af429d34a34ced1d42dd49a7757794c6af6c44560479f0625f52d4679cc0476b",
   "types/_.middleware.ts": "f96daeeb435c37e856453ce65744c22e16528e4109a60d5bbe7be8c74aa19135",
-  "types/context.ts": "aee18d679208e35b1848c65c12bfcb6a71f862a73ee375a3f3e8eb257e2bef35",
+  "types/context.ts": "abd3edd83764aa445b19f70b21de05db25a280010eee59feeef5c8d7e86ab8f7",
   "types/helpers.ts": "976856038028086e4b34bb65e0c9caa2575dd19a1c3ac08d1282fe567dc798db",
   "types/index.ts": "8af92d759312b6a9da552a1938016bbf6b6193250cc13cc7e7ff9ad9215b2125",
   "types/path/_.middleware.ts": "abbd50467bb399de651e5ef1e888450bcfb1b517031d38ede3680621cb7a089a",

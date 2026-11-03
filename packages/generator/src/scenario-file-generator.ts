@@ -281,7 +281,9 @@ function routeContextType(
     [
       ts.factory.createTypeParameterDeclaration(
         undefined,
-        "Path",
+        contextFiles.some((context) => context.routePath !== "/")
+          ? "Path"
+          : "_Path",
         stringType(),
       ),
     ],

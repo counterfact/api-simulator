@@ -5,7 +5,7 @@ import { CodeGenerator } from "../src/code-generator.js";
 import { generateVersionsTsContent } from "../src/versions-ts-generator.js";
 import { ScenarioFileGenerator } from "../src/scenario-file-generator.js";
 
-function diagnostics(file: string): string[] {
+function diagnostics(file: string, options: ts.CompilerOptions = {}): string[] {
   const program = ts.createProgram([file], {
     strict: true,
     noEmit: true,
@@ -14,6 +14,7 @@ function diagnostics(file: string): string[] {
     target: ts.ScriptTarget.ES2022,
     module: ts.ModuleKind.ESNext,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
+    ...options,
   });
   return ts
     .getPreEmitDiagnostics(program)
@@ -131,7 +132,7 @@ it.each(["", "v1"])(
         await $.remove(nested);
         await waitForContent(
           () => $.read(`${destination}/types/context.ts`),
-          "export type ContextFor<Path extends string> = Context;",
+          "export type ContextFor<_Path extends string> = Context;",
         );
         await waitForContent(
           () => $.read(`${destination}/types/pets/_.middleware.ts`),
@@ -167,4 +168,22 @@ it.each(["", "v1"])(
     });
   },
   30_000,
+);
+
+it.each([undefined, "/", "/pets"])(
+  "compiles context helper with unused-parameter checks for context at %s",
+  async (contextPath) => {
+    await usingTemporaryFiles(async ($) => {
+      if (contextPath !== undefined) {
+        await $.add(
+          `routes${contextPath === "/" ? "" : contextPath}/_.context.ts`,
+          "export class Context { count = 0; }",
+        );
+      }
+      await new ScenarioFileGenerator($.path("")).generate();
+      expect(
+        diagnostics($.path("types/context.ts"), { noUnusedParameters: true }),
+      ).toEqual([]);
+    });
+  },
 );
