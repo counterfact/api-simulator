@@ -110,6 +110,53 @@ function diagnostics(...files: string[]): string[] {
 }
 
 describe("central generated types", () => {
+  it("starts with flexible context properties and supports opting into strict typing", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("spec.json", JSON.stringify(spec));
+      const generator = new CodeGenerator($.path("spec.json"), $.path("api"), {
+        routes: true,
+        types: true,
+      });
+      await generator.generate();
+      const original = await $.read("api/routes/_.context.ts");
+      expect(original).toContain("[key: string]: any;");
+      await $.add(
+        "consumer.ts",
+        `
+        import type { Routes } from "./api/types/index.js";
+        const handler: Routes["/pets"]["/{id}"]["GET"] = ($) => {
+          $.context.count ??= 0;
+          $.context.count++;
+          $.context.items = [];
+          $.context.items.push("pet");
+          return $.response.status(204).empty();
+        };
+      `,
+      );
+      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+      const strict = original.replace("[key: string]: any;", "count = 0;");
+      await $.add("api/routes/_.context.ts", strict);
+      await $.add(
+        "consumer.ts",
+        `
+        import type { Routes } from "./api/types/index.js";
+        const handler: Routes["/pets"]["/{id}"]["GET"] = ($) => {
+          $.context.count++;
+          // @ts-expect-error Removing the index signature rejects undeclared properties.
+          $.context.typo = 1;
+          // @ts-expect-error Declared properties retain their types.
+          $.context.count = "wrong";
+          return $.response.status(204).empty();
+        };
+      `,
+      );
+      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+      await generator.generate();
+      expect(await $.read("api/routes/_.context.ts")).toBe(strict);
+      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+    });
+  });
+
   it("compiles routes and every component category, including unused and aliased schemas", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("spec.json", JSON.stringify(spec));

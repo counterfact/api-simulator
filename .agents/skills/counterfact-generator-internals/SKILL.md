@@ -31,6 +31,7 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 ## Existing conventions to follow
 
 - Keep the generator architecture layered: `Specification/Requirement` -> coders -> `Script` -> `Repository`.
+- Generate the default Context class with `[key: string]: any` and an instruction to remove it for strict typing. Preserve existing authored context files, including classes where that signature was removed. Compiler-check both the flexible default and the strict opt-in.
 - Preserve regeneration contract: existing route files are not overwritten; generated types are overwritten.
 - Support OpenAPI features through typed coders and requirement traversal rather than ad-hoc string logic.
 - Keep generated output deterministic and formatted via existing script/repository pipeline.
