@@ -152,6 +152,7 @@ function isGeneratorOwnedTypePath(path: string): boolean {
 
   return (
     path === "versions.ts" ||
+    first === "multipart" ||
     generatedCategory(first) ||
     generatedCategory(second)
   );
