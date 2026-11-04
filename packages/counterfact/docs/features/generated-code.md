@@ -146,6 +146,12 @@ expose unions across versions.
 
 ## Context, scenario, and middleware types
 
+Handler context types follow the same lookup as runtime: an endpoint such as
+`/dictionaries` uses `routes/dictionaries/_.context.ts` when it exists.
+Descendant endpoints inherit that context unless a closer context is defined.
+Otherwise, lookup falls back through ancestor directories to `routes/_.context.ts`.
+This applies to both ordinary and versioned APIs.
+
 Use the same central import for constructor helpers and scenarios:
 
 ```ts

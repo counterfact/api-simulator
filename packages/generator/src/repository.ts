@@ -699,27 +699,26 @@ export class Repository {
    * @param path - Repository-relative path to start from.
    */
   public nearestContextFile(destination: string, path: string): string {
-    const parts = pathDirname(path)
+    // Operation contracts describe the endpoint itself, not just its parent.
+    const parts = path
+      .replace(/(?:\.types)?\.ts$/u, "")
       .split("/")
       .filter((part) => part !== ".");
     const pathsIndex = parts[0] === "types" ? parts.indexOf("paths") : -1;
-    const directory =
+    let directory =
       pathsIndex === 1 || pathsIndex === 2
         ? ["routes", ...parts.slice(pathsIndex + 1)].join("/")
         : parts.join("/");
 
-    const candidate = nodePath.join(destination, directory, "_.context.ts");
-
-    if (directory.length <= 1) {
-      // No _context.ts was found so import the one that should be in the root
-      return nodePath.join(destination, "routes", "_.context.ts");
+    while (directory !== "." && directory !== "routes") {
+      const candidate = nodePath.join(destination, directory, "_.context.ts");
+      if (existsSync(candidate)) {
+        return candidate;
+      }
+      directory = pathDirname(directory);
     }
 
-    if (existsSync(candidate)) {
-      return candidate;
-    }
-
-    return this.nearestContextFile(destination, nodePath.join(path, ".."));
+    return nodePath.join(destination, "routes", "_.context.ts");
   }
 }
 
