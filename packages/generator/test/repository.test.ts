@@ -50,6 +50,15 @@ describe("a Repository", () => {
 
   it.each([
     ["./types/paths/x.ts", "../../routes/_.context.ts"],
+    ["./types/paths/a/b.types.ts", "../../../routes/a/b/_.context.ts"],
+    ["./types/paths/a/b/{id}.types.ts", "../../../../routes/a/b/_.context.ts"],
+    ["./types/v1/paths/a/b.types.ts", "../../../../routes/a/b/_.context.ts"],
+    [
+      "./types/v1/paths/a/b/{id}.types.ts",
+      "../../../../../routes/a/b/_.context.ts",
+    ],
+    ["./types/v1/paths/a/x.types.ts", "../../../../routes/_.context.ts"],
+    ["./routes/a/b.ts", "b/_.context.ts"],
     ["./types/paths/a/x.ts", "../../../routes/_.context.ts"],
     ["./types/paths/a/b/x.ts", "../../../../routes/a/b/_.context.ts"],
     ["./types/paths/a/b/c/x.ts", "../../../../../routes/a/b/_.context.ts"],

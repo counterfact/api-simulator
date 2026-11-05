@@ -53,3 +53,4 @@ Reacquire contexts with `loadContext()` and read `api.store` again after reset. 
 See the [programmatic manual](../features/programmatic-api.md) for complete test-suite examples.
 
 Boolean query, header, and cookie parameters accept the case-sensitive wire values true and false. With request validation enabled, malformed text returns 400 before the handler executes. With validation disabled, malformed boolean text remains unchanged instead of becoming false.
+Versioned dispatchers only execute operations declared in their selected contract. An absent path returns 404; an absent method returns 405. Unversioned dispatchers continue to support custom routes.

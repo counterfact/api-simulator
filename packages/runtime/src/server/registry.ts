@@ -255,6 +255,19 @@ export class Registry {
     );
   }
 
+  public existsForPattern(
+    method: RequestMethod,
+    url: string,
+    pattern: string,
+  ): boolean {
+    return (
+      this.methodFromModule(
+        this.handler(url, method, pattern).module,
+        method,
+      ) !== undefined
+    );
+  }
+
   private methodsForPath(url: string): string[] {
     return [...this.methodNames].filter(
       (method) =>
@@ -274,8 +287,11 @@ export class Registry {
    * @returns An object with `module`, `path` (variable bindings),
    *   `matchedPath`, and `ambiguous` flag.
    */
-  public handler(url: string, method: string) {
-    const match = this.moduleTree.match(url, method);
+  public handler(url: string, method: string, pattern?: string) {
+    const match =
+      pattern === undefined
+        ? this.moduleTree.match(url, method)
+        : this.moduleTree.matchPattern(url, pattern);
 
     return {
       ambiguous: match?.ambiguous ?? false,
@@ -335,8 +351,9 @@ export class Registry {
       path?: Map<string, string>;
       query?: Map<string, string>;
     } = {},
+    pattern?: string,
   ) {
-    const handler = this.handler(url, httpRequestMethod);
+    const handler = this.handler(url, httpRequestMethod, pattern);
 
     debug("handler for %s: %o", url, handler);
 

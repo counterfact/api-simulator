@@ -80,3 +80,4 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
 
 - Read supplied request parameter values using own-property checks; optional parameters named constructor or other prototype keys must remain absent when not supplied.
+- For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.

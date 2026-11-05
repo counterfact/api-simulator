@@ -264,3 +264,5 @@ It exposes:
 - [REPL](./repl.md) — interactive terminal for runtime inspection
 - [Generated code](./generated-code.md) — how code generation works
 - [Find your workflow](../usage.md)
+
+When version prefixes overlap, Counterfact selects the first runner whose contract declares the requested operation and has its handler. Version-specific literal paths cannot shadow a wildcard in another selected contract. A method error reports the selected contract’s allowed methods.
