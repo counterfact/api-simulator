@@ -231,3 +231,122 @@ it("preserves array header schemas and does not collapse repeated scalar values"
     ).valid,
   ).toBe(false);
 });
+
+it("does not treat binary adapter input as an absent HAR body", async () => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add(
+      "har/empty.har",
+      archive([
+        {
+          ...entry,
+          request: {
+            method: "POST",
+            url: "https://recorded.test/upload",
+            bodySize: 0,
+          },
+        },
+      ]),
+    );
+    const collection = new HarCollection($.path("."));
+    await collection.load();
+    const incoming = createHarRequest({
+      method: "POST",
+      url: "/upload",
+      headers: { "content-type": "application/octet-stream" },
+      rawBody: new Uint8Array([0, 255, 1]),
+    });
+    expect(incoming.rawBody).toBeUndefined();
+    expect(incoming.bodyAvailable).toBe(false);
+    expect(collection.lookup(incoming)()).toBeUndefined();
+  });
+});
+
+it("keeps multipart bytes available to handlers while HAR replay declines multipart matching", async () => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add(
+      "har/upload.har",
+      archive([
+        {
+          ...entry,
+          request: { method: "POST", url: "https://recorded.test/api/upload" },
+        },
+      ]),
+    );
+    const collection = new HarCollection($.path("."));
+    await collection.load();
+    const registry = new Registry();
+    const contextRegistry = new ContextRegistry();
+    registry.add("/upload", {
+      POST: ({ har, body }) => {
+        const file = (body as { file: { data: Uint8Array; size: number } })
+          .file;
+        return (
+          (har?.() as unknown as CounterfactResponseObject) ?? {
+            status: 200,
+            contentType: "application/json",
+            body: { size: file.size, bytes: Array.from(file.data) },
+          }
+        );
+      },
+    });
+    const dispatcher = new Dispatcher(
+      registry,
+      contextRegistry,
+      {
+        paths: {
+          "/upload": {
+            post: {
+              requestBody: {
+                required: true,
+                content: {
+                  "multipart/form-data": {
+                    schema: {
+                      type: "object",
+                      required: ["file"],
+                      properties: {
+                        file: { type: "string", format: "binary" },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: { 200: { description: "ok" } },
+            },
+          },
+        },
+      },
+      undefined,
+      "",
+      [],
+      collection,
+    );
+    const app = createKoaApp({
+      runners: [
+        {
+          dispatcher,
+          registry,
+          contextRegistry,
+          openApiPath: "unused",
+          overlays: [],
+          prefix: "/api",
+          subdirectory: "",
+        },
+      ],
+      config: {
+        basePath: ".",
+        port: 0,
+        proxyPaths: new Map(),
+        proxyUrl: "",
+        startAdminApi: false,
+      },
+    });
+    const response = await request(app.callback())
+      .post("/api/upload")
+      .attach("file", Buffer.from([0, 255, 1]), {
+        filename: "one.bin",
+        contentType: "application/octet-stream",
+      });
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ size: 3, bytes: [0, 255, 1] });
+  });
+});

@@ -22,6 +22,7 @@ import { ParameterExportTypeCoder } from "./parameter-export-type-coder.js";
 import { ParametersTypeCoder } from "./parameters-type-coder.js";
 import { READ_ONLY_COMMENTS } from "./read-only-comments.js";
 import { ResponsesTypeCoder } from "./responses-type-coder.js";
+import { MultipartSchemaTypeCoder } from "./multipart-schema-type-coder.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
 import { TypeCoder } from "./type-coder.js";
 import { normalizeOpenApiPath } from "./openapi-path.js";
@@ -367,24 +368,44 @@ export class OperationTypeCoder extends TypeCoder {
       "cookie",
     ).write(script);
 
-    const bodyRequirement =
-      (this.requirement.get("consumes") ??
-      this.requirement.specification?.rootRequirement?.get("consumes"))
-        ? parameters
-            ?.find((parameter) =>
-              ["body", "formData"].includes(
-                parameter.get("in")?.data as string,
-              ),
-            )
-            ?.get("schema")
-        : this.requirement.select(
-            "requestBody/content/application~1json/schema",
-          );
-
+    const consumes =
+      this.requirement.get("consumes") ??
+      this.requirement.specification?.rootRequirement?.get("consumes");
+    const legacyBody = consumes
+      ? parameters
+          ?.find((parameter) =>
+            ["body", "formData"].includes(parameter.get("in")?.data as string),
+          )
+          ?.get("schema")
+      : undefined;
+    const bodyTypes: ts.TypeNode[] = legacyBody
+      ? [new SchemaTypeCoder(legacyBody, this.version).write(script)]
+      : [];
+    const seenBodySchemas = new Set<string>();
+    for (const mediaType of [
+      "application/json",
+      "application/x-www-form-urlencoded",
+      "multipart/form-data",
+    ]) {
+      const schema = this.requirement
+        .get("requestBody")
+        ?.get("content")
+        ?.get(mediaType)
+        ?.get("schema");
+      if (schema) {
+        const Coder =
+          mediaType === "multipart/form-data"
+            ? MultipartSchemaTypeCoder
+            : SchemaTypeCoder;
+        const coder = new Coder(schema, this.version);
+        if (!seenBodySchemas.has(coder.id)) {
+          seenBodySchemas.add(coder.id);
+          bodyTypes.push(coder.write(script));
+        }
+      }
+    }
     const bodyType =
-      bodyRequirement === undefined
-        ? neverType()
-        : new SchemaTypeCoder(bodyRequirement, this.version).write(script);
+      bodyTypes.length === 0 ? neverType() : unionType(bodyTypes);
 
     const openApi2MediaTypes = (this.requirement.get("produces")?.data ??
       this.requirement.specification?.rootRequirement?.get("produces")

@@ -65,7 +65,7 @@ export function createHarRequest(input: {
   url: string;
   headers: Record<string, unknown>;
   body?: unknown;
-  rawBody?: string;
+  rawBody?: string | Uint8Array;
 }): HarRequest {
   const url = new URL(input.url, "http://counterfact.invalid");
   const headers: Record<string, string[]> = Object.create(null);
@@ -81,8 +81,11 @@ export function createHarRequest(input: {
     query: queryFields(url.searchParams),
     headers,
     body: input.body,
-    rawBody: input.rawBody,
-    bodyAvailable: true,
+    // Binary wire bodies are preserved by the adapter, but HAR text matching
+    // cannot compare them without inventing a text encoding.
+    rawBody: typeof input.rawBody === "string" ? input.rawBody : undefined,
+    bodyAvailable:
+      input.rawBody === undefined || typeof input.rawBody === "string",
   });
 }
 

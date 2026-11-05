@@ -79,6 +79,15 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Verify lifecycle changes with real HTTP mutation/restoration, same-listener
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
 
+- Do not enable Ajv allErrors for untrusted request bodies. Stop body-error collection early and regression-test large invalid collections; a request byte limit does not bound the number of validation error objects.
+
+- Normalize array query cardinality and primitive items from the declared schema and serialization style. Do not split commas for default exploded form arrays or invent values for absent optional parameters.
+
+- Query array conversion must retain enclosing union constraints, honor positional prefixItems before trailing items, preserve explicitly exploded occurrences, and reject non-decimal numeric coercion without hiding the original text.
+
+- Read supplied request parameter values using own-property checks; optional parameters named constructor or other prototype keys must remain absent when not supplied.
+
+- Preserve request-body absence at the HTTP parsing boundary. Empty-wire input, explicit {}, and explicit JSON null must remain distinct before optionality and schema validation.
 - For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.
 
 - Keep replay request identity separate from adapter handler-map patterns. Treat known omitted archive payloads as unavailable, compare media types without parameters, and validate scalar transport headers without altering repeated wire values. Deletion regressions must repeat a request that matched before removal.

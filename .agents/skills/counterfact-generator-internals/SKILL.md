@@ -72,4 +72,5 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - After required workspace dependency builds finish, run focused generator tests before the full suite (affected coder + integration/snapshot tests in `packages/generator/test/`).
 - If behavior changes for generated artifacts, verify snapshots and relevant docs (`packages/counterfact/docs/features/generated-code.md`, `packages/counterfact/docs/faq.md`).
 
+- External shared-type imports need collision-free aliases against reserved names, exports, and other imports. Binary multipart models must preserve the non-binary arms of type unions.
 - Resolve operation context imports from the logical endpoint, not the generated filename. The root endpoint uses index.types.ts but must not inherit a real /index child context.

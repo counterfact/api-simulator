@@ -102,3 +102,5 @@ Recordings do not reproduce elapsed time, stream event timing, or WebSocket conv
 HAR files can contain credentials and personal data in headers, URLs and bodies. Review and redact recordings locally before committing them. Counterfact does not upload recordings or log captured payloads in load diagnostics.
 
 MSW requests use their concrete public path (including any base path) for recording matching; rawPath selects the registered handler pattern. Known omitted HAR request payloads do not match bodyless requests by default. Response media-type parameters are preserved while negotiation compares the media type, and singleton transport header arrays validate against scalar schemas without flattening repeated wire headers.
+
+Binary wire bodies, including multipart uploads, are not coerced into text for HAR request matching. Default replay declines these inputs; handlers and proxying retain the original upload bytes.

@@ -8,7 +8,7 @@ export interface HarRequest {
   readonly headers: Readonly<Record<string, readonly string[]>>;
   readonly body: unknown;
   readonly rawBody?: string;
-  /** False when a recording omitted a request payload. */
+  /** False when a payload is omitted or unavailable for HAR text comparison. */
   readonly bodyAvailable: boolean;
 }
 
