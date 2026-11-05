@@ -35,6 +35,7 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Preserve regeneration contract: existing route files are not overwritten; generated types are overwritten.
 - Support OpenAPI features through typed coders and requirement traversal rather than ad-hoc string logic.
 - Keep generated output deterministic and formatted via existing script/repository pipeline.
+- Omit unavailable operation argument properties while assembling their AST, including per-version arguments. Keep pruning at the argument boundary: nested schema properties and generic response-builder methods have separate contracts.
 - Type coders return `TypeNode`s and runtime coders return `Expression`s from `write()`. Compose nodes with TypeScript factories and the AST helpers; do not print and reparse fragments or interpolate TypeScript source text.
 - Assemble imports, exports, and version declarations as statements in `Script`. Resolve context module references before printing; do not replace placeholder tokens in generated source.
 - Use the same AST helpers for versions, scenarios, middleware, and starter files. For route regeneration, inspect user-authored ASTs and insert printed generated declarations at source offsets; do not reprint the existing route or match handlers with regular expressions.

@@ -1,6 +1,7 @@
 import { printStatements, typeReference, printNode } from "../src/ast.js";
 import { describe, expect, it } from "@jest/globals";
 import { format as formatCode } from "prettier";
+import ts from "typescript";
 
 import {
   OperationTypeCoder,
@@ -597,7 +598,8 @@ describe("an OperationTypeCoder", () => {
     const scriptWithExportTracking = createScriptWithExportTracking();
 
     const coder = new OperationTypeCoder(requirement, "", "get");
-    const result = printNode(coder.write(scriptWithExportTracking));
+    const result = coder.write(scriptWithExportTracking) as ts.FunctionTypeNode;
+    const argument = result.parameters[0].type as ts.TypeLiteralNode;
 
     // Verify that parameter types are NOT exported when they are 'never'
     expect(scriptWithExportTracking.exports).not.toHaveProperty(
@@ -613,11 +615,14 @@ describe("an OperationTypeCoder", () => {
       "HTTP_GET_Cookie",
     );
 
-    // Verify that the main type uses 'never' directly
-    expect(result).toContain("query: never");
-    expect(result).toContain("path: never");
-    expect(result).toContain("headers: never");
-    expect(result).toContain("cookie: never");
+    // Absent parameter groups are omitted from the generated argument type.
+    expect(argument.members.map((member) => printNode(member.name!))).toEqual([
+      "context",
+      "response",
+      "x",
+      "proxy",
+      "delay",
+    ]);
   });
 
   it("generates a strongly-typed cookie object from cookie parameters", async () => {
@@ -777,7 +782,7 @@ describe("an OperationTypeCoder", () => {
     expect(result).not.toContain("querystring: never");
   });
 
-  it("uses querystring: never when no querystring parameter is present", () => {
+  it("omits querystring when no querystring parameter is present", () => {
     const requirement = new Requirement(
       {
         operationId: "listItems",
@@ -798,7 +803,7 @@ describe("an OperationTypeCoder", () => {
     const coder = new OperationTypeCoder(requirement, "", "get");
     const result = printNode(coder.write(dummyScript));
 
-    expect(result).toContain("querystring: never");
+    expect(result).not.toContain("querystring:");
   });
 
   it("merges path-level and operation-level parameters (operation-level overrides)", () => {
@@ -927,7 +932,7 @@ describe("a VersionedArgTypeCoder", () => {
     const result = printNode(coder.write(perVersionScript));
 
     expect(typeof result).toBe("string");
-    expect(result).toContain("OmitValueWhenNever");
+    expect(result).not.toContain("OmitValueWhenNever");
   });
 
   it("write() on the shared script delegates to importType()", () => {
@@ -1071,9 +1076,9 @@ describe("an OperationTypeCoder (versioned)", () => {
     const v2Contents = await v2Script.contents();
 
     expect(v1Contents).toContain("HTTP_GET_$_v1");
-    expect(v1Contents).toContain("OmitValueWhenNever");
+    expect(v1Contents).not.toContain("OmitValueWhenNever");
     expect(v2Contents).toContain("HTTP_GET_$_v2");
-    expect(v2Contents).toContain("OmitValueWhenNever");
+    expect(v2Contents).not.toContain("OmitValueWhenNever");
   });
 });
 
@@ -1098,10 +1103,10 @@ describe("version property in the generated $ arg type", () => {
     expect(result).toContain('version: "v3"');
   });
 
-  it("includes version: never in the unversioned OperationTypeCoder output", () => {
+  it("omits version in the unversioned OperationTypeCoder output", () => {
     const coder = new OperationTypeCoder(makeRequirement(), "", "get");
     const result = printNode(coder.write(dummyScript));
 
-    expect(result).toContain("version: never");
+    expect(result).not.toContain("version:");
   });
 });
