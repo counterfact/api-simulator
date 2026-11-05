@@ -315,7 +315,7 @@ export class OperationTypeCoder extends TypeCoder {
   }
 
   /**
-   * Builds the `OmitValueWhenNever<{…}>` dollar-argument type body and sets
+   * Builds the dollar-argument type body and sets
    * up all required shared-type imports on `script`.
    *
    * This helper is reused by both {@link writeCode} (non-versioned) and
@@ -332,7 +332,6 @@ export class OperationTypeCoder extends TypeCoder {
   ): ts.TypeNode {
     const xType = script.importSharedType("WideOperationArgument");
 
-    script.importSharedType("OmitValueWhenNever");
     script.importSharedType("COUNTERFACT_RESPONSE");
 
     script.contextRoutePath = normalizeOpenApiPath(
@@ -484,8 +483,8 @@ export class OperationTypeCoder extends TypeCoder {
 
     const versionLiteralType =
       this.version !== "" ? literalType(this.version) : neverType();
-    return typeReference("OmitValueWhenNever", [
-      typeLiteral([
+    return typeLiteral(
+      [
         typeProperty("query", queryTypeName),
         typeProperty("querystring", querystringTypeName),
         typeProperty("path", pathTypeName),
@@ -500,8 +499,10 @@ export class OperationTypeCoder extends TypeCoder {
         typeProperty("user", this.userType()),
         typeProperty("delay", delayType),
         typeProperty("version", versionLiteralType),
-      ]),
-    ]);
+      ].filter(
+        (property) => property.type?.kind !== ts.SyntaxKind.NeverKeyword,
+      ),
+    );
   }
 
   public override exportDeclarations(
@@ -543,7 +544,6 @@ export class OperationTypeCoder extends TypeCoder {
   public override writeCode(script: Script): ts.TypeNode {
     script.comments = READ_ONLY_COMMENTS;
     script.importSharedType("WideOperationArgument");
-    script.importSharedType("OmitValueWhenNever");
     script.importSharedType("MaybePromise");
     script.importSharedType("COUNTERFACT_RESPONSE");
     const arg = this.buildDollarArgType(
@@ -567,7 +567,7 @@ export class OperationTypeCoder extends TypeCoder {
  * `script.importType(this)` so that the type is written to the per-version
  * file and an import is added to the calling script.
  *
- * Only the `OmitValueWhenNever<{…}>` type body is emitted — the
+ * Only the dollar-argument type body is emitted — the
  * function-wrapper `($: Versioned<…>) => MaybePromise<COUNTERFACT_RESPONSE>`
  * is assembled by the shared script's `versionsTypeStatements()`.
  */
@@ -636,7 +636,7 @@ export class VersionedArgTypeCoder extends OperationTypeCoder {
   }
 
   /**
-   * Generates the `OmitValueWhenNever<{…}>` dollar-argument type and writes
+   * Generates the dollar-argument type and writes
    * it to the per-version script.
    */
   public override writeCode(script: Script): ts.TypeNode {
