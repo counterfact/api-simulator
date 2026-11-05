@@ -63,6 +63,8 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 ## Recursive request schemas
 
+- Preserve shared schema nodes as references as well as cycles. Identity memoization must survive sibling visits; disable Ajv reference inlining to avoid exponential validator compilation. Verify the public Dispatcher path in a bounded-heap subprocess, with valid and invalid nested bodies.
+
 - OpenAPI dereferencing can produce cyclic JavaScript schema graphs. Convert back edges to JSON Schema references before passing them to Ajv; keep recursive constraints and verify finite valid and invalid nested data.
 
 - Schema cycle references must respect nested $id resource scopes and URI-fragment encoding in addition to JSON Pointer escaping. Preserve boolean schemas before object caching and leave annotations unchanged.

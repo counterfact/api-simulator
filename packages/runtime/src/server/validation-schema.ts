@@ -30,7 +30,7 @@ const children = new Set([
 const token = (key: string) =>
   encodeURIComponent(key.replaceAll("~", "~0").replaceAll("/", "~1"));
 
-/** Convert schema graph cycles into URI references within the correct $id resource. */
+/** Convert repeated schema nodes into URI references within the correct $id resource. */
 export function validationSchema(
   schema: Schema,
   resolveUri: ResolveUri,
@@ -39,12 +39,12 @@ export function validationSchema(
   const cached = cache.get(schema);
   if (cached) return cached;
   const base = "https://counterfact.invalid/request-schema/" + ++sequence;
-  const ancestors = new Map<object, { resource: string; pointer: string }>();
+  const targets = new Map<object, { resource: string; pointer: string }>();
   const resources = new Map<string, object>();
   function visit(value: unknown, pointer: string, resource: string): unknown {
     if (typeof value !== "object" || value === null || Array.isArray(value))
       return value;
-    const target = ancestors.get(value);
+    const target = targets.get(value);
     if (target)
       return {
         $ref:
@@ -63,7 +63,7 @@ export function validationSchema(
       pointer = "#";
       resources.set(id, value);
     }
-    ancestors.set(value, { resource, pointer });
+    targets.set(value, { resource, pointer });
     const result: Record<string, unknown> = { ...source };
     if (id !== undefined) result.$id = id;
     for (const [key, child] of Object.entries(source)) {
@@ -88,7 +88,6 @@ export function validationSchema(
           : visit(child, path, resource);
       }
     }
-    ancestors.delete(value);
     return result;
   }
   const normalized = visit(schema, "#", base) as Record<string, unknown>;
