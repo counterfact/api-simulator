@@ -2,6 +2,8 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import ts from "typescript";
+
 export const ADR_DEPENDENCY_ALLOWLIST = Object.freeze({
   "@counterfact/client": ["@counterfact/openapi"],
   "@counterfact/generator": ["@counterfact/openapi", "@counterfact/types"],
@@ -27,278 +29,78 @@ const PRODUCTION_DEPENDENCY_FIELDS = [
 const PRODUCTION_SOURCE_DIRECTORIES = ["src", "bin"];
 const SOURCE_EXTENSIONS = new Set([".cjs", ".js", ".mjs", ".ts", ".tsx"]);
 
-function isIdentifierStart(character) {
-  return /[A-Z_a-z$]/u.test(character);
-}
-
-function isIdentifierPart(character) {
-  return /[\w$]/u.test(character);
-}
-
-function tokenize(source) {
-  const tokens = [];
-  let index = 0;
-  let line = 1;
-
-  function canStartRegularExpression() {
-    const previous = tokens[tokens.length - 1];
-    if (previous === undefined) return true;
-    if (previous.kind === "identifier") {
-      return ["case", "return", "throw"].includes(previous.value);
-    }
-    return (
-      previous.kind === "punctuation" &&
-      ["(", "[", "{", ":", ",", ";", "=", "!", "?", "&", "|"].includes(
-        previous.value,
-      )
-    );
-  }
-
-  function advance() {
-    if (source[index] === "\n") line += 1;
-    index += 1;
-  }
-
-  while (index < source.length) {
-    const character = source[index];
-    const next = source[index + 1];
-
-    if (character === undefined) break;
-    if (/\s/u.test(character)) {
-      advance();
-      continue;
-    }
-
-    if (character === "/" && next === "/") {
-      while (index < source.length && source[index] !== "\n") advance();
-      continue;
-    }
-
-    if (character === "/" && next === "*") {
-      advance();
-      advance();
-      while (
-        index < source.length &&
-        !(source[index] === "*" && source[index + 1] === "/")
-      ) {
-        advance();
-      }
-      if (index < source.length) {
-        advance();
-        advance();
-      }
-      continue;
-    }
-
-    if (character === "/" && canStartRegularExpression()) {
-      let inCharacterClass = false;
-      advance();
-      while (index < source.length) {
-        if (source[index] === "\\") {
-          advance();
-          if (index < source.length) advance();
-          continue;
-        }
-        if (source[index] === "[") inCharacterClass = true;
-        if (source[index] === "]") inCharacterClass = false;
-        if (source[index] === "/" && !inCharacterClass) {
-          advance();
-          while (/[A-Z_a-z]/u.test(source[index] ?? "")) advance();
-          break;
-        }
-        advance();
-      }
-      continue;
-    }
-
-    if (character === '"' || character === "'") {
-      const quote = character;
-      const tokenLine = line;
-      let value = "";
-      advance();
-      while (index < source.length && source[index] !== quote) {
-        if (source[index] === "\\") {
-          advance();
-          if (index < source.length) {
-            value += source[index];
-            advance();
-          }
-          continue;
-        }
-        value += source[index];
-        advance();
-      }
-      if (source[index] === quote) advance();
-      tokens.push({ kind: "string", line: tokenLine, value });
-      continue;
-    }
-
-    if (character === "`") {
-      advance();
-      while (index < source.length && source[index] !== "`") {
-        if (source[index] === "\\") {
-          advance();
-          if (index < source.length) advance();
-          continue;
-        }
-        advance();
-      }
-      if (source[index] === "`") advance();
-      continue;
-    }
-
-    if (isIdentifierStart(character)) {
-      const tokenLine = line;
-      let value = character;
-      advance();
-      while (
-        index < source.length &&
-        source[index] !== undefined &&
-        isIdentifierPart(source[index])
-      ) {
-        value += source[index];
-        advance();
-      }
-      tokens.push({ kind: "identifier", line: tokenLine, value });
-      continue;
-    }
-
-    tokens.push({ kind: "punctuation", line, value: character });
-    advance();
-  }
-
-  return tokens;
-}
-
-export function extractModuleSpecifiers(source) {
-  const tokens = tokenize(source);
+// Parse syntax rather than approximating JavaScript lexical rules. Computed
+// module names are outside this static check; literal require() calls count.
+export function extractModuleSpecifiers(source, filename = "source.ts") {
+  const file = ts.createSourceFile(
+    filename,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+  );
   const imports = [];
 
-  function record(token) {
-    if (token?.kind === "string") {
-      imports.push({ line: token.line, specifier: token.value });
+  function visit(node) {
+    let specifier;
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+      specifier = node.moduleSpecifier;
+    } else if (
+      ts.isCallExpression(node) &&
+      (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(node.expression) &&
+          node.expression.text === "require"))
+    ) {
+      [specifier] = node.arguments;
+    } else if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference)
+    ) {
+      specifier = node.moduleReference.expression;
+    } else if (
+      ts.isImportTypeNode(node) &&
+      ts.isLiteralTypeNode(node.argument)
+    ) {
+      specifier = node.argument.literal;
     }
+    if (
+      specifier &&
+      (ts.isStringLiteral(specifier) ||
+        ts.isNoSubstitutionTemplateLiteral(specifier))
+    ) {
+      imports.push({
+        line:
+          file.getLineAndCharacterOfPosition(specifier.getStart(file)).line + 1,
+        specifier: specifier.text,
+      });
+    }
+    ts.forEachChild(node, visit);
   }
 
-  function findFrom(startIndex) {
-    for (let index = startIndex; index < tokens.length; index += 1) {
-      const token = tokens[index];
-      if (token?.value === ";") return;
-      if (token?.kind === "identifier" && token.value === "from") {
-        record(tokens[index + 1]);
-        return;
-      }
-    }
-  }
-
-  for (let index = 0; index < tokens.length; index += 1) {
-    const token = tokens[index];
-    if (token?.kind !== "identifier") continue;
-
-    if (token.value === "require" && tokens[index + 1]?.value === "(") {
-      record(tokens[index + 2]);
-      continue;
-    }
-
-    if (token.value === "import") {
-      if (tokens[index - 1]?.value === ".") continue;
-      if (tokens[index + 1]?.kind === "string") {
-        record(tokens[index + 1]);
-      } else if (tokens[index + 1]?.value === "(") {
-        record(tokens[index + 2]);
-      } else {
-        findFrom(index + 1);
-      }
-      continue;
-    }
-
-    if (token.value === "export") {
-      const nextToken = tokens[index + 1];
-      const canReexport =
-        nextToken?.value === "*" ||
-        nextToken?.value === "{" ||
-        (nextToken?.value === "type" &&
-          ["*", "{"].includes(tokens[index + 2]?.value));
-      if (canReexport) findFrom(index + 1);
-    }
-  }
-
+  visit(file);
   return imports;
-}
-
-function stripJsonComments(source) {
-  let output = "";
-  let index = 0;
-  let quote;
-
-  while (index < source.length) {
-    const character = source[index];
-    const next = source[index + 1];
-
-    if (quote !== undefined) {
-      output += character;
-      if (character === "\\") {
-        index += 1;
-        if (index < source.length) output += source[index];
-      } else if (character === quote) {
-        quote = undefined;
-      }
-      index += 1;
-      continue;
-    }
-
-    if (character === '"') {
-      quote = character;
-      output += character;
-      index += 1;
-      continue;
-    }
-
-    if (character === "/" && next === "/") {
-      while (index < source.length && source[index] !== "\n") index += 1;
-      output += "\n";
-      index += 1;
-      continue;
-    }
-
-    if (character === "/" && next === "*") {
-      index += 2;
-      while (
-        index < source.length &&
-        !(source[index] === "*" && source[index + 1] === "/")
-      ) {
-        output += source[index] === "\n" ? "\n" : " ";
-        index += 1;
-      }
-      index += 2;
-      continue;
-    }
-
-    output += character;
-    index += 1;
-  }
-
-  return output.replaceAll(/,\s*([}\]])/gu, "$1");
 }
 
 async function readJson(pathname, { jsonc = false } = {}) {
   const source = await readFile(pathname, "utf8");
-  return JSON.parse(jsonc ? stripJsonComments(source) : source);
-}
-
-async function directoryExists(pathname) {
-  try {
-    return (await readdir(pathname)).length >= 0;
-  } catch {
-    return false;
+  if (!jsonc) return JSON.parse(source);
+  const result = ts.parseConfigFileTextToJson(pathname, source);
+  if (result.error) {
+    throw new Error(
+      ts.flattenDiagnosticMessageText(result.error.messageText, "\n"),
+    );
   }
+  return result.config;
 }
 
 async function collectSourceFiles(directory) {
-  if (!(await directoryExists(directory))) return [];
-
+  let entries;
+  try {
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
   const files = [];
-  const entries = await readdir(directory, { withFileTypes: true });
   for (const entry of entries) {
     const pathname = path.join(directory, entry.name);
     if (entry.isDirectory()) {
@@ -318,33 +120,55 @@ function productionDependencies(manifest) {
   return names;
 }
 
-function exportKeys(manifest) {
-  if (manifest.exports === undefined) return new Set(["."]);
-  if (typeof manifest.exports === "string") return new Set(["."]);
-
-  const keys = Object.keys(manifest.exports);
-  return keys.some((key) => key.startsWith("."))
-    ? new Set(keys)
-    : new Set(["."]);
+// This is public-subpath validation, not runtime condition resolution. A
+// conditional export is public if any branch exposes a target (including types).
+function hasExportTarget(target) {
+  if (typeof target === "string") return true;
+  if (target === null || typeof target !== "object") return false;
+  return Object.values(target).some(hasExportTarget);
 }
 
-function exportMatches(keys, subpath) {
-  if (keys.has(subpath)) return true;
-  for (const key of keys) {
-    if (!key.includes("*")) continue;
-    const [prefix = "", suffix = ""] = key.split("*");
-    if (subpath.startsWith(prefix) && subpath.endsWith(suffix)) return true;
+function isExported(manifest, subpath) {
+  const exports = manifest.exports;
+  if (exports === undefined) return subpath === ".";
+  if (
+    exports === null ||
+    typeof exports !== "object" ||
+    Array.isArray(exports)
+  ) {
+    return subpath === "." && hasExportTarget(exports);
   }
-  return false;
+  const keys = Object.keys(exports);
+  if (!keys.some((key) => key.startsWith("."))) {
+    return subpath === "." && hasExportTarget(exports);
+  }
+  if (Object.hasOwn(exports, subpath)) return hasExportTarget(exports[subpath]);
+
+  // Most-specific pattern wins, even when its target is null. Do not let a
+  // broader wildcard reopen a private subpath.
+  const patterns = keys
+    .filter((key) => {
+      const star = key.indexOf("*");
+      return (
+        star !== -1 &&
+        subpath.length >= key.length - 1 &&
+        subpath.startsWith(key.slice(0, star)) &&
+        subpath.endsWith(key.slice(star + 1))
+      );
+    })
+    .sort(
+      (left, right) =>
+        right.indexOf("*") - left.indexOf("*") || right.length - left.length,
+    );
+  return patterns.length > 0 && hasExportTarget(exports[patterns[0]]);
 }
 
 function internalTarget(specifier, packageNames) {
-  const candidates = [...packageNames].sort(
-    (left, right) => right.length - left.length,
-  );
-  return candidates.find(
-    (name) => specifier === name || specifier.startsWith(`${name}/`),
-  );
+  const segments = specifier.split("/");
+  const name = specifier.startsWith("@")
+    ? segments.slice(0, 2).join("/")
+    : segments[0];
+  return packageNames.has(name) ? name : undefined;
 }
 
 function isInside(parent, child) {
@@ -394,7 +218,6 @@ async function discoverPackages(repositoryRoot) {
       const manifest = await readJson(manifestPath);
       packages.push({
         dependencies: productionDependencies(manifest),
-        exportKeys: exportKeys(manifest),
         manifest,
         manifestPath,
         name: manifest.name,
@@ -520,7 +343,10 @@ export async function validatePackageBoundaries(
     for (const sourceFile of sourceFiles) {
       const relativeFile = path.relative(repositoryRoot, sourceFile);
       const source = await readFile(sourceFile, "utf8");
-      for (const { line, specifier } of extractModuleSpecifiers(source)) {
+      for (const { line, specifier } of extractModuleSpecifiers(
+        source,
+        sourceFile,
+      )) {
         if (specifier.startsWith(".")) {
           const resolved = path.resolve(path.dirname(sourceFile), specifier);
           if (!isInside(packageInfo.root, resolved)) {
@@ -557,7 +383,7 @@ export async function validatePackageBoundaries(
             : `.${specifier.slice(targetName.length)}`;
         if (
           targetPackage !== undefined &&
-          !exportMatches(targetPackage.exportKeys, subpath)
+          !isExported(targetPackage.manifest, subpath)
         ) {
           errors.push(
             `${packageInfo.name}: private/deep import is not exported by ${targetName} at ${relativeFile}:${line}: ${specifier}`,

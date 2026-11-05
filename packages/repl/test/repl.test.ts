@@ -272,6 +272,31 @@ describe("REPL", () => {
     ]);
   });
 
+  it("describes the root proxy target when the proxy URL is not configured", () => {
+    const { config, harness } = createHarness();
+
+    config.proxyUrl = "";
+    harness.call("proxy", "on");
+
+    expect(config.proxyPaths.get("")).toBe(true);
+    expect(harness.output).toEqual([
+      "Requests to / will be proxied to <proxy URL>/",
+    ]);
+    expect(harness.isReset()).toBe(true);
+  });
+
+  it("sorts proxy status paths before displaying them", () => {
+    const { config, harness } = createHarness();
+
+    config.proxyPaths.set("/zebra", false);
+    config.proxyPaths.set("/alpha", true);
+
+    harness.call("proxy", "status");
+
+    expect(harness.output.slice(-2)).toEqual(["[+] /alpha/", "[-] /zebra/"]);
+    expect(harness.isReset()).toBe(true);
+  });
+
   it.each(["", "help"])("displays a proxy help message (%s)", () => {
     const { harness } = createHarness();
 
@@ -729,6 +754,64 @@ describe("REPL", () => {
       expect(harness.output[0]).toMatch(/Error: Path must not contain/u);
       expect(harness.isReset()).toBe(true);
     });
+
+    it("rejects dot-only scenario path segments", async () => {
+      const { harness } = createHarness();
+
+      await harness.callAsync("scenario", "./setup");
+
+      expect(harness.output).toEqual([
+        "Error: Path must not contain '.' or '..' segments",
+      ]);
+      expect(harness.isReset()).toBe(true);
+    });
+
+    it("reports an error when the scenario function throws", async () => {
+      const scenarioRegistry = new ScenarioRegistry();
+      scenarioRegistry.add("index", {
+        setup() {
+          throw new Error("seed data unavailable");
+        },
+      });
+      const { harness } = createHarness(scenarioRegistry);
+
+      await harness.callAsync("scenario", "setup");
+
+      expect(harness.output).toEqual(["Error: Error: seed data unavailable"]);
+      expect(harness.isReset()).toBe(true);
+    });
+
+    it("reports an error when a selected multi-API group has no routes binding", async () => {
+      const scenarioRegistry = new ScenarioRegistry();
+      scenarioRegistry.add("index", { setup() {} });
+      const { harness } = createHarness(undefined, [
+        {
+          contextRegistry: new ContextRegistry(),
+          group: "billing",
+          registry: new Registry(),
+          scenarioRegistry,
+        },
+        {
+          contextRegistry: new ContextRegistry(),
+          group: "inventory",
+          registry: new Registry(),
+          scenarioRegistry: new ScenarioRegistry(),
+        },
+      ]);
+
+      delete (
+        harness.server.context["routes"] as Record<
+          string,
+          Record<string, unknown>
+        >
+      )["billing"];
+      await harness.callAsync("scenario", "billing setup");
+
+      expect(harness.output).toEqual([
+        'Error: Could not resolve routes for API group "billing"',
+      ]);
+      expect(harness.isReset()).toBe(true);
+    });
   });
 
   describe("route autocomplete", () => {
@@ -912,6 +995,8 @@ describe("REPL", () => {
       expect(prefix).toBe("");
       expect(completions).toEqual([
         "body(",
+        "cookies(",
+        "form(",
         "headers(",
         "help(",
         "method(",
@@ -958,6 +1043,8 @@ describe("REPL", () => {
       expect(prefix).toBe("");
       expect(completions).toEqual([
         "body(",
+        "cookies(",
+        "form(",
         "headers(",
         "help(",
         "method(",

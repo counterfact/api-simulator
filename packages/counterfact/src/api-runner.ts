@@ -1,4 +1,4 @@
-import { rm } from "node:fs/promises";
+import { mkdir, rm } from "node:fs/promises";
 
 import {
   CodeGenerator,
@@ -136,7 +136,11 @@ export class ApiRunner {
       nativeTs ? "routes" : ".cache",
     );
 
-    this.config = config;
+    this.config = {
+      ...config,
+      generate: { ...config.generate },
+      watch: { ...config.watch },
+    };
     this.nativeTs = nativeTs;
     this.openApiDocument = openApiDocument;
     this.openApiPath = config.openApiPath;
@@ -156,7 +160,7 @@ export class ApiRunner {
     this.codeGenerator = new CodeGenerator(
       this.openApiPath,
       config.basePath + this.subdirectory,
-      config.generate,
+      this.config.generate,
       version,
       config.overlays ?? [],
     );
@@ -221,6 +225,9 @@ export class ApiRunner {
       await rm(compiledPathsDirectory, { force: true, recursive: true });
     }
 
+    await mkdir(pathJoin(modulesPath, "routes"), { recursive: true });
+    await mkdir(compiledPathsDirectory, { recursive: true });
+
     const openApiDocument =
       config.openApiPath === "_"
         ? undefined
@@ -239,6 +246,12 @@ export class ApiRunner {
       versions,
       groupState,
     );
+  }
+
+  /** Applies effective startup controls to generation and spec watchers. */
+  public configureStartup(options: Pick<Config, "generate" | "watch">): void {
+    Object.assign(this.config.generate, options.generate);
+    Object.assign(this.config.watch, options.watch);
   }
 
   /**

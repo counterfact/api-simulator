@@ -14,7 +14,10 @@ export {
   type Module,
   type RequestMethod,
 } from "./server/registry.js";
-export { ScenarioRegistry } from "./server/scenario-registry.js";
+export {
+  ScenarioRegistry,
+  resolveScenario,
+} from "./server/scenario-registry.js";
 export { StoreLoader } from "./server/store-loader.js";
 export { Transpiler } from "./server/transpiler.js";
 export { runtimeCanExecuteErasableTs } from "./runtime-can-execute-erasable-ts.js";

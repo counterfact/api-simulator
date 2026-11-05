@@ -1,149 +1,387 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import navigation from "../data/navigation.json";
+const diagrams = [
+  {
+    name: "waiting",
+    height: 342,
+    heading: "The backend isn’t ready",
+    caption:
+      "Frontend work shouldn’t have to wait for the backend. When an API is unavailable or a feature hasn’t been built yet, developers still need a way to build and test the clients that depend on it.",
+    alt: "Web and mobile clients send API requests to an unavailable backend and wait for responses.",
+  },
+  {
+    name: "simulation",
+    height: 390,
+    heading: "Counterfact implements the contract",
+    caption:
+      "Give Counterfact an OpenAPI contract, and it provides a working API for your web and mobile clients. Develop against that contract, simulate new functionality, and test errors and edge cases without waiting for the live backend.",
+    alt: "Web and mobile clients build and test against Counterfact’s simulated responses. An OpenAPI contract specifies the interface; the backend remains unavailable.",
+  },
+  {
+    name: "proxy",
+    height: 389,
+    heading: "Mix simulated and real responses",
+    caption:
+      "Simulate new functionality, errors, and edge cases. Use real services when useful.",
+    alt: "Web and mobile clients use the same Counterfact interface. Counterfact simulates responses and proxies selected requests to available real services. The OpenAPI contract specifies the interface.",
+  },
+];
+
+const installCommand =
+  "npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api";
 ---
 
 <MainLayout
   title="Counterfact — Build the frontend. Don’t wait for the backend."
-  description="Turn an OpenAPI document into a useful local API in one command, then add custom behavior only when your frontend needs it."
+  description="Turn OpenAPI into a local, stateful API. Customize responses, model workflows, and test your frontend with Counterfact."
   canonicalPath="/"
 >
-  <header class="site-header">
-    <div class="page-shell header-content">
-      <a class="brand" href="/" aria-label="Counterfact home">
-        <img src="/counterfact.svg" alt="" width="180" height="31" />
-      </a>
-      <nav aria-label="Primary navigation">
-        <a href="#quick-start">Quick start</a>
-        <a href="/docs/getting-started" data-analytics-event="getting_started_opened">Docs</a>
-        <a href="https://github.com/counterfact/api-simulator" data-analytics-event="github_opened">GitHub</a>
-      </nav>
-    </div>
-  </header>
-
-  <main>
-    <section class="hero page-shell" aria-labelledby="page-title">
-      <p class="eyebrow">Local APIs from OpenAPI</p>
-      <h1 id="page-title">Build the frontend. Don’t wait for the backend.</h1>
-      <p class="lede">
-        Counterfact turns an OpenAPI document into a useful local API in one command.
-        Point your frontend at localhost and start building against generated responses
-        before the real backend is ready.
-      </p>
-      <div class="actions">
-        <a class="button button-primary" href="#quick-start" data-analytics-event="quickstart_opened">Try it now</a>
-        <a class="button button-secondary" href="/docs/getting-started" data-analytics-event="getting_started_opened">Read the docs</a>
-      </div>
-    </section>
-
-    <section class="page-shell command-section" aria-labelledby="command-heading">
-      <h2 id="command-heading">Start with your OpenAPI document</h2>
-      <div class="command-panel">
-        <code id="install-cmd">npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api</code>
-        <button id="copy-btn" class="copy-button" type="button" aria-label="Copy command" data-analytics-event="quickstart_command_copied">Copy</button>
-      </div>
-      <p class="supporting-text">
-        Requires Node.js 22+. For a repeatable project or CI workflow,
-        <a href="/docs/first-10-minutes#install-a-pinned-version">install a pinned version</a>
-        and commit the lockfile.
-      </p>
-    </section>
-
-    <section class="page-shell workflow-section" aria-labelledby="workflow-heading">
-      <p class="eyebrow">The development loop</p>
-      <h2 id="workflow-heading">Start generated. Make only the behavior your screen needs.</h2>
-      <div class="workflow-grid">
-        <div>
-          <p>
-            Counterfact generates editable, typed route handlers from the contract.
-            Change one response, save the file, and refresh the frontend. The server
-            hot-reloads the handler without throwing away your in-memory state.
-          </p>
-          <ol class="compact-steps">
-            <li>Make the first browser request.</li>
-            <li>Shape one response for the current screen.</li>
-            <li>Add a small create/read workflow when state matters.</li>
-            <li>Exercise one loading, empty, or failure state.</li>
-          </ol>
+  <SiteHeader />
+  <main id="main-content">
+    <section class="hero wide-shell" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">An API you can work with</p>
+        <h1 id="page-title">
+          Build the frontend.
+          <br />
+          Don’t wait for the backend.
+        </h1>
+        <p class="lede">
+          Turn an OpenAPI document into a running local API. Start with
+          generated responses, then add the behavior your frontend needs.
+        </p>
+        <div class="actions">
+          <a class="button button-primary" href="/docs/getting-started" data-analytics-event="getting_started_opened">
+            Start building →
+          </a>
+          <a class="button button-secondary" href="/docs/manual">
+            Browse the manual
+          </a>
         </div>
-        <pre><code>// api/routes/pet/&#123;petId&#125;.ts
-export const GET: HTTP_GET = ($) =&gt;
-  $.response[200].json(&#123;
-    id: $.path.petId,
-    name: "Fluffy",
-    status: "available"
-  &#125;);</code></pre>
+        <p class="supporting-text">
+          TypeScript handlers · Shared state · Hot reload
+        </p>
+      </div>
+      <div class="hero-example">
+        <div class="example-label">
+          <span class="status-dot" aria-hidden="true"></span> Your API, on
+          localhost
+        </div>
+        <pre><code>{`// api/routes/pets.ts
+import type { Routes } from "../types/index.js";
+
+export const GET: Routes["/pets"]["GET"] = function ($) {
+  return $.response.status(200).json(
+    $.context.pets
+  );
+};`}</code></pre>
+        <div class="example-response">
+          <span>GET /pets</span>
+          <span>200 OK</span>
+        </div>
+        <pre><code>{`[{ "id": 1, "name": "Fluffy" }]`}</code></pre>
+        <p>An example custom handler backed by a context.</p>
       </div>
     </section>
-
-    <section class="page-shell examples-section" aria-labelledby="examples-heading">
-      <p class="eyebrow">Use it in a real workflow</p>
-      <h2 id="examples-heading">Two runnable paths beyond Petstore</h2>
-      <div class="example-grid">
-        <article>
-          <h3>React and Vite</h3>
-          <p>Build a profile screen against a local API while the production endpoint is still unavailable.</p>
-          <a href="/docs/examples/react-vite" data-analytics-event="ecosystem_example_opened" data-analytics-example="react-vite">Run the React example</a>
-        </article>
-        <article>
-          <h3>Playwright error states</h3>
-          <p>Verify success, not-found, and temporary-failure UI states through a real HTTP boundary.</p>
-          <a href="/docs/examples/playwright-error-states" data-analytics-event="ecosystem_example_opened" data-analytics-example="playwright">Run the Playwright example</a>
-        </article>
-      </div>
-    </section>
-
-    <section id="quick-start" class="page-shell quick-start" aria-labelledby="quick-start-heading">
-      <p class="eyebrow">Quick start</p>
-      <h2 id="quick-start-heading">A useful API before you write a handler</h2>
-      <ol class="steps">
-        <li>
-          <h3>Run the command</h3>
-          <p>Counterfact reads the document, writes editable routes and generated types, then starts a server.</p>
-        </li>
-        <li>
-          <h3>Point the frontend at localhost</h3>
-          <p>The base URL is <code>http://localhost:3100</code>. A browser app can make an ordinary request:</p>
-          <pre><code>const response = await fetch("http://localhost:3100/pet/1");
-const pet = await response.json();</code></pre>
-        </li>
-        <li>
-          <h3>Get a generated response</h3>
-          <p>Supported operations return schema-derived sample data immediately. For example:</p>
-          <pre><code>&#123;
-  "id": 1,
-  "name": "string",
-  "status": "available"
-&#125;</code></pre>
-        </li>
+    <section class="wide-shell story-section" aria-label="Why Counterfact">
+      <p class="eyebrow">Why Counterfact</p>
+      <ol class="diagram-story">
+        {diagrams.map((diagram) => (
+          <li>
+            <figure>
+              <figcaption>
+                <h2>{diagram.heading}</h2>
+                <p>{diagram.caption}</p>
+              </figcaption>
+              <div
+                class="diagram-scroll"
+                role="region"
+                aria-label={`${diagram.heading} diagram`}
+                aria-describedby={`${diagram.name}-diagram-help`}
+                tabindex="0"
+              >
+                <img
+                  src={`/diagrams/counterfact-${diagram.name}.png`}
+                  alt={diagram.alt}
+                  width="1000"
+                  height={diagram.height}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <p id={`${diagram.name}-diagram-help`} class="diagram-help">
+                <span>Scroll horizontally on small screens. </span>
+                <a href={`/diagrams/counterfact-${diagram.name}.png`}>
+                  Open the full-size diagram
+                </a>
+              </p>
+            </figure>
+          </li>
+        ))}
       </ol>
       <p class="supporting-text">
-        The defaults are a useful starting point for frontend work and exploration—not a claim that your backend behavior is complete.
+        The OpenAPI document describes the interface. Counterfact handles
+        requests and returns simulated responses or forwards selected requests
+        to a real service.
       </p>
     </section>
 
-    <section class="page-shell more-section" aria-labelledby="more-heading">
-      <h2 id="more-heading">When your frontend needs more</h2>
-      <p>
-        Replace a generated response with a custom handler when a screen needs a specific case.
-        Add only the state, failures, latency, proxying, or tests that the workflow needs.
-      </p>
-      <div class="link-list" aria-label="Advanced Counterfact guides">
-        <a href="/docs/features/routes">Custom responses</a>
-        <a href="/docs/features/state">State</a>
-        <a href="/docs/patterns/simulate-failures">Failures and latency</a>
-        <a href="/docs/features/proxy">Proxying</a>
-        <a href="/docs/patterns/automated-integration-tests">Tests</a>
-        <a href="/docs/features/repl">REPL</a>
-        <a href="/docs/comparison" data-analytics-event="comparison_opened">Compare tools</a>
+    <section class="start-band" aria-labelledby="start-heading">
+      <div class="wide-shell start-grid">
+        <div>
+          <p class="eyebrow">From contract to localhost</p>
+          <h2 id="start-heading">One command to get moving.</h2>
+          <p>
+            Counterfact creates editable routes and generated types, then starts
+            an HTTP server. Connect your client to <code>localhost:3100</code>.
+          </p>
+        </div>
+        <div>
+          <div class="command-panel">
+            <code
+              id="install-cmd"
+              tabindex="0"
+              role="region"
+              aria-label="Counterfact startup command"
+              set:text={installCommand}
+            />
+            <button
+              id="copy-btn" data-analytics-event="quickstart_command_copied"
+              class="copy-button"
+              type="button"
+              aria-label="Copy command"
+            >
+              Copy
+            </button>
+          </div>
+          <p class="supporting-text">
+            Node.js 22+. Swagger 2.0 and OpenAPI 3.0–3.2.
+            <br />{" "}
+            <a href="/docs/first-10-minutes#install-a-pinned-version">
+              Install a pinned version
+            </a>{" "}
+            for a repeatable project, and commit the lockfile.
+          </p>
+          <p class="supporting-text">
+            Run in a new directory. Try <code>http://localhost:3100/pet/1</code>
+            or open{" "}
+            <a href="http://localhost:3100/counterfact/swagger/">Swagger UI</a>
+            after the server starts. Use your own OpenAPI document in place of
+            the example URL.
+          </p>
+        </div>
       </div>
     </section>
-  </main>
-
+    <section
+      class="wide-shell feature-section"
+      aria-labelledby="capabilities-heading"
+    >
+      <p class="eyebrow">Grow the simulation with your client</p>
+      <h2 id="capabilities-heading">
+        From sample data to a complete workflow.
+      </h2>
+      <div class="feature-grid">
+        <a href="/docs/manual/sample-responses">
+          <span class="feature-number">01 / RESPOND</span>
+          <h3>Start with useful responses</h3>
+          <p>
+            Generate sample data, choose named examples, or write exactly the
+            response a screen needs.
+          </p>
+          <span class="feature-link">Shape a response →</span>
+        </a>
+        <a href="/docs/features/state">
+          <span class="feature-number">02 / REMEMBER</span>
+          <h3>Model what happens next</h3>
+          <p>
+            Create a resource, read it back, and move through a workflow using
+            small in-memory contexts.
+          </p>
+          <span class="feature-link">Add shared state →</span>
+        </a>
+        <a href="/docs/manual/edge-cases">
+          <span class="feature-number">03 / EXPERIMENT</span>
+          <h3>Make the difficult cases happen</h3>
+          <p>
+            Try empty results, slow requests, and failures. Save a handler and
+            keep working with hot reload.
+          </p>
+          <span class="feature-link">Exercise an edge case →</span>
+        </a>
+        <a href="/docs/features/programmatic-api">
+          <span class="feature-number">04 / REPEAT</span>
+          <h3>Bring the API into your tests</h3>
+          <p>
+            Start a simulator, apply a scenario, reset its state, and stop it
+            when the suite finishes.
+          </p>
+          <span class="feature-link">Use Counterfact from code →</span>
+        </a>
+      </div>
+    </section>
+    <section
+      class="wide-shell contract-callout"
+      aria-labelledby="contract-heading"
+    >
+      <h2 id="contract-heading">
+        Catch changed assumptions before integration.
+      </h2>
+      <p>
+        Regenerate handler types when the OpenAPI contract changes, then run an
+        explicit TypeScript check. Give client and server teams earlier feedback
+        alongside runtime validation and real-backend tests.
+      </p>
+      <div class="link-list">
+        <a href="/docs/patterns/contract-change">
+          Try a contract-change check →
+        </a>
+        <a href="/docs/manual/validation">See validation coverage →</a>
+        <a href="/docs/patterns/agentic-sandbox">AI-assisted workflows →</a>
+      </div>
+    </section>
+    <section
+      class="wide-shell documentation-section"
+      aria-labelledby="documentation-heading"
+    >
+      <p class="eyebrow">Documentation</p>
+      <h2 id="documentation-heading">Learn a feature. Look up a detail.</h2>
+      <div class="documentation-grid">
+        <a href="/docs/manual">
+          <span class="book-label">USER MANUAL</span>
+          <h3>Understand what you can do.</h3>
+          <p>
+            25 features, from your first generated API to scenarios, proxying,
+            multiple APIs, and test integration.
+          </p>
+          <span class="feature-link">Open the manual →</span>
+        </a>
+        <a href="/docs/api">
+          <span class="book-label">API REFERENCE</span>
+          <h3>Find the exact contract.</h3>
+          <p>
+            CLI configuration, handler arguments, response builders, lifecycle
+            methods, and the HTTP Admin API.
+          </p>
+          <span class="feature-link">Open the reference →</span>
+        </a>
+      </div>
+    </section>
+    <section
+      class="wide-shell feature-directory"
+      aria-labelledby="directory-heading"
+    >
+      <h2 id="directory-heading">Everything in the manual</h2>
+      <div class="directory-grid">
+        {navigation.manual.map((group) => (
+          <section>
+            <h3>{group.title}</h3>
+            <ul>
+              {group.pages.map((page) => (
+                <li>
+                  <a href={page.path}>{page.title}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </section>
+      <section class="documentation-section wide-shell" aria-labelledby="examples-heading">
+      <h2 id="examples-heading">Build and test a frontend</h2>
+      <div class="documentation-grid">
+        <a href="/docs/examples/react-vite" data-analytics-event="ecosystem_example_opened" data-analytics-example="react-vite"><h3>React and Vite</h3><p>Run a profile screen against a local API with a complete two-terminal setup.</p></a>
+        <a href="/docs/examples/playwright-error-states" data-analytics-event="ecosystem_example_opened" data-analytics-example="playwright-error-states"><h3>Playwright error states</h3><p>Verify success, not-found, and temporary-failure browser states.</p></a>
+      </div>
+    </section>
+</main>
   <footer class="site-footer">
-    <div class="page-shell footer-content">
+    <div class="wide-shell footer-content">
       <span>Counterfact</span>
-      <a href="/docs/getting-started" data-analytics-event="getting_started_opened">Getting started</a>
-      <a href="https://github.com/counterfact/api-simulator" data-analytics-event="github_opened">GitHub</a>
+      <a href="/docs/manual">Manual</a>
+      <a href="/docs/api">API reference</a>
+      <a href="/docs/usage">Find your workflow</a>
+      <a href="https://github.com/counterfact/api-simulator/blob/main/CONTRIBUTING.md">
+        Contributing
+      </a>
+      <a href="https://github.com/counterfact/api-simulator/issues">Issues</a>
+      <a href="https://github.com/counterfact/api-simulator/blob/main/SECURITY.md">
+        Security
+      </a>
+      <a href="https://www.npmjs.com/package/counterfact">npm</a>
+      <a href="https://github.com/counterfact/api-simulator/blob/main/packages/counterfact/CHANGELOG.md">
+        Changelog
+      </a>
+      <a href="/quality/2026">2026 quality study</a>
+      <a href="/docs/usage#telemetry-and-privacy">Telemetry and privacy</a>
+      <a href="https://github.com/counterfact/api-simulator/blob/main/License.md">
+        MIT · Patrick McElhaney
+      </a>
+      <a href="https://github.com/counterfact/api-simulator">GitHub</a>
     </div>
   </footer>
 </MainLayout>
+
+<style>
+  .story-section {
+    border-top: 1px solid var(--rule);
+    max-width: 1000px;
+    padding-block: 3.5rem;
+  }
+  .diagram-story {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .diagram-story li + li {
+    margin-top: 3rem;
+  }
+  .diagram-story figure {
+    margin: 0;
+  }
+  .diagram-story h2 {
+    font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+  }
+  .diagram-story figcaption {
+    color: var(--muted);
+    margin-bottom: 1rem;
+    max-width: 75ch;
+  }
+  .diagram-scroll {
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+  .diagram-scroll:focus-visible {
+    outline: 3px solid var(--orange);
+    outline-offset: 3px;
+  }
+  .diagram-scroll img {
+    display: block;
+    height: auto;
+    width: 100%;
+  }
+  .diagram-help {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+  .diagram-help span {
+    display: none;
+  }
+  @media (max-width: 480px) {
+    .diagram-scroll img {
+      min-width: 1000px;
+    }
+    .diagram-help span {
+      display: inline;
+    }
+    .story-section {
+      padding-block: 2.5rem;
+    }
+  }
+</style>

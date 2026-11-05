@@ -1,0 +1,280 @@
+2382	2026-09-03T23:04:38Z	2026-09-04T16:39:00Z	docs(site): publish 2026 quality audit microsite
+2379	2026-09-02T10:57:00Z	2026-09-02T11:17:32Z	Fix merge queue manual acceptance check timeout
+2370	2026-08-30T02:10:59Z		Version Packages
+2367	2026-08-29T13:24:30Z		feat: implement product-led adoption foundation
+2365	2026-08-29T12:33:19Z	2026-09-02T11:26:31Z	Fix OpenAPI watch input classification and overlay hot reload
+2362	2026-08-29T12:20:25Z		fix(runtime): validate implicit 200 responses
+2361	2026-08-29T11:43:47Z		test(repl): raise mutation score to 80%
+2355	2026-08-28T13:41:26Z	2026-08-28T14:05:29Z	fix(release): allow version script to update lockfile on CI
+2353	2026-08-28T12:47:38Z	2026-08-28T13:25:41Z	fix(ci): enable automatic npm publication
+2347	2026-08-24T21:31:14Z	2026-08-24T21:41:04Z	fix logo on the home page
+2345	2026-08-24T20:53:37Z	2026-08-24T21:03:35Z	fix(site): refresh satteri lockfile entries
+2344	2026-08-24T19:58:17Z		feat: clarify CLI startup output
+2339	2026-08-23T02:34:01Z	2026-08-28T04:46:24Z	Version Packages
+2338	2026-08-23T02:23:54Z	2026-08-23T02:32:22Z	fix(ci): bootstrap release preflight directly
+2335	2026-08-22T22:24:09Z	2026-08-22T22:44:02Z	fix: harden OpenAPI routing and lifecycle cleanup
+2323	2026-08-19T23:56:03Z	2026-08-20T00:34:31Z	test: migrate black-box coverage to Cucumber journeys
+2319	2026-08-18T16:54:23Z	2026-08-18T17:07:35Z	Only run black box tests on Windows
+2318	2026-08-18T16:03:56Z	2026-08-18T16:54:17Z	chore: repair monorepo release preparation
+2317	2026-08-18T15:48:14Z		feat: add HTTP response chaos rules
+2316	2026-08-18T14:54:14Z		fix(runtime): reload atomic store replacements
+2296	2026-08-09T21:37:14Z	2026-08-09T21:50:12Z	Update typescript-eslint monorepo to v8.66.0
+2277	2026-08-03T00:39:46Z	2026-08-03T01:10:14Z	Document the “Model the Workflow, Not the Backend” pattern
+2270	2026-08-01T23:03:35Z	2026-08-02T00:14:22Z	Version Packages
+2268	2026-08-01T20:43:07Z	2026-08-01T23:02:42Z	Fix flaky Windows CI: StoreLoader watches parent directory instead of absent file path
+2267	2026-08-01T20:22:59Z	2026-08-01T20:56:59Z	Version Packages
+2266	2026-08-01T20:22:52Z	2026-08-01T20:42:00Z	Fix wide route random response typing
+2263	2026-08-01T20:03:54Z	2026-08-01T20:09:23Z	Fix syntax error in src/app.ts: missing closing brace for startRepl property
+2262	2026-08-01T15:19:30Z	2026-08-01T20:47:22Z	Add first-class shared store across API groups
+2261	2026-08-01T11:30:52Z	2026-08-01T11:52:02Z	Version Packages
+2260	2026-08-01T03:15:24Z	2026-08-01T11:17:52Z	fix: add Koa Request type augmentation for body and rawBody
+2259	2026-08-01T03:14:52Z	2026-08-01T11:17:19Z	fix: regenerate site/package-lock.json to unblock npm ci
+2258	2026-08-01T03:13:42Z	2026-08-01T11:30:02Z	Bug reports/openapi multi spec
+2254	2026-07-31T22:27:48Z	2026-08-01T21:06:15Z	Update actions/checkout action to v7
+2253	2026-07-31T19:45:03Z	2026-08-01T11:28:58Z	Sync site lockfile for broken-links workflow
+2252	2026-07-31T19:02:49Z	2026-07-31T19:09:16Z	[WIP] Fix issues identified in Copilot run
+2250	2026-07-31T18:53:26Z	2026-07-31T18:57:33Z	fix: sync site/package-lock.json with missing @emnapi dependencies
+2133	2026-05-31T17:51:52Z	2026-08-01T03:27:01Z	Version Packages
+2119	2026-05-25T00:55:25Z		feat: add chaos() API for HTTP-layer fault injection with default-on rules
+2113	2026-05-23T17:47:20Z	2026-05-23T18:20:25Z	Add robots.txt and llms.txt to counterfact.dev
+2109	2026-05-23T01:42:48Z		Add black-box behavioral specification for Counterfact
+2108	2026-05-23T01:15:36Z		Reverse-engineer OpenAPI spec for the core Admin API
+2106	2026-05-22T23:29:41Z	2026-05-23T01:17:07Z	Prioritize readability in `security/detect-object-injection` cleanup
+2104	2026-05-22T22:56:30Z	2026-05-25T21:49:31Z	feat: append new HTTP method handlers to existing route files
+2102	2026-05-22T22:53:32Z	2026-05-22T23:24:05Z	Watch code generation overlays for hot regeneration
+2099	2026-05-22T22:08:10Z	2026-05-22T22:29:03Z	Bootstrap contributor Copilot skills for Counterfact internals
+2097	2026-05-22T21:52:38Z	2026-05-22T22:05:33Z	Fix telemetry discussion redirect target and usage docs link
+2087	2026-05-21T13:25:37Z	2026-05-21T13:51:39Z	Add SECURITY.md with vulnerability disclosure policy
+2080	2026-05-16T20:47:58Z	2026-05-24T03:48:52Z	Version Packages
+2069	2026-05-14T11:09:42Z	2026-05-14T14:29:06Z	Restore Google Analytics in Astro site layout
+2067	2026-05-14T10:45:19Z	2026-05-14T16:28:55Z	Track website page views via PostHog in shared Astro layout and align site analytics CI config
+2063	2026-05-11T23:38:36Z	2026-05-12T00:05:04Z	Enhance telemetry with privacy-safe startup, file-change, and REPL events
+2059	2026-05-11T22:12:55Z	2026-05-22T22:16:21Z	feat: add OpenAPI Overlays support
+2046	2026-05-09T21:51:35Z	2026-05-09T22:57:27Z	Add OpenAPI 3.2 JSON Schema keyword coverage for schema-based random generation
+2045	2026-05-09T21:12:16Z	2026-05-22T21:55:06Z	Support OpenAPI `apiKey` security (`header`/`query`/`cookie`) in generated route types and `$.auth` (always present with empty-string default), and resolve recurring merge conflicts with `main`
+2044	2026-05-09T21:01:19Z	2026-05-11T21:49:06Z	Support OpenAPI 3.2 `additionalOperations` for custom HTTP methods (including example.yaml fixture examples and merge conflict resolution)
+2043	2026-05-09T21:01:01Z	2026-05-09T21:25:42Z	OpenAPI 3.2: cover discriminator `defaultMapping` when `propertyName` is omitted
+2035	2026-05-05T11:57:46Z	2026-05-09T20:42:57Z	feat: Support OpenAPI 3.2 `xml.nodeType` in JSON-to-XML serialisation
+2031	2026-05-05T08:00:44Z	2026-05-05T10:37:02Z	fix: resolve broken site links and add CI link checker
+2029	2026-05-05T07:50:44Z	2026-05-05T11:37:33Z	feat: set `name` field on injected Counterfact server entry (OpenAPI 3.2)
+2028	2026-05-05T07:49:58Z	2026-05-09T18:44:01Z	OpenAPI 3.2: Include discriminator.defaultMapping in generated union types
+2027	2026-05-05T07:49:22Z		feat: emit @deprecated JSDoc for operations using deprecated security schemes (OpenAPI 3.2)
+2026	2026-05-05T07:48:59Z	2026-05-05T22:00:40Z	Add regression tests for $ref resolution on components/mediaTypes (OpenAPI 3.2)
+2025	2026-05-05T07:47:54Z	2026-05-09T22:55:11Z	feat: OpenAPI 3.2 streaming responses and SSE via itemSchema
+2020	2026-05-05T02:41:58Z	2026-05-09T20:42:57Z	feat: prefer dataValue over value in OpenAPI 3.2 example responses
+2019	2026-05-05T02:40:05Z	2026-05-09T20:50:00Z	OpenAPI 3.2: Add regression tests for $self document identity and $ref resolution
+2018	2026-05-05T02:37:26Z	2026-05-05T02:55:01Z	feat: add native QUERY HTTP method support (OpenAPI 3.2)
+2017	2026-05-05T02:34:34Z	2026-05-09T21:29:42Z	feat: support OpenAPI 3.2 `querystring` parameter location
+2001	2026-05-05T02:31:06Z	2026-05-05T02:53:35Z	Fix broken relative links on .md alias doc pages
+1997	2026-05-05T02:01:25Z	2026-05-05T02:13:05Z	Add build-simulation skill: prompt for AI-guided API simulation from OpenAPI spec
+1993	2026-05-05T01:37:07Z	2026-05-05T02:02:42Z	docs: document multi-version API support
+1991	2026-05-05T00:38:41Z	2026-05-16T18:11:09Z	Version Packages
+1972	2026-04-30T14:41:14Z	2026-05-04T15:08:40Z	fix: include path-item-level parameters in generated TypeScript types and server runtime
+1970	2026-04-28T00:52:13Z	2026-04-28T02:20:44Z	fix: cast OAS3 schema-typed parameters at runtime
+1966	2026-04-27T23:24:53Z	2026-05-05T01:39:38Z	Set up Astro with GitHub Pages, migrate homepage, and publish docs as site pages
+1964	2026-04-27T23:02:29Z	2026-04-27T23:20:19Z	docs: fix CLI reference, programmatic API example, and without-openapi syntax errors
+1962	2026-04-26T01:56:23Z	2026-05-05T00:37:33Z	Add "Multiple API Versions" pattern and restructure patterns index
+1960	2026-04-26T01:47:24Z		feat: update ParametersTypeCoder and ParameterExportTypeCoder to emit output under version subdirectories
+1959	2026-04-26T01:47:06Z		feat: version-aware scenario loading and $.version in startup scenario
+1956	2026-04-26T00:28:33Z	2026-04-26T00:45:48Z	fix: update usage link in REPL and CLI banner to GitHub docs
+1954	2026-04-25T23:38:28Z	2026-04-26T01:53:55Z	fix: separate mapped type from explicit properties in generated response object type
+1952	2026-04-25T19:22:04Z	2026-05-05T00:10:25Z	Version Packages
+1951	2026-04-25T17:38:13Z	2026-04-25T19:21:15Z	docs(workflow): add explanatory comment to manual-acceptance-tests.yaml
+1950	2026-04-25T14:51:17Z	2026-04-25T19:21:15Z	feat: auto-derive URL prefix from group+version in SpecConfig
+1949	2026-04-25T14:51:03Z	2026-04-25T23:55:48Z	feat(generator): emit version-mapped handler types from OperationTypeCoder
+1948	2026-04-25T14:50:53Z	2026-04-26T01:43:35Z	feat: emit per-group types/versions.ts with Versions, VersionsGTE, and Versioned types; add version property to generated $-arg type
+1947	2026-04-25T14:50:34Z	2026-04-25T22:44:28Z	feat: add `version` field to `SpecConfig`, relax duplicate-group validation, and fix concurrent generation for multi-version specs
+1938	2026-04-25T13:13:47Z	2026-04-25T14:42:27Z	docs: propose sub-issues for multi-version API support plan (#1937)
+1935	2026-04-25T00:41:00Z	2026-04-25T01:54:12Z	Fix: Query params of type object are now exploded correctly (OpenAPI default)
+1934	2026-04-22T01:47:57Z	2026-04-25T02:27:12Z	Version Packages
+1929	2026-04-18T13:46:18Z	2026-04-22T01:52:58Z	Pass `version` through coder construction chains with strict second-argument constructor ordering
+1927	2026-04-18T02:09:52Z		Add 5 mobile-first homepage concept variants with fast-scan messaging and pattern-driven CTAs
+1922	2026-04-16T19:19:24Z	2026-04-17T12:20:36Z	repl: update `.scenario` tab completion for group-qualified multi-API usage
+1921	2026-04-16T17:22:00Z	2026-04-16T18:56:03Z	repl: support group-qualified `.scenario` in multi-API sessions
+1920	2026-04-16T16:55:36Z	2026-04-16T17:18:46Z	Handle `_.context` syntax/import failures without crashing startup
+1918	2026-04-16T15:11:55Z	2026-04-16T15:38:18Z	Replace unnamed regex capture groups with named groups
+1917	2026-04-16T15:11:55Z	2026-04-16T17:00:47Z	Resolve `jest/expect-expect` warnings and stabilize flaky app runner test
+1916	2026-04-16T15:11:54Z		Reduce `security/detect-object-injection` warnings with explicit keyed access guards
+1914	2026-04-16T15:11:53Z	2026-04-16T15:42:20Z	Reduce `detect-non-literal-fs-filename` noise with validated path reads and scoped suppressions
+1913	2026-04-16T15:11:52Z	2026-04-16T15:53:38Z	Remove obsolete skipped ModuleLoader tests to eliminate `jest/no-disabled-tests` findings
+1912	2026-04-16T15:11:51Z	2026-04-16T17:09:11Z	Disable `import/no-named-as-default-member` in test files to remove `js-yaml` false positives
+1911	2026-04-16T15:11:51Z	2026-04-16T16:55:38Z	Audit and resolve `security/detect-unsafe-regex` findings
+1902	2026-04-16T13:02:33Z	2026-04-16T14:13:43Z	Document lint warning recommendations and add follow-up issue proposal series
+1900	2026-04-16T12:53:29Z	2026-04-16T17:02:12Z	repl: expose grouped multi-API helpers and require unique group names
+1894	2026-04-16T11:57:03Z	2026-04-16T12:19:43Z	Add issue proposals for multi-ApiRunner REPL support
+1892	2026-04-16T01:20:22Z		Support multi-ApiRunner REPL state maps and API-qualified `.scenario` execution
+1889	2026-04-16T00:46:19Z		Add Architecture Report Card 3 for readability, naming, and organization
+1887	2026-04-16T00:43:21Z	2026-04-16T01:01:38Z	Narrow config argument passing to explicit key subsets
+1883	2026-04-15T20:50:07Z	2026-04-15T22:39:51Z	Add black-box coverage for multi-spec API configurations
+1881	2026-04-15T20:48:56Z	2026-04-16T14:17:15Z	REPL: prefer OpenAPI paths in completer and split lookup logic
+1879	2026-04-15T18:52:38Z	2026-04-15T20:41:50Z	Multiple APIs with ApiRunner
+1877	2026-04-15T18:10:34Z	2026-04-15T18:30:08Z	Test coverage: exclude counterfact-types from Jest and add tests for untested files
+1875	2026-04-15T17:31:36Z	2026-04-15T17:40:02Z	rename routePrefix to prefix, make sure prefix is used in the CLI output
+1874	2026-04-15T13:49:15Z	2026-04-15T16:26:34Z	Move most of bin/counterfact.js into src/cli/ as TypeScript
+1872	2026-04-15T12:10:24Z	2026-04-15T12:26:01Z	Move MSW code out of app.ts
+1870	2026-04-14T21:50:04Z	2026-04-14T22:17:46Z	Organize Koa middleware into web-server/ with path-prefix-first signatures
+1868	2026-04-14T18:58:34Z	2026-04-14T20:38:19Z	feat: Pass runner into createKoaApp; add openApiPath and routePrefix to ApiRunner
+1866	2026-04-14T18:33:12Z	2026-04-17T12:55:48Z	Version Packages
+1865	2026-04-14T16:43:06Z	2026-04-14T18:32:32Z	feat: add ApiRunner class to encapsulate server sub-system lifecycle
+1862	2026-04-14T15:09:37Z	2026-04-14T15:26:36Z	refactor: use Pick<Config, ...> in function signatures to declare only used config keys
+1858	2026-04-14T14:01:42Z		fix: authenticate to npm in release workflow (resolve ENEEDAUTH)
+1853	2026-04-14T01:53:55Z	2026-04-14T10:51:16Z	Add `ForwardSlashPath` branded type and forward-slash path utilities
+1851	2026-04-14T00:04:31Z	2026-04-14T00:18:02Z	Refactor openapiMiddleware to accept multiple documents
+1849	2026-04-13T23:56:05Z	2026-04-14T01:10:40Z	Refactor: pass adminApiMiddleware into createKoaApp(); rename koaMiddleware to routesMiddleware
+1847	2026-04-13T21:03:07Z	2026-04-13T21:25:27Z	fix: close REPL servers after each test to prevent Jest worker from hanging
+1845	2026-04-13T20:51:27Z		Parallel APIs second pass: add `specs` array to `counterfact.yaml`
+1843	2026-04-13T20:44:28Z	2026-04-13T22:29:06Z	Fix TypeError when OpenAPI Path Item Object contains non-HTTP-verb fields
+1841	2026-04-13T17:13:40Z		feat: support multiple APIs at different base paths via `specs` in counterfact.yaml
+1839	2026-04-13T12:11:37Z	2026-04-13T13:53:03Z	Refine the README: concise two-paragraph intro + ten variants
+1835	2026-04-11T18:51:18Z	2026-04-13T00:24:35Z	Add internal JSDocs throughout the codebase
+1833	2026-04-11T13:10:58Z	2026-04-13T17:18:48Z	feat: run `startup` export from `scenarios/index.ts` automatically on server init
+1831	2026-04-11T12:27:33Z		Add `startup()` decorator for default scenarios
+1829	2026-04-11T12:21:48Z	2026-04-11T15:12:01Z	Move openapi-example.yaml to test/fixtures and flesh out with edge cases
+1828	2026-04-11T10:36:35Z	2026-04-11T12:19:12Z	Rename .apply REPL command to .scenario
+1826	2026-04-11T02:27:54Z	2026-04-13T15:31:14Z	feat: OpenApiDocument is now a class with built-in file watching and EventTarget
+1823	2026-04-10T18:34:07Z	2026-04-14T15:31:01Z	Version Packages
+1822	2026-04-10T18:30:06Z	2026-04-13T16:45:19Z	Export Context$ and Scenario$ interfaces for strongly-typed loadContext() in _.context.ts files
+1819	2026-04-10T17:58:50Z	2026-04-10T18:33:09Z	Remove the client (GUI)
+1817	2026-04-10T15:12:31Z		Add a constructor with a strongly typed $ argument to the default Context class
+1811	2026-04-10T01:02:55Z	2026-04-10T01:30:44Z	Replace README v1–v6 with a five-minute walkthrough as the main README
+1804	2026-04-09T21:03:19Z	2026-04-10T17:26:26Z	Add runtime response header validation with OpenAPI hot-reload
+1801	2026-04-09T13:59:01Z	2026-04-09T21:58:59Z	Document usage patterns
+1799	2026-04-09T11:42:10Z	2026-04-09T12:04:54Z	Refactor counterfact-types: one type per file with JSDoc comments
+1797	2026-04-09T01:44:51Z	2026-04-10T16:41:41Z	Add .empty() method to response builder for no-body responses
+1795	2026-04-09T01:29:14Z	2026-04-09T02:48:09Z	fix: type error when returning a response with no body
+1791	2026-04-08T21:48:33Z	2026-04-08T22:19:36Z	Work around component names that are reserved words
+1789	2026-04-08T21:25:59Z	2026-04-10T17:56:43Z	feat: implement .apply REPL dot-command (Approach 1: Minimalist Function Injection)
+1781	2026-04-08T20:19:17Z	2026-04-08T20:30:24Z	Fix src/util/README.md: correct file extensions and add missing entry
+1778	2026-04-08T19:56:36Z	2026-04-08T20:10:00Z	Switch issue proposals from PR-merge to branch-push workflow
+1757	2026-04-08T18:43:02Z	2026-04-08T18:55:54Z	Remove old proposals that were not cleaned up because CI was broken
+1756	2026-04-08T18:27:37Z	2026-04-08T18:51:51Z	Fix invalid YAML in manual-acceptance-tests workflow
+1740	2026-04-08T18:12:57Z	2026-04-09T12:26:44Z	fix: escape XML special characters in jsonToXml text content
+1732	2026-04-08T17:28:55Z	2026-04-08T18:16:48Z	feat: add ADR process with auto-numbering CI workflow
+1729	2026-04-08T16:22:37Z	2026-04-08T16:59:38Z	feat: ban fs module in tests, enforce usingTemporaryFiles()
+1723	2026-04-08T15:18:26Z	2026-04-09T18:06:18Z	feat: add counterfact.yaml config file support with --config option
+1721	2026-04-08T08:38:11Z	2026-04-08T18:21:09Z	Propose AI agent improvements for Counterfact (#1720)
+1719	2026-04-08T03:29:04Z	2026-04-08T20:14:03Z	Add draft ADR for multiple API support (#1718)
+1717	2026-04-08T02:43:09Z		Add 10 Alan Kay-inspired feature proposals for Counterfact
+1715	2026-04-08T02:39:29Z	2026-05-05T02:20:31Z	OpenAPI 3.2: Create sub-issues for 15 adoption opportunities
+1713	2026-04-07T16:57:10Z	2026-04-08T21:12:52Z	docs: propose six README rewrites, a CYOA hub, a recommendation, and implement the recommended README + docs pages
+1711	2026-04-07T13:19:20Z	2026-04-07T15:42:25Z	fix: use `split(".")[0]` instead of passing whole array to `parseInt` in Node version check
+1710	2026-04-07T13:19:09Z	2026-04-07T13:40:30Z	fix: replace deprecated unescape() with decodeURIComponent() in requirement.ts
+1703	2026-04-07T12:21:20Z	2026-04-07T12:39:20Z	Fix CI script that creates issues
+1693	2026-04-07T11:58:15Z	2026-04-07T12:14:44Z	Bug Hunt 2: Document three latent bugs as issue proposals
+1690	2026-04-07T00:51:02Z	2026-04-07T20:03:17Z	Replace PR auto-update workflow with merge queue support
+1687	2026-04-07T00:12:52Z	2026-04-07T00:18:58Z	Add CI workflow to auto-update PR branches when main changes
+1685	2026-04-07T00:02:26Z	2026-04-10T18:07:51Z	Version Packages
+1684	2026-04-06T22:21:16Z	2026-04-06T23:02:09Z	Fix Tools.accepts() failing when Accept header has spaces after commas
+1683	2026-04-06T22:21:04Z	2026-04-07T11:27:08Z	fix: Tools.accepts() case-insensitive accept header lookup
+1682	2026-04-06T22:20:52Z	2026-04-06T23:46:49Z	Fix: Dispatcher proxy() always throws when request body is present
+1674	2026-04-06T16:33:50Z	2026-04-06T21:38:30Z	Version Packages
+1667	2026-04-06T11:54:35Z	2026-04-06T12:13:12Z	Add CI workflow to create GitHub issues from proposal files + update copilot-instructions.md
+1665	2026-04-06T01:24:27Z	2026-04-06T17:19:38Z	Improve error messages for malformed OpenAPI specs
+1659	2026-04-06T00:24:42Z		docs: instruct Copilot to follow TDD red/green/refactor cycle
+1657	2026-04-06T00:12:37Z	2026-04-06T18:36:39Z	refactor: split MiddlewareDetector and FileDiscovery helpers out of module-loader.ts
+1655	2026-04-06T00:10:41Z	2026-04-06T00:47:01Z	Add unit tests for raw-http-client.ts and REPL completer logic
+1653	2026-04-06T00:08:25Z	2026-04-06T17:24:52Z	Add request validation against OpenAPI spec
+1651	2026-04-05T23:59:15Z	2026-04-06T18:02:26Z	Bug Hunt: issue proposals documenting 3 bugs
+1648	2026-04-05T22:39:37Z		Add architecture report card documentation
+1646	2026-04-04T13:07:01Z	2026-04-04T15:15:54Z	Apply codebase architecture improvements
+1644	2026-04-04T12:21:55Z	2026-04-06T17:36:17Z	feat: Add JSDoc generation for types from OpenAPI metadata
+1640	2026-04-04T00:36:11Z	2026-04-04T00:50:54Z	Fix ESLint warnings with easy fixes
+1638	2026-04-03T22:53:00Z		Pass OpenAPI document to Context class constructor
+1637	2026-04-03T20:48:18Z	2026-04-06T18:47:32Z	Add lightweight telemetry using PostHog (initial usage tracking)
+1633	2026-04-03T14:25:51Z	2026-04-03T14:36:12Z	Remove Stryker mutation testing
+1631	2026-04-03T14:05:09Z	2026-04-03T14:11:19Z	fix: remove extra blank line in module-loader.ts (Prettier error)
+1630	2026-04-03T13:32:03Z	2026-04-03T18:02:45Z	Convert remaining JavaScript source files to TypeScript
+1627	2026-04-03T00:25:03Z		[WIP] Fix formatting and linting issues in PR #1624
+1626	2026-04-03T00:03:13Z	2026-04-03T00:31:00Z	Tell Copilot to run eslint --fix before committing
+1624	2026-04-02T22:35:27Z	2026-04-03T14:17:51Z	Fix: syntax error in a route file no longer crashes the server
+1622	2026-04-02T22:28:11Z	2026-04-03T00:17:21Z	Fix reserved keyword operationId causing TypeScript syntax errors
+1621	2026-04-02T22:14:42Z	2026-04-03T00:06:43Z	Fix TypeError when response content has no schema
+1620	2026-04-02T22:13:56Z	2026-04-02T23:33:19Z	Fix import path for routes containing colons (e.g. `/stuff:action`)
+1616	2026-04-01T23:22:20Z	2026-04-02T00:27:44Z	Add runtime version check and display current version on startup
+1614	2026-04-01T21:23:41Z	2026-04-02T22:10:49Z	Fix crash when a route file is deleted
+1612	2026-04-01T21:07:56Z	2026-04-01T21:24:18Z	Fix Access-Control-Allow-Methods to reflect actual route handler methods
+1611	2026-04-01T21:06:35Z	2026-04-03T13:38:56Z	Add ESLint rule to enforce kebab-case filenames
+1609	2026-04-01T20:31:36Z	2026-04-02T22:44:09Z	fix: set Content-Type: application/json in RawHttpClient when body is an object
+1607	2026-04-01T17:33:48Z		Add `.agent` REPL command with constrained DSL parser and interpreter
+1606	2026-03-31T22:10:08Z	2026-04-03T17:57:28Z	Version Packages
+1604	2026-03-31T11:18:14Z	2026-03-31T20:01:49Z	Replace withTemporaryFiles() with usingTemporaryFiles()
+1602	2026-03-30T23:34:25Z	2026-04-06T20:20:15Z	new request builder API for REPL with tab-completion
+1601	2026-03-30T22:03:35Z		refactor: introduce NormalizedPath branded type for path normalization
+1595	2026-03-28T01:50:50Z	2026-03-30T16:35:42Z	Add $.cookie for reading request cookies with strong typing
+1591	2026-03-27T19:04:40Z	2026-03-27T22:18:51Z	Fix REPL tab completion broken by custom completer overriding Node's built-in
+1589	2026-03-27T18:44:50Z	2026-03-27T19:01:51Z	Add route autocomplete to REPL for client.<method>() patterns
+1581	2026-03-27T14:52:12Z	2026-03-27T15:07:07Z	Return 500 when `.example()` is called with a name not defined in the OpenAPI spec
+1579	2026-03-27T14:38:39Z	2026-03-27T14:59:20Z	put eslint rules back
+1574	2026-03-25T13:28:39Z	2026-03-30T22:54:39Z	Version Packages
+1573	2026-03-25T02:09:35Z		Support multiple OpenAPI specs via multiple --spec flags
+1571	2026-03-25T02:01:09Z	2026-03-25T13:28:00Z	Fail fast on ambiguous wildcard paths: console error at load time, 500 at request time
+1570	2026-03-25T01:57:03Z		Add apiKey support (header, query, cookie) to generated operation types and $.auth
+1569	2026-03-25T01:47:53Z	2026-03-27T15:59:54Z	Fix IfHasKey to use substring matching for content type keys
+1568	2026-03-23T21:18:25Z	2026-03-25T15:31:08Z	Break REPL out of `counterfact()` and expose as public API
+1567	2026-03-23T20:27:33Z	2026-03-23T20:30:42Z	Fix broken middlware
+1564	2026-03-23T01:08:32Z	2026-03-30T19:45:18Z	Add binary data support in mock responses
+1563	2026-03-23T00:37:06Z	2026-03-23T01:00:08Z	Add `readJson()` utility to context constructors
+1561	2026-03-22T17:21:09Z	2026-03-26T20:42:21Z	Convert black-box tests from Jest/Node to Python
+1559	2026-03-22T11:27:50Z	2026-03-23T00:03:38Z	Add --spec flag as alternative to positional OpenAPI argument
+1557	2026-03-22T03:01:56Z	2026-03-22T11:09:24Z	Add .github/copilot-instructions.md
+1555	2026-03-20T17:14:00Z	2026-03-23T20:49:08Z	Version Packages
+1554	2026-03-20T11:47:05Z		Add API Testing GUI with Postman-like interface
+1553	2026-03-20T11:44:20Z	2026-03-30T19:23:58Z	Support for external YAML files
+1551	2026-03-20T03:13:41Z	2026-03-20T11:43:47Z	Add per-directory READMEs and design principles doc
+1550	2026-03-20T03:12:45Z	2026-03-20T17:13:25Z	Add --prune option to remove defunct route files when OpenAPI spec changes
+1549	2026-03-19T15:36:57Z	2026-03-20T12:26:19Z	Version Packages
+1546	2026-03-19T14:54:58Z	2026-03-19T15:03:45Z	Changeset for root middleware fix
+1545	2026-03-19T00:28:31Z	2026-03-19T15:36:16Z	Add strongly-typed `example(name)` method to response builder
+1544	2026-03-19T00:26:55Z	2026-03-22T11:20:19Z	Fill in required response headers in random()
+1540	2026-03-18T18:24:03Z	2026-03-18T22:32:26Z	Return HTTP 405 when path exists but method is not registered
+1539	2026-03-18T18:05:13Z	2026-03-18T18:23:22Z	Add comprehensive type tests for counterfact-types and wire into CI
+1536	2026-03-13T23:56:14Z	2026-03-14T00:31:27Z	fix: pass CI automatically on docs-only PRs
+1533	2026-03-10T16:38:59Z	2026-03-19T15:23:41Z	Version Packages
+1525	2026-03-10T02:30:29Z	2026-03-10T16:38:20Z	Add JSON prettification middleware for HTTP responses
+1524	2026-03-10T01:24:04Z	2026-03-10T16:45:24Z	Fix root middleware not executed for any routes
+1516	2026-03-02T16:41:12Z	2026-03-02T17:03:23Z	fix(operation-type-coder): sanitize operation ID before generating type
+1512	2026-02-26T20:53:14Z	2026-03-19T15:28:09Z	[Snyk] Security upgrade koa from 3.1.1 to 3.1.2
+1511	2026-02-26T17:24:30Z	2026-02-26T20:50:15Z	Version Packages
+1509	2026-02-26T16:40:01Z	2026-02-26T16:43:21Z	fix: temporarily make Coveralls optional during outage
+1507	2026-02-25T17:30:35Z	2026-02-26T18:45:19Z	fix(schema-type-coder): fix incorrect required property type generation
+1483	2026-01-20T19:39:28Z	2026-01-20T20:00:39Z	add a $.delay() function, resolves #720
+1482	2026-01-20T18:07:10Z	2026-01-20T19:51:10Z	make operation methods like GET() and POST() async
+1470	2026-01-13T17:14:50Z	2026-01-13T18:11:16Z	fix typescript errors
+1467	2026-01-09T19:59:41Z	2026-01-09T20:06:18Z	Bump qs from 6.13.0 to 6.14.1
+1465	2026-01-09T18:57:57Z	2026-01-09T19:06:31Z	fix: Update js-yaml to fix security alert
+1431	2025-11-18T10:31:52Z	2025-12-04T01:48:33Z	[Snyk] Upgrade koa from 3.0.3 to 3.1.1
+1403	2025-09-30T09:04:27Z	2025-10-10T02:19:39Z	[Snyk] Security upgrade patch-package from 8.0.0 to 8.0.1
+1396	2025-09-11T00:14:54Z	2025-09-11T00:38:40Z	Version Packages
+1395	2025-09-11T00:09:16Z	2025-09-11T00:14:15Z	fix an issue with proxy where headers are mangled
+1391	2025-09-04T23:22:00Z	2025-09-05T00:17:11Z	Version Packages
+1390	2025-09-04T21:41:41Z	2025-09-04T21:49:30Z	Version Packages
+1389	2025-09-04T21:35:25Z	2025-09-04T21:40:57Z	Fix an issue where proxying to SSL does not work
+1388	2025-09-04T01:29:40Z		fix colon in file name debug
+1386	2025-09-03T22:51:27Z	2025-09-04T23:21:25Z	windows fix for a path that contains a colon (resolves #1381)
+1385	2025-09-03T18:12:40Z	2025-09-03T18:18:08Z	Version Packages
+1384	2025-09-03T18:06:57Z	2025-09-03T18:12:04Z	Fix an error with $.proxy() and GET requests
+1372	2025-08-18T17:01:24Z	2025-08-20T17:58:08Z	use substring for content type parsing
+1344	2025-07-03T20:56:41Z	2026-04-06T16:33:00Z	feat: Auto-detect native TypeScript execution support
+1322	2025-06-20T15:35:36Z	2025-06-20T15:42:58Z	feat: Add CLI option to build cache
+1297	2025-05-30T13:13:10Z	2025-06-05T15:24:21Z	Version Packages
+1296	2025-05-29T15:03:09Z	2025-05-30T13:12:20Z	fix(server): Minor fix to buildMatch logic
+1240	2025-03-25T23:52:34Z	2025-03-26T00:03:00Z	fix an error in the docs for middleware usage
+1187	2025-02-07T22:27:55Z	2025-02-09T17:00:31Z	feat: Add alwaysFakeOptionals command line option
+1167	2025-01-18T17:54:53Z	2025-01-18T21:28:05Z	Version Packages
+1162	2025-01-17T19:25:19Z	2025-01-18T03:21:31Z	Version Packages
+1161	2025-01-16T23:11:35Z	2025-01-17T19:24:36Z	type fix: header should be headers (#1160)
+1150	2025-01-01T20:32:56Z	2025-01-01T20:39:26Z	upgrade jsonpath-plus to fix a security vulnerability (CVE-2024-21534)
+1142	2024-12-23T21:54:56Z	2025-01-02T17:58:26Z	Version Packages
+1139	2024-12-23T21:05:39Z	2024-12-23T21:54:23Z	path parameters are always strings
+1117	2024-11-22T21:41:01Z	2024-11-23T00:14:27Z	Version Packages
+1106	2024-11-08T06:40:02Z	2025-01-01T23:31:42Z	[Snyk] Security upgrade json-schema-faker from 0.5.6 to 0.5.8
+1099	2024-11-02T15:29:15Z	2024-11-22T21:39:38Z	fixes to make sure $ref is followed
+1082	2024-10-15T10:26:27Z	2024-10-15T10:53:53Z	Version Packages
+1081	2024-10-15T00:44:29Z	2024-10-15T10:25:55Z	fix vscode link on windows - fixes #1058
+1076	2024-10-10T19:17:27Z	2024-10-10T19:24:06Z	Version Packages
+1074	2024-10-09T16:44:35Z	2024-10-10T19:16:49Z	fix(server): Add support for directories with multiple wildcard children
+1068	2024-10-03T21:23:37Z	2024-10-03T21:27:27Z	lint *.test.ts files
+1062	2024-10-02T21:10:36Z	2024-10-02T21:42:36Z	map index.ts to / -- fixes #1056
+1061	2024-10-02T17:55:09Z	2024-10-02T18:10:24Z	Version Packages
+1060	2024-10-02T17:42:53Z	2024-10-02T17:54:36Z	fix an issue where request body type is not found when consumes is in the root
+1059	2024-10-02T15:08:38Z	2024-10-02T15:20:52Z	fix the docs for quickstart

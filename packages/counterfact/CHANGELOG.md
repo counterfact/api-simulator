@@ -1,5 +1,212 @@
 # counterfact
 
+## 3.1.0
+
+### Minor Changes
+
+- a724401: Generate a central `types/index.ts` exporting `Routes`, `Components`, and `Schemas` (an alias of `Components["schemas"]`). Include unused components, preserve lowercase OpenAPI categories, and use indexed `Routes` contracts in new route handlers while preserving existing route edits and deep imports.
+
+  Deprecate deep imports of generated operation and component types. Use the central exports throughout the manual, API reference, homepage, walkthrough, and agent guidance.
+
+  Expose `Context$`, `Scenario`, `Scenario$`, and directory-indexed `Middleware` through the central entry point. New context and scenario starters use central imports; context watching refreshes the helper module and middleware directory map. Dedicated helper imports remain compatible but deprecated.
+
+  Fix versioned handler narrowing after `minVersion()` checks, including early returns, negated conditions, and explicit else branches. Literal checks narrow both request and response contracts; dynamic union thresholds use a boolean overload to avoid incorrectly excluding possible versions.
+
+  Organize `Routes` as a tree of slash-prefixed path segments. Select `/hello/world` with `Routes["/hello"]["/world"]`; parent operations and child branches coexist, and generated handlers and documentation use the nested indexes.
+
+  Write watched helper modules atomically and skip unchanged content so TypeScript readers do not observe empty modules during regeneration.
+
+  Declare a local `Route` alias once per generated route file and annotate handlers with `Route["GET"]`, `Route["POST"]`, and other method keys. Regeneration reuses matching aliases and avoids existing local names while preserving user code.
+
+### Patch Changes
+
+- 40656be: Require Node 22.22 or later for Chokidar 6 compatibility.
+- acec81d: Updated dependency `@counterfact/repl` in `counterfact` to `0.1.7`.
+  Updated dependency `@counterfact/runtime` in `counterfact` to `0.3.0`.
+  Updated dependency `@counterfact/tutorials` in `counterfact` to `0.2.0`.
+  Updated dependency `posthog-node` in `counterfact` to `5.57.1`.
+- e12dd71: Updated dependency `posthog-node` in `counterfact` to `5.57.2`.
+- Updated dependencies [a724401]
+- Updated dependencies [40656be]
+- Updated dependencies [1f340b6]
+- Updated dependencies [93944c6]
+  - @counterfact/generator@1.1.0
+  - @counterfact/tutorials@0.2.2
+  - @counterfact/runtime@0.3.2
+  - @counterfact/openapi@0.1.7
+  - @counterfact/repl@0.1.9
+
+## 3.0.1
+
+### Patch Changes
+
+- 9871d4c: Print distinct Swagger UI links for versioned APIs and serve the selected version's OpenAPI document and request prefix instead of always showing the first version in the group.
+- Updated dependencies [ad9068d]
+- Updated dependencies [9871d4c]
+  - @counterfact/runtime@0.3.1
+  - @counterfact/repl@0.1.8
+  - @counterfact/tutorials@0.2.1
+
+## 3.0.0
+
+### Major Changes
+
+- 442afd2: Generate operation and parameter types with stable HTTP method names such as
+  `HTTP_GET` and `HTTP_GET_Query`, independent of OpenAPI operationId. On CLI
+  startup, automatically migrate legacy operationId-based route imports and their
+  references while preserving route logic, explicit aliases, comments, and strings.
+  References outside route files must be updated manually.
+
+### Minor Changes
+
+- f139586: Running Counterfact without arguments or a config file now opens a hands-on browser walkthrough with a coffee shop beside its instructions. Complete purchases, edit real product and order handlers, update shared context inventory, and restock through the REPL while seeing the app respond. The bundled example preserves existing projects, supports available ports and browser fallback, and keeps the ordinary API and REPL running after completion. Own-document setup supports local discovery, paths, and URLs; configured, explicit, and unattended invocations retain their behavior.
+
+  The walkthrough includes the Counterfact wordmark and a blue/orange palette aligned with the website. The shop uses customer-facing stock messages, updates automatically and keeps the left panel focused on instructions, optional code hints, and saved-file checks. Stale data, stock rejections, and missing order confirmations have explicit explanations and keep the cart available for recovery.
+
+  The instructions omit the project-folder footer and divider. Instructional file names and file paths link directly to the corresponding generated files using VSCode URLs.
+
+  Detect saved lesson files, run their handlers against separate test inventory, and explain unexpected behavior without consuming shop stock or requiring editor confirmation clicks.
+
+  Explain the starter API’s unchanged stock immediately after the first purchase.
+
+  Group related edits and purchases into eight screens, advance instructions automatically within a lesson, clear completed feedback, simplify saved-check success messages, and detect REPL restocking without confirmation buttons.
+
+  Remove the live API update feed and distinguish changing lesson feedback with a subtle Update label.
+
+  Remove the manual product-refresh button; product updates continue automatically.
+
+  Revisited exercises keep live state and offer a contextual REPL restock when their inventory is depleted.
+
+  State the API-editing promise at the start, explain the one-time Decaf setting, and finish with an optional independent challenge.
+
+  Use the existing Update message to compare real API stock before and after an accepted purchase, without a history or diagnostic panel.
+
+  Accept positive stock variations and verify purchases by their actual quantity rather than requiring exactly five bags to become four.
+
+  Expose editor handoff and path copying beside the current edit instruction, and remove obsolete refresh instructions from the generated handler.
+
+  Give the inventory exercise a starter loop with a TODO in the order handler, so the edit is clear without opening the optional code hint.
+
+  Mark completed tutorial steps with a visible check mark and Step complete message beside the Continue action.
+
+  Offer original-cart recovery when a learner changes an order during the retry lesson, and make the restart handoff explicit about its working directory, port, and fresh session state.
+
+  Explain the purpose of each walkthrough action, connecting response edits, repeatable failures, shared state, boundary cases, and REPL changes to frontend development.
+
+- b0d11b6: Add `response.status(code)` as a typed alternative to `response[code]`. Allow headers and cookies before status selection, narrowing generated status choices by header names and values while preserving required-header and body validation.
+
+  Deprecate bracket-based `response[statusCode]` selection in favor of `response.status(statusCode)`. Update documentation and generated route stubs to use the function-based selector; existing bracket-based handlers remain supported.
+
+### Patch Changes
+
+- f57ac24: Include the complete user manual, API reference, and verified workflow recipes in the published package.
+- 70cbe2e: Preserve live object and array context state when unchanged declarations reload. Scenario-seeded inventory, request updates, and REPL edits now survive context reloads; deliberately changed initializers still apply.
+- 1db6b5b: Updated dependency `posthog-node` in `counterfact` to `5.57.0`.
+- 7f715f3: Updated dependency `posthog-node` in `counterfact` to `5.56.4`.
+- 872e12f: Preserve nullable values, primitive constants, inferred object properties, referenced dictionary values, composition properties and required fields, explicit discriminator mappings, and tuple prefixes in generated TypeScript contracts. Keep unrestricted values typed as unknown and retain Counterfact's streaming and server-oriented binary types.
+
+  Regenerating contracts can expose existing handler type errors where required properties or literal constraints were previously lost.
+
+- eceb762: Report coffee-shop walkthrough milestones through the existing CLI telemetry, honoring CI and telemetry opt-out settings. Correlate events within a temporary simulator session, deduplicate reloads and revisits, and distinguish reaching the final screen from completing every exercise. Exclude paths, source code, cart contents, and error messages.
+- f035672: Extract guided learning experiences into `@counterfact/tutorials`, starting with the coffee-shop tour. Keep the existing offline first-run experience while moving tour content, presentation, progression, saved-handler checks, and project preparation out of the CLI package. Future tours share this package; the CLI retains startup and terminal interactions.
+
+  Format the walkthrough's generated TypeScript files with Prettier, including the editable product, order, context, and scenario files.
+
+- Updated dependencies [70cbe2e]
+- Updated dependencies [872e12f]
+- Updated dependencies [442afd2]
+- Updated dependencies [eceb762]
+- Updated dependencies [b0d11b6]
+- Updated dependencies [f035672]
+  - @counterfact/runtime@0.3.0
+  - @counterfact/generator@1.0.0
+  - @counterfact/tutorials@0.2.0
+  - @counterfact/repl@0.1.7
+
+## 2.17.0
+
+### Minor Changes
+
+- 96b565d: Add simulator.reset() to reconstruct stores, dependent contexts, source routes and startup state without restarting HTTP, and simulator.scenario(path, group?) to await named scenarios with the REPL arguments. Document request gating, reset failure recovery, reference lifetimes, and worker-scoped Playwright integration.
+- 665d281: Simplify programmatic startup: `counterfact({ basePath: "api" })` now supplies defaults for all other runtime options, and `api.start()` reuses that configuration. Serve routes on port 8100 without a REPL by default. Enable generation, watching, and cache building by default; supplying a spec generates routes and types and watches for changes. Explicit opt-outs remain supported. Full configurations and explicit startup options remain supported. Update the embedding and integration-test guides to show the minimal setup.
+
+  Create missing API directories during initialization. Expose `api.status()` to report the resolved configuration (excluding the Admin API token), absolute API directory, HTTP listener, and actual bound port; await listener readiness and reject startup on bind errors.
+
+  Support partial startup overrides such as `api.start({ port: 8111 })` while preserving configured defaults and reporting the effective port.
+
+### Patch Changes
+
+- 376ec98: Updated dependency `js-yaml` in `counterfact` to `5.5.0`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.5.0`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.5.0`.
+- c6e74bc: Updated dependency `posthog-node` in `counterfact` to `5.56.1`.
+- 1666014: Updated dependency `posthog-node` in `counterfact` to `5.56.0`.
+- 6b90551: Updated dependency `posthog-node` in `counterfact` to `5.55.3`.
+- 1a3b612: Updated dependency `posthog-node` in `counterfact` to `5.56.2`.
+- Updated dependencies [96b565d]
+- Updated dependencies [ce0bb3a]
+- Updated dependencies [865750a]
+- Updated dependencies [376ec98]
+- Updated dependencies [91428ea]
+  - @counterfact/runtime@0.2.0
+  - @counterfact/repl@0.1.6
+  - @counterfact/client@0.2.1
+  - @counterfact/generator@0.1.6
+  - @counterfact/openapi@0.1.6
+
+## 2.16.6
+
+### Patch Changes
+
+- 27533e7: Show an animated spinner for active startup steps in interactive terminals, clearing progress when each step completes or fails. Keep redirected startup output plain and restore the random startup tagline.
+- f30856d: Updated dependency `posthog-node` in `counterfact` to `5.52.1`.
+- bd1491f: Updated dependency `posthog-node` in `counterfact` to `5.52.4`.
+- c3db7ef: Updated dependency `posthog-node` in `counterfact` to `5.55.1`.
+- 9e039eb: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `posthog-node` in `counterfact` to `5.53.0`.
+- b56b1c7: Updated dependency `posthog-node` in `counterfact` to `5.54.1`.
+- cb11739: Updated dependency `posthog-node` in `counterfact` to `5.51.8`.
+- 0d2b3be: Updated dependency `posthog-node` in `counterfact` to `5.51.4`.
+- 25215f4: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.1`.
+- befb686: Updated dependency `js-yaml` in `counterfact` to `5.4.3`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.3`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.3`.
+- 15b30fb: Updated dependency `js-yaml` in `counterfact` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.2`.
+- 75b575b: Updated dependency `posthog-node` in `counterfact` to `5.55.0`.
+- 3fceab1: Updated dependency `open` in `counterfact` to `11.0.4`.
+- b253e37: Updated dependency `posthog-node` in `counterfact` to `5.51.7`.
+- ca2112f: Updated dependency `posthog-node` in `counterfact` to `5.51.3`.
+- 267818b: Updated dependency `posthog-node` in `counterfact` to `5.52.5`.
+- 81b825a: Updated dependency `posthog-node` in `counterfact` to `5.51.6`.
+- 9207642: Updated dependency `posthog-node` in `counterfact` to `5.55.2`.
+- Updated dependencies [04d67bb]
+- Updated dependencies [13155b0]
+- Updated dependencies [1714e9a]
+- Updated dependencies [02d013a]
+- Updated dependencies [a2ee147]
+- Updated dependencies [1145bb3]
+- Updated dependencies [dfe2472]
+- Updated dependencies [25215f4]
+- Updated dependencies [befb686]
+- Updated dependencies [2e0cadd]
+- Updated dependencies [15b30fb]
+- Updated dependencies [cfcedc9]
+- Updated dependencies [6d4af72]
+- Updated dependencies [e5105a0]
+- Updated dependencies [ba93689]
+- Updated dependencies [2707325]
+- Updated dependencies [66ab7eb]
+- Updated dependencies [d175f35]
+  - @counterfact/client@0.2.0
+  - @counterfact/repl@0.1.5
+  - @counterfact/openapi@0.1.5
+  - @counterfact/generator@0.1.5
+  - @counterfact/runtime@0.1.5
+
 ## 2.16.5
 
 ### Patch Changes

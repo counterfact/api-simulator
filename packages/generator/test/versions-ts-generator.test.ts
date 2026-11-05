@@ -44,7 +44,7 @@ describe("generateVersionsTsContent", () => {
   it("exports the Versioned utility type", async () => {
     const content = await generateVersionsTsContent(["v1", "v2"]);
     expect(content).toContain("export type Versioned<");
-    expect(content).toContain("version: V");
+    expect(content).toContain("version: K");
     expect(content).toContain("minVersion<M extends keyof T & Versions>");
   });
 

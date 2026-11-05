@@ -1,4 +1,5 @@
 import { defineConfig } from "astro/config";
+import remarkGithubAlerts from "./plugins/remark-github-alerts.mjs";
 import { visit } from "unist-util-visit";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -91,11 +92,15 @@ function rehypeStripMdLinks() {
 export default defineConfig({
   site: "https://counterfact.dev",
   output: "static",
+  // Astro 7 defaults to JSX whitespace rules, which join prose across
+  // line breaks beside inline elements. Keep HTML's whitespace semantics.
+  compressHTML: true,
   markdown: {
     syntaxHighlight: "shiki",
     shikiConfig: {
       theme: "github-light",
     },
+    remarkPlugins: [remarkGithubAlerts],
     rehypePlugins: [rehypeStripMdLinks],
   },
 });

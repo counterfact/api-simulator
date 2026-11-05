@@ -1,5 +1,82 @@
 # @counterfact/runtime
 
+## 0.3.2
+
+### Patch Changes
+
+- 40656be: Require Node 22.22 or later for Chokidar 6 compatibility.
+- 93944c6: Updated dependency `chokidar` in `@counterfact/generator` to `6.0.0`.
+  Updated dependency `chokidar` in `@counterfact/runtime` to `6.0.0`.
+- Updated dependencies [1f340b6]
+  - @counterfact/openapi@0.1.7
+
+## 0.3.1
+
+### Patch Changes
+
+- ad9068d: Use Swagger UI 5.32.0 so documentation pages render OpenAPI 3.0.4 and 3.2.0 documents instead of reporting an invalid version field.
+- 9871d4c: Print distinct Swagger UI links for versioned APIs and serve the selected version's OpenAPI document and request prefix instead of always showing the first version in the group.
+
+## 0.3.0
+
+### Minor Changes
+
+- b0d11b6: Add `response.status(code)` as a typed alternative to `response[code]`. Allow headers and cookies before status selection, narrowing generated status choices by header names and values while preserving required-header and body validation.
+
+  Deprecate bracket-based `response[statusCode]` selection in favor of `response.status(statusCode)`. Update documentation and generated route stubs to use the function-based selector; existing bracket-based handlers remain supported.
+
+### Patch Changes
+
+- 70cbe2e: Preserve live object and array context state when unchanged declarations reload. Scenario-seeded inventory, request updates, and REPL edits now survive context reloads; deliberately changed initializers still apply.
+- Updated dependencies [b0d11b6]
+  - @counterfact/types@0.2.0
+
+## 0.2.0
+
+### Minor Changes
+
+- 96b565d: Add simulator.reset() to reconstruct stores, dependent contexts, source routes and startup state without restarting HTTP, and simulator.scenario(path, group?) to await named scenarios with the REPL arguments. Document request gating, reset failure recovery, reference lifetimes, and worker-scoped Playwright integration.
+
+### Patch Changes
+
+- 376ec98: Updated dependency `js-yaml` in `counterfact` to `5.5.0`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.5.0`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.5.0`.
+- Updated dependencies [865750a]
+- Updated dependencies [376ec98]
+- Updated dependencies [91428ea]
+  - @counterfact/openapi@0.1.6
+
+## 0.1.5
+
+### Patch Changes
+
+- 1714e9a: Classify OpenAPI sources consistently and hot-reload local base documents and overlays without mistaking local `http`-prefixed paths for remote URLs.
+- 02d013a: Validate responses that omit an explicit status against the OpenAPI `200` response definition.
+- 25215f4: Updated dependency `js-yaml` in `counterfact` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.1`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.1`.
+- befb686: Updated dependency `js-yaml` in `counterfact` to `5.4.3`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.3`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.3`.
+- 15b30fb: Updated dependency `js-yaml` in `counterfact` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/openapi` to `5.4.2`.
+  Updated dependency `js-yaml` in `@counterfact/runtime` to `5.4.2`.
+- ba93689: Updated dependency `koa-proxies` in `@counterfact/runtime` to `0.12.6`.
+- Updated dependencies [1714e9a]
+- Updated dependencies [a2ee147]
+- Updated dependencies [dfe2472]
+- Updated dependencies [25215f4]
+- Updated dependencies [befb686]
+- Updated dependencies [2e0cadd]
+- Updated dependencies [15b30fb]
+- Updated dependencies [cfcedc9]
+- Updated dependencies [e5105a0]
+- Updated dependencies [2707325]
+- Updated dependencies [66ab7eb]
+- Updated dependencies [d175f35]
+  - @counterfact/openapi@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes

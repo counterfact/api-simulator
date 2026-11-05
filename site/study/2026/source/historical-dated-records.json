@@ -1,0 +1,223 @@
+{
+  "retrievedAt": "2026-09-09T13:51:33.404875+00:00",
+  "records": [
+    {
+      "id": "issue-453",
+      "year": 2023,
+      "title": "Found an error when headers name contains `-`",
+      "reportedAt": "2023-06-15T05:13:50Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/453",
+      "population": "original-external",
+      "firstAffectedPublishedAt": null,
+      "fixedPublishedAt": null,
+      "originPrecision": "unresolved",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/453"
+      ],
+      "originNote": "Original audit classified as pre-existing or pre-window; exact timestamp not reconstructed here. Requires source adjudication before treating as an exact mature non-event."
+    },
+    {
+      "id": "issue-487",
+      "year": 2023,
+      "title": "Running quickstart command never finishes on windows",
+      "reportedAt": "2023-07-30T17:58:27Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/487",
+      "population": "original-external",
+      "firstAffectedPublishedAt": null,
+      "fixedPublishedAt": null,
+      "originPrecision": "unresolved",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/487"
+      ],
+      "originNote": "Original audit classified as pre-existing or pre-window; exact timestamp not reconstructed here. Requires source adjudication before treating as an exact mature non-event."
+    },
+    {
+      "id": "issue-491",
+      "year": 2023,
+      "title": "All requests return Error: not acceptable",
+      "reportedAt": "2023-08-04T14:14:29Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/491",
+      "population": "original-external",
+      "firstAffectedPublishedAt": "2023-06-15T17:16:23.708Z",
+      "fixedPublishedAt": null,
+      "originPrecision": "original-audit-origin",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/491",
+        "https://github.com/counterfact/api-simulator/commit/b69914f19fd8cd8a35ef4513a3b34d8c81718bb2"
+      ],
+      "firstAffectedRelease": "0.20.4",
+      "originCommit": "b69914f19fd8cd8a35ef4513a3b34d8c81718bb2"
+    },
+    {
+      "id": "issue-530",
+      "year": 2023,
+      "title": "Some links from http://localhost:3100/counterfact/ are invalid due to extra slash before . file extension",
+      "reportedAt": "2023-08-25T14:46:14Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/530",
+      "population": "original-external",
+      "firstAffectedPublishedAt": null,
+      "fixedPublishedAt": null,
+      "originPrecision": "unresolved",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/530"
+      ],
+      "originNote": "Original audit classified as pre-existing or pre-window; exact timestamp not reconstructed here. Requires source adjudication before treating as an exact mature non-event."
+    },
+    {
+      "id": "issue-820",
+      "year": 2024,
+      "title": "Prefix missing from Swagger",
+      "reportedAt": "2024-03-27T11:16:05Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/820",
+      "population": "original-external",
+      "firstAffectedPublishedAt": "2024-03-09T15:10:53.016Z",
+      "fixedPublishedAt": "2024-04-30T23:02:33.697Z",
+      "originPrecision": "confirmed-pre-window-bound",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/820",
+        "https://github.com/counterfact/api-simulator/commit/a5eb8360e288fe4594352905fe7d380f787986d9",
+        "https://registry.npmjs.org/counterfact/0.40.0",
+        "https://github.com/counterfact/api-simulator/blob/13368d3b7103b7a611b2fa2168050f036db224a7/src/server/create-koa-app.ts"
+      ],
+      "originNote": "Swagger base URL omits config.routePrefix in the published pre-window snapshot.",
+      "fixCommit": "a5eb8360e288fe4594352905fe7d380f787986d9",
+      "fixedRelease": "0.40.0",
+      "firstAffectedRelease": "0.37.1",
+      "firstAffectedPrecision": "bound",
+      "originStatus": "pre-window-supported"
+    },
+    {
+      "id": "issue-828",
+      "year": 2024,
+      "title": "Endpoint gives error attempting to return 200 status",
+      "reportedAt": "2024-04-03T19:47:05Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/828",
+      "population": "original-external",
+      "firstAffectedPublishedAt": "2024-03-09T15:10:53.016Z",
+      "fixedPublishedAt": "2024-04-18T22:51:21.572Z",
+      "originPrecision": "confirmed-pre-window-bound",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/828",
+        "https://github.com/counterfact/api-simulator/commit/0177b8d0f88e6900f6c8f8d2ae3389afaec2fe73",
+        "https://registry.npmjs.org/counterfact/0.39.0",
+        "https://github.com/counterfact/api-simulator/blob/13368d3b7103b7a611b2fa2168050f036db224a7/src/server/dispatcher.ts"
+      ],
+      "originNote": "Dispatcher performs exact-key operation lookup while route matching is case insensitive.",
+      "fixCommit": "0177b8d0f88e6900f6c8f8d2ae3389afaec2fe73",
+      "fixedRelease": "0.39.0",
+      "firstAffectedRelease": "0.37.1",
+      "firstAffectedPrecision": "bound",
+      "originStatus": "pre-window-supported"
+    },
+    {
+      "id": "issue-835",
+      "year": 2024,
+      "title": "Hot reloading does not reload all files",
+      "reportedAt": "2024-04-05T22:36:24Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/835",
+      "population": "original-external",
+      "firstAffectedPublishedAt": "2024-03-09T15:10:53.016Z",
+      "fixedPublishedAt": "2024-04-30T23:02:33.697Z",
+      "originPrecision": "confirmed-pre-window-bound",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/835",
+        "https://github.com/counterfact/api-simulator/commit/62abc658849fb46e635ebe0a6efcf333eca13b62",
+        "https://registry.npmjs.org/counterfact/0.40.0",
+        "https://github.com/counterfact/api-simulator/blob/13368d3b7103b7a611b2fa2168050f036db224a7/src/server/module-loader.ts"
+      ],
+      "originNote": "Watcher reloads only changed module; it does not reload importers or update context for changed dependencies.",
+      "fixCommit": "62abc658849fb46e635ebe0a6efcf333eca13b62",
+      "fixedRelease": "0.40.0",
+      "firstAffectedRelease": "0.37.1",
+      "firstAffectedPrecision": "bound",
+      "originStatus": "pre-window-supported"
+    },
+    {
+      "id": "issue-866",
+      "year": 2024,
+      "title": "Cannot start/use the counterfact ",
+      "reportedAt": "2024-04-24T14:24:24Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/866",
+      "population": "original-external",
+      "firstAffectedPublishedAt": "2024-04-18T22:51:21.572Z",
+      "fixedPublishedAt": "2024-04-24T21:00:00.793Z",
+      "originPrecision": "original-audit-origin",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/866",
+        "https://github.com/counterfact/api-simulator/commit/c4dda369fb51fcfa072a49b5a23dc9143b57c9e8",
+        "https://github.com/counterfact/api-simulator/commit/7d39f8fd2393c06dc68374384782af66d9a757a7",
+        "https://registry.npmjs.org/counterfact/0.39.1"
+      ],
+      "firstAffectedRelease": "0.39.0",
+      "originCommit": "c4dda369fb51fcfa072a49b5a23dc9143b57c9e8",
+      "fixCommit": "7d39f8fd2393c06dc68374384782af66d9a757a7",
+      "fixedRelease": "0.39.1"
+    },
+    {
+      "id": "issue-890",
+      "year": 2024,
+      "title": "[BUG] Recursive models generate invalid typescript",
+      "reportedAt": "2024-05-06T12:24:44Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/890",
+      "population": "original-external",
+      "firstAffectedPublishedAt": "2024-03-09T15:10:53.016Z",
+      "fixedPublishedAt": "2024-05-06T18:56:54.407Z",
+      "originPrecision": "confirmed-pre-window-bound",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/890",
+        "https://github.com/counterfact/api-simulator/commit/19c756f91560c2a828669e23435515e8d0b464d9",
+        "https://registry.npmjs.org/counterfact/0.40.2",
+        "https://github.com/counterfact/api-simulator/blob/13368d3b7103b7a611b2fa2168050f036db224a7/src/typescript-generator/script.js"
+      ],
+      "originNote": "firstUniqueName rejects names in exports, including self-recursive type references.",
+      "fixCommit": "19c756f91560c2a828669e23435515e8d0b464d9",
+      "fixedRelease": "0.40.2",
+      "firstAffectedRelease": "0.37.1",
+      "firstAffectedPrecision": "bound",
+      "originStatus": "pre-window-supported"
+    },
+    {
+      "id": "issue-906",
+      "year": 2024,
+      "title": "Context file cannot find modules in counterfact 0.40+ ",
+      "reportedAt": "2024-05-14T16:46:20Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/906",
+      "population": "original-external",
+      "firstAffectedPublishedAt": "2024-04-30T23:02:33.697Z",
+      "fixedPublishedAt": "2024-05-15T21:09:04.488Z",
+      "originPrecision": "original-audit-origin",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/906",
+        "https://github.com/counterfact/api-simulator/commit/485bd42365bbf55d7a695fcd6da0d5de26550652",
+        "https://github.com/counterfact/api-simulator/commit/30e260922ab335895fb8f10f12740869a89c81fb",
+        "https://registry.npmjs.org/counterfact/0.42.1"
+      ],
+      "firstAffectedRelease": "0.40.0",
+      "originCommit": "485bd42365bbf55d7a695fcd6da0d5de26550652",
+      "fixCommit": "30e260922ab335895fb8f10f12740869a89c81fb",
+      "fixedRelease": "0.42.1"
+    },
+    {
+      "id": "issue-918",
+      "year": 2024,
+      "title": "Type error on custom json response",
+      "reportedAt": "2024-05-24T09:53:20Z",
+      "sourceUrl": "https://github.com/counterfact/api-simulator/issues/918",
+      "population": "original-external",
+      "firstAffectedPublishedAt": "2024-03-22T01:17:19.384Z",
+      "fixedPublishedAt": "2024-05-30T23:41:50.956Z",
+      "originPrecision": "original-audit-origin",
+      "sources": [
+        "https://github.com/counterfact/api-simulator/issues/918",
+        "https://github.com/counterfact/api-simulator/commit/9e7923c219b4da73be701803632525d1ae63d4c6",
+        "https://github.com/counterfact/api-simulator/commit/883d4f9a134bbce16f9e108054dcd6253b396a9c",
+        "https://registry.npmjs.org/counterfact/0.45.0"
+      ],
+      "firstAffectedRelease": "0.38.0",
+      "originCommit": "9e7923c219b4da73be701803632525d1ae63d4c6",
+      "fixCommit": "883d4f9a134bbce16f9e108054dcd6253b396a9c",
+      "fixedRelease": "0.45.0"
+    }
+  ],
+  "note": "Issue timestamps retrieved live; correction commits checked against tag ancestry and npm publication times. Original origin classifications requiring additional trace remain explicit."
+}

@@ -15,6 +15,7 @@
 #
 #   Validation is NOT enforced when:
 #     - The PR carries a "design" label (design-only PRs have no observable runtime behavior to test).
+#     - The PR carries a "skip-manual-acceptance-tests" label (explicit reviewer opt-out).
 #
 #   What the section must contain:
 #     - At least one checked item: - [x] some observable behavior
@@ -29,7 +30,9 @@ name: Manual acceptance tests
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+  merge_group:
+    types: [checks_requested]
 
 jobs:
   manual-acceptance-tests:
@@ -37,8 +40,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Skip pull-request validation for a merge group
+        if: github.event_name == 'merge_group'
+        run: echo "Skipping manual acceptance test validation for a merge-group commit; the pull request was validated before queue admission."
+
       - name: Decide whether to enforce
         id: decide
+        if: github.event_name == 'pull_request'
         env:
           PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           PR_BODY: ${{ github.event.pull_request.body }}
@@ -48,7 +56,8 @@ jobs:
           import json, os, sys
           try:
               labels = json.loads(os.environ.get('PR_LABELS', '[]'))
-              sys.exit(0 if 'design' in labels else 1)
+              skip_labels = {'design', 'skip-manual-acceptance-tests'}
+              sys.exit(0 if skip_labels.intersection(labels) else 1)
           except Exception as e:
               print(f'Error parsing PR labels: {e}', file=sys.stderr)
               sys.exit(1)
@@ -62,10 +71,10 @@ jobs:
           fi
       - name: Skip (no enforcement needed)
         if: steps.decide.outputs.enforce == 'false'
-        run: echo "Skipping manual acceptance test validation (design PR, not a Copilot PR, or no section present)"
+        run: echo "Skipping manual acceptance test validation (design or skip-manual-acceptance-tests label, or neither a Copilot branch nor a manual acceptance section)"
 
       - name: Validate PR body
-        if: steps.decide.outputs.enforce == 'true'
+        if: github.event_name == 'pull_request' && steps.decide.outputs.enforce == 'true'
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |

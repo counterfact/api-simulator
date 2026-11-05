@@ -1,13 +1,24 @@
 {
-  "name": "Counterfact",
+  "name": "Counterfact (Node 24 + Python)",
   "build": {
     "dockerfile": "Dockerfile",
-    "args": {
-      "VARIANT": "22-bookworm"
-    }
+    "context": ".."
   },
+  "containerUser": "node",
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+  "workspaceFolder": "/workspaces/counterfact",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/counterfact,type=bind,consistency=cached",
+  "init": true,
+  "privileged": false,
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker",
+        "usernamehw.errorlens"
+      ],
       "settings": {
         "editor.formatOnSave": true,
         "eslint.format.enable": true,
@@ -34,14 +45,7 @@
         "[typescript]": {
           "editor.defaultFormatter": "dbaeumer.vscode-eslint"
         }
-      },
-      "extensions": [
-        "dbaeumer.vscode-eslint",
-        "ms-azuretools.vscode-docker",
-        "usernamehw.errorlens"
-      ]
+      }
     }
-  },
-  "postCreateCommand": "corepack enable && yarn install",
-  "remoteUser": "node"
+  }
 }

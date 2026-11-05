@@ -34,6 +34,19 @@ const OPENAPI = {
 };
 
 describe("OpenApiDocument", () => {
+  const watchedDocuments: OpenApiDocument[] = [];
+  const originalWorkingDirectory = process.cwd();
+
+  afterEach(async () => {
+    try {
+      await Promise.all(
+        watchedDocuments.splice(0).map((doc) => doc.stopWatching()),
+      );
+    } finally {
+      process.chdir(originalWorkingDirectory);
+    }
+  });
+
   if (process.platform === "win32") {
     it("skips these tests because Windows", () => {
       expect("windows-is-dumb").toEqual("windows-is-dumb");
@@ -95,15 +108,17 @@ describe("OpenApiDocument", () => {
       const doc = new OpenApiDocument($.path("openapi.json"));
 
       await doc.load();
+      watchedDocuments.push(doc);
       await doc.watch();
 
       const changed = {
         ...OPENAPI,
         info: { title: "Updated", version: "2.0.0" },
       };
+      const reloaded = waitForEvent(doc, "reload");
       await $.add("openapi.json", JSON.stringify(changed));
 
-      await waitForEvent(doc, "reload");
+      await reloaded;
 
       await doc.stopWatching();
 
@@ -118,6 +133,7 @@ describe("OpenApiDocument", () => {
       const doc = new OpenApiDocument($.path("openapi.json"));
 
       await doc.load();
+      watchedDocuments.push(doc);
       await doc.watch();
 
       const updated = {
@@ -130,14 +146,97 @@ describe("OpenApiDocument", () => {
           },
         },
       };
+      const reloaded = waitForEvent(doc, "reload");
       await $.add("openapi.json", JSON.stringify(updated));
 
-      await waitForEvent(doc, "reload");
+      await reloaded;
 
       await doc.stopWatching();
 
       expect(Object.keys(doc.paths)).toContain("/updated");
       expect(Object.keys(doc.paths)).not.toContain("/example");
+    });
+  });
+
+  it("reloads the complete document when a local overlay changes", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("openapi.json", JSON.stringify(OPENAPI));
+      await $.add(
+        "overlay.json",
+        JSON.stringify({
+          overlay: "1.0.0",
+          actions: [
+            {
+              target: "$.paths['/example'].get.responses['200']",
+              update: { description: "Initial overlay" },
+            },
+          ],
+        }),
+      );
+
+      const doc = new OpenApiDocument($.path("openapi.json"), [
+        $.path("overlay.json"),
+      ]);
+
+      await doc.load();
+      watchedDocuments.push(doc);
+      await doc.watch();
+
+      const reloaded = waitForEvent(doc, "reload");
+      await $.add(
+        "overlay.json",
+        JSON.stringify({
+          overlay: "1.0.0",
+          actions: [
+            {
+              target: "$.paths['/example'].get.responses['200']",
+              update: { description: "Reloaded overlay" },
+            },
+          ],
+        }),
+      );
+
+      await reloaded;
+      await doc.stopWatching();
+
+      expect(doc.paths["/example"]?.get?.responses?.["200"]?.description).toBe(
+        "Reloaded overlay",
+      );
+    });
+  });
+
+  it("watches a local relative path that begins with 'http'", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("httpspec.json", JSON.stringify(OPENAPI));
+      const originalWorkingDirectory = process.cwd();
+      process.chdir($.path("."));
+
+      try {
+        const doc = new OpenApiDocument("httpspec.json");
+        await doc.load();
+        watchedDocuments.push(doc);
+        await doc.watch();
+
+        const reloaded = waitForEvent(doc, "reload");
+        await $.add(
+          "httpspec.json",
+          JSON.stringify({
+            ...OPENAPI,
+            paths: {
+              "/http-prefix-reloaded": {
+                get: { responses: { "200": { description: "OK" } } },
+              },
+            },
+          }),
+        );
+
+        await reloaded;
+        await doc.stopWatching();
+
+        expect(Object.keys(doc.paths)).toStrictEqual(["/http-prefix-reloaded"]);
+      } finally {
+        process.chdir(originalWorkingDirectory);
+      }
     });
   });
 

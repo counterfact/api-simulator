@@ -1,9 +1,28 @@
 import { describe, expect, it } from "@jest/globals";
 
+import ts from "typescript";
+
+import { printNode } from "../src/ast.js";
 import { Requirement } from "../src/requirement.js";
 import { ResponseTypeCoder } from "../src/response-type-coder.js";
 
-describe("a ResponsesTypeCoder", () => {
+function exampleNames(type: ts.TypeLiteralNode): string[] {
+  return type.members.map(
+    (member) =>
+      ((member as ts.PropertySignature).name as ts.StringLiteral).text,
+  );
+}
+
+function contentEntries(entries: [string, ts.TypeNode][]): [string, string][] {
+  return entries.map(([name, type]) => [
+    name,
+    printNode(
+      ((type as ts.TypeLiteralNode).members[0] as ts.PropertySignature).type!,
+    ),
+  ]);
+}
+
+describe("a ResponseTypeCoder", () => {
   it("prints required headers", () => {
     const coder = new ResponseTypeCoder({
       data: {
@@ -26,7 +45,9 @@ describe("a ResponsesTypeCoder", () => {
       },
     });
 
-    expect(coder.printRequiredHeaders(headers)).toBe('"always" | "mandatory"');
+    expect(printNode(coder.requiredHeadersType(headers))).toBe(
+      '"always" | "mandatory"',
+    );
   });
 
   describe("buildExamplesObjectType", () => {
@@ -36,7 +57,7 @@ describe("a ResponsesTypeCoder", () => {
         schema: { type: "object" },
       });
 
-      expect(coder.buildExamplesObjectType(response)).toBe("{}");
+      expect(exampleNames(coder.buildExamplesObjectType(response))).toEqual([]);
     });
 
     it("returns '{}' when content types have no examples", () => {
@@ -49,7 +70,7 @@ describe("a ResponsesTypeCoder", () => {
         },
       });
 
-      expect(coder.buildExamplesObjectType(response)).toBe("{}");
+      expect(exampleNames(coder.buildExamplesObjectType(response))).toEqual([]);
     });
 
     it("returns an object type with example names from a single content type", () => {
@@ -66,9 +87,10 @@ describe("a ResponsesTypeCoder", () => {
         },
       });
 
-      expect(coder.buildExamplesObjectType(response)).toBe(
-        '{\n"success": unknown,\n"empty": unknown\n}',
-      );
+      expect(exampleNames(coder.buildExamplesObjectType(response))).toEqual([
+        "success",
+        "empty",
+      ]);
     });
 
     it("merges example names from multiple content types without duplicates", () => {
@@ -91,9 +113,10 @@ describe("a ResponsesTypeCoder", () => {
         },
       });
 
-      expect(coder.buildExamplesObjectType(response)).toBe(
-        '{\n"success": unknown,\n"error": unknown\n}',
-      );
+      expect(exampleNames(coder.buildExamplesObjectType(response))).toEqual([
+        "success",
+        "error",
+      ]);
     });
   });
 
@@ -110,11 +133,9 @@ describe("a ResponsesTypeCoder", () => {
         },
       });
 
-      const result = coder.buildContentObjectType({}, response);
+      const result = contentEntries(coder.buildContentObjectType({}, response));
 
-      expect(result).toStrictEqual([
-        ["application/json", "{ \n            schema:  unknown\n         }"],
-      ]);
+      expect(result).toStrictEqual([["application/json", "unknown"]]);
     });
 
     it("generates AsyncIterable<T> when content has itemSchema and is text/event-stream", () => {
@@ -127,13 +148,10 @@ describe("a ResponsesTypeCoder", () => {
         },
       });
 
-      const result = coder.buildContentObjectType({}, response);
+      const result = contentEntries(coder.buildContentObjectType({}, response));
 
       expect(result).toStrictEqual([
-        [
-          "text/event-stream",
-          "{ \n            schema:  AsyncIterable<string>\n         }",
-        ],
+        ["text/event-stream", "AsyncIterable<string>"],
       ]);
     });
 
@@ -147,13 +165,10 @@ describe("a ResponsesTypeCoder", () => {
         },
       });
 
-      const result = coder.buildContentObjectType({}, response);
+      const result = contentEntries(coder.buildContentObjectType({}, response));
 
       expect(result).toStrictEqual([
-        [
-          "application/jsonl",
-          "{ \n            schema:  AsyncIterable<number>\n         }",
-        ],
+        ["application/jsonl", "AsyncIterable<number>"],
       ]);
     });
 
@@ -167,13 +182,10 @@ describe("a ResponsesTypeCoder", () => {
         },
       });
 
-      const result = coder.buildContentObjectType({}, response);
+      const result = contentEntries(coder.buildContentObjectType({}, response));
 
       expect(result).toStrictEqual([
-        [
-          "application/json-seq",
-          "{ \n            schema:  AsyncIterable<string>\n         }",
-        ],
+        ["application/json-seq", "AsyncIterable<string>"],
       ]);
     });
 
@@ -187,11 +199,9 @@ describe("a ResponsesTypeCoder", () => {
         },
       });
 
-      const result = coder.buildContentObjectType({}, response);
+      const result = contentEntries(coder.buildContentObjectType({}, response));
 
-      expect(result).toStrictEqual([
-        ["text/event-stream", "{ \n            schema:  string\n         }"],
-      ]);
+      expect(result).toStrictEqual([["text/event-stream", "string"]]);
     });
 
     it("ignores itemSchema for non-streaming content types", () => {
@@ -205,12 +215,10 @@ describe("a ResponsesTypeCoder", () => {
         },
       });
 
-      const result = coder.buildContentObjectType({}, response);
+      const result = contentEntries(coder.buildContentObjectType({}, response));
 
       // Should use schema, not itemSchema, because application/json is not a streaming type
-      expect(result).toStrictEqual([
-        ["application/json", "{ \n            schema:  {}\n         }"],
-      ]);
+      expect(result).toStrictEqual([["application/json", "{}"]]);
     });
   });
 
@@ -256,10 +264,10 @@ describe("a ResponsesTypeCoder", () => {
       });
       const coder = new ResponseTypeCoder(response);
 
-      const code = coder.writeCode(null);
+      const code = printNode(coder.writeCode(null));
 
       expect(code).toContain("examples:");
-      expect(code).toContain('"myExample": unknown');
+      expect(code).toContain("myExample: unknown");
     });
 
     it("includes 'examples: {}' when no examples are defined", () => {
@@ -272,7 +280,7 @@ describe("a ResponsesTypeCoder", () => {
       });
       const coder = new ResponseTypeCoder(response);
 
-      const code = coder.writeCode(null);
+      const code = printNode(coder.writeCode(null));
 
       expect(code).toContain("examples: {}");
     });

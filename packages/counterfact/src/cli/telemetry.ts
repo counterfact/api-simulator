@@ -297,6 +297,7 @@ export async function sendTelemetryAndWait(
     posthog.capture({
       distinctId: installationId,
       event: sanitized.event,
+
       properties: {
         $ip: null,
         $process_person_profile: false,

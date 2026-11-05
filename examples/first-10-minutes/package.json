@@ -12,7 +12,12 @@
     "verify": "npm run generate && npm test && npm run typecheck"
   },
   "devDependencies": {
-    "counterfact": "2.14.0",
+    "counterfact": "3.0.1",
     "typescript": "6.0.3"
+  },
+  "overrides": {
+    "koa-proxies": {
+      "uuid": "11.1.1"
+    }
   }
 }

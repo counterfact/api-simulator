@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { once } from "node:events";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
 import { jest } from "@jest/globals";
 import { usingTemporaryFiles } from "using-temporary-files";
@@ -548,4 +550,43 @@ export const notAFunction = 42;`,
       expect(scenarioRegistry.getFileKeys()).toHaveLength(0);
     });
   });
+});
+
+it("restores source import errors after initial load and a failed hot reload", async () => {
+  // Use Node's real module cache: Jest retains evaluated modules across cache-busted imports.
+  await promisify(execFile)(
+    process.execPath,
+    [
+      "--input-type=module",
+      "--eval",
+      `
+    import assert from "node:assert/strict";
+    import { once } from "node:events";
+    import { usingTemporaryFiles } from "using-temporary-files";
+    import { ModuleLoader, Registry } from "@counterfact/runtime";
+    await usingTemporaryFiles(async ($) => {
+      await $.add("broken.cjs", 'throw new Error("initial import failure");');
+      await $.add("changed.cjs", 'exports.GET = () => "original";');
+      const registry = new Registry();
+      const loader = new ModuleLoader($.path("."), registry);
+      await loader.load();
+      const error = registry.handler("/broken", "GET").module.GET;
+      assert.equal(error({}).status, 500);
+      loader.resetRoutes();
+      assert.equal(registry.handler("/broken", "GET").module.GET, error);
+      await loader.watch();
+      try {
+        const changed = once(loader, "add");
+        await $.add("changed.cjs", 'throw new Error("reload import failure");');
+        await changed;
+        const failedReload = registry.handler("/changed", "GET").module.GET;
+        assert.equal(failedReload({}).status, 500);
+        loader.resetRoutes();
+        assert.equal(registry.handler("/changed", "GET").module.GET, failedReload);
+      } finally { await loader.stopWatching(); }
+    });
+  `,
+    ],
+    { timeout: 5000 },
+  );
 });

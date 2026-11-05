@@ -129,6 +129,24 @@ OPENAPI_DOCUMENT = {
                 }
             }
         },
+        "/implicit-status": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "implicit success",
+                        "headers": {
+                            "X-Required-Response": {
+                                "required": True,
+                                "schema": {"type": "string"},
+                            }
+                        },
+                        "content": {
+                            "text/plain": {"schema": {"type": "string"}}
+                        },
+                    }
+                }
+            }
+        },
     },
 }
 
@@ -136,6 +154,13 @@ OPENAPI_DOCUMENT = {
 BINARY_HANDLER = """\
 export const GET = ($) => {
   return $.response[200].binary("aGVsbG8gYmluYXJ5");
+};
+"""
+
+
+IMPLICIT_STATUS_HANDLER = """\
+export const GET = () => {
+  return { body: "implicit success", contentType: "text/plain", headers: {} };
 };
 """
 
@@ -263,6 +288,27 @@ def request_bodies_are_validated(journey):
     assert (valid.status_code, valid.text) == (200, "accepted")
 
 
+@when("I customize a handler that relies on the implicit success status")
+def customize_implicit_status_handler(journey):
+    (journey.output / "routes" / "implicit-status.ts").write_text(
+        IMPLICIT_STATUS_HANDLER, encoding="utf-8"
+    )
+
+
+@then("its implicit 200 response is still validated")
+def implicit_success_response_is_validated(journey):
+    response = journey.wait_for_http(
+        f"{journey.prefix}/implicit-status",
+        lambda candidate: (
+            candidate.status_code == 200
+            and candidate.text == "implicit success"
+            and "X-Required-Response"
+            in candidate.headers.get("response-type-error", "")
+        ),
+    )
+    assert "X-Required-Response" in response.headers["response-type-error"]
+
+
 @when("I customize the generated binary handler")
 def customize_binary_handler(journey):
     (journey.output / "routes" / "binary-file.ts").write_text(
@@ -281,3 +327,60 @@ def binary_handler_is_hot_reloaded(journey):
     )
     assert "application/octet-stream" in response.headers.get("content-type", "")
     assert response.content == b"hello binary"
+
+
+@scenario(
+    "features/generated_openapi.feature",
+    "Upgrade operationId-based route types automatically",
+)
+def test_upgrade_operation_id_route_types():
+    """Existing customized routes migrate through the shipped CLI."""
+
+
+@given("an existing customized route using operationId-based types")
+def legacy_operation_id_route(journey):
+    journey.spec_path = journey.write_json("openapi.json", {
+        "openapi": "3.0.3",
+        "info": {"title": "Migration", "version": "1"},
+        "paths": {"/pet": {"get": {
+            "operationId": "getPet",
+            "parameters": [{"in": "query", "name": "name", "schema": {"type": "string"}}],
+            "responses": {"200": {"description": "OK"}},
+        }}},
+    })
+    journey.output = journey.project / "generated-api"
+    journey.legacy_route = journey.write_text("generated-api/routes/pet.ts", '''import type { getPet, getPet_Query } from "../types/paths/pet.types.ts";
+// Keep getPet in this comment and string.
+const label = "getPet";
+type Query = getPet_Query;
+export const GET: getPet = ($) => ({ status: 200 });
+''')
+
+
+@when("I regenerate the legacy project through the CLI")
+def regenerate_legacy_project(journey):
+    result = journey.run_cli(
+        journey.spec_path, journey.output, "--generate", "--no-update-check",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+@then("method-based types replace operationId-based types without changing handler logic")
+def migrated_method_types(journey):
+    content = journey.legacy_route.read_text(encoding="utf-8")
+    assert content == '''import type { HTTP_GET, HTTP_GET_Query } from "../types/paths/pet.types.ts";
+// Keep getPet in this comment and string.
+const label = "getPet";
+type Query = HTTP_GET_Query;
+export const GET: HTTP_GET = ($) => ({ status: 200 });
+'''
+    types = (journey.output / "types/paths/pet.types.ts").read_text(encoding="utf-8")
+    assert "export type HTTP_GET =" in types
+    assert "export type HTTP_GET_Query =" in types
+    assert "export type getPet" not in types
+    journey.migrated_route_content = content
+
+
+@then("the migrated route stays unchanged")
+def stable_migrated_route(journey):
+    assert journey.legacy_route.read_text(encoding="utf-8") == journey.migrated_route_content

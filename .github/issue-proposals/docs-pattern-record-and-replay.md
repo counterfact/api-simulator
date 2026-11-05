@@ -31,5 +31,5 @@ A `Record and Replay` usage pattern document would describe:
 
 - [ ] A `--record` (or equivalent) CLI flag is implemented that writes captured responses to handler files
 - [ ] `packages/counterfact/docs/patterns/record-and-replay.md` is added following the established pattern format (Context, Problem, Solution, Example, Consequences, Related Patterns)
-- [ ] The new pattern is linked in `packages/counterfact/docs/patterns/index.md`
+- [ ] The new pattern is linked in `packages/counterfact/docs/usage.md`
 - [ ] The reference doc is updated to describe the new CLI flag

@@ -18,7 +18,7 @@ const response = await fetch("http://localhost:3100/pet/1");
 const pet = await response.json();
 ```
 
-Requires Node.js 22 or newer. Counterfact supports Swagger 2.0 and OpenAPI
+Requires Node.js 22.22 or newer. Counterfact supports Swagger 2.0 and OpenAPI
 3.0, 3.1, and 3.2. For a project or CI workflow, install Counterfact as a dev
 dependency and commit the lockfile:
 
@@ -39,10 +39,10 @@ local API is running.
 
 - [Getting started](./docs/getting-started.md) — the shortest path from OpenAPI document to browser request.
 - [First 10 minutes](./docs/first-10-minutes.md) — add a small stateful workflow and one failure.
-- [Usage](./docs/usage.md) — guides grouped by frontend, team/test, advanced, and reference work.
-- [Reference](./docs/reference.md) — CLI flags, response builders, generated files, and programmatic API.
-- [Patterns](./docs/patterns/index.md) — focused workflows, including failures, latency, proxying, and tests.
-- [Runnable examples](./docs/examples/index.md) — repository-hosted React/Vite and Playwright applications with complete setup instructions; their source is not included in this npm package.
+- [User manual](./docs/manual.md) — feature-by-feature explanations of API generation, behavior, state, and integration.
+- [API reference](./docs/api.md) — CLI configuration, handler contracts, response builders, and simulator lifecycle.
+- [Find your workflow](docs/usage.md) — guides for frontend work, testing, proxying, and agents.
+- [Runnable examples](./docs/examples/index.md) — repository-hosted React/Vite and Playwright apps with complete setup instructions; source is not included in the npm package.
 - [Without OpenAPI](./docs/features/without-openapi.md) — the deeper alternative when no OpenAPI document exists.
 
 For a complete checked-in example, see the

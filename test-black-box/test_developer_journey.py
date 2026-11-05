@@ -334,14 +334,15 @@ def repl_and_swagger_are_ready(journey):
     assert b"\x1b[" in journey.terminal.output
     assert displayed_url in transcript, transcript
     assert transcript.index("Counterfact v") < transcript.index(
-        "→ Reading OpenAPI document…"
+        "⠋ Reading OpenAPI document…"
     ) < transcript.index("✓ OpenAPI document ready") < transcript.index(
-        "→ Generating routes and types…"
+        "⠋ Generating routes and types…"
     ) < transcript.index("✓ Generated routes and types") < transcript.index(
         f"✓ Mock server → {displayed_url}"
     ) < transcript.index("✓ Swagger UI →") < transcript.index(
         "✓ Watching routes and types"
     ) < transcript.index("⬣> ")
+    assert b"\r\x1b[2K" in journey.terminal.output
     journey.response = journey.wait_for_http(
         "/counterfact/swagger",
         lambda response: response.status_code == 200,
@@ -364,6 +365,23 @@ def route_builder_reports_readiness(journey):
         'route("/pets/{petId}").method("get").path({ petId: 1 }).ready()'
     )
     _assert_repl_scalar(ready_path, "true", journey.transcript())
+
+
+@then("the route builder requires the documented pet body")
+def route_builder_requires_pet_body(journey):
+    missing_body = journey.terminal.command(
+        'route("/pets").method("post").ready()'
+    )
+    _assert_repl_scalar(missing_body, "false", journey.transcript())
+    wrong_entity = journey.terminal.command(
+        'route("/pets").method("post").form({ name: "Fluffy" }).ready()'
+    )
+    _assert_repl_scalar(wrong_entity, "false", journey.transcript())
+    ready_body = journey.terminal.command(
+        'route("/pets").method("post").body('
+        '{ name: "Fluffy", status: "available" }).ready()'
+    )
+    _assert_repl_scalar(ready_body, "true", journey.transcript())
 
 
 @then("a REPL request for the missing pet returns 404")
@@ -397,8 +415,8 @@ def invalid_pet_is_rejected(journey):
 @when("I create Fluffy through the REPL")
 def create_fluffy(journey):
     journey.repl_output = journey.terminal.command(
-        'void (await client.post("/pets", '
-        '{ name: "Fluffy", status: "available" }))'
+        'void (await route("/pets").method("post").body('
+        '{ name: "Fluffy", status: "available" }).send())'
     )
     _assert_repl_http_status(
         journey.repl_output, "201 Created", journey.transcript()

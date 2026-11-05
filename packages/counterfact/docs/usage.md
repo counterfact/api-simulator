@@ -1,8 +1,12 @@
-# Usage
+# Find your workflow
 
 Counterfact starts with an OpenAPI document, a local URL, and generated
 responses. Choose the next guide by the job your frontend, team, or test suite
 needs—not by a feature checklist.
+
+New to the terminology? Read [How Counterfact fits together](./manual/concepts.md), including what an [API group](./manual/concepts.md#api-groups-versions-and-url-prefixes) shares.
+
+For feature explanations, use the [user manual](./manual.md). For exact options and signatures, use the [API reference](./api.md).
 
 ## Frontend workflows
 
@@ -11,8 +15,9 @@ needs—not by a feature checklist.
 - [State](./features/state.md) — share small in-memory state across routes.
 - [Hot reload](./features/hot-reload.md) — update handlers without restarting.
 - [Generated code](./features/generated-code.md) — understand editable routes and generated types.
-- [React and Vite example](./examples/react-vite.md) — run a repository-hosted screen against a local contract-shaped API.
-- [Simulate failures](./patterns/simulate-failures.md) and [simulate latency](./patterns/simulate-latency.md) — exercise error, empty, loading, and retry states.
+- [React and Vite example](./examples/react-vite.md) — run a frontend against a local API.
+- [Failures, latency, and edge cases](./manual/edge-cases.md) — exercise error, empty, loading, and retry states.
+
 
 ## Team and test workflows
 
@@ -20,8 +25,13 @@ needs—not by a feature checklist.
 - [Automated integration tests](./patterns/automated-integration-tests.md) — start and stop a local API in tests.
 - [Playwright error states example](./examples/playwright-error-states.md) — run repository-hosted browser checks for success, not-found, and service-unavailable UI states.
 - [Scenario scripts](./patterns/scenario-scripts.md) — create repeatable starting states.
+- [Model the workflow](./patterns/model-the-workflow.md) — keep state small and document supported behavior.
+- [Test context logic](./patterns/test-context-not-handlers.md) — verify domain behavior independently of HTTP adapters.
+- [Payment retry and reset](./patterns/payment-retry.md) — run decline, recovery, permission, and isolation assertions.
+- [Contract-change check](./patterns/contract-change.md) — regenerate, observe a type error, and repair a handler.
 - [Shared store](./patterns/shared-store.md) — coordinate state across API groups.
-- [AI-assisted implementation](./patterns/ai-assisted-implementation.md) and [agentic sandbox](./patterns/agentic-sandbox.md) — give coding agents a bounded, verifiable API task.
+- [Third-party SDK against a local API](./patterns/agentic-sandbox.md#point-a-third-party-sdk-at-a-local-api) — redirect the Stripe Node SDK, exercise a rate limit, and recover.
+- [AI-assisted implementation](./patterns/ai-assisted-implementation.md) and [agentic sandbox](./patterns/agentic-sandbox.md) — give coding agents a specific task and tests you can run yourself.
 
 ## Advanced control
 
@@ -30,7 +40,7 @@ needs—not by a feature checklist.
 - [Middleware](./features/middleware.md) — add cross-cutting behavior.
 - [Programmatic API](./features/programmatic-api.md) — embed Counterfact in another process.
 - [Multiple versions](./features/multiple-versions.md) — serve more than one API version.
-- [TypeScript native mode](./features/typescript-native-mode.md) — run route files directly.
+- [TypeScript native mode](./features/typescript-native-mode.md) — understand native loading and installed-CLI limitations.
 
 ## Runnable examples
 
@@ -40,7 +50,7 @@ needs—not by a feature checklist.
 
 ## Reference and troubleshooting
 
-- [Reference](./reference.md) — CLI flags, response builders, the `$` parameter, and architecture.
+- [API reference](./api.md) — CLI flags, response builders, the `$` parameter, and architecture.
 - [FAQ](./faq.md) — state, validation, type safety, and regeneration questions.
 - [How Counterfact compares](./comparison.md) — comparison with json-server, WireMock, Prism, Microcks, and MSW.
 - [Without OpenAPI](./features/without-openapi.md) — the alternative path when no OpenAPI document exists.
@@ -53,8 +63,24 @@ command names. A random installation identifier links these anonymous events
 for retention analysis and rotates after 180 days. Each run receives a separate
 session identifier.
 
-API file locations are hashed. Counterfact never sends raw paths, OpenAPI
+API file locations are HMAC-SHA-256 hashed with a private installation key. Counterfact never sends raw paths, OpenAPI
 documents or URLs, request paths or data, headers, tokens, error messages,
 project names, or command arguments. Telemetry is disabled in CI and when
-`COUNTERFACT_TELEMETRY_DISABLED=true`. See the
-[telemetry discussion](https://counterfact.dev/telemetry-discussion).
+`COUNTERFACT_TELEMETRY_DISABLED=true`. 
+
+To disable Counterfact telemetry, set `COUNTERFACT_TELEMETRY_DISABLED=true`
+before starting the process. For example, in a POSIX shell:
+
+```sh
+export COUNTERFACT_TELEMETRY_DISABLED=true
+npx counterfact@latest ./openapi.yaml api
+```
+
+In PowerShell, use `$env:COUNTERFACT_TELEMETRY_DISABLED = "true"` before the
+command. Telemetry is also disabled when the `CI` environment variable is set.
+This switch controls Counterfact process telemetry; it does not configure
+analytics on this website.
+
+See [Feedback, Telemetry, and Privacy](https://github.com/counterfact/api-simulator/discussions/1527)
+for the project discussion.
+

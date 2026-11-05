@@ -1,0 +1,1012 @@
+77f0bc6fd2c3bc935d2eb2da80190369d91f7084	2026-09-03T06:06:41Z	Merge pull request #2381 from counterfact/renovate/eslint-plugin-jest-29.x
+9c44521ce4e0c7d3ce7c18812d0d7ef4cf87480f	2026-09-02T18:59:00Z	Merge pull request #2358 from counterfact/codex/counterfact-devcontainer-foundation
+5f5ef56b999f9f28b6da99e4852e0cb2ce9c9b2b	2026-09-02T11:21:30Z	Merge pull request #2365 from counterfact/codex/fix-openapi-watch-inputs
+3849bd75d830ba2d9db5d0985dd584d378834c9b	2026-09-02T11:18:33Z	Merge pull request #2377 from counterfact/renovate/linkinator-8.x
+307b8e5e62b0a4aa7691be97b4ffd382a7756a11	2026-09-02T11:12:49Z	Merge pull request #2379 from counterfact/codex/fix-merge-queue-manual-check
+ebeee9f45c7a45ca502777d794874c02d14a6a36	2026-08-31T19:10:35Z	Merge pull request #2376 from counterfact/renovate/jest-monorepo
+35a5d7683ba2229153ff83304c97555185c20903	2026-08-31T18:58:22Z	Merge pull request #2375 from counterfact/renovate/typescript-eslint-monorepo
+2f07aed1e45101b799c9dbd203673acb6ca6fdcd	2026-08-30T23:16:15Z	Merge pull request #2374 from counterfact/renovate/posthog-node-5.x
+04a909b0cf3ecc454c6d94d74fd83c966bcc9d32	2026-08-30T23:00:00Z	Merge pull request #2373 from counterfact/renovate/eslint-plugin-jest-29.x
+074daf898f4c01f81da2583b9c825ad4d2278049	2026-08-30T22:54:38Z	Merge pull request #2372 from counterfact/renovate/astro-monorepo
+4394b7990f1ff5cd95c151530bde688f84dc8368	2026-08-30T13:12:29Z	Merge pull request #2371 from counterfact/renovate/posthog-node-5.x
+7264d4a430fbdc818deddc5593326b5eb0f8b9d1	2026-08-30T02:05:20Z	Merge pull request #2369 from counterfact/renovate/js-yaml-5.x
+ffb220aa4a70672e56b67fdb945caee183ff06d8	2026-08-30T02:00:59Z	Merge pull request #2368 from counterfact/renovate/astro-monorepo
+3f2cb84facc42afb794c255dab6317a6d72817e2	2026-08-29T02:45:33Z	Merge pull request #2359 from counterfact/renovate/eslint-plugin-jest-29.x
+463a65166d6e8eba639a0bb82dd7756b1f66e5f2	2026-08-29T02:45:22Z	Merge pull request #2360 from counterfact/renovate/astro-monorepo
+625342b7efee04a6c74701653ba4bce0a436e30f	2026-08-29T02:39:52Z	Merge pull request #2357 from counterfact/changeset-release/main
+44a6e00784ff73f51182b6312060abf1c63acd5c	2026-08-28T14:00:13Z	Merge pull request #2355 from counterfact/fix/release-version-lockfile
+58ba284229edb3cb9c7bbc610e8ac46b5dcab7c5	2026-08-28T13:51:43Z	Merge pull request #2356 from counterfact/renovate/posthog-node-5.x
+79f6afdb930d31f88a557c20b28752c72bc747da	2026-08-28T13:20:40Z	Merge pull request #2353 from counterfact/fix/enable-npm-publishing-pr
+0d1240c3499f7a010078c12a46d8edf9c10bfc93	2026-08-28T12:57:34Z	Merge pull request #2354 from counterfact/renovate/js-yaml-5.x
+a5cf033eb14035765b78bb98c0ac2a3a82c5fec6	2026-08-28T04:41:18Z	Merge pull request #2339 from counterfact/changeset-release/main
+4d71573cebd7b39065956fe0ac12982769844f3b	2026-08-28T00:13:19Z	Merge pull request #2352 from counterfact/renovate/typescript-eslint-monorepo
+7a0458286e096f8832b9a6ac333ac069802a234b	2026-08-28T00:12:30Z	Merge pull request #2351 from counterfact/renovate/eslint-monorepo
+ecb41d91a43ace862e6c6deee47296b6b7a88323	2026-08-27T18:36:57Z	Merge pull request #2350 from counterfact/renovate/posthog-node-5.x
+8d52c79870c9734555541ff701aeb45184380ff5	2026-08-27T18:27:09Z	Merge pull request #2349 from counterfact/renovate/astro-monorepo
+928c9c5503c0bac73954c44a2d1c98d53f0433b7	2026-08-24T21:36:03Z	Merge pull request #2347 from counterfact/fix-logo
+c40ba4ef9fc47bd70563a548defea92fa10fb483	2026-08-24T21:00:18Z	Merge pull request #2346 from counterfact/codex/agents-isolated-change-worktree
+4d177d4a9ce0304d8c41385054a9a9f2f100757f	2026-08-24T20:58:30Z	Merge pull request #2345 from counterfact/codex/fix-site-lockfile
+32681567679241e3964353760de61390551442d8	2026-08-24T20:08:31Z	Merge pull request #2343 from counterfact/renovate/posthog-node-5.x
+88837529f2af5a3badb6fdd8559d98b20a22cf7e	2026-08-24T18:29:02Z	Merge pull request #2342 from counterfact/renovate/eslint-monorepo
+eb3b5e78cf5eeb74e83599ac101da8956dca6527	2026-08-24T18:15:05Z	Merge pull request #2341 from counterfact/renovate/typescript-eslint-monorepo
+96cc1eb3b0b17568b85b8c0cc253a630db10c20c	2026-08-24T18:14:14Z	Merge pull request #2337 from counterfact/codex/marketing-docs-redesign
+16253445b5ddc3b260012cd4493d9566bfb215f6	2026-08-23T22:07:40Z	Merge pull request #2340 from counterfact/renovate/posthog-node-5.x
+bf069573f19242aa7af04ec6ae435e4401b572cd	2026-08-23T02:27:22Z	Merge pull request #2338 from counterfact/fix/release-preflight-install
+17e64395f1bbca5348e02838b5a57c078e831c9d	2026-08-23T01:58:17Z	Merge pull request #2336 from counterfact/codex/centralize-agent-instructions-main
+d78a17859f9711b587b055144fa78cacd5886469	2026-08-22T22:38:52Z	Merge pull request #2335 from counterfact/codex/harden-openapi-routing
+b41cfeebc7e9314bab23ba37698dc801dce33770	2026-08-22T20:45:49Z	Merge pull request #2334 from counterfact/renovate/astro-monorepo
+28a8ea755e390765f35f456a6a4e1090617cd211	2026-08-22T13:06:31Z	Merge pull request #2333 from counterfact/renovate/changesets-action-2.x
+1908a4d1d7c77c1204f3d061b4628a79d0f6bd1e	2026-08-22T10:46:43Z	Merge pull request #2332 from counterfact/renovate/swc-monorepo
+5cf697b89c3e2f4d5d555bf0de74e79a19095d22	2026-08-22T10:46:03Z	Merge pull request #2331 from counterfact/renovate/changesets-cli-3.x
+6f9e907c0bceda96aa629b43a12dff1683e434b9	2026-08-21T20:16:43Z	Merge pull request #2330 from counterfact/renovate/astro-monorepo
+28fc060382cca54eba031f22840c9aa2225fa72d	2026-08-20T23:02:56Z	Merge pull request #2324 from counterfact/changeset-release/main
+fe2adddc4b5c1bae2a66a7e7e5190f017d860927	2026-08-20T19:19:54Z	Merge pull request #2325 from counterfact/renovate/actions-cache-6.x
+189fe7ef4022db4a175186314763aa3c029f9909	2026-08-20T11:20:17Z	Merge pull request #2329 from counterfact/renovate/linkinator-8.x
+8e35d68a014004c4da01eba0cda4517453136678	2026-08-20T02:03:47Z	Merge pull request #2305 from counterfact/renovate/changesets-cli-3.x
+4e1b9c75c014e45c27d110ee764b03bde2f02642	2026-08-20T01:48:59Z	Merge pull request #2328 from counterfact/renovate/posthog-node-5.x
+1e27e9b604d12397ab9c1ec8612fce9acd608b9d	2026-08-20T01:05:40Z	Merge pull request #2327 from counterfact/renovate/major-stryker-js-monorepo
+f1e1ce7fee2f10a3c0062a4a64110f7fe8b3ac9f	2026-08-20T01:00:30Z	Merge pull request #2294 from counterfact/renovate/posthog-node-5.x
+ec790d8103cd35f2fd3df40e443451de3c04c829	2026-08-20T00:51:19Z	Merge pull request #2307 from counterfact/renovate/eslint-plugin-regexp-3.x
+d23717ba1ec1a7de0342518ab79feed86e060612	2026-08-20T00:48:22Z	Merge pull request #2309 from counterfact/renovate/astro-monorepo
+5fb7a0bb005f84a7456ea236256ac7d2285b3338	2026-08-20T00:47:50Z	Merge pull request #2326 from counterfact/renovate/major-github-artifact-actions
+21ce4cd52869712933543872ab6234382b7ae556	2026-08-20T00:47:00Z	Merge pull request #2313 from counterfact/renovate/js-yaml-5.x
+4c0d10b7a96569c765b641d9873ad81bf99b08cc	2026-08-20T00:29:15Z	Merge pull request #2323 from counterfact/codex/cucumber-black-box-journeys
+4a13a8b63d5cb97cc9c6ce24f0db2f89f13b75b8	2026-08-18T23:08:14Z	Merge pull request #2322 from counterfact/codex/bootstrap-npm-provenance
+c37fd738b028abd326f74589cdd2a275693125fc	2026-08-18T21:29:54Z	Merge pull request #2321 from counterfact/monorepo-release
+a1747dccc693904111a6e7a8bb7a423fb24c1017	2026-08-18T17:20:15Z	Merge pull request #2282 from counterfact/changeset-release/main
+e5f161de670fe1ca61336b4e9bbce03af3853fff	2026-08-18T17:02:45Z	Merge pull request #2319 from counterfact/streamline-windows-ci
+7dc6c9f939e61eb9f48f5a4cadec07ca4ecae720	2026-08-18T16:42:35Z	Merge pull request #2318 from counterfact/agent/release-readiness-monorepo
+7d771f69ff01bb356bec151a67f874ccfac144f6	2026-08-17T19:12:28Z	Merge pull request #2301 from counterfact/codex/monorepo-package-plan
+9e29516bb3a1d1ec9c91c621e6faa268b95c5754	2026-08-17T19:10:40Z	Merge pull request #2314 from counterfact/renovate/swc-monorepo
+cd79733e902a7c0d67031677b2f3b36ee0581f6b	2026-08-17T13:14:21Z	Merge pull request #2312 from counterfact/renovate/apidevtools-json-schema-ref-parser-16.x
+0ae2def180a2b76efc5a7d68038d2d136f5cb7c4	2026-08-17T06:22:19Z	Merge pull request #2311 from counterfact/renovate/open-11.x
+18c5b281f1e5abd3f8f5707a5fc5059e0164159e	2026-08-16T18:16:55Z	Merge pull request #2308 from counterfact/renovate/changesets-action-2.x
+1169676d3fd0a81396f7af64b3f2eb896282cbac	2026-08-15T12:19:23Z	Merge pull request #2306 from counterfact/renovate/eslint-plugin-jest-29.x
+3b75d61d1880777ad66033c9be0b8cf9a629ae8e	2026-08-14T23:57:09Z	Merge pull request #2303 from counterfact/renovate/astro-monorepo
+b383fd25a4c92e807c7c300d61d091c0e7ca95dc	2026-08-14T23:53:16Z	Merge pull request #2304 from counterfact/renovate/changesets-action-2.x
+cc61615b31ff25f20490d9391523aff869a063dd	2026-08-13T21:35:24Z	Merge pull request #2302 from counterfact/renovate/typescript-eslint-monorepo
+0ee60c5289c25b9beafbbb0725ef3c9396cefcce	2026-08-13T15:33:18Z	Merge pull request #2300 from counterfact/renovate/recast-0.x
+7f324f5a8ee5174c1c65a8ce9623ce558371df1f	2026-08-12T09:02:07Z	Merge pull request #2299 from counterfact/renovate/eslint-plugin-n-18.x
+26c4de1e53098166332d3775de13b3fe6b89c9ae	2026-08-11T02:32:56Z	Merge pull request #2298 from counterfact/renovate/eslint-monorepo
+5320e15bc08fb0c11d7faa083997449607740166	2026-08-10T18:13:05Z	Merge pull request #2297 from counterfact/renovate/typescript-eslint-monorepo
+6bc652330872c5cd8e880c3d47115452c8e92211	2026-08-09T21:45:11Z	Merge pull request #2296 from counterfact/renovate/typescript-eslint-monorepo
+947447a3d4b28248efbf4ce3d411f099ad77bb72	2026-08-09T18:07:01Z	Merge pull request #2295 from counterfact/renovate/astro-monorepo
+57f44ed64fde2cc84854e88f215fc375a3ecd907	2026-08-05T15:27:24Z	Merge pull request #2290 from counterfact/renovate/tsx-4.x
+a49fcfce31831491b9828224d9ed81ba81a5700a	2026-08-05T15:18:14Z	Merge pull request #2289 from counterfact/renovate/eslint-plugin-jest-dom-5.x
+8cda39e51c3a49d10f0bdaac741b5407326af3d8	2026-08-04T21:56:57Z	Merge pull request #2288 from counterfact/renovate/prettier-3.x
+12c4fce077e641ed86cf6b2e6bdda6607a5c7a74	2026-08-04T21:52:40Z	Merge pull request #2287 from counterfact/send-random-seed-to-jsf
+0cc7a43d3a75bdf4a82b9865422b57492d13ca3a	2026-08-04T21:48:20Z	Merge pull request #2285 from counterfact/renovate/json-schema-faker-0.x
+01d493b1743433f79a1c50790fd7ebe1abda650c	2026-08-04T17:17:00Z	Merge pull request #2192 from counterfact/renovate/prettier-3.x
+3d1ff5e2a6e9b3fb583482b32feec7c8150108df	2026-08-04T13:09:59Z	Merge pull request #2286 from counterfact/renovate/eslint-plugin-jest-dom-5.x
+1081eda07cc983043b7d4b93672bd16664237fff	2026-08-04T13:01:03Z	Merge pull request #2284 from counterfact/renovate/js-yaml-5.x
+20f524dc8003bf2e64cb5a23cdaf9546bd439488	2026-08-03T19:39:34Z	Merge pull request #2281 from counterfact/renovate/posthog-node-5.x
+483528e59847df6fac69f2e8d583cbef4d05aad2	2026-08-03T19:31:49Z	Merge pull request #2272 from counterfact/changeset-release/main
+788f839169fe10b817558a773997dea0f6817f08	2026-08-03T18:17:30Z	Merge pull request #2279 from counterfact/renovate/recast-0.x
+228798942a3fc49ffc9db9b5a1a5cac0d4e68f4d	2026-08-03T18:14:36Z	Merge pull request #2280 from counterfact/renovate/typescript-eslint-monorepo
+8820635007b23c67aeb40689f872b4f42f84d20c	2026-08-03T01:30:42Z	Merge pull request #2278 from counterfact/publish-package-documentation
+67254660b2f951a48d11fd7d17c3275de1b9daa2	2026-08-03T01:05:13Z	Merge pull request #2277 from counterfact/document-model-workflow
+1a5fd8634a86fdbc9f2a5b572fdfb3d91406360e	2026-08-02T22:15:25Z	Merge pull request #2275 from counterfact/renovate/recast-0.x
+4e293d9e920fe087a2e34f5073def1bdf19ad51c	2026-08-02T22:12:19Z	Merge pull request #2276 from counterfact/renovate/eslint-plugin-jest-dom-5.x
+fb433fe0d643e00644b2945698135fc7cd468a4d	2026-08-02T21:55:53Z	Merge pull request #2274 from counterfact/renovate/posthog-node-5.x
+9ffd940f2df0e89d317e9cf8652375b0b668a3d1	2026-08-02T12:38:24Z	Merge pull request #2273 from counterfact/renovate/linkinator-8.x
+41fd9283e80928528a7c97f9e1e33300232bd185	2026-08-02T11:57:16Z	Merge pull request #2241 from counterfact/renovate/posthog-node-5.x
+aa5bd34e8d8cb478f25e1949eca90b558fa1c0a5	2026-08-02T11:56:57Z	Merge pull request #2243 from counterfact/renovate/linkinator-8.x
+4f815e6f22237ecad048bcbb271935a3f4f8c46b	2026-08-02T11:55:16Z	Merge pull request #2271 from counterfact/renovate/apidevtools-json-schema-ref-parser-15.x
+cd9d92b5591d951723114e2b27dfc9cf0cdd5e40	2026-08-02T00:09:58Z	Merge pull request #2270 from counterfact/changeset-release/main
+255df58203bd3d689e78d35f7fccf5963b2cf0cd	2026-08-01T23:58:05Z	Merge pull request #2269 from counterfact/codex/generated-middleware-types
+efc66eae4ba303ea435c5fb880b885352c23b674	2026-08-01T22:57:33Z	Merge pull request #2268 from counterfact/copilot/fix-ci-checks-windows-latest
+7a03d063e5bd44b7fe8cd72c361b0fc9af1f20b3	2026-08-01T21:01:19Z	Merge pull request #2254 from counterfact/renovate/actions-checkout-7.x
+8664d2ebf3e4347fe654f48bcf60177ae0e78b32	2026-08-01T20:52:36Z	Merge pull request #2267 from counterfact/changeset-release/main
+973b198e4f7c4deca99719f763bc4b51b78e53ca	2026-08-01T20:42:32Z	Merge pull request #2262 from counterfact/codex/durable-context
+dce5372daff3b86939a961eba38d91b73e50835c	2026-08-01T20:37:20Z	Merge pull request #2266 from counterfact/codex/fix-wide-response-builder-typecheck
+16aba8ad55b522e6a878f7057390114ced6675ff	2026-08-01T20:17:43Z	Merge pull request #2264 from counterfact/renovate/swc-monorepo
+1b6575f8e74053299399a960e6108651ff4353f9	2026-08-01T20:17:00Z	Merge pull request #2265 from counterfact/renovate/astro-monorepo
+8b638419059965eed8515098cb78c6d9b24bfa10	2026-08-01T11:47:13Z	Merge pull request #2261 from counterfact/changeset-release/main
+42590a8501d1e4b8d01df37487cd6ab538d65706	2026-08-01T11:36:22Z	Merge pull request #2257 from counterfact/renovate/node-24.x
+de6fd2f7022a52cf090815628b6403fdc680dc71	2026-08-01T11:35:56Z	Merge pull request #2255 from counterfact/renovate/actions-setup-node-7.x
+eba2bb51a6f3b702ac61a782f62412aa6804c8b6	2026-08-01T11:25:18Z	Merge pull request #2258 from counterfact/bug-reports/openapi-multi-spec
+6b75180e0656251f05227a0402d5bf6abca9e3e5	2026-08-01T11:24:29Z	Merge pull request #2253 from counterfact/copilot/fix-with-copilot-again
+55a76f95935eb50666f863212115bbc5442b6ded	2026-08-01T03:21:59Z	Merge pull request #2133 from counterfact/changeset-release/main
+d47728f34126695122ed9e8c55b8cbcc6597dadd	2026-08-01T01:03:56Z	Merge pull request #2256 from counterfact/renovate/eslint-plugin-jest-dom-5.x
+e50580b94022a6ff4a6b61f8e3b84fd47a37b666	2026-07-31T19:45:35Z	Merge pull request #2249 from counterfact/improve-readme
+55e1a2d8538efacb12663684bf5aa2248011e10a	2026-07-31T19:05:03Z	Merge pull request #2251 from counterfact/renovate/astro-monorepo
+cbe773dab3c3f0ec54c552266d5ed2a5521eec8b	2026-07-31T15:30:13Z	Merge pull request #2248 from counterfact/personas-and-web-site-updates
+b6de976fa945da2736bb016b1655e1e97feb72d9	2026-07-31T00:44:51Z	Merge pull request #2247 from counterfact/renovate/coverallsapp-github-action-2.x
+c69c6706e783755f2a0d4bd7dcdccb8dacbe1b03	2026-07-31T00:36:00Z	Merge pull request #2246 from counterfact/renovate/astro-monorepo
+29451ac64dadf93c7357ec5bc6617e27b46723de	2026-07-28T02:59:32Z	Merge pull request #2245 from counterfact/renovate/eslint-monorepo
+ec04cf70ffc91eb2d61c60e354c5c8ac11405afc	2026-07-27T11:07:20Z	Merge pull request #2244 from counterfact/renovate/eslint-plugin-jest-29.x
+80569d5567694a465b977aa5b19332db987a6d0e	2026-07-27T02:00:05Z	Merge pull request #2242 from counterfact/renovate/fs-extra-11.x
+c48bd79dcd143f7c162a4e3313145b54ea7532b7	2026-07-25T12:44:31Z	Merge pull request #2240 from counterfact/renovate/npm-js-yaml-vulnerability
+60fb55a602fe91c39acefa37682a8fa55a31951d	2026-07-25T12:31:19Z	Merge pull request #2239 from counterfact/renovate/linkinator-8.x
+5c2a813552ce3bda6be6ba661d76b358c36abb21	2026-07-24T08:49:51Z	Merge pull request #2238 from counterfact/renovate/linkinator-8.x
+212adc882c1ce66dde888bcc75f85a77e88a4a63	2026-07-23T21:18:45Z	Merge pull request #2237 from counterfact/renovate/posthog-node-5.x
+9d8c6cb64b572534ee84a7b19fe9813af6e6c74e	2026-07-23T21:12:32Z	Merge pull request #2236 from counterfact/renovate/typescript-eslint-monorepo
+d0fe7208d7a316a7b50aa1e01c8e38d883709578	2026-07-23T21:03:46Z	Merge pull request #2235 from counterfact/renovate/astro-monorepo
+893fbe4b885321ba9d282faa59783e9106c1ceb5	2026-07-23T21:03:34Z	Merge pull request #2234 from counterfact/renovate/eslint-plugin-jest-29.x
+9d77816d20dff58dfa4b7eb91082fc1ab5bbdc62	2026-07-23T05:01:51Z	Merge pull request #2233 from counterfact/renovate/actions-setup-python-7.x
+3530b679a59611c7d9486ba741230217108c07b4	2026-07-22T23:01:09Z	Merge pull request #2232 from counterfact/renovate/swc-monorepo
+591bcd852e7087ebb7de7a35a7e24c62298ba62e	2026-07-21T03:56:43Z	Merge pull request #2230 from counterfact/renovate/astro-monorepo
+64f772e4bfde9418a471c9e811e055397d58ff61	2026-07-21T03:54:20Z	Merge pull request #2231 from counterfact/renovate/typescript-eslint-monorepo
+b990b4b55d775cd1e04155207c5bcff2ebcebfcd	2026-07-20T04:20:09Z	Merge pull request #2229 from counterfact/renovate/posthog-node-5.x
+72d77a56c4e104a65e334508e1a663479c873ba0	2026-07-20T04:19:54Z	Merge pull request #2228 from counterfact/renovate/node-mocks-http-1.x
+0d0ff68cfb104e0accdb4f196c7b813e8b0a8a12	2026-07-19T19:31:12Z	Merge pull request #2227 from counterfact/renovate/posthog-node-5.x
+8f0fbd1ab6ecdb7975eb4f8c2fe215098d7eefdb	2026-07-19T19:23:18Z	Merge pull request #2226 from counterfact/renovate/astro-monorepo
+27c6ec4db300890f28f13c261ddb7bf885017feb	2026-07-19T02:09:17Z	Merge pull request #2225 from counterfact/renovate/posthog-node-5.x
+d34680b5355135634a908fc55399141eaa93d5cd	2026-07-18T17:53:53Z	Merge pull request #2224 from counterfact/renovate/precinct-13.x
+e0e4c7e178a8128b9be507845a2694ea31683856	2026-07-18T17:45:09Z	Merge pull request #2223 from counterfact/renovate/changesets-cli-2.x
+07f3278cfd67a34c848edbcea51f5f7bf5757f22	2026-07-17T18:10:49Z	Merge pull request #2222 from counterfact/renovate/posthog-node-5.x
+920192df20ad6cab284c2298af8ea25aca474ec1	2026-07-17T10:09:22Z	Merge pull request #2220 from counterfact/renovate/astro-monorepo
+7e966d1c5b6a830001a0fbf567cfb0769b42e14e	2026-07-17T10:05:48Z	Merge pull request #2221 from counterfact/renovate/actions-setup-node-7.x
+1c7e12250d2ec54629a249dbc3615c1294ab20d1	2026-07-17T10:01:06Z	Merge pull request #2219 from counterfact/renovate/typescript-eslint-monorepo
+7808049cb73d68fe5db9b844aa037e27bcfdf053	2026-07-16T10:41:48Z	Merge pull request #2218 from counterfact/renovate/tsx-4.x
+bec340b60c6db4176ee70c881fce5dff5a7c6fd1	2026-07-14T11:06:28Z	Merge pull request #2217 from counterfact/renovate/posthog-node-5.x
+94ab3098e3bf7ac7c42d042b31d27266a4d1457e	2026-07-14T02:01:19Z	Merge pull request #2216 from counterfact/renovate/eslint-plugin-n-18.x
+4ebf0d3e964986dbf7e014d6d21848a52a427885	2026-07-14T01:53:10Z	Merge pull request #2215 from counterfact/renovate/eslint-monorepo
+46f330889c84b0b0c8e25eb21ca1d6a086eff868	2026-07-13T22:00:59Z	Merge pull request #2214 from counterfact/renovate/typescript-eslint-monorepo
+800a0091dd0c7c5d3a93c0970a0b7ac4cb4f4c7c	2026-07-12T09:00:46Z	Merge pull request #2213 from counterfact/renovate/apidevtools-json-schema-ref-parser-15.x
+93ac4bd975b16982356dd4ce8a536042a42d2c4e	2026-07-11T21:51:20Z	Merge pull request #2211 from counterfact/renovate/astro-monorepo
+f0d7e4f726926a0e7ce539d74bd5c08649d6ebfb	2026-07-11T03:47:52Z	Merge pull request #2209 from counterfact/renovate/node-mocks-http-1.x
+5860515f43d031a96a7e0252abd5edf122cdcf81	2026-07-11T03:47:21Z	Merge pull request #2210 from counterfact/renovate/posthog-node-5.x
+06725054c7746c0f50be1b1c725718d44f3cffc8	2026-07-10T03:12:17Z	Merge pull request #2208 from counterfact/renovate/typescript-eslint-monorepo
+58483df060f4a2e4dd62089afd537d48f8afed8b	2026-07-06T21:10:21Z	Merge pull request #2207 from counterfact/renovate/tsx-4.x
+885b6f27701070c190ac3ae22c2e24974a38c809	2026-07-06T21:06:53Z	Merge pull request #2206 from counterfact/renovate/typescript-eslint-monorepo
+79f380eec67b85b96ed0ee8c6f7517ec5372623d	2026-07-06T02:21:05Z	Merge pull request #2205 from counterfact/renovate/astro-monorepo
+53df80d75c0675e12f2f8c86606ce3377887cc00	2026-07-05T22:38:08Z	Merge pull request #2203 from counterfact/renovate/posthog-node-5.x
+22d5bada38ffba4c46d949864cba73c7b30782e7	2026-07-05T22:37:38Z	Merge pull request #2204 from counterfact/renovate/tsx-4.x
+a2be0a6d9bb63a7ccd6b5fcfa88f77168c30aef5	2026-07-05T08:35:36Z	Merge pull request #2202 from counterfact/renovate/js-yaml-5.x
+af10f4225532b5bcc3be6ccb647c5e009462c6fc	2026-07-04T22:33:20Z	Merge pull request #2201 from counterfact/renovate/astro-monorepo
+9ec0851879620c5d8f21a5dd9f68658d10171fce	2026-07-04T18:15:36Z	Merge pull request #2200 from counterfact/renovate/posthog-node-5.x
+4af51da40b72214731688dd53a598ada774cdcbd	2026-07-03T21:56:24Z	Merge pull request #2199 from counterfact/renovate/posthog-node-5.x
+148067c946709eccd3d6a37ea6606c1b47b3dc1d	2026-07-03T12:43:20Z	Merge pull request #2198 from counterfact/renovate/astro-monorepo
+8dc1e210fe74627719c3cd8726e0d6563ff0a525	2026-07-03T12:35:42Z	Merge pull request #2197 from counterfact/renovate/posthog-node-5.x
+c2f5c96429e3f06d2769e752fd96f597dd687239	2026-07-03T03:05:17Z	Merge pull request #2196 from counterfact/renovate/eslint-plugin-jest-29.x
+dcb99e8a0f12f7b01f24275db579892edbce5df4	2026-07-03T02:58:24Z	Merge pull request #2195 from counterfact/renovate/fs-extra-11.x
+dd6496f8518e006b4508c1544149755501880a83	2026-07-02T23:54:53Z	Merge pull request #2194 from counterfact/renovate/typescript-eslint-monorepo
+3d3d9b13959e5d97f86eeba3e683619a949b8823	2026-07-02T23:46:58Z	Merge pull request #2193 from counterfact/renovate/posthog-node-5.x
+1d49534780e9c85126b1947b9b80364c1e387928	2026-06-30T07:53:03Z	Merge pull request #2191 from counterfact/renovate/js-yaml-5.x
+c1a0910e1e9e5bcc05da526a300be322394c072a	2026-06-30T03:18:00Z	Merge pull request #2190 from counterfact/renovate/eslint-monorepo
+391e56becd48339f487d1e1af0dc7409e5f6a534	2026-06-30T03:17:19Z	Merge pull request #2189 from counterfact/renovate/recast-0.x
+531110eaa8de11b523ae376907d9ec4767622975	2026-06-29T23:55:07Z	Merge pull request #2188 from counterfact/renovate/posthog-node-5.x
+954e8d2ccc807d3f583ccac604772b6bcae89a0b	2026-06-29T23:47:32Z	Merge pull request #2187 from counterfact/renovate/prettier-3.x
+6f86d416c40dc2c96414e64430c794a566c2bd84	2026-06-29T19:47:54Z	Merge pull request #2186 from counterfact/renovate/eslint-plugin-jest-29.x
+0ba12772fd818f73d5fe570b9204bfddd0b3531a	2026-06-29T19:44:58Z	Merge pull request #2185 from counterfact/renovate/typescript-eslint-monorepo
+ea45c4266c6d11eafacd7be819e4eb43de4f2d45	2026-06-29T06:47:38Z	Merge pull request #2183 from counterfact/renovate/eslint-plugin-n-18.x
+9414f1b646fadb911e611f9982ee93d67b18d008	2026-06-29T06:46:23Z	Merge pull request #2184 from counterfact/renovate/eslint-plugin-regexp-3.x
+72138397e5da43ea4a48d81daf5b25f9046b8207	2026-06-28T19:21:41Z	Merge pull request #2182 from counterfact/renovate/astro-monorepo
+7f719f74f32c14cf1fd4d04e8c7587c837c8fff7	2026-06-28T19:14:08Z	Merge pull request #2181 from counterfact/renovate/eslint-plugin-n-18.x
+60ad03cb4ec25551f0cbb0f47c07791351a1ed74	2026-06-28T02:01:39Z	Merge pull request #2180 from counterfact/renovate/posthog-node-5.x
+5d47246c2cc88ac8a62e0680bbcc3174d7397333	2026-06-27T01:36:12Z	Merge pull request #2179 from counterfact/renovate/posthog-node-5.x
+e0071f7175b6881cad57af086f9375050861beb9	2026-06-26T19:58:02Z	Merge pull request #2177 from counterfact/renovate/major-astro-monorepo
+eb10d49d0f98dd74579c2a73d5312f035fb733d4	2026-06-26T19:49:44Z	Merge pull request #2176 from counterfact/renovate/actions-cache-6.x
+29c7f90daedb6f7581c79ae0f02d96d97e30849e	2026-06-26T14:56:04Z	Merge pull request #2175 from counterfact/renovate/posthog-node-5.x
+f69a66fbe3d1530a4cde1186a89efafe458820cf	2026-06-26T14:47:07Z	Merge pull request #2174 from counterfact/renovate/js-yaml-5.x
+3cccd7a33d9b89e95a3fefe43403b429b07f83bf	2026-06-26T04:35:29Z	Merge pull request #2173 from counterfact/renovate/typescript-eslint-monorepo
+492ce04088bed878279b2efd7e9cdf6ba65277d8	2026-06-26T04:35:21Z	Merge pull request #2172 from counterfact/renovate/swc-monorepo
+ff606bd2d5d558584a700578f75a667283579d48	2026-06-22T21:52:33Z	Merge pull request #2171 from counterfact/renovate/apidevtools-json-schema-ref-parser-15.x
+608560346a140567e3fe9d5c58921ecc6b72a1f1	2026-06-22T21:52:03Z	Merge pull request #2170 from counterfact/renovate/posthog-node-5.x
+27dbe08610071cb420c2f7ec5f6412b0e0a3c12e	2026-06-22T20:13:49Z	Merge pull request #2169 from counterfact/renovate/typescript-eslint-monorepo
+488ed3bbff8f4a9e6fbdf7bccf80c60074df9b32	2026-06-22T14:21:28Z	Merge pull request #2164 from counterfact/renovate/js-yaml-5.x
+5797a27074aaa36d0c2a52d97eedf8d1eead5c54	2026-06-22T14:19:38Z	Merge pull request #2168 from counterfact/copilot/ask-copilot-fix-ci-fail
+de309c0fcd4067b8577e91279c933bae1e81862b	2026-06-22T11:28:53Z	Merge pull request #2167 from counterfact/renovate/posthog-node-5.x
+a64198df12b6afc644b0c4f494d5fb77ffd6c9f3	2026-06-22T11:27:14Z	Merge pull request #2166 from counterfact/renovate/typescript-eslint-monorepo
+2d13e04a6990ceb5a923d725fc03f80357786c8f	2026-06-22T11:07:57Z	Merge pull request #2153 from counterfact/renovate/typescript-eslint-monorepo
+397e35dc6091c07ec208b36f6235ed7e772919c6	2026-06-22T11:07:39Z	Merge pull request #2150 from counterfact/renovate/posthog-node-5.x
+dc34305a20530ee95db3a0d75f20ddb220b5cd70	2026-06-21T01:50:15Z	Merge pull request #2165 from counterfact/renovate/actions-checkout-7.x
+80062ac4412571980f12a0841357f6dba2d78102	2026-06-20T17:44:52Z	Merge pull request #2163 from counterfact/renovate/astro-monorepo
+2218b7dfed38367a3f50640ba1929dde0e6d40ab	2026-06-19T01:15:29Z	Merge pull request #2162 from counterfact/renovate/astro-monorepo
+152b2580434bc07b9144549b24f2e8db03b385d0	2026-06-16T16:23:52Z	Merge pull request #2161 from counterfact/pmcelhaney-patch-2
+04675d4d29e3a9e7818e5ee8ffc65c096a6e98c8	2026-06-16T03:44:38Z	Merge pull request #2160 from counterfact/renovate/eslint-monorepo
+f1c48996d849dea8cd05f27222d8c67db23da195	2026-06-15T12:00:45Z	Merge pull request #2159 from counterfact/renovate/eslint-plugin-security-4.x
+4ce4f4dd8d191f1232693c8b84237639d607f682	2026-06-15T02:50:53Z	Merge pull request #2158 from counterfact/renovate/apidevtools-json-schema-ref-parser-15.x
+c9fb2185de9efc9ef5b3f158af48eb38586dba42	2026-06-13T22:51:22Z	Merge pull request #2157 from counterfact/renovate/astro-monorepo
+65242bede19d3f5152f9e71d5f88223c3e2cfb9f	2026-06-13T01:37:17Z	Merge pull request #2156 from counterfact/renovate/prettier-3.x
+daf3a5ecbc2d4b6b0984a1fc72a6d6f8af3fcc2a	2026-06-12T22:46:18Z	Merge pull request #2155 from counterfact/renovate/astro-monorepo
+d4411e8b0109ad70b7463e4b12565a3fa10759e9	2026-06-12T22:45:08Z	Merge pull request #2154 from counterfact/renovate/swc-monorepo
+3fba5082cc74ba4c17937af1d06b25e8c899ffd7	2026-06-12T02:03:16Z	Merge pull request #2152 from counterfact/renovate/eslint-plugin-n-18.x
+299f023dba7a572ba0aa5563c7b2e808271020dd	2026-06-09T00:08:42Z	Merge pull request #2151 from counterfact/renovate/typescript-eslint-monorepo
+aa76c51cd8910414afa54703a49071687efe2b6b	2026-06-08T02:35:27Z	Merge pull request #2149 from counterfact/renovate/js-yaml-4.x
+eeff0b53c19da5e02ba1b999d0350cf4098c4dc3	2026-06-07T20:38:53Z	Merge pull request #2147 from counterfact/renovate/posthog-node-5.x
+92a9bc4b73b0a91e8fc454790dbe3997470a5f18	2026-06-07T20:38:33Z	Merge pull request #2135 from counterfact/renovate/js-yaml-4.x
+f5cc4bc020599cafc0d89a5b57f63c0d1f3cf731	2026-06-07T01:08:06Z	Merge pull request #2148 from counterfact/renovate/astro-monorepo
+2eabf7b9dc4a889191e5333499d4f44e3404c1f3	2026-06-05T23:09:04Z	Merge pull request #2146 from counterfact/renovate/posthog-node-5.x
+0ab75de068785789a4d455b0dfd7d857c7c16c12	2026-06-05T23:01:30Z	Merge pull request #2145 from counterfact/renovate/astro-monorepo
+9f838e8d0484d8f970a5bb5cf716479bc97105b9	2026-06-05T01:42:09Z	Merge pull request #2143 from counterfact/renovate/typescript-eslint-monorepo
+c639915c63ac1c3d0060df46a01a9f64cf6ac7fd	2026-06-05T01:41:56Z	Merge pull request #2144 from counterfact/renovate/posthog-node-5.x
+da6df6d9e0874d56c95165244b36a827eaa7594b	2026-06-04T18:21:19Z	Merge pull request #2142 from counterfact/renovate/posthog-node-5.x
+01d3ab0ff8c9886dacfeb6bfd93047d6d2c1cbc0	2026-06-04T11:51:30Z	Merge pull request #2141 from counterfact/renovate/eslint-import-resolver-typescript-4.x
+e4b157bb69656707b333e1b62cb9bf0d11ff4ad3	2026-06-03T23:17:07Z	Merge pull request #2140 from counterfact/renovate/posthog-node-5.x
+bc90ae4e57f47b2ba95b8cb9d93ab9ffb5a5e896	2026-06-03T23:09:08Z	Merge pull request #2139 from counterfact/renovate/tsx-4.x
+f273a65b2b37f2aec0ecb49cf433e73d065f35b6	2026-06-02T02:23:02Z	Merge pull request #2138 from counterfact/renovate/eslint-monorepo
+7b6a27eec63cdac88939be5077c5159ea51c10c1	2026-06-02T02:01:55Z	Merge pull request #2137 from counterfact/renovate/commander-15.x
+559d3209e5a1dd873e7f2bced091c5f11eef8ad3	2026-06-02T01:58:15Z	Merge pull request #2136 from counterfact/renovate/typescript-eslint-monorepo
+28a6d60ec8531377db85805c8ce4593ea1921f55	2026-06-01T03:48:30Z	Merge pull request #2134 from counterfact/renovate/posthog-node-5.x
+8a286807a3d1db8caa739adcd7f560c7ef4f766b	2026-05-31T17:54:21Z	Merge pull request #2132 from counterfact/renovate/astro-monorepo
+b78ec04ff611a11a55caae9aeef6e6d1d2f69632	2026-05-31T17:47:02Z	Merge pull request #2131 from counterfact/renovate/eslint-plugin-prettier-5.x
+8d1f8524ed93f73de7db00528d9d1dde79abae36	2026-05-30T17:17:54Z	Merge pull request #2114 from counterfact/changeset-release/main
+8362945dd4c30398661ffae8ef26060392bc98d2	2026-05-30T16:12:35Z	Merge pull request #2129 from counterfact/export-types-from-package
+a88ef30c8d38c7bc22858815cdad2c9d21bb4de5	2026-05-30T16:07:32Z	Merge pull request #2130 from counterfact/renovate/posthog-node-5.x
+fabef3785424f1450796cf73663c1c170e33a52e	2026-05-29T18:43:41Z	Merge pull request #2127 from counterfact/renovate/astro-monorepo
+b50cc12aeb903d021e364de97e7eaa8687f89592	2026-05-29T18:42:08Z	Merge pull request #2128 from counterfact/renovate/posthog-node-5.x
+e11d7cc9639314010247b135e8b5706bb8e8c2be	2026-05-29T13:23:38Z	Merge pull request #2126 from counterfact/renovate/posthog-node-5.x
+b7eb13d0e162a596a0a016b9e6c3c2693fb9edea	2026-05-29T05:16:18Z	Merge pull request #2125 from counterfact/renovate/json-schema-faker-0.x
+45197753bd6223e959def7689f4b190eca7c0fcd	2026-05-29T00:58:51Z	Merge pull request #2124 from counterfact/renovate/typescript-eslint-monorepo
+baf06b9118d56b2e54f5d0bc269947abff4c61ff	2026-05-29T00:57:57Z	Merge pull request #2123 from counterfact/renovate/posthog-node-5.x
+95a5df81332ec2b6dd031b22d4be268299e7896e	2026-05-26T21:02:05Z	Merge pull request #2122 from counterfact/renovate/swc-monorepo
+b2496e28123a49f9f4a2d9a989bdb6b33475ce9e	2026-05-25T21:45:26Z	Merge pull request #2104 from counterfact/copilot/append-new-handlers-to-route-files
+c71d91c9a308003fdac8353c2a8082f903893155	2026-05-25T18:05:11Z	Merge pull request #2120 from counterfact/renovate/posthog-node-5.x
+e07d8c50c7dd940bdd7f2678e4a48814a98596c5	2026-05-25T18:02:11Z	Merge pull request #2121 from counterfact/renovate/typescript-eslint-monorepo
+333a17c5bd8335b730e2fc99dac2ee8b35d769ae	2026-05-24T20:54:14Z	Merge pull request #2118 from counterfact/renovate/posthog-node-5.x
+34604eb499b739109953c54a8e23e407c2c08bce	2026-05-24T20:46:51Z	Merge pull request #2117 from counterfact/renovate/astro-monorepo
+0bcf68fbf61ca8367d4f010ca6bde0cda0990e15	2026-05-24T13:39:01Z	Merge pull request #2115 from counterfact/renovate/koa-3.x
+02c4e13f8faa7879de5c5b4e6539d22fd4e7bacc	2026-05-24T13:38:55Z	Merge pull request #2116 from counterfact/renovate/posthog-node-5.x
+9093faecbb0d249bd8b141e071024fa5f005e7e0	2026-05-24T03:44:45Z	Merge pull request #2080 from counterfact/changeset-release/main
+86f71f027b8d376e81977254b7da3bcafcffc60d	2026-05-24T03:39:41Z	Merge pull request #2111 from counterfact/renovate/posthog-node-5.x
+4d6f1c77583970651624ae3ab2d8991023feac7d	2026-05-23T18:16:08Z	Merge pull request #2113 from counterfact/copilot/create-llms-and-robots-files
+a62c9eb46c6bed3c892bc0e0b86734e37c57cbe8	2026-05-23T16:37:40Z	Merge pull request #2110 from counterfact/renovate/astro-monorepo
+5b4ce6cfdf539d09640e4ec8885de0d592dad164	2026-05-23T01:12:53Z	Merge pull request #2106 from counterfact/copilot/reduce-security-detect-object-injection-warnings-again
+2e7d38119d894d16a1fe30e5fad9f1bc72107e25	2026-05-22T23:19:49Z	Merge pull request #2102 from counterfact/copilot/watch-changes-to-overlay-files
+d342cbf7bd372e189db1346fa970b20a778ce383	2026-05-22T23:05:45Z	Merge pull request #2105 from counterfact/learning-loop-update
+6dca9017a11627bb4dc1c836c60489f570c438d7	2026-05-22T22:47:11Z	Merge pull request #2101 from counterfact/copilot/refresh-copilot-instructions
+209d2e5961ef622a9c786077a08a00f09d332616	2026-05-22T22:24:44Z	Merge pull request #2099 from counterfact/copilot/create-reusable-copilot-skills
+8a2d6bd7c825719874e55f25991ac9b9bb5ccf84	2026-05-22T22:12:05Z	Merge pull request #2059 from counterfact/copilot/add-openapi-overlays-support
+f6a85dddf2d4a01a82d7dda55a8339c6cd58dbc3	2026-05-22T22:00:38Z	Merge pull request #2097 from counterfact/copilot/fix-telemetry-discussion-link
+787931af58716c64d868566ecfdfb4ca6a17a204	2026-05-22T21:49:46Z	Merge pull request #2045 from counterfact/copilot/support-api-key-authentication-again
+908bb8a6069ba4aeb6ca975b05cac9c2ca23bd6f	2026-05-22T20:46:22Z	Merge pull request #2094 from counterfact/renovate/koa-3.x
+80e9f35d2fafc513cbea941d2d8bf0c3e3fe8414	2026-05-22T18:36:05Z	Merge pull request #2093 from counterfact/renovate/precinct-13.x
+ccab8ee1e571ced16372d73961bf6b09f6df1a4d	2026-05-22T18:35:24Z	Merge pull request #2092 from counterfact/renovate/tsx-4.x
+2156ff31e0e38ce9c3f1557f3a9362bcf0135b56	2026-05-22T01:57:39Z	Merge pull request #2091 from counterfact/renovate/posthog-node-5.x
+796605e659ce6ca3e6529d98a5e212ba6e7e4e75	2026-05-22T01:50:26Z	Merge pull request #2090 from counterfact/renovate/astro-monorepo
+e5a733980e46bad174c99481c30e119e51adb86e	2026-05-21T21:49:03Z	Merge pull request #2089 from counterfact/renovate/tsx-4.x
+5ff6d610f12003f7c87c8fb540b24de7daa2a6e1	2026-05-21T21:47:41Z	Merge pull request #2088 from counterfact/renovate/typescript-eslint-monorepo
+0af2346932f41b88050155dddd58ef6f28b1fe79	2026-05-21T13:44:46Z	Merge pull request #2087 from counterfact/copilot/create-security-file
+ca7f081514532e3915c6f784c75d602ac5959476	2026-05-20T11:17:44Z	Merge pull request #2086 from counterfact/renovate/tsx-4.x
+c206bf5985891bf89a958a71f186be46b22084ff	2026-05-18T19:59:46Z	Merge pull request #2085 from counterfact/renovate/eslint-monorepo
+49e0a4362d39521f204364b743b7d5d217f1a39f	2026-05-18T19:59:32Z	Merge pull request #2084 from counterfact/renovate/posthog-node-5.x
+b4de15115ca24f834527e5befe73a42fe2b1daa4	2026-05-18T19:39:36Z	Merge pull request #2071 from counterfact/copilot/create-agent-skills-for-counterfact
+12ae63b4655c46ce42a1c9dbecd23842685f2dd4	2026-05-18T18:54:32Z	Merge pull request #2083 from counterfact/renovate/typescript-eslint-monorepo
+247465eb96934dca99f0e13a38e2bd0eac8b2778	2026-05-17T20:57:36Z	Merge pull request #2081 from counterfact/renovate/astro-monorepo
+89c4135bf564d0a7cf8c24059ed7a7561902906c	2026-05-17T20:55:26Z	Merge pull request #2082 from counterfact/renovate/tsx-4.x
+bc245815873b9123560c6da63cfadde6a6d39b3e	2026-05-16T20:42:33Z	Merge pull request #2079 from counterfact/renovate/astro-monorepo
+b452180200a00292e6951113d54950828c3eb7c6	2026-05-16T18:06:59Z	Merge pull request #1991 from counterfact/changeset-release/main
+c6ad445454bb89d0a6cac141d074e1d48f49d85e	2026-05-16T01:37:31Z	Merge pull request #2078 from counterfact/renovate/posthog-node-5.x
+1cd24bdf1d965760b527f8b31f73523995126a8c	2026-05-15T17:17:58Z	Merge pull request #2076 from counterfact/copilot/remove-patch-package
+e4c141f1f515ce688e635da6410642337b0aa15d	2026-05-15T16:47:26Z	Merge pull request #2077 from counterfact/renovate/posthog-node-5.x
+e76f737101f07cdf54a0f7def946a1551f01dcba	2026-05-15T12:56:59Z	Merge pull request #2074 from counterfact/copilot/update-copilot-instructions-logging
+23055d03465ddfee36dffdf825ce2322e0baa51a	2026-05-15T01:12:15Z	Merge pull request #2073 from counterfact/renovate/posthog-node-5.x
+8691b0f788f1837c37cc964820a280240c20c654	2026-05-15T01:05:08Z	Merge pull request #2072 from counterfact/renovate/typescript-eslint-monorepo
+a4745e1edb6d0cbc9cddb3bb23fee32716b49a05	2026-05-14T16:24:10Z	Merge pull request #2067 from counterfact/copilot/track-page-views-posthog
+d5bebb76c1dcb789f150707a5ea88ebd01bd3ebd	2026-05-14T14:24:04Z	Merge pull request #2069 from counterfact/copilot/set-up-google-analytics
+c5cb05ea6a413ef4c392abb38cfdc55570043098	2026-05-13T13:04:57Z	Merge pull request #2065 from counterfact/renovate/pin-dependencies
+adf7d88aa37baa153bd7eeb54e4b691d11c44619	2026-05-12T10:41:33Z	Merge pull request #2064 from counterfact/renovate/jest-monorepo
+557b4d3866e871bca408dec91fc47bd10416e9b3	2026-05-11T23:59:57Z	Merge pull request #2063 from counterfact/copilot/enhance-telemetry-events
+e8ce8279ffa33d49bad9cd3e50dbad6316072fb1	2026-05-11T23:00:02Z	Merge pull request #2057 from counterfact/copilot/check-renovate-automerge-config
+af4394d1084d58efaf60d343b223019043ce0892	2026-05-11T22:57:45Z	Merge pull request #2056 from counterfact/renovate/typescript-eslint-monorepo
+13cd996c5c41df9065f3e725e07b89a7152614c9	2026-05-11T21:44:38Z	Merge pull request #2044 from counterfact/copilot/support-additional-operations
+519626df55c21bbb17b5694ed5094f3eeed79b1e	2026-05-11T20:17:24Z	Merge pull request #2051 from counterfact/renovate/eslint-plugin-n-18.x
+32f66fc325d61eede0b295442bfdcfd39f68c918	2026-05-11T15:18:05Z	Merge pull request #2055 from counterfact/renovate/jest-monorepo
+1b2c290390975dd777967b94e7fde4b8b949d850	2026-05-11T00:48:59Z	Merge pull request #2054 from counterfact/renovate/jest-monorepo
+e17b486ee9423cda39c47629454fdbc24abe2a4b	2026-05-11T00:48:28Z	Merge pull request #2053 from counterfact/renovate/posthog-node-5.x
+1c7446cc929bc1a3069f5570966766b694ca8003	2026-05-10T16:51:43Z	Merge pull request #2052 from counterfact/renovate/astro-monorepo
+6a95d5d8b4610c52fad6c0c9d1b1cf2a293b48b5	2026-05-10T00:53:57Z	Merge pull request #2050 from counterfact/renovate/precinct-12.x
+5e46b3caca8e9d530248247d4d283e57cc3cfb6a	2026-05-09T23:11:24Z	Merge pull request #2048 from counterfact/renovate/fs-extra-11.x
+5dd49b9f8128eb8f133ce798c8afc543656011e7	2026-05-09T23:11:01Z	Merge pull request #2049 from counterfact/renovate/posthog-node-5.x
+38374dd1759e86c8d85fd742affd4bd3cce3e505	2026-05-09T23:04:08Z	Merge pull request #2047 from counterfact/renovate/typescript-eslint-monorepo
+42367dc029e49aceccf1b73f5de2c53cfb6378b0	2026-05-09T22:52:27Z	Merge pull request #2046 from counterfact/copilot/audit-json-schema-faker
+ee67f17034681247f069c23bb1ba4b6c968ac6cb	2026-05-09T22:51:18Z	Merge pull request #2025 from counterfact/copilot/add-support-for-streaming-responses
+7e8f15d22449c13b783a03af2690e96d7c42e5bb	2026-05-09T21:25:25Z	Merge pull request #2017 from counterfact/copilot/add-querystring-parameter-support
+92b2f2bd0b35b0f65dcfe8e87adf512a84f1a3ac	2026-05-09T21:21:29Z	Merge pull request #2043 from counterfact/copilot/fix-discriminator-property-name-access
+472fabb9977e91f8c5a4dc43970577812901bc9e	2026-05-09T20:46:16Z	Merge pull request #2040 from counterfact/copilot/write-parody-linux-announcement
+0bed1c02d8dfc922190360baaea3a932c399f88c	2026-05-09T20:45:56Z	Merge pull request #2019 from counterfact/copilot/verify-self-document-identity
+65ee406ba880c9dc1036eddc4d8aad3ce1cf6948	2026-05-09T20:38:47Z	Merge pull request #2020 from counterfact/copilot/update-example-response-logic
+14a0987072459654c2e123813d5cea47b4955205	2026-05-09T20:38:33Z	Merge pull request #2035 from counterfact/copilot/support-xml-nodetype-field
+424f2eb829b1d3c68f2d2505b47f3b0743ad8c7a	2026-05-09T20:33:13Z	Merge pull request #2042 from counterfact/copilot/add-readme-notes-oas-support
+327f910dcba96f3aa0af8ca5dfdbe19444609113	2026-05-09T18:40:06Z	Merge pull request #2028 from counterfact/copilot/add-discriminator-default-mapping
+fab4f39b2a4e6b993f858bc4eb42a32c330c19a5	2026-05-05T21:56:00Z	Merge pull request #2026 from counterfact/copilot/test-media-types-ref-resolution
+8ddf47450bbb2c5d8e92491d4b0019796cb23058	2026-05-05T21:43:39Z	Merge pull request #2037 from counterfact/copilot/update-renovate-config-merge-queue
+b01d94230316b8613697a04f3004064bf3011390	2026-05-05T17:15:19Z	Merge pull request #2038 from counterfact/renovate/swc-monorepo
+b9b10edf8965723f815f4b253c68bfe360afa6bd	2026-05-05T17:03:50Z	Merge pull request #2024 from counterfact/renovate/actions-setup-node-6.x
+dc50c0bdecd407a4dede45075d5b3ef8629056a3	2026-05-05T11:56:46Z	Merge pull request #2034 from counterfact/renovate/node-24.x
+248d2bbe89e8815dd1780ab4190bfd3b48e34370	2026-05-05T11:32:01Z	Merge pull request #2029 from counterfact/copilot/set-name-field-counterfact-server
+a039967e69aa9e366fa97bd69de687c53db9852b	2026-05-05T10:26:15Z	Merge pull request #2031 from counterfact/copilot/add-ci-check-for-broken-links
+eb5b1a653fe24dc4fb2c9449630e16a13a19576e	2026-05-05T08:28:44Z	Merge pull request #2033 from counterfact/renovate/node-24.x
+c3893b4639d02e006e8ba6481fca4eda4acbe432	2026-05-05T08:28:20Z	Merge pull request #2032 from counterfact/renovate/actions-upload-pages-artifact-5.x
+e729833e90f658917043bc950e6510c35d6b1431	2026-05-05T07:51:00Z	Merge pull request #2023 from counterfact/renovate/actions-deploy-pages-5.x
+90c5e9a05ef637cfd1d60d482da75debd28f9867	2026-05-05T07:42:38Z	Merge pull request #2021 from counterfact/renovate/actions-checkout-6.x
+b6301b414d14fb4ef9e7272c0e1386fe6fbbcd5a	2026-05-05T06:37:46Z	Merge pull request #2022 from counterfact/renovate/actions-configure-pages-6.x
+6dc2eb62bcbff05bd6175fe3db7345cf538b2508	2026-05-05T02:50:42Z	Merge pull request #2018 from counterfact/copilot/add-query-http-method-support
+95e6c43c65cf2d4b224c1744dc63eef5c3bba3ea	2026-05-05T02:49:29Z	Merge pull request #2001 from counterfact/copilot/fix-broken-links-on-site
+456093f28db1b69c53991395d9f2293a69159312	2026-05-05T02:30:15Z	Merge pull request #1999 from counterfact/renovate/typescript-eslint-monorepo
+0b3e185cdb4ce824ce570ac2df5b9fbf09edaf12	2026-05-05T02:21:55Z	Merge pull request #1998 from counterfact/renovate/eslint-plugin-regexp-3.x
+4af56531b63cfbba5adb5df5c7d4bf2ab0446b26	2026-05-05T02:16:03Z	Merge pull request #1715 from counterfact/copilot/identify-opportunities-for-counterfact
+8792005cc8edf2bb97c4b72cbaababe1f0056913	2026-05-05T02:08:21Z	Merge pull request #1997 from counterfact/copilot/write-prompt-for-simulations
+5ab5d61cae437de642e618e765d2bb399f7b6e16	2026-05-05T01:58:32Z	Merge pull request #1993 from counterfact/copilot/docs-multi-version-api-support
+ec11df41852bbc74429d39139a9d61dd0ee9a40d	2026-05-05T01:52:21Z	Merge pull request #1994 from counterfact/renovate/npm-astro-vulnerability
+c9fed5d6709b822633bae85aeadbcb47947cd07a	2026-05-05T01:52:13Z	Merge pull request #1995 from counterfact/renovate/debug-4.x
+60efb89bea07753701b0aad60cc4098d2ee934c6	2026-05-05T01:51:49Z	Merge pull request #1429 from counterfact/renovate/apidevtools-json-schema-ref-parser-15.x
+83700c5a7996c3592a13cee0e40c7e75d3ba9f3e	2026-05-05T01:37:49Z	Merge pull request #1975 from counterfact/renovate/pin-dependencies
+948d03642df6473d8d0c9578ed7f7ccc3eb35a4a	2026-05-05T01:35:07Z	Merge pull request #1966 from counterfact/copilot/set-up-astro-github-pages
+1fdcd4bfed719ed3761bef12fba1e2a9baed98a1	2026-05-05T01:26:33Z	Merge pull request #1982 from counterfact/renovate/typescript-eslint-monorepo
+80c276b20e9fb00cd0f0029e47532b0bbab91740	2026-05-05T01:26:21Z	Merge pull request #1988 from counterfact/renovate/actions-checkout-6.x
+3f8cc1be819c578c3ab1f5eb033d8dda762f4e87	2026-05-05T01:26:10Z	Merge pull request #1990 from counterfact/renovate/migrate-config
+6695015e521d472a5ef1e459c81592f5031fa037	2026-05-05T00:52:31Z	Merge pull request #1987 from counterfact/renovate/precinct-12.x
+ff6b9584c4862c8cee48704950a1ea50be2be2fb	2026-05-05T00:40:30Z	Merge pull request #1983 from counterfact/renovate/eslint-monorepo
+e012be82bb74705a07f19579c109a585cf3ae82e	2026-05-05T00:39:42Z	Merge pull request #1981 from counterfact/renovate/changesets-cli-2.x
+1e93b612c95987015a0412da04572c7a90b3980e	2026-05-05T00:38:34Z	Merge pull request #1980 from counterfact/renovate/typescript-6.x
+7740a2a390d029896fa2bd351f991ba305638303	2026-05-05T00:37:20Z	Merge pull request #1977 from counterfact/renovate/eslint-plugin-jest-29.x
+bd6b3b9e7cdaba74646a332b7f5f5e666faac345	2026-05-05T00:36:34Z	Merge pull request #1979 from counterfact/renovate/prettier-3.x
+82844326593398fd54c92e081613140842c1082b	2026-05-05T00:35:53Z	Merge pull request #1978 from counterfact/renovate/json-schema-faker-0.x
+40d00207f22a66a23d41c69151988ad694a3c4c5	2026-05-05T00:34:49Z	Merge pull request #1984 from counterfact/renovate/eslint-plugin-promise-7.x
+b673f98d0be7aba0440882f551dec6adcd803943	2026-05-05T00:32:44Z	Merge pull request #1976 from counterfact/renovate/swc-monorepo
+be36c33c58736dfcb1717471e0f942b9f446a783	2026-05-05T00:32:27Z	Merge pull request #1989 from counterfact/renovate/actions-github-script-9.x
+2d6fa9deabaebd52f12ddce35f7772e2c38c5a87	2026-05-05T00:31:24Z	Merge pull request #1986 from counterfact/renovate/posthog-node-5.x
+89b088af1ccc40646eb034c177745ae374f665e7	2026-05-05T00:29:50Z	Merge pull request #1985 from counterfact/renovate/ajv-8.x
+b6f9b8756b696f9b889d629397146cec6d489078	2026-05-05T00:27:47Z	Merge pull request #1962 from counterfact/copilot/create-pattern-for-multiple-versions
+8026038ba0d0ca53b31931cc8cc1a37ef93620d3	2026-05-05T00:05:59Z	Merge pull request #1952 from counterfact/changeset-release/main
+40e47377b6b37961436bf3a953f395bd85553b38	2026-05-04T23:41:12Z	Merge pull request #1968 from counterfact/copilot/fix-admin-api-default-off
+695c1ca39d90d8cc26a8e5448f3209e81ef08e41	2026-05-04T15:04:01Z	Merge pull request #1972 from counterfact/copilot/fix-parameters-at-path-level
+fd9b7dcb179b45c465fc438244272953ba1d5c8b	2026-05-04T13:53:54Z	Merge pull request #1974 from counterfact/copilot/enable-telemetry
+69ca5201ec2785a5e49b9f418fb83a4c4c9210e9	2026-04-28T02:15:18Z	Merge pull request #1970 from counterfact/copilot/cast-parameters-at-runtime
+e2dff75e27d0b5a648d6434c6070f58b79c76a31	2026-04-27T23:15:33Z	Merge pull request #1964 from counterfact/copilot/review-docs-update
+8e0d33e707de7f09773c1ea97ff71068fd850d1e	2026-04-26T01:49:46Z	Merge pull request #1954 from counterfact/copilot/fix-mapped-type-and-explicit-properties
+e5f9bc87fbd90d990cb03f5508d433d8cfffc03f	2026-04-26T01:39:11Z	Merge pull request #1948 from counterfact/copilot/generate-types-versions-file
+489cd3525b2359b0c602c42d2ec8787a55b17b3b	2026-04-26T01:38:03Z	Merge pull request #1958 from counterfact/copilot/add-runtime-version-of-minversion
+9d7b5c451b227505148d7c0dc8dcee3de7c505dc	2026-04-26T00:39:30Z	Merge pull request #1956 from counterfact/copilot/update-usage-link-repl
+386dd669865b7fdd4bd433e74bc920f3100e4b9c	2026-04-25T23:51:27Z	Merge pull request #1949 from counterfact/copilot/update-operation-type-coder
+fbaac5063a06ef1053566397e1fd00146a950dcd	2026-04-25T22:40:20Z	Merge pull request #1947 from counterfact/copilot/add-version-field-to-specconfig
+f30314f4e07b2ac0cc7777885822849746f8ea7e	2026-04-25T19:16:22Z	Merge pull request #1950 from counterfact/copilot/server-route-versioned-specs
+2d06534dd1bfd5e0b689b948f0432603b3b305a2	2026-04-25T19:16:20Z	Merge pull request #1951 from counterfact/copilot/add-comment-to-manual-acceptance-workflow
+90fe29f77dae8d4d88db088c901e2520f44444aa	2026-04-25T14:38:13Z	Merge pull request #1938 from counterfact/copilot/add-multiple-version-support
+9db4e22d2976bd7152751018017fc0fdbb8144b1	2026-04-25T02:22:36Z	Merge pull request #1934 from counterfact/changeset-release/main
+2997e43c12df3d4214d2302183b618d772c452e3	2026-04-25T01:50:19Z	Merge pull request #1935 from counterfact/copilot/fix-query-params-object-explode
+a67ccaf1f3f2067210fe67c3d8ffd9876036300a	2026-04-25T01:35:55Z	Merge pull request #1936 from counterfact/version-in-path
+0acb02cd6b51f1c3d657fb4947a49b944c7ce6ad	2026-04-25T00:42:59Z	Merge pull request #1932 from counterfact/copilot/add-declare-version-method
+4fe14b06ace814b33a8243fdcefe6fccfecd014f	2026-04-22T01:48:53Z	Merge pull request #1929 from counterfact/copilot/add-version-argument-to-coder
+e9e25cc4e03c9a3f3e9716f29ce89d9b845e5fc5	2026-04-22T01:43:08Z	Merge pull request #1930 from counterfact/require-response-builder
+8df73215b82beca22137425d09b050e36f4520d8	2026-04-18T01:58:33Z	Merge pull request #1925 from counterfact/pmcelhaney-patch-2
+8cb2c3564346a72d115e250df3eaafa207cdfc07	2026-04-17T20:30:50Z	Merge pull request #1924 from counterfact/pmcelhaney-patch-2
+eaf0bc110ce1aeced74e31cd5865d620e6b4a800	2026-04-17T20:18:09Z	Merge pull request #1923 from counterfact/pmcelhaney-patch-2
+dc68f604f0de5120839e6ac7e28010b67fc1a1ff	2026-04-17T12:51:36Z	Merge pull request #1866 from counterfact/changeset-release/main
+46028151c4d81797deb7b7347b68db77276a4e64	2026-04-17T12:15:37Z	Merge pull request #1922 from counterfact/copilot/update-tab-completion-scenario
+3bde212819727d20ce5875079c46f003f9c60450	2026-04-16T18:51:01Z	Merge pull request #1921 from counterfact/copilot/add-group-qualified-scenario-command
+2f996fed5e708d8c2e478e522490dda680f02a2f	2026-04-16T17:14:26Z	Merge pull request #1920 from counterfact/copilot/fix-syntax-error-in-context-module
+115d233e5db9876ed82ab58785b64ccfc4539047	2026-04-16T17:02:43Z	Merge pull request #1912 from counterfact/copilot/disable-import-no-named-as-default-member
+97a38032e5d76d9dd267c5310a8a8c35dad6f738	2026-04-16T16:57:28Z	Merge pull request #1900 from counterfact/copilot/expose-multi-api-context
+b732a8f85f20dcd5389c3c0adaaa891c3fa026aa	2026-04-16T16:56:39Z	Merge pull request #1917 from counterfact/copilot/resolve-jest-expect-expect-warnings
+c62f89e1a9fa7f3cbb60c32acedcf27801a80eb0	2026-04-16T16:55:22Z	Merge pull request #1915 from counterfact/copilot/refactor-conditional-tests
+fd9d9bf22bb2647d301f0133dc0baf17edf7ba2e	2026-04-16T16:51:37Z	Merge pull request #1911 from counterfact/copilot/audit-resolve-security-regex-warnings
+eea291686cad48d009eed37714f5fe70c8c5d663	2026-04-16T15:48:33Z	Merge pull request #1913 from counterfact/copilot/re-enable-or-remove-disabled-tests
+188c64028dbe2206d3e72bc733f1209cbbd81569	2026-04-16T15:37:38Z	Merge pull request #1914 from counterfact/copilot/reduce-security-detect-non-literal-fs-filename-war
+ab65157744fd419430fa94bde791ab422121a43c	2026-04-16T15:33:54Z	Merge pull request #1918 from counterfact/copilot/update-regex-capture-groups
+1650211ada6b098ab26f86d96527ac1f2d8d3db9	2026-04-16T14:12:53Z	Merge pull request #1881 from counterfact/copilot/update-completer-repl-openapi
+a59d71bbece8c2dfac738b2d4bc78ff1e1dec7bf	2026-04-16T14:09:31Z	Merge pull request #1902 from counterfact/copilot/review-lint-warnings
+b6b4aa2eb65c84954878224dd43afc3862437ce8	2026-04-16T13:58:38Z	Merge pull request #1896 from counterfact/copilot/skip-ci-checks-markdown-files
+8f9d4ce2b0b72f7b42378b2f002551d2c9d0dd5a	2026-04-16T12:14:45Z	Merge pull request #1894 from counterfact/copilot/add-multiple-apirunners-support
+4b85dea685143d1ffa0197c1f7e5a68f107e5f6c	2026-04-16T00:59:35Z	Merge pull request #1890 from counterfact/pmcelhaney-patch-2
+6fa5da9dd11041b5e0bedd7ec4d0843e83101a04	2026-04-16T00:57:11Z	Merge pull request #1887 from counterfact/copilot/stop-passing-config-around
+b3ac3b72fc6710fabaf0e6315a57386ff8496a67	2026-04-15T22:35:45Z	Merge pull request #1883 from counterfact/copilot/create-black-box-tests-apis
+d9687acbc91a561c7e0e860c4128afb54655de33	2026-04-15T22:09:44Z	Merge pull request #1885 from counterfact/copilot/update-dependency-installation-instructions
+929d05942d2032d1ddf214f868c74120d406ebea	2026-04-15T20:37:32Z	Merge pull request #1879 from counterfact/copilot/normalize-api-config-array
+008df0974312d5e855c8e7322f21a67197c2649d	2026-04-15T18:25:50Z	Merge pull request #1877 from counterfact/copilot/exclude-counterfact-types-directory
+2b6ba1182f0e370365c13ee647eaf48d96e9f703	2026-04-15T17:35:13Z	Merge pull request #1875 from counterfact/attach-prefix
+09cfc97462deba83d5321290db62b36ce3eb4e2c	2026-04-15T16:21:45Z	Merge pull request #1874 from counterfact/copilot/move-counterfact-to-src
+0869ae6f7267a4ec9d3fa3a798d0d723a6e8d70e	2026-04-15T12:21:35Z	Merge pull request #1872 from counterfact/copilot/move-mockserviceworkers-out
+6a343ac97e763ead667790333abecdb76468c696	2026-04-14T22:12:49Z	Merge pull request #1870 from counterfact/copilot/organize-middlewares
+769e4b8444329d7e9b3d5a10ffb3402cd87c7400	2026-04-14T20:33:49Z	Merge pull request #1868 from counterfact/copilot/pass-runner-into-create-koa-app
+b6a11e5618b99632cc65e572de91d57e285f2d23	2026-04-14T18:28:35Z	Merge pull request #1865 from counterfact/copilot/create-api-runner-class
+fde9cff212bbce737bbca05ebdf80694a5b8792f	2026-04-14T15:42:39Z	Merge pull request #1863 from counterfact/changeset-release/main
+f54351fff529993adf72f1e0848a906970024a59	2026-04-14T15:26:34Z	Merge pull request #1823 from counterfact/changeset-release/main
+6275ff2c18c163eeb486f4d3684099c1c0433a14	2026-04-14T15:22:28Z	Merge pull request #1862 from counterfact/copilot/pick-used-keys-from-config
+f1a01489ab60e8a70be7fdc4e4de5b24fca525c8	2026-04-14T15:05:06Z	Merge pull request #1860 from counterfact/copilot/create-middlewares-in-createkoaapp
+06287a2e6f7d45cf40bb18bf26f6d0716dcf8b9c	2026-04-14T12:55:48Z	Merge pull request #1857 from counterfact/copilot/refactor-move-generate-to-code-generator
+47fc9441faf45b9784845b411717b5335cfac639	2026-04-14T11:29:29Z	Merge pull request #1855 from counterfact/copilot/factor-out-scenario-file-generator
+6a230a06c46a98624a8b4059943a7ab9830b9604	2026-04-14T10:47:01Z	Merge pull request #1853 from counterfact/copilot/add-branded-string-utility-function
+72c11d29c0bcf36555ef782552d3903029cf491e	2026-04-14T01:05:54Z	Merge pull request #1849 from counterfact/copilot/fix-admin-api-middleware-in-create-koa-app
+a7cbeab401d35288a3d13246c782d4e0171fa8c1	2026-04-14T00:13:27Z	Merge pull request #1851 from counterfact/copilot/refactor-openapi-middleware
+af406dd6a4709d00fbae8b757ff43eb10ddd4bab	2026-04-13T22:24:52Z	Merge pull request #1843 from counterfact/copilot/fix-typeerror-non-http-verbs
+60a320e5c9673d5fc0cfd5ec351891869b6f1eb1	2026-04-13T21:21:25Z	Merge pull request #1847 from counterfact/copilot/fix-worker-process-exit
+d77d0d45b7b3b1c7a5d492f4fba5e21373e9d0c5	2026-04-13T17:14:42Z	Merge pull request #1833 from counterfact/copilot/add-startup-scenario-function
+e9bf98ab30800cf9a6a245cadfae81dc46be28fe	2026-04-13T16:40:53Z	Merge pull request #1822 from counterfact/copilot/make-applycontext-type-available
+4a7a90102f84abb602a9001cf940f7a015e64ff1	2026-04-13T15:27:08Z	Merge pull request #1826 from counterfact/copilot/convert-openapi-document-to-class
+873ffa82d4232781f6c09cbe70fc11c8aad37ea0	2026-04-13T13:49:06Z	Merge pull request #1839 from counterfact/copilot/refine-readme-content
+258de47c8de0fdc8b373f48a7c6ad476d58927b2	2026-04-13T00:20:39Z	Merge pull request #1835 from counterfact/copilot/add-internal-jsdocs
+dd344801ce5316d3fdcbbbf8e10fcddf711dc3b3	2026-04-12T01:38:18Z	Merge pull request #1837 from counterfact/copilot/make-hexagon-blue
+f7ee9e2f9c536cc64bbae0f4cd15d8864e4709e2	2026-04-11T15:08:07Z	Merge pull request #1829 from counterfact/copilot/move-openapi-example-to-fixtures
+b6917f661830175075056a59acdaf08ac32de72f	2026-04-11T12:14:29Z	Merge pull request #1828 from counterfact/copilot/rename-apply-to-scenario
+0247e371baa5a69faf96dae8f38ac92fe2f5470b	2026-04-10T21:31:00Z	Merge pull request #1824 from counterfact/update-package-json
+8588f0fa828d871002a9adfacf250e998aeec09f	2026-04-10T19:00:00Z	Merge pull request #1821 from counterfact/copilot/refactor-docs-usage-and-reference
+128ce32fdec25ad6a8d391cbb1c4c2ddd274cdbe	2026-04-10T18:29:11Z	Merge pull request #1819 from counterfact/copilot/remove-gui-client
+cf94e4bbba623cdfb84eb08648fe8e57930e1a8c	2026-04-10T18:03:00Z	Merge pull request #1685 from counterfact/changeset-release/main
+ee0426098f6f302d92e18c1b8d575b59e687489e	2026-04-10T17:52:22Z	Merge pull request #1789 from counterfact/copilot/implement-apply-command-design
+5d09384d2439860023570aec240ae301b358ef06	2026-04-10T17:22:01Z	Merge pull request #1804 from counterfact/copilot/fix-response-type-errors
+f52ec126af410ff7881e568a8a78423e2d6aa4e5	2026-04-10T16:37:46Z	Merge pull request #1797 from counterfact/copilot/add-empty-method-to-responses
+be2d7cc19ca97487b4e8f4dc809ebef53b32174d	2026-04-10T14:49:59Z	Merge pull request #1814 from counterfact/copilot/revise-documentation-coherence
+2415bccfbd3e32778f585fa1d884df827a744505	2026-04-10T12:19:39Z	Merge pull request #1812 from counterfact/pmcelhaney-patch-2
+27a49443e51aa7b8d656927b55d36c529f515588	2026-04-10T01:26:32Z	Merge pull request #1811 from counterfact/copilot/delete-old-readme-versions
+161f9d8fa7cb9e1bf447c32fb37d03584d3214b0	2026-04-10T00:34:13Z	Merge pull request #1806 from counterfact/copilot/review-usage-patterns
+58be0c90cef53752bd068986c26518bc270edc3f	2026-04-09T21:53:26Z	Merge pull request #1801 from counterfact/copilot/document-usage-patterns
+411ea4ddfd8a6f704f9748ec68f17e6a62ecfba4	2026-04-09T18:01:57Z	Merge pull request #1723 from counterfact/copilot/add-counterfact-config-file
+79f78eaab40cd8619538cb0281aae98ab2398b69	2026-04-09T17:17:45Z	Merge pull request #1802 from counterfact/move-skills
+4a94e4ebdec2f3de33dee3cf6be6b069bcd63de7	2026-04-09T12:22:10Z	Merge pull request #1740 from Bahtya/fix/xml-text-escaping
+fab67a192ef8733b197d2761adb51f26c3eb6b27	2026-04-09T12:00:21Z	Merge pull request #1799 from counterfact/copilot/refactor-counterfact-types
+4d64c2eaa1d10f1d0598c3a34ef01530e444143a	2026-04-09T02:43:59Z	Merge pull request #1795 from counterfact/copilot/fix-type-error-on-response
+294de96a1b0da36b4237fc5ae174d95960d6af9f	2026-04-08T22:17:29Z	Merge pull request #1793 from counterfact/copilot/add-changeset-and-docs-update
+e18a35fcd349d7525cf3983b24cf42df6ba551c3	2026-04-08T22:15:28Z	Merge pull request #1791 from counterfact/copilot/work-around-reserved-word-names
+0cda6efd19e435e188b9f2f6046c3df3118d141a	2026-04-08T21:28:11Z	Merge pull request #1788 from counterfact/pmcelhaney-patch-2
+6053f5d7627d9009bf0b11ed4a00fa05f5d8714c	2026-04-08T21:09:19Z	Merge pull request #1785 from counterfact/copilot/rework-issue-creation-workflow
+419754fd4e51d0306a6079af953bf778fd568530	2026-04-08T21:09:02Z	Merge pull request #1713 from counterfact/copilot/rewrite-readme-approaches
+ac00e7a492704e6d6dfdd15a45cfad5255297fb4	2026-04-08T20:58:20Z	Merge pull request #1787 from counterfact/copilot/change-adr-numbering-workflow
+c869987e7f960540350ec089f95be5368b299984	2026-04-08T20:26:11Z	Merge pull request #1781 from counterfact/copilot/create-dummy-issue
+85387dc5e1ea85ec78ea30a39088ea1d32b96286	2026-04-08T20:09:44Z	Merge pull request #1719 from counterfact/copilot/define-multiple-api-support
+1a915dad147cb8f1b2e31c5b803d751ce748bd38	2026-04-08T20:06:09Z	Merge pull request #1778 from counterfact/copilot/issue-requestchange-issue-creation-process
+b8b8e4ad80fe60c0c9f5501faaefd89368a1abaa	2026-04-08T19:29:36Z	Merge pull request #1774 from counterfact/cleanup-issue-proposals
+887c2b2a7b23433ed39d0d0b20bda8ff89ac1f96	2026-04-08T19:29:28Z	Merge pull request #1776 from counterfact/pmcelhaney-patch-2
+f1e4dd3890721e6f8f5d12f64b1637817007657d	2026-04-08T19:29:21Z	Merge pull request #1725 from counterfact/copilot/suggest-onboarding-experience-designs
+9c0bee2136d857011ee86650fd559422cc1cdea2	2026-04-08T15:19:27-04:00	Merge pull request #1775 from counterfact/fix-create-issues-workflow
+d8c7cc4d21e51b0f83482a16e0d4ce08086286b8	2026-04-08T18:46:18Z	Merge pull request #1757 from counterfact/remove-bug-proposals
+f0e3e9079b6f89a8092a5a51b0cd48dadab7e1fb	2026-04-08T18:46:55Z	Merge pull request #1756 from counterfact/copilot/fix-manual-acceptance-tests-workflow
+68ab62ad86fb3947e5c72f4f8fbf3a52e3242dfe	2026-04-08T18:14:52Z	Merge pull request #1721 from counterfact/copilot/propose-improvements-to-counterfact
+f3b4396345e3d26c8242e734eb7d4156d1693b37	2026-04-08T18:12:36Z	Merge pull request #1732 from counterfact/copilot/create-adr-process
+6dbb527c796b8c217428d983c31698a74db324e2	2026-04-08T18:01:59Z	Merge pull request #1714 from counterfact/copilot/add-apply-command
+b80ac8edeb8367790b305d4f4186ab0dc14f212e	2026-04-08T16:55:11Z	Merge pull request #1729 from counterfact/copilot/add-using-temporary-files
+543ad7e16d2fe8e51d54ac372f18476c17e73ba0	2026-04-08T15:58:46Z	Merge pull request #1727 from counterfact/copilot/update-copilot-instructions-design-tag
+69c85efbf05114be151a6b8284f1ba7c68da2574	2026-04-08T15:57:39Z	Merge pull request #1675 from counterfact/renovate/ajv-8.x
+a772389ec1c8c4b0625c4f758a529de69eade637	2026-04-07T19:59:30Z	Merge pull request #1690 from counterfact/copilot/replace-pr-auto-update-workflow
+5bb4042d615b1160186a01109ef03f2d4d1cca2e	2026-04-07T11:42:24-04:00	Merge pull request #1711 from counterfact/copilot/fix-node-version-check-bug
+edb067fa65419a7aeba1673766ac91ea069e9108	2026-04-07T09:40:29-04:00	Merge pull request #1710 from pmcelhaney/copilot/fix-deprecated-unescape-function
+4335ea334df45a018543334b15d4729e145756f2	2026-04-07T08:39:20-04:00	Merge pull request #1703 from pmcelhaney/copilot/fix-ci-script-issues
+acd8e47608dcfa7360c1f3d8b5f93144d0ac7fa4	2026-04-07T08:14:44-04:00	Merge pull request #1693 from pmcelhaney/copilot/bug-hunt-2
+fa25ec391b7554ca53631f4119d3d3ece9a7d5f0	2026-04-07T11:35:03Z	chore(deps): update dependency @swc/core to v1.15.24 (#1691)
+4757c4500f56df552aa0cdf53b011c0310ff4694	2026-04-07T07:27:08-04:00	Merge pull request #1683 from pmcelhaney/copilot/fix-tools-accepts-lowercase-header-issue
+fea59a02eb2859a061980fbe8ef239d2e29d9d15	2026-04-06T22:38:20-04:00	Merge pull request #1688 from pmcelhaney/renovate/actions-github-script-8.x
+6da87bf49a7d369bd90764422869c52d42a48385	2026-04-06T20:18:58-04:00	Merge pull request #1687 from pmcelhaney/copilot/add-ci-workflow-update-pr-branches
+cbab92934e67d96ea301fe11685ba0c561e79e70	2026-04-07T00:01:13Z	chore(deps): update dependency eslint to v10.2.0 (#1681)
+fe38756485ce5650d895012e992b28d22f289f9a	2026-04-06T19:46:48-04:00	Merge pull request #1682 from pmcelhaney/copilot/fix-dispatcher-proxy-error
+ce3da8468e957899cfc436c33dcb391512460f0d	2026-04-06T19:02:08-04:00	Merge pull request #1684 from pmcelhaney/copilot/fix-tools-accepts-header-whitespace
+ce489dfce40b65d9b05409984887373885c2eebc	2026-04-06T17:38:30-04:00	Merge pull request #1674 from pmcelhaney/changeset-release/main
+1fc0517058a06fbb5c9fdd9e25422fa72937d2c0	2026-04-06T16:20:15-04:00	Merge pull request #1602 from pmcelhaney/copilot/introduce-repl-native-request-builder
+828718da8e0544795b79c685efb5a74098c943b1	2026-04-06T14:47:31-04:00	Merge pull request #1637 from pmcelhaney/copilot/add-lightweight-telemetry
+442102b9150bdfed7056bed6c1decd3ea71f8c16	2026-04-06T14:36:39-04:00	Merge pull request #1657 from pmcelhaney/copilot/refactor-module-loader-helpers
+e9ced69faba6ea680592a0115c38583a831009f6	2026-04-06T14:02:26-04:00	Merge pull request #1651 from pmcelhaney/copilot/create-failing-tests-for-bugs
+c56dcff7c949437a98c3f4a4e01681728101a282	2026-04-06T13:52:20-04:00	Merge pull request #1642 from pmcelhaney/copilot/change-objects-to-maps
+414c82e4dacbc5f15dccb6fadee06fe9b93f2a5b	2026-04-06T13:44:06-04:00	Merge pull request #1672 from pmcelhaney/renovate/actions-checkout-6.x
+e3aa99edd34ef2510a3b0e46b73e1a422a243929	2026-04-06T13:36:17-04:00	Merge pull request #1644 from pmcelhaney/copilot/add-jsdoc-generation-for-types
+e6fb53292fd2656a38f594963d5af07afdc36ec3	2026-04-06T13:24:52-04:00	Merge pull request #1653 from pmcelhaney/copilot/add-request-validation-feature
+e4b7a7ce8f444bac0bdda3b5206bc12ea48665c5	2026-04-06T13:19:38-04:00	Merge pull request #1665 from pmcelhaney/copilot/improve-error-messages
+ffa9dd3bce3d81b6636e9903964380b981d9f42b	2026-04-06T12:32:59-04:00	Merge pull request #1344 from pmcelhaney/transpile-to-module-test
+acc668eb25bca1df85949b090bf1b281762692b8	2026-04-06T08:21:17-04:00	Merge pull request #1669 from pmcelhaney/copilot/create-example-issues
+aefd91de7c13cfef0a65e0d13ad64a74fab69123	2026-04-06T08:13:12-04:00	Merge pull request #1667 from pmcelhaney/copilot/add-ci-workflow-for-issues
+9294fb4dd439f7c860b8c6c2d8a7044c36b4d466	2026-04-05T20:57:01-04:00	Merge pull request #1661 from pmcelhaney/copilot/update-copilot-instructions-to-use-tdd
+d87a690108198a9325c16ec1c6ce78c9dc44467c	2026-04-05T20:47:00-04:00	Merge pull request #1655 from pmcelhaney/copilot/add-test-coverage-repl
+4a7b5af72ce112f931bb54e437c9e8975c9a3900	2026-04-04T11:15:54-04:00	Merge pull request #1646 from pmcelhaney/copilot/create-architecture-report-card
+ed993a672547d810c42df3c42ac18b4211bdcb74	2026-04-03T20:50:54-04:00	Merge pull request #1640 from pmcelhaney/copilot/fix-eslint-warnings
+27c5cf54a6c91ac58cabaf241cf571d540398a91	2026-04-03T14:18:29-04:00	Merge pull request #1634 from pmcelhaney/changeset-release/main
+cd70816a67c6d2a4036c2a8cd5d37e4f21afe25f	2026-04-03T14:11:01-04:00	Merge pull request #1635 from pmcelhaney/pmcelhaney-patch-2
+2673e86e66f4cc34b4151396702096d4d2391198	2026-04-03T14:02:45-04:00	Merge pull request #1630 from pmcelhaney/copilot/convert-js-code-to-typescript
+4106030bcf6acd8c44043f113cc85cde05b6635a	2026-04-03T13:57:28-04:00	Merge pull request #1606 from pmcelhaney/changeset-release/main
+a221328f143fd71671c7212211918802fa942427	2026-04-03T10:36:11-04:00	Merge pull request #1633 from pmcelhaney/copilot/remove-stryker-dependency
+4769e51c03f72986d72682222c64890a70d61063	2026-04-03T10:17:51-04:00	Merge pull request #1624 from pmcelhaney/copilot/fix-route-file-syntax-error
+b750019c246859f608a6ebebe87d2d197162b269	2026-04-03T09:38:56-04:00	Merge pull request #1611 from pmcelhaney/copilot/add-eslint-rule-for-kebab-case
+0daed755836ba14fec83f4e727f1493b97e1fbfb	2026-04-02T20:44:44-04:00	Merge pull request #1628 from pmcelhaney/renovate/npm-lodash-vulnerability
+aaa33c3cf68ba8d8d3bbddee193c8772990c490b	2026-04-02T20:31:00-04:00	Merge pull request #1626 from pmcelhaney/copilot/add-eslint-fix-command
+59f74e1cf2374290b0499567bbe5ff9107cd011b	2026-04-02T20:17:21-04:00	Merge pull request #1622 from pmcelhaney/copilot/fix-reserved-keyword-operationid
+8587018a0daa9f93b934b6e0060023b954c4fb91	2026-04-02T20:06:43-04:00	Merge pull request #1621 from pmcelhaney/copilot/fix-response-schema-error
+80dc0732ecb4e6e664dbedc29d1ceac7ce49a366	2026-04-02T19:33:19-04:00	Merge pull request #1620 from pmcelhaney/copilot/fix-routes-colons-issue
+241d6284ac1424669c179ca4538786b97aa11539	2026-04-02T18:44:09-04:00	Merge pull request #1609 from pmcelhaney/copilot/fix-parsing-request-body
+22a2226fd8dd231bc9bb14fabd312467b8eeb118	2026-04-02T18:10:49-04:00	Merge pull request #1614 from pmcelhaney/copilot/fix-counterfact-crash-on-file-delete
+bce1c600ae90b939b1588244439b0e3b9751f65f	2026-04-01T20:27:44-04:00	Merge pull request #1616 from pmcelhaney/copilot/recommend-latest-npx-version
+830480d1651803c3b6fba9445f05ec8fdb364491	2026-04-01T17:24:18-04:00	Merge pull request #1612 from pmcelhaney/copilot/fix-allowed-methods-issue
+37dec24356b516844ac87f8deadd1b9451cea7d0	2026-03-31T22:09:00Z	fix(deps): update dependency koa to v3.2.0 (#1605)
+19dd1e3e9d663bde64c2d01c3f1a9de53b13ee15	2026-03-31T16:01:48-04:00	Merge pull request #1604 from pmcelhaney/copilot/refactor-temporary-files-methods
+7951e71d284dd56e09c9254dd3fc83684c54e2fb	2026-03-30T18:54:38-04:00	Merge pull request #1574 from pmcelhaney/changeset-release/main
+a7a56a25d3eee5ad543c9bb6b74f84e42a0ab525	2026-03-30T22:06:59Z	chore(deps): update dependency eslint to v10.1.0 (#1600)
+2eda8e0f2e36b2296d0b4f43bba96a6f22b1975b	2026-03-30T17:56:44-04:00	Merge pull request #1493 from pmcelhaney/renovate/major-eslint-monorepo
+26c37cbd0361fb29b54bd4046ad95a1fb2193aad	2026-03-30T16:05:25-04:00	Merge pull request #1504 from pmcelhaney/renovate/json-schema-faker-0.x
+4544b54693bea6f2c3cca42878c88196ffcfe5ec	2026-03-30T15:45:18-04:00	Merge pull request #1564 from pmcelhaney/copilot/add-support-for-binary-data
+f1531e41bd6a079eeb47d03bc33fad49d2fa3916	2026-03-30T15:23:57-04:00	Merge pull request #1553 from pmcelhaney/copilot/fix-counterfact-external-yaml-support
+a8f0ffa2a66de001712816cd102c642657e50ebe	2026-03-30T15:05:01-04:00	Merge pull request #1576 from pmcelhaney/renovate/typescript-6.x
+2d7b2ad5e7faca4f392164e15b3390cfb6ca3913	2026-03-30T14:34:06-04:00	Merge pull request #1597 from pmcelhaney/copilot/add-chainable-response-cookie-helper
+8ea005f48f922c0f3763b20e67faae9dff9a3e6a	2026-03-30T12:35:42-04:00	Merge pull request #1595 from pmcelhaney/copilot/add-cookie-helper-for-requests
+cf1ae286e62296f1d883759bfef8036588d43a96	2026-03-27T18:18:50-04:00	Merge pull request #1591 from pmcelhaney/copilot/fix-repl-tab-completion
+d6a93b09e0cd343080e31d44eed71479c06d0280	2026-03-27T15:36:42-04:00	Merge pull request #1592 from pmcelhaney/enforce-manual-acceptance-tests
+c6e9cffda21205c774127d26d396afacb0fb15c9	2026-03-27T15:01:51-04:00	Merge pull request #1589 from pmcelhaney/copilot/add-autocomplete-to-repl-routes
+fed9ee73271796bd491c8461e1f25ea133c3a26e	2026-03-27T14:26:07-04:00	Merge pull request #1587 from pmcelhaney/manual-acceptance-tests-in-ci-workflow
+635071cd09448f854b5c1a0c77f685c9e00f3dfa	2026-03-27T16:09:47Z	chore(deps): update dependency eslint-plugin-jest to v29.15.1 (#1582)
+7913a9c4587419ed4fe2f6140d8ea4f30aed0ccc	2026-03-27T11:59:53-04:00	Merge pull request #1569 from pmcelhaney/copilot/fix-maybe-shortcut-content-type
+3cce71f2be19d66549b55553f01039fa3cd29bad	2026-03-27T11:07:07-04:00	Merge pull request #1581 from pmcelhaney/copilot/fix-invalid-example-name-response
+5c79f0aefbc3633231b4cc994cd17457a29f340b	2026-03-27T10:59:20-04:00	Merge pull request #1579 from pmcelhaney/put-eslint-rules-back
+ff36c53b1b0639f5a30391743015cb1da301c929	2026-03-27T01:01:08Z	fix(deps): update dependency handlebars to v4.7.9 [security] (#1578)
+c440b42c3ecc40cff6e5bbd9b211b43291ba832d	2026-03-26T21:54:18Z	chore(deps): update actions/setup-python action to v6 (#1577)
+61455e829e8c17e6b84c426db8c9f9527bc4de5b	2026-03-26T16:42:21-04:00	Merge pull request #1561 from pmcelhaney/copilot/convert-black-box-tests-to-python
+7f9ce731e846e0fe90aaf4f7e022ae527afef50f	2026-03-25T18:43:36Z	chore(deps): update dependency @swc/core to v1.15.21 (#1575)
+11e27a33264b1c18996d2f5fa907883529fb48ad	2026-03-25T11:31:06-04:00	Merge pull request #1568 from pmcelhaney/copilot/add-counterfact-api-commands
+aaeb779586f5bc796b4be32b4f121db3c71d6d4a	2026-03-25T09:28:00-04:00	Merge pull request #1571 from pmcelhaney/copilot/add-warning-to-module-tree
+7cdacf305bed560e8145b824d830e6a28d6919eb	2026-03-23T16:49:08-04:00	Merge pull request #1555 from pmcelhaney/changeset-release/main
+f5c6cdc510bba23abcaf1d0a5591643694bd14ad	2026-03-23T16:30:42-04:00	Merge pull request #1567 from pmcelhaney/fix-broken-middlware
+08c0d8bdad6f56589cfd52b9aaf4f7e2361aad88	2026-03-23T09:44:31-04:00	Merge pull request #1565 from pmcelhaney/pmcelhaney-patch-2
+fa9f51efd518e0c07fc7c00c9a60ad743fa5abdd	2026-03-22T21:00:07-04:00	Merge pull request #1563 from pmcelhaney/copilot/add-read-json-utility-function
+4ef55c2da04bbea113453cd4b5754d102a6f533a	2026-03-22T20:03:38-04:00	Merge pull request #1559 from pmcelhaney/copilot/update-cli-spec-flag
+8050b3437a95209235e51413277a327e4e7d4a20	2026-03-22T07:20:19-04:00	Merge pull request #1544 from pmcelhaney/copilot/fix-edge-cases-response-headers
+ba9de81477e90f0d848d78254b9a9f275d168f21	2026-03-22T07:09:23-04:00	Merge pull request #1557 from pmcelhaney/copilot/set-up-copilot-instructions
+86c4460c53d54418daa91e8c16b90369e65190de	2026-03-21T21:02:20Z	chore(deps): update dependency @types/koa to v3.0.2 (#1556)
+e8cb8ff75518929a3ec22bef1f0a7b9848d1d724	2026-03-20T13:13:25-04:00	Merge pull request #1550 from pmcelhaney/copilot/add-prune-option-for-clearing-paths
+bf994d4f662b6865f362ff60133b81818d8af21d	2026-03-20T08:26:19-04:00	Merge pull request #1549 from pmcelhaney/changeset-release/main
+945bd4209b38bae95cc0996c8020ccbd42f732a6	2026-03-20T07:43:47-04:00	Merge pull request #1551 from pmcelhaney/copilot/add-readme-and-design-principles
+aca4d5baf086e32f1987a94b94841ecfc7fde7ab	2026-03-19T15:40:30Z	chore(deps): update actions/github-script action to v8 (#1548)
+f68a4c3c56cacfd7d1de96d4f76232d3ab8e0b21	2026-03-19T11:36:16-04:00	Merge pull request #1545 from pmcelhaney/copilot/update-openapi-examples-output
+3f32cbe2e3b4fa0551a33b4cd1701ac1b0cfd6c0	2026-03-19T11:31:47-04:00	Merge pull request #1547 from pmcelhaney/copilot/automate-changesets-for-renovate-prs
+9e76a9008cf1ed7c07f8f872074206d8217c3c8e	2026-03-19T11:28:09-04:00	Merge pull request #1512 from pmcelhaney/snyk-fix-75af800fb44e8bf8ec7678e3394dcc22
+67d93249b3d7fd0cad1068a924bbb8952d371dda	2026-03-19T11:23:41-04:00	Merge pull request #1533 from pmcelhaney/changeset-release/main
+929f7946dcc059e3e00d822b2e4e336bb6f9817f	2026-03-19T11:03:45-04:00	Merge pull request #1546 from pmcelhaney/fix-root-middleware-changeset
+13a94bcaf7a598084d71c6aa7a7d279e04d268e1	2026-03-18T21:57:01-04:00	Merge pull request #1543 from pmcelhaney/add-my-name-to-readme
+297f6bee5d0767192780a81889d3a0665f407643	2026-03-18T18:32:26-04:00	Merge pull request #1540 from pmcelhaney/copilot/fix-low-hanging-fruit-issue
+0900cfadadaf34891ea609257957dc88b8ac2eaa	2026-03-18T14:23:22-04:00	Merge pull request #1539 from pmcelhaney/copilot/add-tests-for-counterfact-types
+459cf707ee8719c2b6bc5950bc21e32a7066a1f3	2026-03-15T21:34:19-04:00	Merge pull request #1537 from pmcelhaney/pmcelhaney-patch-1
+0545370ee5fcdfd3c1bf932c7d5c6ccd05c0b71c	2026-03-13T20:35:10-04:00	Merge pull request #1534 from pmcelhaney/rewrite-docs
+ac83a09079317895d908112a2f9ba050008142fc	2026-03-13T07:43:44-04:00	Merge pull request #1523 from pmcelhaney/agent-skill-admin-api
+3b51effd685b86a871cb54a0ea18a1d4a1793ec1	2026-03-13T10:17:35Z	chore(deps): update dependency jest to v30.3.0 (#1535)
+a987fde68aa5d07f0695f99bc70a734cd6ca629e	2026-03-10T11:45:24-05:00	Merge pull request #1524 from pmcelhaney/copilot/fix-root-middleware-execution
+d244e0140aa4d1e315aeec2369e00b16c8ff7a49	2026-03-10T11:38:20-05:00	Merge pull request #1525 from pmcelhaney/copilot/add-json-prettify-middleware
+68a3f505ce457f10e4ab30dea47ed8fdde2eb48a	2026-03-10T11:27:26-05:00	Merge pull request #1532 from pmcelhaney/skip-ci-for-md-changes
+b34b34b9f2d5e9602adbccddd738fc58b433fcf8	2026-03-10T11:20:11-05:00	Merge pull request #1530 from pmcelhaney/vibe-readme
+f59b27daaaec4f56c1f0fbefe0a770846b1d4703	2026-03-10T11:08:42-05:00	Merge pull request #1531 from pmcelhaney/discsussion-tracker
+55b171e6e72f4c858b220f1872abf9847c751ff1	2026-03-10T10:35:16-05:00	Merge pull request #1529 from pmcelhaney/changeset-release/main
+9d7c7f79bd1c2a3c6ccedf4d15d04f59ee040c38	2026-03-10T10:30:19-05:00	Merge pull request #1528 from pmcelhaney/feedback-annoucement
+9b54ca9a79a5ee2183e84c9f03c821b087fc93b8	2026-03-10T05:55:38Z	chore(deps): update dependency eslint to v9.39.4 (#1526)
+3908c1fa166fd0857363c7f27fd2af2e1077cb8a	2026-03-06T21:37:40Z	fix(deps): update dependency fs-extra to v11.3.4 (#1522)
+99570f47168789e6dda3be896d7bef69a91bc1fb	2026-03-06T13:46:35Z	chore(deps): update dependency @changesets/cli to v2.30.0 (#1521)
+9ae95fbe1c36ecf1089391bbff211aff89791fec	2026-03-05T12:45:49-05:00	Merge pull request #1520 from pmcelhaney/new-homepage
+403a3768905f3a5ea101c9cf9ad13777c1a87526	2026-03-04T10:49:21Z	chore(deps): update dependency @swc/core to v1.15.18 (#1519)
+567c8726c0fc42f1659b8ca50eb738735e5fa627	2026-03-02T21:16:38Z	chore(deps): update stryker-js monorepo to v9.6.0 (#1518)
+dbea0a4a886784ae28da44e5d93bdea13b215f10	2026-03-02T13:19:45-05:00	Merge pull request #1517 from pmcelhaney/changeset-release/main
+9a6af7a75daacf1283bab4a55f3024e706426d59	2026-03-02T12:03:22-05:00	Merge pull request #1516 from nkincy/sanitize-operation-id
+8a1fe397aa858dc5aed27c0aa6453828dedbba8d	2026-03-02T09:53:49Z	chore(deps): update dependency @swc/core to v1.15.17 (#1514)
+58abbd8cb13e90f2aead96a0647085c250a91037	2026-02-28T09:36:01Z	fix(deps): update dependency koa to v3.1.2 [security] (#1513)
+8ff2046f6e7ddfd2f58d75c600de0fcc2053ab09	2026-02-26T15:50:15-05:00	Merge pull request #1511 from pmcelhaney/changeset-release/main
+7017a918b1f31353abe53f21a95e3959db8aa190	2026-02-26T13:45:18-05:00	Merge pull request #1507 from nkincy/fix-required-parameter-generation
+564dee6615a2fd39de442ada8c13009b1d2c839c	2026-02-26T12:23:54-05:00	Merge pull request #1502 from pmcelhaney/feature/operationid-type-names
+92c1bbe944f4aba5d48497053d599031e40ad529	2026-02-26T16:46:53Z	chore(deps): update dependency @swc/core to v1.15.13 (#1510)
+e161d2987997e6d6c6dc33127864446b653924b6	2026-02-26T11:43:20-05:00	Merge pull request #1509 from pmcelhaney/coveralls-make-optional
+8651c0d0fc32ce86ebcaf3d1729c55b73d2df2ca	2026-02-26T09:50:08Z	chore(deps): update dependency @types/lodash to v4.17.24 (#1508)
+2709daede27a3152027e002b744c186fe20c94cb	2026-02-25T07:52:56-05:00	Merge pull request #1505 from pmcelhaney/changeset-release/main
+078606a26a01cbaac2412d6ad39edcf1e57b5f5e	2026-02-24T10:33:07-05:00	Merge pull request #1501 from pmcelhaney/feature/parameter-type-exports
+280585d2aabd11ecde1c274a8e6c48d221d47adc	2026-02-23T21:55:49Z	chore(deps): update dependency eslint to v9.39.3 (#1503)
+17b6c7d3f3b0a55d66d5568d61b1108f4ecfb94b	2026-02-22T20:46:07Z	chore(deps): update dependency eslint-plugin-security to v4 (#1500)
+930362cbe1b7c0a9af1df2d6b2d79255fa3604be	2026-02-19T09:14:02Z	chore(deps): update dependency rimraf to v6.1.3 (#1499)
+2992adc46fd533da87030a55ab87df8056cb7eb3	2026-02-19T00:33:45Z	chore(deps): update dependency eslint-plugin-jest to v29.15.0 (#1498)
+14a8fb479f2a128fab08ca3378265dcec4190bd3	2026-02-18T15:47:38Z	chore(deps): update dependency eslint-plugin-n to ^17.24.0 (#1497)
+3320ccb5ecb1c88820a89ac94bddc7bad8302940	2026-02-16T00:58:52Z	chore(deps): update dependency eslint-plugin-jest to v29.14.0 (#1496)
+1d27e718e910c25ee9a6db4e4e5c5ba9ff399b95	2026-02-12T20:04:36Z	chore(deps): update dependency eslint-plugin-unused-imports to v4.4.1 (#1495)
+1ef21dcf9e04f09e1a76e272823400aa4dbe010a	2026-02-12T01:00:48Z	chore(deps): update dependency eslint-plugin-jest to v29.13.0 (#1494)
+92474406398faeb21e8b285c7a78ae04578857da	2026-02-06T12:41:09Z	chore(deps): update dependency eslint-plugin-jest to v29.12.2 (#1492)
+f0109191d79cce352933ced24a699f57d4254157	2026-02-06T02:25:13Z	fix(deps): update dependency commander to v14.0.3 (#1490)
+1b28db64f449506b54a3fa2f65855887d4296a07	2026-02-05T21:15:29Z	chore(deps): update stryker-js monorepo to v9.5.1 (#1491)
+7a6ee87505256d1352d465aaa524cf790e6ce162	2026-02-02T23:39:23Z	chore(deps): update stryker-js monorepo to v9.5.0 (#1489)
+2a25a172fd9695d15ef461be652fb012c0fdaa00	2026-01-31T05:27:22Z	chore(deps): update dependency @swc/core to v1.15.11 (#1488)
+74a6c4061eff2808ea6b7a56be15f733a160f621	2026-01-25T14:10:38Z	chore(deps): update dependency eslint-plugin-regexp to v3 (#1487)
+66854a0987609fcf24830987e109249ff56fa22e	2026-01-25T00:43:08Z	fix(deps): update dependency prettier to v3.8.1 (#1486)
+e0119f473b658b777b9dee6d5dec283f2e0f3e09	2026-01-22T20:50:41Z	chore(deps): update dependency @swc/core to v1.15.10 (#1485)
+558e2f004a6243dc75636ee35c2c84050d83c3ed	2026-01-22T13:17:27-05:00	Merge pull request #1481 from pmcelhaney/changeset-release/main
+293f8a17c0b06986811865fe4c337c66bbc87028	2026-01-22T04:56:57Z	fix(deps): update dependency lodash to v4.17.23 [security] (#1484)
+bee88e383d504323e185be759af33315ec30cbd7	2026-01-20T15:00:39-05:00	Merge pull request #1483 from pmcelhaney/delay-function
+645f9285be1c851b588f373bfe7fe7864eec242c	2026-01-20T14:51:10-05:00	Merge pull request #1482 from pmcelhaney/async-methods
+2b16f67c48df5f9619971019c4422113c92431ac	2026-01-20T12:43:30-05:00	Merge pull request #1480 from pmcelhaney/http-client-in-repl
+a559cfac32cc067fba4331ae15fee20a4f7d1bea	2026-01-18T04:58:39Z	fix(deps): update dependency prettier to v3.8.0 (#1479)
+b4dc414745ec5cd007d31b5fa00d4e22048d8855	2026-01-17T17:32:42Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.5 (#1478)
+9d6b460f82c3b6437a59f919a04d141d40408597	2026-01-14T16:40:04-05:00	Merge pull request #1476 from pmcelhaney/changeset-release/main
+e6ec5b7f86d360be5cd1e811cccc8b785779c385	2026-01-14T16:31:29-05:00	Merge pull request #1477 from pmcelhaney/changeset-for-json-method-fix
+a9777af9cfca20b5b3979695a3167198115f37d4	2026-01-14T11:16:43-05:00	Merge pull request #1463 from jrunning/use-regex-replace-instead-of-recast-for-js-to-cjs
+8772fe5f81fbb57b8eb4065a71dacd9a317229ee	2026-01-13T18:01:02-05:00	Merge pull request #1474 from pmcelhaney/normalize-line-endings-in-test
+a769dfa26667eafeda17047bcc7fe3fbf5e1c6a0	2026-01-13T17:53:32-05:00	Merge pull request #1475 from pmcelhaney/remove-eslint-plugin-hardcore
+6e80b9c09719d0d68be4a8d5b779fb307401a311	2026-01-13T21:57:52Z	chore(deps): update dependency eslint to v9.39.2 (#1318)
+9d7d9b22e2af0dba5da613ef8b9f297a96ce355d	2026-01-13T19:56:14Z	chore(deps): update dependency @types/koa to v3 (#1364)
+d486b9508446695258454b03785a743c5f00ba7b	2026-01-13T14:34:46-05:00	Merge pull request #1473 from pmcelhaney/line-ending-test-fix
+4851c13968a523182811fa712bf0df99ee930432	2026-01-13T14:26:27-05:00	Merge pull request #1472 from pmcelhaney/break-out-types
+25346d3ae52e07e6ef67c2061667bbb4746d4298	2026-01-13T18:17:58Z	chore(deps): update dependency @types/lodash to v4.17.23 (#1471)
+bdfe13f9ab2db354972277eb1ec6acb3a8b709fe	2026-01-13T13:11:15-05:00	Merge pull request #1470 from pmcelhaney/fix-typescript-errors
+5dd98a02331e5c43dfe1678a675b40bf231b758a	2026-01-09T15:41:17-05:00	Merge pull request #1469 from pmcelhaney/npm-trusted-publishing
+d9c0add4059a82d810061f38d4b3637ac4342dce	2026-01-09T15:27:06-05:00	Merge pull request #1468 from pmcelhaney/npm-trusted-publishing
+2a4eda964ad89065502d03f0346d40e969718e14	2026-01-09T15:06:17-05:00	Merge pull request #1467 from pmcelhaney/dependabot/npm_and_yarn/qs-6.14.1
+ea7e02090a31fad7d63fa4ecfbba0324be7f442d	2026-01-09T14:12:32-05:00	Merge pull request #1466 from pmcelhaney/changeset-release/main
+4aadb154305751d0b49864e630176348dc31429c	2026-01-09T14:06:31-05:00	Merge pull request #1465 from pmcelhaney/upgrade-js-yaml
+6393a02b8c801437a918e38b39d3d8119bd9383f	2026-01-09T13:13:58Z	chore(deps): update dependency supertest to v7.2.2 (#1464)
+1739f2198ba17cacc5dfc697e1ba9767f74681a1	2026-01-05T21:48:31Z	chore(deps): update dependency eslint-plugin-jest to v29.12.1 (#1462)
+089e6b444a5d044ea1cc73ed44db604d44d7dfb9	2026-01-02T12:58:08Z	chore(deps): update dependency @swc/core to v1.15.8 (#1461)
+9a8748a640af30005b640bd262e056e6efcb4496	2026-01-02T05:10:36Z	chore(deps): update dependency eslint-plugin-jest to v29.11.2 (#1460)
+8d94d68bc05518d155841d2f69ad5893843ac784	2026-01-01T09:15:30Z	chore(deps): update dependency eslint-plugin-jest to v29.11.1 (#1459)
+1d8e2e5d54e85964b7ccef9f2f39b5bb8dd7be78	2025-12-27T00:50:55Z	chore(deps): update dependency eslint-plugin-jest to v29.11.0 (#1458)
+02d8ec002dbb2bacaca3037c4bdc97b7753b529d	2025-12-26T04:29:47Z	chore(deps): update dependency eslint-plugin-jest to v29.10.1 (#1457)
+f6f99c8c842bd4933a397ee18366b508e49b0662	2025-12-25T08:28:16Z	chore(deps): update dependency eslint-plugin-jest to v29.9.0 (#1456)
+a57dc0d97cc5b0fc4addf757a9ac01616997d06c	2025-12-22T01:40:24Z	fix(deps): update dependency fs-extra to v11.3.3 (#1455)
+b2be02479270362d119a62e6f569f91835c67278	2025-12-21T21:41:11Z	chore(deps): update dependency @swc/core to v1.15.7 (#1454)
+95c3c1fe4a618e86517ab6a7605231c2d416ca3b	2025-12-21T10:16:26Z	chore(deps): update dependency @swc/core to v1.15.6 (#1453)
+11fa7b50558dfbf4675f36ad1522693679bbf7e2	2025-12-18T17:53:02Z	chore(deps): update dependency @swc/core to v1.15.5 (#1452)
+967e43550577ec48f8bc859e51057fd566b874c1	2025-12-17T22:11:06Z	chore(deps): update dependency eslint-plugin-jest to v29.5.0 (#1451)
+26253f6ea74cc857b1b6813b8a2f0255aecb6528	2025-12-17T06:29:50Z	chore(deps): update dependency eslint-plugin-jest to v29.4.0 (#1450)
+bbca7e79d3bf0d5ea80b5ab8cd51a753391cdd95	2025-12-16T17:05:19Z	chore(deps): update dependency @swc/core to v1.15.4 (#1449)
+08f9e743518570f52f5756bc90f36310f9f14e22	2025-12-16T09:30:45Z	chore(deps): update dependency eslint-plugin-jest to v29.2.2 (#1448)
+d816082c8d83856b18de89fc2fbe91be5b757415	2025-12-16T01:11:01Z	chore(deps): update actions/cache action to v5 (#1447)
+977e8027810bc26d4a3c037012f1ef3b51507814	2025-12-07T18:33:26Z	fix(deps): update dependency jsonwebtoken to v9.0.3 (#1446)
+67d734a5c369e566bd424573b04b99e7006302c4	2025-12-06T08:38:12Z	fix(deps): update dependency prettier to v3.7.4 (#1445)
+003ccc5c9ca6eec40e16c43018373c0883f69b3d	2025-12-03T20:48:33-05:00	Merge pull request #1431 from pmcelhaney/snyk-upgrade-721b151985ea31a4e91350d30ad8adea
+576d7413694a83b85e5366d58b5841d64bfa262b	2025-12-03T12:41:46-05:00	Merge pull request #1409 from pmcelhaney/changeset-release/main
+f735d5b11b3aa72e0ea8fff38091a89fe2a35154	2025-12-02T21:54:54Z	fix(deps): update dependency prettier to v3.7.3 (#1444)
+7630685abd2217ccfd8d50983ebd6eb194269b5c	2025-12-02T06:13:30Z	fix(deps): update dependency prettier to v3.7.2 (#1443)
+ea6d2dd5584e34cc9c368ff4c6f49962c388c5cf	2025-11-30T22:42:58Z	chore(deps): update dependency @changesets/cli to v2.29.8 (#1442)
+8b8e9842a816f15eef3bec887d962071818f6a13	2025-11-30T16:58:58Z	fix(deps): update dependency prettier to v3.7.1 (#1441)
+44e3107972e1e22e62208c0dab26260163ec5600	2025-11-29T05:39:23Z	fix(deps): update dependency chokidar to v5 (#1440)
+86fffcc677ba142b9e51323dd04b5265f8599b33	2025-11-27T03:37:27Z	chore(deps): update stryker-js monorepo to v9.4.0 (#1439)
+bde4fe8003348d0b570bb92599a96357d80a3e2e	2025-11-26T21:03:09Z	chore(deps): update dependency eslint-plugin-jest to v29.2.1 (#1438)
+0ae031881f206fe1b411051193e71975399036bf	2025-11-25T21:23:38Z	chore(deps): update dependency @swc/core to v1.15.3 (#1436)
+2d322c14c393e4d64cd0c6606e396c3ce6f21b05	2025-11-25T21:16:53Z	chore(deps): update dependency @types/lodash to v4.17.21 (#1437)
+c2bd27d6f4015428547b4928baaaddf91761ca3d	2025-11-24T01:49:34Z	chore(deps): update dependency eslint-plugin-jest to v29.2.0 (#1435)
+d0067c0e6b5a5b42a9e9c59b0d631a4b45362cd0	2025-11-23T20:31:22Z	chore(deps): update actions/checkout action to v6 (#1434)
+658a7678aaca2459d73bef954fbbaed1eb649505	2025-11-22T22:17:58Z	chore(deps): update dependency rimraf to v6.1.2 (#1433)
+953a6ae97bbe1637b94198a61dffe18232334f20	2025-11-18T10:38:22Z	fix(deps): update dependency open to v11 (#1432)
+b08df1e5b0d9063b8834b2bab669ee09b4a0229f	2025-11-18T09:01:13Z	chore(deps): update dependency @swc/core to v1.15.2 (#1430)
+5dd87387fea6a05e6c669afa6c6aab7df783c1c3	2025-11-14T22:53:03Z	fix(deps): update dependency js-yaml to v4.1.1 [security] (#1428)
+8c226b2939bac99e6ca4f908c941e0b686c04a14	2025-11-14T07:03:21Z	chore(deps): update dependency eslint-plugin-jest to v29.1.0 (#1427)
+3edf04e9983f82404c33d8cb45f1fe802d09896d	2025-11-11T22:15:29Z	chore(deps): update dependency @swc/core to v1.15.1 (#1426)
+dc96c67a68035af757f92b2b2d84c19d7e63d1fa	2025-11-07T10:18:28Z	chore(deps): update dependency @swc/core to v1.15.0 (#1425)
+e227a2fb7e34f4c2af0e790425e9469d06b04ddf	2025-11-03T02:00:36Z	chore(deps): update dependency rimraf to v6.1.0 (#1423)
+4618824db071a97419a8af4dcf8f171608422b3f	2025-11-01T18:15:34Z	chore(deps): update dependency @swc/core to v1.14.0 (#1422)
+1634fb94b53253c9898606d10280d1a17ce70f33	2025-11-01T02:57:24Z	chore(deps): update stryker-js monorepo to v9.3.0 (#1421)
+f8dd2486c1eb572d902af7b6ecf7ad39455335ce	2025-10-28T23:35:23Z	fix(deps): update dependency commander to v14.0.2 (#1420)
+d6adf9bcdb3eba8caf4f53305cad8a244da39e48	2025-10-27T16:55:52Z	chore(deps): update dependency @swc/core to v1.13.21 (#1419)
+b26ea5238051923ec42399084edfe5715c13d681	2025-10-27T11:46:54Z	chore(deps): update dependency @types/koa-bodyparser to v4.3.13 (#1417)
+c2a437307369e56b055b6de5d60b943c598d725b	2025-10-27T11:40:06Z	chore(deps): update dependency @types/koa-proxy to v1.0.8 (#1418)
+032a89c2333dc450f42138d82439e44b648f3f59	2025-10-23T06:09:40Z	chore(deps): update dependency eslint-plugin-unused-imports to v4.3.0 (#1416)
+18868b2323345da9a5b5a4f5c142845e4e1a672c	2025-10-21T22:03:10Z	fix(deps): update dependency koa to v3.0.3 [security] (#1415)
+125c8e26874030aee026e455bb059c5d2f917d67	2025-10-17T04:55:19Z	chore(deps): update actions/setup-node action to v6 (#1414)
+19a6885ee06d6d24e0bbca4c2ebfb807c9baf3c4	2025-10-13T21:52:21Z	chore(deps): update github/codeql-action action to v4 (#1413)
+2c02c55424ec3a93a9dbc05e572ce38a2865da4f	2025-10-11T16:06:16-04:00	Merge pull request #1412 from pmcelhaney/better-example-in-readme
+e50c1e643c395b9cef90e4e65f1eede52b626727	2025-10-09T22:19:39-04:00	Merge pull request #1403 from pmcelhaney/snyk-fix-59ace40fc2a6e40f58ca586b636f4d8c
+e54728fbc8dd10b35e8e7d7a81dae4bd75f5f867	2025-10-07T19:39:57Z	chore(deps): update dependency stryker-cli to v1.1.0 (#1410)
+2f6269f7f3dcabe0dc2cc82b7cb9dabacde3c8d0	2025-10-07T19:32:56Z	chore(deps): update stryker-js monorepo to v9.2.0 (#1411)
+0918e7f4cb2d72430e97539bad3fa54bdbeb5c11	2025-10-04T12:40:25-04:00	Merge pull request #1408 from pmcelhaney/new-readme
+e9046ea9095b847ee0e9341544a0377354233bca	2025-10-04T00:29:17Z	fix(deps): update dependency typescript to v5.9.3 (#1407)
+927e326c8fb9bdaeed770347d2a2fe610a92e8ec	2025-10-02T21:54:44Z	fix(deps): update dependency patch-package to v8.0.1 (#1406)
+ee35930b3e04d74d1577d589444687e295926e7a	2025-10-02T01:49:54Z	chore(deps): update dependency jest to v30.2.0 (#1405)
+a28fa5073d6b8f0942e520c283f169d6bae5f6a1	2025-09-30T09:10:06Z	chore(deps): update dependency @swc/core to v1.13.20 (#1404)
+26a38ea17588d729988040ddb8d206582b8eda18	2025-09-28T13:29:14Z	chore(deps): update dependency @swc/core to v1.13.19 (#1402)
+59ff3c001adfac09f45345f141d7bafeb6ba8602	2025-09-19T14:31:47Z	fix(deps): update dependency koa2-swagger-ui to v5.12.0 (#1401)
+d0faee31e10ea88a01865736919f41a5ba1210ef	2025-09-19T02:03:04Z	fix(deps): update dependency fs-extra to v11.3.2 (#1400)
+f04dbc9757c3e4821352675835d5c216391eeffb	2025-09-17T01:24:32Z	fix(deps): update dependency debug to v4.4.3 (#1399)
+01c722cfe706f1170bfa675952633ce42b2f7968	2025-09-16T09:58:53Z	fix(deps): update dependency commander to v14.0.1 (#1398)
+46e771ba4f6e6aa1b252400d16e68a05d1e86a9b	2025-09-14T08:02:42Z	chore(deps): update dependency @changesets/cli to v2.29.7 (#1397)
+923ed8f5b56b1192c5c7f9ae9659a0d27040f23a	2025-09-10T20:38:40-04:00	Merge pull request #1396 from pmcelhaney/changeset-release/main
+1ebeb61a9fcd2658cbb2c9b224285eebada29020	2025-09-10T20:14:15-04:00	Merge pull request #1395 from pmcelhaney/fix-proxy-encoding
+2cf2666e59f9ed6599b37bad2845a33b03189cfc	2025-09-07T01:41:07Z	chore(deps): update actions/setup-node action to v5 (#1393)
+1d130045f95d547b69dba3ca55a838002fe3a957	2025-09-05T22:07:46Z	chore(deps): update dependency jest to v30.1.3 (#1392)
+0c081caf351ad5c378b1da9a48a54130abf1fe62	2025-09-04T20:17:11-04:00	Merge pull request #1391 from pmcelhaney/changeset-release/main
+f2117da199ce4589da6f9c5babc86bc0b2bed282	2025-09-04T19:21:25-04:00	Merge pull request #1386 from pmcelhaney/fix-colon-in-file-name
+ef323ac278f03178831ebe41f408f242e1ded20a	2025-09-04T17:49:30-04:00	Merge pull request #1390 from pmcelhaney/changeset-release/main
+a2b0774235bb3404e4543925451e2163a2a2e4e8	2025-09-04T17:40:56-04:00	Merge pull request #1389 from pmcelhaney/fix-ssl-issue
+b9eb5b1a393b37c7d994256672895f90279f08e9	2025-09-04T01:17:18Z	chore(deps): update dependency jest to v30.1.2 (#1387)
+939d149f753edcc0c2de10db1afb60c335840231	2025-09-03T14:18:08-04:00	Merge pull request #1385 from pmcelhaney/changeset-release/main
+1865cfc6e5dcf51298db2d9729c848ed374545d2	2025-09-03T14:12:03-04:00	Merge pull request #1384 from pmcelhaney/fix-proxy-with-get
+02ab5da0aee75cbc44fe303ceb691d50ce9ac5d1	2025-09-03T02:28:31Z	chore(deps): update dependency jest to v30.1.1 (#1380)
+372b2e0ddef99de89ade12a095ac787b7aeaa425	2025-09-02T20:39:40Z	chore(deps): update stryker-js monorepo to v9.1.1 (#1383)
+7fd6788667abe6b3492fa0b20788778a11bc2669	2025-09-02T13:00:22Z	chore(deps): update stryker-js monorepo to v9.1.0 (#1382)
+64464964e1d9e624b71f7e7105ab680d583e67d1	2025-08-27T21:38:09Z	chore(deps): update dependency @swc/core to v1.13.5 (#1379)
+99d36bb11643e4961b68cd786f7b9d2420037f74	2025-08-24T12:53:06Z	chore(deps): update dependency @swc/core to v1.13.4 (#1378)
+578926af81417ec01a9b252b893eb77e6f4663c9	2025-08-24T06:26:34Z	chore(deps): update dependency eslint-plugin-unused-imports to v4.2.0 (#1377)
+c2a8412950fe9bdba62a5f1665218071dbf4f6b0	2025-08-21T03:01:53Z	chore(deps): pin dependency tsd to 0.33.0 (#1376)
+1c9e0a080fc2ceeb90a17ec908cb5961c79f7bb2	2025-08-20T19:14:01-04:00	Merge pull request #1375 from pmcelhaney/changeset-release/main
+51890d4ce7513d0840c6895915b8f36db27662a1	2025-08-20T16:26:25-04:00	Merge pull request #1374 from pmcelhaney/release-content-type-fix
+efe8c3e6c57b8240ba89873f7e0f1aaceba048fb	2025-08-20T13:58:08-04:00	Merge pull request #1372 from ihor-rud/main
+d4c631a3be5246d5c52918ec45744539abcf5b81	2025-08-19T22:58:38Z	chore(deps): update dependency @changesets/cli to v2.29.6 (#1373)
+0752efd7e88bf5b0f4d4373ee4f6bf7d721635e4	2025-08-14T18:36:46Z	chore(deps): update actions/checkout action to v5 (#1371)
+5e994bfb1ca382897ab817fc5f11e1a5a72ad167	2025-08-09T17:37:17Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.4 (#1369)
+eb59e215c56b4602c63b7e5adebfc31bf6d506fd	2025-08-09T05:07:24Z	chore(deps): update dependency eslint-config-hardcore to v49 (#1368)
+c64b2dfbc1c722764f430a2a6b0e4e412a2d5339	2025-08-08T21:00:25Z	fix(deps): update dependency fs-extra to v11.3.1 (#1367)
+7bbbfcee6f1d8470152fc98e570ba5121bb8d537	2025-08-08T00:58:41Z	chore(deps): update dependency eslint-config-hardcore to v48 (#1366)
+c5a86bc62f2ca330f681ccefbcee84593d986de5	2025-08-04T00:40:25Z	fix(deps): update dependency typescript to v5.9.2 (#1365)
+46ce048e1f00c4246d70152ef563dfa59d5313b4	2025-08-01T11:53:09Z	chore(deps): update dependency @swc/core to v1.13.3 (#1363)
+517d06aa9ae84ac6aa32d922a680f6e8df43437e	2025-07-30T20:34:40Z	chore(deps): update dependency @testing-library/dom to v10.4.1 (#1362)
+ee3064632089d2fe536b1d24637c9c5e74a0848e	2025-07-28T22:58:20Z	fix(deps): update dependency koa to v3.0.1 [security] (#1361)
+1728145074c0e91163820ac3aa2db36782c4a27b	2025-07-26T10:35:03Z	chore(deps): update dependency supertest to v7.1.4 (#1360)
+4488e9d916c6e55c8cd3cfc6044200f0f9947e04	2025-07-26T05:35:54Z	chore(deps): update dependency @swc/core to v1.13.2 (#1359)
+c6546e86681380066b644ff10d0129184f13f0fd	2025-07-25T08:36:36Z	chore(deps): update dependency jest to v30.0.5 (#1358)
+660e2e204519fcccd5a6c97bffbc1615c82b15f9	2025-07-23T01:54:06Z	chore(deps): update dependency @swc/core to v1.13.1 (#1357)
+4936e538a8db931fe58b2d8e376c8abfa74bf659	2025-07-22T03:40:54Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.3 (#1355)
+1913fd34250ff627429c39e14fc2d2f49eeb44e9	2025-07-21T04:35:09Z	chore(deps): update dependency @swc/core to v1.13.0 (#1354)
+5ddc8ba881f2d1b3e2d356e3fa9832147e0ae0c2	2025-07-18T04:30:25Z	fix(deps): update dependency open to v10.2.0 (#1353)
+1a1931efda93ffd8dde37582f2693f3a7463388c	2025-07-17T17:52:26Z	chore(deps): update dependency @swc/core to v1.12.14 (#1352)
+bec11a7364f7ea116c00affa15c3979aadac7cea	2025-07-12T14:09:38Z	chore(deps): update dependency @swc/jest to v0.2.39 (#1351)
+77d51c20bb570e4f6d080783ba1e593b2fca0574	2025-07-11T14:42:27Z	chore(deps): update dependency @swc/core to v1.12.11 (#1350)
+ca70c1abdd06b376d61ac51d816b7ecc3deec8e4	2025-07-11T06:54:16Z	chore(deps): update dependency supertest to v7.1.3 (#1349)
+dab8cf826eb1d252457e5d52390004156bb5f4e7	2025-07-10T22:48:41Z	chore(deps): update dependency supertest to v7.1.2 (#1348)
+feeecd4fea1ae44704e942c5d159e9f653b28831	2025-07-06T06:33:44Z	chore(deps): update dependency jest to v30.0.4 (#1347)
+f98435db82b960a9c8a26160039aa3a22cb27e02	2025-07-05T01:43:43Z	chore(deps): update dependency @types/lodash to v4.17.20 (#1346)
+1126d44d4b61af908fc7006f86d81c08ed966b0d	2025-07-04T16:46:43Z	chore(deps): update dependency @swc/core to v1.12.9 (#1345)
+9d91215fe7097c0940757b33d2dc3dda77bb6ed5	2025-06-30T13:52:05Z	fix(deps): update dependency prettier to v3.6.2 (#1343)
+3487975fee12490dc3eb22f95af07455d9853902	2025-06-29T16:48:43Z	chore(deps): update dependency @swc/core to v1.12.7 (#1342)
+8fef8f5cdcc59ab3a220c074e4a10d76b64175d6	2025-06-29T10:40:01Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.4 (#1341)
+a1a8dd84f20246c2d2cece4184f28b5e7145b517	2025-06-29T06:28:20Z	chore(deps): update dependency @types/lodash to v4.17.19 (#1340)
+36bdf0852be9bc94bfe94a5a098748956225c896	2025-06-28T21:00:45Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.1 (#1339)
+8bfb8c0f0bc6482ce66cb425229a1be9bc08ae34	2025-06-28T12:52:24Z	fix(deps): update dependency prettier to v3.6.1 (#1338)
+1357eed7d4ea25d63d9a51f4cc58fee167c54d09	2025-06-28T06:45:59Z	chore(deps): update dependency jest to v30.0.3 (#1337)
+5c200451449af71d0cc0fef49c221107b6b19d0b	2025-06-27T05:31:54Z	chore(deps): update dependency @swc/core to v1.12.6 (#1336)
+34e0b13a257c414592f0e097b8a839a9e6288c42	2025-06-26T08:12:54Z	fix(deps): update dependency prettier to v3.6.0 (#1335)
+891f3df3865ae7a2a58360c1824c2ddddb78581e	2025-06-24T17:12:02Z	chore(deps): update dependency @swc/core to v1.12.5 (#1334)
+75f4e6485b9a5599e11dab6c0c32ef299ad71852	2025-06-24T05:09:20Z	chore(deps): update dependency eslint-plugin-import to v2.32.0 (#1333)
+8fb2bd08ae50ca444b47bcdd91c4bdaf65f6f0dd	2025-06-23T22:06:46Z	chore(deps): update dependency @swc/core to v1.12.4 (#1332)
+3012e9a5c5c052332cdece37adbeab49579d28ad	2025-06-23T16:39:23Z	chore(deps): update dependency @changesets/cli to v2.29.5 (#1331)
+cfb67d7b0ee2d1de9eb733fd0377b93332897a2a	2025-06-22T22:14:15Z	chore(deps): update dependency jest to v30.0.2 (#1330)
+591f492774210fcbc9494c5a1f89ac78526fccd0	2025-06-22T15:04:25Z	chore(deps): update dependency @swc/core to v1.12.3 (#1329)
+a5dfae43e417a6272f06142b80b1dd94bcafb58d	2025-06-22T05:58:33Z	chore(deps): update dependency jest to v30.0.1 (#1328)
+cff1fa69d817e269ae39af17e2bb4d1ebeeb283d	2025-06-22T01:59:28Z	chore(deps): update dependency eslint-plugin-jest to v29.0.1 (#1327)
+d4b9b9de0bd9c059dcb5dd6a834d04ac7a205647	2025-06-21T14:18:03Z	chore(deps): update dependency eslint-plugin-jest to v29 (#1326)
+715d58b8c1c931189840e5cf52a7e9c3ef5201f6	2025-06-21T10:45:56Z	chore(deps): update dependency @types/lodash to v4.17.18 (#1325)
+9572522c79295be5924015b4667e4eb1eded4e3d	2025-06-20T19:39:02Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.0 (#1324)
+09ea5c5b2444bb5c41903c97e5ef5b62c9da8043	2025-06-20T11:54:51-04:00	Merge pull request #1323 from pmcelhaney/changeset-release/main
+8527745ffac3c1b5742ee242515fdc679aa6739c	2025-06-20T11:42:58-04:00	Merge pull request #1322 from pmcelhaney/cli-build-cache-option
+1bb5793f1871ea924ea60a5c2c47996e068ed17f	2025-06-19T16:03:39Z	chore(deps): update dependency @types/jest to v30 (#1320)
+26152e54d74fdee6137acaafcbf5f38decaadafe	2025-06-18T22:18:59Z	chore(deps): update dependency eslint-plugin-jest to v28.14.0 (#1319)
+9b0ee47ca39a7938ec7d9a6c7f14835867629cb5	2025-06-16T11:04:29Z	chore(deps): update dependency eslint-plugin-jest to v28.13.5 (#1317)
+f8867ef18dde4ae9ff08cc8f8b8091a5a4711ef0	2025-06-16T02:40:48Z	chore(deps): update dependency @swc/core to v1.12.1 (#1315)
+1370a20dd8854969b5ef9852715cf91494eddf62	2025-06-15T21:59:30Z	chore(deps): update dependency jest to v30 (#1316)
+e4727926f9c657d229746a9353cdee7dd3bd1dbf	2025-06-15T15:02:44Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v13.0.5 (#1314)
+f12b696db0815598d683d1b7e294d9b88cdfadb1	2025-06-15T09:30:05Z	chore(deps): update dependency eslint-plugin-jest to v28.13.3 (#1313)
+0c27d90f52802989e46d910ccf388376694fdfb7	2025-06-11T23:32:37Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v13.0.4 (#1312)
+67ce4d6bddc6706d8ba7d6eaad894e9937e1c734	2025-06-10T07:35:56Z	chore(deps): update dependency eslint-plugin-jest to v28.13.0 (#1310)
+8a87a858251bec6d79bac727b14d1cff0c0d8e44	2025-06-10T01:49:09Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v13.0.3 (#1309)
+d478c2aee77419dc9fb67d2dffec68d1e99d50cb	2025-06-09T01:04:33Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.3 (#1307)
+3eb63967f711797abf415f72e8f7147de9b5d595	2025-06-08T13:06:40Z	chore(deps): update dependency @swc/core to v1.11.31 (#1306)
+1c39a3afa1c28a7a3421ddcd001dad17d7efb800	2025-06-07T03:02:58Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v13 (#1305)
+96c2440d9b2a0c8e7a7d9c7d244daa5a16c05dee	2025-06-05T11:24:21-04:00	Merge pull request #1297 from pmcelhaney/changeset-release/main
+03bbce525f485b4afc41ad3b724ff6c1a39a741f	2025-06-04T17:53:57-04:00	Merge pull request #1303 from pmcelhaney/msw-handler-functions
+f61a2ee7c3576b97afd6aaf594fa53bd61974a84	2025-06-04T02:38:15Z	chore(deps): update dependency eslint to v9.28.0 (#1301)
+6e3af41e7ad8f50e1525a6f1c508416d1a936527	2025-06-04T02:30:24Z	chore(deps): update dependency eslint-plugin-jest to v28.12.0 (#1302)
+a5fa9a15149100c41dddbeacba7383460ee664b8	2025-06-03T22:01:55Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.2 (#1299)
+ff702512491bf45eb0f7eed420a92ac3c550b6f0	2025-06-03T21:55:36Z	chore(deps): update dependency eslint-plugin-prettier to v5.4.1 (#1300)
+249a67da8914a6de84e3f841066a7f84c77f78c9	2025-05-31T05:58:21Z	chore(deps): update dependency eslint-plugin-jest to v28.11.1 (#1298)
+3f0731573a513676977476bdb12efc0caa7723dd	2025-05-30T09:12:19-04:00	Merge pull request #1296 from pmcelhaney/module-tree-case-fix
+127ba3dd663ffafc9abfe9f5ff2bc4a3c0ec3904	2025-05-29T09:53:54Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.1 (#1295)
+0f7bdb5c6869016b076b9e3136b27dede8afd2e2	2025-05-28T17:06:38Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.0 (#1294)
+2065f6a4ebde91ad733d273cfbc581d073050f53	2025-05-24T23:12:38Z	chore(deps): update dependency @swc/core to v1.11.29 (#1293)
+b50f2b6e01d2ecf0af110fe2ff5af966e70f5ce7	2025-05-23T23:58:49Z	chore(deps): update dependency @types/lodash to v4.17.17 (#1292)
+c4ddb6993222d5860ee55d558daefd452111e664	2025-05-21T17:30:13Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.3.5 (#1290)
+71cb267e16730c72903ac30215614d01811b4c00	2025-05-21T11:11:50Z	fix(deps): update dependency commander to v14 (#1291)
+60265c41ba999ff97e2c1e820da3678c62eab7fe	2025-05-20T01:45:00Z	chore(deps): update dependency eslint to v9.27.0 (#1289)
+7d7811e1d2ee6ee94474a7311a902dff212a2286	2025-05-17T15:22:21Z	chore(deps): update stryker-js monorepo to v9.0.1 (#1288)
+0041b310ec6fd07ef5083eb35c8ee71a4999910f	2025-05-17T01:41:00Z	fix(deps): update dependency debug to v4.4.1 (#1287)
+ab4fb859c0f1e8e96b7f030b4cc773108ae37be5	2025-05-16T19:51:49Z	chore(deps): update stryker-js monorepo to v9 (major) (#1286)
+1763270e4eb3d92b4286c3df7d3270b9d6bcd7d5	2025-05-16T05:51:54Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v12.0.2 (#1285)
+50df32d1781e93568c80ae76c3a12332b0d64d21	2025-05-16T02:39:45Z	chore(deps): update dependency @changesets/cli to v2.29.4 (#1284)
+4bd1829f23c625be1bb2c2049f95fa782343cb74	2025-05-15T16:34:35Z	chore(deps): update dependency supertest to v7.1.1 (#1283)
+ac3db45048235f4b53937fa07b9ee48d9b100581	2025-05-09T03:13:00Z	chore(deps): update dependency eslint-plugin-prettier to v5.4.0 (#1282)
+b9a56899b87c07e93a174369c5d37e63e1b14934	2025-05-08T15:59:05Z	chore(deps): update dependency @changesets/cli to v2.29.3 (#1281)
+f5df80ff15f7a0a6919b9c5b387a344f0858d248	2025-05-07T17:59:01Z	chore(deps): update dependency eslint-plugin-prettier to v5.3.1 (#1280)
+b2ea44cf4d279dd85af6c53d8c5551c7ac240d38	2025-05-06T05:56:22Z	chore(deps): update dependency eslint to v9.26.0 (#1279)
+784f8bd1be2107498b460bf5a11becdfdf3f31f6	2025-05-06T03:01:34Z	chore(deps): update dependency node-mocks-http to v1.17.2 (#1278)
+e7aba0b4152882e1a4af3b9cec8c66231488ccb1	2025-05-05T02:47:51Z	chore(deps): update dependency node-mocks-http to v1.17.1 (#1277)
+2bfafedcef73b55c467084009d4a0090c1ce60df	2025-05-04T14:12:15Z	fix(deps): update dependency open to v10.1.2 (#1276)
+43215551f57b724de3bf4d05e436c01aca3571c5	2025-05-03T01:45:29Z	chore(deps): update dependency @swc/core to v1.11.24 (#1275)
+3e5fae25fdb19413b6b1b884884c308493ac0204	2025-05-01T08:10:01Z	fix(deps): update dependency koa to v3 (#1274)
+531ef67fd055b37a26cde7bd3adca6b8310eed0a	2025-04-30T22:01:39Z	chore(deps): update dependency node-mocks-http to v1.17.0 (#1273)
+f760bf0810d8bd1dfb3b8401636e7b3428956145	2025-04-26T23:17:04Z	chore(deps): update swc monorepo (#1272)
+aac6575183feb524fd521dc15924df8a7d06fb76	2025-04-25T06:17:46Z	chore(deps): update dependency eslint to v9.25.1 (#1271)
+0a68e2843ce169a279eb42844f46e799e55af1b3	2025-04-24T20:55:19Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.3.4 (#1270)
+7c68fc9bd5f026bf020c46e84fd90929082f5502	2025-04-23T06:48:54Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.3.3 (#1269)
+6d4e79b1572595e336bb5653f7ef521c028fac09	2025-04-22T21:32:54-04:00	Merge pull request #1268 from pmcelhaney/changeset-release/main
+083fd3f7c0bfd4d113d7c409241e595c5077ea1f	2025-04-22T21:24:40-04:00	Merge pull request #1267 from pmcelhaney/middleware-release
+f1250794e28fffdaa93373952b65781d939a99fb	2025-04-22T02:43:25Z	chore(deps): update dependency eslint to v9.25.0 (#1266)
+a8b0277bb688ae881371a89c702f855e18c3fc17	2025-04-20T01:51:31Z	chore(deps): update dependency @changesets/cli to v2.29.2 (#1265)
+8d7ac917c4bf46b0e2ec25e6fbdafa170c1cc3b3	2025-04-18T22:49:07Z	chore(deps): update dependency @changesets/cli to v2.29.1 (#1264)
+a0738e03e7a791ee29a05b54ab3933f3b8653193	2025-04-18T15:20:40Z	fix(deps): update dependency open to v10.1.1 (#1263)
+fc1cad576717335e72a887c2b6d5ba702b0b0c32	2025-04-17T19:41:51Z	chore(deps): update dependency @changesets/cli to v2.29.0 (#1262)
+77cd63870bd71f2edbb6b7ffa2a40b48c97cedb3	2025-04-17T12:01:28Z	chore(deps): update dependency @swc/core to v1.11.21 (#1261)
+70984a18a8d381c955dbb5dda61dff56e2979673	2025-04-15T06:36:37Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v12 (#1260)
+4d4b4fe02e16df0a09a1418df37efe05ac4f7bd8	2025-04-14T11:40:21Z	chore(deps): update dependency @swc/core to v1.11.20 (#1259)
+362a4bb27ad7ac88d670ef424a9b0116e737f1dc	2025-04-11T05:58:23Z	fix(deps): update dependency json-schema-faker to v0.5.9 (#1258)
+d4fe14a790a3656a213c1696c688bba564d6e1dd	2025-04-10T16:07:12Z	chore(deps): update dependency @swc/core to v1.11.18 (#1256)
+2d5e8656dd8fb018154bcfefd4ea8c936f83ab83	2025-04-10T11:19:18Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.3.2 (#1257)
+bdbf2b3ef32b00b11d85a2c62009d780a8c01ab1	2025-04-09T17:00:18Z	fix(deps): update dependency koa to v2.16.1 [security] (#1255)
+bcfb514b1c4d0850c3ba90bc85d02d44cc987efe	2025-04-08T06:06:26Z	fix(deps): update dependency typescript to v5.8.3 (#1254)
+d4780f2342397eea99a80deca3173e4e46fafef7	2025-04-07T22:19:15Z	chore(deps): update dependency eslint to v9.24.0 (#1253)
+2d356386312772f4dcaf46d518a1801abbea33c3	2025-04-05T22:19:38Z	chore(deps): update dependency eslint-plugin-prettier to v5.2.6 (#1252)
+087ab6a5c31d140bbc0df092ed13163a69e7da2d	2025-04-04T17:57:00Z	chore(deps): update dependency @swc/core to v1.11.16 (#1251)
+8a9e06bfaeda52dfc093c77cdb5ec6d1beda1120	2025-04-01T22:48:52Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.3.1 (#1250)
+77b0f546c0f5a33b9b46f01ff506b60b818736c3	2025-03-31T23:40:24Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.7 (#1249)
+000d1ef436364d99c6087a18d5e369e34a8c820f	2025-03-30T03:08:05Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.5 (#1248)
+92d9ac3eb05a79816600a92ff49d4c89c61628c7	2025-03-29T09:41:41Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.4 (#1247)
+06c65e0617a7a5f4317d2316ef9c177a660be6e3	2025-03-28T23:17:56Z	chore(deps): update dependency eslint-plugin-prettier to v5.2.5 (#1246)
+d24d6b0dadd4212b00288dbabbd4b9039c3278cb	2025-03-28T19:05:31Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.3 (#1245)
+c2b1998419054ba0a557901a8548031eb390845d	2025-03-27T15:16:55Z	chore(deps): update dependency @swc/core to v1.11.13 (#1243)
+f79dc95fe266cc6dd40ec986c1d8bc947926eaad	2025-03-27T08:02:42Z	chore(deps): update dependency eslint-plugin-prettier to v5.2.4 (#1242)
+1fb0e3a2b5b55270d4f23f2a1058310809168db2	2025-03-26T22:01:33Z	chore(deps): update dependency @swc/core to v1.11.12 (#1241)
+cac1e82c7673532580cf8b2925821b53ebd4b93a	2025-03-25T20:02:59-04:00	Merge pull request #1240 from pmcelhaney/interceptors
+3a6171421a1e89b077669ff1ff29505653d26f19	2025-03-25T19:47:06-04:00	Merge pull request #1239 from pmcelhaney/interceptors
+b1f147c771cd24778d8ef488546be26b56babd4a	2025-03-25T02:10:44Z	chore(deps): update dependency eslint to v9.23.0 (#1237)
+16b654b38ba11fdc9c8c5dfd1e14aee6dc252a40	2025-03-23T22:16:38Z	chore(deps): update dependency supertest to v7.1.0 (#1236)
+528351955fa7b86b1b648311afb2d67bc9992b7a	2025-03-22T05:41:38Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.2 (#1235)
+211c5097651038b7929f01cbf61e985f19edc742	2025-03-21T15:18:51Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.1 (#1234)
+acf2f565ed0720651779cb37cad56a21c8049af9	2025-03-21T02:23:24Z	chore(deps): update dependency @swc/core to v1.11.11 (#1232)
+f0045f8e11116092f563338901f63879e5478538	2025-03-20T22:16:33Z	chore(deps): update dependency eslint-plugin-file-progress to v3.0.2 (#1233)
+c416c1d48023b9d1c982674c72174b1dd20be36d	2025-03-20T15:21:56Z	chore(deps): update dependency @swc/core to v1.11.10 (#1231)
+2759267894ced343942c751b341f0d88921b1d59	2025-03-20T06:10:44Z	chore(deps): update dependency eslint-import-resolver-typescript to v4 (#1230)
+492d03388e66e77336de9b1c0ff0866de77a0f30	2025-03-19T16:20:18Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.9.1 (#1229)
+5c73d320da8ca637efdcc17f58aabcb141ffec89	2025-03-18T11:19:33Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.9.0 (#1228)
+b40517c9d7714a1a82602e852b914a1db6557a96	2025-03-16T18:48:02Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.7 (#1227)
+3c26d151b89c712c31d5e3bbe9d5beea4c55634f	2025-03-15T18:14:36Z	chore(deps): update dependency @swc/core to v1.11.9 (#1226)
+4290d39e7c4ca821b29c001415dc081b5a7e6294	2025-03-15T02:31:46Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.5 (#1225)
+651883daaf8d2597c90163bac97550095f525757	2025-03-14T02:04:52Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.4 (#1224)
+d57b50a93eabd29c37d38763f5850d0679edbea6	2025-03-11T05:37:55Z	chore(deps): update dependency eslint to v9.22.0 (#1223)
+66d68a7ddcd6f0a9354146bb13d1aedb1c486dc3	2025-03-10T22:44:49Z	chore(deps): update dependency @swc/core to v1.11.8 (#1222)
+91affcdd555a4d14c1a7b9c0d1742a4c3de69a04	2025-03-08T01:42:03Z	chore(deps): update dependency @swc/core to v1.11.7 (#1221)
+6b9b6030ed9182468743892bb8508c337de060c0	2025-03-07T18:06:04Z	fix(deps): update dependency recast to v0.23.11 (#1219)
+f03098dabff14f4879ee19b038a086655105d479	2025-03-07T15:40:15Z	chore(deps): update dependency @swc/core to v1.11.6 (#1220)
+29cfc0203fb53cd7003a1be25407c8fda6ce4701	2025-03-06T05:52:33Z	fix(deps): update dependency prettier to v3.5.3 (#1218)
+afa7a641f71723ab2189ec6d3b3f5e8691c4a109	2025-03-04T16:35:27Z	chore(deps): update dependency @types/lodash to v4.17.16 (#1217)
+c709f60a95f5844874142382d558e96fdde8044e	2025-03-04T06:13:40Z	chore(deps): update dependency @swc/core to v1.11.5 (#1215)
+49ee1884f9a674cdd9473b5c59017a44fc6c0d1b	2025-03-04T02:08:25Z	fix(deps): update dependency typescript to v5.8.2 (#1216)
+3951e37da0165633b876f3a83450c2238612f944	2025-03-03T07:12:53Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.9.3 (#1214)
+93b95bcfd0c7cbd2cafbcd0b858b1e49e14a6b38	2025-03-02T22:32:23Z	chore(deps): update dependency @swc/core to v1.11.4 (#1213)
+b32bc4604da308a8bbf639f985c17e900bc7cf13	2025-03-02T13:45:59Z	fix(deps): update dependency koa to v2.16.0 (#1212)
+3ffc7d1fc10c4296aca90b6127057b3d0ab97846	2025-03-02T06:50:05Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.9.2 (#1211)
+348f55c6d368f1333886f118e1653eda5bee4f59	2025-03-01T22:44:27Z	fix(deps): update dependency recast to v0.23.10 (#1210)
+95d9fd1adf12daeb731585844a4289cb8e7783a1	2025-02-28T11:33:50Z	chore(deps): update dependency @swc/core to v1.11.1 (#1209)
+ee1d9133e04d865d7dd863e5df747593dc154629	2025-02-25T13:30:14Z	fix(deps): update dependency prettier to v3.5.2 (#1208)
+64b8085317a8191fbb40ee200b38405f1df80093	2025-02-25T02:30:54Z	chore(deps): update dependency eslint to v9.21.0 (#1207)
+e6318bd80a6c518889caa46598971ae65ce61ec7	2025-02-23T21:51:50Z	chore(deps): update dependency @changesets/cli to v2.28.1 (#1205)
+65131ab0a55ffa9182251d6bc23220eb3fbfb8f5	2025-02-23T18:28:44Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.3 (#1206)
+d0bd0d52aadd346600b5cbfb8a2f5ab2b1895d58	2025-02-22T14:01:00Z	chore(deps): update dependency @swc/core to v1.10.18 (#1204)
+b9936dcc0cd298a446b441f985850c5a30d500a2	2025-02-21T23:34:03Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.2 (#1203)
+1abd8538797cdaa123684b98aeb61889498b5151	2025-02-21T10:50:47Z	chore(deps): update dependency @swc/core to v1.10.17 (#1202)
+1220732fed5cbadd64420454a21919304fec5e7d	2025-02-21T02:14:29Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.1 (#1201)
+e5301438076c1a76d417795abadbf1bc4794eebc	2025-02-20T16:39:21Z	chore(deps): update dependency @changesets/cli to v2.28.0 (#1200)
+153e547fb309b7cee8d59272d6d1ccec8e6846c7	2025-02-17T15:47:30Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.0 (#1199)
+6ace8bafe79896469447921a66b046bcc519fb54	2025-02-16T23:09:17Z	fix(deps): update dependency prettier to v3.5.1 (#1198)
+4cc2c71a14a2daf44bd6dcccaef4aa8d8ca240aa	2025-02-16T11:01:45Z	chore(deps): update dependency @swc/core to v1.10.16 (#1197)
+ce8f696a6f71fabf21f968b7cd294b03644b5f7e	2025-02-16T02:51:56Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.9.1 (#1196)
+d47cb5fd412b32910718fa9099b04e8124300c40	2025-02-14T21:51:45Z	chore(deps): update dependency eslint to v9.20.1 (#1195)
+13be8c8641635f37bb3e9bf5b12415de53497af3	2025-02-12T23:14:48Z	fix(deps): update dependency koa to v2.15.4 [security] (#1194)
+14a587c7f20d37d898568d73a5a6bd69342a79e8	2025-02-12T15:21:18Z	fix(deps): update dependency prettier to v3.5.0 (#1192)
+66d28f788276e41ade46a962085eecc38fd1b488	2025-02-11T10:08:36Z	chore(deps): update dependency @swc/core to v1.10.15 (#1191)
+244477c79b30381e92da7fcf138b744a09749085	2025-02-11T02:07:53Z	chore(deps): update dependency eslint to v9.20.0 (#1190)
+7ff76e65aef29eff0d9c92f03f9814dce896d7d0	2025-02-09T20:39:43Z	fix(deps): update dependency precinct to v12.2.0 (#1189)
+75128a1c467928f069a83269a39955130fe8c77a	2025-02-09T14:04:30-05:00	Merge pull request #1188 from pmcelhaney/changeset-release/main
+09d34d8ff44a75835ddcb682b569c74765724f73	2025-02-09T12:00:30-05:00	Merge pull request #1187 from pmcelhaney/always_fake_optionals
+b45f0cb1b3c354e0730f14f139f7983b713493eb	2025-02-07T04:42:11Z	chore(deps): update dependency @swc/core to v1.10.14 (#1186)
+938a1dd0409d7b936e7a5093c0e22844f4612302	2025-02-04T17:05:20Z	fix(deps): update dependency precinct to v12.1.3 (#1184)
+f9594ab29196ddb0df6b4362815adde0a9182e5e	2025-02-02T12:33:43Z	chore(deps): update dependency @swc/core to v1.10.12 (#1183)
+54d8e8893f3d4325c96a2416d74cf27e71edb438	2025-02-02T07:11:36Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.9.0 (#1182)
+0b5722b88601ed4c8118b4f28ce54d54cb7a4e94	2025-01-31T21:14:29Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.8.2 (#1181)
+7fde35d7f2f99f1cf43e45ab061dd70bf320d095	2025-01-31T13:07:53Z	chore(deps): update dependency @types/lodash to v4.17.15 (#1180)
+5793684345a859acdea8c10fd02a3e3452c83954	2025-01-30T17:41:23Z	chore(deps): update dependency @swc/core to v1.10.11 (#1179)
+b64853a99cde3cbc201dc5c3e421b7758fe2d852	2025-01-28T21:27:21Z	chore(deps): update coverallsapp/github-action action to v2.3.6 (#1178)
+dabcb64ff4c1211678a5b8f7c1fc1a46defa37b7	2025-01-28T06:02:58Z	chore(deps): update dependency eslint to v9.19.0 (#1177)
+bcb329e215ebb04903bbdbc491836442bdf8a594	2025-01-28T00:52:51Z	chore(deps): update coverallsapp/github-action action to v2.3.5 (#1176)
+854b5b59bd114feeb855772bfc2de9b7c2f6f248	2025-01-27T14:00:53Z	chore(deps): update dependency @changesets/cli to v2.27.12 (#1175)
+916b2d4b6d8eba67da451ce3b198e02c73314de5	2025-01-24T22:10:35Z	chore(deps): update dependency @swc/core to v1.10.9 (#1174)
+41be5274a7e19970780e28ece320c57076a8651f	2025-01-24T05:28:01Z	fix(deps): update dependency commander to v13.1.0 (#1173)
+7d1adb836efb493d42a641001ee8857e3c41eaef	2025-01-22T13:39:41Z	chore(deps): update dependency @swc/core to v1.10.8 (#1172)
+dcfb3abf955f0568bd58516ba60d83b5a56500a9	2025-01-22T05:12:43Z	chore(deps): update dependency eslint-plugin-prettier to v5.2.3 (#1171)
+278dcbd48c310666c6a80982c829202bf9efb4a9	2025-01-18T16:28:05-05:00	Merge pull request #1167 from pmcelhaney/changeset-release/main
+6276150f505c66af286b05aa38d355c2378298de	2025-01-18T19:22:49Z	fix(deps): update dependency fs-extra to v11.3.0 (#1169)
+69a554c02a448bea004ccb5f6c2471b17c89f7e9	2025-01-18T13:27:23-05:00	Merge pull request #1168 from pmcelhaney/remove-flaky-test
+122f740f98054dd20983e48cdf7a11d674e8918c	2025-01-18T13:19:27-05:00	Merge pull request #1166 from pmcelhaney/1083-url-encoding
+3b0bab4442db668db1a8d940720476f05954531b	2025-01-18T12:54:16-05:00	Merge pull request #1165 from pmcelhaney/dereference-parameters
+c1371f96a93e7315eab2b1d6bc5061b9b9f0b6cf	2025-01-18T12:46:13Z	chore(deps): update dependency eslint-plugin-prettier to v5.2.2 (#1164)
+6635245c93fe02df3c8f04f0fc2f3950cba6ebb2	2025-01-18T05:12:22Z	chore(deps): update dependency eslint-plugin-jest to v28.11.0 (#1163)
+e1b3d850f36b193d8ceb69947b1c167f88872d17	2025-01-17T22:21:30-05:00	Merge pull request #1162 from pmcelhaney/changeset-release/main
+edf757d166b470dd0d08aebaab4c278d1680c9f1	2025-01-17T14:24:36-05:00	Merge pull request #1161 from pmcelhaney/header-should-be-headers
+b4185baed8cb0edee50c3f2efb5e8bfc5c2949f2	2025-01-15T02:40:13Z	chore(deps): update dependency eslint to v9.18.0 (#1159)
+8862c237b81f23ae744751ffddceb83b74d10dd3	2025-01-14T14:34:07Z	chore(deps): update dependency @swc/core to v1.10.7 (#1158)
+714f83fc97e75d2774c1c0f6b1992ffca0bef5e0	2025-01-12T06:18:02Z	chore(deps): update dependency @swc/core to v1.10.6 (#1156)
+4d0ac670bcf10d569737e805826f83b071d06aea	2025-01-12T02:27:11Z	fix(deps): update dependency typescript to v5.7.3 (#1157)
+d28898d678d467ce7006e687a7057c70485e5786	2025-01-07T09:22:21Z	chore(deps): update dependency @swc/core to v1.10.4 (#1153)
+04a89496b15699d317dbe810cf4be03ebf7db249	2025-01-07T04:39:59Z	fix(deps): update dependency commander to v13 (#1154)
+2b96b4ffabfc7a0af1fd921f72a83f1a10d1af8a	2025-01-07T00:55:34Z	chore(deps): update dependency @types/lodash to v4.17.14 (#1155)
+fcd2a7a22c6593b8300b331098c306bb74c59d9e	2025-01-02T12:58:26-05:00	Merge pull request #1142 from pmcelhaney/changeset-release/main
+37f99dc294801e0db3511f2aea6aad476888fa77	2025-01-01T18:40:01-05:00	Merge pull request #1152 from pmcelhaney/remove-unused-package
+c75f994affe8e1024e8a155a7aaa28aa68bff187	2025-01-01T18:31:42-05:00	Merge pull request #1106 from pmcelhaney/snyk-fix-9e50a5ddc14139af679471e14dcd3fe6
+0b92dad8da5939ebdddd1fc13aafa6cfb1fa32dc	2025-01-01T18:22:48-05:00	Merge pull request #1140 from pmcelhaney/remove-nodemon
+a57f82c13f0edee3d7a9259ae12107c47bbfbc0c	2025-01-01T15:39:26-05:00	Merge pull request #1150 from pmcelhaney/upgrade-jsonpath-plus
+2efc1a87efcd83f4899bef27178b16317f5a8978	2025-01-01T20:30:10Z	chore(deps): pin dependency jest-retries to 1.0.1 (#1149)
+fcfb2ea93156146b7c5527fe180b5c750b77af5d	2025-01-01T15:23:52-05:00	Merge pull request #1148 from pmcelhaney/jest-retries
+9ce28fcd76970eda5930826e074a24afec39b68c	2025-01-01T15:07:57-05:00	Merge pull request #1147 from pmcelhaney/clean-up-1139
+943e89f5994fbdefbcdfcdf9a2fd74a3dc67c490	2024-12-30T22:38:29Z	chore(deps): update dependency @swc/core to v1.10.3 (#1146)
+2338faa51edfb10433008c90784bc4cea8c1d28e	2024-12-29T18:46:26Z	chore(deps): update dependency @swc/core to v1.10.2 (#1145)
+1a34da00230b31225b13865cba769459f5f28e43	2024-12-23T22:49:46Z	chore(deps): update dependency eslint-plugin-jest to v28.10.0 (#1138)
+6d405c2a695f7403c7e9004484822dde3ca0656d	2024-12-23T22:39:13Z	chore(deps): update dependency node-mocks-http to v1.16.2 (#1132)
+c3b9b18c6cb203b28a0671e9f8efe4fb1219efd6	2024-12-23T22:33:38Z	chore(deps): update dependency nodemon to v3.1.9 (#1134)
+54695ac6a15a38afc4bb404e1b1fe08cf058f6f5	2024-12-23T17:28:02-05:00	Merge pull request #1143 from pmcelhaney/flaky-json-schema-faker-test
+7e9a44c9621b0320cec1fe8593416a1d71c3cf95	2024-12-23T22:21:25Z	fix(deps): update dependency chokidar to v4.0.3 (#1136)
+a89f4c4f85bd88739f9c3704f8277e6d681ffa20	2024-12-23T22:15:29Z	chore(deps): update dependency eslint to v9.17.0 (#1135)
+2884734bf7ac30ca508477452dc1812ffd42d89e	2024-12-23T22:08:17Z	chore(deps): update stryker-js monorepo to v8.7.1 (#1133)
+71036f3b416a066a620d1bf140812549adc601d0	2024-12-23T22:00:17Z	chore(deps): update dependency @changesets/cli to v2.27.11 (#1137)
+973ff9066630c85c8f4ab2e3ef3c5d382776f8f1	2024-12-23T16:54:23-05:00	Merge pull request #1139 from pmcelhaney/path-parameters-are-always-strings
+977dc14bf1180ee82afdbdb883328c3bc835f4b3	2024-12-23T16:50:02-05:00	Merge pull request #1141 from pmcelhaney/skip-broken-windows-test
+f87f49c20afcb0b65110bfe8af4ce0cae7da57f8	2024-12-12T14:54:05Z	chore(deps): update dependency @swc/core to v1.10.1 (#1131)
+d84b0680ce1e0eb35fff36c4d7fa464ed6f3b8b9	2024-12-09T20:52:59Z	chore(deps): update stryker-js monorepo to v8.7.0 (#1129)
+7b9ea32a604fd510d6872a58d8bd88e4afb874fd	2024-12-09T16:15:09Z	fix(deps): update dependency debug to v4.4.0 (#1130)
+cbde3ab207afbe37d2d9ce78a4ff5b1682e17abc	2024-12-09T05:50:35Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.7.3 (#1128)
+76a84596b8d10cbcc2abfc13a5c08e3340426ce8	2024-12-07T12:31:14Z	fix(deps): update dependency prettier to v3.4.2 (#1126)
+b66fb37cf7788cecc5f76d4ef8461c6fd6cbe821	2024-12-07T10:25:20Z	chore(deps): update dependency @swc/core to v1.10.0 (#1127)
+87fe316896fed781accf2cab9d84f6f21af5bc1e	2024-12-06T19:23:08Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.7.0 (#1125)
+70813c97d5d43fa7ec3de4a60cd68400bceb575e	2024-12-04T18:39:50Z	chore(deps): update dependency eslint to v9.16.0 (#1124)
+e9dfe9a5b653980139bdda1445d41db72184b612	2024-11-29T15:46:09Z	fix(deps): update dependency prettier to v3.4.1 (#1123)
+ce2d3eadcbbebfdbd8e0a4d26d19948e0865c5c3	2024-11-29T11:28:53Z	fix(deps): update dependency prettier to v3.4.0 (#1122)
+4fa2afab66e389098c65beefc46d3d91ef0db59b	2024-11-25T22:25:11Z	fix(deps): update dependency typescript to v5.7.2 (#1120)
+5c3c3c4e47e6d0f3cac5a592326fae007df99ee4	2024-11-25T12:28:13Z	chore(deps): update dependency @swc/core to v1.9.3 (#1119)
+8e9b720f9b7adaaa0d1233ad308e8d2b1e3bb9dd	2024-11-23T14:03:01Z	chore(deps): update dependency @changesets/cli to v2.27.10 (#1118)
+9c49b1fe8c2aec8d8aa21529f576dde592f47b65	2024-11-22T19:14:27-05:00	Merge pull request #1117 from pmcelhaney/changeset-release/main
+aa4dec60c1a316c68ba886b63227274d1331ecda	2024-11-22T16:39:38-05:00	Merge pull request #1099 from pmcelhaney/sync-refs-1089
+791dbaccba1da00fc36c94b97825c2b42df03805	2024-11-21T18:39:13Z	chore(deps): update dependency husky to v9.1.7 (#1115)
+f7e21e6c10b3c03eee31ea4d3e2a558cf5809acd	2024-11-21T07:34:58Z	fix(deps): update dependency koa2-swagger-ui to v5.11.0 (#1114)
+70db550f2bc9d266dba6b93d72ae2cde1eaef4d9	2024-11-21T00:51:20Z	chore(deps): update dependency eslint-plugin-jest-dom to v5.5.0 (#1113)
+ea1db643dd7927af014e4d8790996a1cf29f7d2b	2024-11-18T22:35:40Z	chore(deps): update dependency eslint to v9.15.0 (#1112)
+816b1f26c0274749f503b33a3057d131427bde30	2024-11-14T09:57:22Z	fix(deps): update dependency json-schema-faker to v0.5.8 (#1109)
+f870f4fd36ea4740bd5d737a51aa8b672bd08177	2024-11-14T07:42:43Z	chore(deps): update dependency @swc/core to v1.9.2 (#1111)
+17eae824ded6519fd10ddbfd1f9d0ad03f5f5e96	2024-11-12T11:59:29Z	chore(deps): update dependency eslint-plugin-file-progress to v3.0.1 (#1110)
+eb125b703602f789c59316b12fd47b5dbe25cde8	2024-11-10T00:19:01Z	chore(deps): update dependency eslint-plugin-file-progress to v3 (#1104)
+d6df7e25908c1f2f6d26d8f3342e73dcfd6eb84d	2024-11-09T18:56:24Z	chore(deps): update dependency @swc/core to v1.9.1 (#1108)
+79bf57eb21366fe6263d6ff3a1e178967a4db987	2024-11-09T03:44:47Z	fix(deps): update dependency json-schema-faker to v0.5.7
+57fe5fed6f071cdc36a37d53695fde5b7b77d8d7	2024-11-09T01:46:12Z	chore(deps): update dependency eslint-plugin-jest to v28.9.0 (#1107)
+a3d2623856eae0a028b7d1e6267fb67c61549dc0	2024-11-07T04:28:07Z	chore(deps): update dependency @swc/core to v1.8.0
+5fcb74c030863f9e872f0c9222b5dddff8746215	2024-11-04T19:10:46Z	chore(deps): update dependency eslint to v9.14.0
+12981b7ed744750736674825ea56133e1387fd9c	2024-11-03T08:25:41Z	chore(deps): update dependency @swc/core to v1.7.42
+245534299bd7efd77aeb8a1fb72319d1e8fa3dcd	2024-11-02T15:29:05Z	chore(deps): update coverallsapp/github-action action to v2.3.4
+3a7146e4faf8be2bc94167b1416478c9afb350f1	2024-11-02T12:38:53Z	chore(deps): update dependency @types/lodash to v4.17.13
+a41ce96dcd9f106eea18d844bd137eca4bf3ea00	2024-11-02T10:47:47Z	chore(deps): update swc monorepo
+a33b055a5a412a695c8e3e75dd25e7a9c9807a5b	2024-10-26T03:55:24Z	chore(deps): update dependency @types/jest to v29.5.14
+a8f28699ab25513311f990b6af7bb722b77d525c	2024-10-25T05:05:16Z	chore(deps): update dependency @swc/core to v1.7.39
+760df53a780c556a6c37ba7b18ccd8e2bcf9b96d	2024-10-22T10:33:24Z	chore(deps): update dependency @types/lodash to v4.17.12
+32e62503b44a1cd28813722810034e4e85d079e0	2024-10-21T21:32:30Z	chore(deps): update dependency eslint to v9.13.0
+dfc166bbcee10ecc475ff4710bdc86a9e52b103d	2024-10-19T21:59:06Z	chore(deps): update coverallsapp/github-action action to v2.3.3
+dbbe975c8b07916e364c03c209fb1f3c65fd8f35	2024-10-18T23:19:49Z	chore(deps): update dependency @swc/core to v1.7.36
+79b781055c814238df34fc35e0ef826ee48b7f47	2024-10-18T17:27:02Z	chore(deps): update coverallsapp/github-action action to v2.3.2
+37c07a6912dc8e1165a9eac0a3248bc68d426306	2024-10-17T12:23:14-04:00	Merge pull request #1085 from pmcelhaney/changeset-release/main
+d60c90d2f0b1f7325397057e686a5ba972ad81b6	2024-10-17T12:13:50-04:00	Merge pull request #1084 from pmcelhaney/disable-fill-properties-json-schema
+178f4e7a766a85cebcd00d8692fc9ac9695748d6	2024-10-15T06:53:53-04:00	Merge pull request #1082 from pmcelhaney/changeset-release/main
+eedffe7a7e4b1d68793b0abdef40407712d23374	2024-10-15T06:25:55-04:00	Merge pull request #1081 from pmcelhaney/fix-vscode-link-on-windows
+9312ec5005fca4501fd536dc639b45856d9b2f14	2024-10-14T03:12:30Z	chore(deps): update coverallsapp/github-action action to v2.3.1
+96a2f3be9228478fa9951e40530264a794abcfab	2024-10-13T21:12:07Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.7.2
+6af4bcf1ffcc80b71a44da22fed0ca2b1a3fb3eb	2024-10-13T10:46:53Z	chore(deps): update dependency @swc/core to v1.7.35
+57ea611cb1d11d0d4df9be5b032777203247e115	2024-10-11T23:05:49Z	fix(deps): update dependency typescript to v5.6.3
+6341934ab0d7dedb0f416fc997902fb3f5bf2e44	2024-10-10T15:24:05-04:00	Merge pull request #1076 from pmcelhaney/changeset-release/main
+6cd61a645b409b44b67d9e5b53e8d7c6d5f36966	2024-10-10T15:16:49-04:00	Merge pull request #1074 from pmcelhaney/server-module-tree-wildcard-fix
+6ac12b2ad56c759c11c311dcb0b27b0a48e2b857	2024-10-10T10:49:05Z	chore(deps): update dependency @swc/core to v1.7.28
+695a1e75d01d66e8823664a629aaf9ba066f3003	2024-10-07T21:10:38Z	chore(deps): update dependency eslint to v9.12.0
+3c1a76349c8642a3da0fe5685862cc14d664485b	2024-10-07T12:55:28Z	chore(deps): update dependency node-mocks-http to v1.16.1
+4914133116f7f1be8aa3395cd3fbeb9df8a03abe	2024-10-06T18:01:14Z	chore(deps): update dependency @changesets/cli to v2.27.9
+117a9023b70d226227260dd76dad033dba4ac734	2024-10-06T16:22:34Z	chore(deps): update dependency @types/lodash to v4.17.10
+bfa84ea052c7f752e29f903c9638ca4bc215c2be	2024-10-06T10:49:23Z	chore(deps): update dependency eslint-plugin-import to v2.31.0
+11230901d34042d29511d13018e9efa3616434a9	2024-10-03T17:27:27-04:00	Merge pull request #1068 from pmcelhaney/lint-test-files
+e15e8fe58f847e389a8c7cbe97f51da62b0d3693	2024-10-02T21:15:15-04:00	Merge pull request #1063 from pmcelhaney/changeset-release/main
+a921a22d7f8ef7ef745dd191086700d7efe02553	2024-10-02T20:47:36-04:00	Merge pull request #1066 from pmcelhaney/clean-up-options
+d4140c7cc1fb272fb2226c6d01c538f226a14526	2024-10-02T23:28:57Z	fix(deps): update dependency chokidar to v4.0.1
+09533b3e2b9b1a27bda1562b6aff8d720b4d970c	2024-10-02T19:28:42-04:00	Merge pull request #1064 from pmcelhaney/cleanup-eslint
+8a0483ecfd624227d19781a6005fab121de1f4b1	2024-10-02T18:47:00-04:00	reinstate check for JS extension
+17635fe6b5a55b8381f83eb4f81583d930ae02e3	2024-09-16T11:44:32-04:00	chokidar removed support for globs
+17338c59a1d565bd5a6211535e7a4f759e09cd79	2024-09-16T01:00:15Z	fix(deps): update dependency chokidar to v4
+a585b912209a2f4ab574d1f7c72ca085dae11b79	2024-10-02T21:43:18Z	chore(deps): update stryker-js monorepo to v8.6.0
+a61d17f60a276e3bab9fa5af884e2333e9df8880	2024-10-02T17:42:36-04:00	Merge pull request #1062 from pmcelhaney/root-path
+e8450b629e519a16ff4ea99e5e1abef6e9dc200c	2024-10-02T14:10:24-04:00	Merge pull request #1061 from pmcelhaney/changeset-release/main
+a1623d631a7d5892d1eb477a5e8b7562d2e175d6	2024-10-02T13:54:35-04:00	Merge pull request #1060 from pmcelhaney/consumes-in-root
+fc2610f3da4e4e53141eebe920a309e93641369d	2024-10-02T11:20:52-04:00	Merge pull request #1059 from pmcelhaney/fix-quickstart
+412bb8b607317f63155f45e15ca9a19fe2be45ec	2024-09-27T00:57:08Z	chore(deps): update dependency eslint to v9.11.1
+565149ff6519038e6408ddcd8058948f0458631c	2024-09-26T18:47:18Z	chore(deps): update dependency @types/lodash to v4.17.9
+8e14e1674332e4b817d375461d0fed1812510b78	2024-09-23T22:09:07Z	chore(deps): update dependency nodemon to v3.1.7
+6854c391224e45fda08f63cc97d55f25d872ecc8	2024-09-23T16:58:19Z	chore(deps): update dependency eslint to v9.11.0
+67abe4eca9c5e790f8b05be46c86d69804ec5645	2024-09-22T12:14:14Z	chore(deps): update dependency nodemon to v3.1.6
+bca26c076d843533490ec2d2df2a3cc10b6f9c69	2024-09-20T18:12:51Z	chore(deps): update dependency nodemon to v3.1.5
+ee0b3a2c020af73f3796cef03b6c8357635e9706	2024-09-16T11:01:28Z	chore(deps): update dependency eslint-plugin-unused-imports to v4.1.4
+9a50c41c0c5508ff76cb3a4ad21ad1f1fcb59614	2024-09-15T19:24:56Z	chore(deps): update dependency @types/jest to v29.5.13
+6aeb4bcd3e98ed33b70518c278fc2ee55cbcb6ed	2024-09-15T00:36:02Z	chore(deps): update dependency husky to v9.1.6
+5ede4d4f48e1685b56677a2cf48cb86714a8b127	2024-09-14T12:55:53Z	chore(deps): update dependency @swc/core to v1.7.26
+aed42fd63bf08a1d3e3448a0d6c1a9e53418a29f	2024-09-14T06:23:15Z	chore(deps): update dependency @swc/core to v1.7.25
+fee25bda1948b0761c12d8e84d5fe517ffb57fc4	2024-09-13T00:12:21Z	chore(deps): update dependency node-mocks-http to v1.16.0
+1d05dbed890460ba1a71eb8ef20852fdb68dcdd6	2024-09-12T20:29:26Z	fix(deps): update dependency typescript to v5.6.2
+aa7c5d04013d0bcdadeed29f534672c231dfc045	2024-09-11T07:16:11Z	chore(deps): update dependency @swc/core to v1.7.24
+eb574194e21ad5586a97574e3b73158d4d4e071b	2024-09-09T23:01:51Z	chore(deps): update dependency eslint to v9.10.0
+50f396e6d663a04bb692e056960644c678a97e64	2024-09-09T01:59:00Z	fix(deps): update dependency debug to v4.3.7
+16f550e3bd744399be5c612c55b4e7f8967b2694	2024-09-07T21:06:36Z	chore(deps): update dependency eslint-plugin-jest to v28.8.3
+ffc369ee4c34a18ddc993951e9819ef2c6538111	2024-09-07T11:04:40Z	chore(deps): update dependency @changesets/cli to v2.27.8
+9516dab85051fa6f2d18b49db181e8957c886c1f	2024-09-06T08:29:51Z	chore(deps): update dependency eslint-plugin-import to v2.30.0
+9150cd9a9094a8890f8519d0b8c1e2b8398baeb6	2024-09-06T00:40:22Z	chore(deps): update dependency @swc/core to v1.7.23
+d21fef706298fc99ab493611cf87bf031739b73c	2024-09-05T04:08:05Z	chore(deps): update dependency eslint-plugin-jest to v28.8.2
+7eaccb20ae8f26e4b767dfb9f4f9e92b09623744	2024-09-02T10:23:22Z	chore(deps): update dependency @swc/core to v1.7.22
+b2cf8935dc0077cde2a6d4da2ae1804750480415	2024-09-01T22:12:27Z	chore(deps): update dependency eslint-plugin-jest to v28.8.1

@@ -1,0 +1,353 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { fileURLToPath } from "node:url";
+import { build } from "astro";
+import { parse } from "parse5";
+import { parse as parseCSS } from "postcss";
+import { usingTemporaryFiles } from "using-temporary-files";
+
+const siteRoot = new URL("../", import.meta.url);
+
+async function usingSiteTemporaryFiles(callback) {
+  // Astro stages static assets under cwd when outDir is outside it, then
+  // renames them into outDir. Keep both paths on the checkout's filesystem.
+  const variable = process.platform === "win32" ? "TEMP" : "TMPDIR";
+  const previous = process.env[variable];
+  process.env[variable] = fileURLToPath(siteRoot);
+  try {
+    await usingTemporaryFiles(callback);
+  } finally {
+    if (previous === undefined) {
+      delete process.env[variable];
+    } else {
+      process.env[variable] = previous;
+    }
+  }
+}
+
+function elements(node, predicate) {
+  return [
+    ...(predicate(node) ? [node] : []),
+    ...(node.childNodes ?? []).flatMap((child) => elements(child, predicate)),
+  ];
+}
+
+function textContent(node) {
+  return node.nodeName === "#text"
+    ? node.value
+    : (node.childNodes ?? []).map(textContent).join("");
+}
+
+function proseText(node) {
+  return textContent(node)
+    .replace(/[\t\n\r ]+/g, " ")
+    .trim();
+}
+
+function paragraphs(html) {
+  return elements(parse(html), (node) => node.tagName === "p").map(proseText);
+}
+
+test("the site build preserves authored inline whitespace", async (t) => {
+  await usingSiteTemporaryFiles(async ($) => {
+    // Build fixtures with the site's actual config and compiler, without
+    // publishing test routes or overriding the whitespace setting under test.
+    await build({
+      root: siteRoot,
+      srcDir: fileURLToPath(
+        new URL("test-fixtures/inline-whitespace/", siteRoot),
+      ),
+      outDir: $.path("fixtures"),
+      cacheDir: $.path("fixture-cache"),
+      publicDir: $.path("empty-public"),
+      logLevel: "silent",
+    });
+
+    const fixture = parse(await $.read("fixtures/index.html"));
+    const byId = (id) => {
+      const matches = elements(fixture, (node) =>
+        node.attrs?.some((attr) => attr.name === "id" && attr.value === id),
+      );
+      assert.equal(matches.length, 1, `fixture #${id} exists`);
+      return matches[0];
+    };
+
+    await t.test("line breaks separate inline links and components", () => {
+      assert.deepEqual(
+        ["multiline", "component", "neighbors", "same-line", "explicit"].map(
+          (id) => proseText(byId(id)),
+        ),
+        Array(5).fill("Read the docs for help."),
+      );
+    });
+    await t.test(
+      "punctuation and intentional in-word links stay adjacent",
+      () => {
+        assert.equal(
+          proseText(byId("punctuation")),
+          "Read (the docs), then try npx counterfact.",
+        );
+        assert.equal(
+          proseText(byId("component-punctuation")),
+          "Read (the docs), then try npx counterfact.",
+        );
+        assert.equal(proseText(byId("joined")), "counterfact");
+        assert.equal(textContent(byId("code")), "line one\n  line two\n");
+      },
+    );
+    await t.test(
+      "Markdown retains spaces and intentional adjacency",
+      async () => {
+        assert.deepEqual(
+          paragraphs(await $.read("fixtures/markdown/index.html")),
+          [
+            "Read the docs for help.",
+            "Read (the docs), then try npx counterfact.",
+            "counterfact",
+          ],
+        );
+      },
+    );
+
+    await t.test(
+      "GitHub alerts render labels and preserve Markdown content",
+      async () => {
+        const html = await $.read("fixtures/alerts/index.html");
+        const document = parse(html);
+        const alerts = elements(document, (node) =>
+          node.attrs?.some(
+            (attr) =>
+              attr.name === "class" &&
+              attr.value.split(" ").includes("markdown-alert"),
+          ),
+        );
+        assert.equal(alerts.length, 5);
+        for (const [index, type] of [
+          "note",
+          "tip",
+          "important",
+          "warning",
+          "caution",
+        ].entries()) {
+          const alert = alerts[index];
+          assert.ok(
+            alert.attrs.some((attr) =>
+              attr.value.includes(`markdown-alert-${type}`),
+            ),
+          );
+          assert.equal(
+            proseText(alert.childNodes.find((node) => node.tagName === "p")),
+            type[0].toUpperCase() + type.slice(1),
+          );
+          assert.ok(!textContent(alert).includes(`[!${type.toUpperCase()}]`));
+        }
+        assert.equal(
+          elements(alerts[1], (node) => node.tagName === "code")
+            .map(textContent)
+            .join(" "),
+          "$ req res",
+        );
+        assert.equal(
+          elements(alerts[2], (node) => node.tagName === "a")[0].attrs.find(
+            (attr) => attr.name === "href",
+          ).value,
+          "/docs/reference",
+        );
+        assert.equal(
+          elements(alerts[3], (node) => node.tagName === "li").length,
+          2,
+        );
+        const quotes = elements(
+          document,
+          (node) => node.tagName === "blockquote",
+        );
+        assert.ok(
+          quotes.some((node) => proseText(node) === "An ordinary quote."),
+        );
+        assert.ok(
+          quotes.some(
+            (node) => proseText(node) === "[!UNKNOWN] Keep this text.",
+          ),
+        );
+        assert.ok(
+          quotes.some(
+            (node) =>
+              proseText(node) ===
+              "[!TIP] This is inline prose, not an alert marker.",
+          ),
+        );
+        assert.ok(
+          textContent(document).includes("> [!TIP]"),
+          "code examples stay literal",
+        );
+      },
+    );
+
+    await build({
+      root: siteRoot,
+      outDir: $.path("site"),
+      cacheDir: $.path("site-cache"),
+      logLevel: "silent",
+    });
+
+    await t.test(
+      "the command stays intact in a keyboard-accessible scroll region",
+      async () => {
+        const homepage = parse(await $.read("site/index.html"));
+        const byId = (id) =>
+          elements(homepage, (node) =>
+            node.attrs?.some((attr) => attr.name === "id" && attr.value === id),
+          )[0];
+        const command = byId("install-cmd");
+        const copy = byId("copy-btn");
+        assert.equal(
+          textContent(command),
+          "npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api",
+        );
+        assert.equal(
+          command.attrs.find((attr) => attr.name === "tabindex")?.value,
+          "0",
+        );
+        assert.equal(
+          command.attrs.find((attr) => attr.name === "role")?.value,
+          "region",
+        );
+        assert.ok(
+          command.attrs.find((attr) => attr.name === "aria-label")?.value,
+        );
+        assert.equal(
+          command.parentNode,
+          copy.parentNode,
+          "Copy stays outside the scrolling code",
+        );
+        assert.equal(copy.tagName, "button");
+
+        const stylesheets = elements(
+          homepage,
+          (node) =>
+            node.tagName === "link" &&
+            node.attrs?.some(
+              (attr) => attr.name === "rel" && attr.value === "stylesheet",
+            ),
+        );
+        const css = [];
+        for (const link of stylesheets) {
+          const href = link.attrs.find((attr) => attr.name === "href")?.value;
+          assert.ok(href?.startsWith("/_astro/"));
+          css.push(await $.read(`site${href}`));
+        }
+        const stylesheet = parseCSS(css.join("\n"));
+        const declarations = (selector) => {
+          const result = {};
+          stylesheet.walkRules(selector, (rule) => {
+            rule.walkDecls((decl) => {
+              result[decl.prop] = decl.value;
+            });
+          });
+          return result;
+        };
+        // This verifies the emitted CSS contract, not browser-computed geometry.
+        // min-width: 0 lets the flex item shrink instead of widening the page.
+        const code = declarations(".command-panel code");
+        assert.equal(code["white-space"], "nowrap");
+        assert.equal(code["overflow-x"], "auto");
+        assert.equal(code["min-width"], "0");
+        assert.ok(
+          ["none", "0 0 auto"].includes(declarations(".copy-button").flex),
+        );
+        const focus = declarations(".command-panel code:focus-visible");
+        assert.ok(focus.outline);
+        assert.notEqual(focus.outline, "none");
+        assert.ok(focus["outline-offset"]);
+      },
+    );
+
+    await t.test(
+      "the homepage preserves inline code and installation links",
+      async () => {
+        const text = paragraphs(await $.read("site/index.html"));
+        assert.ok(
+          text.includes(
+            "Counterfact creates editable routes and generated types, then starts an HTTP server. Connect your client to localhost:3100.",
+          ),
+        );
+        assert.ok(
+          text.includes(
+            "Node.js 22+. Swagger 2.0 and OpenAPI 3.0–3.2. Install a pinned version for a repeatable project, and commit the lockfile.",
+          ),
+        );
+      },
+    );
+    await t.test("canonical docs render GitHub alert markers", async () => {
+      for (const page of ["routes", "state"]) {
+        const document = parse(
+          await $.read(`site/docs/features/${page}/index.html`),
+        );
+        assert.ok(!/\[!(TIP|IMPORTANT)\]/.test(textContent(document)));
+        assert.ok(
+          elements(document, (node) =>
+            node.attrs?.some(
+              (attr) =>
+                attr.name === "class" && attr.value.includes("markdown-alert"),
+            ),
+          ).length > 0,
+        );
+      }
+    });
+    await t.test(
+      "retired documentation URLs lead to canonical chapters",
+      async () => {
+        for (const [slug, destination] of [
+          ["reference", "/docs/api"],
+          ["reference.md", "/docs/api"],
+          ["patterns/simulate-failures", "/docs/manual/edge-cases"],
+          ["patterns", "/docs/usage"],
+        ]) {
+          const document = parse(await $.read(`site/docs/${slug}/index.html`));
+          const redirect = elements(
+            document,
+            (node) =>
+              node.tagName === "meta" &&
+              node.attrs?.some(
+                (attr) =>
+                  attr.name === "http-equiv" &&
+                  attr.value.toLowerCase() === "refresh",
+              ),
+          );
+          assert.equal(redirect.length, 1);
+          const content = redirect[0].attrs.find(
+            (attr) => attr.name === "content",
+          ).value;
+          assert.ok(
+            content.endsWith(`url=${destination}`),
+            `${slug}: ${content}`,
+          );
+        }
+      },
+    );
+    await t.test(
+      "canonical Markdown docs keep inline code separated",
+      async () => {
+        assert.ok(
+          paragraphs(
+            await $.read("site/docs/getting-started/index.html"),
+          ).includes(
+            "Counterfact writes editable route files and generated TypeScript types to api/, then starts a local server at http://localhost:3100.",
+          ),
+        );
+      },
+    );
+    await t.test(
+      "the quality appendix separates the formerly joined link",
+      async () => {
+        assert.ok(
+          paragraphs(
+            await $.read("site/quality/2026/cases/index.html"),
+          ).includes(
+            "The detailed external-report ledger shows the screening decisions for these cases. The public-record census provides the broader candidate record.",
+          ),
+        );
+      },
+    );
+  });
+});

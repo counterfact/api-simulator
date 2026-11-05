@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
+import redirects from "../../data/documentation-redirects.json";
 import DocLayout from "../../layouts/DocLayout.astro";
 
 export async function getStaticPaths() {
@@ -17,38 +18,24 @@ export async function getStaticPaths() {
       props: { doc, isMdAlias: true },
     });
   }
-
-  // Framework-specific guides moved from Patterns to Examples. Keep both
-  // historical public URL forms as permanent redirects without retaining
-  // duplicate Markdown files in the published package.
-  const legacyRedirects = {
-    "patterns/react-vite": "examples/react-vite",
-    "patterns/playwright-error-states": "examples/playwright-error-states",
-  };
-  for (const [legacySlug, targetDocId] of Object.entries(legacyRedirects)) {
-    const doc = docs.find((candidate) => candidate.id === targetDocId);
-    if (!doc) throw new Error(`Missing legacy redirect target: ${targetDocId}`);
-
-    for (const slug of [legacySlug, `${legacySlug}.md`]) {
-      routes.push({
-        params: { slug },
-        props: { doc, redirectPath: `/docs/${targetDocId}` },
-      });
+  for (const [slug, target] of Object.entries(redirects)) {
+    for (const alias of [slug, `${slug}.md`]) {
+      routes.push({ params: { slug: alias }, props: { redirect: target } });
     }
   }
-
   return routes;
 }
 
-const { doc, isMdAlias, redirectPath } = Astro.props;
+const { doc, isMdAlias, redirect } = Astro.props;
+if (redirect) return Astro.redirect(redirect, 301);
 
 // Canonical URL always points to the clean (no .md) path.
 const canonicalPath = `/docs/${doc.id}`;
 
 // For .md alias pages, redirect to the clean URL so that relative links inside
 // the rendered document always resolve against the clean base path.
-if (isMdAlias || redirectPath) {
-  return Astro.redirect(redirectPath ?? canonicalPath, 301);
+if (isMdAlias) {
+  return Astro.redirect(canonicalPath, 301);
 }
 
 const { Content, headings } = await render(doc);
@@ -62,6 +49,6 @@ const titleFromSlug = doc.id
 const title = titleFromHeading ?? titleFromSlug;
 ---
 
-<DocLayout title={title} canonicalPath={canonicalPath}>
+<DocLayout title={title} canonicalPath={canonicalPath} headings={headings}>
   <Content />
 </DocLayout>

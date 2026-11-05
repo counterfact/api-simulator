@@ -1,3 +1,4 @@
+import ts from "typescript";
 import { describe, expect, it } from "@jest/globals";
 
 import { Coder } from "../src/coder.js";
@@ -32,7 +33,14 @@ describe("integration Test", () => {
       }
 
       write() {
-        return "() => {}";
+        return ts.factory.createArrowFunction(
+          undefined,
+          undefined,
+          [],
+          undefined,
+          ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+          ts.factory.createBlock([], false),
+        );
       }
     }
 
@@ -48,10 +56,10 @@ describe("integration Test", () => {
     await account.finished();
 
     await expect(account.contents()).resolves.toBe(
-      "export const HTTP_GET = () => {};\n\nexport const HTTP_POST = () => {};\n",
+      "export const HTTP_GET = () => {};\nexport const HTTP_POST = () => {};\n",
     );
     await expect(accountId.contents()).resolves.toBe(
-      "export const HTTP_GET = () => {};\n\nexport const HTTP_PUT = () => {};\n",
+      "export const HTTP_GET = () => {};\nexport const HTTP_PUT = () => {};\n",
     );
   });
 });

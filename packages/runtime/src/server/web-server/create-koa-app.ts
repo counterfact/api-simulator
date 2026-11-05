@@ -1,4 +1,4 @@
-import { Readable } from "node:stream";
+import { finished, Readable } from "node:stream";
 
 import createDebug from "debug";
 import Koa from "koa";
@@ -31,6 +31,7 @@ export interface RuntimeRunner {
   prefix: string;
   registry: Registry;
   subdirectory: string;
+  version?: string;
 }
 
 /**
@@ -54,11 +55,16 @@ export function createKoaApp({
   config,
   adminApi,
   reportEvent = () => {},
+  lifecycle,
 }: {
   runners: RuntimeRunner[];
   config: KoaRuntimeConfig;
   adminApi?: AdminApiAdapter;
   reportEvent?: RuntimeEventReporter;
+  lifecycle?: {
+    enter(): boolean;
+    leave(): void;
+  };
 }) {
   const app = new Koa();
   let firstApiRequestReported = false;
@@ -86,24 +92,80 @@ export function createKoaApp({
     }
   };
 
+  if (lifecycle) {
+    app.use(async (ctx, next) => {
+      if (!lifecycle.enter()) {
+        ctx.status = 503;
+        ctx.body =
+          "Counterfact is unavailable during reset or after a lifecycle failure";
+        return;
+      }
+      let left = false;
+      let responseDone = false;
+      let handlerDone = false;
+      let bodyDone = true;
+      const leave = () => {
+        if (left || !responseDone || !handlerDone || !bodyDone) return;
+        left = true;
+        lifecycle.leave();
+      };
+      const responseFinished = () => {
+        responseDone = true;
+        leave();
+      };
+      ctx.res.once("finish", responseFinished);
+      ctx.res.once("close", responseFinished);
+      try {
+        await next();
+      } finally {
+        handlerDone = true;
+        if (ctx.body instanceof Readable) {
+          bodyDone = false;
+          // Readable.from waits for iterator.return()/finally during destruction.
+          // Response close alone does not mean the producer has finished cleanup.
+          const cleanup = finished(ctx.body, () => {
+            cleanup();
+            bodyDone = true;
+            leave();
+          });
+        }
+        leave();
+      }
+    });
+  }
+
   for (const runner of runners) {
     app.use(
       openapiMiddleware(`/counterfact/openapi${runner.subdirectory}`, {
         path: runner.openApiPath,
         baseUrl: `//localhost:${config.port}${runner.prefix}`,
         overlays: runner.overlays,
+        version: runner.version,
       }),
     );
 
-    app.use(
-      koaSwagger({
-        routePrefix: `/counterfact/swagger${runner.subdirectory}`,
+    const versionQuery = runner.version
+      ? `?version=${encodeURIComponent(runner.version)}`
+      : "";
+    const swaggerMiddleware = koaSwagger({
+      // The wrapper's default predates OpenAPI 3.0.4 and 3.2 support.
+      swaggerCdnUrl: "https://cdn.jsdelivr.net/npm",
+      swaggerVersion: "swagger-ui-dist@5.32.0",
+      routePrefix: `/counterfact/swagger${runner.subdirectory}`,
 
-        swaggerOptions: {
-          url: `/counterfact/openapi${runner.subdirectory}`,
-        },
-      }),
-    );
+      swaggerOptions: {
+        url: `/counterfact/openapi${runner.subdirectory}${versionQuery}`,
+      },
+    });
+    app.use(async (ctx, next) => {
+      if (
+        ctx.query.version !== undefined &&
+        ctx.query.version !== runner.version
+      ) {
+        return await next();
+      }
+      return await swaggerMiddleware(ctx, next);
+    });
 
     if (config.startAdminApi) {
       if (adminApi === undefined) {

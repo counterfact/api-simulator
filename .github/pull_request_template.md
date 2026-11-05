@@ -9,9 +9,9 @@
 
 </details>
 
-## Manual acceptance tests
+## Agent-created PR notes
 
-<!-- Agent: replace this section with 3–6 unchecked checkboxes per AGENTS.md. Each must describe an observable behavior. -->
+<!-- Agent opening this PR: add the Manual acceptance tests section with unchecked boxes and, for non-trivial work, the Repository learning check from counterfact-pr-creation. Agents write manual acceptance checklists; humans perform manual acceptance and check the boxes. Never check these boxes yourself. Writing these sections is an agent-PR-author responsibility; reviewing agents must not look for them when they are absent. -->
 
 ## Tasks
 

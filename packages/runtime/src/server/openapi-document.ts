@@ -1,6 +1,9 @@
 import { type FSWatcher, watch } from "chokidar";
 import createDebug from "debug";
-import { loadOpenApiDocument as loadOpenApiData } from "@counterfact/openapi";
+import {
+  getLocalOpenApiSourcePaths,
+  loadOpenApiDocument as loadOpenApiData,
+} from "@counterfact/openapi";
 import type { OpenApiOperation } from "@counterfact/types";
 import type { RuntimeEventReporter } from "../runtime-config.js";
 import { waitForEvent } from "../util/wait-for-event.js";
@@ -104,17 +107,23 @@ export class OpenApiDocument extends EventTarget {
   }
 
   /**
-   * Starts watching the source file for changes. When a change is detected
-   * the document reloads itself and dispatches a `"reload"` event.
+   * Starts watching every local input for changes. When a change is detected
+   * the complete base document and overlay chain are reloaded before a
+   * `"reload"` event is dispatched.
    *
-   * Has no effect when the source is `"_"` or a remote URL.
+   * Has no effect when none of the contributing inputs is local.
    */
   public async watch(): Promise<void> {
-    if (this.source === "_" || this.source.startsWith("http")) {
+    const watchablePaths = getLocalOpenApiSourcePaths([
+      this.source,
+      ...this.overlays,
+    ]);
+
+    if (watchablePaths.length === 0) {
       return;
     }
 
-    this.watcher = watch(this.source, CHOKIDAR_OPTIONS).on("change", () => {
+    this.watcher = watch(watchablePaths, CHOKIDAR_OPTIONS).on("change", () => {
       this.reportEvent("file_change_detected", {
         changeType: "change",
         fileType: "openapi",

@@ -1,0 +1,1221 @@
+[
+  {
+    "number": 2365,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2365",
+    "title": "Fix OpenAPI watch input classification and overlay hot reload",
+    "body": "## Summary\r\n\r\n- add a shared `@counterfact/openapi` source classifier that recognizes parsed HTTP(S) URLs, converts `file:` URLs to local paths, preserves NUL rejection, and keeps ordinary names such as `httpspec.yaml` local\r\n- make runtime and generator watchers observe every unique local OpenAPI input, including ordered overlays, while excluding remote inputs and the `_` sentinel\r\n- reload the complete base-plus-overlay document when any local contributor changes, and document the resulting watch behavior\r\n- extend the existing contract-evolution journey to prove that editing a local overlay updates the live server without a restart\r\n- add patch changesets for `@counterfact/openapi`, `@counterfact/generator`, and `@counterfact/runtime`\r\n\r\n## Verification\r\n\r\n- focused OpenAPI, runtime, and generator tests: 4 suites, 26 tests passed\r\n- full unit suite: 65 suites, 950 tests, and 127 snapshots passed\r\n- build, typecheck, and lint passed\r\n- focused contract-evolution black-box journey passed\r\n- release preflight passed, including package boundaries, packaging dry runs, isolated package closures, and changeset validation\r\n\r\n## Manual acceptance tests\r\n\r\n- [x] Start Counterfact with a local base document, a local overlay, `--watch`, and `--serve`; edit the overlay and confirm the affected endpoint changes without restarting the process.\r\n- [x] Start Counterfact from a local file named `httpspec.yaml`; edit the file and confirm generated contracts and the running server reflect the change.\r\n- [x] Use the `_` spec sentinel in a configuration that generates scenario/context artifacts and confirm Counterfact does not attempt to watch a file literally named `_`.\r\n\r\n## Repository learning check\r\n\r\n- Learning found: Yes\r\n- Guidance updated: Yes\r\n- Updated file(s): `.github/skills/counterfact-generator-internals/SKILL.md`\r\n- Rationale: Generator watchers must classify sources through the shared OpenAPI contract, watch every unique local contributor, and regenerate from the complete ordered input set instead of inferring URL behavior from string prefixes.\r\n",
+    "state": "closed",
+    "created_at": "2026-08-29T12:33:19Z",
+    "closed_at": "2026-09-02T11:26:31Z",
+    "merged_at": "2026-09-02T11:26:31Z",
+    "merge_commit_sha": "5f5ef56b999f9f28b6da99e4852e0cb2ce9c9b2b",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 2362,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2362",
+    "title": "fix(runtime): validate implicit 200 responses",
+    "body": "## Summary\n\n- validate handler responses that omit `status` against the OpenAPI `200` response definition\n- preserve explicit-status and `default` response behavior\n- cover the regression through focused runtime tests and the shipped CLI journey\n- document the implicit-success validation rule and release it with a runtime changeset\n\n<details>\n<summary>Original Prompt</summary>\n\nFix the confirmed bug where response validation is bypassed when a handler relies on the implicit HTTP 200 status. Create a dedicated branch and PR with a changeset.\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] A handler that omits `status` and a required `200` response header returns its body with a `response-type-error` header.\n- [ ] Supplying the required header removes the validation error without requiring `status: 200`.\n- [ ] A handler with an explicit non-200 status is validated against that response definition.\n- [ ] An OpenAPI `default` response still applies when the effective status has no explicit response entry.\n\n## Tasks\n\n- Normalize response-spec selection to the effective HTTP status.\n- Add unit, dispatcher, and black-box regression coverage.\n- Update the response-validation FAQ and add a patch changeset.\n\n## Verification\n\n- `mise exec node@24 -- yarn build`\n- `mise exec node@24 -- yarn workspace @counterfact/runtime test` — 28 suites, 367 tests passed\n- `mise exec node@24 -- yarn typecheck`\n- `mise exec node@24 -- yarn lint` — passed with existing warnings only\n- `mise exec node@24 -- yarn test` — 64 suites, 945 tests, 127 snapshots passed\n- Generated-OpenAPI black-box journey passed; the remaining four journeys also passed across the full/targeted runs\n- `mise exec node@24 -- yarn test:packed-consumer`\n- `mise exec node@24 -- yarn release:preflight`\n- `git diff --check`\n\n## Repository learning check\n\n- Learning found: No\n- Guidance updated: No\n- Updated file(s): N/A\n- Rationale: The defect is a localized status-default mismatch now captured by focused runtime and product-level regression tests; it did not reveal a new repository-wide contribution rule.\n",
+    "state": "open",
+    "created_at": "2026-08-29T12:20:25Z",
+    "closed_at": null,
+    "merged_at": null,
+    "merge_commit_sha": "fd7a29e297a2d600778abd12a22a15f71c502448",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 2335,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2335",
+    "title": "fix: harden OpenAPI routing and lifecycle cleanup",
+    "body": "## Summary\n\n- prevent generated route paths and repository keys from escaping the output directory\n- enforce URL segment boundaries and HTTP header case-insensitivity across routing, validation, coercion, and response generation\n- safely encode client path parameters, inherit path-item parameters, and distinguish URLs from similarly named local files\n- roll back partial startup and attempt every shutdown operation\n- restore the no-emit typecheck, activate the missing-route regression test, and isolate REPL test streams\n\nEach publishable behavior fix has its own patch changeset.\n\n## Security impact\n\nOpenAPI paths and repository keys now fail closed before any generated file operation if they are absolute, contain traversal or platform separators, or otherwise cannot be represented safely under the destination.\n\n## Verification\n\n- build, lint, typecheck, package boundaries, publishable-package checks\n- 949 unit tests and 127 snapshots\n- client, generator, runtime, REPL, OpenAPI, and Counterfact focused suites\n- packed consumers and isolated package closures\n- 5 black-box developer journeys\n- type-definition tests and release preflight\n- traced REPL suite with no MaxListeners warning\n\nNative macOS watching hit the host file-descriptor ceiling during the combined suite; the complete suite passed with `CHOKIDAR_USEPOLLING=1`, while package suites passed independently with native watching.\n",
+    "state": "closed",
+    "created_at": "2026-08-22T22:24:09Z",
+    "closed_at": "2026-08-22T22:44:02Z",
+    "merged_at": "2026-08-22T22:44:02Z",
+    "merge_commit_sha": "d78a17859f9711b587b055144fa78cacd5886469",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 2316,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2316",
+    "title": "fix(runtime): reload atomic store replacements",
+    "body": "## Summary\n\n- make StoreLoader resilient to editor-style atomic replacements of `_.store.ts`\n- coalesce shallow directory events, then reload only when the store source content changes\n- preserve the live store object and last-good state across replacements and broken reloads\n- supersedes #2292 with an implementation based on the monorepo runtime package\n\n## Original Prompt\n\nMake StoreLoader watch reliably on Windows and when editors save by replacing the store file.\n\n## Manual acceptance tests\n\n- [ ] Start a project with a stateful `_.store.ts`, mutate its live state, then save the file normally; confirm methods update without resetting state.\n- [ ] Save `_.store.ts` using an editor that writes a temporary sibling and renames it over the original; confirm the store reloads without a transient deletion error.\n- [ ] Change an unrelated file in the same directory; confirm no store reload occurs.\n- [ ] Introduce a syntax error, then repair it; confirm the last good store remains active and the repaired source reloads.\n- [ ] Repeat the replacement workflow on Windows; confirm watching remains reliable without forcing polling on other platforms.\n\n## Tasks\n\n- [x] Reconcile directory watcher events against the exact store source contents.\n- [x] Serialize and flush debounced reconciliation during watcher shutdown.\n- [x] Add regression coverage for temporary-file replacement and unrelated sibling changes.\n- [x] Add a runtime patch changeset.\n\n## Repository learning check\n\n- [x] StoreLoader remains owned by `@counterfact/runtime`; no facade or REPL boundary changed.\n- [x] The shared chokidar configuration still enables polling only on Windows.\n- [x] Runtime lint, type build, focused StoreLoader tests, and the full runtime test directory pass.\n\n## Verification\n\n- `./node_modules/.bin/eslint packages/runtime/src/server/store-loader.ts packages/runtime/test/server/store-loader.test.ts`\n- `./node_modules/.bin/tsc --build packages/types/tsconfig.json packages/openapi/tsconfig.json packages/runtime/tsconfig.json --force --pretty false`\n- `CHOKIDAR_USEPOLLING=true node --experimental-vm-modules ./node_modules/jest-cli/bin/jest.js --config jest.config.js packages/runtime/test/server/store-loader.test.ts --runInBand --forceExit --coverage=false`\n- `CHOKIDAR_USEPOLLING=true node --experimental-vm-modules ./node_modules/jest-cli/bin/jest.js --config jest.config.js packages/runtime/test --runInBand --forceExit --coverage=false`\n- `git diff --check`\n\nThe polling override in the verification commands avoids the current macOS sandbox's file-descriptor limit; the production watcher configuration is unchanged and remains Windows-only.\n",
+    "state": "closed",
+    "created_at": "2026-08-18T14:54:14Z",
+    "closed_at": "2026-08-22T13:56:51Z",
+    "merged_at": null,
+    "merge_commit_sha": "1b01687ce3deb6cca0f040733fde66eb7db35689",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 2266,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2266",
+    "title": "Fix wide route random response typing",
+    "body": "## Summary\r\n\r\nMake wide-route response helpers valid handler return values, including `.json()`, chained helpers, `.random()`, and `.stream()`.\r\n\r\n## Root cause\r\n\r\n`WideResponseBuilder` was not assignable to `COUNTERFACT_RESPONSE`, even though its fluent helpers return runtime response objects that a route handler can return directly. This caused valid wide-route implementations such as `$.x.response[200].json(...)` to fail type checking.\r\n\r\n## Changes\r\n\r\n- Make `WideResponseBuilder` a completed Counterfact response while preserving its fluent API.\r\n- Ensure standard HTTP status codes such as `200` are available without an `undefined` result under strict indexed access.\r\n- Type `.random()` as returning a fluent wide response.\r\n- Type `.stream()` as a terminal response.\r\n- Correct `.header()` to accept a header name and value.\r\n- Add regression type tests for random, JSON, chained-header JSON, and stream responses.\r\n- Add a patch changeset.\r\n\r\n## Validation\r\n\r\n- TypeScript compilation\r\n- `tsd` type tests\r\n- ESLint\r\n- Unit tests: 873 passed\r\n- Black-box tests: 13 passed",
+    "state": "closed",
+    "created_at": "2026-08-01T20:22:52Z",
+    "closed_at": "2026-08-01T20:42:00Z",
+    "merged_at": "2026-08-01T20:42:00Z",
+    "merge_commit_sha": "dce5372daff3b86939a961eba38d91b73e50835c",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 2263,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2263",
+    "title": "Fix syntax error in src/app.ts: missing closing brace for startRepl property",
+    "body": "## Summary\n\nThe `startRepl` arrow function inside the `baseSimulator` object literal was missing its closing `},`, causing a parse error (`',' expected` at line 475) that broke ESLint and TypeScript compilation.\n\n**Before:**\n```typescript\n    startRepl: () => {\n      // ...\n      return replServer;\n  };  // ❌ wrong indent, missing comma — closes nothing correctly\n```\n\n**After:**\n```typescript\n    startRepl: () => {\n      // ...\n      return replServer;\n    },  // ✅ closes startRepl as object property\n  };    // closes baseSimulator object\n```\n\n<details>\n<summary>Original Prompt</summary>\n\nFix with Copilot: https://github.com/counterfact/api-simulator/actions/runs/30706039092/job/91385553095\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] `yarn eslint -f github-annotations .` completes with exit code 0 (no errors on `src/app.ts`)\n- [ ] `yarn build` succeeds without TypeScript errors\n- [ ] `yarn test` passes, including `test/app.test.ts`\n- [ ] Calling `startRepl()` on a running simulator returns a REPL server instance\n- [ ] Closing a REPL server removes it from the internal `replServers` set (no memory leak on repeated calls)\n\n## Tasks\n\n- Fixed missing `},` closing the `startRepl` arrow function as an object property in the `baseSimulator` object literal (`src/app.ts` line 475)\n\n## Repository learning check\n\n- Learning found: No\n- Guidance updated: No\n- Updated file(s): N/A\n- Rationale: This was a one-off syntax typo introduced by an automated commit; no durable pattern or convention update is warranted.",
+    "state": "closed",
+    "created_at": "2026-08-01T20:03:54Z",
+    "closed_at": "2026-08-01T20:09:23Z",
+    "merged_at": "2026-08-01T20:09:23Z",
+    "merge_commit_sha": "31833fb46b704554bc587f0825029caacd1b1862",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 2260,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2260",
+    "title": "fix: add Koa Request type augmentation for body and rawBody",
+    "body": "## Summary\n\n`tsc --noEmit` was failing because `body` and `rawBody` don't exist on Koa's `Request` type. These properties are injected at runtime by `koa-bodyparser`, and `@types/koa-bodyparser` normally augments Koa's `Request` interface to match. However, `tsconfig.json` sets `\"types\": [\"node\"]` to prevent `@types/koa-bodyparser`'s bundled `@types/koa`/`@types/node` from conflicting with the project's own copies — which also suppresses the augmentation.\n\n**Fix**: Added `src/server/web-server/koa-bodyparser.d.ts` — a local module augmentation that declares `body` and `rawBody` on Koa's `Request` interface, picked up automatically since `tsconfig.json` includes `src/`.\n\n```ts\nexport {};\n\ndeclare module \"koa\" {\n  interface Request {\n    body?: unknown;\n    rawBody: string;\n  }\n}\n```\n\n<details>\n<summary>Original Prompt</summary>\n\nFix with Copilot: https://github.com/counterfact/api-simulator/actions/runs/30681583781/job/91319534656\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] Running `yarn tsc --noEmit` completes without errors\n- [ ] Accessing `ctx.request.body` in `admin-api-middleware.ts` resolves without a TypeScript error\n- [ ] Accessing `ctx.request.rawBody` in `routes-middleware.ts` resolves without a TypeScript error\n- [ ] All existing tests pass (`yarn test`)\n\n## Tasks\n\n- Added `src/server/web-server/koa-bodyparser.d.ts` with a module augmentation for `koa` that adds `body?: unknown` and `rawBody: string` to `Request`\n\n## Repository learning check\n\n- Learning found: Yes\n- Guidance updated: No\n- Updated file(s): N/A\n- Rationale: The pattern of using a local `.d.ts` module augmentation to expose runtime-injected properties when `tsconfig.json` restricts `types` is a useful repo-specific convention, but the existing skill files cover type augmentation patterns adequately and this is a narrow enough case that adding it would be noise rather than signal.",
+    "state": "closed",
+    "created_at": "2026-08-01T03:15:24Z",
+    "closed_at": "2026-08-01T11:17:52Z",
+    "merged_at": "2026-08-01T11:17:52Z",
+    "merge_commit_sha": "1f1cd88b1d6a08777ca3d7ba02293cd784ba530f",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 2258,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2258",
+    "title": "Bug reports/openapi multi spec",
+    "body": "## Summary\r\n\r\n<!-- Copilot: write a concise summary of the change -->\r\n\r\n<details>\r\n<summary>Original Prompt</summary>\r\n\r\n<!-- Copilot: paste the full original prompt or issue description here -->\r\n\r\n</details>\r\n\r\n## Manual acceptance tests\r\n\r\n<!-- Copilot: replace this section with 3–6 unchecked checkboxes per copilot-instructions.md. Each must describe an observable behavior. -->\r\n\r\n## Tasks\r\n\r\n<!-- Copilot: list the main implementation steps you performed -->\r\n",
+    "state": "closed",
+    "created_at": "2026-08-01T03:13:42Z",
+    "closed_at": "2026-08-01T11:30:02Z",
+    "merged_at": "2026-08-01T11:30:02Z",
+    "merge_commit_sha": "eba2bb51a6f3b702ac61a782f62412aa6804c8b6",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 2252,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2252",
+    "title": "[WIP] Fix issues identified in Copilot run",
+    "body": "- [x] Inspect the failing GitHub Actions run and identify the precise failure\n- [x] Trace how the repository runs the failing example test and find the smallest resolution fix\n- [x] Apply the minimal code/config change needed for the example test to resolve `counterfact`\n- [x] Run targeted validation for the touched example/Jest path\n- [x] Run final lint/build/test checks relevant to the change, secret scan, and parallel validation\n\n## Manual acceptance tests\n- [ ] Run the repository test command that includes `/home/runner/work/api-simulator/api-simulator/examples/first-10-minutes/test/counterfact.test.mjs` and confirm it no longer tries to execute that standalone example under the root Jest suite\n- [ ] Confirm the dedicated `/home/runner/work/api-simulator/api-simulator/.github/workflows/first-10-minutes.yml` workflow remains the path-scoped check for `/home/runner/work/api-simulator/api-simulator/examples/first-10-minutes/**`\n- [ ] Confirm the root repository test suite still ignores black-box tests in the default Jest run and completes successfully with the updated ignore pattern\n\n## Repository learning check\n- Learning found: No\n- Guidance updated: No\n- Updated file(s): N/A\n- Rationale: This fix is a narrow root-test selection change, not a reusable repository-wide convention",
+    "state": "closed",
+    "created_at": "2026-07-31T19:02:49Z",
+    "closed_at": "2026-07-31T19:09:16Z",
+    "merged_at": "2026-07-31T19:09:16Z",
+    "merge_commit_sha": "a0b51903a27fb28211d6a7e3eb0e467a9fbd1602",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 2250,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2250",
+    "title": "fix: sync site/package-lock.json with missing @emnapi dependencies",
+    "body": "## Summary\n\n`npm ci` in the `site/` directory was failing because `package-lock.json` was missing transitive dependencies `@emnapi/core@1.11.1` and `@emnapi/runtime@1.11.1`, causing the \"Check for broken links\" CI job to fail.\n\nRan `npm install` in `site/` to regenerate the lock file with the missing entries.\n\n<details>\n<summary>Original Prompt</summary>\n\nFix with Copilot: https://github.com/counterfact/api-simulator/actions/runs/30656004682/job/91242343983\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] The \"Check for broken links\" CI job passes on this PR\n- [ ] `cd site && npm ci` completes without errors\n- [ ] The site builds successfully after `npm ci`\n\n## Tasks\n\n- Ran `npm install` in `site/` to regenerate `package-lock.json`\n- Verified `@emnapi/core` and `@emnapi/runtime` are now present in the lock file (11 references added)",
+    "state": "closed",
+    "created_at": "2026-07-31T18:53:26Z",
+    "closed_at": "2026-07-31T18:57:33Z",
+    "merged_at": "2026-07-31T18:57:33Z",
+    "merge_commit_sha": "255fabad6764c95f5822de884a353a07df385ca6",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 2102,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/2102",
+    "title": "Watch code generation overlays for hot regeneration",
+    "body": "## Summary\n\nWhen an applied overlay file changes, generation now reruns the same way it does for OpenAPI source edits. This closes the gap where overlay-driven changes required manual regeneration.\n\n- **Watch scope expanded**\n  - `CodeGenerator.watch()` now watches all local generation inputs, not just the OpenAPI file:\n    - local OpenAPI file + overlays for file-based specs\n    - overlays only for HTTP OpenAPI sources\n  - watch remains a no-op when there are no local watchable paths.\n\n- **Overlay change regression coverage**\n  - Added a focused server test that edits an applied overlay during watch mode and asserts regenerated type output changes accordingly.\n\n```ts\nconst watchablePaths = this.openapiPath.startsWith(\"http\")\n  ? [...this.overlays]\n  : [this.openapiPath, ...this.overlays];\n```\n\n<details>\n<summary>Original Prompt</summary>\n\n<issue_title>Watch changes to overlay files</issue_title>\n<issue_description>When an applied overlay file changes, the code should regenerate, just like when the OpenAPI document itself changes.</issue_description>\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] Run generator watch mode with a local OpenAPI file and one overlay, edit only the overlay, and observe regenerated output updates automatically.\n- [ ] Run generator watch mode with an HTTP OpenAPI source plus a local overlay, edit only the overlay, and observe regeneration.\n- [ ] Run generator watch mode with an HTTP OpenAPI source and no overlays, and observe that no local file watch behavior is started.\n- [ ] Edit only the OpenAPI source (no overlay edits) and confirm existing regeneration behavior is unchanged.\n\n## Tasks\n\n- [x] Update `CodeGenerator.watch()` to watch overlay files in addition to the OpenAPI source when applicable.\n- [x] Preserve existing no-op watch behavior when no local files are watchable.\n- [x] Add targeted test coverage for regeneration triggered by overlay file edits.",
+    "state": "closed",
+    "created_at": "2026-05-22T22:53:32Z",
+    "closed_at": "2026-05-22T23:24:05Z",
+    "merged_at": "2026-05-22T23:24:05Z",
+    "merge_commit_sha": "2e7d38119d894d16a1fe30e5fad9f1bc72107e25",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1972,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1972",
+    "title": "fix: include path-item-level parameters in generated TypeScript types and server runtime",
+    "body": "## Summary\n\nOpenAPI allows parameters to be defined at the path item level (shared across all operations on that path), but both the TypeScript generator and the server dispatcher only read operation-level parameters — causing `path: never` in generated route handler types and missing type conversion (e.g. integer coercion) at runtime when parameters were declared at the path item level.\n\n**Root cause (type generator):** `buildDollarArgType` called `this.requirement.get(\"parameters\")` which only sees the operation object, never the parent path item.\n\n**Root cause (server):** `operationForPathAndMethod` returned the raw operation object without merging path-item-level parameters, so `parameterTypes()`, `collectExplodedObjectParams()`, and `validateRequest()` all missed those parameters.\n\n**Fix:** Both layers now merge path-item-level and operation-level parameters, with operation-level taking precedence on `name`+`in` collision per the OpenAPI specification. A new `parent` property on `Requirement` makes the path-item navigation direct and avoids URL string parsing. Merge logic in both layers uses a `Map` keyed on `\"${in}:${name}\"` for a clean O(n) implementation.\n\n```yaml\n# Before fix: generates `path: never` and skips integer coercion at runtime\npaths:\n  /stuff/{stuffId}:\n    parameters:\n      - name: stuffId\n        in: path\n        required: true\n        schema:\n          type: string\n    get:\n      responses:\n        '204':\n          description: successful\n```\n\n<details>\n<summary>Original Prompt</summary>\n\nParameters defined on the path level are ignored. The generated type in `types/paths/stuff/{stuffId}.types.ts` has `path: never` even though there should be the `stuffId` path parameter.\n\nParameters on path level are defined here: https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.2.md#fixed-fields-7\n\n</details>\n\n## Manual acceptance tests\n\n- [x] A spec with `parameters` defined only at the path item level generates a non-`never` `path` type in the corresponding `types/paths/…types.ts` file\n- [x] A spec with parameters at both path item level and operation level produces merged types, with the operation-level entry overriding the path-level one when they share the same `name` and `in`\n- [x] A spec with parameters only at the operation level continues to generate correct types (no regression)\n- [x] At runtime, an integer parameter defined at the path item level is correctly coerced from a URL string to a number before being passed to the handler\n- [x] Required parameters defined at the path item level are validated on incoming requests (missing parameter returns 400)\n\n## Tasks\n\n- Added `getEffectiveParameters()` to `OperationTypeCoder` — uses `this.requirement.parent` to access the path item requirement directly, merges path-item-level and operation-level parameter arrays using a `Map`\n- Updated `buildDollarArgType` to call `getEffectiveParameters()` instead of `this.requirement.get(\"parameters\")`\n- Changed `import type { Requirement }` → `import { Requirement }` to allow constructing the merged `Requirement` instance\n- Added `public parent: Requirement | undefined` property to `Requirement`; `get()` now sets `child.parent = this` so any consumer can navigate to the logical parent without URL string parsing\n- Added unit tests for `Requirement.parent`: child parent is set by `get()`, root has no parent, `select()` chains parents correctly\n- Added two new unit tests for the type generator: path-item-only params generate non-`never` path type; operation-level params override path-level on same `name`+`in`\n- Updated `OpenApiDocument.paths` in `dispatcher.ts` to type path items with an optional `parameters?: OpenApiParameters[]` field\n- Rewrote `mergeParameters()` in `dispatcher.ts` using a `Map<string, OpenApiParameters>` keyed on `\"${in}:${name}\"` (operation-level naturally overrides path-level on duplicate key)\n- Replaced `findOperation()` with `findPathItem()`; `operationForPathAndMethod()` now merges path-item parameters into the returned operation so type conversion, exploded query param reconstruction, and request validation all honour path-item-level parameters\n- Added two new dispatcher tests: path-item-only integer coercion; merge of path-item and operation-level parameters\n- Added changeset (patch)",
+    "state": "closed",
+    "created_at": "2026-04-30T14:41:14Z",
+    "closed_at": "2026-05-04T15:08:40Z",
+    "merged_at": "2026-05-04T15:08:40Z",
+    "merge_commit_sha": "695c1ca39d90d8cc26a8e5448f3209e81ef08e41",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1970,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1970",
+    "title": "fix: cast OAS3 schema-typed parameters at runtime",
+    "body": "## Summary\n\nOAS3 places parameter types under `parameter.schema.type` rather than the OAS2 top-level `parameter.type`. The dispatcher's `parameterTypes()` only read the OAS2 field, so path/query/header parameters declared OAS3-style were never cast — e.g. `$.path.petId` remained `\"1\"` (string) instead of `1` (number).\n\n**Fix:** one-line fallback in `Dispatcher.parameterTypes()`:\n\n```ts\n// Before\nconst type = parameter?.type;\n\n// After\nconst type = parameter?.type ?? parameter?.schema?.type;\n```\n\n**Test:** new dispatcher test mirrors the existing OAS2 casting test but uses `schema: { type: \"integer\" }` etc. to cover the OAS3 path end-to-end.\n\n<details>\n<summary>Original Prompt</summary>\n\nWhen a parameter is not a string per the OpenAPI spec the server should perform type conversions as necessary.\n\nFor example when GET /pet/1 is called, $.path.petId should be a number not a string.\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] `GET /pet/1` where `petId` is declared as OAS3 `schema: { type: \"integer\" }` — `$.path.petId` is the number `1`, not the string `\"1\"`\n- [ ] `GET /pets?limit=10` where `limit` is declared as OAS3 `schema: { type: \"integer\" }` — `$.query.limit` is the number `10`, not `\"10\"`\n- [ ] A header declared `schema: { type: \"boolean\" }` with raw value `\"true\"` arrives as the boolean `true` in the handler\n- [ ] OAS2-style `type: \"integer\"` path/query/header parameters still cast correctly (regression)\n- [ ] String parameters remain strings under both OAS2 and OAS3 declaration styles\n\n## Tasks\n\n- Fixed `Dispatcher.parameterTypes()` in `src/server/dispatcher.ts` to fall back to `parameter.schema?.type` when `parameter.type` is absent\n- Added a new test in `test/server/dispatcher.test.ts` covering OAS3 schema-typed path, query, and header parameter casting\n- Added a patch changeset",
+    "state": "closed",
+    "created_at": "2026-04-28T00:52:13Z",
+    "closed_at": "2026-04-28T02:20:44Z",
+    "merged_at": "2026-04-28T02:20:44Z",
+    "merge_commit_sha": "69ca5201ec2785a5e49b9f418fb83a4c4c9210e9",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1935,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1935",
+    "title": "Fix: Query params of type object are now exploded correctly (OpenAPI default)",
+    "body": "## Summary\n\nOpenAPI 3.x defaults query parameters of type `object` to `style: form, explode: true`, which means each property is sent as its own query param (e.g. `?page=0&size=100&sort=name`). Counterfact was looking for the literal parameter name (`pageable`) in the query string, producing a false 400 \"required\" error and never assembling the object for the handler.\n\n**Validation** (`src/server/request-validator.ts`)\n- Added `isExplodedObjectQueryParam()` — detects object-type query params using the OpenAPI 3.x default serialisation rules (`style: form`, `explode: true`)\n- `findMissingRequired()` now considers a required object param satisfied when any of its schema-declared properties appear in the query string\n\n**Object reconstruction** (`src/server/dispatcher.ts`)\n- Added `collectExplodedObjectParams()` — gathers flat query keys that match a parameter's schema properties back under the parameter name before the handler is called\n- Handler receives `$.query.pageable = { page: \"0\", size: \"100\" }` instead of bare `$.query.page` etc.\n- Unrelated query params remain at the top level of `$.query`\n\n**Type updates** (`src/counterfact-types/open-api-parameters.ts`)\n- Added `style?: string`, `explode?: boolean`, and `properties` to `OpenApiParameters` so the checks are type-safe\n\nSetting `explode: false` on a parameter in the spec opts out of this behaviour and restores the previous lookup-by-name semantics.\n\n<details>\n<summary>Original Prompt</summary>\n\n**Bug: Query Params of Type Object do not explode**\n\nWhen a query parameter is declared with a schema of `type: object` (e.g. `Pageable` with `page`, `size`, `sort`), calling the endpoint with exploded properties (`?page=0&size=100&sort=a`) returns:\n\n> Request validation failed: query parameter 'pageable' is required\n\nAccording to the OpenAPI spec, `in: query` parameters default to `style: form, explode: true`, so each object property should map to its own query param. The validator incorrectly expects a literal `pageable` key. Setting `style: form, explode: true` explicitly has no effect.\n\n</details>\n\n## Manual acceptance tests\n\n- [x] `GET /test?page=0&size=100` no longer returns 400 when `pageable` is a required object-type query parameter\n- [x] The handler receives `$.query.pageable` as a reconstructed object (`{ page: \"0\", size: \"100\" }`) rather than having those keys only at the top level\n- [x] Sending no `pageable` properties when the parameter is `required: true` still returns 400 mentioning the parameter name\n- [x] A query parameter with `explode: false` in the spec is still resolved by its own name (no regression)\n- [x] Unrelated query params not in the object schema remain accessible directly on `$.query`\n\n## Tasks\n\n- Added `isExplodedObjectQueryParam()` to `request-validator.ts` (exported) and wired it into `findMissingRequired()`\n- Added `collectExplodedObjectParams()` to `dispatcher.ts`; applied it between validation and handler dispatch\n- Broadened `DispatcherRequest.query` to `string | string[]` to match Koa's actual parsed type\n- Updated `OpenApiParameters` with `style`, `explode`, and `schema.properties`\n- Added 4 new tests covering acceptance, rejection, reconstruction, and preservation of unrelated params\n- Added patch changeset and documented exploded object query params in `docs/features/routes.md`",
+    "state": "closed",
+    "created_at": "2026-04-25T00:41:00Z",
+    "closed_at": "2026-04-25T01:54:12Z",
+    "merged_at": "2026-04-25T01:54:12Z",
+    "merge_commit_sha": "2997e43c12df3d4214d2302183b618d772c452e3",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1920,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1920",
+    "title": "Handle `_.context` syntax/import failures without crashing startup",
+    "body": "## Summary\n\nA broken `_.context.ts` (syntax/import error) previously bubbled into startup failure paths. This change makes context-module load failures non-fatal: Counterfact now warns and skips that context module, while continuing to load routes.\n\n- **Context load error handling**\n  - In `ModuleLoader.loadEndpoint`, context files (`_.context.*`) now take a dedicated error path on import failure.\n  - Instead of registering route-style 500 handlers or throwing, loader writes a warning and returns.\n- **Route error behavior unchanged**\n  - Non-context route modules still keep existing behavior (500 responder registration for import/syntax failures).\n- **Docs update**\n  - Added explicit note in state docs that invalid `_.context.ts` is skipped with a warning.\n- **Release metadata**\n  - Added a patch changeset describing the behavior change.\n\n```ts\nif (this.isContextFile(pathName)) {\n  const warning = isSyntaxError\n    ? `Warning: There is a syntax error in the context file: ${displayPath}`\n    : `Warning: There was an error loading the context file: ${displayPath}`;\n\n  process.stdout.write(`\\n${warning}\\n`);\n  return;\n}\n```\n\n<details>\n<summary>Original Prompt</summary>\n\n**Issue title:** App should not crash due to syntax error in _.context.ts\n\n**Issue description:** A syntax error in _.context.ts should not cause the app to crash. Instead it should print a warning and not load the context module.\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] Start Counterfact with a project whose `routes/_.context.ts` contains invalid syntax; verify startup continues and a warning is printed mentioning the context file.\n- [ ] With the same invalid `_.context.ts`, call a normal route module in that tree and verify it still responds (app remains operational).\n- [ ] Confirm the broken context is not applied (state/methods from that context are unavailable) until the file is fixed.\n- [ ] Introduce a syntax error in a route file (not `_.context.ts`) and verify existing route-error behavior is unchanged (generated 500 response path still applies).\n\n## Tasks\n\n- Added context-specific import-error handling in `src/server/module-loader.ts` to warn + skip for `_.context.*`.\n- Added focused regression test in `test/server/module-loader.test.ts` for invalid `_.context.js` behavior (warning emitted, route still loaded, context not registered).\n- Updated docs in `docs/features/state.md` to document warning-and-skip behavior for invalid context files.\n- Added patch changeset in `.changeset/free-numbers-relate.md`.",
+    "state": "closed",
+    "created_at": "2026-04-16T16:55:36Z",
+    "closed_at": "2026-04-16T17:18:46Z",
+    "merged_at": "2026-04-16T17:18:46Z",
+    "merge_commit_sha": "2f996fed5e708d8c2e478e522490dda680f02a2f",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1804,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1804",
+    "title": "Add runtime response header validation with OpenAPI hot-reload",
+    "body": "## Summary\n\nValidates response headers at runtime against the OpenAPI spec and reports errors as `response-type-error` HTTP headers — one header per error, with the same name repeated for multiple errors. Enabled by default; disable with `--no-validate-response`. Changes to the OpenAPI spec file are picked up automatically without a server restart.\n\n## Manual acceptance tests\n\n- [ ] Start counterfact against a spec with a required response header; call the route without setting it — verify a `response-type-error` header describes the missing header\n- [ ] Return a response header with the wrong type (e.g. `\"not-a-number\"` for an `integer` header) — verify a `response-type-error` header appears with a descriptive message\n- [ ] Return multiple invalid headers — verify multiple `response-type-error` headers appear (one per error, same header name)\n- [ ] Return all required response headers with correct types — verify no `response-type-error` headers appear\n- [ ] Start counterfact with `--no-validate-response` — verify no `response-type-error` headers appear even when headers are invalid\n- [ ] Routes with no response header schemas in the spec behave unchanged (no error headers added)\n- [ ] Edit the local OpenAPI spec file while the server is running — verify subsequent requests use the updated validation rules without restarting\n\n## Tasks\n\n- **`src/server/response-validator.ts`** (new) — AJV-based validator: checks required headers are present and header values match their schema types; coerces integer/number/boolean strings before validation; falls back to `default` response spec when the specific status code isn't defined\n- **`src/server/registry.ts`** — Added `appendedHeaders?: [string, string][]` to `CounterfactResponseObject` to explicitly represent repeated same-name headers as individual entries\n- **`src/server/dispatcher.ts`** — After normalizing the response, runs `validateResponse` when `config.validateResponses !== false`; maps each error to a separate `[\"response-type-error\", error]` tuple in `appendedHeaders` — one entry per error, no array bundling under a single key\n- **`src/server/koa-middleware.ts`** — Iterates `response.appendedHeaders` and calls `ctx.res.appendHeader` once per entry, sending each as a genuinely separate HTTP header\n- **`src/server/config.ts`** — Added `validateResponses: boolean`\n- **`bin/counterfact.js`** — Added `--no-validate-response` flag; wired to `validateResponses` in the config object\n- **`src/server/load-openapi-document.ts`** (new) — Extracted `loadOpenApiDocument` from `app.ts` into its own server-side module; re-exported from `app.ts` for backward compatibility\n- **`src/server/openapi-watcher.ts`** (new) — `OpenApiWatcher` class with `watch()` / `stopWatching()` methods; watches a local OpenAPI spec file with chokidar and updates `dispatcher.openApiDocument` on every `change` event so validation reflects the latest spec without a restart; skips URL-based specs\n- **`src/app.ts`** — Instantiates `OpenApiWatcher` and calls `watch()` / `stopWatching()` alongside the other watchers; no longer contains any inline file-watching logic\n- **Tests** — `test/server/response-validator.test.ts` (15 cases); dispatcher tests updated to assert on `appendedHeaders` for required-header missing, wrong type, valid, and disabled scenarios\n- **Docs** — `docs/reference.md` and `docs/faq.md` updated to document the feature and the new flag",
+    "state": "closed",
+    "created_at": "2026-04-09T21:03:19Z",
+    "closed_at": "2026-04-10T17:26:26Z",
+    "merged_at": "2026-04-10T17:26:26Z",
+    "merge_commit_sha": "5d09384d2439860023570aec240ae301b358ef06",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1795,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1795",
+    "title": "fix: type error when returning a response with no body",
+    "body": "## Summary\n\nReturning `$.response[status]` directly (without calling `.json()`, `.text()`, etc.) caused a spurious TypeScript type error for routes where the spec defines no response body.\n\n`GenericResponseBuilder` uses `OmitValueWhenNever<Response>` to detect a \"complete\" response (nothing left to provide). The generator always emits `examples: {}` in the response type even when no named examples exist. This caused:\n\n- `OmitValueWhenNever<{ content: never; headers: never; requiredHeaders: never; examples: {} }>` → `{ examples: {} }` (not omitted, since `{}` ≠ `never`)\n- `object extends { examples: {} }` → `false`\n- Type resolved to `GenericResponseBuilderInner` (with only `cookie` accessible), not `COUNTERFACT_RESPONSE`\n\nSo code like this incorrectly produced a type error:\n\n```ts\nexport const DELETE: deleteOrder = ($) => {\n  const deleted = $.context.deleteOrder($.path.orderId);\n  if (!deleted) return $.response[404]; // ← type error (wrongly)\n  return $.response[200];              // ← type error (wrongly)\n};\n```\n\nThe same root cause also prevented the `ALL_REMAINING_HEADERS_ARE_OPTIONAL` builder branch from ever being reached for responses with only optional headers remaining.\n\n<details>\n<summary>Original Prompt</summary>\n\nA route like the following is showing a type error. It should not.\n\n```ts\nexport const DELETE: deleteOrder = ($) => {\n  const deleted = $.context.deleteOrder($.path.orderId);\n  if (!deleted) {\n    return $.response[404];\n  }\n  return $.response[200];\n};\n```\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] A route handler that returns `$.response[200]` with no body in the spec compiles without type errors\n- [ ] A route handler that returns `$.response[404]` with no body in the spec compiles without type errors\n- [ ] Routes with a body (`$.response[200].json(data)`) continue to work unchanged\n- [ ] `ResponseBuilderFactory` with no-body status codes: the factory value is directly assignable to `COUNTERFACT_RESPONSE` without calling any builder method\n- [ ] A response with only optional headers (no content) resolves to the `ALL_REMAINING_HEADERS_ARE_OPTIONAL` builder, exposing `.header()` and `.ALL_REMAINING_HEADERS_ARE_OPTIONAL`\n\n## Tasks\n\n- Updated `GenericResponseBuilder` in `src/counterfact-types/index.ts` to use `Omit<Response, \"examples\">` in both `OmitValueWhenNever` checks, so the always-present `examples: {}` field no longer interferes with completion detection\n- Added TSD type tests for no-body response factory assignability to `COUNTERFACT_RESPONSE`\n- Added TSD type test verifying that responses with only optional headers correctly resolve to the `ALL_REMAINING_HEADERS_ARE_OPTIONAL` builder\n- Added changeset (patch)",
+    "state": "closed",
+    "created_at": "2026-04-09T01:29:14Z",
+    "closed_at": "2026-04-09T02:48:09Z",
+    "merged_at": "2026-04-09T02:48:09Z",
+    "merge_commit_sha": "4d64c2eaa1d10f1d0598c3a34ef01530e444143a",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1740,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1740",
+    "title": "fix: escape XML special characters in jsonToXml text content",
+    "body": "## Problem\n\nIn `src/server/json-to-xml.ts`, the `jsonToXml` function escapes attribute values via `xmlEscape()` but does **not** escape text content in the fallback branch for primitive values:\n\n```ts\nreturn `<${name}>${String(json)}</${name}>`;\n```\n\nIf the string contains `<`, `>`, `&`, `\"` or ``, the output will be malformed XML. For example, `jsonToXml(\"<script>alert(1)</script>\", undefined, \"data\")` produces `<data><script>alert(1)</script></data>` — broken XML.\n\n## Fix\n\nApply the existing `xmlEscape()` function to `String(json)` in the text content branch:\n\n```ts\nreturn `<${name}>${xmlEscape(String(json))}</${name}>`;\n```\n\n## Testing\n\nAdded two new test cases:\n- Escaping `<script>alert(\"xss\")</script>` in text content\n- Escaping `&`, `<`, `>` in a mixed string\n\nFixes #1739",
+    "state": "closed",
+    "created_at": "2026-04-08T18:12:57Z",
+    "closed_at": "2026-04-09T12:26:44Z",
+    "merged_at": "2026-04-09T12:26:44Z",
+    "merge_commit_sha": "4a94e4ebdec2f3de33dee3cf6be6b069bcd63de7",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1684,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1684",
+    "title": "Fix Tools.accepts() failing when Accept header has spaces after commas",
+    "body": "`Tools.accepts()` incorrectly returned `false` for valid Accept headers like `\"text/html, application/json\"` because tokens weren't trimmed after splitting on `\",\"`, leaving a leading space that broke the type comparison.\n\n## Summary\n\nSingle-char fix: `.trim()` each token before splitting on `\"/\"`.\n\n```ts\n// Before\nconst [type, subtype] = acceptType.split(\"/\");\n// After\nconst [type, subtype] = acceptType.trim().split(\"/\");\n```\n\n<details>\n<summary>Original Prompt</summary>\n\n`Tools.accepts()` splits on `\",\"` but does not trim whitespace from each part. This produces `[\" application/json\"]` (with a leading space) as the second element. When that is further split on `\"/\"`, the type becomes `\" application\"` rather than `\"application\"`, so the comparison always fails and `accepts()` returns `false` even when the type is listed in the Accept header.\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] `Tools.accepts('application/json')` returns `true` when Accept header is `\"text/html, application/json\"` (space after comma)\n- [ ] `Tools.accepts('text/html')` returns `true` when Accept header is `\"text/html\"` (no change to single-type behavior)\n- [ ] `Tools.accepts('text/html')` returns `true` when Accept header is `\"text/*\"` (wildcard subtype still works)\n- [ ] `Tools.accepts('application/json')` returns `false` when Accept header is `\"text/*\"` (rejection still works)\n- [ ] `Tools.accepts('what/ever')` returns `true` when Accept header is `undefined` (missing header still accepts all)\n\n## Tasks\n\n- Added `.trim()` to each `acceptType` token before splitting on `\"/\"` in `src/server/tools.ts`\n- Added test case for space-separated Accept header to the `it.each` truth table in `test/server/tools.test.ts`",
+    "state": "closed",
+    "created_at": "2026-04-06T22:21:16Z",
+    "closed_at": "2026-04-06T23:02:09Z",
+    "merged_at": "2026-04-06T23:02:09Z",
+    "merge_commit_sha": "ce3da8468e957899cfc436c33dcb391512460f0d",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1683,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1683",
+    "title": "fix: Tools.accepts() case-insensitive accept header lookup",
+    "body": "`Tools.accepts()` read `this.headers.Accept` (capital A), but Node.js normalizes all incoming HTTP header names to lowercase. In production, `this.headers.Accept` is always `undefined`, triggering the early-return guard and making `accepts()` unconditionally return `true`.\n\n## Summary\n\nReplace the direct key lookup with a case-insensitive search so `accept`, `Accept`, and `ACCEPT` all resolve correctly.\n\n```ts\n// Before — broken in production (Node.js lowercases all headers)\nconst acceptHeader = this.headers.Accept;\n\n// After — handles any casing\nconst acceptHeader = Object.entries(this.headers).find(\n  ([key]) => key.toLowerCase() === \"accept\",\n)?.[1];\n```\n\n<details>\n<summary>Original Prompt</summary>\n\n`Tools.accepts()` reads `this.headers.Accept` (capital A). Node.js normalises all incoming HTTP header names to **lowercase**, so when a real HTTP request is processed via Koa the header is stored under `accept` (lowercase). `this.headers.Accept` is therefore always `undefined` in production.\n\nBecause `undefined` triggers the early-return guard `if (acceptHeader === \"\" || acceptHeader === undefined) { return true; }`, the method unconditionally returns `true` — completely ignoring the client's actual Accept header.\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] `Tools.accepts(\"application/json\")` returns `false` when the request carries a lowercase `accept: text/plain` header\n- [ ] `Tools.accepts(\"text/html\")` returns `true` when the request carries `accept: text/html`\n- [ ] `Tools.accepts(\"text/html\")` returns `true` when the request carries `Accept: text/html` (capital A, e.g. from a browser or curl)\n- [ ] `Tools.accepts(\"application/json\")` returns `true` when no `accept` header is present (existing permissive behavior unchanged)\n- [ ] A route handler that gates response type on `tools.accepts()` returns `406 Not Acceptable` when the client sends an incompatible `accept` header in a real Koa request\n\n## Tasks\n\n- Added failing test: `accepts('application/json') returns false when lowercase 'accept' header is 'text/plain'`\n- Replaced `this.headers.Accept` with a case-insensitive `Object.entries()` lookup in `src/server/tools.ts`",
+    "state": "closed",
+    "created_at": "2026-04-06T22:21:04Z",
+    "closed_at": "2026-04-07T11:27:08Z",
+    "merged_at": "2026-04-07T11:27:08Z",
+    "merge_commit_sha": "4757c4500f56df552aa0cdf53b011c0310ff4694",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1682,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1682",
+    "title": "Fix: Dispatcher proxy() always throws when request body is present",
+    "body": "`proxy()` in the Dispatcher was broken in two ways: `headers.contentType` (camelCase) was used instead of `headers[\"content-type\"]` (kebab-case), causing the guard to always evaluate as `true`; and the guard itself unnecessarily restricted proxying to `application/json` requests only.\n\n## Summary\n\nRemove the content-type restriction from `proxy()` entirely so it works for all content types. Rather than re-serializing the parsed body, `proxy()` now forwards `ctx.request.rawBody` — the original wire bytes stored by `koa-bodyparser` before parsing — directly to `fetch()`. This eliminates all re-serialization and correctly handles every content type, including those with charset suffixes (e.g. `application/json; charset=utf-8`).\n\n```ts\n// Before (broken — threw for every request with a body)\nif (body !== undefined && headers.contentType !== \"application/json\") {\n  throw new Error(`$.proxy() is currently limited to application/json requests...`);\n}\nbody: body === undefined ? undefined : JSON.stringify(body),\n\n// After — no restriction, no re-serialization; raw wire bytes forwarded as-is\nbody: body === undefined ? undefined : rawBody,\n```\n\n`koa-bodyparser` unconditionally sets `returnRawBody: true` on `co-body` internally, so `ctx.request.rawBody` is always available as the unparsed string for any request that has a body.\n\n<details>\n<summary>Original Prompt</summary>\n\n`proxy()` in the Dispatcher had a guard that threw when the request body was present and the content-type was not `application/json`. The guard used `headers.contentType` (camelCase) instead of `headers[\"content-type\"]` (kebab-case), so it was always `undefined`, making the condition always `true` — causing `proxy()` to throw for every request carrying a body, including valid `application/json` POSTs.\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] `POST /any-route` with `content-type: application/json` and a JSON body successfully proxies through without throwing\n- [ ] `POST /any-route` with `content-type: application/json; charset=utf-8` and a JSON body successfully proxies through (charset suffix handled correctly)\n- [ ] `POST /any-route` with `content-type: text/plain` and a plain-text body successfully proxies through without throwing\n- [ ] `POST /any-route` with `content-type: application/x-www-form-urlencoded` and a body successfully proxies through without throwing\n- [ ] `GET /any-route` with no body proxies normally (unchanged behavior)\n- [ ] The upstream response body and headers are returned correctly regardless of content type\n\n## Tasks\n\n- Remove the content-type restriction guard from `proxy()` in `src/server/dispatcher.ts`\n- Add `rawBody?: string` to `DispatcherRequest` type\n- In `koa-middleware.ts`, declare `rawBody` on the Koa `Request` interface, destructure `ctx.request.rawBody`, and pass it through to `dispatcher.request()` (excluded for GET/HEAD, consistent with `body`)\n- In `dispatcher.ts`, destructure `rawBody` in `request()` and use `body === undefined ? undefined : rawBody` in `proxy()` — no re-serialization of any kind\n- Update tests: pass `rawBody` alongside `body` and verify the exact string forwarded to upstream `fetch` is the raw wire bytes unchanged",
+    "state": "closed",
+    "created_at": "2026-04-06T22:20:52Z",
+    "closed_at": "2026-04-06T23:46:49Z",
+    "merged_at": "2026-04-06T23:46:49Z",
+    "merge_commit_sha": "fe38756485ce5650d895012e992b28d22f289f9a",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1665,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1665",
+    "title": "Improve error messages for malformed OpenAPI specs",
+    "body": "## Summary\n\nA bad or partial OpenAPI document produced a raw JavaScript stack trace instead of a user-facing message. This replaces those stack traces with clear, actionable errors that include the spec path and the underlying cause.\n\n**Before:**\n```\nResolverError: Error opening file /path/to/bad-spec.yaml: ENOENT: no such file or directory\n    at Object.read (node_modules/@apidevtools/json-schema-ref-parser/dist/lib/resolvers/file.js:74:19)\n    at ...\n```\n\n**After:**\n```\n❌ Could not load the OpenAPI spec from \"bad-spec.yaml\".\nError opening file /path/to/bad-spec.yaml: ENOENT: no such file or directory, open '/path/to/bad-spec.yaml'\n```\n\n<details>\n<summary>Original Prompt</summary>\n\nA bad or partial OpenAPI document currently produces a JavaScript stack trace, not a user-facing message pointing at the problem. Given that users feed arbitrary specs to this tool, clear, actionable errors at this boundary would meaningfully reduce friction.\n\n</details>\n\n## Manual acceptance tests\n\n- [x] Running `counterfact nonexistent.yaml ./api` prints a `❌` message containing the spec path and a clear reason (e.g. ENOENT), with no stack trace\n- [x] Running with a spec that has a broken `$ref` (pointing to a missing file) prints a user-friendly error, not a raw exception\n- [x] Running `counterfact _ ./api` (no-spec mode) starts normally without any spec-loading error\n- [x] Running with a valid spec still works as before — routes and types are generated correctly\n- [x] A spec that fails to load during `--generate` prints only the friendly error message and exits cleanly\n\n## Tasks\n\n- **`specification.ts`** — `load()` wraps `bundle()` errors: catches, formats a `Could not load the OpenAPI spec from \"...\"` message, re-throws with `{ cause }` preserved\n- **`app.ts`** — `loadOpenApiDocument()` throws the same friendly error format instead of silently returning `undefined`; `counterfact()` and `start()` skip spec loading and code generation/watching when `openApiPath === \"_\"` (run-without-spec mode); removed now-dead `undefined` guard in `createMswHandlers()`\n- **`bin/counterfact.js`** — wrapped both `await counterfact(config)` and `await start(config)` in `try/catch`; on failure, prints only `error.message` prefixed with `❌` and exits cleanly — no stack trace exposed to the user\n- **`test/app.test.ts`** — changed mock config `openApiPath` from the non-existent `\"foo.yaml\"` to `\"_\"` so tests no longer rely on silent spec-load failure\n- **`specification.test.ts`** — added three error-handling tests: file not found, broken `$ref`, and verifying ENOENT details appear in the thrown message",
+    "state": "closed",
+    "created_at": "2026-04-06T01:24:27Z",
+    "closed_at": "2026-04-06T17:19:38Z",
+    "merged_at": "2026-04-06T17:19:38Z",
+    "merge_commit_sha": "e4b7a7ce8f444bac0bdda3b5206bc12ea48665c5",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1651,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1651",
+    "title": "Bug Hunt: issue proposals documenting 3 bugs",
+    "body": "Hunted for potential bugs and documented them as GitHub issue proposals. No fixes applied.\n\n## Summary\n\nThree bugs identified across `tools.ts` and `dispatcher.ts`, each with a GitHub issue proposal under `.github/issue-proposals/` explaining the root cause and acceptance criteria.\n\n<details>\n<summary>Original Prompt</summary>\n\nLook for potential bugs. Don't fix them, just create failing tests and document in bugs.md\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] Three issue proposal files exist under `.github/issue-proposals/` with correct `parentIssue` front matter, one for each bug\n- [ ] `bug-tools-accepts-ignores-lowercase-accept-header.md` describes the `accepts()` capital-A header bug with root cause and acceptance criteria\n- [ ] `bug-tools-accepts-whitespace-in-accept-header.md` describes the whitespace-after-comma bug with root cause and acceptance criteria\n- [ ] `bug-dispatcher-proxy-throws-on-json-post.md` describes the `headers.contentType` camelCase bug with root cause and acceptance criteria\n- [ ] `yarn test` passes with no new failures introduced by this PR\n\n## Tasks\n\n- Audited `tools.ts`, `dispatcher.ts`, `registry.ts`, `context-registry.ts`, and `is-proxy-enabled-for-path.ts` for bugs\n- **Bug 1** (`tools.ts`): `accepts()` reads `this.headers.Accept` (capital A); Node.js lowercases all header keys, so this is always `undefined` in production — method always returns `true`\n- **Bug 2** (`tools.ts`): `accepts()` splits Accept header on `\",\"` without trimming; `\"text/html, application/json\"` yields `\" application\"` (with leading space), breaking type comparison\n- **Bug 3** (`dispatcher.ts`): proxy guard checks `headers.contentType` (camelCase) instead of `headers[\"content-type\"]`; evaluates to `body !== undefined`, throwing on every POST/PUT/PATCH with a body\n- Created `.github/issue-proposals/bug-tools-accepts-ignores-lowercase-accept-header.md` for Bug 1\n- Created `.github/issue-proposals/bug-tools-accepts-whitespace-in-accept-header.md` for Bug 2\n- Created `.github/issue-proposals/bug-dispatcher-proxy-throws-on-json-post.md` for Bug 3",
+    "state": "closed",
+    "created_at": "2026-04-05T23:59:15Z",
+    "closed_at": "2026-04-06T18:02:26Z",
+    "merged_at": "2026-04-06T18:02:26Z",
+    "merge_commit_sha": "e9ced69faba6ea680592a0115c38583a831009f6",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1624,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1624",
+    "title": "Fix: syntax error in a route file no longer crashes the server",
+    "body": "A syntax error in a CommonJS route file would crash Counterfact via an unhandled promise rejection. `require()` throws synchronously on parse failure; the existing `.catch()` only handled promise rejections, so the error re-threw past `void loadEndpoint(...)`.\n\n## Summary\n\n**Root cause:** `uncached-require.cjs` called `require()` synchronously inside `Promise.resolve(...)`, so a `SyntaxError` escaped before `.catch()` could intercept it. The outer `catch` re-threw, producing an unhandled rejection.\n\n**Fix:**\n- **`uncached-require.cjs`** — wrap `require()` in `try/catch`, return `Promise.reject(error)` on failure so errors are always promise rejections\n- **`module-loader.ts` (`loadEndpoint`)** — capture import errors and register a stub `Module` for all HTTP methods that returns `500` with an informative message:\n  - `SyntaxError` → `\"There is a syntax error in the route file: <path>\"`\n  - Other errors → `\"There was an error loading the route file: <path>\"`\n- When the file is fixed and the watcher fires again, `registry.add` overwrites the stub with the real handler\n\n<details>\n<summary>Original Prompt</summary>\n\nIf a file under `./routes` has a syntax error, Counterfact currently crashes.\n\nThe server should not crash. Requests to that route should return a 500 error with a message: \"There is a syntax error in the route file: ./routes/my/path.ts\"\n\n</details>\n\n## Manual acceptance tests\n\n- [x] Saving a route file with a syntax error (e.g. `const = 1;`) does not crash the server\n- [x] A `GET` request to a route whose file has a syntax error returns HTTP 500 with a message containing \"syntax error\" and the file path\n- [x] All other routes continue to respond normally while one route file is broken\n- [x] Fixing the syntax error and saving the file causes the route to respond correctly (stub is replaced by real handler)\n- [x] A `.cjs` CommonJS route file with a syntax error also returns 500 instead of crashing (this was the primary crash path)\n- [x] Deleting a broken route file removes the 500 stub from the registry\n\n## Tasks\n\n- Wrap `require()` in `try/catch` in `uncached-require.cjs` to convert synchronous throws into `Promise.reject`\n- Capture import errors in `loadEndpoint` and register a 500 stub module covering all HTTP methods\n- Add tests for ESM and CJS route files with syntax errors\n- Add changeset entry",
+    "state": "closed",
+    "created_at": "2026-04-02T22:35:27Z",
+    "closed_at": "2026-04-03T14:17:51Z",
+    "merged_at": "2026-04-03T14:17:51Z",
+    "merge_commit_sha": "4769e51c03f72986d72682222c64890a70d61063",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1622,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1622",
+    "title": "Fix reserved keyword operationId causing TypeScript syntax errors",
+    "body": "## Summary\n\nWhen an OpenAPI spec uses a JS/TS reserved keyword (e.g. `delete`, `import`, `type`) as an `operationId`, Counterfact emits invalid TypeScript like `import type { delete } from ...`, crashing with a `SyntaxError`. The fix appends `_` to any sanitized identifier that collides with a reserved word.\n\n```ts\n// operationId \"delete\" → \"delete_\"\nexport type delete_ = { ... };\n```\n\n<details>\n<summary>Original Prompt</summary>\n\nOpenAPI specs that use reserved words as `operationId` (valid per the spec, accepted by Swagger Editor) caused a `SyntaxError` in generated TypeScript. Example: `operationId: delete` produced `import type { delete } from ...`.\n\nMaintainer direction: append `_` to the identifier and leave an explanatory comment.\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] An OpenAPI spec with `operationId: delete` generates valid TypeScript (no `SyntaxError` on import)\n- [ ] The generated type name is `delete_` (not `delete`)\n- [ ] Other reserved words (`import`, `type`, `return`, etc.) are similarly suffixed with `_`\n- [ ] A non-reserved `operationId` like `deleteItem` is unchanged\n- [ ] An `operationId` that becomes a reserved word after sanitization (e.g. `delete!!`) is also suffixed\n- [ ] Existing operationId sanitization (camelCase, digit prefix) still works correctly\n\n## Tasks\n\n- Added `RESERVED_WORDS` set covering all JS/TS reserved and future-reserved words to `operation-type-coder.js`\n- Updated `sanitizeIdentifier` to append `_` when the result is a reserved word\n- Added unit tests for direct reserved words, post-sanitization collisions, and non-colliding identifiers",
+    "state": "closed",
+    "created_at": "2026-04-02T22:28:11Z",
+    "closed_at": "2026-04-03T00:17:21Z",
+    "merged_at": "2026-04-03T00:17:21Z",
+    "merge_commit_sha": "59f74e1cf2374290b0499567bbe5ff9107cd011b",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1621,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1621",
+    "title": "Fix TypeError when response content has no schema",
+    "body": "## Summary\n\nWhen a response content entry defines only `examples` (no `schema`), the TypeScript type generator crashes with `TypeError: Cannot read properties of undefined (reading 'data')` and emits a useless error-comment stub type instead of a valid type.\n\n**Root cause:** `SchemaTypeCoder` was constructed unconditionally with `content.get(\"schema\")`, which returns `undefined` when the key is absent. The coder then blows up accessing `.data` on `undefined`.\n\n**Fix:** Guard with `content.has(\"schema\")` before constructing `SchemaTypeCoder`; fall back to `unknown` when absent.\n\n```js\n// Before — crashes when schema is missing\nbody?: ${new SchemaTypeCoder(content.get(\"schema\")).write(script)}\n\n// After — graceful fallback\nbody?: ${content.has(\"schema\") ? new SchemaTypeCoder(content.get(\"schema\")).write(script) : \"unknown\"}\n```\n\n<details>\n<summary>Original Prompt</summary>\n\nWhen a response lacks a schema (e.g. only has `examples`), the generated type for that operation collapses to an empty `{}` containing only an error comment. This makes the `$` argument in the route handler lose all useful type information (request body, parameters, etc.). The requested behavior is to emit `unknown` for the response body type instead of crashing.\n\n</details>\n\n## Manual acceptance tests\n\n- [x] `POST /stuff` with the issue's spec generates a valid `createStuff` type with `body?: unknown` for the 200 response — no error comment\n- [x] The `$` argument in the generated route handler retains meaningful types for request body and parameters when response schema is absent\n- [x] Response content that has both `examples` and a `schema` still generates the correctly typed body (no regression)\n- [x] Response with no `content` at all still generates `{ status: N }` with no body field\n- [x] OpenAPI 2 specs with schema-only responses are unaffected\n\n## Tasks\n\n- Guard `content.has(\"schema\")` before constructing `SchemaTypeCoder` in `operation-type-coder.js` (`responseTypes`)\n- Same guard in `response-type-coder.js` (`buildContentObjectType`)\n- Unit tests covering the no-schema case in both coders",
+    "state": "closed",
+    "created_at": "2026-04-02T22:14:42Z",
+    "closed_at": "2026-04-03T00:06:43Z",
+    "merged_at": "2026-04-03T00:06:43Z",
+    "merge_commit_sha": "8587018a0daa9f93b934b6e0060023b954c4fb91",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1620,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1620",
+    "title": "Fix import path for routes containing colons (e.g. `/stuff:action`)",
+    "body": "## Summary\n\nRoutes with colons in their path (e.g. `/stuff:action`) caused the generated route handler to import from the wrong type file path, making `$` resolve to `any` instead of the correct typed parameter.\n\n**Root cause:** `repository.js` writes files to disk using `escapePathForWindows()`, which replaces `:` with `∶` (U+2236 ratio symbol). But `script.js#importStatements()` computed the import path from the raw unescaped path, producing a mismatch:\n\n```ts\n// Before (broken) — file on disk is `stuff∶action.types.js`, import references `stuff:action.types.js`\nimport type { stuffAction } from \"../types/paths/stuff:action.types.js\";\n\n// After (fixed) — import matches actual file on disk\nimport type { stuffAction } from \"../types/paths/stuff∶action.types.js\";\n```\n\n<details>\n<summary>Original Prompt</summary>\n\nRoutes with Colons lead to wrong file import path\n\nWhile the filenames are generated as expected (with the ratio character instead of the colon character), the import statement in the route file to import the type file is not adjusted properly:\n\n```ts\nimport type { stuffAction } from \"../types/paths/stuff:action.types.js\"; // this is a colon, not a ratio\n```\n\nThis leads to `$` having type `any` which is undesirable.\n\n</details>\n\n## Manual acceptance tests\n\n- [x] Generating files from a spec with a colon route (e.g. `/stuff:action`) produces an import path using `∶` (ratio symbol), not `:`\n- [x] TypeScript correctly resolves the imported type — `$` is typed, not `any`\n- [x] Routes without colons continue to generate correct import paths unchanged\n- [x] The generated type file (e.g. `stuff∶action.types.ts`) is written to disk and resolvable by the import in the route handler\n- [x] Nested colon paths (e.g. `/category:type/items`) also produce correct import paths\n\n## Tasks\n\n- Applied `escapePathForWindows()` to `resolvedPath` in `Script#importStatements()` (`src/typescript-generator/script.js`)\n- Added unit test in `test/typescript-generator/script.test.js` asserting colon is escaped to ratio symbol in generated imports\n- Updated snapshot in `test/typescript-generator/__snapshots__/generate.test.ts.snap` to reflect the corrected import path\n- Added changeset entry (`patch`)",
+    "state": "closed",
+    "created_at": "2026-04-02T22:13:56Z",
+    "closed_at": "2026-04-02T23:33:19Z",
+    "merged_at": "2026-04-02T23:33:19Z",
+    "merge_commit_sha": "80dc0732ecb4e6e664dbedc29d1ceac7ce49a366",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1614,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1614",
+    "title": "Fix crash when a route file is deleted",
+    "body": "## Summary\n\nWhen a file deletion (`unlink`) was detected by chokidar, the watch handler removed the route from the registry but then fell through and called `loadEndpoint` on the now-gone file. The failed import returned `undefined`, and calling `isContextModule(undefined)` threw `TypeError: Cannot use 'in' operator to search for 'Context' in undefined`. For non-context route files, `registry.add(url, undefined)` silently re-registered the deleted route with an `undefined` module, causing failures on subsequent requests.\n\n<details>\n<summary>Original Prompt</summary>\n\nCounterfact should not crash after a route file is deleted. I think the crash is coming from the typescript generator or module loader. A file deleted by the user should be handled gracefully, just as a file added by the user is handled gracefully.\n\n</details>\n\n## Manual acceptance tests\n\n- [x] Deleting a route file (e.g. `pets.js`) while the server is running removes that route — subsequent requests return 404, not a crash\n- [x] Deleting a `_.context.js` file while the server is running does not crash the server; other routes remain accessible\n- [x] Adding a new route file after a delete continues to work normally (hot-reload is not broken)\n- [x] Server startup and normal request handling are unaffected when no files are deleted\n- [x] Deleting a file with a syntax error (which previously failed to load) does not crash the server\n\n## Tasks\n\n- **`src/server/module-loader.ts` — watch handler**: Added `return` after `unlink` handling so `loadEndpoint` is never called on the deleted file\n- **`src/server/module-loader.ts` — `loadEndpoint`**: Added null guard after import — if the module resolves to `undefined` (failed load), skip registration entirely; also improved the catch log from the useless `\"ERROR\"` string to `console.error(\\`Failed to import ${pathName}:\\`, error)`\n- **`test/server/module-loader.test.ts`**: Added test covering the context-file-deletion crash path\n- **`.changeset/fix-crash-on-file-delete.md`**: Added patch changeset describing the fix",
+    "state": "closed",
+    "created_at": "2026-04-01T21:23:41Z",
+    "closed_at": "2026-04-02T22:10:49Z",
+    "merged_at": "2026-04-02T22:10:49Z",
+    "merge_commit_sha": "22a2226fd8dd231bc9bb14fabd312467b8eeb118",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1612,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1612",
+    "title": "Fix Access-Control-Allow-Methods to reflect actual route handler methods",
+    "body": "## Summary\n\n`Access-Control-Allow-Methods` was hardcoded to `\"GET,HEAD,PUT,POST,DELETE,PATCH\"` for every route. It should reflect only the methods actually exported by the route handler, which the registry already tracks via `allowedMethods(path)`.\n\n<details>\n<summary>Original Prompt</summary>\n\n> This line is incorrect.\n>\n> `ctx.set(\"Access-Control-Allow-Methods\", \"GET,HEAD,PUT,POST,DELETE,PATCH\");`\n>\n> Counterfact should figure out which methods are actually allowed, i.e. what functions are exported by the route handler.\n>\n> The answer can be found in `registry.allowedMethods(path)`\n\n</details>\n\n## Manual acceptance tests\n\n- [ ] A route with only `GET` exported returns `Access-Control-Allow-Methods: GET` in the CORS preflight response\n- [ ] A route with `GET` and `POST` exported returns both methods in `Access-Control-Allow-Methods`\n- [ ] An OPTIONS preflight to a route returns only its implemented methods, not the full `GET,HEAD,PUT,POST,DELETE,PATCH` list\n- [ ] Routes that existed before this change continue to function normally for their implemented methods\n- [ ] A path with no handlers returns an empty `Access-Control-Allow-Methods` rather than the hardcoded list\n\n## Tasks\n\n- Updated `addCors` in `koa-middleware.ts` to accept `allowedMethods: string` as an explicit parameter instead of hardcoding the value\n- Passed `dispatcher.registry.allowedMethods(path)` at the call site, dynamically deriving allowed methods per path\n- Updated CORS unit tests to assert the actual registered methods (e.g. `\"POST\"`) rather than the old blanket string\n- Added a changeset (`patch`) describing the fix",
+    "state": "closed",
+    "created_at": "2026-04-01T21:07:56Z",
+    "closed_at": "2026-04-01T21:24:18Z",
+    "merged_at": "2026-04-01T21:24:18Z",
+    "merge_commit_sha": "830480d1651803c3b6fba9445f05ec8fdb364491",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1609,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1609",
+    "title": "fix: set Content-Type: application/json in RawHttpClient when body is an object",
+    "body": "## Summary\n\n`RawHttpClient#send` serialized object bodies to JSON and set `Content-Length`, but never added `Content-Type: application/json`. Without it, `koa-bodyparser` can't identify the payload as JSON, falls through all content-type checks, and returns `{}` — making `$.body` always empty in route handlers when requests originate from the REPL client.\n\nFix injects `Content-Type: application/json` automatically when the body is a non-null object and the caller hasn't already supplied a `content-type` header:\n\n```ts\n// src/repl/RawHttpClient.ts\nconst effectiveHeaders = { ...headers };\n\nif (\n  typeof bodyAsStringOrObject === \"object\" &&\n  bodyAsStringOrObject !== null &&\n  !Object.keys(effectiveHeaders).some(\n    (k) => k.toLowerCase() === \"content-type\",\n  )\n) {\n  effectiveHeaders[\"Content-Type\"] = \"application/json\";\n}\n```\n\n<details>\n<summary>Original Prompt</summary>\n\nSomehow parsing the request body got broken. The value of $.body is always {} even when a body is passed in the HTTP request. It seems like the problem only happens when I call client.post(). So maybe the real issue is in RawHttpClient.\n\n</details>\n\n## Manual acceptance tests\n\n- [x] `$.post('/some-route', { key: 'value' })` in the REPL delivers `{ key: 'value' }` as `$.body` in the route handler\n- [x] `$.put('/some-route', { key: 'value' })` and `$.patch('/some-route', { key: 'value' })` likewise populate `$.body` correctly\n- [x] Passing a string body (e.g. `$.post('/route', 'raw')`) does not inject any `Content-Type` header\n- [x] Passing an explicit `Content-Type` header (e.g. `$.post('/route', {}, { 'Content-Type': 'text/plain' })`) is preserved — not overridden with `application/json`\n- [x] Routes that receive no body (GET, DELETE) are unaffected\n\n## Tasks\n\n- Detected that `RawHttpClient#send` was never setting `Content-Type` for object bodies, causing `koa-bodyparser` to return `{}`\n- Added `effectiveHeaders` shallow-copy logic to inject `Content-Type: application/json` only when needed\n- Added `test/repl/RawHttpClient.test.ts` covering auto-injection, no-override, string-body, PUT, and PATCH cases\n- Added `.changeset/fix-raw-http-client-content-type.md` to record this as a `patch` release",
+    "state": "closed",
+    "created_at": "2026-04-01T20:31:36Z",
+    "closed_at": "2026-04-02T22:44:09Z",
+    "merged_at": "2026-04-02T22:44:09Z",
+    "merge_commit_sha": "241d6284ac1424669c179ca4538786b97aa11539",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1591,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1591",
+    "title": "Fix REPL tab completion broken by custom completer overriding Node's built-in",
+    "body": "The custom `client.<method>(\"...\")` completer replaced Node's built-in REPL completer entirely, so `context.<Tab>` and all other built-in property completions stopped working.\n\n## Summary\n\nThe fix converts the completer to async and threads the built-in REPL completer through as a fallback:\n\n```ts\n// Before: custom completer passed at startup, replaces built-in\nconst replServer = repl.start({ completer: createCompleter(registry), prompt: \"⬣> \" });\n\n// After: capture built-in first, then wrap it\nconst replServer = repl.start({ prompt: \"⬣> \" });\nconst builtinCompleter = replServer.completer as (line: string, callback: CompleterCallback) => void;\n// eslint-disable-next-line @typescript-eslint/no-explicit-any\n(replServer as any).completer = createCompleter(registry, builtinCompleter);\n```\n\n`createCompleter` now accepts an optional async `fallback` and returns an `AsyncCompleter`. When input doesn't match the `client.<method>(\"...\")` pattern, it delegates to the fallback instead of returning empty completions.\n\n`@types/node` marks `REPLServer.completer` as readonly, but Node.js sets it as a plain writable instance property in the constructor. The built-in completer is only available after `repl.start()` returns, so it cannot be passed to `repl.start()` directly — we must capture it from the returned instance and replace it with our wrapper via `as any`.\n\n<details>\n<summary>Original Prompt</summary>\n\nREPL tab completion for `context.<Tab>` and all other built-in property completions was broken because the custom `client.<method>(\"...\")` completer replaced Node's built-in REPL completer entirely when passed to `repl.start()`.\n\n</details>\n\n## Manual acceptance tests\n\n- [x] Typing `context.` in the REPL and pressing Tab shows property completions (e.g. `context.loadContext`, etc.)\n- [x] Typing `client.get(\"/p` and pressing Tab still suggests matching routes (e.g. `/pets`, `/pets/{petId}`)\n- [x] Typing a partial variable name (e.g. `con`) and pressing Tab completes to `context`\n- [x] Typing `client.` and pressing Tab shows method completions from the built-in completer\n- [x] Pressing Tab on an empty line or unrelated expression does not throw or produce an error\n\n## Tasks\n\n- Changed `createCompleter` signature to accept an optional async `fallback` completer and return `AsyncCompleter` (callback-based)\n- In `startRepl`, start REPL without a custom completer, capture `replServer.completer` (the built-in), then assign `createCompleter(registry, builtinCompleter)` via `(replServer as any).completer = ...` to bypass the readonly TypeScript constraint\n- Exported `CompleterCallback` type for test reuse\n- Updated all autocomplete tests to use the async callback style via a `callCompleter` helper\n- Added a test verifying the fallback is invoked for non-matching input\n- Added changeset (`patch`)\n- Ran `eslint --fix` to correct formatting\n\n<!-- START COPILOT CODING AGENT TIPS -->\n---\n\n📱 Kick off Copilot coding agent tasks wherever you are with [GitHub Mobile](https://gh.io/cca-mobile-docs), available on iOS and Android.",
+    "state": "closed",
+    "created_at": "2026-03-27T19:04:40Z",
+    "closed_at": "2026-03-27T22:18:51Z",
+    "merged_at": "2026-03-27T22:18:51Z",
+    "merge_commit_sha": "cf1ae286e62296f1d883759bfef8036588d43a96",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1581,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1581",
+    "title": "Return 500 when `.example()` is called with a name not defined in the OpenAPI spec",
+    "body": "`$.response[status].example(name)` silently returned `undefined` body with status 200 when the requested example name didn't exist in any content type — no error surfaced at all.\n\n## Changes\n\n- **`src/server/response-builder.ts`**: After confirming `response.content` exists, check whether the requested example name appears in at least one content type. If not, return a 500 with a descriptive message:\n  ```\n  The OpenAPI document does not define an example named \"hello-example3\" for status code 200\n  ```\n- **`test/server/response-builder.test.ts`**: Add test covering the new 500 error path for an unknown example name.\n\n<!-- START COPILOT CODING AGENT TIPS -->\n---\n\n🔒 GitHub Advanced Security automatically protects Copilot coding agent pull requests. You can protect all pull requests by enabling Advanced Security for your repositories. [Learn more about Advanced Security.](https://gh.io/cca-advanced-security)",
+    "state": "closed",
+    "created_at": "2026-03-27T14:52:12Z",
+    "closed_at": "2026-03-27T15:07:07Z",
+    "merged_at": "2026-03-27T15:07:07Z",
+    "merge_commit_sha": "3cce71f2be19d66549b55553f01039fa3cd29bad",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1571,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1571",
+    "title": "Fail fast on ambiguous wildcard paths: console error at load time, 500 at request time",
+    "body": "- [x] Add `ambiguous?: boolean` to `Match` interface in `module-tree.ts`\n- [x] Update `addModuleToDirectory` to log a console error when adding a wildcard file creates ambiguity\n- [x] Update `putDirectory` to log a console error when adding a wildcard directory creates ambiguity\n- [x] Update `buildMatch` to detect multiple matching wildcard files and return `ambiguous: true`\n- [x] Update `matchWithinDirectory` to detect multiple matching wildcard directories and return `ambiguous: true`\n- [x] Update `registry.ts` `handler()` to pass `ambiguous` through from the match\n- [x] Update `registry.ts` `endpoint()` to return HTTP 500 when the match is ambiguous\n- [x] Add tests for warnings and 500 errors for ambiguous wildcard paths\n- [x] Fix TypeScript compilation errors: add explicit return type `Match | undefined` to `buildMatch`, cast array elements with `as File` / `as Match` to avoid optional property inference\n- [x] Add changeset (`minor` bump)\n\n<!-- START COPILOT ORIGINAL PROMPT -->\n\n\n\n<details>\n\n<summary>Original prompt</summary>\n\n> \n> ----\n> \n> *This section details on the original issue you should resolve*\n> \n> <issue_title>Add Warning to Module Tree if Ambiguous Wildcards Detected</issue_title>\n> <issue_description>While it is invalid API spec to have two wildcard paths at the same path defined (see issue pmcelhaney/counterfact#1308) it is possible to end up in a state where you have two such as the referenced issue or from just manually creating a second endpoint. The `module-tree.ts` class has enough logic in place to be aware that more than a single leaf wildcard path has been found for a given path. We should at the least show a console log warning when this is detected to raise awareness to the consumer.</issue_description>\n> \n> ## Comments on the Issue (you are @copilot in this section)\n> \n> <comments>\n> <comment_new><author>@pmcelhaney</author><body>\n> Also maybe send a 500 response when that happens? Fail fast and loud. </body></comment_new>\n> <comment_new><author>@pmcelhaney</author><body>\n> Yes, it should do two things:\n> \n> 1. Show an error in the console when the spec with ambiguous paths is loaded. \n> \n> 2. Return a 500 error when a request could be routed to 2 or more different ways. </body></comment_new>\n> </comments>\n> \n\n\n</details>\n\n\n\n<!-- START COPILOT CODING AGENT SUFFIX -->\n\n- Fixes pmcelhaney/counterfact#1311\n\n<!-- START COPILOT CODING AGENT TIPS -->\n---\n\n✨ Let Copilot coding agent [set things up for you](https://github.com/pmcelhaney/counterfact/issues/new?title=✨+Set+up+Copilot+instructions&body=Configure%20instructions%20for%20this%20repository%20as%20documented%20in%20%5BBest%20practices%20for%20Copilot%20coding%20agent%20in%20your%20repository%5D%28https://gh.io/copilot-coding-agent-tips%29%2E%0A%0A%3COnboard%20this%20repo%3E&assignees=copilot) — coding agent works faster and does higher quality work when set up for your repo.\n",
+    "state": "closed",
+    "created_at": "2026-03-25T02:01:09Z",
+    "closed_at": "2026-03-25T13:28:00Z",
+    "merged_at": "2026-03-25T13:28:00Z",
+    "merge_commit_sha": "aaeb779586f5bc796b4be32b4f121db3c71d6d4a",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1569,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1569",
+    "title": "Fix IfHasKey to use substring matching for content type keys",
+    "body": "`MaybeShortcut` (and thus shortcuts like `.json()`) was unavailable when an OpenAPI spec used content types like `application/json; charset=utf-8` because `IfHasKey` required an exact key match.\n\n## Changes\n\n- **`src/counterfact-types/index.ts`** — Changed `IfHasKey` from exact matching (`keyof SomeObject extends FirstKey`) to substring/contains matching (`Extract<keyof SomeObject, \\`${string}${FirstKey}${string}\\`> extends never`), consistent with how `OmitAll` already works.\n- **`test/server/types.test-d.ts`** — Added a type test asserting `IfHasKey` returns `true` when the object has `application/json; charset=utf-8` as a key and the search term is `application/json`.\n\n```ts\n// Before: this would resolve to `never` — no `.json()` shortcut available\ntype R = {\n  content: { \"application/json; charset=utf-8\": { schema: string } };\n  headers: {};\n  requiredHeaders: never;\n};\n\n// After: IfHasKey correctly matches the key, exposing `.json()`\ndeclare const builder: GenericResponseBuilderInner<R>;\nbuilder.json(\"hello\"); // ✅ now works\n```\n\n<!-- START COPILOT ORIGINAL PROMPT -->\n\n\n\n<details>\n\n<summary>Original prompt</summary>\n\n> \n> ----\n> \n> *This section details on the original issue you should resolve*\n> \n> <issue_title>MaybeShortcut for content type is too strict</issue_title>\n> <issue_description>Openapi library, which I am using, uses `application/json; charset=utf-8` for json responses as content type. Current `MaybeShortcut` implementation expects exact match of content type which make json field not available. My suggestion is to use contains instead of exact content match. Like so:\n> ```ts\n> type IfHasKey<\n>   SomeObject,\n>   Keys extends readonly string[],\n>   Yes,\n>   No,\n> > = Keys extends [infer FirstKey, ...infer RestKeys]\n>   ? Extract<\n>       keyof SomeObject,\n>       `${string}${FirstKey & string}${string}`\n>     > extends never\n>     ? IfHasKey<SomeObject, RestKeys & readonly string[], Yes, No>\n>     : Yes\n>   : No;\n> ```</issue_description>\n> \n> ## Comments on the Issue (you are @copilot in this section)\n> \n> <comments>\n> <comment_new><author>@pmcelhaney</author><body>\n> Thank you! Can you open a PR? </body></comment_new>\n> <comment_new><author>@pmcelhaney</author><body>\n> Fixed in 1.4.2. Thanks @ihor-rud! </body></comment_new>\n> <comment_new><author>@pmcelhaney</author><body>\n> Reopening as the latest release reverts this change. </body></comment_new>\n> </comments>\n> \n\n\n</details>\n\n\n\n<!-- START COPILOT CODING AGENT SUFFIX -->\n\n- Fixes pmcelhaney/counterfact#1370\n\n<!-- START COPILOT CODING AGENT TIPS -->\n---\n\n📱 Kick off Copilot coding agent tasks wherever you are with [GitHub Mobile](https://gh.io/cca-mobile-docs), available on iOS and Android.",
+    "state": "closed",
+    "created_at": "2026-03-25T01:47:53Z",
+    "closed_at": "2026-03-27T15:59:54Z",
+    "merged_at": "2026-03-27T15:59:54Z",
+    "merge_commit_sha": "7913a9c4587419ed4fe2f6140d8ea4f30aed0ccc",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1567,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1567",
+    "title": "Fix broken middlware",
+    "body": "The fix for root middleware ended up breaking everything. A little confusion around whether the root middleware is stored at \"/\" or \"\". It should be the latter. If we try to put a middleware at \"/\" it's pretty clear we meant the root, so that's now fixed automatically. ",
+    "state": "closed",
+    "created_at": "2026-03-23T20:27:33Z",
+    "closed_at": "2026-03-23T20:30:42Z",
+    "merged_at": "2026-03-23T20:30:42Z",
+    "merge_commit_sha": "f5c6cdc510bba23abcaf1d0a5591643694bd14ad",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1540,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1540",
+    "title": "Return HTTP 405 when path exists but method is not registered",
+    "body": "Previously, any unmatched request returned 404 regardless of whether the URL path existed — making it impossible to distinguish \"path not found\" from \"method not allowed\".\n\n## Changes\n\n- **`src/server/dispatcher.ts`**: Added an early-return 405 check in `request()` — if the path is registered but the requested method has no handler, returns 405 with an `Allow` header listing the valid methods; 404 is still returned when the path itself is not found.\n- **`src/server/registry.ts`**: Added `ALL_HTTP_METHODS` constant, `pathExistsWithAnyMethod(url, excludeMethod)`, and `allowedMethods(url)` as public methods used by the dispatcher.\n- **`test/server/dispatcher.test.ts`**: Added 405 tests for exact paths and wildcard paths.\n- **`.changeset/return-405-for-unregistered-methods.md`**: Added a changeset file (type `patch`) to document the change for release management.\n\n## Example\n\n```ts\nregistry.add(\"/hello\", { GET() { return { body: \"hi\", status: 200 }; } });\n\n// Before: POST /hello → 404\n// After:  POST /hello → 405, Allow: GET\n```\n\n<!-- START COPILOT CODING AGENT SUFFIX -->\n\n\n\n<!-- START COPILOT ORIGINAL PROMPT -->\n\n\n\n<details>\n\n<summary>Original prompt</summary>\n\n> Find a low hanging fruit in the issues and fix it. \n\n\n</details>\n\n\n\n<!-- START COPILOT CODING AGENT TIPS -->\n---\n\n📍 Connect Copilot coding agent with [Jira](https://gh.io/cca-jira-docs), [Azure Boards](https://gh.io/cca-azure-boards-docs) or [Linear](https://gh.io/cca-linear-docs) to delegate work to Copilot in one click without leaving your project management tool.",
+    "state": "closed",
+    "created_at": "2026-03-18T18:24:03Z",
+    "closed_at": "2026-03-18T22:32:27Z",
+    "merged_at": "2026-03-18T22:32:26Z",
+    "merge_commit_sha": "297f6bee5d0767192780a81889d3a0665f407643",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1524,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1524",
+    "title": "Fix root middleware not executed for any routes",
+    "body": "Root-level `_.middleware.ts` (placed in the `routes/` folder) was silently skipped — it never ran for any route.\n\nThe `recurse()` function in `registry.ts` walked path segments from deepest to root by stripping trailing segments, but bottomed out at `\"\"` instead of `\"/\"`. Since the module-loader registers root middleware under key `\"/\"`, it was never matched.\n\n**Changes:**\n- **`src/server/registry.ts`**: Fix `nextPath` calculation so traversal ends at `\"/\"` rather than `\"\"`, before terminating at `null`:\n  ```ts\n  // Before: /devices → \"\" → null  (never checks \"/\")\n  // After:  /devices → \"/\" → null  (root middleware matched)\n  const nextPath =\n    path === \"/\" || path === \"\"\n      ? null\n      : path.slice(0, path.lastIndexOf(\"/\")) || \"/\";\n  ```\n- **`test/server/registry.test.ts`**: Update existing middleware tests to register root middleware under `\"/\"` (consistent with module-loader), and add a focused regression test for the root middleware case.\n\n<!-- START COPILOT ORIGINAL PROMPT -->\n\n\n\n<details>\n\n<summary>Original prompt</summary>\n\n> \n> ----\n> \n> *This section details on the original issue you should resolve*\n> \n> <issue_title>Midleware matching all routes is not executed</issue_title>\n> <issue_description>Hey,\n> \n> I am using counterfact@1.5.0.\n> \n> \n> Assume the following definition of a middleware\n> ```typescript\n> //_.middleware.ts\n> export async function middleware($: any, respondTo: any) {\n>   const response = await respondTo($);\n>   console.log(`received request to ${$.matchedPath} -> ${response.status}`);\n>   return response;\n> }\n> ```\n> \n> If I place the file in the subfolder of any route, the middleware is executed for all (sub-)routes in that folder.\n> If the middleware is defined in the root-folder (`routes`), it is not executed at all.\n> \n> As described in https://github.com/pmcelhaney/counterfact/issues/1170, the middleware should actually be ececuted for any path.\n> \n> IMHO the problem liys in the definition of the `recurse`-function in `registry.ts`: When the last path segment (e.g. \"/devices\") is handled, the leading \"/\" is omitted, so a root-middleware (which is inserted with the URL \"/\") is never called.\n> \n> \n> Best regards</issue_description>\n> \n> ## Comments on the Issue (you are @copilot in this section)\n> \n> <comments>\n> </comments>\n> \n\n\n</details>\n\n\n\n<!-- START COPILOT CODING AGENT SUFFIX -->\n\n- Fixes pmcelhaney/counterfact#1515\n\n<!-- START COPILOT CODING AGENT TIPS -->\n---\n\n🔒 GitHub Advanced Security automatically protects Copilot coding agent pull requests. You can protect all pull requests by enabling Advanced Security for your repositories. [Learn more about Advanced Security.](https://gh.io/cca-advanced-security)",
+    "state": "closed",
+    "created_at": "2026-03-10T01:24:04Z",
+    "closed_at": "2026-03-10T16:45:24Z",
+    "merged_at": "2026-03-10T16:45:24Z",
+    "merge_commit_sha": "a987fde68aa5d07f0695f99bc70a734cd6ca629e",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1516,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1516",
+    "title": "fix(operation-type-coder): sanitize operation ID before generating type",
+    "body": "Attempts to fix an issue in `operation-type-coder` when using an OpenAPI `operationId` value as a TypeScript parameter name. Previously we used the `operationId` value verbatim which leads to TypeScript syntax errors when invalid TypeScript identifier characters were present. \r\n\r\nThis fix sanitizes the `operationId` value removing invalid special characters and camelCasing the output. If an `operationId` starts with a digit it is prefixed with a `_`. ",
+    "state": "closed",
+    "created_at": "2026-03-02T16:41:12Z",
+    "closed_at": "2026-03-02T17:03:23Z",
+    "merged_at": "2026-03-02T17:03:23Z",
+    "merge_commit_sha": "9a6af7a75daacf1283bab4a55f3024e706426d59",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1507,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1507",
+    "title": "fix(schema-type-coder): fix incorrect required property type generation",
+    "body": "Attempts to fix issue #1506 .\r\n\r\nThe previous truthiness check for `isRequired` needs to be made more strict to avoid optional parameters being marked as required during type generation when they contain required sub properties. ",
+    "state": "closed",
+    "created_at": "2026-02-25T17:30:35Z",
+    "closed_at": "2026-02-26T18:45:19Z",
+    "merged_at": "2026-02-26T18:45:19Z",
+    "merge_commit_sha": "7017a918b1f31353abe53f21a95e3959db8aa190",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1470,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1470",
+    "title": "fix typescript errors",
+    "body": "- **minor type fix in response-builder-factory.ts**\r\n- **revert change in #1372 which broke type shortcuts like .json(), .html(), etc.**\r\n",
+    "state": "closed",
+    "created_at": "2026-01-13T17:14:50Z",
+    "closed_at": "2026-01-13T18:11:16Z",
+    "merged_at": "2026-01-13T18:11:16Z",
+    "merge_commit_sha": "bdfe13f9ab2db354972277eb1ec6acb3a8b709fe",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1395,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1395",
+    "title": "fix an issue with proxy where headers are mangled",
+    "body": null,
+    "state": "closed",
+    "created_at": "2025-09-11T00:09:16Z",
+    "closed_at": "2025-09-11T00:14:15Z",
+    "merged_at": "2025-09-11T00:14:15Z",
+    "merge_commit_sha": "1ebeb61a9fcd2658cbb2c9b224285eebada29020",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1389,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1389",
+    "title": "Fix an issue where proxying to SSL does not work",
+    "body": null,
+    "state": "closed",
+    "created_at": "2025-09-04T21:35:25Z",
+    "closed_at": "2025-09-04T21:40:57Z",
+    "merged_at": "2025-09-04T21:40:57Z",
+    "merge_commit_sha": "a2b0774235bb3404e4543925451e2163a2a2e4e8",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1386,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1386",
+    "title": "windows fix for a path that contains a colon (resolves #1381)",
+    "body": "Windows filenames cannot contain colon, so we replace it with a unicode ratio symbol. \r\n\r\nresolves #1381",
+    "state": "closed",
+    "created_at": "2025-09-03T22:51:27Z",
+    "closed_at": "2025-09-04T23:21:26Z",
+    "merged_at": "2025-09-04T23:21:25Z",
+    "merge_commit_sha": "f2117da199ce4589da6f9c5babc86bc0b2bed282",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1384,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1384",
+    "title": "Fix an error with $.proxy() and GET requests",
+    "body": "It appears that Koa is adding an empty request body to GET requests. Get rid of it as it causes errors down the line. ",
+    "state": "closed",
+    "created_at": "2025-09-03T18:06:57Z",
+    "closed_at": "2025-09-03T18:12:04Z",
+    "merged_at": "2025-09-03T18:12:04Z",
+    "merge_commit_sha": "1865cfc6e5dcf51298db2d9729c848ed374545d2",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1296,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1296",
+    "title": "fix(server): Minor fix to buildMatch logic",
+    "body": "Fixes a minor case comparison issue in `module-tree-ts` where the `buildMatch` logic could fail to find a file when invoking `dispatcher.request` directly.",
+    "state": "closed",
+    "created_at": "2025-05-29T15:03:09Z",
+    "closed_at": "2025-05-30T13:12:20Z",
+    "merged_at": "2025-05-30T13:12:20Z",
+    "merge_commit_sha": "3f0731573a513676977476bdb12efc0caa7723dd",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1240,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1240",
+    "title": "fix an error in the docs for middleware usage",
+    "body": null,
+    "state": "closed",
+    "created_at": "2025-03-25T23:52:34Z",
+    "closed_at": "2025-03-26T00:03:00Z",
+    "merged_at": "2025-03-26T00:03:00Z",
+    "merge_commit_sha": "cac1e82c7673532580cf8b2925821b53ebd4b93a",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1161,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1161",
+    "title": "type fix: header should be headers (#1160)",
+    "body": null,
+    "state": "closed",
+    "created_at": "2025-01-16T23:11:35Z",
+    "closed_at": "2025-01-17T19:24:36Z",
+    "merged_at": "2025-01-17T19:24:36Z",
+    "merge_commit_sha": "edf757d166b470dd0d08aebaab4c278d1680c9f1",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1139,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1139",
+    "title": "path parameters are always strings",
+    "body": "Fixes #1116 \r\n\r\nCounterfact looks at OpenAPI spec to determine the types of parameters in the query, path, or headers and make sure they are parsed to the correct type at runtime (string, number, or boolean -- we don't support arrays yet). \r\n\r\nWhen using OpenAPI / Swagger v2, the types of parameters are in the `type` property rather than `schema.type`. Counterfact wasn't looking for the `type` property so everything was being left as strings. \r\n\r\nAlso, it didn't make a distinction between `number` and `integer`, casting all numbers to integers. With this change integers are parsed with `parseInt()` and numbers are parsed with `parseFloat()`. \r\n\r\nAlso booleans were not parsed. Now the string \"true\" is parsed as `true`; any other string is `false`. ",
+    "state": "closed",
+    "created_at": "2024-12-23T21:05:39Z",
+    "closed_at": "2024-12-23T21:54:23Z",
+    "merged_at": "2024-12-23T21:54:23Z",
+    "merge_commit_sha": "973ff9066630c85c8f4ab2e3ef3c5d382776f8f1",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1099,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1099",
+    "title": "fixes to make sure $ref is followed",
+    "body": "- **change async requirementAt() to sync getRequirement()**\r\n- updates so that `Requirement#get()` and `Requirement#select()` follow `$ref`s\r\n\r\nI think this is correct based on the tests I added, but there's one piece where `~` and `/` are escaped / unescaped that's confusing me. ",
+    "state": "closed",
+    "created_at": "2024-11-02T15:29:15Z",
+    "closed_at": "2024-11-22T21:39:38Z",
+    "merged_at": "2024-11-22T21:39:38Z",
+    "merge_commit_sha": "aa4dec60c1a316c68ba886b63227274d1331ecda",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1081,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1081",
+    "title": "fix vscode link on windows - fixes #1058",
+    "body": null,
+    "state": "closed",
+    "created_at": "2024-10-15T00:44:29Z",
+    "closed_at": "2024-10-15T10:25:55Z",
+    "merged_at": "2024-10-15T10:25:55Z",
+    "merge_commit_sha": "eedffe7a7e4b1d68793b0abdef40407712d23374",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1074,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1074",
+    "title": "fix(server): Add support for directories with multiple wildcard children",
+    "body": "Updates the logic in `module-tree.ts` to support a path that has multiple children that are wildcards at the same segment position. E.g.:\r\n\r\n`/myPets/{petName}/health`\r\n`/myPets/{petId}/records`\r\n\r\nThe PR also updates the logic in `module-tree.ts` to support a path that has multiple wildcard files at the same ending segment but with different methods. E.g.:\r\n\r\n`/myPets/health/{id}` - GET\r\n`/myPets/health/{enableDisable}` - PUT",
+    "state": "closed",
+    "created_at": "2024-10-09T16:44:35Z",
+    "closed_at": "2024-10-10T19:16:49Z",
+    "merged_at": "2024-10-10T19:16:49Z",
+    "merge_commit_sha": "6cd61a645b409b44b67d9e5b53e8d7c6d5f36966",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1062,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1062",
+    "title": "map index.ts to / -- fixes #1056",
+    "body": null,
+    "state": "closed",
+    "created_at": "2024-10-02T21:10:36Z",
+    "closed_at": "2024-10-02T21:42:37Z",
+    "merged_at": "2024-10-02T21:42:36Z",
+    "merge_commit_sha": "a61d17f60a276e3bab9fa5af884e2333e9df8880",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  },
+  {
+    "number": 1060,
+    "html_url": "https://github.com/counterfact/api-simulator/pull/1060",
+    "title": "fix an issue where request body type is not found when consumes is in the root",
+    "body": null,
+    "state": "closed",
+    "created_at": "2024-10-02T17:42:53Z",
+    "closed_at": "2024-10-02T17:54:36Z",
+    "merged_at": "2024-10-02T17:54:36Z",
+    "merge_commit_sha": "a1623d631a7d5892d1eb477a5e8b7562d2e175d6",
+    "user": {
+      "login": null
+    },
+    "base": {
+      "ref": null,
+      "sha": null
+    },
+    "head": {
+      "sha": null,
+      "ref": null
+    },
+    "labels": []
+  }
+]

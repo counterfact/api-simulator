@@ -1,0 +1,1080 @@
+2382	2026-09-03T23:04:38Z	2026-09-04T16:39:00Z	docs(site): publish 2026 quality audit microsite	https://github.com/counterfact/api-simulator/pull/2382
+2381	2026-09-03T06:01:14Z	2026-09-03T06:11:43Z	chore(deps): update dependency eslint-plugin-jest to v29.16.6	https://github.com/counterfact/api-simulator/pull/2381
+2380	2026-09-02T11:40:52Z	2026-09-07T00:53:52Z	docs: clarify agent-created PR guidance	https://github.com/counterfact/api-simulator/pull/2380
+2379	2026-09-02T10:57:00Z	2026-09-02T11:17:32Z	Fix merge queue manual acceptance check timeout	https://github.com/counterfact/api-simulator/pull/2379
+2378	2026-09-01T20:53:26Z		fix(deps): update dependency open to v11.0.2	https://github.com/counterfact/api-simulator/pull/2378
+2377	2026-09-01T20:45:08Z	2026-09-02T11:23:10Z	chore(deps): update dependency linkinator to v8.1.0	https://github.com/counterfact/api-simulator/pull/2377
+2376	2026-08-31T18:54:21Z	2026-08-31T19:15:41Z	chore(deps): update jest monorepo to v30.5.0	https://github.com/counterfact/api-simulator/pull/2376
+2375	2026-08-31T18:54:17Z	2026-08-31T19:03:38Z	chore(deps): update dependency @typescript-eslint/utils to v8.69.0	https://github.com/counterfact/api-simulator/pull/2375
+2374	2026-08-30T23:07:19Z	2026-08-30T23:21:20Z	fix(deps): update dependency posthog-node to v5.51.4	https://github.com/counterfact/api-simulator/pull/2374
+2373	2026-08-30T22:55:29Z	2026-08-30T23:05:06Z	chore(deps): update dependency eslint-plugin-jest to v29.16.5	https://github.com/counterfact/api-simulator/pull/2373
+2372	2026-08-30T22:50:50Z	2026-08-30T23:00:05Z	fix(deps): update dependency astro to v7.2.9	https://github.com/counterfact/api-simulator/pull/2372
+2371	2026-08-30T13:04:02Z	2026-08-30T13:17:36Z	fix(deps): update dependency posthog-node to v5.51.3	https://github.com/counterfact/api-simulator/pull/2371
+2370	2026-08-30T02:10:59Z		Version Packages	https://github.com/counterfact/api-simulator/pull/2370
+2369	2026-08-30T01:56:16Z	2026-08-30T02:09:40Z	fix(deps): update dependency js-yaml to v5.4.1	https://github.com/counterfact/api-simulator/pull/2369
+2368	2026-08-30T01:56:08Z	2026-08-30T02:06:11Z	fix(deps): update dependency astro to v7.2.8	https://github.com/counterfact/api-simulator/pull/2368
+2367	2026-08-29T13:24:30Z		feat: implement product-led adoption foundation	https://github.com/counterfact/api-simulator/pull/2367
+2366	2026-08-29T12:33:30Z	2026-09-09T12:40:19Z	Support required cookies, bodies, and forms in RouteBuilder	https://github.com/counterfact/api-simulator/pull/2366
+2365	2026-08-29T12:33:19Z	2026-09-02T11:26:31Z	Fix OpenAPI watch input classification and overlay hot reload	https://github.com/counterfact/api-simulator/pull/2365
+2364	2026-08-29T12:23:27Z		fix(deps): update dependency @apidevtools/json-schema-ref-parser to v16.0.1	https://github.com/counterfact/api-simulator/pull/2364
+2363	2026-08-29T12:23:18Z		Align agent guidance with the package monorepo	https://github.com/counterfact/api-simulator/pull/2363
+2362	2026-08-29T12:20:25Z		fix(runtime): validate implicit 200 responses	https://github.com/counterfact/api-simulator/pull/2362
+2361	2026-08-29T11:43:47Z		test(repl): raise mutation score to 80%	https://github.com/counterfact/api-simulator/pull/2361
+2360	2026-08-29T02:40:57Z	2026-08-29T02:50:30Z	fix(deps): update dependency astro to v7.2.7	https://github.com/counterfact/api-simulator/pull/2360
+2359	2026-08-29T02:40:47Z	2026-08-29T02:50:30Z	chore(deps): update dependency eslint-plugin-jest to v29.16.2	https://github.com/counterfact/api-simulator/pull/2359
+2358	2026-08-28T14:19:59Z	2026-09-02T19:04:07Z	Add reproducible Counterfact devcontainer	https://github.com/counterfact/api-simulator/pull/2358
+2357	2026-08-28T14:06:58Z	2026-08-29T02:45:04Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2357
+2356	2026-08-28T13:42:01Z	2026-08-28T13:56:49Z	fix(deps): update dependency posthog-node to v5.51.2	https://github.com/counterfact/api-simulator/pull/2356
+2355	2026-08-28T13:41:26Z	2026-08-28T14:05:29Z	fix(release): allow version script to update lockfile on CI	https://github.com/counterfact/api-simulator/pull/2355
+2354	2026-08-28T12:48:02Z	2026-08-28T13:02:37Z	fix(deps): update dependency js-yaml to v5.4.0	https://github.com/counterfact/api-simulator/pull/2354
+2353	2026-08-28T12:47:38Z	2026-08-28T13:25:41Z	fix(ci): enable automatic npm publication	https://github.com/counterfact/api-simulator/pull/2353
+2352	2026-08-28T00:08:45Z	2026-08-28T00:17:47Z	chore(deps): update typescript-eslint monorepo to v8.68.0	https://github.com/counterfact/api-simulator/pull/2352
+2351	2026-08-28T00:08:33Z	2026-08-28T00:17:30Z	chore(deps): update dependency eslint to v10.9.1	https://github.com/counterfact/api-simulator/pull/2351
+2350	2026-08-27T18:27:18Z	2026-08-27T18:41:37Z	fix(deps): update dependency posthog-node to v5.51.1	https://github.com/counterfact/api-simulator/pull/2350
+2349	2026-08-27T18:20:47Z	2026-08-27T18:32:33Z	fix(deps): update dependency astro to v7.2.6	https://github.com/counterfact/api-simulator/pull/2349
+2347	2026-08-24T21:31:14Z	2026-08-24T21:41:04Z	fix logo on the home page	https://github.com/counterfact/api-simulator/pull/2347
+2346	2026-08-24T20:55:02Z	2026-08-24T21:05:23Z	docs: require isolated worktrees for new changes	https://github.com/counterfact/api-simulator/pull/2346
+2345	2026-08-24T20:53:37Z	2026-08-24T21:03:35Z	fix(site): refresh satteri lockfile entries	https://github.com/counterfact/api-simulator/pull/2345
+2344	2026-08-24T19:58:17Z		feat: clarify CLI startup output	https://github.com/counterfact/api-simulator/pull/2344
+2343	2026-08-24T19:58:08Z	2026-08-24T20:14:03Z	fix(deps): update dependency posthog-node to v5.50.0	https://github.com/counterfact/api-simulator/pull/2343
+2342	2026-08-24T18:15:14Z	2026-08-24T18:34:06Z	chore(deps): update dependency eslint to v10.9.0	https://github.com/counterfact/api-simulator/pull/2342
+2341	2026-08-24T18:10:04Z	2026-08-24T18:19:29Z	chore(deps): update dependency @typescript-eslint/utils to v8.68.0	https://github.com/counterfact/api-simulator/pull/2341
+2340	2026-08-23T21:59:40Z	2026-08-23T22:12:40Z	fix(deps): update dependency posthog-node to v5.49.2	https://github.com/counterfact/api-simulator/pull/2340
+2339	2026-08-23T02:34:01Z	2026-08-28T04:46:24Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2339
+2338	2026-08-23T02:23:54Z	2026-08-23T02:32:22Z	fix(ci): bootstrap release preflight directly	https://github.com/counterfact/api-simulator/pull/2338
+2337	2026-08-23T02:07:00Z	2026-08-24T18:18:40Z	Redesign beginner-facing marketing and docs	https://github.com/counterfact/api-simulator/pull/2337
+2336	2026-08-23T01:54:51Z	2026-08-23T02:03:16Z	docs: centralize agent instructions	https://github.com/counterfact/api-simulator/pull/2336
+2335	2026-08-22T22:24:09Z	2026-08-22T22:44:02Z	fix: harden OpenAPI routing and lifecycle cleanup	https://github.com/counterfact/api-simulator/pull/2335
+2334	2026-08-22T20:41:23Z	2026-08-22T20:50:51Z	fix(deps): update astro monorepo to ^7.2.3	https://github.com/counterfact/api-simulator/pull/2334
+2333	2026-08-22T13:02:14Z	2026-08-22T13:11:32Z	chore(deps): update changesets/action action to v2.1.1	https://github.com/counterfact/api-simulator/pull/2333
+2332	2026-08-22T10:42:24Z	2026-08-22T10:51:17Z	chore(deps): update dependency @swc/core to v1.16.1	https://github.com/counterfact/api-simulator/pull/2332
+2331	2026-08-22T10:42:21Z	2026-08-22T10:51:00Z	chore(deps): update dependency @changesets/cli to v3.0.1	https://github.com/counterfact/api-simulator/pull/2331
+2330	2026-08-21T20:12:16Z	2026-08-21T20:21:35Z	fix(deps): update astro monorepo to ^7.2.2	https://github.com/counterfact/api-simulator/pull/2330
+2329	2026-08-20T11:16:01Z	2026-08-20T11:25:13Z	chore(deps): update dependency linkinator to v8.0.4	https://github.com/counterfact/api-simulator/pull/2329
+2328	2026-08-20T01:40:34Z	2026-08-20T01:54:20Z	fix(deps): update dependency posthog-node to v5.49.1	https://github.com/counterfact/api-simulator/pull/2328
+2327	2026-08-20T01:01:19Z	2026-08-20T01:10:59Z	chore(deps): update stryker-js monorepo to v10	https://github.com/counterfact/api-simulator/pull/2327
+2326	2026-08-20T00:43:24Z	2026-08-20T00:52:26Z	chore(deps): update actions/upload-artifact action to v7	https://github.com/counterfact/api-simulator/pull/2326
+2325	2026-08-20T00:43:22Z	2026-08-20T19:24:55Z	chore(deps): update actions/cache action to v6	https://github.com/counterfact/api-simulator/pull/2325
+2324	2026-08-20T00:36:11Z	2026-08-20T23:08:13Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2324
+2323	2026-08-19T23:56:03Z	2026-08-20T00:34:31Z	test: migrate black-box coverage to Cucumber journeys	https://github.com/counterfact/api-simulator/pull/2323
+2322	2026-08-18T23:03:56Z	2026-08-18T23:13:29Z	Allow local release bootstrap without provenance	https://github.com/counterfact/api-simulator/pull/2322
+2321	2026-08-18T21:25:27Z	2026-08-18T21:35:28Z	Switch mise to Node 24	https://github.com/counterfact/api-simulator/pull/2321
+2320	2026-08-18T16:58:00Z		chore(deps): update changesets/action action to v2	https://github.com/counterfact/api-simulator/pull/2320
+2319	2026-08-18T16:54:23Z	2026-08-18T17:07:35Z	Only run black box tests on Windows	https://github.com/counterfact/api-simulator/pull/2319
+2318	2026-08-18T16:03:56Z	2026-08-18T16:54:17Z	chore: repair monorepo release preparation	https://github.com/counterfact/api-simulator/pull/2318
+2317	2026-08-18T15:48:14Z		feat: add HTTP response chaos rules	https://github.com/counterfact/api-simulator/pull/2317
+2316	2026-08-18T14:54:14Z		fix(runtime): reload atomic store replacements	https://github.com/counterfact/api-simulator/pull/2316
+2315	2026-08-18T14:32:18Z		docs: lead with UI-first prototyping	https://github.com/counterfact/api-simulator/pull/2315
+2314	2026-08-17T19:03:05Z	2026-08-17T19:16:14Z	chore(deps): update dependency @swc/core to v1.16.0	https://github.com/counterfact/api-simulator/pull/2314
+2313	2026-08-17T13:15:20Z	2026-08-20T00:52:08Z	fix(deps): update dependency js-yaml to v5.3.0	https://github.com/counterfact/api-simulator/pull/2313
+2312	2026-08-17T13:06:00Z	2026-08-17T13:19:00Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v16	https://github.com/counterfact/api-simulator/pull/2312
+2311	2026-08-17T06:15:26Z	2026-08-17T06:26:57Z	fix(deps): update dependency open to v11.0.1	https://github.com/counterfact/api-simulator/pull/2311
+2310	2026-08-17T06:15:16Z		fix(deps): update dependency @apidevtools/json-schema-ref-parser to v15.5.2 - abandoned	https://github.com/counterfact/api-simulator/pull/2310
+2309	2026-08-17T02:46:14Z	2026-08-20T00:53:31Z	fix(deps): update dependency astro to v7.2.2	https://github.com/counterfact/api-simulator/pull/2309
+2308	2026-08-16T18:13:04Z	2026-08-16T18:21:01Z	chore(deps): update changesets/action action to v2.1.0	https://github.com/counterfact/api-simulator/pull/2308
+2307	2026-08-16T09:02:42Z	2026-08-20T00:56:03Z	chore(deps): update dependency eslint-plugin-regexp to v3.2.0	https://github.com/counterfact/api-simulator/pull/2307
+2306	2026-08-15T12:11:40Z	2026-08-15T12:24:05Z	chore(deps): update dependency eslint-plugin-jest to v29.16.1	https://github.com/counterfact/api-simulator/pull/2306
+2305	2026-08-15T01:43:09Z	2026-08-20T02:08:39Z	chore(deps): update dependency @changesets/cli to v3	https://github.com/counterfact/api-simulator/pull/2305
+2304	2026-08-14T23:49:16Z	2026-08-14T23:57:58Z	chore(deps): update changesets/action action to v2	https://github.com/counterfact/api-simulator/pull/2304
+2303	2026-08-14T23:49:06Z	2026-08-15T00:01:43Z	fix(deps): update dependency astro to v7.2.1	https://github.com/counterfact/api-simulator/pull/2303
+2302	2026-08-13T21:27:58Z	2026-08-13T21:39:54Z	chore(deps): update typescript-eslint monorepo to v8.67.0	https://github.com/counterfact/api-simulator/pull/2302
+2301	2026-08-13T15:32:00Z	2026-08-17T19:25:07Z	codex/monorepo package plan	https://github.com/counterfact/api-simulator/pull/2301
+2300	2026-08-13T15:26:07Z	2026-08-13T15:38:01Z	fix(deps): update dependency recast to v0.24.0	https://github.com/counterfact/api-simulator/pull/2300
+2299	2026-08-12T08:55:07Z	2026-08-12T09:09:45Z	Update dependency eslint-plugin-n to v18.3.0	https://github.com/counterfact/api-simulator/pull/2299
+2298	2026-08-11T02:24:34Z	2026-08-11T02:37:18Z	Update dependency eslint to v10.8.1	https://github.com/counterfact/api-simulator/pull/2298
+2297	2026-08-10T18:08:38Z	2026-08-10T18:17:43Z	Update dependency @typescript-eslint/utils to v8.67.0	https://github.com/counterfact/api-simulator/pull/2297
+2296	2026-08-09T21:37:14Z	2026-08-09T21:50:12Z	Update typescript-eslint monorepo to v8.66.0	https://github.com/counterfact/api-simulator/pull/2296
+2295	2026-08-09T17:59:29Z	2026-08-09T18:11:45Z	Update dependency astro to v7.2.0	https://github.com/counterfact/api-simulator/pull/2295
+2294	2026-08-07T19:40:35Z	2026-08-20T01:05:42Z	Update dependency posthog-node to v5.47.10	https://github.com/counterfact/api-simulator/pull/2294
+2293	2026-08-06T06:12:26Z		Update dependency tsx to v4.23.5 - abandoned	https://github.com/counterfact/api-simulator/pull/2293
+2292	2026-08-05T15:26:10Z		Make StoreLoader more robust on Windows	https://github.com/counterfact/api-simulator/pull/2292
+2291	2026-08-05T15:16:40Z		Update dependency typescript to v7	https://github.com/counterfact/api-simulator/pull/2291
+2290	2026-08-05T15:12:18Z	2026-08-05T15:32:50Z	Update dependency tsx to v4.23.4	https://github.com/counterfact/api-simulator/pull/2290
+2289	2026-08-05T05:27:46Z	2026-08-05T15:25:29Z	Update dependency eslint-plugin-jest-dom to v5.10.1	https://github.com/counterfact/api-simulator/pull/2289
+2288	2026-08-04T21:49:17Z	2026-08-04T22:01:57Z	Update dependency prettier to v3.9.6	https://github.com/counterfact/api-simulator/pull/2288
+2287	2026-08-04T17:09:03Z	2026-08-04T21:57:13Z	supply a seed to JSONSchemaFaker so it returns actually random values	https://github.com/counterfact/api-simulator/pull/2287
+2286	2026-08-04T13:02:06Z	2026-08-04T13:14:39Z	Update dependency eslint-plugin-jest-dom to v5.9.0	https://github.com/counterfact/api-simulator/pull/2286
+2285	2026-08-04T12:54:14Z	2026-08-04T21:52:56Z	Update dependency json-schema-faker to v0.6.3	https://github.com/counterfact/api-simulator/pull/2285
+2284	2026-08-04T12:54:05Z	2026-08-04T13:05:38Z	Update dependency js-yaml to v5.2.3	https://github.com/counterfact/api-simulator/pull/2284
+2283	2026-08-03T21:00:29Z		docs: lead with explorable prototype workflows	https://github.com/counterfact/api-simulator/pull/2283
+2282	2026-08-03T19:46:04Z	2026-08-18T17:26:14Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2282
+2281	2026-08-03T19:32:34Z	2026-08-03T19:44:26Z	Update dependency posthog-node to v5.47.3	https://github.com/counterfact/api-simulator/pull/2281
+2280	2026-08-03T18:10:23Z	2026-08-03T18:19:32Z	Update dependency @typescript-eslint/utils to v8.66.0	https://github.com/counterfact/api-simulator/pull/2280
+2279	2026-08-03T18:10:05Z	2026-08-03T18:22:10Z	Update dependency recast to v0.23.19	https://github.com/counterfact/api-simulator/pull/2279
+2278	2026-08-03T01:16:59Z	2026-08-03T01:35:16Z	publish documentation in package	https://github.com/counterfact/api-simulator/pull/2278
+2277	2026-08-03T00:39:46Z	2026-08-03T01:10:14Z	Document the “Model the Workflow, Not the Backend” pattern	https://github.com/counterfact/api-simulator/pull/2277
+2276	2026-08-02T22:04:59Z	2026-08-02T22:17:23Z	Update dependency eslint-plugin-jest-dom to v5.7.0	https://github.com/counterfact/api-simulator/pull/2276
+2275	2026-08-02T21:56:42Z	2026-08-02T22:19:44Z	Update dependency recast to v0.23.16	https://github.com/counterfact/api-simulator/pull/2275
+2274	2026-08-02T21:48:11Z	2026-08-02T22:00:14Z	Update dependency posthog-node to v5.47.0	https://github.com/counterfact/api-simulator/pull/2274
+2273	2026-08-02T12:30:50Z	2026-08-02T12:42:28Z	Update dependency linkinator to v8.0.3	https://github.com/counterfact/api-simulator/pull/2273
+2272	2026-08-02T12:00:07Z	2026-08-03T19:36:50Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2272
+2271	2026-08-02T04:37:53Z	2026-08-02T11:59:05Z	Update dependency @apidevtools/json-schema-ref-parser to v15.5.1	https://github.com/counterfact/api-simulator/pull/2271
+2270	2026-08-01T23:03:35Z	2026-08-02T00:14:22Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2270
+2269	2026-08-01T22:19:08Z	2026-08-02T00:02:39Z	Generate context-aware middleware types by route directory	https://github.com/counterfact/api-simulator/pull/2269
+2268	2026-08-01T20:43:07Z	2026-08-01T23:02:42Z	Fix flaky Windows CI: StoreLoader watches parent directory instead of absent file path	https://github.com/counterfact/api-simulator/pull/2268
+2267	2026-08-01T20:22:59Z	2026-08-01T20:56:59Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2267
+2266	2026-08-01T20:22:52Z	2026-08-01T20:42:00Z	Fix wide route random response typing	https://github.com/counterfact/api-simulator/pull/2266
+2265	2026-08-01T20:09:53Z	2026-08-01T20:21:53Z	fix(deps): update dependency astro to v7.1.6	https://github.com/counterfact/api-simulator/pull/2265
+2264	2026-08-01T20:09:45Z	2026-08-01T20:21:54Z	chore(deps): update dependency @swc/core to v1.15.47	https://github.com/counterfact/api-simulator/pull/2264
+2263	2026-08-01T20:03:54Z	2026-08-01T20:09:23Z	Fix syntax error in src/app.ts: missing closing brace for startRepl property	https://github.com/counterfact/api-simulator/pull/2263
+2262	2026-08-01T15:19:30Z	2026-08-01T20:47:22Z	Add first-class shared store across API groups	https://github.com/counterfact/api-simulator/pull/2262
+2261	2026-08-01T11:30:52Z	2026-08-01T11:52:02Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2261
+2260	2026-08-01T03:15:24Z	2026-08-01T11:17:52Z	fix: add Koa Request type augmentation for body and rawBody	https://github.com/counterfact/api-simulator/pull/2260
+2259	2026-08-01T03:14:52Z	2026-08-01T11:17:19Z	fix: regenerate site/package-lock.json to unblock npm ci	https://github.com/counterfact/api-simulator/pull/2259
+2258	2026-08-01T03:13:42Z	2026-08-01T11:30:02Z	Bug reports/openapi multi spec	https://github.com/counterfact/api-simulator/pull/2258
+2257	2026-08-01T00:57:12Z	2026-08-01T11:40:58Z	chore(deps): update dependency node to v24	https://github.com/counterfact/api-simulator/pull/2257
+2256	2026-08-01T00:57:02Z	2026-08-01T01:08:23Z	chore(deps): update dependency eslint-plugin-jest-dom to v5.6.0	https://github.com/counterfact/api-simulator/pull/2256
+2255	2026-07-31T22:27:50Z	2026-08-01T11:40:42Z	chore(deps): update actions/setup-node action to v7	https://github.com/counterfact/api-simulator/pull/2255
+2254	2026-07-31T22:27:48Z	2026-08-01T21:06:15Z	Update actions/checkout action to v7	https://github.com/counterfact/api-simulator/pull/2254
+2253	2026-07-31T19:45:03Z	2026-08-01T11:28:58Z	Sync site lockfile for broken-links workflow	https://github.com/counterfact/api-simulator/pull/2253
+2252	2026-07-31T19:02:49Z	2026-07-31T19:09:16Z	[WIP] Fix issues identified in Copilot run	https://github.com/counterfact/api-simulator/pull/2252
+2251	2026-07-31T18:58:09Z	2026-07-31T19:10:13Z	fix(deps): update dependency astro to v7.1.5	https://github.com/counterfact/api-simulator/pull/2251
+2250	2026-07-31T18:53:26Z	2026-07-31T18:57:33Z	fix: sync site/package-lock.json with missing @emnapi dependencies	https://github.com/counterfact/api-simulator/pull/2250
+2249	2026-07-31T16:44:27Z	2026-07-31T19:50:03Z	Improve README with an AI workflow	https://github.com/counterfact/api-simulator/pull/2249
+2248	2026-07-31T15:15:09Z	2026-07-31T15:34:48Z	personas and web site updates	https://github.com/counterfact/api-simulator/pull/2248
+2247	2026-07-31T00:36:56Z	2026-07-31T00:49:34Z	chore(deps): update coverallsapp/github-action action to v2.3.8	https://github.com/counterfact/api-simulator/pull/2247
+2246	2026-07-31T00:28:47Z	2026-07-31T00:40:35Z	fix(deps): update dependency astro to v7.1.4	https://github.com/counterfact/api-simulator/pull/2246
+2245	2026-07-28T02:52:16Z	2026-07-28T03:04:07Z	chore(deps): update dependency eslint to v10.8.0	https://github.com/counterfact/api-simulator/pull/2245
+2244	2026-07-27T10:58:16Z	2026-07-27T11:11:59Z	chore(deps): update dependency eslint-plugin-jest to v29.16.0	https://github.com/counterfact/api-simulator/pull/2244
+2243	2026-07-27T02:00:48Z	2026-08-02T12:02:12Z	chore(deps): update dependency linkinator to v8.0.2	https://github.com/counterfact/api-simulator/pull/2243
+2242	2026-07-27T01:52:43Z	2026-07-27T02:04:52Z	fix(deps): update dependency fs-extra to v11.4.0	https://github.com/counterfact/api-simulator/pull/2242
+2241	2026-07-26T17:38:44Z	2026-08-02T12:02:12Z	fix(deps): update dependency posthog-node to v5.46.1	https://github.com/counterfact/api-simulator/pull/2241
+2240	2026-07-25T12:37:23Z	2026-07-25T12:49:23Z	fix(deps): update dependency js-yaml to v5.2.2 [security]	https://github.com/counterfact/api-simulator/pull/2240
+2239	2026-07-25T12:24:27Z	2026-07-25T12:35:41Z	chore(deps): update dependency linkinator to v8.0.1	https://github.com/counterfact/api-simulator/pull/2239
+2238	2026-07-24T08:42:49Z	2026-07-24T08:54:18Z	chore(deps): update dependency linkinator to v8	https://github.com/counterfact/api-simulator/pull/2238
+2237	2026-07-23T21:11:48Z	2026-07-23T21:23:17Z	fix(deps): update dependency posthog-node to v5.46.0	https://github.com/counterfact/api-simulator/pull/2237
+2236	2026-07-23T21:04:35Z	2026-07-23T21:16:43Z	chore(deps): update typescript-eslint monorepo to v8.65.0	https://github.com/counterfact/api-simulator/pull/2236
+2235	2026-07-23T20:56:46Z	2026-07-23T21:09:08Z	fix(deps): update dependency astro to v7.1.3 - autoclosed	https://github.com/counterfact/api-simulator/pull/2235
+2234	2026-07-23T20:56:36Z	2026-07-23T21:08:52Z	chore(deps): update dependency eslint-plugin-jest to v29.15.5	https://github.com/counterfact/api-simulator/pull/2234
+2233	2026-07-23T04:58:02Z	2026-07-23T05:06:51Z	chore(deps): update actions/setup-python action to v7	https://github.com/counterfact/api-simulator/pull/2233
+2232	2026-07-22T22:54:28Z	2026-07-22T23:06:06Z	chore(deps): update dependency @swc/core to v1.15.46	https://github.com/counterfact/api-simulator/pull/2232
+2231	2026-07-21T03:50:46Z	2026-07-21T03:58:45Z	chore(deps): update dependency @typescript-eslint/utils to v8.65.0	https://github.com/counterfact/api-simulator/pull/2231
+2230	2026-07-21T03:50:28Z	2026-07-21T04:00:57Z	fix(deps): update dependency astro to v7.1.1	https://github.com/counterfact/api-simulator/pull/2230
+2229	2026-07-20T04:13:00Z	2026-07-20T04:24:11Z	fix(deps): update dependency posthog-node to v5.45.2	https://github.com/counterfact/api-simulator/pull/2229
+2228	2026-07-20T04:12:52Z	2026-07-20T04:24:11Z	chore(deps): update dependency node-mocks-http to v1.18.1	https://github.com/counterfact/api-simulator/pull/2228
+2227	2026-07-19T19:24:26Z	2026-07-19T19:35:12Z	fix(deps): update dependency posthog-node to v5.45.0	https://github.com/counterfact/api-simulator/pull/2227
+2226	2026-07-19T19:15:52Z	2026-07-19T19:27:38Z	fix(deps): update dependency astro to v7.1.0	https://github.com/counterfact/api-simulator/pull/2226
+2225	2026-07-19T02:01:43Z	2026-07-19T02:13:23Z	fix(deps): update dependency posthog-node to v5.44.0	https://github.com/counterfact/api-simulator/pull/2225
+2224	2026-07-18T17:46:05Z	2026-07-18T17:58:30Z	fix(deps): update dependency precinct to v13.0.1	https://github.com/counterfact/api-simulator/pull/2224
+2223	2026-07-18T17:37:24Z	2026-07-18T17:49:51Z	chore(deps): update dependency @changesets/cli to v2.31.1	https://github.com/counterfact/api-simulator/pull/2223
+2222	2026-07-17T18:03:55Z	2026-07-17T18:15:10Z	fix(deps): update dependency posthog-node to v5.42.0	https://github.com/counterfact/api-simulator/pull/2222
+2221	2026-07-17T10:02:11Z	2026-07-17T10:09:38Z	chore(deps): update actions/setup-node action to v7	https://github.com/counterfact/api-simulator/pull/2221
+2220	2026-07-17T10:02:01Z	2026-07-17T10:14:01Z	fix(deps): update dependency astro to v7.0.9	https://github.com/counterfact/api-simulator/pull/2220
+2219	2026-07-17T09:53:12Z	2026-07-17T10:06:38Z	chore(deps): update typescript-eslint monorepo to v8.64.0	https://github.com/counterfact/api-simulator/pull/2219
+2218	2026-07-16T10:35:29Z	2026-07-16T10:46:40Z	fix(deps): update dependency tsx to v4.23.1	https://github.com/counterfact/api-simulator/pull/2218
+2217	2026-07-14T10:59:22Z	2026-07-14T11:10:41Z	fix(deps): update dependency posthog-node to v5.41.0	https://github.com/counterfact/api-simulator/pull/2217
+2216	2026-07-14T01:53:50Z	2026-07-14T02:05:51Z	chore(deps): update dependency eslint-plugin-n to v18.2.2	https://github.com/counterfact/api-simulator/pull/2216
+2215	2026-07-14T01:46:11Z	2026-07-14T01:58:03Z	chore(deps): update dependency eslint to v10.7.0	https://github.com/counterfact/api-simulator/pull/2215
+2214	2026-07-13T21:56:42Z	2026-07-13T22:06:25Z	chore(deps): update dependency @typescript-eslint/utils to v8.64.0	https://github.com/counterfact/api-simulator/pull/2214
+2213	2026-07-12T08:54:21Z	2026-07-12T09:05:24Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v15.5.0	https://github.com/counterfact/api-simulator/pull/2213
+2212	2026-07-11T21:43:52Z		fix(deps): update dependency typescript to v7	https://github.com/counterfact/api-simulator/pull/2212
+2211	2026-07-11T21:43:43Z	2026-07-11T21:55:52Z	fix(deps): update dependency astro to v7.0.7	https://github.com/counterfact/api-simulator/pull/2211
+2210	2026-07-11T03:40:35Z	2026-07-11T03:52:06Z	fix(deps): update dependency posthog-node to v5.40.0	https://github.com/counterfact/api-simulator/pull/2210
+2209	2026-07-11T03:40:26Z	2026-07-11T03:52:22Z	chore(deps): update dependency node-mocks-http to v1.18.0	https://github.com/counterfact/api-simulator/pull/2209
+2208	2026-07-10T03:06:24Z	2026-07-10T03:17:17Z	chore(deps): update typescript-eslint monorepo to v8.63.0	https://github.com/counterfact/api-simulator/pull/2208
+2207	2026-07-06T21:03:14Z	2026-07-06T21:15:11Z	fix(deps): update dependency tsx to v4.23.0	https://github.com/counterfact/api-simulator/pull/2207
+2206	2026-07-06T21:03:11Z	2026-07-06T21:11:52Z	chore(deps): update dependency @typescript-eslint/utils to v8.63.0	https://github.com/counterfact/api-simulator/pull/2206
+2205	2026-07-06T02:14:09Z	2026-07-06T02:25:19Z	fix(deps): update dependency astro to v7.0.6	https://github.com/counterfact/api-simulator/pull/2205
+2204	2026-07-05T22:30:31Z	2026-07-05T22:41:51Z	fix(deps): update dependency tsx to v4.22.5	https://github.com/counterfact/api-simulator/pull/2204
+2203	2026-07-05T22:30:23Z	2026-07-05T22:42:48Z	fix(deps): update dependency posthog-node to v5.39.4	https://github.com/counterfact/api-simulator/pull/2203
+2202	2026-07-05T08:28:36Z	2026-07-05T08:40:28Z	fix(deps): update dependency js-yaml to v5.2.1	https://github.com/counterfact/api-simulator/pull/2202
+2201	2026-07-04T22:26:21Z	2026-07-04T22:38:08Z	fix(deps): update dependency astro to v7.0.5	https://github.com/counterfact/api-simulator/pull/2201
+2200	2026-07-04T18:08:21Z	2026-07-04T18:19:53Z	fix(deps): update dependency posthog-node to v5.39.2	https://github.com/counterfact/api-simulator/pull/2200
+2199	2026-07-03T21:49:38Z	2026-07-03T22:01:27Z	fix(deps): update dependency posthog-node to v5.39.1	https://github.com/counterfact/api-simulator/pull/2199
+2198	2026-07-03T12:36:26Z	2026-07-03T12:47:31Z	fix(deps): update dependency astro to v7.0.4	https://github.com/counterfact/api-simulator/pull/2198
+2197	2026-07-03T12:29:13Z	2026-07-03T12:40:13Z	fix(deps): update dependency posthog-node to v5.39.0	https://github.com/counterfact/api-simulator/pull/2197
+2196	2026-07-03T02:59:04Z	2026-07-03T03:09:46Z	chore(deps): update dependency eslint-plugin-jest to v29.15.4	https://github.com/counterfact/api-simulator/pull/2196
+2195	2026-07-03T02:51:19Z	2026-07-03T03:03:19Z	fix(deps): update dependency fs-extra to v11.3.6	https://github.com/counterfact/api-simulator/pull/2195
+2194	2026-07-02T23:47:45Z	2026-07-02T23:58:52Z	chore(deps): update typescript-eslint monorepo to v8.62.1	https://github.com/counterfact/api-simulator/pull/2194
+2193	2026-07-02T23:39:39Z	2026-07-02T23:51:25Z	fix(deps): update dependency posthog-node to v5.38.8	https://github.com/counterfact/api-simulator/pull/2193
+2192	2026-06-30T14:55:09Z	2026-08-04T17:21:51Z	fix(deps): update dependency prettier to v3.9.0	https://github.com/counterfact/api-simulator/pull/2192
+2191	2026-06-30T07:46:52Z	2026-06-30T07:57:07Z	fix(deps): update dependency js-yaml to v5.2.0	https://github.com/counterfact/api-simulator/pull/2191
+2190	2026-06-30T03:10:48Z	2026-06-30T03:22:03Z	chore(deps): update dependency eslint to v10.6.0	https://github.com/counterfact/api-simulator/pull/2190
+2189	2026-06-30T03:10:39Z	2026-06-30T03:22:03Z	fix(deps): update dependency recast to v0.23.12	https://github.com/counterfact/api-simulator/pull/2189
+2188	2026-06-29T23:48:18Z	2026-06-30T00:00:00Z	fix(deps): update dependency posthog-node to v5.38.6	https://github.com/counterfact/api-simulator/pull/2188
+2187	2026-06-29T23:40:54Z	2026-06-29T23:51:21Z	fix(deps): update dependency prettier to v3.8.5	https://github.com/counterfact/api-simulator/pull/2187
+2186	2026-06-29T19:40:55Z	2026-06-29T19:54:11Z	chore(deps): update dependency eslint-plugin-jest to v29.15.3	https://github.com/counterfact/api-simulator/pull/2186
+2185	2026-06-29T19:40:52Z	2026-06-29T19:50:12Z	chore(deps): update dependency @typescript-eslint/utils to v8.62.1	https://github.com/counterfact/api-simulator/pull/2185
+2184	2026-06-29T06:39:11Z	2026-06-29T06:50:33Z	chore(deps): update dependency eslint-plugin-regexp to v3.1.1	https://github.com/counterfact/api-simulator/pull/2184
+2183	2026-06-29T06:39:02Z	2026-06-29T06:51:55Z	chore(deps): update dependency eslint-plugin-n to v18.2.1	https://github.com/counterfact/api-simulator/pull/2183
+2182	2026-06-28T19:15:01Z	2026-06-28T19:26:27Z	fix(deps): update dependency astro to v7.0.3	https://github.com/counterfact/api-simulator/pull/2182
+2181	2026-06-28T19:07:25Z	2026-06-28T19:18:28Z	chore(deps): update dependency eslint-plugin-n to v18.2.0	https://github.com/counterfact/api-simulator/pull/2181
+2180	2026-06-28T01:54:12Z	2026-06-28T02:06:39Z	fix(deps): update dependency posthog-node to v5.38.5	https://github.com/counterfact/api-simulator/pull/2180
+2179	2026-06-27T01:28:27Z	2026-06-27T01:40:35Z	fix(deps): update dependency posthog-node to v5.38.4	https://github.com/counterfact/api-simulator/pull/2179
+2178	2026-06-26T21:16:49Z		Add issue proposal against multi-user remote REPL	https://github.com/counterfact/api-simulator/pull/2178
+2177	2026-06-26T19:50:34Z	2026-06-26T20:02:29Z	fix(deps): update dependency astro to v7	https://github.com/counterfact/api-simulator/pull/2177
+2176	2026-06-26T19:46:17Z	2026-06-26T19:54:10Z	chore(deps): update actions/cache action to v6	https://github.com/counterfact/api-simulator/pull/2176
+2175	2026-06-26T14:48:37Z	2026-06-26T15:01:06Z	fix(deps): update dependency posthog-node to v5.38.3	https://github.com/counterfact/api-simulator/pull/2175
+2174	2026-06-26T14:40:32Z	2026-06-26T14:52:03Z	fix(deps): update dependency js-yaml to v5.1.0	https://github.com/counterfact/api-simulator/pull/2174
+2173	2026-06-26T04:28:53Z	2026-06-26T04:39:40Z	chore(deps): update typescript-eslint monorepo to v8.62.0	https://github.com/counterfact/api-simulator/pull/2173
+2172	2026-06-26T04:28:44Z	2026-06-26T04:39:40Z	chore(deps): update dependency @swc/core to v1.15.43	https://github.com/counterfact/api-simulator/pull/2172
+2171	2026-06-22T21:45:05Z	2026-06-22T21:57:01Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v15.4.0	https://github.com/counterfact/api-simulator/pull/2171
+2170	2026-06-22T21:44:56Z	2026-06-22T21:57:01Z	fix(deps): update dependency posthog-node to v5.38.2	https://github.com/counterfact/api-simulator/pull/2170
+2169	2026-06-22T20:08:43Z	2026-06-22T20:19:13Z	chore(deps): update typescript-eslint monorepo	https://github.com/counterfact/api-simulator/pull/2169
+2168	2026-06-22T11:39:35Z	2026-06-22T14:23:50Z	feat: auto-request Copilot fix when CI fails on Renovate PRs	https://github.com/counterfact/api-simulator/pull/2168
+2167	2026-06-22T11:20:07Z	2026-06-22T11:33:25Z	fix(deps): update dependency posthog-node to v5.38.1	https://github.com/counterfact/api-simulator/pull/2167
+2166	2026-06-22T11:19:58Z	2026-06-22T11:30:50Z	chore(deps): update typescript-eslint monorepo to v8.61.1	https://github.com/counterfact/api-simulator/pull/2166
+2165	2026-06-21T01:46:21Z	2026-06-21T01:54:45Z	chore(deps): update actions/checkout action to v7	https://github.com/counterfact/api-simulator/pull/2165
+2164	2026-06-20T17:38:20Z	2026-06-22T14:26:09Z	chore(deps): update dependency js-yaml to v5	https://github.com/counterfact/api-simulator/pull/2164
+2163	2026-06-20T17:37:55Z	2026-06-20T17:48:58Z	fix(deps): update astro monorepo to v6.4.8	https://github.com/counterfact/api-simulator/pull/2163
+2162	2026-06-19T01:08:39Z	2026-06-19T01:19:58Z	fix(deps): update astro monorepo to v6.4.7	https://github.com/counterfact/api-simulator/pull/2162
+2161	2026-06-16T16:23:10Z	2026-06-16T16:29:15Z	Add DeepWiki badge to README	https://github.com/counterfact/api-simulator/pull/2161
+2160	2026-06-16T03:37:13Z	2026-06-16T03:49:40Z	chore(deps): update eslint monorepo to v10.5.0	https://github.com/counterfact/api-simulator/pull/2160
+2159	2026-06-15T11:53:27Z	2026-06-15T12:05:27Z	chore(deps): update dependency eslint-plugin-security to v4.0.1	https://github.com/counterfact/api-simulator/pull/2159
+2158	2026-06-15T02:43:29Z	2026-06-15T02:55:27Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v15.3.6	https://github.com/counterfact/api-simulator/pull/2158
+2157	2026-06-13T22:44:24Z	2026-06-13T22:55:51Z	fix(deps): update astro monorepo to v6.4.6	https://github.com/counterfact/api-simulator/pull/2157
+2156	2026-06-13T01:30:46Z	2026-06-13T01:41:34Z	fix(deps): update dependency prettier to v3.8.4	https://github.com/counterfact/api-simulator/pull/2156
+2155	2026-06-12T22:38:18Z	2026-06-12T22:50:26Z	fix(deps): update astro monorepo to v6.4.5	https://github.com/counterfact/api-simulator/pull/2155
+2154	2026-06-12T22:38:09Z	2026-06-12T22:49:28Z	chore(deps): update swc monorepo to v1.15.41	https://github.com/counterfact/api-simulator/pull/2154
+2153	2026-06-12T02:15:43Z	2026-06-22T11:13:42Z	chore(deps): update typescript-eslint monorepo to v8.61.0	https://github.com/counterfact/api-simulator/pull/2153
+2152	2026-06-12T01:56:37Z	2026-06-12T02:07:25Z	chore(deps): update dependency eslint-plugin-n to v18.1.0	https://github.com/counterfact/api-simulator/pull/2152
+2151	2026-06-09T00:04:26Z	2026-06-09T00:13:59Z	chore(deps): update typescript-eslint monorepo to v8.61.0	https://github.com/counterfact/api-simulator/pull/2151
+2150	2026-06-08T02:36:19Z	2026-06-22T11:12:22Z	fix(deps): update dependency posthog-node to v5.36.2	https://github.com/counterfact/api-simulator/pull/2150
+2149	2026-06-08T02:27:38Z	2026-06-08T02:39:25Z	fix(deps): update dependency js-yaml to v4.2.0	https://github.com/counterfact/api-simulator/pull/2149
+2148	2026-06-07T01:00:57Z	2026-06-07T01:12:23Z	fix(deps): update astro monorepo to v6.4.4	https://github.com/counterfact/api-simulator/pull/2148
+2147	2026-06-06T16:32:21Z	2026-06-07T20:42:59Z	fix(deps): update dependency posthog-node to v5.35.13	https://github.com/counterfact/api-simulator/pull/2147
+2146	2026-06-05T23:02:22Z	2026-06-05T23:13:12Z	fix(deps): update dependency posthog-node to v5.35.12	https://github.com/counterfact/api-simulator/pull/2146
+2145	2026-06-05T22:54:56Z	2026-06-05T23:05:32Z	fix(deps): update astro monorepo to v6.4.3	https://github.com/counterfact/api-simulator/pull/2145
+2144	2026-06-05T01:35:24Z	2026-06-05T01:46:12Z	fix(deps): update dependency posthog-node to v5.35.11	https://github.com/counterfact/api-simulator/pull/2144
+2143	2026-06-05T01:35:16Z	2026-06-05T01:46:12Z	chore(deps): update typescript-eslint monorepo to v8.60.1	https://github.com/counterfact/api-simulator/pull/2143
+2142	2026-06-04T18:14:48Z	2026-06-04T18:25:44Z	fix(deps): update dependency posthog-node to v5.35.9	https://github.com/counterfact/api-simulator/pull/2142
+2141	2026-06-04T11:44:51Z	2026-06-04T11:57:04Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.5	https://github.com/counterfact/api-simulator/pull/2141
+2140	2026-06-03T23:10:12Z	2026-06-03T23:21:26Z	fix(deps): update dependency posthog-node to v5.35.8	https://github.com/counterfact/api-simulator/pull/2140
+2139	2026-06-03T23:02:06Z	2026-06-03T23:13:20Z	fix(deps): update dependency tsx to v4.22.4	https://github.com/counterfact/api-simulator/pull/2139
+2138	2026-06-02T02:15:21Z	2026-06-02T02:27:45Z	chore(deps): update dependency eslint to v10.4.1	https://github.com/counterfact/api-simulator/pull/2138
+2137	2026-06-02T01:55:09Z	2026-06-02T02:07:16Z	fix(deps): update dependency commander to v15	https://github.com/counterfact/api-simulator/pull/2137
+2136	2026-06-02T01:54:51Z	2026-06-02T02:02:42Z	chore(deps): update dependency @typescript-eslint/utils to v8.60.1	https://github.com/counterfact/api-simulator/pull/2136
+2135	2026-06-01T03:39:40Z	2026-06-07T20:42:59Z	chore(deps): update dependency js-yaml to v4.2.0	https://github.com/counterfact/api-simulator/pull/2135
+2134	2026-06-01T03:39:23Z	2026-06-01T03:53:09Z	fix(deps): update dependency posthog-node to v5.35.6	https://github.com/counterfact/api-simulator/pull/2134
+2133	2026-05-31T17:51:52Z	2026-08-01T03:27:01Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2133
+2132	2026-05-31T17:47:53Z	2026-05-31T17:58:39Z	fix(deps): update dependency astro to v6.4.2	https://github.com/counterfact/api-simulator/pull/2132
+2131	2026-05-31T17:40:27Z	2026-05-31T17:51:01Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.6	https://github.com/counterfact/api-simulator/pull/2131
+2130	2026-05-30T16:00:32Z	2026-05-30T16:12:05Z	fix(deps): update dependency posthog-node to v5.35.5	https://github.com/counterfact/api-simulator/pull/2130
+2129	2026-05-30T15:57:28Z	2026-05-30T16:16:55Z	makes the named counterfact export explicitly available when consumers do import { counterfact } from "counterfact"	https://github.com/counterfact/api-simulator/pull/2129
+2128	2026-05-29T18:35:45Z	2026-05-29T18:46:14Z	fix(deps): update dependency posthog-node to v5.35.4	https://github.com/counterfact/api-simulator/pull/2128
+2127	2026-05-29T18:35:33Z	2026-05-29T18:48:36Z	fix(deps): update dependency astro to v6.3.8	https://github.com/counterfact/api-simulator/pull/2127
+2126	2026-05-29T13:16:07Z	2026-05-29T13:27:49Z	fix(deps): update dependency posthog-node to v5.35.3	https://github.com/counterfact/api-simulator/pull/2126
+2125	2026-05-29T05:09:43Z	2026-05-29T05:21:37Z	fix(deps): update dependency json-schema-faker to v0.6.2	https://github.com/counterfact/api-simulator/pull/2125
+2124	2026-05-29T00:51:34Z	2026-05-29T01:03:30Z	chore(deps): update typescript-eslint monorepo to v8.60.0	https://github.com/counterfact/api-simulator/pull/2124
+2123	2026-05-29T00:51:25Z	2026-05-29T01:02:25Z	fix(deps): update dependency posthog-node to v5.35.2	https://github.com/counterfact/api-simulator/pull/2123
+2122	2026-05-26T20:55:19Z	2026-05-26T21:06:41Z	chore(deps): update dependency @swc/core to v1.15.40	https://github.com/counterfact/api-simulator/pull/2122
+2121	2026-05-25T17:58:29Z	2026-05-25T18:06:45Z	chore(deps): update dependency @typescript-eslint/utils to v8.60.0	https://github.com/counterfact/api-simulator/pull/2121
+2120	2026-05-25T17:58:03Z	2026-05-25T18:09:43Z	fix(deps): update dependency posthog-node to v5.35.1	https://github.com/counterfact/api-simulator/pull/2120
+2119	2026-05-25T00:55:25Z		feat: add chaos() API for HTTP-layer fault injection with default-on rules	https://github.com/counterfact/api-simulator/pull/2119
+2118	2026-05-24T20:47:50Z	2026-05-24T20:58:22Z	fix(deps): update dependency posthog-node to v5.35.0	https://github.com/counterfact/api-simulator/pull/2118
+2117	2026-05-24T20:40:29Z	2026-05-24T20:52:25Z	fix(deps): update dependency astro to v6.3.7	https://github.com/counterfact/api-simulator/pull/2117
+2116	2026-05-24T13:32:31Z	2026-05-24T13:43:28Z	fix(deps): update dependency posthog-node to v5.34.8	https://github.com/counterfact/api-simulator/pull/2116
+2115	2026-05-24T13:32:23Z	2026-05-24T13:43:28Z	fix(deps): update dependency koa to v3.2.1	https://github.com/counterfact/api-simulator/pull/2115
+2114	2026-05-24T03:49:35Z	2026-05-30T17:22:12Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2114
+2113	2026-05-23T17:47:20Z	2026-05-23T18:20:25Z	Add robots.txt and llms.txt to counterfact.dev	https://github.com/counterfact/api-simulator/pull/2113
+2111	2026-05-23T16:38:28Z	2026-05-24T03:44:26Z	fix(deps): update dependency posthog-node to v5.34.7	https://github.com/counterfact/api-simulator/pull/2111
+2110	2026-05-23T16:31:22Z	2026-05-23T16:43:13Z	fix(deps): update dependency astro to v6.3.6	https://github.com/counterfact/api-simulator/pull/2110
+2109	2026-05-23T01:42:48Z		Add black-box behavioral specification for Counterfact	https://github.com/counterfact/api-simulator/pull/2109
+2108	2026-05-23T01:15:36Z		Reverse-engineer OpenAPI spec for the core Admin API	https://github.com/counterfact/api-simulator/pull/2108
+2106	2026-05-22T23:29:41Z	2026-05-23T01:17:07Z	Prioritize readability in `security/detect-object-injection` cleanup	https://github.com/counterfact/api-simulator/pull/2106
+2105	2026-05-22T23:05:17Z	2026-05-22T23:10:11Z	improve Copilot's learning loop instructions	https://github.com/counterfact/api-simulator/pull/2105
+2104	2026-05-22T22:56:30Z	2026-05-25T21:49:31Z	feat: append new HTTP method handlers to existing route files	https://github.com/counterfact/api-simulator/pull/2104
+2102	2026-05-22T22:53:32Z	2026-05-22T23:24:05Z	Watch code generation overlays for hot regeneration	https://github.com/counterfact/api-simulator/pull/2102
+2101	2026-05-22T22:29:17Z	2026-05-22T22:51:28Z	Refresh copilot instructions by extracting redundant guidance into skills	https://github.com/counterfact/api-simulator/pull/2101
+2099	2026-05-22T22:08:10Z	2026-05-22T22:29:03Z	Bootstrap contributor Copilot skills for Counterfact internals	https://github.com/counterfact/api-simulator/pull/2099
+2097	2026-05-22T21:52:38Z	2026-05-22T22:05:33Z	Fix telemetry discussion redirect target and usage docs link	https://github.com/counterfact/api-simulator/pull/2097
+2094	2026-05-22T20:38:12Z	2026-05-22T20:50:05Z	chore(deps): update dependency @types/koa to v3.0.3	https://github.com/counterfact/api-simulator/pull/2094
+2093	2026-05-22T18:29:28Z	2026-05-22T18:40:50Z	fix(deps): update dependency precinct to v13	https://github.com/counterfact/api-simulator/pull/2093
+2092	2026-05-22T18:29:14Z	2026-05-22T18:40:50Z	fix(deps): update dependency tsx to v4.22.3	https://github.com/counterfact/api-simulator/pull/2092
+2091	2026-05-22T01:51:06Z	2026-05-22T02:02:10Z	fix(deps): update dependency posthog-node to v5.34.6	https://github.com/counterfact/api-simulator/pull/2091
+2090	2026-05-22T01:43:55Z	2026-05-22T01:55:25Z	fix(deps): update dependency astro to v6.3.5	https://github.com/counterfact/api-simulator/pull/2090
+2089	2026-05-21T21:41:44Z	2026-05-21T21:53:15Z	fix(deps): update dependency tsx to v4.22.2	https://github.com/counterfact/api-simulator/pull/2089
+2088	2026-05-21T21:41:06Z	2026-05-21T21:53:15Z	chore(deps): update typescript-eslint monorepo to v8.59.4	https://github.com/counterfact/api-simulator/pull/2088
+2087	2026-05-21T13:25:37Z	2026-05-21T13:51:39Z	Add SECURITY.md with vulnerability disclosure policy	https://github.com/counterfact/api-simulator/pull/2087
+2086	2026-05-20T11:06:07Z	2026-05-20T11:22:03Z	fix(deps): update dependency tsx to v4.22.1	https://github.com/counterfact/api-simulator/pull/2086
+2085	2026-05-18T19:52:07Z	2026-05-18T20:04:20Z	chore(deps): update dependency eslint to v10.4.0	https://github.com/counterfact/api-simulator/pull/2085
+2084	2026-05-18T19:52:02Z	2026-05-18T20:04:20Z	fix(deps): update dependency posthog-node to v5.34.2	https://github.com/counterfact/api-simulator/pull/2084
+2083	2026-05-18T18:50:42Z	2026-05-18T18:59:39Z	chore(deps): update dependency @typescript-eslint/utils to v8.59.4	https://github.com/counterfact/api-simulator/pull/2083
+2082	2026-05-17T20:48:16Z	2026-05-17T20:59:43Z	fix(deps): update dependency tsx to v4.22.0	https://github.com/counterfact/api-simulator/pull/2082
+2081	2026-05-17T20:48:09Z	2026-05-17T21:01:40Z	fix(deps): update dependency astro to v6.3.3	https://github.com/counterfact/api-simulator/pull/2081
+2080	2026-05-16T20:47:58Z	2026-05-24T03:48:52Z	Version Packages	https://github.com/counterfact/api-simulator/pull/2080
+2079	2026-05-16T20:34:53Z	2026-05-16T20:47:08Z	fix(deps): update dependency astro to v6.3.2	https://github.com/counterfact/api-simulator/pull/2079
+2078	2026-05-16T01:30:51Z	2026-05-16T01:42:30Z	fix(deps): update dependency posthog-node to v5.34.1	https://github.com/counterfact/api-simulator/pull/2078
+2077	2026-05-15T16:40:45Z	2026-05-15T16:52:21Z	fix(deps): update dependency posthog-node to v5.34.0	https://github.com/counterfact/api-simulator/pull/2077
+2076	2026-05-15T16:22:03Z	2026-05-15T17:22:17Z	Remove patch-package dependency, postinstall script, and CI step	https://github.com/counterfact/api-simulator/pull/2076
+2074	2026-05-15T12:55:17Z	2026-05-15T13:02:14Z	Require decision/learning logs for non-trivial code changes in Copilot instructions	https://github.com/counterfact/api-simulator/pull/2074
+2073	2026-05-15T01:05:49Z	2026-05-15T01:17:08Z	fix(deps): update dependency posthog-node to v5.33.7	https://github.com/counterfact/api-simulator/pull/2073
+2072	2026-05-15T00:57:30Z	2026-05-15T01:09:22Z	chore(deps): update typescript-eslint monorepo to v8.59.3	https://github.com/counterfact/api-simulator/pull/2072
+2071	2026-05-14T19:34:07Z	2026-05-18T19:44:13Z	Add required Counterfact editing skills (counterfact/route/context/scenario)	https://github.com/counterfact/api-simulator/pull/2071
+2069	2026-05-14T11:09:42Z	2026-05-14T14:29:06Z	Restore Google Analytics in Astro site layout	https://github.com/counterfact/api-simulator/pull/2069
+2067	2026-05-14T10:45:19Z	2026-05-14T16:28:55Z	Track website page views via PostHog in shared Astro layout and align site analytics CI config	https://github.com/counterfact/api-simulator/pull/2067
+2065	2026-05-13T12:56:36Z	2026-05-13T13:09:51Z	fix(deps): pin dependencies	https://github.com/counterfact/api-simulator/pull/2065
+2064	2026-05-12T10:34:12Z	2026-05-12T10:46:41Z	chore(deps): update dependency jest to v30.4.2	https://github.com/counterfact/api-simulator/pull/2064
+2063	2026-05-11T23:38:36Z	2026-05-12T00:05:04Z	Enhance telemetry with privacy-safe startup, file-change, and REPL events	https://github.com/counterfact/api-simulator/pull/2063
+2061	2026-05-11T23:11:00Z		Add Counterfact version to PostHog telemetry events	https://github.com/counterfact/api-simulator/pull/2061
+2059	2026-05-11T22:12:55Z	2026-05-22T22:16:21Z	feat: add OpenAPI Overlays support	https://github.com/counterfact/api-simulator/pull/2059
+2057	2026-05-11T21:42:19Z	2026-05-11T23:04:13Z	Fix Renovate automerge config warning	https://github.com/counterfact/api-simulator/pull/2057
+2056	2026-05-11T18:00:10Z	2026-05-11T23:02:57Z	chore(deps): update dependency @typescript-eslint/utils to v8.59.3	https://github.com/counterfact/api-simulator/pull/2056
+2055	2026-05-11T15:10:35Z	2026-05-11T15:22:55Z	chore(deps): update jest monorepo to v30.4.1	https://github.com/counterfact/api-simulator/pull/2055
+2054	2026-05-11T00:42:06Z	2026-05-11T00:53:13Z	chore(deps): update jest monorepo to v30.4.0	https://github.com/counterfact/api-simulator/pull/2054
+2053	2026-05-11T00:41:59Z	2026-05-11T00:52:06Z	fix(deps): update dependency posthog-node to v5.33.4	https://github.com/counterfact/api-simulator/pull/2053
+2052	2026-05-10T16:45:11Z	2026-05-10T16:56:06Z	fix(deps): update dependency astro to ^6.3.0	https://github.com/counterfact/api-simulator/pull/2052
+2051	2026-05-10T00:47:51Z	2026-05-11T20:21:36Z	chore(deps): update dependency eslint-plugin-n to v18	https://github.com/counterfact/api-simulator/pull/2051
+2050	2026-05-10T00:47:44Z	2026-05-10T00:58:04Z	fix(deps): update dependency precinct to v12.3.2	https://github.com/counterfact/api-simulator/pull/2050
+2049	2026-05-09T23:05:02Z	2026-05-09T23:15:25Z	fix(deps): update dependency posthog-node to v5.33.3	https://github.com/counterfact/api-simulator/pull/2049
+2048	2026-05-09T23:04:55Z	2026-05-09T23:15:25Z	fix(deps): update dependency fs-extra to v11.3.5	https://github.com/counterfact/api-simulator/pull/2048
+2047	2026-05-09T22:57:04Z	2026-05-09T23:08:26Z	chore(deps): update typescript-eslint monorepo to v8.59.2	https://github.com/counterfact/api-simulator/pull/2047
+2046	2026-05-09T21:51:35Z	2026-05-09T22:57:27Z	Add OpenAPI 3.2 JSON Schema keyword coverage for schema-based random generation	https://github.com/counterfact/api-simulator/pull/2046
+2045	2026-05-09T21:12:16Z	2026-05-22T21:55:06Z	Support OpenAPI `apiKey` security (`header`/`query`/`cookie`) in generated route types and `$.auth` (always present with empty-string default), and resolve recurring merge conflicts with `main`	https://github.com/counterfact/api-simulator/pull/2045
+2044	2026-05-09T21:01:19Z	2026-05-11T21:49:06Z	Support OpenAPI 3.2 `additionalOperations` for custom HTTP methods (including example.yaml fixture examples and merge conflict resolution)	https://github.com/counterfact/api-simulator/pull/2044
+2043	2026-05-09T21:01:01Z	2026-05-09T21:25:42Z	OpenAPI 3.2: cover discriminator `defaultMapping` when `propertyName` is omitted	https://github.com/counterfact/api-simulator/pull/2043
+2042	2026-05-09T20:19:57Z	2026-05-09T20:37:19Z	Docs: note Swagger 2.0 and OpenAPI 3.0–3.2 support	https://github.com/counterfact/api-simulator/pull/2042
+2040	2026-05-07T21:50:24Z	2026-05-09T20:51:18Z	docs: add 5 TriLUG parody variants of Linus's Linux announcement email	https://github.com/counterfact/api-simulator/pull/2040
+2038	2026-05-05T17:08:29Z	2026-05-05T17:20:45Z	chore(deps): update dependency @swc/core to v1.15.33	https://github.com/counterfact/api-simulator/pull/2038
+2037	2026-05-05T17:06:27Z	2026-05-05T21:48:01Z	Update Renovate config to support merge queue	https://github.com/counterfact/api-simulator/pull/2037
+2035	2026-05-05T11:57:46Z	2026-05-09T20:42:57Z	feat: Support OpenAPI 3.2 `xml.nodeType` in JSON-to-XML serialisation	https://github.com/counterfact/api-simulator/pull/2035
+2034	2026-05-05T10:39:10Z	2026-05-05T12:02:13Z	chore(deps): update dependency node to v24	https://github.com/counterfact/api-simulator/pull/2034
+2033	2026-05-05T08:24:47Z	2026-05-05T08:33:28Z	chore(deps): update dependency node to v24	https://github.com/counterfact/api-simulator/pull/2033
+2032	2026-05-05T08:24:38Z	2026-05-05T08:33:11Z	chore(deps): update actions/upload-pages-artifact action to v5	https://github.com/counterfact/api-simulator/pull/2032
+2031	2026-05-05T08:00:44Z	2026-05-05T10:37:02Z	fix: resolve broken site links and add CI link checker	https://github.com/counterfact/api-simulator/pull/2031
+2029	2026-05-05T07:50:44Z	2026-05-05T11:37:33Z	feat: set `name` field on injected Counterfact server entry (OpenAPI 3.2)	https://github.com/counterfact/api-simulator/pull/2029
+2028	2026-05-05T07:49:58Z	2026-05-09T18:44:01Z	OpenAPI 3.2: Include discriminator.defaultMapping in generated union types	https://github.com/counterfact/api-simulator/pull/2028
+2027	2026-05-05T07:49:22Z		feat: emit @deprecated JSDoc for operations using deprecated security schemes (OpenAPI 3.2)	https://github.com/counterfact/api-simulator/pull/2027
+2026	2026-05-05T07:48:59Z	2026-05-05T22:00:40Z	Add regression tests for $ref resolution on components/mediaTypes (OpenAPI 3.2)	https://github.com/counterfact/api-simulator/pull/2026
+2025	2026-05-05T07:47:54Z	2026-05-09T22:55:11Z	feat: OpenAPI 3.2 streaming responses and SSE via itemSchema	https://github.com/counterfact/api-simulator/pull/2025
+2024	2026-05-05T07:43:44Z	2026-05-05T17:10:10Z	chore(deps): update actions/setup-node action to v6	https://github.com/counterfact/api-simulator/pull/2024
+2023	2026-05-05T07:43:35Z	2026-05-05T07:55:57Z	chore(deps): update actions/deploy-pages action to v5	https://github.com/counterfact/api-simulator/pull/2023
+2022	2026-05-05T06:34:08Z	2026-05-05T06:42:06Z	chore(deps): update actions/configure-pages action to v6	https://github.com/counterfact/api-simulator/pull/2022
+2021	2026-05-05T06:34:06Z	2026-05-05T07:46:56Z	chore(deps): update actions/checkout action to v6	https://github.com/counterfact/api-simulator/pull/2021
+2020	2026-05-05T02:41:58Z	2026-05-09T20:42:57Z	feat: prefer dataValue over value in OpenAPI 3.2 example responses	https://github.com/counterfact/api-simulator/pull/2020
+2019	2026-05-05T02:40:05Z	2026-05-09T20:50:00Z	OpenAPI 3.2: Add regression tests for $self document identity and $ref resolution	https://github.com/counterfact/api-simulator/pull/2019
+2018	2026-05-05T02:37:26Z	2026-05-05T02:55:01Z	feat: add native QUERY HTTP method support (OpenAPI 3.2)	https://github.com/counterfact/api-simulator/pull/2018
+2017	2026-05-05T02:34:34Z	2026-05-09T21:29:42Z	feat: support OpenAPI 3.2 `querystring` parameter location	https://github.com/counterfact/api-simulator/pull/2017
+2001	2026-05-05T02:31:06Z	2026-05-05T02:53:35Z	Fix broken relative links on .md alias doc pages	https://github.com/counterfact/api-simulator/pull/2001
+1999	2026-05-05T02:22:49Z	2026-05-05T02:34:58Z	chore(deps): update typescript-eslint monorepo to v8.59.1	https://github.com/counterfact/api-simulator/pull/1999
+1998	2026-05-05T02:15:13Z	2026-05-05T02:26:14Z	chore(deps): update dependency eslint-plugin-regexp to v3.1.0	https://github.com/counterfact/api-simulator/pull/1998
+1997	2026-05-05T02:01:25Z	2026-05-05T02:13:05Z	Add build-simulation skill: prompt for AI-guided API simulation from OpenAPI spec	https://github.com/counterfact/api-simulator/pull/1997
+1995	2026-05-05T01:45:07Z	2026-05-05T01:56:20Z	chore(deps): update dependency @types/debug to v4.1.13	https://github.com/counterfact/api-simulator/pull/1995
+1994	2026-05-05T01:40:32Z	2026-05-05T01:56:20Z	fix(deps): update dependency astro to v6 [security]	https://github.com/counterfact/api-simulator/pull/1994
+1993	2026-05-05T01:37:07Z	2026-05-05T02:02:42Z	docs: document multi-version API support	https://github.com/counterfact/api-simulator/pull/1993
+1992	2026-05-05T01:30:59Z	2026-05-05T01:44:10Z	fix(deps): upgrade @apidevtools/json-schema-ref-parser to v15.3.5, remove patch-package patch	https://github.com/counterfact/api-simulator/pull/1992
+1991	2026-05-05T00:38:41Z	2026-05-16T18:11:09Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1991
+1990	2026-05-05T00:27:42Z	2026-05-05T01:30:34Z	chore(config): migrate Renovate config	https://github.com/counterfact/api-simulator/pull/1990
+1989	2026-05-05T00:26:32Z	2026-05-05T00:40:48Z	chore(deps): update actions/github-script action to v9	https://github.com/counterfact/api-simulator/pull/1989
+1988	2026-05-05T00:26:25Z	2026-05-05T01:30:34Z	chore(deps): update actions/checkout action to v6	https://github.com/counterfact/api-simulator/pull/1988
+1987	2026-05-05T00:26:15Z	2026-05-05T00:57:15Z	fix(deps): update dependency precinct to v12.3.1	https://github.com/counterfact/api-simulator/pull/1987
+1986	2026-05-05T00:26:00Z	2026-05-05T00:40:48Z	fix(deps): update dependency posthog-node to ^5.33.0	https://github.com/counterfact/api-simulator/pull/1986
+1985	2026-05-05T00:25:47Z	2026-05-05T00:39:06Z	fix(deps): update dependency ajv to v8.20.0	https://github.com/counterfact/api-simulator/pull/1985
+1984	2026-05-05T00:25:35Z	2026-05-05T00:41:26Z	chore(deps): update dependency eslint-plugin-promise to ^7.3.0	https://github.com/counterfact/api-simulator/pull/1984
+1983	2026-05-05T00:25:23Z	2026-05-05T00:47:58Z	chore(deps): update dependency eslint to v10.3.0	https://github.com/counterfact/api-simulator/pull/1983
+1982	2026-05-05T00:25:12Z	2026-05-05T01:30:34Z	chore(deps): update dependency @typescript-eslint/utils to v8.59.2	https://github.com/counterfact/api-simulator/pull/1982
+1981	2026-05-05T00:24:57Z	2026-05-05T00:45:17Z	chore(deps): update dependency @changesets/cli to v2.31.0	https://github.com/counterfact/api-simulator/pull/1981
+1980	2026-05-05T00:24:45Z	2026-05-05T00:45:00Z	fix(deps): update dependency typescript to v6.0.3	https://github.com/counterfact/api-simulator/pull/1980
+1979	2026-05-05T00:24:33Z	2026-05-05T00:43:33Z	fix(deps): update dependency prettier to v3.8.3	https://github.com/counterfact/api-simulator/pull/1979
+1978	2026-05-05T00:24:20Z	2026-05-05T00:42:41Z	fix(deps): update dependency json-schema-faker to v0.6.1	https://github.com/counterfact/api-simulator/pull/1978
+1977	2026-05-05T00:24:09Z	2026-05-05T00:43:49Z	chore(deps): update dependency eslint-plugin-jest to v29.15.2	https://github.com/counterfact/api-simulator/pull/1977
+1976	2026-05-05T00:23:58Z	2026-05-05T00:40:48Z	chore(deps): update dependency @swc/core to v1.15.32	https://github.com/counterfact/api-simulator/pull/1976
+1975	2026-05-05T00:23:45Z	2026-05-05T01:42:15Z	fix(deps): pin dependencies	https://github.com/counterfact/api-simulator/pull/1975
+1974	2026-05-04T13:42:45Z	2026-05-04T13:58:42Z	Enable telemetry: remove pre-May-2026 date gate	https://github.com/counterfact/api-simulator/pull/1974
+1972	2026-04-30T14:41:14Z	2026-05-04T15:08:40Z	fix: include path-item-level parameters in generated TypeScript types and server runtime	https://github.com/counterfact/api-simulator/pull/1972
+1970	2026-04-28T00:52:13Z	2026-04-28T02:20:44Z	fix: cast OAS3 schema-typed parameters at runtime	https://github.com/counterfact/api-simulator/pull/1970
+1968	2026-04-28T00:41:42Z	2026-05-04T23:44:16Z	Admin API disabled by default (opt-in via --admin-api)	https://github.com/counterfact/api-simulator/pull/1968
+1966	2026-04-27T23:24:53Z	2026-05-05T01:39:38Z	Set up Astro with GitHub Pages, migrate homepage, and publish docs as site pages	https://github.com/counterfact/api-simulator/pull/1966
+1964	2026-04-27T23:02:29Z	2026-04-27T23:20:19Z	docs: fix CLI reference, programmatic API example, and without-openapi syntax errors	https://github.com/counterfact/api-simulator/pull/1964
+1962	2026-04-26T01:56:23Z	2026-05-05T00:37:33Z	Add "Multiple API Versions" pattern and restructure patterns index	https://github.com/counterfact/api-simulator/pull/1962
+1960	2026-04-26T01:47:24Z		feat: update ParametersTypeCoder and ParameterExportTypeCoder to emit output under version subdirectories	https://github.com/counterfact/api-simulator/pull/1960
+1959	2026-04-26T01:47:06Z		feat: version-aware scenario loading and $.version in startup scenario	https://github.com/counterfact/api-simulator/pull/1959
+1958	2026-04-26T00:57:14Z	2026-04-26T01:42:25Z	feat: add runtime implementation of $.minVersion() for versioned route handlers	https://github.com/counterfact/api-simulator/pull/1958
+1956	2026-04-26T00:28:33Z	2026-04-26T00:45:48Z	fix: update usage link in REPL and CLI banner to GitHub docs	https://github.com/counterfact/api-simulator/pull/1956
+1954	2026-04-25T23:38:28Z	2026-04-26T01:53:55Z	fix: separate mapped type from explicit properties in generated response object type	https://github.com/counterfact/api-simulator/pull/1954
+1952	2026-04-25T19:22:04Z	2026-05-05T00:10:25Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1952
+1951	2026-04-25T17:38:13Z	2026-04-25T19:21:15Z	docs(workflow): add explanatory comment to manual-acceptance-tests.yaml	https://github.com/counterfact/api-simulator/pull/1951
+1950	2026-04-25T14:51:17Z	2026-04-25T19:21:15Z	feat: auto-derive URL prefix from group+version in SpecConfig	https://github.com/counterfact/api-simulator/pull/1950
+1949	2026-04-25T14:51:03Z	2026-04-25T23:55:48Z	feat(generator): emit version-mapped handler types from OperationTypeCoder	https://github.com/counterfact/api-simulator/pull/1949
+1948	2026-04-25T14:50:53Z	2026-04-26T01:43:35Z	feat: emit per-group types/versions.ts with Versions, VersionsGTE, and Versioned types; add version property to generated $-arg type	https://github.com/counterfact/api-simulator/pull/1948
+1947	2026-04-25T14:50:34Z	2026-04-25T22:44:28Z	feat: add `version` field to `SpecConfig`, relax duplicate-group validation, and fix concurrent generation for multi-version specs	https://github.com/counterfact/api-simulator/pull/1947
+1938	2026-04-25T13:13:47Z	2026-04-25T14:42:27Z	docs: propose sub-issues for multi-version API support plan (#1937)	https://github.com/counterfact/api-simulator/pull/1938
+1936	2026-04-25T01:16:46Z	2026-04-25T01:40:35Z	SchemaTypeCoder and ResponseTypeCoder include version number in the path when provided	https://github.com/counterfact/api-simulator/pull/1936
+1935	2026-04-25T00:41:00Z	2026-04-25T01:54:12Z	Fix: Query params of type object are now exploded correctly (OpenAPI default)	https://github.com/counterfact/api-simulator/pull/1935
+1934	2026-04-22T01:47:57Z	2026-04-25T02:27:12Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1934
+1932	2026-04-18T21:14:14Z	2026-04-25T00:47:11Z	Add `Script.declareVersion()` and emit `Versions` type map from versioned generated code	https://github.com/counterfact/api-simulator/pull/1932
+1930	2026-04-18T19:45:18Z	2026-04-22T01:47:14Z	In the types, require using $.response to build a response.	https://github.com/counterfact/api-simulator/pull/1930
+1929	2026-04-18T13:46:18Z	2026-04-22T01:52:58Z	Pass `version` through coder construction chains with strict second-argument constructor ordering	https://github.com/counterfact/api-simulator/pull/1929
+1927	2026-04-18T02:09:52Z		Add 5 mobile-first homepage concept variants with fast-scan messaging and pattern-driven CTAs	https://github.com/counterfact/api-simulator/pull/1927
+1925	2026-04-18T01:57:59Z	2026-04-18T02:03:06Z	Update README.md	https://github.com/counterfact/api-simulator/pull/1925
+1924	2026-04-17T20:30:18Z	2026-04-17T20:35:28Z	Update README.md	https://github.com/counterfact/api-simulator/pull/1924
+1923	2026-04-17T20:16:50Z	2026-04-17T20:23:41Z	Revise README for improved content and formatting	https://github.com/counterfact/api-simulator/pull/1923
+1922	2026-04-16T19:19:24Z	2026-04-17T12:20:36Z	repl: update `.scenario` tab completion for group-qualified multi-API usage	https://github.com/counterfact/api-simulator/pull/1922
+1921	2026-04-16T17:22:00Z	2026-04-16T18:56:03Z	repl: support group-qualified `.scenario` in multi-API sessions	https://github.com/counterfact/api-simulator/pull/1921
+1920	2026-04-16T16:55:36Z	2026-04-16T17:18:46Z	Handle `_.context` syntax/import failures without crashing startup	https://github.com/counterfact/api-simulator/pull/1920
+1918	2026-04-16T15:11:55Z	2026-04-16T15:38:18Z	Replace unnamed regex capture groups with named groups	https://github.com/counterfact/api-simulator/pull/1918
+1917	2026-04-16T15:11:55Z	2026-04-16T17:00:47Z	Resolve `jest/expect-expect` warnings and stabilize flaky app runner test	https://github.com/counterfact/api-simulator/pull/1917
+1916	2026-04-16T15:11:54Z		Reduce `security/detect-object-injection` warnings with explicit keyed access guards	https://github.com/counterfact/api-simulator/pull/1916
+1915	2026-04-16T15:11:54Z	2026-04-16T17:00:47Z	Refactor test conditionals to remove `jest/no-conditional-in-test` warnings	https://github.com/counterfact/api-simulator/pull/1915
+1914	2026-04-16T15:11:53Z	2026-04-16T15:42:20Z	Reduce `detect-non-literal-fs-filename` noise with validated path reads and scoped suppressions	https://github.com/counterfact/api-simulator/pull/1914
+1913	2026-04-16T15:11:52Z	2026-04-16T15:53:38Z	Remove obsolete skipped ModuleLoader tests to eliminate `jest/no-disabled-tests` findings	https://github.com/counterfact/api-simulator/pull/1913
+1912	2026-04-16T15:11:51Z	2026-04-16T17:09:11Z	Disable `import/no-named-as-default-member` in test files to remove `js-yaml` false positives	https://github.com/counterfact/api-simulator/pull/1912
+1911	2026-04-16T15:11:51Z	2026-04-16T16:55:38Z	Audit and resolve `security/detect-unsafe-regex` findings	https://github.com/counterfact/api-simulator/pull/1911
+1902	2026-04-16T13:02:33Z	2026-04-16T14:13:43Z	Document lint warning recommendations and add follow-up issue proposal series	https://github.com/counterfact/api-simulator/pull/1902
+1900	2026-04-16T12:53:29Z	2026-04-16T17:02:12Z	repl: expose grouped multi-API helpers and require unique group names	https://github.com/counterfact/api-simulator/pull/1900
+1896	2026-04-16T12:15:50Z	2026-04-16T14:02:52Z	Keep required CI and CodeQL checks green while skipping heavy work for Markdown-only pull requests	https://github.com/counterfact/api-simulator/pull/1896
+1894	2026-04-16T11:57:03Z	2026-04-16T12:19:43Z	Add issue proposals for multi-ApiRunner REPL support	https://github.com/counterfact/api-simulator/pull/1894
+1892	2026-04-16T01:20:22Z		Support multi-ApiRunner REPL state maps and API-qualified `.scenario` execution	https://github.com/counterfact/api-simulator/pull/1892
+1890	2026-04-16T00:55:48Z	2026-04-16T01:04:41Z	Update coverage badge	https://github.com/counterfact/api-simulator/pull/1890
+1889	2026-04-16T00:46:19Z		Add Architecture Report Card 3 for readability, naming, and organization	https://github.com/counterfact/api-simulator/pull/1889
+1887	2026-04-16T00:43:21Z	2026-04-16T01:01:38Z	Narrow config argument passing to explicit key subsets	https://github.com/counterfact/api-simulator/pull/1887
+1885	2026-04-15T20:54:54Z	2026-04-15T22:13:44Z	docs: require `yarn install` before any other yarn command	https://github.com/counterfact/api-simulator/pull/1885
+1883	2026-04-15T20:50:07Z	2026-04-15T22:39:51Z	Add black-box coverage for multi-spec API configurations	https://github.com/counterfact/api-simulator/pull/1883
+1881	2026-04-15T20:48:56Z	2026-04-16T14:17:15Z	REPL: prefer OpenAPI paths in completer and split lookup logic	https://github.com/counterfact/api-simulator/pull/1881
+1879	2026-04-15T18:52:38Z	2026-04-15T20:41:50Z	Multiple APIs with ApiRunner	https://github.com/counterfact/api-simulator/pull/1879
+1877	2026-04-15T18:10:34Z	2026-04-15T18:30:08Z	Test coverage: exclude counterfact-types from Jest and add tests for untested files	https://github.com/counterfact/api-simulator/pull/1877
+1875	2026-04-15T17:31:36Z	2026-04-15T17:40:02Z	rename routePrefix to prefix, make sure prefix is used in the CLI output	https://github.com/counterfact/api-simulator/pull/1875
+1874	2026-04-15T13:49:15Z	2026-04-15T16:26:34Z	Move most of bin/counterfact.js into src/cli/ as TypeScript	https://github.com/counterfact/api-simulator/pull/1874
+1872	2026-04-15T12:10:24Z	2026-04-15T12:26:01Z	Move MSW code out of app.ts	https://github.com/counterfact/api-simulator/pull/1872
+1870	2026-04-14T21:50:04Z	2026-04-14T22:17:46Z	Organize Koa middleware into web-server/ with path-prefix-first signatures	https://github.com/counterfact/api-simulator/pull/1870
+1868	2026-04-14T18:58:34Z	2026-04-14T20:38:19Z	feat: Pass runner into createKoaApp; add openApiPath and routePrefix to ApiRunner	https://github.com/counterfact/api-simulator/pull/1868
+1866	2026-04-14T18:33:12Z	2026-04-17T12:55:48Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1866
+1865	2026-04-14T16:43:06Z	2026-04-14T18:32:32Z	feat: add ApiRunner class to encapsulate server sub-system lifecycle	https://github.com/counterfact/api-simulator/pull/1865
+1863	2026-04-14T15:31:52Z	2026-04-14T15:47:42Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1863
+1862	2026-04-14T15:09:37Z	2026-04-14T15:26:36Z	refactor: use Pick<Config, ...> in function signatures to declare only used config keys	https://github.com/counterfact/api-simulator/pull/1862
+1860	2026-04-14T14:35:03Z	2026-04-14T15:09:35Z	Create all middleware within createKoaApp()	https://github.com/counterfact/api-simulator/pull/1860
+1858	2026-04-14T14:01:42Z		fix: authenticate to npm in release workflow (resolve ENEEDAUTH)	https://github.com/counterfact/api-simulator/pull/1858
+1857	2026-04-14T11:45:53Z	2026-04-14T12:59:49Z	Refactor: move generate.ts into CodeGenerator class	https://github.com/counterfact/api-simulator/pull/1857
+1855	2026-04-14T10:54:00Z	2026-04-14T11:36:55Z	Factor out ScenarioFileGenerator class	https://github.com/counterfact/api-simulator/pull/1855
+1853	2026-04-14T01:53:55Z	2026-04-14T10:51:16Z	Add `ForwardSlashPath` branded type and forward-slash path utilities	https://github.com/counterfact/api-simulator/pull/1853
+1851	2026-04-14T00:04:31Z	2026-04-14T00:18:02Z	Refactor openapiMiddleware to accept multiple documents	https://github.com/counterfact/api-simulator/pull/1851
+1849	2026-04-13T23:56:05Z	2026-04-14T01:10:40Z	Refactor: pass adminApiMiddleware into createKoaApp(); rename koaMiddleware to routesMiddleware	https://github.com/counterfact/api-simulator/pull/1849
+1847	2026-04-13T21:03:07Z	2026-04-13T21:25:27Z	fix: close REPL servers after each test to prevent Jest worker from hanging	https://github.com/counterfact/api-simulator/pull/1847
+1845	2026-04-13T20:51:27Z		Parallel APIs second pass: add `specs` array to `counterfact.yaml`	https://github.com/counterfact/api-simulator/pull/1845
+1843	2026-04-13T20:44:28Z	2026-04-13T22:29:06Z	Fix TypeError when OpenAPI Path Item Object contains non-HTTP-verb fields	https://github.com/counterfact/api-simulator/pull/1843
+1841	2026-04-13T17:13:40Z		feat: support multiple APIs at different base paths via `specs` in counterfact.yaml	https://github.com/counterfact/api-simulator/pull/1841
+1839	2026-04-13T12:11:37Z	2026-04-13T13:53:03Z	Refine the README: concise two-paragraph intro + ten variants	https://github.com/counterfact/api-simulator/pull/1839
+1837	2026-04-12T00:54:05Z	2026-04-12T01:42:28Z	Make REPL prompt hexagon and > blue to match logo	https://github.com/counterfact/api-simulator/pull/1837
+1835	2026-04-11T18:51:18Z	2026-04-13T00:24:35Z	Add internal JSDocs throughout the codebase	https://github.com/counterfact/api-simulator/pull/1835
+1833	2026-04-11T13:10:58Z	2026-04-13T17:18:48Z	feat: run `startup` export from `scenarios/index.ts` automatically on server init	https://github.com/counterfact/api-simulator/pull/1833
+1831	2026-04-11T12:27:33Z		Add `startup()` decorator for default scenarios	https://github.com/counterfact/api-simulator/pull/1831
+1829	2026-04-11T12:21:48Z	2026-04-11T15:12:01Z	Move openapi-example.yaml to test/fixtures and flesh out with edge cases	https://github.com/counterfact/api-simulator/pull/1829
+1828	2026-04-11T10:36:35Z	2026-04-11T12:19:12Z	Rename .apply REPL command to .scenario	https://github.com/counterfact/api-simulator/pull/1828
+1826	2026-04-11T02:27:54Z	2026-04-13T15:31:14Z	feat: OpenApiDocument is now a class with built-in file watching and EventTarget	https://github.com/counterfact/api-simulator/pull/1826
+1824	2026-04-10T21:27:20Z	2026-04-10T21:35:35Z	update package.json	https://github.com/counterfact/api-simulator/pull/1824
+1823	2026-04-10T18:34:07Z	2026-04-14T15:31:01Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1823
+1822	2026-04-10T18:30:06Z	2026-04-13T16:45:19Z	Export Context$ and Scenario$ interfaces for strongly-typed loadContext() in _.context.ts files	https://github.com/counterfact/api-simulator/pull/1822
+1821	2026-04-10T18:09:30Z	2026-04-10T19:03:40Z	[WIP] Refactor usage and reference documentation for Counterfact	https://github.com/counterfact/api-simulator/pull/1821
+1819	2026-04-10T17:58:50Z	2026-04-10T18:33:09Z	Remove the client (GUI)	https://github.com/counterfact/api-simulator/pull/1819
+1817	2026-04-10T15:12:31Z		Add a constructor with a strongly typed $ argument to the default Context class	https://github.com/counterfact/api-simulator/pull/1817
+1814	2026-04-10T13:43:04Z	2026-04-10T14:54:21Z	Revise documentation for coherence	https://github.com/counterfact/api-simulator/pull/1814
+1812	2026-04-10T12:13:43Z	2026-04-10T12:23:31Z	Update README.md	https://github.com/counterfact/api-simulator/pull/1812
+1811	2026-04-10T01:02:55Z	2026-04-10T01:30:44Z	Replace README v1–v6 with a five-minute walkthrough as the main README	https://github.com/counterfact/api-simulator/pull/1811
+1806	2026-04-09T22:26:47Z	2026-04-10T00:37:56Z	Add two usage patterns and three future-enhancement proposals	https://github.com/counterfact/api-simulator/pull/1806
+1804	2026-04-09T21:03:19Z	2026-04-10T17:26:26Z	Add runtime response header validation with OpenAPI hot-reload	https://github.com/counterfact/api-simulator/pull/1804
+1802	2026-04-09T17:14:23Z	2026-04-09T17:21:59Z	chore: Move skills to top-level folder	https://github.com/counterfact/api-simulator/pull/1802
+1801	2026-04-09T13:59:01Z	2026-04-09T21:58:59Z	Document usage patterns	https://github.com/counterfact/api-simulator/pull/1801
+1799	2026-04-09T11:42:10Z	2026-04-09T12:04:54Z	Refactor counterfact-types: one type per file with JSDoc comments	https://github.com/counterfact/api-simulator/pull/1799
+1797	2026-04-09T01:44:51Z	2026-04-10T16:41:41Z	Add .empty() method to response builder for no-body responses	https://github.com/counterfact/api-simulator/pull/1797
+1795	2026-04-09T01:29:14Z	2026-04-09T02:48:09Z	fix: type error when returning a response with no body	https://github.com/counterfact/api-simulator/pull/1795
+1793	2026-04-08T22:11:11Z	2026-04-08T22:24:31Z	Tell Copilot to always update docs and add a changeset	https://github.com/counterfact/api-simulator/pull/1793
+1791	2026-04-08T21:48:33Z	2026-04-08T22:19:36Z	Work around component names that are reserved words	https://github.com/counterfact/api-simulator/pull/1791
+1789	2026-04-08T21:25:59Z	2026-04-10T17:56:43Z	feat: implement .apply REPL dot-command (Approach 1: Minimalist Function Injection)	https://github.com/counterfact/api-simulator/pull/1789
+1788	2026-04-08T21:21:41Z	2026-04-08T21:33:36Z	Revise README for better structure and readability	https://github.com/counterfact/api-simulator/pull/1788
+1787	2026-04-08T20:48:04Z	2026-04-08T21:03:30Z	Change ADR numbering workflow to use branch + PR + auto-merge	https://github.com/counterfact/api-simulator/pull/1787
+1785	2026-04-08T20:46:07Z	2026-04-08T21:16:18Z	Rework issue creation workflow: PR-based instead of dedicated branch	https://github.com/counterfact/api-simulator/pull/1785
+1783	2026-04-08T20:25:21Z		Add issue proposal: "This is a test"	https://github.com/counterfact/api-simulator/pull/1783
+1781	2026-04-08T20:19:17Z	2026-04-08T20:30:24Z	Fix src/util/README.md: correct file extensions and add missing entry	https://github.com/counterfact/api-simulator/pull/1781
+1778	2026-04-08T19:56:36Z	2026-04-08T20:10:00Z	Switch issue proposals from PR-merge to branch-push workflow	https://github.com/counterfact/api-simulator/pull/1778
+1776	2026-04-08T19:26:15Z	2026-04-08T19:37:43Z	Rename xxx-architecture-decision-records.md to 000-architecture-decis…	https://github.com/counterfact/api-simulator/pull/1776
+1775	2026-04-08T19:19:02Z	2026-04-08T19:19:27Z	allow create issues workflow to push to main	https://github.com/counterfact/api-simulator/pull/1775
+1774	2026-04-08T19:10:58Z	2026-04-08T19:42:00Z	clean up old issue proposals	https://github.com/counterfact/api-simulator/pull/1774
+1757	2026-04-08T18:43:02Z	2026-04-08T18:55:54Z	Remove old proposals that were not cleaned up because CI was broken	https://github.com/counterfact/api-simulator/pull/1757
+1756	2026-04-08T18:27:37Z	2026-04-08T18:51:51Z	Fix invalid YAML in manual-acceptance-tests workflow	https://github.com/counterfact/api-simulator/pull/1756
+1740	2026-04-08T18:12:57Z	2026-04-09T12:26:44Z	fix: escape XML special characters in jsonToXml text content	https://github.com/counterfact/api-simulator/pull/1740
+1732	2026-04-08T17:28:55Z	2026-04-08T18:16:48Z	feat: add ADR process with auto-numbering CI workflow	https://github.com/counterfact/api-simulator/pull/1732
+1730	2026-04-08T17:09:52Z	2026-04-08T17:35:01Z	docs(adr): document .apply command design decision and remove rejected proposals	https://github.com/counterfact/api-simulator/pull/1730
+1729	2026-04-08T16:22:37Z	2026-04-08T16:59:38Z	feat: ban fs module in tests, enforce usingTemporaryFiles()	https://github.com/counterfact/api-simulator/pull/1729
+1727	2026-04-08T15:28:01Z	2026-04-08T16:05:33Z	Tag design PRs with "design" label; skip manual acceptance tests for design PRs	https://github.com/counterfact/api-simulator/pull/1727
+1725	2026-04-08T15:21:57Z	2026-04-08T19:33:44Z	Onboarding experience: ADR for first-run CLI survey (Design 1 selected, proposed)	https://github.com/counterfact/api-simulator/pull/1725
+1723	2026-04-08T15:18:26Z	2026-04-09T18:06:18Z	feat: add counterfact.yaml config file support with --config option	https://github.com/counterfact/api-simulator/pull/1723
+1721	2026-04-08T08:38:11Z	2026-04-08T18:21:09Z	Propose AI agent improvements for Counterfact (#1720)	https://github.com/counterfact/api-simulator/pull/1721
+1719	2026-04-08T03:29:04Z	2026-04-08T20:14:03Z	Add draft ADR for multiple API support (#1718)	https://github.com/counterfact/api-simulator/pull/1719
+1717	2026-04-08T02:43:09Z		Add 10 Alan Kay-inspired feature proposals for Counterfact	https://github.com/counterfact/api-simulator/pull/1717
+1715	2026-04-08T02:39:29Z	2026-05-05T02:20:31Z	OpenAPI 3.2: Create sub-issues for 15 adoption opportunities	https://github.com/counterfact/api-simulator/pull/1715
+1714	2026-04-08T02:36:16Z	2026-04-08T18:08:44Z	ADR for the .apply REPL command	https://github.com/counterfact/api-simulator/pull/1714
+1713	2026-04-07T16:57:10Z	2026-04-08T21:12:52Z	docs: propose six README rewrites, a CYOA hub, a recommendation, and implement the recommended README + docs pages	https://github.com/counterfact/api-simulator/pull/1713
+1711	2026-04-07T13:19:20Z	2026-04-07T15:42:25Z	fix: use `split(".")[0]` instead of passing whole array to `parseInt` in Node version check	https://github.com/counterfact/api-simulator/pull/1711
+1710	2026-04-07T13:19:09Z	2026-04-07T13:40:30Z	fix: replace deprecated unescape() with decodeURIComponent() in requirement.ts	https://github.com/counterfact/api-simulator/pull/1710
+1703	2026-04-07T12:21:20Z	2026-04-07T12:39:20Z	Fix CI script that creates issues	https://github.com/counterfact/api-simulator/pull/1703
+1693	2026-04-07T11:58:15Z	2026-04-07T12:14:44Z	Bug Hunt 2: Document three latent bugs as issue proposals	https://github.com/counterfact/api-simulator/pull/1693
+1691	2026-04-07T11:28:48Z	2026-04-07T11:35:03Z	chore(deps): update dependency @swc/core to v1.15.24	https://github.com/counterfact/api-simulator/pull/1691
+1690	2026-04-07T00:51:02Z	2026-04-07T20:03:17Z	Replace PR auto-update workflow with merge queue support	https://github.com/counterfact/api-simulator/pull/1690
+1688	2026-04-07T00:43:30Z	2026-04-07T02:38:21Z	chore(deps): update actions/github-script action to v8	https://github.com/counterfact/api-simulator/pull/1688
+1687	2026-04-07T00:12:52Z	2026-04-07T00:18:58Z	Add CI workflow to auto-update PR branches when main changes	https://github.com/counterfact/api-simulator/pull/1687
+1685	2026-04-07T00:02:26Z	2026-04-10T18:07:51Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1685
+1684	2026-04-06T22:21:16Z	2026-04-06T23:02:09Z	Fix Tools.accepts() failing when Accept header has spaces after commas	https://github.com/counterfact/api-simulator/pull/1684
+1683	2026-04-06T22:21:04Z	2026-04-07T11:27:08Z	fix: Tools.accepts() case-insensitive accept header lookup	https://github.com/counterfact/api-simulator/pull/1683
+1682	2026-04-06T22:20:52Z	2026-04-06T23:46:49Z	Fix: Dispatcher proxy() always throws when request body is present	https://github.com/counterfact/api-simulator/pull/1682
+1681	2026-04-06T21:36:03Z	2026-04-07T00:01:14Z	chore(deps): update dependency eslint to v10.2.0	https://github.com/counterfact/api-simulator/pull/1681
+1675	2026-04-06T17:29:15Z	2026-04-08T16:01:48Z	fix(deps): update dependency ajv to v8	https://github.com/counterfact/api-simulator/pull/1675
+1674	2026-04-06T16:33:50Z	2026-04-06T21:38:30Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1674
+1672	2026-04-06T12:57:44Z	2026-04-06T17:44:06Z	chore(deps): update actions/checkout action to v6	https://github.com/counterfact/api-simulator/pull/1672
+1669	2026-04-06T12:14:58Z	2026-04-06T12:21:17Z	Add two example issue proposals to test the issue creation workflow	https://github.com/counterfact/api-simulator/pull/1669
+1667	2026-04-06T11:54:35Z	2026-04-06T12:13:12Z	Add CI workflow to create GitHub issues from proposal files + update copilot-instructions.md	https://github.com/counterfact/api-simulator/pull/1667
+1665	2026-04-06T01:24:27Z	2026-04-06T17:19:38Z	Improve error messages for malformed OpenAPI specs	https://github.com/counterfact/api-simulator/pull/1665
+1663	2026-04-06T00:50:46Z		docs: identify OpenAPI 3.2 opportunities for Counterfact	https://github.com/counterfact/api-simulator/pull/1663
+1661	2026-04-06T00:36:14Z	2026-04-06T00:57:01Z	Tell Copilot to use TDD	https://github.com/counterfact/api-simulator/pull/1661
+1659	2026-04-06T00:24:42Z		docs: instruct Copilot to follow TDD red/green/refactor cycle	https://github.com/counterfact/api-simulator/pull/1659
+1657	2026-04-06T00:12:37Z	2026-04-06T18:36:39Z	refactor: split MiddlewareDetector and FileDiscovery helpers out of module-loader.ts	https://github.com/counterfact/api-simulator/pull/1657
+1655	2026-04-06T00:10:41Z	2026-04-06T00:47:01Z	Add unit tests for raw-http-client.ts and REPL completer logic	https://github.com/counterfact/api-simulator/pull/1655
+1653	2026-04-06T00:08:25Z	2026-04-06T17:24:52Z	Add request validation against OpenAPI spec	https://github.com/counterfact/api-simulator/pull/1653
+1651	2026-04-05T23:59:15Z	2026-04-06T18:02:26Z	Bug Hunt: issue proposals documenting 3 bugs	https://github.com/counterfact/api-simulator/pull/1651
+1649	2026-04-05T23:55:59Z		Add architecture report card for Counterfact codebase	https://github.com/counterfact/api-simulator/pull/1649
+1648	2026-04-05T22:39:37Z		Add architecture report card documentation	https://github.com/counterfact/api-simulator/pull/1648
+1646	2026-04-04T13:07:01Z	2026-04-04T15:15:54Z	Apply codebase architecture improvements	https://github.com/counterfact/api-simulator/pull/1646
+1644	2026-04-04T12:21:55Z	2026-04-06T17:36:17Z	feat: Add JSDoc generation for types from OpenAPI metadata	https://github.com/counterfact/api-simulator/pull/1644
+1642	2026-04-04T00:51:46Z	2026-04-06T17:52:20Z	Convert internal plain objects to Maps	https://github.com/counterfact/api-simulator/pull/1642
+1640	2026-04-04T00:36:11Z	2026-04-04T00:50:54Z	Fix ESLint warnings with easy fixes	https://github.com/counterfact/api-simulator/pull/1640
+1638	2026-04-03T22:53:00Z		Pass OpenAPI document to Context class constructor	https://github.com/counterfact/api-simulator/pull/1638
+1637	2026-04-03T20:48:18Z	2026-04-06T18:47:32Z	Add lightweight telemetry using PostHog (initial usage tracking)	https://github.com/counterfact/api-simulator/pull/1637
+1635	2026-04-03T18:07:40Z	2026-04-03T18:11:01Z	Update copilot-instructions.md	https://github.com/counterfact/api-simulator/pull/1635
+1634	2026-04-03T18:03:28Z	2026-04-03T18:18:29Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1634
+1633	2026-04-03T14:25:51Z	2026-04-03T14:36:12Z	Remove Stryker mutation testing	https://github.com/counterfact/api-simulator/pull/1633
+1631	2026-04-03T14:05:09Z	2026-04-03T14:11:19Z	fix: remove extra blank line in module-loader.ts (Prettier error)	https://github.com/counterfact/api-simulator/pull/1631
+1630	2026-04-03T13:32:03Z	2026-04-03T18:02:45Z	Convert remaining JavaScript source files to TypeScript	https://github.com/counterfact/api-simulator/pull/1630
+1628	2026-04-03T00:32:00Z	2026-04-03T00:44:45Z	fix(deps): update dependency lodash to v4.18.1 [security]	https://github.com/counterfact/api-simulator/pull/1628
+1627	2026-04-03T00:25:03Z		[WIP] Fix formatting and linting issues in PR #1624	https://github.com/counterfact/api-simulator/pull/1627
+1626	2026-04-03T00:03:13Z	2026-04-03T00:31:00Z	Tell Copilot to run eslint --fix before committing	https://github.com/counterfact/api-simulator/pull/1626
+1624	2026-04-02T22:35:27Z	2026-04-03T14:17:51Z	Fix: syntax error in a route file no longer crashes the server	https://github.com/counterfact/api-simulator/pull/1624
+1622	2026-04-02T22:28:11Z	2026-04-03T00:17:21Z	Fix reserved keyword operationId causing TypeScript syntax errors	https://github.com/counterfact/api-simulator/pull/1622
+1621	2026-04-02T22:14:42Z	2026-04-03T00:06:43Z	Fix TypeError when response content has no schema	https://github.com/counterfact/api-simulator/pull/1621
+1620	2026-04-02T22:13:56Z	2026-04-02T23:33:19Z	Fix import path for routes containing colons (e.g. `/stuff:action`)	https://github.com/counterfact/api-simulator/pull/1620
+1616	2026-04-01T23:22:20Z	2026-04-02T00:27:44Z	Add runtime version check and display current version on startup	https://github.com/counterfact/api-simulator/pull/1616
+1614	2026-04-01T21:23:41Z	2026-04-02T22:10:49Z	Fix crash when a route file is deleted	https://github.com/counterfact/api-simulator/pull/1614
+1612	2026-04-01T21:07:56Z	2026-04-01T21:24:18Z	Fix Access-Control-Allow-Methods to reflect actual route handler methods	https://github.com/counterfact/api-simulator/pull/1612
+1611	2026-04-01T21:06:35Z	2026-04-03T13:38:56Z	Add ESLint rule to enforce kebab-case filenames	https://github.com/counterfact/api-simulator/pull/1611
+1609	2026-04-01T20:31:36Z	2026-04-02T22:44:09Z	fix: set Content-Type: application/json in RawHttpClient when body is an object	https://github.com/counterfact/api-simulator/pull/1609
+1607	2026-04-01T17:33:48Z		Add `.agent` REPL command with constrained DSL parser and interpreter	https://github.com/counterfact/api-simulator/pull/1607
+1606	2026-03-31T22:10:08Z	2026-04-03T17:57:28Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1606
+1605	2026-03-31T22:02:48Z	2026-03-31T22:09:01Z	fix(deps): update dependency koa to v3.2.0	https://github.com/counterfact/api-simulator/pull/1605
+1604	2026-03-31T11:18:14Z	2026-03-31T20:01:49Z	Replace withTemporaryFiles() with usingTemporaryFiles()	https://github.com/counterfact/api-simulator/pull/1604
+1602	2026-03-30T23:34:25Z	2026-04-06T20:20:15Z	new request builder API for REPL with tab-completion	https://github.com/counterfact/api-simulator/pull/1602
+1601	2026-03-30T22:03:35Z		refactor: introduce NormalizedPath branded type for path normalization	https://github.com/counterfact/api-simulator/pull/1601
+1600	2026-03-30T21:59:41Z	2026-03-30T22:07:00Z	chore(deps): update dependency eslint to v10.1.0	https://github.com/counterfact/api-simulator/pull/1600
+1597	2026-03-28T02:18:05Z	2026-03-30T18:34:06Z	Add chainable `$.response.cookie()` helper for setting response cookies	https://github.com/counterfact/api-simulator/pull/1597
+1595	2026-03-28T01:50:50Z	2026-03-30T16:35:42Z	Add $.cookie for reading request cookies with strong typing	https://github.com/counterfact/api-simulator/pull/1595
+1592	2026-03-27T19:10:12Z	2026-03-27T19:36:42Z	enforce that manual acceptance test checklist is completed in CI	https://github.com/counterfact/api-simulator/pull/1592
+1591	2026-03-27T19:04:40Z	2026-03-27T22:18:51Z	Fix REPL tab completion broken by custom completer overriding Node's built-in	https://github.com/counterfact/api-simulator/pull/1591
+1589	2026-03-27T18:44:50Z	2026-03-27T19:01:51Z	Add route autocomplete to REPL for client.<method>() patterns	https://github.com/counterfact/api-simulator/pull/1589
+1587	2026-03-27T18:22:36Z	2026-03-27T18:26:07Z	Tell Copilot to add manual acceptance tests	https://github.com/counterfact/api-simulator/pull/1587
+1582	2026-03-27T16:01:50Z	2026-03-27T16:09:47Z	chore(deps): update dependency eslint-plugin-jest to v29.15.1	https://github.com/counterfact/api-simulator/pull/1582
+1581	2026-03-27T14:52:12Z	2026-03-27T15:07:07Z	Return 500 when `.example()` is called with a name not defined in the OpenAPI spec	https://github.com/counterfact/api-simulator/pull/1581
+1579	2026-03-27T14:38:39Z	2026-03-27T14:59:20Z	put eslint rules back	https://github.com/counterfact/api-simulator/pull/1579
+1578	2026-03-27T00:53:58Z	2026-03-27T01:01:09Z	fix(deps): update dependency handlebars to v4.7.9 [security]	https://github.com/counterfact/api-simulator/pull/1578
+1577	2026-03-26T21:50:35Z	2026-03-26T21:54:19Z	chore(deps): update actions/setup-python action to v6	https://github.com/counterfact/api-simulator/pull/1577
+1576	2026-03-26T18:16:43Z	2026-03-30T19:05:02Z	fix(deps): update dependency typescript to v6	https://github.com/counterfact/api-simulator/pull/1576
+1575	2026-03-25T18:36:37Z	2026-03-25T18:43:36Z	chore(deps): update dependency @swc/core to v1.15.21	https://github.com/counterfact/api-simulator/pull/1575
+1574	2026-03-25T13:28:39Z	2026-03-30T22:54:39Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1574
+1573	2026-03-25T02:09:35Z		Support multiple OpenAPI specs via multiple --spec flags	https://github.com/counterfact/api-simulator/pull/1573
+1571	2026-03-25T02:01:09Z	2026-03-25T13:28:00Z	Fail fast on ambiguous wildcard paths: console error at load time, 500 at request time	https://github.com/counterfact/api-simulator/pull/1571
+1570	2026-03-25T01:57:03Z		Add apiKey support (header, query, cookie) to generated operation types and $.auth	https://github.com/counterfact/api-simulator/pull/1570
+1569	2026-03-25T01:47:53Z	2026-03-27T15:59:54Z	Fix IfHasKey to use substring matching for content type keys	https://github.com/counterfact/api-simulator/pull/1569
+1568	2026-03-23T21:18:25Z	2026-03-25T15:31:08Z	Break REPL out of `counterfact()` and expose as public API	https://github.com/counterfact/api-simulator/pull/1568
+1567	2026-03-23T20:27:33Z	2026-03-23T20:30:42Z	Fix broken middlware	https://github.com/counterfact/api-simulator/pull/1567
+1565	2026-03-23T13:40:32Z	2026-03-23T13:44:31Z	Update GitHub Sponsors username in FUNDING.yml	https://github.com/counterfact/api-simulator/pull/1565
+1564	2026-03-23T01:08:32Z	2026-03-30T19:45:18Z	Add binary data support in mock responses	https://github.com/counterfact/api-simulator/pull/1564
+1563	2026-03-23T00:37:06Z	2026-03-23T01:00:08Z	Add `readJson()` utility to context constructors	https://github.com/counterfact/api-simulator/pull/1563
+1561	2026-03-22T17:21:09Z	2026-03-26T20:42:21Z	Convert black-box tests from Jest/Node to Python	https://github.com/counterfact/api-simulator/pull/1561
+1559	2026-03-22T11:27:50Z	2026-03-23T00:03:38Z	Add --spec flag as alternative to positional OpenAPI argument	https://github.com/counterfact/api-simulator/pull/1559
+1557	2026-03-22T03:01:56Z	2026-03-22T11:09:24Z	Add .github/copilot-instructions.md	https://github.com/counterfact/api-simulator/pull/1557
+1556	2026-03-21T20:56:09Z	2026-03-21T21:02:21Z	chore(deps): update dependency @types/koa to v3.0.2	https://github.com/counterfact/api-simulator/pull/1556
+1555	2026-03-20T17:14:00Z	2026-03-23T20:49:08Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1555
+1554	2026-03-20T11:47:05Z		Add API Testing GUI with Postman-like interface	https://github.com/counterfact/api-simulator/pull/1554
+1553	2026-03-20T11:44:20Z	2026-03-30T19:23:58Z	Support for external YAML files	https://github.com/counterfact/api-simulator/pull/1553
+1551	2026-03-20T03:13:41Z	2026-03-20T11:43:47Z	Add per-directory READMEs and design principles doc	https://github.com/counterfact/api-simulator/pull/1551
+1550	2026-03-20T03:12:45Z	2026-03-20T17:13:25Z	Add --prune option to remove defunct route files when OpenAPI spec changes	https://github.com/counterfact/api-simulator/pull/1550
+1549	2026-03-19T15:36:57Z	2026-03-20T12:26:19Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1549
+1548	2026-03-19T15:33:42Z	2026-03-19T15:40:30Z	chore(deps): update actions/github-script action to v8	https://github.com/counterfact/api-simulator/pull/1548
+1547	2026-03-19T15:02:18Z	2026-03-19T15:31:47Z	feat: automatically create changesets for Renovate PRs	https://github.com/counterfact/api-simulator/pull/1547
+1546	2026-03-19T14:54:58Z	2026-03-19T15:03:45Z	Changeset for root middleware fix	https://github.com/counterfact/api-simulator/pull/1546
+1545	2026-03-19T00:28:31Z	2026-03-19T15:36:16Z	Add strongly-typed `example(name)` method to response builder	https://github.com/counterfact/api-simulator/pull/1545
+1544	2026-03-19T00:26:55Z	2026-03-22T11:20:19Z	Fill in required response headers in random()	https://github.com/counterfact/api-simulator/pull/1544
+1543	2026-03-19T00:24:50Z	2026-03-19T01:57:01Z	add that I'm open to work and other small README updates	https://github.com/counterfact/api-simulator/pull/1543
+1542	2026-03-18T23:08:57Z		README feedback: structural and content observations	https://github.com/counterfact/api-simulator/pull/1542
+1541	2026-03-18T23:08:03Z		Update README.md	https://github.com/counterfact/api-simulator/pull/1541
+1540	2026-03-18T18:24:03Z	2026-03-18T22:32:26Z	Return HTTP 405 when path exists but method is not registered	https://github.com/counterfact/api-simulator/pull/1540
+1539	2026-03-18T18:05:13Z	2026-03-18T18:23:22Z	Add comprehensive type tests for counterfact-types and wire into CI	https://github.com/counterfact/api-simulator/pull/1539
+1538	2026-03-16T01:27:58Z	2026-03-16T01:30:30Z	Remove docs-only CI skip filter	https://github.com/counterfact/api-simulator/pull/1538
+1537	2026-03-16T01:12:56Z	2026-03-16T01:34:19Z	Update README.md	https://github.com/counterfact/api-simulator/pull/1537
+1536	2026-03-13T23:56:14Z	2026-03-14T00:31:27Z	fix: pass CI automatically on docs-only PRs	https://github.com/counterfact/api-simulator/pull/1536
+1535	2026-03-13T10:14:15Z	2026-03-13T10:17:36Z	chore(deps): update dependency jest to v30.3.0	https://github.com/counterfact/api-simulator/pull/1535
+1534	2026-03-10T20:42:50Z	2026-03-14T00:35:10Z	Rewrite docs	https://github.com/counterfact/api-simulator/pull/1534
+1533	2026-03-10T16:38:59Z	2026-03-19T15:23:41Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1533
+1532	2026-03-10T16:19:33Z	2026-03-10T16:27:26Z	skip CI when only .md files change	https://github.com/counterfact/api-simulator/pull/1532
+1531	2026-03-10T15:53:20Z	2026-03-10T16:08:42Z	docs: add telemetry discussion redirect page	https://github.com/counterfact/api-simulator/pull/1531
+1530	2026-03-10T15:44:39Z	2026-03-10T16:20:11Z	docs: rewrite README with improved structure and feature overview	https://github.com/counterfact/api-simulator/pull/1530
+1529	2026-03-10T15:31:10Z	2026-03-10T15:35:17Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1529
+1528	2026-03-10T15:25:46Z	2026-03-10T15:30:19Z	announce request for feedback and clean up the starting screen a bit	https://github.com/counterfact/api-simulator/pull/1528
+1526	2026-03-10T05:51:58Z	2026-03-10T05:55:39Z	chore(deps): update dependency eslint to v9.39.4	https://github.com/counterfact/api-simulator/pull/1526
+1525	2026-03-10T02:30:29Z	2026-03-10T16:38:20Z	Add JSON prettification middleware for HTTP responses	https://github.com/counterfact/api-simulator/pull/1525
+1524	2026-03-10T01:24:04Z	2026-03-10T16:45:24Z	Fix root middleware not executed for any routes	https://github.com/counterfact/api-simulator/pull/1524
+1523	2026-03-09T14:02:27Z	2026-03-13T11:43:44Z	feat(server): Add an admin API and related Agent Skill	https://github.com/counterfact/api-simulator/pull/1523
+1522	2026-03-06T21:34:21Z	2026-03-06T21:37:40Z	fix(deps): update dependency fs-extra to v11.3.4	https://github.com/counterfact/api-simulator/pull/1522
+1521	2026-03-06T13:43:09Z	2026-03-06T13:46:35Z	chore(deps): update dependency @changesets/cli to v2.30.0	https://github.com/counterfact/api-simulator/pull/1521
+1520	2026-03-05T17:13:27Z	2026-03-05T17:45:49Z	new homepage	https://github.com/counterfact/api-simulator/pull/1520
+1519	2026-03-04T10:45:18Z	2026-03-04T10:49:21Z	chore(deps): update dependency @swc/core to v1.15.18	https://github.com/counterfact/api-simulator/pull/1519
+1518	2026-03-02T21:13:13Z	2026-03-02T21:16:39Z	chore(deps): update stryker-js monorepo to v9.6.0	https://github.com/counterfact/api-simulator/pull/1518
+1517	2026-03-02T17:04:08Z	2026-03-02T18:19:45Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1517
+1516	2026-03-02T16:41:12Z	2026-03-02T17:03:23Z	fix(operation-type-coder): sanitize operation ID before generating type	https://github.com/counterfact/api-simulator/pull/1516
+1514	2026-03-02T09:50:39Z	2026-03-02T09:53:49Z	chore(deps): update dependency @swc/core to v1.15.17	https://github.com/counterfact/api-simulator/pull/1514
+1513	2026-02-28T09:32:35Z	2026-02-28T09:36:01Z	fix(deps): update dependency koa to v3.1.2 [security]	https://github.com/counterfact/api-simulator/pull/1513
+1512	2026-02-26T20:53:14Z	2026-03-19T15:28:09Z	[Snyk] Security upgrade koa from 3.1.1 to 3.1.2	https://github.com/counterfact/api-simulator/pull/1512
+1511	2026-02-26T17:24:30Z	2026-02-26T20:50:15Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1511
+1510	2026-02-26T16:40:20Z	2026-02-26T16:46:53Z	chore(deps): update dependency @swc/core to v1.15.13	https://github.com/counterfact/api-simulator/pull/1510
+1509	2026-02-26T16:40:01Z	2026-02-26T16:43:21Z	fix: temporarily make Coveralls optional during outage	https://github.com/counterfact/api-simulator/pull/1509
+1508	2026-02-26T09:46:29Z	2026-02-26T09:50:08Z	chore(deps): update dependency @types/lodash to v4.17.24	https://github.com/counterfact/api-simulator/pull/1508
+1507	2026-02-25T17:30:35Z	2026-02-26T18:45:19Z	fix(schema-type-coder): fix incorrect required property type generation	https://github.com/counterfact/api-simulator/pull/1507
+1505	2026-02-24T15:33:54Z	2026-02-25T12:52:56Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1505
+1504	2026-02-24T10:54:26Z	2026-03-30T20:05:25Z	fix(deps): update dependency json-schema-faker to v0.6.0	https://github.com/counterfact/api-simulator/pull/1504
+1503	2026-02-23T21:52:15Z	2026-02-23T21:55:49Z	chore(deps): update dependency eslint to v9.39.3	https://github.com/counterfact/api-simulator/pull/1503
+1502	2026-02-23T17:56:23Z	2026-02-26T17:23:55Z	feat(typescript-generator): Update route types to use operationId	https://github.com/counterfact/api-simulator/pull/1502
+1501	2026-02-23T17:38:55Z	2026-02-24T15:33:08Z	feat(typescript-coder): Update operation-type-coder to export query, path and headers types instead of inline types	https://github.com/counterfact/api-simulator/pull/1501
+1500	2026-02-22T20:42:37Z	2026-02-22T20:46:07Z	chore(deps): update dependency eslint-plugin-security to v4	https://github.com/counterfact/api-simulator/pull/1500
+1499	2026-02-19T09:10:30Z	2026-02-19T09:14:03Z	chore(deps): update dependency rimraf to v6.1.3	https://github.com/counterfact/api-simulator/pull/1499
+1498	2026-02-19T00:30:19Z	2026-02-19T00:33:46Z	chore(deps): update dependency eslint-plugin-jest to v29.15.0	https://github.com/counterfact/api-simulator/pull/1498
+1497	2026-02-18T15:43:57Z	2026-02-18T15:47:38Z	chore(deps): update dependency eslint-plugin-n to ^17.24.0	https://github.com/counterfact/api-simulator/pull/1497
+1496	2026-02-16T00:55:52Z	2026-02-16T00:58:52Z	chore(deps): update dependency eslint-plugin-jest to v29.14.0	https://github.com/counterfact/api-simulator/pull/1496
+1495	2026-02-12T20:00:45Z	2026-02-12T20:04:36Z	chore(deps): update dependency eslint-plugin-unused-imports to v4.4.1	https://github.com/counterfact/api-simulator/pull/1495
+1494	2026-02-12T00:57:23Z	2026-02-12T01:00:49Z	chore(deps): update dependency eslint-plugin-jest to v29.13.0	https://github.com/counterfact/api-simulator/pull/1494
+1493	2026-02-10T05:00:19Z	2026-03-30T21:56:44Z	chore(deps): update dependency eslint to v10	https://github.com/counterfact/api-simulator/pull/1493
+1492	2026-02-06T12:37:54Z	2026-02-06T12:41:09Z	chore(deps): update dependency eslint-plugin-jest to v29.12.2	https://github.com/counterfact/api-simulator/pull/1492
+1491	2026-02-05T21:12:03Z	2026-02-05T21:15:29Z	chore(deps): update stryker-js monorepo to v9.5.1	https://github.com/counterfact/api-simulator/pull/1491
+1490	2026-02-03T08:42:24Z	2026-02-06T02:25:13Z	fix(deps): update dependency commander to v14.0.3	https://github.com/counterfact/api-simulator/pull/1490
+1489	2026-02-02T23:35:43Z	2026-02-02T23:39:23Z	chore(deps): update stryker-js monorepo to v9.5.0	https://github.com/counterfact/api-simulator/pull/1489
+1488	2026-01-31T05:23:53Z	2026-01-31T05:27:23Z	chore(deps): update dependency @swc/core to v1.15.11	https://github.com/counterfact/api-simulator/pull/1488
+1487	2026-01-25T14:06:50Z	2026-01-25T14:10:38Z	chore(deps): update dependency eslint-plugin-regexp to v3	https://github.com/counterfact/api-simulator/pull/1487
+1486	2026-01-25T00:39:32Z	2026-01-25T00:43:08Z	fix(deps): update dependency prettier to v3.8.1	https://github.com/counterfact/api-simulator/pull/1486
+1485	2026-01-22T20:46:51Z	2026-01-22T20:50:41Z	chore(deps): update dependency @swc/core to v1.15.10	https://github.com/counterfact/api-simulator/pull/1485
+1484	2026-01-22T04:52:18Z	2026-01-22T04:56:57Z	fix(deps): update dependency lodash to v4.17.23 [security]	https://github.com/counterfact/api-simulator/pull/1484
+1483	2026-01-20T19:39:28Z	2026-01-20T20:00:39Z	add a $.delay() function, resolves #720	https://github.com/counterfact/api-simulator/pull/1483
+1482	2026-01-20T18:07:10Z	2026-01-20T19:51:10Z	make operation methods like GET() and POST() async	https://github.com/counterfact/api-simulator/pull/1482
+1481	2026-01-20T17:44:20Z	2026-01-22T18:17:27Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1481
+1480	2026-01-20T17:30:19Z	2026-01-20T17:43:30Z	add an HTTP client (client) to the REPL	https://github.com/counterfact/api-simulator/pull/1480
+1479	2026-01-18T04:55:10Z	2026-01-18T04:58:39Z	fix(deps): update dependency prettier to v3.8.0	https://github.com/counterfact/api-simulator/pull/1479
+1478	2026-01-17T17:29:25Z	2026-01-17T17:32:43Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.5	https://github.com/counterfact/api-simulator/pull/1478
+1477	2026-01-14T21:28:06Z	2026-01-14T21:31:30Z	changeset for revert change in #1372 which broke type shortcuts like .json(), .html(), etc.	https://github.com/counterfact/api-simulator/pull/1477
+1476	2026-01-14T16:17:33Z	2026-01-14T21:40:04Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1476
+1475	2026-01-13T22:41:13Z	2026-01-13T22:53:32Z	remove eslint-plugin-hardcore, no longer using it	https://github.com/counterfact/api-simulator/pull/1475
+1474	2026-01-13T22:29:38Z	2026-01-13T23:01:02Z	more robust line ending normalization to make unit tests pass in Windows	https://github.com/counterfact/api-simulator/pull/1474
+1473	2026-01-13T19:26:34Z	2026-01-13T19:34:47Z	trim line ending in test so it won't break on Windows	https://github.com/counterfact/api-simulator/pull/1473
+1472	2026-01-13T18:11:01Z	2026-01-13T19:26:27Z	break out types	https://github.com/counterfact/api-simulator/pull/1472
+1471	2026-01-13T18:09:13Z	2026-01-13T18:17:59Z	chore(deps): update dependency @types/lodash to v4.17.23	https://github.com/counterfact/api-simulator/pull/1471
+1470	2026-01-13T17:14:50Z	2026-01-13T18:11:16Z	fix typescript errors	https://github.com/counterfact/api-simulator/pull/1470
+1469	2026-01-09T20:32:30Z	2026-01-09T20:41:17Z	replace accidentally deleted code in release script	https://github.com/counterfact/api-simulator/pull/1469
+1468	2026-01-09T20:21:40Z	2026-01-09T20:27:06Z	switch from deprecated npm token to trusted publishing	https://github.com/counterfact/api-simulator/pull/1468
+1467	2026-01-09T19:59:41Z	2026-01-09T20:06:18Z	Bump qs from 6.13.0 to 6.14.1	https://github.com/counterfact/api-simulator/pull/1467
+1466	2026-01-09T19:07:45Z	2026-01-09T19:12:32Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1466
+1465	2026-01-09T18:57:57Z	2026-01-09T19:06:31Z	fix: Update js-yaml to fix security alert	https://github.com/counterfact/api-simulator/pull/1465
+1464	2026-01-09T13:09:39Z	2026-01-09T13:13:58Z	chore(deps): update dependency supertest to v7.2.2	https://github.com/counterfact/api-simulator/pull/1464
+1463	2026-01-06T22:52:37Z	2026-01-14T16:16:43Z	feat: Speed up by using regex replace instead of recast	https://github.com/counterfact/api-simulator/pull/1463
+1462	2026-01-03T04:56:12Z	2026-01-05T21:48:31Z	chore(deps): update dependency eslint-plugin-jest to v29.12.1	https://github.com/counterfact/api-simulator/pull/1462
+1461	2026-01-02T12:53:39Z	2026-01-02T12:58:08Z	chore(deps): update dependency @swc/core to v1.15.8	https://github.com/counterfact/api-simulator/pull/1461
+1460	2026-01-02T05:05:48Z	2026-01-02T05:10:36Z	chore(deps): update dependency eslint-plugin-jest to v29.11.2	https://github.com/counterfact/api-simulator/pull/1460
+1459	2026-01-01T09:10:35Z	2026-01-01T09:15:30Z	chore(deps): update dependency eslint-plugin-jest to v29.11.1	https://github.com/counterfact/api-simulator/pull/1459
+1458	2025-12-27T00:46:16Z	2025-12-27T00:50:55Z	chore(deps): update dependency eslint-plugin-jest to v29.11.0	https://github.com/counterfact/api-simulator/pull/1458
+1457	2025-12-26T04:25:34Z	2025-12-26T04:29:47Z	chore(deps): update dependency eslint-plugin-jest to v29.10.1	https://github.com/counterfact/api-simulator/pull/1457
+1456	2025-12-25T08:23:48Z	2025-12-25T08:28:16Z	chore(deps): update dependency eslint-plugin-jest to v29.9.0	https://github.com/counterfact/api-simulator/pull/1456
+1455	2025-12-21T21:36:42Z	2025-12-22T01:40:24Z	fix(deps): update dependency fs-extra to v11.3.3	https://github.com/counterfact/api-simulator/pull/1455
+1454	2025-12-21T21:36:37Z	2025-12-21T21:41:11Z	chore(deps): update dependency @swc/core to v1.15.7	https://github.com/counterfact/api-simulator/pull/1454
+1453	2025-12-21T10:11:23Z	2025-12-21T10:16:26Z	chore(deps): update dependency @swc/core to v1.15.6	https://github.com/counterfact/api-simulator/pull/1453
+1452	2025-12-18T17:48:14Z	2025-12-18T17:53:03Z	chore(deps): update dependency @swc/core to v1.15.5	https://github.com/counterfact/api-simulator/pull/1452
+1451	2025-12-17T22:05:45Z	2025-12-17T22:11:07Z	chore(deps): update dependency eslint-plugin-jest to v29.5.0	https://github.com/counterfact/api-simulator/pull/1451
+1450	2025-12-17T06:25:17Z	2025-12-17T06:29:50Z	chore(deps): update dependency eslint-plugin-jest to v29.4.0	https://github.com/counterfact/api-simulator/pull/1450
+1449	2025-12-16T16:59:52Z	2025-12-16T17:05:19Z	chore(deps): update dependency @swc/core to v1.15.4	https://github.com/counterfact/api-simulator/pull/1449
+1448	2025-12-16T09:26:05Z	2025-12-16T09:30:45Z	chore(deps): update dependency eslint-plugin-jest to v29.2.2	https://github.com/counterfact/api-simulator/pull/1448
+1447	2025-12-16T01:06:26Z	2025-12-16T01:11:01Z	chore(deps): update actions/cache action to v5	https://github.com/counterfact/api-simulator/pull/1447
+1446	2025-12-07T18:28:52Z	2025-12-07T18:33:26Z	fix(deps): update dependency jsonwebtoken to v9.0.3	https://github.com/counterfact/api-simulator/pull/1446
+1445	2025-12-06T08:33:59Z	2025-12-06T08:38:12Z	fix(deps): update dependency prettier to v3.7.4	https://github.com/counterfact/api-simulator/pull/1445
+1444	2025-12-02T21:50:14Z	2025-12-02T21:54:54Z	fix(deps): update dependency prettier to v3.7.3	https://github.com/counterfact/api-simulator/pull/1444
+1443	2025-12-02T06:08:42Z	2025-12-02T06:13:30Z	fix(deps): update dependency prettier to v3.7.2	https://github.com/counterfact/api-simulator/pull/1443
+1442	2025-11-30T22:38:13Z	2025-11-30T22:42:58Z	chore(deps): update dependency @changesets/cli to v2.29.8	https://github.com/counterfact/api-simulator/pull/1442
+1441	2025-11-30T16:54:38Z	2025-11-30T16:58:58Z	fix(deps): update dependency prettier to v3.7.1	https://github.com/counterfact/api-simulator/pull/1441
+1440	2025-11-29T05:33:48Z	2025-11-29T05:39:23Z	fix(deps): update dependency chokidar to v5	https://github.com/counterfact/api-simulator/pull/1440
+1439	2025-11-27T03:33:06Z	2025-11-27T03:37:27Z	chore(deps): update stryker-js monorepo to v9.4.0	https://github.com/counterfact/api-simulator/pull/1439
+1438	2025-11-26T20:58:21Z	2025-11-26T21:03:09Z	chore(deps): update dependency eslint-plugin-jest to v29.2.1	https://github.com/counterfact/api-simulator/pull/1438
+1437	2025-11-25T21:12:27Z	2025-11-25T21:16:53Z	chore(deps): update dependency @types/lodash to v4.17.21	https://github.com/counterfact/api-simulator/pull/1437
+1436	2025-11-24T05:52:58Z	2025-11-25T21:23:38Z	chore(deps): update dependency @swc/core to v1.15.3	https://github.com/counterfact/api-simulator/pull/1436
+1435	2025-11-24T01:44:56Z	2025-11-24T01:49:34Z	chore(deps): update dependency eslint-plugin-jest to v29.2.0	https://github.com/counterfact/api-simulator/pull/1435
+1434	2025-11-23T20:26:59Z	2025-11-23T20:31:22Z	chore(deps): update actions/checkout action to v6	https://github.com/counterfact/api-simulator/pull/1434
+1433	2025-11-22T22:13:24Z	2025-11-22T22:17:58Z	chore(deps): update dependency rimraf to v6.1.2	https://github.com/counterfact/api-simulator/pull/1433
+1432	2025-11-18T10:33:06Z	2025-11-18T10:38:22Z	fix(deps): update dependency open to v11	https://github.com/counterfact/api-simulator/pull/1432
+1431	2025-11-18T10:31:52Z	2025-12-04T01:48:33Z	[Snyk] Upgrade koa from 3.0.3 to 3.1.1	https://github.com/counterfact/api-simulator/pull/1431
+1430	2025-11-18T08:56:28Z	2025-11-18T09:01:13Z	chore(deps): update dependency @swc/core to v1.15.2	https://github.com/counterfact/api-simulator/pull/1430
+1429	2025-11-15T10:06:29Z	2026-05-05T01:56:04Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v15	https://github.com/counterfact/api-simulator/pull/1429
+1428	2025-11-14T22:48:04Z	2025-11-14T22:53:03Z	fix(deps): update dependency js-yaml to v4.1.1 [security]	https://github.com/counterfact/api-simulator/pull/1428
+1427	2025-11-14T06:59:03Z	2025-11-14T07:03:21Z	chore(deps): update dependency eslint-plugin-jest to v29.1.0	https://github.com/counterfact/api-simulator/pull/1427
+1426	2025-11-11T22:10:57Z	2025-11-11T22:15:29Z	chore(deps): update dependency @swc/core to v1.15.1	https://github.com/counterfact/api-simulator/pull/1426
+1425	2025-11-07T10:13:53Z	2025-11-07T10:18:28Z	chore(deps): update dependency @swc/core to v1.15.0	https://github.com/counterfact/api-simulator/pull/1425
+1423	2025-11-03T01:55:47Z	2025-11-03T02:00:36Z	chore(deps): update dependency rimraf to v6.1.0	https://github.com/counterfact/api-simulator/pull/1423
+1422	2025-11-01T18:10:28Z	2025-11-01T18:15:35Z	chore(deps): update dependency @swc/core to v1.14.0	https://github.com/counterfact/api-simulator/pull/1422
+1421	2025-11-01T02:52:19Z	2025-11-01T02:57:24Z	chore(deps): update stryker-js monorepo to v9.3.0	https://github.com/counterfact/api-simulator/pull/1421
+1420	2025-10-28T23:30:34Z	2025-10-28T23:35:24Z	fix(deps): update dependency commander to v14.0.2	https://github.com/counterfact/api-simulator/pull/1420
+1419	2025-10-27T16:50:28Z	2025-10-27T16:55:52Z	chore(deps): update dependency @swc/core to v1.13.21	https://github.com/counterfact/api-simulator/pull/1419
+1418	2025-10-27T11:35:15Z	2025-10-27T11:40:06Z	chore(deps): update dependency @types/koa-proxy to v1.0.8	https://github.com/counterfact/api-simulator/pull/1418
+1417	2025-10-27T11:35:10Z	2025-10-27T11:46:54Z	chore(deps): update dependency @types/koa-bodyparser to v4.3.13	https://github.com/counterfact/api-simulator/pull/1417
+1416	2025-10-23T06:04:24Z	2025-10-23T06:09:40Z	chore(deps): update dependency eslint-plugin-unused-imports to v4.3.0	https://github.com/counterfact/api-simulator/pull/1416
+1415	2025-10-21T21:56:52Z	2025-10-21T22:03:10Z	fix(deps): update dependency koa to v3.0.3 [security]	https://github.com/counterfact/api-simulator/pull/1415
+1414	2025-10-17T04:50:11Z	2025-10-17T04:55:19Z	chore(deps): update actions/setup-node action to v6	https://github.com/counterfact/api-simulator/pull/1414
+1413	2025-10-13T21:47:14Z	2025-10-13T21:52:21Z	chore(deps): update github/codeql-action action to v4	https://github.com/counterfact/api-simulator/pull/1413
+1412	2025-10-11T20:00:37Z	2025-10-11T20:06:16Z	make the example on the README a bit more sophisticated	https://github.com/counterfact/api-simulator/pull/1412
+1411	2025-10-07T19:27:59Z	2025-10-07T19:32:56Z	chore(deps): update stryker-js monorepo to v9.2.0	https://github.com/counterfact/api-simulator/pull/1411
+1410	2025-10-07T19:27:50Z	2025-10-07T19:39:58Z	chore(deps): update dependency stryker-cli to v1.1.0	https://github.com/counterfact/api-simulator/pull/1410
+1409	2025-10-04T16:41:11Z	2025-12-03T17:41:46Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1409
+1408	2025-10-04T16:18:44Z	2025-10-04T16:40:25Z	new readme	https://github.com/counterfact/api-simulator/pull/1408
+1407	2025-10-04T00:24:36Z	2025-10-04T00:29:17Z	fix(deps): update dependency typescript to v5.9.3	https://github.com/counterfact/api-simulator/pull/1407
+1406	2025-10-02T21:49:00Z	2025-10-02T21:54:44Z	fix(deps): update dependency patch-package to v8.0.1	https://github.com/counterfact/api-simulator/pull/1406
+1405	2025-10-02T01:45:06Z	2025-10-02T01:49:54Z	chore(deps): update dependency jest to v30.2.0	https://github.com/counterfact/api-simulator/pull/1405
+1404	2025-09-30T09:04:54Z	2025-09-30T09:10:06Z	chore(deps): update dependency @swc/core to v1.13.20	https://github.com/counterfact/api-simulator/pull/1404
+1403	2025-09-30T09:04:27Z	2025-10-10T02:19:39Z	[Snyk] Security upgrade patch-package from 8.0.0 to 8.0.1	https://github.com/counterfact/api-simulator/pull/1403
+1402	2025-09-28T13:24:27Z	2025-09-28T13:29:14Z	chore(deps): update dependency @swc/core to v1.13.19	https://github.com/counterfact/api-simulator/pull/1402
+1401	2025-09-19T14:26:25Z	2025-09-19T14:31:47Z	fix(deps): update dependency koa2-swagger-ui to v5.12.0	https://github.com/counterfact/api-simulator/pull/1401
+1400	2025-09-19T01:58:02Z	2025-09-19T02:03:04Z	fix(deps): update dependency fs-extra to v11.3.2	https://github.com/counterfact/api-simulator/pull/1400
+1399	2025-09-17T01:13:21Z	2025-09-17T01:24:32Z	fix(deps): update dependency debug to v4.4.3	https://github.com/counterfact/api-simulator/pull/1399
+1398	2025-09-16T09:54:04Z	2025-09-16T09:58:53Z	fix(deps): update dependency commander to v14.0.1	https://github.com/counterfact/api-simulator/pull/1398
+1397	2025-09-14T07:57:38Z	2025-09-14T08:02:42Z	chore(deps): update dependency @changesets/cli to v2.29.7	https://github.com/counterfact/api-simulator/pull/1397
+1396	2025-09-11T00:14:54Z	2025-09-11T00:38:40Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1396
+1395	2025-09-11T00:09:16Z	2025-09-11T00:14:15Z	fix an issue with proxy where headers are mangled	https://github.com/counterfact/api-simulator/pull/1395
+1393	2025-09-07T01:30:51Z	2025-09-07T01:41:07Z	chore(deps): update actions/setup-node action to v5	https://github.com/counterfact/api-simulator/pull/1393
+1392	2025-09-05T22:01:40Z	2025-09-05T22:07:46Z	chore(deps): update dependency jest to v30.1.3	https://github.com/counterfact/api-simulator/pull/1392
+1391	2025-09-04T23:22:00Z	2025-09-05T00:17:11Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1391
+1390	2025-09-04T21:41:41Z	2025-09-04T21:49:30Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1390
+1389	2025-09-04T21:35:25Z	2025-09-04T21:40:57Z	Fix an issue where proxying to SSL does not work	https://github.com/counterfact/api-simulator/pull/1389
+1388	2025-09-04T01:29:40Z		fix colon in file name debug	https://github.com/counterfact/api-simulator/pull/1388
+1387	2025-09-04T01:11:18Z	2025-09-04T01:17:18Z	chore(deps): update dependency jest to v30.1.2	https://github.com/counterfact/api-simulator/pull/1387
+1386	2025-09-03T22:51:27Z	2025-09-04T23:21:25Z	windows fix for a path that contains a colon (resolves #1381)	https://github.com/counterfact/api-simulator/pull/1386
+1385	2025-09-03T18:12:40Z	2025-09-03T18:18:08Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1385
+1384	2025-09-03T18:06:57Z	2025-09-03T18:12:04Z	Fix an error with $.proxy() and GET requests	https://github.com/counterfact/api-simulator/pull/1384
+1383	2025-09-02T20:34:04Z	2025-09-02T20:39:40Z	chore(deps): update stryker-js monorepo to v9.1.1	https://github.com/counterfact/api-simulator/pull/1383
+1382	2025-09-02T12:55:30Z	2025-09-02T13:00:22Z	chore(deps): update stryker-js monorepo to v9.1.0	https://github.com/counterfact/api-simulator/pull/1382
+1380	2025-08-31T12:25:18Z	2025-09-03T02:28:31Z	chore(deps): update dependency jest to v30.1.1	https://github.com/counterfact/api-simulator/pull/1380
+1379	2025-08-27T21:33:36Z	2025-08-27T21:38:10Z	chore(deps): update dependency @swc/core to v1.13.5	https://github.com/counterfact/api-simulator/pull/1379
+1378	2025-08-24T12:48:24Z	2025-08-24T12:53:06Z	chore(deps): update dependency @swc/core to v1.13.4	https://github.com/counterfact/api-simulator/pull/1378
+1377	2025-08-24T06:21:18Z	2025-08-24T06:26:34Z	chore(deps): update dependency eslint-plugin-unused-imports to v4.2.0	https://github.com/counterfact/api-simulator/pull/1377
+1376	2025-08-21T02:57:02Z	2025-08-21T03:01:53Z	chore(deps): pin dependency tsd to 0.33.0	https://github.com/counterfact/api-simulator/pull/1376
+1375	2025-08-20T20:27:13Z	2025-08-20T23:14:01Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1375
+1374	2025-08-20T20:12:31Z	2025-08-20T20:26:26Z	Changeset for MaybeShortcut for content type is too strict #1370	https://github.com/counterfact/api-simulator/pull/1374
+1373	2025-08-19T22:54:01Z	2025-08-19T22:58:38Z	chore(deps): update dependency @changesets/cli to v2.29.6	https://github.com/counterfact/api-simulator/pull/1373
+1372	2025-08-18T17:01:24Z	2025-08-20T17:58:08Z	use substring for content type parsing	https://github.com/counterfact/api-simulator/pull/1372
+1371	2025-08-14T18:31:21Z	2025-08-14T18:36:46Z	chore(deps): update actions/checkout action to v5	https://github.com/counterfact/api-simulator/pull/1371
+1369	2025-08-09T17:32:29Z	2025-08-09T17:37:18Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.4	https://github.com/counterfact/api-simulator/pull/1369
+1368	2025-08-09T05:02:51Z	2025-08-09T05:07:24Z	chore(deps): update dependency eslint-config-hardcore to v49	https://github.com/counterfact/api-simulator/pull/1368
+1367	2025-08-08T20:55:21Z	2025-08-08T21:00:25Z	fix(deps): update dependency fs-extra to v11.3.1	https://github.com/counterfact/api-simulator/pull/1367
+1366	2025-08-08T00:52:39Z	2025-08-08T00:58:41Z	chore(deps): update dependency eslint-config-hardcore to v48	https://github.com/counterfact/api-simulator/pull/1366
+1365	2025-08-04T00:35:43Z	2025-08-04T00:40:25Z	fix(deps): update dependency typescript to v5.9.2	https://github.com/counterfact/api-simulator/pull/1365
+1364	2025-08-02T10:34:00Z	2026-01-13T19:56:14Z	chore(deps): update dependency @types/koa to v3	https://github.com/counterfact/api-simulator/pull/1364
+1363	2025-08-01T11:48:35Z	2025-08-01T11:53:09Z	chore(deps): update dependency @swc/core to v1.13.3	https://github.com/counterfact/api-simulator/pull/1363
+1362	2025-07-30T20:30:20Z	2025-07-30T20:34:40Z	chore(deps): update dependency @testing-library/dom to v10.4.1	https://github.com/counterfact/api-simulator/pull/1362
+1361	2025-07-28T22:53:49Z	2025-07-28T22:58:20Z	fix(deps): update dependency koa to v3.0.1 [security]	https://github.com/counterfact/api-simulator/pull/1361
+1360	2025-07-26T05:30:58Z	2025-07-26T10:35:03Z	chore(deps): update dependency supertest to v7.1.4	https://github.com/counterfact/api-simulator/pull/1360
+1359	2025-07-26T05:30:54Z	2025-07-26T05:35:54Z	chore(deps): update dependency @swc/core to v1.13.2	https://github.com/counterfact/api-simulator/pull/1359
+1358	2025-07-25T08:28:20Z	2025-07-25T08:36:36Z	chore(deps): update dependency jest to v30.0.5	https://github.com/counterfact/api-simulator/pull/1358
+1357	2025-07-23T01:48:49Z	2025-07-23T01:54:07Z	chore(deps): update dependency @swc/core to v1.13.1	https://github.com/counterfact/api-simulator/pull/1357
+1355	2025-07-22T03:32:41Z	2025-07-22T03:40:54Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.3	https://github.com/counterfact/api-simulator/pull/1355
+1354	2025-07-21T04:26:13Z	2025-07-21T04:35:10Z	chore(deps): update dependency @swc/core to v1.13.0	https://github.com/counterfact/api-simulator/pull/1354
+1353	2025-07-18T04:26:00Z	2025-07-18T04:30:26Z	fix(deps): update dependency open to v10.2.0	https://github.com/counterfact/api-simulator/pull/1353
+1352	2025-07-17T17:46:21Z	2025-07-17T17:52:26Z	chore(deps): update dependency @swc/core to v1.12.14	https://github.com/counterfact/api-simulator/pull/1352
+1351	2025-07-12T14:03:30Z	2025-07-12T14:09:38Z	chore(deps): update dependency @swc/jest to v0.2.39	https://github.com/counterfact/api-simulator/pull/1351
+1350	2025-07-11T14:37:50Z	2025-07-11T14:42:28Z	chore(deps): update dependency @swc/core to v1.12.11	https://github.com/counterfact/api-simulator/pull/1350
+1349	2025-07-11T06:49:59Z	2025-07-11T06:54:17Z	chore(deps): update dependency supertest to v7.1.3	https://github.com/counterfact/api-simulator/pull/1349
+1348	2025-07-10T22:44:02Z	2025-07-10T22:48:42Z	chore(deps): update dependency supertest to v7.1.2	https://github.com/counterfact/api-simulator/pull/1348
+1347	2025-07-06T06:29:31Z	2025-07-06T06:33:44Z	chore(deps): update dependency jest to v30.0.4	https://github.com/counterfact/api-simulator/pull/1347
+1346	2025-07-05T01:39:21Z	2025-07-05T01:43:43Z	chore(deps): update dependency @types/lodash to v4.17.20	https://github.com/counterfact/api-simulator/pull/1346
+1345	2025-07-04T16:41:07Z	2025-07-04T16:46:43Z	chore(deps): update dependency @swc/core to v1.12.9	https://github.com/counterfact/api-simulator/pull/1345
+1344	2025-07-03T20:56:41Z	2026-04-06T16:33:00Z	feat: Auto-detect native TypeScript execution support	https://github.com/counterfact/api-simulator/pull/1344
+1343	2025-06-30T13:47:30Z	2025-06-30T13:52:05Z	fix(deps): update dependency prettier to v3.6.2	https://github.com/counterfact/api-simulator/pull/1343
+1342	2025-06-29T16:44:16Z	2025-06-29T16:48:43Z	chore(deps): update dependency @swc/core to v1.12.7	https://github.com/counterfact/api-simulator/pull/1342
+1341	2025-06-29T06:24:04Z	2025-06-29T10:40:01Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.4	https://github.com/counterfact/api-simulator/pull/1341
+1340	2025-06-29T06:23:58Z	2025-06-29T06:28:20Z	chore(deps): update dependency @types/lodash to v4.17.19	https://github.com/counterfact/api-simulator/pull/1340
+1339	2025-06-28T20:52:24Z	2025-06-28T21:00:45Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.1	https://github.com/counterfact/api-simulator/pull/1339
+1338	2025-06-28T12:47:43Z	2025-06-28T12:52:24Z	fix(deps): update dependency prettier to v3.6.1	https://github.com/counterfact/api-simulator/pull/1338
+1337	2025-06-28T06:41:13Z	2025-06-28T06:45:59Z	chore(deps): update dependency jest to v30.0.3	https://github.com/counterfact/api-simulator/pull/1337
+1336	2025-06-27T05:26:52Z	2025-06-27T05:31:54Z	chore(deps): update dependency @swc/core to v1.12.6	https://github.com/counterfact/api-simulator/pull/1336
+1335	2025-06-26T08:06:11Z	2025-06-26T08:12:54Z	fix(deps): update dependency prettier to v3.6.0	https://github.com/counterfact/api-simulator/pull/1335
+1334	2025-06-24T17:06:26Z	2025-06-24T17:12:02Z	chore(deps): update dependency @swc/core to v1.12.5	https://github.com/counterfact/api-simulator/pull/1334
+1333	2025-06-24T04:59:58Z	2025-06-24T05:09:20Z	chore(deps): update dependency eslint-plugin-import to v2.32.0	https://github.com/counterfact/api-simulator/pull/1333
+1332	2025-06-23T16:35:22Z	2025-06-23T22:06:46Z	chore(deps): update dependency @swc/core to v1.12.4	https://github.com/counterfact/api-simulator/pull/1332
+1331	2025-06-23T16:35:16Z	2025-06-23T16:39:23Z	chore(deps): update dependency @changesets/cli to v2.29.5	https://github.com/counterfact/api-simulator/pull/1331
+1330	2025-06-22T22:05:05Z	2025-06-22T22:14:16Z	chore(deps): update dependency jest to v30.0.2	https://github.com/counterfact/api-simulator/pull/1330
+1329	2025-06-22T14:58:45Z	2025-06-22T15:04:25Z	chore(deps): update dependency @swc/core to v1.12.3	https://github.com/counterfact/api-simulator/pull/1329
+1328	2025-06-22T01:54:05Z	2025-06-22T05:58:34Z	chore(deps): update dependency jest to v30.0.1	https://github.com/counterfact/api-simulator/pull/1328
+1327	2025-06-22T01:54:01Z	2025-06-22T01:59:28Z	chore(deps): update dependency eslint-plugin-jest to v29.0.1	https://github.com/counterfact/api-simulator/pull/1327
+1326	2025-06-21T10:41:51Z	2025-06-21T14:18:03Z	chore(deps): update dependency eslint-plugin-jest to v29	https://github.com/counterfact/api-simulator/pull/1326
+1325	2025-06-21T10:41:45Z	2025-06-21T10:45:57Z	chore(deps): update dependency @types/lodash to v4.17.18	https://github.com/counterfact/api-simulator/pull/1325
+1324	2025-06-20T19:32:01Z	2025-06-20T19:39:03Z	chore(deps): update dependency eslint-plugin-prettier to v5.5.0	https://github.com/counterfact/api-simulator/pull/1324
+1323	2025-06-20T15:43:39Z	2025-06-20T15:54:51Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1323
+1322	2025-06-20T15:35:36Z	2025-06-20T15:42:58Z	feat: Add CLI option to build cache	https://github.com/counterfact/api-simulator/pull/1322
+1321	2025-06-20T05:24:34Z		fix(deps): update dependency @apidevtools/json-schema-ref-parser to v14 - autoclosed	https://github.com/counterfact/api-simulator/pull/1321
+1320	2025-06-19T15:56:41Z	2025-06-19T16:03:39Z	chore(deps): update dependency @types/jest to v30	https://github.com/counterfact/api-simulator/pull/1320
+1319	2025-06-18T22:10:48Z	2025-06-18T22:18:59Z	chore(deps): update dependency eslint-plugin-jest to v28.14.0	https://github.com/counterfact/api-simulator/pull/1319
+1318	2025-06-17T02:54:45Z	2026-01-13T21:57:52Z	chore(deps): update dependency eslint to v9.39.2	https://github.com/counterfact/api-simulator/pull/1318
+1317	2025-06-16T10:58:01Z	2025-06-16T11:04:29Z	chore(deps): update dependency eslint-plugin-jest to v28.13.5	https://github.com/counterfact/api-simulator/pull/1317
+1316	2025-06-15T21:52:10Z	2025-06-15T21:59:30Z	chore(deps): update dependency jest to v30	https://github.com/counterfact/api-simulator/pull/1316
+1315	2025-06-15T21:52:06Z	2025-06-16T02:40:48Z	chore(deps): update dependency @swc/core to v1.12.1	https://github.com/counterfact/api-simulator/pull/1315
+1314	2025-06-15T09:26:10Z	2025-06-15T15:02:45Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v13.0.5	https://github.com/counterfact/api-simulator/pull/1314
+1313	2025-06-15T09:26:05Z	2025-06-15T09:30:06Z	chore(deps): update dependency eslint-plugin-jest to v28.13.3	https://github.com/counterfact/api-simulator/pull/1313
+1312	2025-06-11T23:24:58Z	2025-06-11T23:32:37Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v13.0.4	https://github.com/counterfact/api-simulator/pull/1312
+1310	2025-06-10T01:41:39Z	2025-06-10T07:35:56Z	chore(deps): update dependency eslint-plugin-jest to v28.13.0	https://github.com/counterfact/api-simulator/pull/1310
+1309	2025-06-10T01:41:35Z	2025-06-10T01:49:10Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v13.0.3	https://github.com/counterfact/api-simulator/pull/1309
+1307	2025-06-09T00:59:08Z	2025-06-09T01:04:33Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.3	https://github.com/counterfact/api-simulator/pull/1307
+1306	2025-06-08T12:58:11Z	2025-06-08T13:06:40Z	chore(deps): update dependency @swc/core to v1.11.31	https://github.com/counterfact/api-simulator/pull/1306
+1305	2025-06-07T02:54:42Z	2025-06-07T03:02:59Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v13	https://github.com/counterfact/api-simulator/pull/1305
+1303	2025-06-04T21:07:48Z	2025-06-04T21:53:57Z	feat: mock service worker handler ability	https://github.com/counterfact/api-simulator/pull/1303
+1302	2025-06-04T02:26:25Z	2025-06-04T02:30:24Z	chore(deps): update dependency eslint-plugin-jest to v28.12.0	https://github.com/counterfact/api-simulator/pull/1302
+1301	2025-06-04T02:26:20Z	2025-06-04T02:38:15Z	chore(deps): update dependency eslint to v9.28.0	https://github.com/counterfact/api-simulator/pull/1301
+1300	2025-06-03T21:47:08Z	2025-06-03T21:55:36Z	chore(deps): update dependency eslint-plugin-prettier to v5.4.1	https://github.com/counterfact/api-simulator/pull/1300
+1299	2025-06-03T21:47:03Z	2025-06-03T22:01:55Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.2	https://github.com/counterfact/api-simulator/pull/1299
+1298	2025-05-31T05:51:07Z	2025-05-31T05:58:21Z	chore(deps): update dependency eslint-plugin-jest to v28.11.1	https://github.com/counterfact/api-simulator/pull/1298
+1297	2025-05-30T13:13:10Z	2025-06-05T15:24:21Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1297
+1296	2025-05-29T15:03:09Z	2025-05-30T13:12:20Z	fix(server): Minor fix to buildMatch logic	https://github.com/counterfact/api-simulator/pull/1296
+1295	2025-05-29T09:49:26Z	2025-05-29T09:53:54Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.1	https://github.com/counterfact/api-simulator/pull/1295
+1294	2025-05-28T16:57:30Z	2025-05-28T17:06:38Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.4.0	https://github.com/counterfact/api-simulator/pull/1294
+1293	2025-05-24T23:06:05Z	2025-05-24T23:12:38Z	chore(deps): update dependency @swc/core to v1.11.29	https://github.com/counterfact/api-simulator/pull/1293
+1292	2025-05-23T23:53:34Z	2025-05-23T23:58:49Z	chore(deps): update dependency @types/lodash to v4.17.17	https://github.com/counterfact/api-simulator/pull/1292
+1291	2025-05-21T11:07:22Z	2025-05-21T11:11:50Z	fix(deps): update dependency commander to v14	https://github.com/counterfact/api-simulator/pull/1291
+1290	2025-05-21T11:07:17Z	2025-05-21T17:30:13Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.3.5	https://github.com/counterfact/api-simulator/pull/1290
+1289	2025-05-20T01:40:53Z	2025-05-20T01:45:00Z	chore(deps): update dependency eslint to v9.27.0	https://github.com/counterfact/api-simulator/pull/1289
+1288	2025-05-17T15:15:37Z	2025-05-17T15:22:21Z	chore(deps): update stryker-js monorepo to v9.0.1	https://github.com/counterfact/api-simulator/pull/1288
+1287	2025-05-17T01:32:58Z	2025-05-17T01:41:00Z	fix(deps): update dependency debug to v4.4.1	https://github.com/counterfact/api-simulator/pull/1287
+1286	2025-05-16T19:44:34Z	2025-05-16T19:51:49Z	chore(deps): update stryker-js monorepo to v9 (major)	https://github.com/counterfact/api-simulator/pull/1286
+1285	2025-05-16T02:34:36Z	2025-05-16T05:51:54Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v12.0.2	https://github.com/counterfact/api-simulator/pull/1285
+1284	2025-05-16T02:34:32Z	2025-05-16T02:39:45Z	chore(deps): update dependency @changesets/cli to v2.29.4	https://github.com/counterfact/api-simulator/pull/1284
+1283	2025-05-15T16:27:32Z	2025-05-15T16:34:35Z	chore(deps): update dependency supertest to v7.1.1	https://github.com/counterfact/api-simulator/pull/1283
+1282	2025-05-09T03:05:09Z	2025-05-09T03:13:00Z	chore(deps): update dependency eslint-plugin-prettier to v5.4.0	https://github.com/counterfact/api-simulator/pull/1282
+1281	2025-05-08T15:52:08Z	2025-05-08T15:59:05Z	chore(deps): update dependency @changesets/cli to v2.29.3	https://github.com/counterfact/api-simulator/pull/1281
+1280	2025-05-07T17:47:59Z	2025-05-07T17:59:01Z	chore(deps): update dependency eslint-plugin-prettier to v5.3.1	https://github.com/counterfact/api-simulator/pull/1280
+1279	2025-05-06T02:54:51Z	2025-05-06T05:56:22Z	chore(deps): update dependency eslint to v9.26.0	https://github.com/counterfact/api-simulator/pull/1279
+1278	2025-05-06T02:54:46Z	2025-05-06T03:01:34Z	chore(deps): update dependency node-mocks-http to v1.17.2	https://github.com/counterfact/api-simulator/pull/1278
+1277	2025-05-05T02:40:46Z	2025-05-05T02:47:52Z	chore(deps): update dependency node-mocks-http to v1.17.1	https://github.com/counterfact/api-simulator/pull/1277
+1276	2025-05-04T14:03:51Z	2025-05-04T14:12:15Z	fix(deps): update dependency open to v10.1.2	https://github.com/counterfact/api-simulator/pull/1276
+1275	2025-05-03T01:38:51Z	2025-05-03T01:45:29Z	chore(deps): update dependency @swc/core to v1.11.24	https://github.com/counterfact/api-simulator/pull/1275
+1274	2025-05-01T08:03:53Z	2025-05-01T08:10:01Z	fix(deps): update dependency koa to v3	https://github.com/counterfact/api-simulator/pull/1274
+1273	2025-04-30T21:53:24Z	2025-04-30T22:01:39Z	chore(deps): update dependency node-mocks-http to v1.17.0	https://github.com/counterfact/api-simulator/pull/1273
+1272	2025-04-26T23:10:56Z	2025-04-26T23:17:04Z	chore(deps): update swc monorepo	https://github.com/counterfact/api-simulator/pull/1272
+1271	2025-04-25T06:12:05Z	2025-04-25T06:17:47Z	chore(deps): update dependency eslint to v9.25.1	https://github.com/counterfact/api-simulator/pull/1271
+1270	2025-04-24T20:46:25Z	2025-04-24T20:55:19Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.3.4	https://github.com/counterfact/api-simulator/pull/1270
+1269	2025-04-23T06:41:09Z	2025-04-23T06:48:55Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.3.3	https://github.com/counterfact/api-simulator/pull/1269
+1268	2025-04-23T01:25:16Z	2025-04-23T01:32:54Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1268
+1267	2025-04-23T01:18:32Z	2025-04-23T01:24:40Z	changeset for middleware release	https://github.com/counterfact/api-simulator/pull/1267
+1266	2025-04-22T02:37:13Z	2025-04-22T02:43:25Z	chore(deps): update dependency eslint to v9.25.0	https://github.com/counterfact/api-simulator/pull/1266
+1265	2025-04-20T01:43:48Z	2025-04-20T01:51:32Z	chore(deps): update dependency @changesets/cli to v2.29.2	https://github.com/counterfact/api-simulator/pull/1265
+1264	2025-04-18T22:44:10Z	2025-04-18T22:49:07Z	chore(deps): update dependency @changesets/cli to v2.29.1	https://github.com/counterfact/api-simulator/pull/1264
+1263	2025-04-18T15:13:17Z	2025-04-18T15:20:40Z	fix(deps): update dependency open to v10.1.1	https://github.com/counterfact/api-simulator/pull/1263
+1262	2025-04-17T19:34:47Z	2025-04-17T19:41:51Z	chore(deps): update dependency @changesets/cli to v2.29.0	https://github.com/counterfact/api-simulator/pull/1262
+1261	2025-04-17T11:54:12Z	2025-04-17T12:01:28Z	chore(deps): update dependency @swc/core to v1.11.21	https://github.com/counterfact/api-simulator/pull/1261
+1260	2025-04-15T06:29:04Z	2025-04-15T06:36:37Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v12	https://github.com/counterfact/api-simulator/pull/1260
+1259	2025-04-14T11:32:27Z	2025-04-14T11:40:21Z	chore(deps): update dependency @swc/core to v1.11.20	https://github.com/counterfact/api-simulator/pull/1259
+1258	2025-04-11T05:51:07Z	2025-04-11T05:58:23Z	fix(deps): update dependency json-schema-faker to v0.5.9	https://github.com/counterfact/api-simulator/pull/1258
+1257	2025-04-10T11:15:13Z	2025-04-10T11:19:18Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.3.2	https://github.com/counterfact/api-simulator/pull/1257
+1256	2025-04-10T11:15:06Z	2025-04-10T16:07:12Z	chore(deps): update dependency @swc/core to v1.11.18	https://github.com/counterfact/api-simulator/pull/1256
+1255	2025-04-09T16:53:27Z	2025-04-09T17:00:18Z	fix(deps): update dependency koa to v2.16.1 [security]	https://github.com/counterfact/api-simulator/pull/1255
+1254	2025-04-08T05:58:53Z	2025-04-08T06:06:26Z	fix(deps): update dependency typescript to v5.8.3	https://github.com/counterfact/api-simulator/pull/1254
+1253	2025-04-07T22:11:53Z	2025-04-07T22:19:15Z	chore(deps): update dependency eslint to v9.24.0	https://github.com/counterfact/api-simulator/pull/1253
+1252	2025-04-05T22:12:51Z	2025-04-05T22:19:38Z	chore(deps): update dependency eslint-plugin-prettier to v5.2.6	https://github.com/counterfact/api-simulator/pull/1252
+1251	2025-04-04T17:47:03Z	2025-04-04T17:57:00Z	chore(deps): update dependency @swc/core to v1.11.16	https://github.com/counterfact/api-simulator/pull/1251
+1250	2025-04-01T22:42:06Z	2025-04-01T22:48:52Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.3.1	https://github.com/counterfact/api-simulator/pull/1250
+1249	2025-03-31T23:34:37Z	2025-03-31T23:40:24Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.7	https://github.com/counterfact/api-simulator/pull/1249
+1248	2025-03-30T03:00:51Z	2025-03-30T03:08:05Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.5	https://github.com/counterfact/api-simulator/pull/1248
+1247	2025-03-29T09:36:16Z	2025-03-29T09:41:41Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.4	https://github.com/counterfact/api-simulator/pull/1247
+1246	2025-03-28T19:01:30Z	2025-03-28T23:17:57Z	chore(deps): update dependency eslint-plugin-prettier to v5.2.5	https://github.com/counterfact/api-simulator/pull/1246
+1245	2025-03-28T19:01:25Z	2025-03-28T19:05:31Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.3	https://github.com/counterfact/api-simulator/pull/1245
+1243	2025-03-27T15:08:00Z	2025-03-27T15:16:55Z	chore(deps): update dependency @swc/core to v1.11.13	https://github.com/counterfact/api-simulator/pull/1243
+1242	2025-03-27T07:56:37Z	2025-03-27T08:02:42Z	chore(deps): update dependency eslint-plugin-prettier to v5.2.4	https://github.com/counterfact/api-simulator/pull/1242
+1241	2025-03-26T21:57:16Z	2025-03-26T22:01:33Z	chore(deps): update dependency @swc/core to v1.11.12	https://github.com/counterfact/api-simulator/pull/1241
+1240	2025-03-25T23:52:34Z	2025-03-26T00:03:00Z	fix an error in the docs for middleware usage	https://github.com/counterfact/api-simulator/pull/1240
+1239	2025-03-25T23:34:36Z	2025-03-25T23:47:06Z	Middleware	https://github.com/counterfact/api-simulator/pull/1239
+1238	2025-03-25T23:32:33Z	2025-03-25T23:32:51Z	Add documentation for middleware functionality	https://github.com/counterfact/api-simulator/pull/1238
+1237	2025-03-25T02:03:16Z	2025-03-25T02:10:44Z	chore(deps): update dependency eslint to v9.23.0	https://github.com/counterfact/api-simulator/pull/1237
+1236	2025-03-23T22:12:47Z	2025-03-23T22:16:38Z	chore(deps): update dependency supertest to v7.1.0	https://github.com/counterfact/api-simulator/pull/1236
+1235	2025-03-22T05:34:26Z	2025-03-22T05:41:38Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.2	https://github.com/counterfact/api-simulator/pull/1235
+1234	2025-03-21T09:52:34Z	2025-03-21T15:18:52Z	chore(deps): update dependency eslint-import-resolver-typescript to v4.2.1	https://github.com/counterfact/api-simulator/pull/1234
+1233	2025-03-20T22:12:21Z	2025-03-20T22:16:34Z	chore(deps): update dependency eslint-plugin-file-progress to v3.0.2	https://github.com/counterfact/api-simulator/pull/1233
+1232	2025-03-20T22:12:16Z	2025-03-21T02:23:24Z	chore(deps): update dependency @swc/core to v1.11.11	https://github.com/counterfact/api-simulator/pull/1232
+1231	2025-03-20T15:14:57Z	2025-03-20T15:21:56Z	chore(deps): update dependency @swc/core to v1.11.10	https://github.com/counterfact/api-simulator/pull/1231
+1230	2025-03-20T06:03:41Z	2025-03-20T06:10:44Z	chore(deps): update dependency eslint-import-resolver-typescript to v4	https://github.com/counterfact/api-simulator/pull/1230
+1229	2025-03-19T16:13:00Z	2025-03-19T16:20:18Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.9.1	https://github.com/counterfact/api-simulator/pull/1229
+1228	2025-03-18T11:14:52Z	2025-03-18T11:19:34Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.9.0	https://github.com/counterfact/api-simulator/pull/1228
+1227	2025-03-16T01:58:12Z	2025-03-16T18:48:02Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.7	https://github.com/counterfact/api-simulator/pull/1227
+1226	2025-03-15T18:06:01Z	2025-03-15T18:14:36Z	chore(deps): update dependency @swc/core to v1.11.9	https://github.com/counterfact/api-simulator/pull/1226
+1225	2025-03-15T02:24:38Z	2025-03-15T02:31:46Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.5	https://github.com/counterfact/api-simulator/pull/1225
+1224	2025-03-14T01:57:52Z	2025-03-14T02:04:53Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.4	https://github.com/counterfact/api-simulator/pull/1224
+1223	2025-03-11T05:33:45Z	2025-03-11T05:37:55Z	chore(deps): update dependency eslint to v9.22.0	https://github.com/counterfact/api-simulator/pull/1223
+1222	2025-03-10T22:38:18Z	2025-03-10T22:44:50Z	chore(deps): update dependency @swc/core to v1.11.8	https://github.com/counterfact/api-simulator/pull/1222
+1221	2025-03-08T01:37:22Z	2025-03-08T01:42:04Z	chore(deps): update dependency @swc/core to v1.11.7	https://github.com/counterfact/api-simulator/pull/1221
+1220	2025-03-07T15:33:51Z	2025-03-07T15:40:15Z	chore(deps): update dependency @swc/core to v1.11.6	https://github.com/counterfact/api-simulator/pull/1220
+1219	2025-03-06T05:46:10Z	2025-03-07T18:06:05Z	fix(deps): update dependency recast to v0.23.11	https://github.com/counterfact/api-simulator/pull/1219
+1218	2025-03-06T05:46:05Z	2025-03-06T05:52:33Z	fix(deps): update dependency prettier to v3.5.3	https://github.com/counterfact/api-simulator/pull/1218
+1217	2025-03-04T16:28:51Z	2025-03-04T16:35:27Z	chore(deps): update dependency @types/lodash to v4.17.16	https://github.com/counterfact/api-simulator/pull/1217
+1216	2025-03-04T02:02:29Z	2025-03-04T02:08:25Z	fix(deps): update dependency typescript to v5.8.2	https://github.com/counterfact/api-simulator/pull/1216
+1215	2025-03-04T02:02:24Z	2025-03-04T06:13:40Z	chore(deps): update dependency @swc/core to v1.11.5	https://github.com/counterfact/api-simulator/pull/1215
+1214	2025-03-03T07:03:49Z	2025-03-03T07:12:54Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.9.3	https://github.com/counterfact/api-simulator/pull/1214
+1213	2025-03-02T22:28:37Z	2025-03-02T22:32:24Z	chore(deps): update dependency @swc/core to v1.11.4	https://github.com/counterfact/api-simulator/pull/1213
+1212	2025-03-02T13:39:15Z	2025-03-02T13:45:59Z	fix(deps): update dependency koa to v2.16.0	https://github.com/counterfact/api-simulator/pull/1212
+1211	2025-03-02T06:43:47Z	2025-03-02T06:50:05Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.9.2	https://github.com/counterfact/api-simulator/pull/1211
+1210	2025-03-01T22:40:30Z	2025-03-01T22:44:28Z	fix(deps): update dependency recast to v0.23.10	https://github.com/counterfact/api-simulator/pull/1210
+1209	2025-02-28T11:26:28Z	2025-02-28T11:33:50Z	chore(deps): update dependency @swc/core to v1.11.1	https://github.com/counterfact/api-simulator/pull/1209
+1208	2025-02-25T13:23:19Z	2025-02-25T13:30:14Z	fix(deps): update dependency prettier to v3.5.2	https://github.com/counterfact/api-simulator/pull/1208
+1207	2025-02-25T02:25:27Z	2025-02-25T02:30:55Z	chore(deps): update dependency eslint to v9.21.0	https://github.com/counterfact/api-simulator/pull/1207
+1206	2025-02-23T18:24:08Z	2025-02-23T18:28:44Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.3	https://github.com/counterfact/api-simulator/pull/1206
+1205	2025-02-23T18:24:03Z	2025-02-23T21:51:51Z	chore(deps): update dependency @changesets/cli to v2.28.1	https://github.com/counterfact/api-simulator/pull/1205
+1204	2025-02-22T13:53:46Z	2025-02-22T14:01:00Z	chore(deps): update dependency @swc/core to v1.10.18	https://github.com/counterfact/api-simulator/pull/1204
+1203	2025-02-21T23:27:24Z	2025-02-21T23:34:03Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.2	https://github.com/counterfact/api-simulator/pull/1203
+1202	2025-02-21T10:45:47Z	2025-02-21T10:50:48Z	chore(deps): update dependency @swc/core to v1.10.17	https://github.com/counterfact/api-simulator/pull/1202
+1201	2025-02-21T02:09:31Z	2025-02-21T02:14:29Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.1	https://github.com/counterfact/api-simulator/pull/1201
+1200	2025-02-20T16:32:41Z	2025-02-20T16:39:21Z	chore(deps): update dependency @changesets/cli to v2.28.0	https://github.com/counterfact/api-simulator/pull/1200
+1199	2025-02-17T15:41:17Z	2025-02-17T15:47:30Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.8.0	https://github.com/counterfact/api-simulator/pull/1199
+1198	2025-02-16T23:03:59Z	2025-02-16T23:09:17Z	fix(deps): update dependency prettier to v3.5.1	https://github.com/counterfact/api-simulator/pull/1198
+1197	2025-02-16T10:54:03Z	2025-02-16T11:01:45Z	chore(deps): update dependency @swc/core to v1.10.16	https://github.com/counterfact/api-simulator/pull/1197
+1196	2025-02-16T02:46:09Z	2025-02-16T02:51:56Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.9.1	https://github.com/counterfact/api-simulator/pull/1196
+1195	2025-02-14T21:44:00Z	2025-02-14T21:51:46Z	chore(deps): update dependency eslint to v9.20.1	https://github.com/counterfact/api-simulator/pull/1195
+1194	2025-02-12T23:09:51Z	2025-02-12T23:14:48Z	fix(deps): update dependency koa to v2.15.4 [security]	https://github.com/counterfact/api-simulator/pull/1194
+1193	2025-02-12T21:27:59Z		Add support for binary responses	https://github.com/counterfact/api-simulator/pull/1193
+1192	2025-02-12T15:14:31Z	2025-02-12T15:21:18Z	fix(deps): update dependency prettier to v3.5.0	https://github.com/counterfact/api-simulator/pull/1192
+1191	2025-02-11T10:02:56Z	2025-02-11T10:08:36Z	chore(deps): update dependency @swc/core to v1.10.15	https://github.com/counterfact/api-simulator/pull/1191
+1190	2025-02-11T02:03:49Z	2025-02-11T02:07:53Z	chore(deps): update dependency eslint to v9.20.0	https://github.com/counterfact/api-simulator/pull/1190
+1189	2025-02-09T20:32:39Z	2025-02-09T20:39:43Z	fix(deps): update dependency precinct to v12.2.0	https://github.com/counterfact/api-simulator/pull/1189
+1188	2025-02-09T17:01:14Z	2025-02-09T19:04:31Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1188
+1187	2025-02-07T22:27:55Z	2025-02-09T17:00:31Z	feat: Add alwaysFakeOptionals command line option	https://github.com/counterfact/api-simulator/pull/1187
+1186	2025-02-07T04:34:10Z	2025-02-07T04:42:12Z	chore(deps): update dependency @swc/core to v1.10.14	https://github.com/counterfact/api-simulator/pull/1186
+1184	2025-02-04T17:00:49Z	2025-02-04T17:05:20Z	fix(deps): update dependency precinct to v12.1.3	https://github.com/counterfact/api-simulator/pull/1184
+1183	2025-02-02T12:26:20Z	2025-02-02T12:33:43Z	chore(deps): update dependency @swc/core to v1.10.12	https://github.com/counterfact/api-simulator/pull/1183
+1182	2025-02-02T07:07:22Z	2025-02-02T07:11:36Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.9.0	https://github.com/counterfact/api-simulator/pull/1182
+1181	2025-01-31T21:07:41Z	2025-01-31T21:14:30Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.8.2	https://github.com/counterfact/api-simulator/pull/1181
+1180	2025-01-31T13:03:53Z	2025-01-31T13:07:54Z	chore(deps): update dependency @types/lodash to v4.17.15	https://github.com/counterfact/api-simulator/pull/1180
+1179	2025-01-30T17:33:13Z	2025-01-30T17:41:23Z	chore(deps): update dependency @swc/core to v1.10.11	https://github.com/counterfact/api-simulator/pull/1179
+1178	2025-01-28T21:20:59Z	2025-01-28T21:27:22Z	chore(deps): update coverallsapp/github-action action to v2.3.6	https://github.com/counterfact/api-simulator/pull/1178
+1177	2025-01-28T00:45:29Z	2025-01-28T06:02:58Z	chore(deps): update dependency eslint to v9.19.0	https://github.com/counterfact/api-simulator/pull/1177
+1176	2025-01-28T00:45:24Z	2025-01-28T00:52:51Z	chore(deps): update coverallsapp/github-action action to v2.3.5	https://github.com/counterfact/api-simulator/pull/1176
+1175	2025-01-27T13:56:41Z	2025-01-27T14:00:53Z	chore(deps): update dependency @changesets/cli to v2.27.12	https://github.com/counterfact/api-simulator/pull/1175
+1174	2025-01-24T22:04:25Z	2025-01-24T22:10:35Z	chore(deps): update dependency @swc/core to v1.10.9	https://github.com/counterfact/api-simulator/pull/1174
+1173	2025-01-24T05:22:02Z	2025-01-24T05:28:01Z	fix(deps): update dependency commander to v13.1.0	https://github.com/counterfact/api-simulator/pull/1173
+1172	2025-01-22T13:32:47Z	2025-01-22T13:39:42Z	chore(deps): update dependency @swc/core to v1.10.8	https://github.com/counterfact/api-simulator/pull/1172
+1171	2025-01-22T05:05:11Z	2025-01-22T05:12:44Z	chore(deps): update dependency eslint-plugin-prettier to v5.2.3	https://github.com/counterfact/api-simulator/pull/1171
+1169	2025-01-18T19:15:24Z	2025-01-18T19:22:50Z	fix(deps): update dependency fs-extra to v11.3.0	https://github.com/counterfact/api-simulator/pull/1169
+1168	2025-01-18T18:08:29Z	2025-01-18T18:27:23Z	remove a flaky test caused by json-schema-faker	https://github.com/counterfact/api-simulator/pull/1168
+1167	2025-01-18T17:54:53Z	2025-01-18T21:28:05Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1167
+1166	2025-01-18T17:47:15Z	2025-01-18T18:19:27Z	work-around for URL encoding in path names (#1083)	https://github.com/counterfact/api-simulator/pull/1166
+1165	2025-01-18T17:30:38Z	2025-01-18T17:54:16Z	update ParametersTypeCoder to follow references (#1105)	https://github.com/counterfact/api-simulator/pull/1165
+1164	2025-01-18T12:37:10Z	2025-01-18T12:46:14Z	chore(deps): update dependency eslint-plugin-prettier to v5.2.2	https://github.com/counterfact/api-simulator/pull/1164
+1163	2025-01-18T05:08:13Z	2025-01-18T05:12:22Z	chore(deps): update dependency eslint-plugin-jest to v28.11.0	https://github.com/counterfact/api-simulator/pull/1163
+1162	2025-01-17T19:25:19Z	2025-01-18T03:21:31Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1162
+1161	2025-01-16T23:11:35Z	2025-01-17T19:24:36Z	type fix: header should be headers (#1160)	https://github.com/counterfact/api-simulator/pull/1161
+1159	2025-01-15T02:33:32Z	2025-01-15T02:40:13Z	chore(deps): update dependency eslint to v9.18.0	https://github.com/counterfact/api-simulator/pull/1159
+1158	2025-01-14T14:30:16Z	2025-01-14T14:34:07Z	chore(deps): update dependency @swc/core to v1.10.7	https://github.com/counterfact/api-simulator/pull/1158
+1157	2025-01-12T02:19:45Z	2025-01-12T02:27:12Z	fix(deps): update dependency typescript to v5.7.3	https://github.com/counterfact/api-simulator/pull/1157
+1156	2025-01-10T21:59:55Z	2025-01-12T06:18:02Z	chore(deps): update dependency @swc/core to v1.10.6	https://github.com/counterfact/api-simulator/pull/1156
+1155	2025-01-07T00:49:02Z	2025-01-07T00:55:34Z	chore(deps): update dependency @types/lodash to v4.17.14	https://github.com/counterfact/api-simulator/pull/1155
+1154	2025-01-02T11:03:20Z	2025-01-07T04:39:59Z	fix(deps): update dependency commander to v13	https://github.com/counterfact/api-simulator/pull/1154
+1153	2025-01-02T06:09:46Z	2025-01-07T09:22:21Z	chore(deps): update dependency @swc/core to v1.10.4	https://github.com/counterfact/api-simulator/pull/1153
+1152	2025-01-01T23:34:01Z	2025-01-01T23:40:01Z	remove accidentally added package	https://github.com/counterfact/api-simulator/pull/1152
+1151	2025-01-01T23:28:07Z		fix(deps): pin dependency package.json to 2.0.1	https://github.com/counterfact/api-simulator/pull/1151
+1150	2025-01-01T20:32:56Z	2025-01-01T20:39:26Z	upgrade jsonpath-plus to fix a security vulnerability (CVE-2024-21534)	https://github.com/counterfact/api-simulator/pull/1150
+1149	2025-01-01T20:26:16Z	2025-01-01T20:30:10Z	chore(deps): pin dependency jest-retries to 1.0.1	https://github.com/counterfact/api-simulator/pull/1149
+1148	2025-01-01T20:11:25Z	2025-01-01T20:23:52Z	reintroduce test that is flaky due to random()	https://github.com/counterfact/api-simulator/pull/1148
+1147	2025-01-01T20:01:48Z	2025-01-01T20:07:57Z	only a body parameter has a schema and body parameters aren't parsed here	https://github.com/counterfact/api-simulator/pull/1147
+1146	2024-12-30T22:33:06Z	2024-12-30T22:38:29Z	chore(deps): update dependency @swc/core to v1.10.3	https://github.com/counterfact/api-simulator/pull/1146
+1145	2024-12-29T18:38:54Z	2024-12-29T18:46:26Z	chore(deps): update dependency @swc/core to v1.10.2	https://github.com/counterfact/api-simulator/pull/1145
+1144	2024-12-27T18:21:36Z		feat: add openApiDocument to module-loader Context #968	https://github.com/counterfact/api-simulator/pull/1144
+1143	2024-12-23T22:04:34Z	2024-12-23T22:28:03Z	disable a flaky test related to JSON Schema Faker	https://github.com/counterfact/api-simulator/pull/1143
+1142	2024-12-23T21:54:56Z	2025-01-02T17:58:26Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1142
+1141	2024-12-23T21:32:09Z	2024-12-23T21:50:02Z	skip a test for non-essential functionality that just started failing in Windows	https://github.com/counterfact/api-simulator/pull/1141
+1140	2024-12-23T21:24:25Z	2025-01-01T23:22:48Z	remove unused dependency nodemon and console.logs	https://github.com/counterfact/api-simulator/pull/1140
+1139	2024-12-23T21:05:39Z	2024-12-23T21:54:23Z	path parameters are always strings	https://github.com/counterfact/api-simulator/pull/1139
+1138	2024-12-22T22:51:10Z	2024-12-23T22:49:46Z	chore(deps): update dependency eslint-plugin-jest to v28.10.0	https://github.com/counterfact/api-simulator/pull/1138
+1137	2024-12-21T10:27:47Z	2024-12-23T22:00:17Z	chore(deps): update dependency @changesets/cli to v2.27.11	https://github.com/counterfact/api-simulator/pull/1137
+1136	2024-12-19T23:54:36Z	2024-12-23T22:21:25Z	fix(deps): update dependency chokidar to v4.0.3	https://github.com/counterfact/api-simulator/pull/1136
+1135	2024-12-17T01:08:06Z	2024-12-23T22:15:30Z	chore(deps): update dependency eslint to v9.17.0	https://github.com/counterfact/api-simulator/pull/1135
+1134	2024-12-16T17:20:42Z	2024-12-23T22:33:38Z	chore(deps): update dependency nodemon to v3.1.9	https://github.com/counterfact/api-simulator/pull/1134
+1133	2024-12-14T12:26:28Z	2024-12-23T22:08:17Z	chore(deps): update stryker-js monorepo to v8.7.1	https://github.com/counterfact/api-simulator/pull/1133
+1132	2024-12-13T18:58:43Z	2024-12-23T22:39:14Z	chore(deps): update dependency node-mocks-http to v1.16.2	https://github.com/counterfact/api-simulator/pull/1132
+1131	2024-12-12T14:48:15Z	2024-12-12T14:54:06Z	chore(deps): update dependency @swc/core to v1.10.1	https://github.com/counterfact/api-simulator/pull/1131
+1130	2024-12-09T16:09:25Z	2024-12-09T16:15:09Z	fix(deps): update dependency debug to v4.4.0	https://github.com/counterfact/api-simulator/pull/1130
+1129	2024-12-09T16:09:19Z	2024-12-09T20:52:59Z	chore(deps): update stryker-js monorepo to v8.7.0	https://github.com/counterfact/api-simulator/pull/1129
+1128	2024-12-09T05:43:23Z	2024-12-09T05:50:35Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.7.3	https://github.com/counterfact/api-simulator/pull/1128
+1127	2024-12-07T10:19:25Z	2024-12-07T10:25:21Z	chore(deps): update dependency @swc/core to v1.10.0	https://github.com/counterfact/api-simulator/pull/1127
+1126	2024-12-07T10:19:20Z	2024-12-07T12:31:14Z	fix(deps): update dependency prettier to v3.4.2	https://github.com/counterfact/api-simulator/pull/1126
+1125	2024-12-06T19:19:13Z	2024-12-06T19:23:09Z	chore(deps): update dependency eslint-import-resolver-typescript to v3.7.0	https://github.com/counterfact/api-simulator/pull/1125
+1124	2024-12-03T01:05:51Z	2024-12-04T18:39:50Z	chore(deps): update dependency eslint to v9.16.0	https://github.com/counterfact/api-simulator/pull/1124
+1123	2024-11-29T15:40:10Z	2024-11-29T15:46:09Z	fix(deps): update dependency prettier to v3.4.1	https://github.com/counterfact/api-simulator/pull/1123
+1122	2024-11-29T11:23:12Z	2024-11-29T11:28:53Z	fix(deps): update dependency prettier to v3.4.0	https://github.com/counterfact/api-simulator/pull/1122
+1120	2024-11-25T22:20:00Z	2024-11-25T22:25:11Z	fix(deps): update dependency typescript to v5.7.2	https://github.com/counterfact/api-simulator/pull/1120
+1119	2024-11-25T12:22:13Z	2024-11-25T12:28:13Z	chore(deps): update dependency @swc/core to v1.9.3	https://github.com/counterfact/api-simulator/pull/1119
+1118	2024-11-23T13:56:42Z	2024-11-23T14:03:01Z	chore(deps): update dependency @changesets/cli to v2.27.10	https://github.com/counterfact/api-simulator/pull/1118
+1117	2024-11-22T21:41:01Z	2024-11-23T00:14:27Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1117
+1115	2024-11-21T18:31:56Z	2024-11-21T18:39:13Z	chore(deps): update dependency husky to v9.1.7	https://github.com/counterfact/api-simulator/pull/1115
+1114	2024-11-21T07:26:50Z	2024-11-21T07:34:58Z	fix(deps): update dependency koa2-swagger-ui to v5.11.0	https://github.com/counterfact/api-simulator/pull/1114
+1113	2024-11-21T00:44:46Z	2024-11-21T00:51:21Z	chore(deps): update dependency eslint-plugin-jest-dom to v5.5.0	https://github.com/counterfact/api-simulator/pull/1113
+1112	2024-11-18T22:28:12Z	2024-11-18T22:35:40Z	chore(deps): update dependency eslint to v9.15.0	https://github.com/counterfact/api-simulator/pull/1112
+1111	2024-11-14T07:38:56Z	2024-11-14T07:42:43Z	chore(deps): update dependency @swc/core to v1.9.2	https://github.com/counterfact/api-simulator/pull/1111
+1110	2024-11-12T11:53:41Z	2024-11-12T11:59:30Z	chore(deps): update dependency eslint-plugin-file-progress to v3.0.1	https://github.com/counterfact/api-simulator/pull/1110
+1109	2024-11-10T21:49:11Z	2024-11-14T09:57:22Z	fix(deps): update dependency json-schema-faker to v0.5.8	https://github.com/counterfact/api-simulator/pull/1109
+1108	2024-11-09T18:51:27Z	2024-11-09T18:56:24Z	chore(deps): update dependency @swc/core to v1.9.1	https://github.com/counterfact/api-simulator/pull/1108
+1107	2024-11-09T01:40:24Z	2024-11-09T01:46:12Z	chore(deps): update dependency eslint-plugin-jest to v28.9.0	https://github.com/counterfact/api-simulator/pull/1107
+1106	2024-11-08T06:40:02Z	2025-01-01T23:31:42Z	[Snyk] Security upgrade json-schema-faker from 0.5.6 to 0.5.8	https://github.com/counterfact/api-simulator/pull/1106
+1104	2024-11-07T19:34:01Z	2024-11-10T00:19:01Z	chore(deps): update dependency eslint-plugin-file-progress to v3	https://github.com/counterfact/api-simulator/pull/1104
+1103	2024-11-07T06:59:34Z	2024-11-07T07:06:16Z	chore(deps): update dependency @swc/core to v1.8.0	https://github.com/counterfact/api-simulator/pull/1103
+1102	2024-11-06T00:36:31Z	2024-11-09T03:49:20Z	fix(deps): update dependency json-schema-faker to v0.5.7	https://github.com/counterfact/api-simulator/pull/1102
+1101	2024-11-04T22:24:39Z	2024-11-04T22:28:45Z	chore(deps): update dependency eslint to v9.14.0	https://github.com/counterfact/api-simulator/pull/1101
+1100	2024-11-03T09:10:15Z	2024-11-03T09:16:34Z	chore(deps): update dependency @swc/core to v1.7.42	https://github.com/counterfact/api-simulator/pull/1100
+1099	2024-11-02T15:29:15Z	2024-11-22T21:39:38Z	fixes to make sure $ref is followed	https://github.com/counterfact/api-simulator/pull/1099
+1098	2024-11-02T03:40:33Z	2024-11-02T12:44:18Z	chore(deps): update dependency @types/lodash to v4.17.13	https://github.com/counterfact/api-simulator/pull/1098
+1097	2024-10-29T15:22:54Z	2024-11-02T10:54:00Z	chore(deps): update swc monorepo	https://github.com/counterfact/api-simulator/pull/1097
+1096	2024-10-28T01:03:40Z	2024-11-02T15:35:38Z	chore(deps): update coverallsapp/github-action action to v2.3.4	https://github.com/counterfact/api-simulator/pull/1096
+1095	2024-10-26T06:54:08Z	2024-10-26T06:58:10Z	chore(deps): update dependency @types/jest to v29.5.14	https://github.com/counterfact/api-simulator/pull/1095
+1094	2024-10-25T07:58:38Z	2024-10-25T08:04:03Z	chore(deps): update dependency @swc/core to v1.7.39	https://github.com/counterfact/api-simulator/pull/1094
+1093	2024-10-22T02:12:53Z	2024-10-22T02:18:58Z	chore(deps): update dependency eslint to v9.13.0	https://github.com/counterfact/api-simulator/pull/1093
+1092	2024-10-21T15:13:51Z	2024-10-22T10:39:55Z	chore(deps): update dependency @types/lodash to v4.17.12	https://github.com/counterfact/api-simulator/pull/1092
+1091	2024-10-21T02:40:18Z		change async requirementAt to sync getRequirement	https://github.com/counterfact/api-simulator/pull/1091
+1090	2024-10-20T00:16:52Z	2024-10-20T00:23:43Z	chore(deps): update coverallsapp/github-action action to v2.3.3	https://github.com/counterfact/api-simulator/pull/1090
+1088	2024-10-18T19:39:01Z	2024-10-18T23:23:32Z	chore(deps): update dependency @swc/core to v1.7.36	https://github.com/counterfact/api-simulator/pull/1088
+1087	2024-10-18T19:38:56Z	2024-10-18T19:45:59Z	chore(deps): update coverallsapp/github-action action to v2.3.2	https://github.com/counterfact/api-simulator/pull/1087
+1085	2024-10-17T16:14:34Z	2024-10-17T16:23:14Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1085
+1084	2024-10-17T16:06:37Z	2024-10-17T16:13:50Z	feat(server): Update JSONSchemaFaker not to create fake object properties	https://github.com/counterfact/api-simulator/pull/1084
+1082	2024-10-15T10:26:27Z	2024-10-15T10:53:53Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1082
+1081	2024-10-15T00:44:29Z	2024-10-15T10:25:55Z	fix vscode link on windows - fixes #1058	https://github.com/counterfact/api-simulator/pull/1081
+1080	2024-10-14T00:43:22Z	2024-10-14T00:47:30Z	fix(deps): update dependency @apidevtools/json-schema-ref-parser to v11.7.2	https://github.com/counterfact/api-simulator/pull/1080
+1079	2024-10-14T00:43:17Z	2024-10-14T03:18:58Z	chore(deps): update coverallsapp/github-action action to v2.3.1	https://github.com/counterfact/api-simulator/pull/1079
+1078	2024-10-13T13:48:52Z	2024-10-13T13:56:08Z	chore(deps): update dependency @swc/core to v1.7.35	https://github.com/counterfact/api-simulator/pull/1078
+1077	2024-10-12T00:37:44Z	2024-10-12T00:43:34Z	fix(deps): update dependency typescript to v5.6.3	https://github.com/counterfact/api-simulator/pull/1077
+1076	2024-10-10T19:17:27Z	2024-10-10T19:24:06Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1076
+1075	2024-10-10T13:43:28Z	2024-10-10T13:51:09Z	chore(deps): update dependency @swc/core to v1.7.28	https://github.com/counterfact/api-simulator/pull/1075
+1074	2024-10-09T16:44:35Z	2024-10-10T19:16:49Z	fix(server): Add support for directories with multiple wildcard children	https://github.com/counterfact/api-simulator/pull/1074
+1073	2024-10-08T00:08:06Z	2024-10-08T00:13:00Z	chore(deps): update dependency eslint to v9.12.0	https://github.com/counterfact/api-simulator/pull/1073
+1072	2024-10-07T16:21:28Z	2024-10-07T16:26:51Z	chore(deps): update dependency node-mocks-http to v1.16.1	https://github.com/counterfact/api-simulator/pull/1072
+1071	2024-10-06T21:02:13Z	2024-10-06T21:05:52Z	chore(deps): update dependency @changesets/cli to v2.27.9	https://github.com/counterfact/api-simulator/pull/1071
+1070	2024-10-06T12:55:30Z	2024-10-06T12:59:00Z	chore(deps): update dependency eslint-plugin-import to v2.31.0	https://github.com/counterfact/api-simulator/pull/1070
+1069	2024-10-06T12:55:25Z	2024-10-06T16:27:49Z	chore(deps): update dependency @types/lodash to v4.17.10	https://github.com/counterfact/api-simulator/pull/1069
+1068	2024-10-03T21:23:37Z	2024-10-03T21:27:27Z	lint *.test.ts files	https://github.com/counterfact/api-simulator/pull/1068
+1067	2024-10-02T23:25:02Z	2024-10-02T23:34:47Z	fix(deps): update dependency chokidar to v4.0.1	https://github.com/counterfact/api-simulator/pull/1067
+1066	2024-10-02T23:15:42Z	2024-10-03T00:47:36Z	clean up options	https://github.com/counterfact/api-simulator/pull/1066
+1065	2024-10-02T22:41:14Z	2024-10-02T22:45:37Z	chore(deps): update stryker-js monorepo to v8.6.0	https://github.com/counterfact/api-simulator/pull/1065
+1064	2024-10-02T22:41:09Z	2024-10-02T23:28:42Z	ensure ESLint ignores files in dist and out	https://github.com/counterfact/api-simulator/pull/1064
+1063	2024-10-02T21:43:11Z	2024-10-03T01:15:15Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1063
+1062	2024-10-02T21:10:36Z	2024-10-02T21:42:36Z	map index.ts to / -- fixes #1056	https://github.com/counterfact/api-simulator/pull/1062
+1061	2024-10-02T17:55:09Z	2024-10-02T18:10:24Z	Version Packages	https://github.com/counterfact/api-simulator/pull/1061
+1060	2024-10-02T17:42:53Z	2024-10-02T17:54:36Z	fix an issue where request body type is not found when consumes is in the root	https://github.com/counterfact/api-simulator/pull/1060
+1059	2024-10-02T15:08:38Z	2024-10-02T15:20:52Z	fix the docs for quickstart	https://github.com/counterfact/api-simulator/pull/1059
+1055	2024-09-27T03:20:42Z	2024-09-27T03:25:53Z	chore(deps): update dependency eslint to v9.11.1	https://github.com/counterfact/api-simulator/pull/1055
+1054	2024-09-26T21:55:10Z	2024-09-26T22:01:21Z	chore(deps): update dependency @types/lodash to v4.17.9	https://github.com/counterfact/api-simulator/pull/1054
+1053	2024-09-24T02:40:05Z	2024-09-24T02:44:54Z	chore(deps): update dependency nodemon to v3.1.7	https://github.com/counterfact/api-simulator/pull/1053
+1052	2024-09-23T18:41:24Z	2024-09-23T18:49:42Z	chore(deps): update dependency eslint to v9.11.0	https://github.com/counterfact/api-simulator/pull/1052
+1051	2024-09-22T15:56:54Z	2024-09-22T16:03:35Z	chore(deps): update dependency nodemon to v3.1.6	https://github.com/counterfact/api-simulator/pull/1051
+1050	2024-09-20T21:57:13Z	2024-09-20T22:01:23Z	chore(deps): update dependency nodemon to v3.1.5	https://github.com/counterfact/api-simulator/pull/1050
+1049	2024-09-16T13:25:32Z	2024-09-16T13:32:03Z	chore(deps): update dependency eslint-plugin-unused-imports to v4.1.4	https://github.com/counterfact/api-simulator/pull/1049
+1048	2024-09-16T04:59:34Z	2024-10-02T23:19:26Z	fix(deps): update dependency chokidar to v4	https://github.com/counterfact/api-simulator/pull/1048
+1047	2024-09-15T22:21:41Z	2024-09-15T22:29:56Z	chore(deps): update dependency @types/jest to v29.5.13	https://github.com/counterfact/api-simulator/pull/1047
+1046	2024-09-15T04:36:53Z	2024-09-15T04:43:15Z	chore(deps): update dependency husky to v9.1.6	https://github.com/counterfact/api-simulator/pull/1046
+1045	2024-09-14T16:28:28Z	2024-09-14T16:35:56Z	chore(deps): update dependency @swc/core to v1.7.26	https://github.com/counterfact/api-simulator/pull/1045
+1044	2024-09-14T09:35:44Z	2024-09-14T09:41:53Z	chore(deps): update dependency @swc/core to v1.7.25	https://github.com/counterfact/api-simulator/pull/1044
+1043	2024-09-12T22:34:14Z	2024-09-12T22:38:45Z	fix(deps): update dependency typescript to v5.6.2	https://github.com/counterfact/api-simulator/pull/1043
+1042	2024-09-12T22:34:09Z	2024-09-13T00:21:21Z	chore(deps): update dependency node-mocks-http to v1.16.0	https://github.com/counterfact/api-simulator/pull/1042
+1041	2024-09-11T09:28:48Z	2024-09-11T09:35:41Z	chore(deps): update dependency @swc/core to v1.7.24	https://github.com/counterfact/api-simulator/pull/1041
+1040	2024-09-10T01:47:40Z	2024-09-10T01:51:48Z	chore(deps): update dependency eslint to v9.10.0	https://github.com/counterfact/api-simulator/pull/1040
+1039	2024-09-09T03:57:59Z	2024-09-09T04:02:46Z	fix(deps): update dependency debug to v4.3.7	https://github.com/counterfact/api-simulator/pull/1039
+1038	2024-09-08T01:23:03Z	2024-09-08T01:30:15Z	chore(deps): update dependency eslint-plugin-jest to v28.8.3	https://github.com/counterfact/api-simulator/pull/1038
+1037	2024-09-07T12:55:15Z	2024-09-07T13:01:19Z	chore(deps): update dependency @changesets/cli to v2.27.8	https://github.com/counterfact/api-simulator/pull/1037
+1036	2024-09-06T10:47:41Z	2024-09-06T10:55:03Z	chore(deps): update dependency eslint-plugin-import to v2.30.0	https://github.com/counterfact/api-simulator/pull/1036
+1035	2024-09-06T05:05:08Z	2024-09-06T05:09:57Z	chore(deps): update dependency @swc/core to v1.7.23	https://github.com/counterfact/api-simulator/pull/1035
+1034	2024-09-05T07:46:25Z	2024-09-05T07:53:09Z	chore(deps): update dependency eslint-plugin-jest to v28.8.2	https://github.com/counterfact/api-simulator/pull/1034
+1033	2024-09-02T12:58:48Z	2024-09-02T13:06:08Z	chore(deps): update dependency @swc/core to v1.7.22	https://github.com/counterfact/api-simulator/pull/1033
+1032	2024-09-02T00:40:27Z	2024-09-02T00:46:24Z	chore(deps): update dependency eslint-plugin-jest to v28.8.1	https://github.com/counterfact/api-simulator/pull/1032

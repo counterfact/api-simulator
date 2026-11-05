@@ -12,10 +12,28 @@ export interface RouteParameter {
   type?: string;
 }
 
+/** OpenAPI 3 request-body metadata consumed by request validation and help. */
+export interface RouteRequestBody {
+  content?: Readonly<
+    Record<
+      string,
+      {
+        schema?: {
+          type?: string;
+        };
+      }
+    >
+  >;
+  description?: string;
+  required?: boolean;
+}
+
 /** Operation metadata consumed by request help and validation. */
 export interface RouteOperation {
+  consumes?: readonly string[];
   description?: string;
   parameters?: readonly RouteParameter[];
+  requestBody?: RouteRequestBody;
   responses?: Readonly<Record<string, { description?: string }>>;
   summary?: string;
 }
@@ -31,6 +49,7 @@ export interface RouteCatalog {
 
 /** The only OpenAPI document shape needed to create a route catalog. */
 export interface OpenApiRouteDocument {
+  readonly consumes?: readonly string[];
   readonly paths: Readonly<Record<string, object>>;
 }
 
@@ -94,12 +113,16 @@ export function createOpenApiRouteCatalog(
         pathItemParameters,
         operation.parameters,
       );
+      const consumes = operation.consumes ?? document.consumes;
 
-      if (!pathItemParameters || pathItemParameters.length === 0) {
+      if (
+        (!pathItemParameters || pathItemParameters.length === 0) &&
+        consumes === operation.consumes
+      ) {
         return operation;
       }
 
-      return { ...operation, parameters };
+      return { ...operation, consumes, parameters };
     },
     listPaths() {
       return Object.keys(document.paths);

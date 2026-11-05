@@ -1,0 +1,112 @@
+[
+  {
+    "number": 453,
+    "title": "Found an error when headers name contains `-`",
+    "body": "Hi @pmcelhaney, thanks for making a great repo. It helps me a lot.\r\n\r\nAfter some time I used, I found an error when generating a mock when my headers contain `-`. For example: `X-AUTHORIZATION`.  Maybe you have any solution for this without making changes in the repo? Thank you.\r\n\r\nThis is the example of the header that I used : \r\n```\r\n{\r\n  \"parameters\": [\r\n    {\r\n      \"in\": \"header\",\r\n      \"name\": \"X-TIMESTAMP\",\r\n      \"description\": \"e.g 2020-01-01T00:00:00+07:00\",\r\n      \"required\": true,\r\n      \"schema\": {\r\n        \"type\": \"string\",\r\n        \"maxLength\": 25,\r\n        \"minLength\": 25\r\n      }\r\n    },\r\n    {\r\n      \"in\": \"header\",\r\n      \"name\": \"X-CLIENT-KEY\",\r\n      \"description\": \"Please use your client id\",\r\n      \"required\": true,\r\n      \"schema\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    {\r\n      \"in\": \"header\",\r\n      \"name\": \"Private-Key\",\r\n      \"description\": \"Please use your private key to get valid rsa key\",\r\n      \"required\": true,\r\n      \"schema\": {\r\n        \"type\": \"string\"\r\n      }\r\n    }\r\n  ]\r\n}\r\n```\r\n\r\nAnd this is the error message:\r\n```\r\nSyntaxError: Property or signature expected. (4:111)\r\n  2 | import type { Signature } from \"./../../../../components/Signature.js\";\r\n  3 |\r\n> 4 | export type HTTP_POST = ({ query, path, header, body, context, proxy }: { query: never, path: never, header: {X-TIMESTAMP: string, X-CLIENT-KEY: string, Private-Key: string}, body: undefined, context: typeof Context, response: ResponseBuilderFactory<{\r\n    |                                                                                                               ^\r\n  5 | 200: {\r\n  6 |           headers: {};\r\n  7 |           content: {\r\n    at v (/Users/ejakmiaw/.npm/_npx/e8d1761dc3fb6aab/node_modules/prettier/parser-typescript.js:1:14679)\r\n    at _H (/Users/ejakmiaw/.npm/_npx/e8d1761dc3fb6aab/node_modules/prettier/parser-typescript.js:49:10722)\r\n    at Object.cH [as parse] (/Users/ejakmiaw/.npm/_npx/e8d1761dc3fb6aab/node_modules/prettier/parser-typescript.js:49:11028)\r\n    at Object.parse (/Users/ejakmiaw/.npm/_npx/e8d1761dc3fb6aab/node_modules/prettier/index.js:7515:23)\r\n    at coreFormat (/Users/ejakmiaw/.npm/_npx/e8d1761dc3fb6aab/node_modules/prettier/index.js:8829:18)\r\n    at formatWithCursor2 (/Users/ejakmiaw/.npm/_npx/e8d1761dc3fb6aab/node_modules/prettier/index.js:9021:18)\r\n    at /Users/ejakmiaw/.npm/_npx/e8d1761dc3fb6aab/node_modules/prettier/index.js:38183:12\r\n    at Object.format (/Users/ejakmiaw/.npm/_npx/e8d1761dc3fb6aab/node_modules/prettier/index.js:38197:12)\r\n    at Script.contents (file:///Users/ejakmiaw/.npm/_npx/e8d1761dc3fb6aab/node_modules/counterfact/src/typescript-generator/script.js:186:21)\r\n    at file:///Users/ejakmiaw/.npm/_npx/e8d1761dc3fb6aab/node_modules/counterfact/src/typescript-generator/repository.js:71:49 {\r\n  loc: { start: { line: 4, column: 111 } },\r\n  codeFrame: '\\x1B[0m \\x1B[90m 2 |\\x1B[39m \\x1B[36mimport\\x1B[39m type { \\x1B[33mSignature\\x1B[39m } \\x1B[36mfrom\\x1B[39m \\x1B[32m\"./../../../../components/Signature.js\"\\x1B[39m\\x1B[33m;\\x1B[39m\\x1B[0m\\n' +\r\n    '\\x1B[0m \\x1B[90m 3 |\\x1B[39m\\x1B[0m\\n' +\r\n    '\\x1B[0m\\x1B[31m\\x1B[1m>\\x1B[22m\\x1B[39m\\x1B[90m 4 |\\x1B[39m \\x1B[36mexport\\x1B[39m type \\x1B[33mHTTP_POST\\x1B[39m \\x1B[33m=\\x1B[39m ({ query\\x1B[33m,\\x1B[39m path\\x1B[33m,\\x1B[39m header\\x1B[33m,\\x1B[39m body\\x1B[33m,\\x1B[39m context\\x1B[33m,\\x1B[39m proxy }\\x1B[33m:\\x1B[39m { query\\x1B[33m:\\x1B[39m never\\x1B[33m,\\x1B[39m path\\x1B[33m:\\x1B[39m never\\x1B[33m,\\x1B[39m header\\x1B[33m:\\x1B[39m {\\x1B[33mX\\x1B[39m\\x1B[33m-\\x1B[39m\\x1B[33mTIMESTAMP\\x1B[39m\\x1B[33m:\\x1B[39m string\\x1B[33m,\\x1B[39m \\x1B[33mX\\x1B[39m\\x1B[33m-\\x1B[39m\\x1B[33mCLIENT\\x1B[39m\\x1B[33m-\\x1B[39m\\x1B[33mKEY\\x1B[39m\\x1B[33m:\\x1B[39m string\\x1B[33m,\\x1B[39m \\x1B[33mPrivate\\x1B[39m\\x1B[33m-\\x1B[39m\\x1B[33mKey\\x1B[39m\\x1B[33m:\\x1B[39m string}\\x1B[33m,\\x1B[39m body\\x1B[33m:\\x1B[39m undefined\\x1B[33m,\\x1B[39m context\\x1B[33m:\\x1B[39m \\x1B[36mtypeof\\x1B[39m \\x1B[33mContext\\x1B[39m\\x1B[33m,\\x1B[39m response\\x1B[33m:\\x1B[39m \\x1B[33mResponseBuilderFactory\\x1B[39m\\x1B[33m<\\x1B[39m{\\x1B[0m\\n' +\r\n    '\\x1B[0m \\x1B[90m   |\\x1B[39m                                                                                                               \\x1B[31m\\x1B[1m^\\x1B[22m\\x1B[39m\\x1B[0m\\n' +\r\n    '\\x1B[0m \\x1B[90m 5 |\\x1B[39m \\x1B[35m200\\x1B[39m\\x1B[33m:\\x1B[39m {\\x1B[0m\\n' +\r\n    '\\x1B[0m \\x1B[90m 6 |\\x1B[39m           headers\\x1B[33m:\\x1B[39m {}\\x1B[33m;\\x1B[39m\\x1B[0m\\n' +\r\n    '\\x1B[0m \\x1B[90m 7 |\\x1B[39m           content\\x1B[33m:\\x1B[39m {\\x1B[0m'\r\n}\r\n```",
+    "created_at": "2023-06-15T05:13:50Z",
+    "closed_at": "2023-06-15T17:04:10Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/453",
+    "comments": 2,
+    "state": "closed"
+  },
+  {
+    "number": 487,
+    "title": "Running quickstart command never finishes on windows",
+    "body": "Hi! \r\n\r\nI am trying to execute the command provided in the tutorial:\r\n\r\n```sh\r\nnpx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api --open\r\n```\r\n\r\nBut it just never finishes. There is no debug output whatsoever.\r\n\r\nI am running it on a windows 11, tried node v16.9.0 and v18.17.0. \r\n\r\nA colleague even tried it on his machine with win11 and has the same result.\r\n\r\nMacOS execution works fine.\r\n\r\n\r\n\r\n\r\n",
+    "created_at": "2023-07-30T17:58:27Z",
+    "closed_at": "2023-08-25T13:49:59Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/487",
+    "comments": 20,
+    "state": "closed"
+  },
+  {
+    "number": 491,
+    "title": "All requests return Error: not acceptable",
+    "body": "Hello,\r\n\r\nI have been following the quick start guide and started the pet store mock server. However, all the requests I am making are returning `406: Not acceptable`. Is there any way I can fix this issue?\r\n\r\nAlso getting this error before the REPL loads:\r\n\r\n```\r\nError loading /Users/dorelbarbu/api/paths/pet/findByTags.ts:\r\nTypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension \".ts\" for /Users/dorelbarbu/api/paths/pet/findByTags.ts\r\n```\r\n\r\nThank you!",
+    "created_at": "2023-08-04T14:14:29Z",
+    "closed_at": "2023-08-21T17:32:54Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/491",
+    "comments": 1,
+    "state": "closed"
+  },
+  {
+    "number": 530,
+    "title": "Some links from http://localhost:3100/counterfact/ are invalid due to extra slash before . file extension",
+    "body": "Having the counterfact running in windows via quick-start commands:\r\n<pre>\r\nnpm i -g ts-node\r\nnpx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api --open\r\n</pre>\r\n\r\nBrowser opens with a nice page listing the endpoints as links.\r\n\r\nHowever - **actual result** - some links are invalid, as they have extra slash: ```vscode://file/C:\\Users\\tsyg\\work\\try\\openAPI\\counterfact/paths///pet/findByStatus/.ts```\r\n\r\n**Expected**: each link can be opened via VSCode - as, e.g. ```/user```)\r\n\r\nHere is a screenshot illustrating the issue.\r\n\r\n![Counterfact_some_filenames_have_extra_slash_2023-08-25](https://github.com/pmcelhaney/counterfact/assets/2368240/6218f93b-c051-4c68-aa15-6393be161a55)\r\n\r\n\r\nPS. seems like follow-up from slashes fixing in [issue 487](https://github.com/pmcelhaney/counterfact/issues/487)",
+    "created_at": "2023-08-25T14:46:14Z",
+    "closed_at": "2023-08-30T20:28:59Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/530",
+    "comments": 0,
+    "state": "closed"
+  },
+  {
+    "number": 820,
+    "title": "Prefix missing from Swagger",
+    "body": "Run counterfact with --prefix /something\r\n\r\n/something prefix is missing from Swagger",
+    "created_at": "2024-03-27T11:16:05Z",
+    "closed_at": "2024-04-30T21:21:00Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/820",
+    "comments": 7,
+    "state": "closed"
+  },
+  {
+    "number": 828,
+    "title": "Endpoint gives error attempting to return 200 status",
+    "body": "Getting this 500 error from an endpoint that does have a valid 200 response defined:\r\n\r\n`The Open API document does not specify a response for status code 200`",
+    "created_at": "2024-04-03T19:47:05Z",
+    "closed_at": "2024-04-10T14:30:28Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/828",
+    "comments": 9,
+    "state": "closed"
+  },
+  {
+    "number": 835,
+    "title": "Hot reloading does not reload all files",
+    "body": "(Created from #823)\r\n\r\nWhile hot reloading will reload a changed file, it does not appear that changes are actually used. For example, a changed file in the `paths/` directory will be reloaded. However, those changes have no effect until the `_.context.ts` file is reloaded as well.\r\n\r\n## Steps to reproduce\r\n### Setup\r\nHave a file structure like so:\r\n```\r\ncounterfact/\r\n    paths/\r\n        _mocks/\r\n            my-custom-code.ts\r\n        _.context.ts\r\n```\r\n\r\nIn `_.context.ts`:\r\n```ts\r\nimport { CustomClass } from './_mocks/my-custom-code';\r\n\r\nconsole.log(\"_.context.ts loaded\");\r\n// Do stuff with CustomClass\r\n```\r\n\r\nIn `./_mocks/my-custom-code`:\r\n\r\n```ts\r\nconsole.log(\"Custom code loaded\");\r\n\r\nconst value = \"Some value that's used in generating a mock response\";\r\n\r\nclass CustomClass {\r\n  // Use value in here somehow as part of generating a response\r\n}\r\n\r\nexport { CustomClass }\r\n```\r\n### Trigger\r\n\r\n1. Run counterfact (ex: `npx counterfact spec.openapi.yaml counterfact`)\r\n2. Call counterfact api, see the `\"Some value...\"` in the HTTP response\r\n3. Modify the custom code string to be something else (`\"const value = \"Changed!\"`)\r\n4. Note that `Custom code loaded` is logged\r\n5. Make a request to counterfact. Note that the new value is not returned\r\n\r\nHowever, if I trivially modify the `_.context.ts` file (touch it, add a comment, etc), I do see counterfact log the `_.context.ts loaded` message. If I then make a new HTTP request, I see the new value in the mock http response.",
+    "created_at": "2024-04-05T22:36:24Z",
+    "closed_at": "2024-04-30T23:01:54Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/835",
+    "comments": 9,
+    "state": "closed"
+  },
+  {
+    "number": 866,
+    "title": "Cannot start/use the counterfact ",
+    "body": "From the 60 seconds guide\r\n```\r\nnpx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api --open\r\n```\r\n\r\ngives me the following print out\r\n```\r\nnpm WARN deprecated request-promise-native@1.0.9: request-promise-native has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142\r\nnpm WARN deprecated har-validator@5.1.5: this library is no longer supported\r\nnpm WARN deprecated json-schema-ref-parser@9.0.9: Please switch to @apidevtools/json-schema-ref-parser\r\nnpm WARN deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.\r\nnpm WARN deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142\r\nnpm WARN deprecated json-schema-ref-parser@6.1.0: Please switch to @apidevtools/json-schema-ref-parser\r\n```\r\nand the command exited with with `127`.",
+    "created_at": "2024-04-24T14:24:24Z",
+    "closed_at": "2024-04-24T21:44:57Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/866",
+    "comments": 4,
+    "state": "closed"
+  },
+  {
+    "number": 890,
+    "title": "[BUG] Recursive models generate invalid typescript",
+    "body": "We have the following python model:\r\n```py\r\nclass FilterRule(BaseModel):\r\n    value: str | list[str]\r\n    operator: Literal[\"eq\", \"ne\", \"in\"]\r\n    field: str\r\n    field_type: Literal[\"list\", \"string\"] = \"string\"\r\n\r\n    def __str__(self) -> str:\r\n        if self.field_type == \"list\":\r\n            if isinstance(self.value, list):\r\n                joined_value = \", \".join([v for v in self.value])\r\n            else:\r\n                joined_value = self.value\r\n            return f\"{self.field}/any(g: search.in(g, '{joined_value}'))\"\r\n        else:\r\n            if self.operator == \"in\":\r\n                if isinstance(self.value, list):\r\n                    predicate = \" or \".join(\r\n                        [f\"{self.field} eq '{v}' \" for v in self.value]\r\n                    )\r\n                else:\r\n                    predicate = f\"{self.field} eq '{self.value}'\"\r\n                return f\"({predicate})\" if predicate else \"\"\r\n\r\n        return f\"{self.field} {self.operator} '{self.value}'\"\r\n\r\n    def __bool__(self) -> bool:\r\n        return bool(self.value) and bool(self.field)\r\n\r\n\r\nclass Filters(BaseModel):\r\n    logical_op: Literal[\"and\", \"or\", \"not\"] = \"and\"\r\n    rules: list[Union[FilterRule, \"Filters\"]]\r\n\r\n    def __str__(self) -> str:\r\n        filter_str = f\" {self.logical_op} \".join(\r\n            [\r\n                str(rule) if isinstance(rule, FilterRule) else f\"({rule})\"\r\n                for rule in self.rules\r\n                if bool(rule)\r\n            ]\r\n        )\r\n\r\n        return filter_str.strip()\r\n```\r\n\r\nWhich generates the following OpenAPI schema type:\r\n```json\r\n\"Filters\":{\r\n   \"properties\":{\r\n      \"logical_op\":{\r\n         \"type\":\"string\",\r\n         \"enum\":[\r\n            \"and\",\r\n            \"or\",\r\n            \"not\"\r\n         ],\r\n         \"title\":\"Logical Op\",\r\n         \"default\":\"and\"\r\n      },\r\n      \"rules\":{\r\n         \"items\":{\r\n            \"oneOf\":[\r\n               {\r\n                  \"$ref\":\"#/components/schemas/FilterRule\"\r\n               },\r\n               {\r\n                  \"$ref\":\"#/components/schemas/Filters\"\r\n               }\r\n            ]\r\n         },\r\n         \"type\":\"array\",\r\n         \"title\":\"Rules\"\r\n      }\r\n   },\r\n   \"type\":\"object\",\r\n   \"required\":[\r\n      \"rules\"\r\n   ],\r\n   \"title\":\"Filters\"\r\n},\r\n```\r\n\r\nWhich is correct. But the generated typescript file is invalid:\r\n```ts\r\nimport type { FilterRule } from \"./FilterRule.js\";\r\nimport type { Filters2 } from \"./Filters.js\";\r\n\r\nexport type Filters = {\r\n  logical_op?: \"and\" | \"or\" | \"not\";\r\n  rules: Array<FilterRule | Filters2>;\r\n};\r\n```\r\n\r\nThere exists not \"Filters2\". It should simply be:\r\n```ts\r\nimport type { FilterRule } from \"./FilterRule.js\";\r\n\r\nexport type Filters = {\r\n  logical_op?: \"and\" | \"or\" | \"not\";\r\n  rules: Array<FilterRule | Filters>;\r\n};\r\n```\r\n\r\n\r\nHow can this be fixed? If we manually adjust it, every time we run the client it is overwritten.",
+    "created_at": "2024-05-06T12:24:44Z",
+    "closed_at": "2024-05-06T18:45:59Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/890",
+    "comments": 3,
+    "state": "closed"
+  },
+  {
+    "number": 906,
+    "title": "Context file cannot find modules in counterfact 0.40+ ",
+    "body": "I upgraded from `0.38.3` to `0.42.0` to try out the new hot reloading changes (#835). Unfortunately, the app no longer works at all.\r\n\r\n## Setup\r\nI have custom counterfact code in a sub-folder of my little UI project, like so:\r\n```\r\nmy-ui/\r\n\t...files...\r\n\tpackage.json\r\n\tcounterfact/\r\n\t\tpath-types/\r\n\t\tpaths/\r\n\t\t\tmocks/ <-- my custom code\r\n\t\t\t\tsession-manager.ts\r\n\t\t\t_.context.ts\r\n\t\tpackage.json\r\n```\r\n\r\nI have a lot of custom code in that `/mocks` directory, but I'm simplifying things here to a minimal test case.\r\n\r\n### counterfact/package.json\r\n```json\r\n{\r\n\t\"name\": \"my-ui-counterfact\",\r\n\t\"version\": \"0.0.1\",\r\n\t\"private\": true,\r\n\t\"scripts\": {\r\n\t\t\"mockapi\": \"counterfact ../path/to/my/openapi.yaml .\"\r\n\t},\r\n\t\"devDependencies\": {\r\n\t\t\"counterfact\": \"^0.42.0\"\r\n\t},\r\n\t\"type\": \"commonjs\"\r\n}\r\n```\r\n\r\n### counterfact/paths/_.context.ts\r\n```ts\r\nimport { SessionManager } from './mocks/session-manager';\r\n\r\nconst sessionManager = new SessionManager();\r\n\r\nexport class Context {\r\n\tsomeCustomFunction(): any {\r\n\t\treturn sessionManager.toString();\r\n\t}\r\n}\r\n```\r\n\r\n### counterfact/paths/mocks/session-manager.ts\r\n```ts\r\nclass SessionManager {}\r\nexport { SessionManager };\r\n```\r\n\r\n## Error\r\n\r\nWith all that in place, when I run `my-ui/counterfact> npm run mockapi`, I get the following:\r\n\r\n```\r\n...\r\nWatching for changes\r\nStarting server\r\nStarting REPL, type .help for more info\r\n\r\nError loading /Users/.../my-ui/counterfact/.cache/_.context.cjs:\r\nError: Cannot find module './mocks/session-manager'\r\nRequire stack:\r\n- /Users/.../my-ui/counterfact/.cache/_.context.cjs\r\n- /Users/.../my-ui/counterfact/node_modules/counterfact/dist/server/uncached-require.cjs\r\n```\r\n\r\nPlease let me know if my setup is unsupported/I'm doing something wrong, if you cannot reproduce, or if this is a genuine bug.",
+    "created_at": "2024-05-14T16:46:20Z",
+    "closed_at": "2024-05-15T20:29:36Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/906",
+    "comments": 4,
+    "state": "closed"
+  },
+  {
+    "number": 918,
+    "title": "Type error on custom json response",
+    "body": "The linter gives the error here on the **GET** const. So the type passed into the json does match, and is not causing a type error. But the response returned has some type error with HTTP_GET.\r\n\r\nThis worked before, but appeared after updating to latest. So somewhere between 0.37.1 and 0.42.1\r\n\r\n```ts\r\nimport type { HTTP_GET } from '../../../path-types/api/Lansumsoknir/ListaUmsoknir.types.js'\r\n\r\nexport const GET: HTTP_GET = ($) => {\r\n  return $.response[200].json($.context.lansumsoknir)\r\n}\r\n```\r\n\r\nHere is the error, also translated via TotalTypescript\r\n```ts\r\nType '($: OmitValueWhenNever<{ query: { namsar?: number | undefined; stada?: string | undefined; }; path: never; header: never; body: never; context: Context; response: ResponseBuilderFactory<{ 200: { headers: never; requiredHeaders: never; content: { ...; }; }; 400: { ...; }; 500: { ...; }; }>; x: WideOperationArgument; ...' is not assignable to type 'HTTP_GET'.\r\n  Type 'GenericResponseBuilderInner<{ content: Omit<{ \"application/json\": { schema: UmsoknSottUmContract[]; }; \"text/json\": { schema: UmsoknSottUmContract[]; }; }, \"application/json\">; headers: never; requiredHeaders: never; }>' is not assignable to type '\"COUNTERFACT_RESPONSE\" | { status: 200; contentType?: \"application/json\" | undefined; body?: UmsoknSottUmContract[] | undefined; } | { status: 200; contentType?: \"text/json\" | undefined; body?: UmsoknSottUmContract[] | undefined; } | { ...; } | { ...; } | { ...; } | { ...; }'.ts(2322)\r\nTranslation\r\nType '($: OmitValueWhenNever<{ query: { namsar?: number | undefined; stada?: string | undefined; }; path: never; header: never; body: never; context: Context; response: ResponseBuilderFactory<{ 200: { headers: never; requiredHeaders: never; content: { ...; }; }; 400: { ...; }; 500: { ...; }; }>; x: WideOperationArgument; ...' is not assignable to type 'HTTP_GET'.\r\nI was expecting a type matching HTTP_GET, but instead you passed ($: OmitValueWhenNever<{ query: { namsar?: number | undefined; stada?: string | undefined; }; path: never; header: never; body: never; context: Context; response: ResponseBuilderFactory<{ 200: { headers: never; requiredHeaders: never; content: { ...; }; }; 400: { ...; }; 500: { ...; }; }>; x: WideOperationArgument; ....\r\n\r\nType 'GenericResponseBuilderInner<{ content: Omit<{ \"application/json\": { schema: UmsoknSottUmContract[]; }; \"text/json\": { schema: UmsoknSottUmContract[]; }; }, \"application/json\">; headers: never; requiredHeaders: never; }>' is not assignable to type '\"COUNTERFACT_RESPONSE\" | { status: 200; contentType?: \"application/json\" | undefined; body?: UmsoknSottUmContract[] | undefined; } | { status: 200; contentType?: \"text/json\" | undefined; body?: UmsoknSottUmContract[] | undefined; } | { ...; } | { ...; } | { ...; } | { ...; }'.\r\nI was expecting a type matching \"COUNTERFACT_RESPONSE\" | { status: 200; contentType?: \"application/json\" | undefined; body?: UmsoknSottUmContract[] | undefined; } | { status: 200; contentType?: \"text/json\" | undefined; body?: UmsoknSottUmContract[] | undefined; } | { ...; } | { ...; } | { ...; } | { ...; }, but instead you passed GenericResponseBuilderInner<{ content: Omit<{ \"application/json\": { schema: UmsoknSottUmContract[]; }; \"text/json\": { schema: UmsoknSottUmContract[]; }; }, \"application/json\">; headers: never; requiredHeaders: never; }>.\r\n\r\nconst GET: HTTP_GET\r\n```\r\n\r\n\r\nSo this GenericResponseBuilderInner is not matching the expected HTTP_GET returnType of \r\n\r\n```ts\r\n{\r\n      status: 200\r\n      contentType?: 'application/json'\r\n      body?: Array<UmsoknSottUmContract>\r\n    }\r\n```",
+    "created_at": "2024-05-24T09:53:20Z",
+    "closed_at": "2024-05-29T18:20:47Z",
+    "html_url": "https://github.com/counterfact/api-simulator/issues/918",
+    "comments": 10,
+    "state": "closed"
+  }
+]
