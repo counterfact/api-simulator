@@ -10,6 +10,7 @@ import type {
   CounterfactResponseObject,
   Registry,
 } from "./registry.js";
+import { parameterType } from "./parameter-type.js";
 import { normalizeArrayQueryParameters } from "./array-query-parameters.js";
 import { ModuleTree } from "./module-tree.js";
 import { createResponseBuilder } from "./response-builder.js";
@@ -328,7 +329,7 @@ export class Dispatcher {
         continue;
       }
 
-      const type = parameter?.type ?? parameter?.schema?.type;
+      const type = parameter.type ?? parameterType(parameter.schema);
 
       if (type !== undefined) {
         types[parameter.in].set(
