@@ -16,6 +16,10 @@ import { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
 
 export class SchemaTypeCoder extends TypeCoder {
+  protected child(requirement: Requirement): SchemaTypeCoder {
+    return new SchemaTypeCoder(requirement, this.version);
+  }
+
   public override names(): Generator<string> {
     return super.names(this.requirement.refUrl?.split("/").at(-1));
   }
@@ -41,10 +45,9 @@ export class SchemaTypeCoder extends TypeCoder {
       return unknownType();
     }
 
-    return new SchemaTypeCoder(
-      this.requirement.get("additionalProperties")!,
-      this.version,
-    ).write(script);
+    return this.child(this.requirement.get("additionalProperties")!).write(
+      script,
+    );
   }
 
   public objectSchema(script: Script): ts.TypeNode {
@@ -63,7 +66,7 @@ export class SchemaTypeCoder extends TypeCoder {
 
         return typeProperty(
           name,
-          new SchemaTypeCoder(property, this.version).write(script),
+          this.child(property).write(script),
           !isRequired,
           property.data,
         );
@@ -108,7 +111,7 @@ export class SchemaTypeCoder extends TypeCoder {
       const items = this.requirement.get(tupleKey)!;
       const members = items
         .map((item, index) => {
-          const type = new SchemaTypeCoder(item, this.version).write(script);
+          const type = this.child(item).write(script);
           return Number(index) < (data.minItems ?? 0)
             ? type
             : ts.factory.createOptionalTypeNode(type);
@@ -120,9 +123,7 @@ export class SchemaTypeCoder extends TypeCoder {
         rest?.data !== false &&
         (data.maxItems === undefined || data.maxItems > members.length)
       ) {
-        const restType = rest
-          ? new SchemaTypeCoder(rest, this.version).write(script)
-          : unknownType();
+        const restType = rest ? this.child(rest).write(script) : unknownType();
         members.push(
           ts.factory.createRestTypeNode(
             ts.factory.createArrayTypeNode(restType),
@@ -133,9 +134,7 @@ export class SchemaTypeCoder extends TypeCoder {
     }
     const items = this.requirement.get("items");
     return typeReference("Array", [
-      items
-        ? new SchemaTypeCoder(items, this.version).write(script)
-        : unknownType(),
+      items ? this.child(items).write(script) : unknownType(),
     ]);
   }
 
@@ -222,7 +221,7 @@ export class SchemaTypeCoder extends TypeCoder {
     };
     const types = items.map((_item, index) => {
       const branch = this.requirement.get(key)!.get(index)!;
-      const type = new SchemaTypeCoder(branch, this.version).write(script);
+      const type = this.child(branch).write(script);
       const values =
         !allOf && branch.refUrl && discriminator?.propertyName
           ? Object.entries(discriminator.mapping ?? {})
@@ -251,13 +250,12 @@ export class SchemaTypeCoder extends TypeCoder {
 
       if (discriminator?.defaultMapping) {
         types.push(
-          new SchemaTypeCoder(
+          this.child(
             new Requirement(
               { $ref: discriminator.defaultMapping },
               "",
               this.requirement.specification,
             ),
-            this.version,
           ).write(script),
         );
       }
@@ -302,7 +300,7 @@ export class SchemaTypeCoder extends TypeCoder {
       : type;
   }
 
-  private writeSchema(script: Script): ts.TypeNode {
+  protected writeSchema(script: Script): ts.TypeNode {
     const { allOf, anyOf, oneOf, type, format, itemSchema } = this.requirement
       .data as {
       allOf?: unknown[];
@@ -315,10 +313,7 @@ export class SchemaTypeCoder extends TypeCoder {
 
     if (itemSchema) {
       return typeReference("AsyncIterable", [
-        new SchemaTypeCoder(
-          this.requirement.get("itemSchema")!,
-          this.version,
-        ).write(script),
+        this.child(this.requirement.get("itemSchema")!).write(script),
       ]);
     }
 
