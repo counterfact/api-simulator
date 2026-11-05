@@ -78,3 +78,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   preserve one startup per group in declaration order across versioned runners.
 - Verify lifecycle changes with real HTTP mutation/restoration, same-listener
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
+
+- When resolving primitive unions, retain null-only alternatives separately from unresolved schemas. A nested null-only union or null-only type array must not erase the single non-null conversion.

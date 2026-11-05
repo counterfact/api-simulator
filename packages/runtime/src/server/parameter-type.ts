@@ -14,6 +14,7 @@ export function parameterType(
       : undefined;
   if (types) {
     const nonNull = [...new Set(types.filter((type) => type !== "null"))];
+    if (nonNull.length === 0 && types.length > 0) return "null";
     return nonNull.length === 1 && typeof nonNull[0] === "string"
       ? nonNull[0]
       : undefined;
@@ -22,18 +23,15 @@ export function parameterType(
   if (!Array.isArray(alternatives) || alternatives.length === 0)
     return undefined;
   const resolved = alternatives.map((entry) => parameterType(entry, seen));
-  if (
-    resolved.some(
-      (type, index) =>
-        type === undefined &&
-        (alternatives[index] as Record<string, unknown>)?.type !== "null",
-    )
-  )
-    return undefined;
+  if (resolved.some((type) => type === undefined)) return undefined;
   const nonNull = [
     ...new Set(
       resolved.filter((type) => type !== undefined && type !== "null"),
     ),
   ];
-  return nonNull.length === 1 ? nonNull[0] : undefined;
+  return nonNull.length === 0
+    ? "null"
+    : nonNull.length === 1
+      ? nonNull[0]
+      : undefined;
 }

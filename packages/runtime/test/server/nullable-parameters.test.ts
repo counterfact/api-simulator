@@ -59,3 +59,16 @@ it("does not recurse indefinitely through a dereferenced union", () => {
   schema.anyOf = [{ type: "integer" }, schema];
   expect(parameterType(schema)).toBeUndefined();
 });
+
+it.each([
+  { type: ["null"] },
+  { oneOf: [{ type: "null" }] },
+  { anyOf: [{ type: ["null"] }] },
+])("recognizes equivalent null-only alternatives %j", (nullBranch) => {
+  expect(parameterType({ anyOf: [{ type: "integer" }, nullBranch] })).toBe(
+    "integer",
+  );
+  expect(parameterType({ oneOf: [{ type: "boolean" }, nullBranch] })).toBe(
+    "boolean",
+  );
+});
