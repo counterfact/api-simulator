@@ -138,11 +138,22 @@ function castParameter(value: string | number | boolean, type: string) {
 function castParameters(
   parameters: { [key: string]: string | number | boolean } = {},
   parameterTypes: Map<string, string> = new Map(),
+  caseInsensitive = false,
 ) {
   const copy: { [key: string]: boolean | number | string } = {};
 
+  const types = caseInsensitive
+    ? new Map(
+        Array.from(parameterTypes, ([key, value]) => [
+          key.toLowerCase(),
+          value,
+        ]),
+      )
+    : parameterTypes;
+
   Object.entries(parameters).forEach(([key, value]) => {
-    copy[key] = castParameter(value, parameterTypes.get(key) ?? "string");
+    const lookupKey = caseInsensitive ? key.toLowerCase() : key;
+    copy[key] = castParameter(value, types.get(lookupKey) ?? "string");
   });
 
   return copy;
@@ -156,12 +167,21 @@ function castParameters(
  * middleware functions that wrap every route handler execution.
  */
 export class Registry {
-  private readonly moduleTree = new ModuleTree();
+  private moduleTree = new ModuleTree();
 
   private middlewares: Map<string, MiddlewareFunction> = new Map();
   private readonly methodNames: Set<string> = new Set(DEFAULT_HTTP_METHODS);
 
   public constructor() {
+    this.middlewares.set("", ($, respondTo) => respondTo($));
+  }
+
+  /** Discards runtime routes and middleware before restoring source definitions. */
+  public clear(): void {
+    this.moduleTree = new ModuleTree();
+    this.middlewares.clear();
+    this.methodNames.clear();
+    for (const method of DEFAULT_HTTP_METHODS) this.methodNames.add(method);
     this.middlewares.set("", ($, respondTo) => respondTo($));
   }
 
@@ -233,6 +253,19 @@ export class Registry {
     );
   }
 
+  public existsForPattern(
+    method: RequestMethod,
+    url: string,
+    pattern: string,
+  ): boolean {
+    return (
+      this.methodFromModule(
+        this.handler(url, method, pattern).module,
+        method,
+      ) !== undefined
+    );
+  }
+
   private methodsForPath(url: string): string[] {
     return [...this.methodNames].filter(
       (method) =>
@@ -252,8 +285,11 @@ export class Registry {
    * @returns An object with `module`, `path` (variable bindings),
    *   `matchedPath`, and `ambiguous` flag.
    */
-  public handler(url: string, method: string) {
-    const match = this.moduleTree.match(url, method);
+  public handler(url: string, method: string, pattern?: string) {
+    const match =
+      pattern === undefined
+        ? this.moduleTree.match(url, method)
+        : this.moduleTree.matchPattern(url, pattern);
 
     return {
       ambiguous: match?.ambiguous ?? false,
@@ -313,8 +349,9 @@ export class Registry {
       path?: Map<string, string>;
       query?: Map<string, string>;
     } = {},
+    pattern?: string,
   ) {
-    const handler = this.handler(url, httpRequestMethod);
+    const handler = this.handler(url, httpRequestMethod, pattern);
 
     debug("handler for %s: %o", url, handler);
 
@@ -344,7 +381,11 @@ export class Registry {
         x?: RequestDataWithBody;
       } = {
         ...requestData,
-        headers: castParameters(requestData.headers, parameterTypes.header),
+        headers: castParameters(
+          requestData.headers,
+          parameterTypes.header,
+          true,
+        ),
         matchedPath: handler.matchedPath,
         path: castParameters(handler.path, parameterTypes.path),
         query: castParameters(requestData.query, parameterTypes.query),

@@ -57,6 +57,7 @@ export default [
     ignores: [
       "**/node_modules/**",
       "**/coverage/**",
+      "**/.stryker-tmp/**",
       "**/reports/**",
       "**/out/**",
       "**/dist/**",

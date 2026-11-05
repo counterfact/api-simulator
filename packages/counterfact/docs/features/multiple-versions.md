@@ -17,10 +17,13 @@ Counterfact can serve several versions of the same API simultaneously from a sin
 
 ## YAML config syntax
 
+An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) collects specs that share route files and context state. `basePath` names the library’s output directory (`destination` in the CLI YAML config); a named group lives in a subdirectory of it. A `version` labels a contract within that group; only `prefix` changes URLs.
+
 Declare multiple specs in `counterfact.yaml` using the `spec` array. Give them the same `group` and different `version` labels:
 
 ```yaml
 # counterfact.yaml
+destination: api
 spec:
   - source: ./openapi-v1.yaml
     group: catalog
@@ -86,7 +89,8 @@ For each group with at least one versioned spec, Counterfact generates the follo
     │   └── items/
     │       └── {itemId}.ts          # one handler file, shared across all versions
     └── types/
-        ├── paths/                   # shared request/response types (imported by handlers)
+        ├── index.ts                 # Routes, Components, and Schemas
+        ├── paths/                   # internal shared operation contracts
         │   └── items/
         │       └── {itemId}.types.ts
         ├── v1/                      # per-version $ arg types (auto-generated)
@@ -103,8 +107,8 @@ For each group with at least one versioned spec, Counterfact generates the follo
 Key points:
 
 - **`routes/`** is shared. A single handler file serves every version.
-- **`types/paths/`** contains the handler type exports (`HTTP_GET`, `HTTP_POST`, …) that your handler imports. These are the types you use in your `import type` statements.
-- **`types/<version>/paths/`** holds per-version type definitions for the `$` argument. You do not import from here directly; the generated `types/paths/` file composes them for you.
+- **`types/index.ts`** exports `Routes`, `Components`, and `Schemas`. Import `Routes`, define `type Route = Routes["/items"]["/{itemId}"]`, and select an operation with `Route["GET"]`; the entry combines all versions of that handler. Same-named components across versions are unions in `Components` and `Schemas`.
+- **`types/paths/`** and **`types/<version>/paths/`** hold internal shared and per-version operation definitions. Direct imports from these modules are deprecated; use the central entry point.
 - **`types/versions.ts`** exports `Versions`, `VersionsGTE`, and `Versioned`. It is generated once per group and re-generated whenever the set of versions changes.
 
 > **Never edit files under `types/`** — they are regenerated automatically when the spec changes.
@@ -124,22 +128,26 @@ Both properties are only present when `version` is set in the config. For a sing
 
 ### Example
 
+This handler assumes a catalog context you write with `findById(id)`, returning items with `id`, `name`, and `category`. Declare the shown response shapes and text 404 in each version’s contract. See [stateful contexts](./state.md) for how to author that class.
+
 ```ts
 // catalog/routes/items/{itemId}.ts
-import type { HTTP_GET } from "../../types/paths/items/{itemId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = ($) => {
+type Route = Routes["/items"]["/{itemId}"];
+
+export const GET: Route["GET"] = function ($) {
   const item = $.context.findById($.path.itemId);
-  if (!item) return $.response[404].text("Item not found");
+  if (!item) return $.response.status(404).text("Item not found");
 
   // v1: return only id and name
-  if (!$.minVersion("v2")) {
-    return $.response[200].json({ id: item.id, name: item.name });
+  if ($.version === "v1") {
+    return $.response.status(200).json({ id: item.id, name: item.name });
   }
 
   // v2: also include the category field
-  if (!$.minVersion("v3")) {
-    return $.response[200].json({
+  if ($.version === "v2") {
+    return $.response.status(200).json({
       id: item.id,
       name: item.name,
       category: item.category,
@@ -147,11 +155,11 @@ export const GET: HTTP_GET = ($) => {
   }
 
   // v3+: return the full object
-  return $.response[200].json(item);
+  return $.response.status(200).json(item);
 };
 ```
 
-The conditions layer naturally — each `return` only runs if the previous `minVersion()` check failed. Adding a v4 later only requires adding its config entry and updating handlers that actually changed.
+Checking `$.version` selects an exact contract before constructing a version-specific response. Later versions reach the final branch; add another explicit branch when a new version needs different behavior.
 
 ---
 
@@ -178,24 +186,60 @@ route.catalog("/items/{itemId}");
 
 ## TypeScript narrowing with `Versioned`
 
-`$.minVersion()` is a TypeScript type predicate. After a successful check, TypeScript narrows `$` to the intersection of only the versions that satisfy the minimum:
+For the following example, v2 adds a required string `category` query parameter and
+includes it in the JSON response. `$.minVersion()` is a TypeScript type predicate. After a successful check, TypeScript narrows `$` to the request arguments for the versions that satisfy the minimum:
 
 ```ts
-export const GET: HTTP_GET = ($) => {
+import type { Routes } from "../../types/index.js";
+
+type Route = Routes["/items"]["/{itemId}"];
+
+export const GET: Route["GET"] = function ($) {
   if ($.minVersion("v2")) {
     // $ is typed as the v2 (and later) $ arg — v2-only fields are available here
-    return $.response[200].json({
+    return $.response.status(200).json({
       id: $.path.itemId,
-      category: $.body.category,
+      category: $.query.category,
     });
   }
 
-  // $ is typed as the v1 $ arg here — only v1 fields are available
-  return $.response[200].json({ id: $.path.itemId });
+  // Return a schema-valid sample for versions before v2.
+  return $.response.status(200).random();
 };
 ```
 
-This narrowing is powered by the `Versioned<T, V>` type in `types/versions.ts`. You do not need to import or use it directly — the generated `HTTP_GET` (and other) types already use it as the type of `$`.
+This narrowing is powered by the `Versioned<T, V>` type in `types/versions.ts`. You do not need to import or use it directly — the operation contracts selected through `Routes` already use it as the type of `$`.
+
+### Early returns narrow the remaining versions
+
+A literal threshold narrows both outcomes. If v1 returns `{ message: string }`
+and v2 requires an additional `locale` field, this handler is fully typed:
+
+```ts
+// routes/greeting.ts
+import type { Routes } from "../types/index.js";
+
+type Route = Routes["/greeting"];
+
+export const GET: Route["GET"] = async ($) => {
+  if ($.minVersion("v2")) {
+    return $.response.status(200).json({ message: "x", locale: "en" });
+  }
+
+  return $.response.status(200).json({ message: "x" });
+};
+```
+
+After the v2 branch returns, `$` and its response builder describe v1. Negated
+checks and explicit `else` branches narrow the same way. With more versions,
+checking newer versions first lets successive early returns narrow the
+remaining contracts.
+
+When the threshold itself has a union type, such as `"v2" | "v3"`,
+`minVersion()` returns a boolean without narrowing. The runtime comparison still
+works, but the compiler cannot use one fixed boundary to exclude versions from
+the other branch. Use literal checks when you need version-specific inputs or
+response shapes.
 
 ### The `Versioned` type
 
@@ -208,16 +252,17 @@ This narrowing is powered by the `Versioned<T, V>` type in `types/versions.ts`. 
 
 It exposes:
 
-- **All properties of `T[V]`** — the intersection of properties available in the current version.
+- **A discriminated union of `T[V]`** — each selected version retains its own inputs and response builders.
 - **`version: V`** — the current version string at runtime.
-- **`minVersion<M>(min: M): this is Versioned<T, Extract<V, VersionsGTE[M]>>`** — type predicate that narrows `$` to versions ≥ `min`.
+- **`minVersion(min)`** — a literal threshold narrows `$` to versions at or after `min` when true and the remaining versions when false. A dynamic union threshold uses the boolean overload.
 
 ---
 
 ## See also
 
-- [Patterns: Multiple API Versions](../patterns/multiple-versions.md) — cookbook pattern with a worked example
-- [Reference: `version` field and `Versioned` type](../reference.md#multiple-api-versions)
+- [Reference: `version` field and `Versioned` type](../api.md)
 - [REPL](./repl.md) — interactive terminal for runtime inspection
 - [Generated code](./generated-code.md) — how code generation works
-- [Usage](../usage.md)
+- [Find your workflow](../usage.md)
+
+When version prefixes overlap, Counterfact selects the first runner whose contract declares the requested operation and has its handler. Version-specific literal paths cannot shadow a wildcard in another selected contract. A method error reports the selected contract’s allowed methods.

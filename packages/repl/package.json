@@ -1,6 +1,6 @@
 {
   "name": "@counterfact/repl",
-  "version": "0.1.0",
+  "version": "0.1.9",
   "description": "Inspect and manipulate a running Counterfact simulator from a Node.js REPL.",
   "type": "module",
   "main": "./dist/index.js",
@@ -43,8 +43,7 @@
     "node": ">=22"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "scripts": {
     "build": "rimraf dist && tsc --build --force",
@@ -53,7 +52,7 @@
     "test:packed-consumer": "node test/package/repl-consumer-smoke.mjs"
   },
   "dependencies": {
-    "@counterfact/client": "0.1.0",
-    "@counterfact/runtime": "0.1.0"
+    "@counterfact/client": "0.2.1",
+    "@counterfact/runtime": "0.3.2"
   }
 }

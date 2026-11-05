@@ -81,6 +81,28 @@ describe("routes middleware for multiple API runners", () => {
     expect(response.text).toBe("products");
   });
 
+  it("does not select a runner when only the prefix text matches", async () => {
+    const app = appFor([
+      runner("/api", [["/pets", { GET: () => ({ body: "pets" }) }]]),
+    ]);
+
+    const response = await request(app.callback()).get("/apiary/pets");
+
+    expect(response.status).toBe(404);
+    expect(response.text).not.toBe("pets");
+  });
+
+  it("maps an exact trailing-slash prefix to the root route", async () => {
+    const app = appFor([
+      runner("/api/", [["/", { GET: () => ({ body: "root" }) }]]),
+    ]);
+
+    const response = await request(app.callback()).get("/api");
+
+    expect(response.status).toBe(200);
+    expect(response.text).toBe("root");
+  });
+
   it("selects a later runner that supports the requested method", async () => {
     const app = appFor([
       runner("", [["/items", { GET: () => ({ body: "get items" }) }]]),

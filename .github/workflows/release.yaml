@@ -5,12 +5,6 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      publish:
-        description: Publish versions already merged to main
-        required: true
-        type: boolean
-        default: false
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -24,7 +18,7 @@ jobs:
       pull-requests: write
 
     outputs:
-      has_changesets: ${{ steps.changesets.outputs.hasChangesets }}
+      has_changesets: ${{ steps.changesets.outputs['has-changesets'] }}
 
     steps:
       - name: Checkout Repo
@@ -34,26 +28,26 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24.x
+      - name: Enable Corepack
+        run: corepack enable
       - name: Install trusted-publishing toolchain
-        run: npm install --global npm@11.18.0 yarn@1.22.22
+        run: npm install --global npm@11.18.0
       - name: Release preflight
-        run: yarn release:preflight
+        run: node scripts/release-preflight.mjs
 
       - name: Create or update the version pull request
         id: changesets
-        uses: changesets/action@v2.1.0
+        uses: changesets/action@v2.1.2
         with:
-          version: yarn changeset version
-        env:
-          GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          github-token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          version-script: yarn release:version
 
   publish:
     name: Publish to npm
     needs: prepare
     if: >-
-      github.event_name == 'workflow_dispatch' &&
-      inputs.publish &&
-      needs.prepare.outputs.has_changesets != 'true'
+      needs.prepare.outputs.has_changesets != 'true' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     environment: npm-publish
 
@@ -70,17 +64,19 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24.x
+      - name: Enable Corepack
+        run: corepack enable
       - name: Install trusted-publishing toolchain
-        run: npm install --global npm@11.18.0 yarn@1.22.22
+        run: npm install --global npm@11.18.0
       - name: Install frozen dependencies
-        run: yarn install --frozen-lockfile --ignore-scripts --network-timeout 100000
+        run: yarn install --immutable --mode skip-build
       - name: Build verified release artifacts
         run: yarn build
       - name: Publish merged versions
-        uses: changesets/action@v2.1.0
+        uses: changesets/action@v2.1.2
         with:
-          publish: yarn release
+          github-token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          publish-script: yarn release
         env:
-          GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
           NPM_CONFIG_IGNORE_SCRIPTS: "true"
           NPM_CONFIG_PROVENANCE: "true"

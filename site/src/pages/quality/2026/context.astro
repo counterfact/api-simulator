@@ -1,0 +1,70 @@
+---
+import QualityLayout from "../../../layouts/QualityLayout.astro";
+import evidence from "../../../data/quality-audit-evidence.json" with { type: "json" };
+import { deriveMature, derivePeriods } from "../../../../scripts/quality-case-study-lib.mjs";
+import { exactPoissonInterval } from "../../../../scripts/quality-audit-lib.mjs";
+
+const study = evidence.caseStudy as any;
+const mature = deriveMature(study.matureRecords, study.delivery, study.delivery.windows) as Record<string, any>;
+const periods = derivePeriods(study) as Record<string, any>;
+const featureTimeline = evidence.featureTimeline;
+const unplacedUnresolved = (study.unresolvedRecords as any[]).filter((record) => !record.reportedAt && record.sources?.length);
+const matureRecords = new Map((study.matureRecords as any[]).map((record) => [record.id, record]));
+const matchedWindows = Object.entries(study.delivery.windows).filter(([name]) => name.startsWith("matched-"));
+const inWindow = (value: string, window: any) => value >= window.start && value < window.endExclusive;
+const matched = matchedWindows.map(([name, window]: [string, any]) => ({ name, window, reportIds: (study.matureRecords as any[]).filter((record) => inWindow(record.reportedAt, window)).map((record) => record.id) }));
+const rate = (events: number, denominator: number) => denominator > 0 ? (events / denominator) * 100 : null;
+const interval = (events: number, denominator: number) => denominator > 0 ? exactPoissonInterval(events, denominator) : null;
+const formatDate = (value: string) => new Date(value).toISOString().slice(0, 10);
+---
+
+<QualityLayout title="Supporting evidence — Counterfact quality study" description="Recomputed mature-cohort, delivery, response, and capability records supporting the Counterfact quality study." canonicalPath="/quality/2026/context" active="context">
+  <article class="appendix-page quality-reading quality-prose">
+    <header class="appendix-header">
+      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Supporting analyses</p>
+      <h1>Supporting delivery and response evidence</h1>
+      <p>These retrospective comparisons support the study question. They describe the observed delivery and correction record; they do not estimate a counterfactual defect total or establish a causal effect of coding agents.</p>
+    </header>
+
+    <section aria-labelledby="mature">
+      <h2 id="mature">Mature intake cohorts</h2>
+      <p>Each intake window is recomputed from the mature-record, delivery, and window records. An unresolved chronology is displayed as incomplete rather than counted as zero.</p>
+      <div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Intake window</th><th scope="col">Eligible event records</th><th scope="col">Reports observed for response</th><th scope="col">Non-dependency merged PRs</th><th scope="col">Published releases</th><th scope="col">Response record</th></tr></thead><tbody>
+        {Object.entries(mature).map(([name, cohort]) => <tr><th scope="row">{name.replace("mature-intake-", "").replace("matched-", "")}<span class="cell-detail">{study.delivery.windows[name].start.slice(0, 10)} to {study.delivery.windows[name].endExclusive.slice(0, 10)}</span></th><td>{cohort.incomplete ? <>Unresolved ({cohort.counters.eventRecords} confirmed; {cohort.unresolvedIds.length} origins pending)</> : cohort.counters.eventRecords}</td><td>{cohort.counters.responseRecords}</td><td>{cohort.counters.deliveryNonDependencyPullRequestCount}<span class="cell-detail">{cohort.incomplete || cohort.counters.deliveryNonDependencyPullRequestCount === 0 ? "Rate not reported" : `${rate(cohort.counters.eventRecords, cohort.counters.deliveryNonDependencyPullRequestCount)?.toFixed(2)} per 100; exact 95% interval ${(interval(cohort.counters.eventRecords, cohort.counters.deliveryNonDependencyPullRequestCount)!.lower * 100).toFixed(2)}–${(interval(cohort.counters.eventRecords, cohort.counters.deliveryNonDependencyPullRequestCount)!.upper * 100).toFixed(2)}`}</span></td><td>{cohort.counters.deliveryReleaseCount}<span class="cell-detail">{cohort.incomplete || cohort.counters.deliveryReleaseCount === 0 ? "Rate not reported" : `${rate(cohort.counters.eventRecords, cohort.counters.deliveryReleaseCount)?.toFixed(2)} per 100; exact 95% interval ${(interval(cohort.counters.eventRecords, cohort.counters.deliveryReleaseCount)!.lower * 100).toFixed(2)}–${(interval(cohort.counters.eventRecords, cohort.counters.deliveryReleaseCount)!.upper * 100).toFixed(2)}`}</span></td><td>{cohort.counters.correctedWithinFollowup} corrected within follow-up; {cohort.counters.censored} censored{cohort.incomplete && <span class="cell-detail">Incomplete: {cohort.unresolvedIds.join(", ")}</span>}</td></tr>)}
+      </tbody></table></div>
+      <p>The delivery denominators above come from merged pull-request and npm-publication records within each stated window. Reported rates and exact Poisson intervals describe those observed counts only; they are not a reliability model or a causal estimate. Incomplete cohorts and zero denominators suppress rate display. The full source, including classification rules, is in <a href="/quality/2026/data.json">Download data</a>.</p>
+    </section>
+
+    <section aria-labelledby="matched-population">
+      <h2 id="matched-population">Matched five-year report records</h2>
+      <p>This matched-window view derives report IDs from mature records whose report timestamps fall inside each delivery window.</p>
+      <div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Window</th><th scope="col">Reported mature records</th></tr></thead><tbody>{matched.map((row) => <tr><th scope="row">{row.name}<span class="cell-detail">{row.window.start.slice(0, 10)} to {row.window.endExclusive.slice(0, 10)}</span></th><td>{row.reportIds.length}<span class="cell-detail">{row.reportIds.join(", ") || "No report IDs"}</span></td></tr>)}</tbody></table></div>
+    </section>
+
+    <section aria-labelledby="adoption-periods">
+      <h2 id="adoption-periods">Pre- and post-adoption delivery record</h2>
+      <p>The pre-adoption interval runs from September 1, 2024 to the recorded adoption timestamp; the post-adoption interval runs from that timestamp to September 4, 2026. The durations differ, so this table reports counts only and makes no rate or effect claim.</p>
+      <div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Period</th><th scope="col">Non-dependency merged PRs</th><th scope="col">Published releases</th><th scope="col">Released reports by discovery channel</th><th scope="col">Pre-release reports</th><th scope="col">Unknown release status</th></tr></thead><tbody>
+        {Object.entries(periods).map(([name, period]) => <tr><th scope="row">{name.replace("mature-intake-", "").replace("matched-", "")}<span class="cell-detail">{period.start} to {period.endExclusive}</span></th><td>{period.nonDependencyMergedPullRequestIds.length}</td><td>{period.publishedReleaseIds.length}</td><td>external human: {period.releasedByChannel["external-human"]}; internal human: {period.releasedByChannel["internal-human"]}; automated agent: {period.releasedByChannel["automated-agent"]}; unknown: {period.releasedByChannel.unknown}</td><td>{period.preReleaseIds.length}</td><td>{period.unknownReleaseIds.length}</td></tr>)}
+      </tbody></table></div>
+    </section>
+
+    <section aria-labelledby="response-observations">
+      <h2 id="response-observations">Response observations</h2>
+      <p>A response observation records the report date, the 90-day follow-up deadline, and either a first corrected publication or the applicable censoring point. The deadline is a study boundary for comparable historical follow-up, not a repair objective, MTTR, or time-to-restore measure. It is separate from the eligible-event count because a report may be observable without satisfying that event definition.</p>
+      {Object.entries(mature).map(([name, cohort]) => <details><summary>{name}: {cohort.responseObservations.length} response observation{cohort.responseObservations.length === 1 ? "" : "s"}</summary>{cohort.responseObservations.length === 0 ? <p>No response observations are available for this intake window.</p> : <div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Record</th><th scope="col">Reported</th><th scope="col">90-day deadline</th><th scope="col">Observed until</th><th scope="col">Status</th><th scope="col">Elapsed days</th></tr></thead><tbody>{cohort.responseObservations.map((row: any) => <tr><th scope="row">{matureRecords.get(row.id)?.sources?.[0] ? <a href={matureRecords.get(row.id).sources[0]}>{row.id}</a> : row.id}</th><td>{formatDate(row.reportAt)}</td><td>{formatDate(row.deadline)}</td><td>{formatDate(row.observedUntil)}</td><td>{row.status}</td><td>{row.elapsedDays.toFixed(2)}</td></tr>)}</tbody></table></div>}</details>)}
+    </section>
+
+    <section aria-labelledby="diagnostics">
+      <h2 id="diagnostics">Unresolved-record diagnostics</h2>
+      <p>{study.unresolvedRecords.length} detailed records remain unresolved in the public-record census. They are not treated as confirmed defects, absent defects, or a zero response count.</p>
+      <ul>{study.unresolvedRecords.filter((record: any) => record.sources?.length).map((record: any) => <li><a href={record.sources[0]}>{record.id}</a>: {record.reason}</li>)}</ul>
+      {unplacedUnresolved.length > 0 && <details><summary>{unplacedUnresolved.length} unresolved direct-mainline candidates cannot be placed in a report-time month</summary><p>These records remain globally unresolved. Their author and committer timestamps support the record, but neither is presented as an invented discovery time or a zero monthly count.</p><div class="table-scroll"><table class="research-table"><thead><tr><th scope="col">Commit</th><th scope="col">Authored</th><th scope="col">Committed</th><th scope="col">Reason</th></tr></thead><tbody>{unplacedUnresolved.map((record: any) => <tr><th scope="row"><a href={record.sources[0]}>{record.id.replace("commit-", "")}</a></th><td>{record.authoredAt}</td><td>{record.committedAt}</td><td>{record.reason}</td></tr>)}</tbody></table></div></details>}
+    </section>
+
+    <section aria-labelledby="capabilities">
+      <h2 id="capabilities">Major capabilities released in 2026</h2>
+      <ol class="chronology-list">{featureTimeline.map((feature) => <li><p><strong>{feature.release}, {feature.date}:</strong> <a href={feature.href}>{feature.title}</a></p><p>{feature.detail}</p></li>)}</ol>
+    </section>
+  </article>
+</QualityLayout>

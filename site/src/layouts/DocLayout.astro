@@ -1,175 +1,256 @@
 ---
 import MainLayout from "./MainLayout.astro";
-
+import SiteHeader from "../components/SiteHeader.astro";
+import navigation from "../data/navigation.json";
 interface Props {
   title?: string;
   canonicalPath?: string;
+  headings?: { depth: number; slug: string; text: string }[];
 }
-
-const { title, canonicalPath } = Astro.props;
+const { title, canonicalPath, headings = [] } = Astro.props;
+const isReference = canonicalPath?.startsWith("/docs/api");
+const sections = isReference
+  ? [{ title: "API reference", pages: navigation.reference }]
+  : navigation.manual;
+const allPages = sections.flatMap((section) => section.pages);
+const current = allPages.findIndex((page) => page.path === canonicalPath);
+const previous = current > 0 ? allPages[current - 1] : undefined;
+const next = current >= 0 ? allPages[current + 1] : undefined;
+const toc = headings.filter((heading) => heading.depth === 2);
 ---
 
 <MainLayout
-  title={title ? `${title} — Counterfact` : "Counterfact — API Simulator"}
+  title={`${title ?? "Documentation"} — Counterfact`}
   canonicalPath={canonicalPath}
 >
-  <div class="doc-page">
-    <nav class="doc-nav">
-      <a href="/" class="doc-home-link">← Home</a>
-    </nav>
-    <article class="doc-content">
-      <slot />
-    </article>
+  <SiteHeader />
+  <div class="docs-shell">
+    <aside
+      class="docs-sidebar"
+      aria-label={isReference ? "API reference chapters" : "Manual chapters"}
+    >
+      <details class="chapter-menu" open>
+        <summary>{isReference ? "API reference" : "User manual"}</summary>
+        <nav class="chapter-nav" aria-label="Chapters">
+          <a href={isReference ? "/docs/api" : "/docs/manual"}>Overview</a>
+          {sections.map((section) => (
+            <section>
+              <h2>{section.title}</h2>
+              {section.pages.map((page) => (
+                <a
+                  href={page.path}
+                  aria-current={
+                    canonicalPath === page.path ? "page" : undefined
+                  }
+                >
+                  {page.title}
+                </a>
+              ))}
+            </section>
+          ))}
+          <section>
+            <h2>Workflow recipes</h2>
+            {navigation.recipes.map((page) => (
+              <a
+                href={page.path}
+                aria-current={canonicalPath === page.path ? "page" : undefined}
+              >
+                {page.title}
+              </a>
+            ))}
+          </section>
+          <section>
+            <h2>More help</h2>
+            <a href="/docs/usage">Find your workflow</a>
+            <a href="/docs/comparison">How Counterfact compares</a>
+            <a href="/docs/features/typescript-native-mode">
+              TypeScript native mode
+            </a>
+            <a href="/docs/usage#telemetry-and-privacy">
+              Telemetry and privacy
+            </a>
+            <a href="/docs/first-10-minutes">First ten minutes</a>
+            <a href="/docs/faq">FAQ</a>
+          </section>
+        </nav>
+      </details>
+    </aside>
+    <main id="main-content" class="doc-page">
+      <p class="eyebrow">{isReference ? "API reference" : "User manual"}</p>
+      <article class="doc-content">
+        <slot />
+      </article>
+      {(previous || next) && (
+        <nav class="page-pagination" aria-label="Chapter pagination">
+          {previous ? (
+            <a href={previous.path}>
+              <small>Previous</small>
+              {previous.title}
+            </a>
+          ) : (
+            <span />
+          )}
+          {next && (
+            <a href={next.path}>
+              <small>Next</small>
+              {next.title}
+            </a>
+          )}
+        </nav>
+      )}
+      <footer class="doc-footer">
+        <a href="/docs/manual">Manual</a>
+        <a href="/docs/api">API reference</a>
+        <a href="https://github.com/counterfact/api-simulator/tree/main/packages/counterfact/docs">
+          Documentation source ↗
+        </a>
+      </footer>
+    </main>
+    <aside class="page-toc" aria-label="On this page">
+      {toc.length > 0 && (
+        <>
+          <p>On this page</p>
+          <nav>
+            {toc.map((heading) => (
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            ))}
+          </nav>
+        </>
+      )}
+    </aside>
   </div>
 </MainLayout>
+<script>
+  const menu = document.querySelector<HTMLDetailsElement>(".chapter-menu");
+  if (menu && window.matchMedia("(max-width: 800px)").matches)
+    menu.open = false;
+</script>
 
 <style>
-  .doc-page {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem 4rem;
-  }
-
-  .doc-nav {
-    margin-bottom: 2rem;
-  }
-
-  .doc-home-link {
-    color: var(--blue-lt);
-    text-decoration: none;
-    font-size: 0.9rem;
-  }
-
-  .doc-home-link:hover {
-    text-decoration: underline;
-  }
-
   .doc-content {
-    line-height: 1.75;
     color: var(--ink);
+    line-height: 1.75;
   }
-
   .doc-content :global(h1) {
-    font-size: 2.2rem;
+    font-size: clamp(2rem, 5vw, 2.7rem);
     font-weight: 800;
     margin-bottom: 1.25rem;
-    color: var(--ink);
   }
-
   .doc-content :global(h2) {
-    font-size: 1.5rem;
+    border-bottom: 1px solid var(--rule);
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
     font-weight: 700;
     margin: 2.5rem 0 0.75rem;
-    color: var(--ink);
-    border-bottom: 1px solid var(--rule);
     padding-bottom: 0.4rem;
   }
-
   .doc-content :global(h3) {
     font-size: 1.15rem;
     font-weight: 600;
     margin: 1.75rem 0 0.5rem;
-    color: var(--ink);
   }
-
   .doc-content :global(p) {
+    color: var(--muted);
     margin-bottom: 1rem;
-    color: var(--ink-dim);
   }
-
   .doc-content :global(a) {
-    color: var(--blue-lt);
-    text-decoration: none;
+    color: var(--blue);
   }
-
-  .doc-content :global(a:hover) {
-    text-decoration: underline;
-  }
-
   .doc-content :global(pre) {
-    background: var(--code-bg);
+    background: var(--code);
     border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 1.25rem 1.5rem;
-    overflow-x: auto;
     margin: 1.25rem 0;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 1.1rem;
   }
-
+  .doc-content :global(pre.code-block) {
+    padding-top: 3rem;
+    position: relative;
+  }
   .doc-content :global(code) {
-    font-family: "DM Mono", monospace;
+    background: var(--code);
+    color: var(--ink);
+    font-family: var(--font-mono);
     font-size: 0.88em;
-    background: var(--code-bg);
-    color: var(--code-fg);
-    padding: 0.15em 0.4em;
-    border-radius: 3px;
+    padding: 0.12em 0.3em;
   }
-
   .doc-content :global(pre code) {
     background: none;
     padding: 0;
   }
-
   .doc-content :global(ul),
   .doc-content :global(ol) {
+    color: var(--muted);
     margin: 0.75rem 0 1rem 1.5rem;
-    color: var(--ink-dim);
   }
-
   .doc-content :global(li) {
     margin-bottom: 0.4rem;
   }
-
   .doc-content :global(blockquote) {
+    background: #edf6fb;
     border-left: 3px solid var(--blue);
-    padding: 0.5rem 1rem;
+    color: var(--muted);
     margin: 1rem 0;
-    color: var(--ink-dim);
-    background: var(--blue-glow);
-    border-radius: 0 4px 4px 0;
+    padding: 0.5rem 1rem;
   }
-
+  .doc-content :global(.markdown-alert) {
+    --alert-color: #0969da;
+    background: #edf6fb;
+    border-left: 3px solid var(--alert-color);
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+  }
+  .doc-content :global(.markdown-alert-tip) {
+    --alert-color: #1a7f37;
+    background: #effaf2;
+  }
+  .doc-content :global(.markdown-alert-important) {
+    --alert-color: #8250df;
+    background: #f6f0ff;
+  }
+  .doc-content :global(.markdown-alert-warning) {
+    --alert-color: #9a6700;
+    background: #fff8e5;
+  }
+  .doc-content :global(.markdown-alert-caution) {
+    --alert-color: #cf222e;
+    background: #fff1f1;
+  }
+  .doc-content :global(.markdown-alert-title) {
+    color: var(--alert-color);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .doc-content :global(.markdown-alert > :last-child) {
+    margin-bottom: 0;
+  }
   .doc-content :global(table) {
-    width: 100%;
     border-collapse: collapse;
-    margin: 1.25rem 0;
+    display: block;
     font-size: 0.9rem;
+    margin: 1.25rem 0;
+    max-width: 100%;
+    overflow-x: auto;
+    width: 100%;
   }
-
   .doc-content :global(th) {
-    text-align: left;
-    padding: 0.6rem 0.9rem;
-    background: var(--surface2);
-    color: var(--ink);
+    background: var(--code);
     border-bottom: 2px solid var(--rule);
-  }
-
-  .doc-content :global(td) {
+    color: var(--ink);
     padding: 0.6rem 0.9rem;
+    text-align: left;
+  }
+  .doc-content :global(td) {
     border-bottom: 1px solid var(--rule);
-    color: var(--ink-dim);
+    color: var(--muted);
+    padding: 0.6rem 0.9rem;
   }
-
-  .doc-content :global(tr:last-child td) {
-    border-bottom: none;
-  }
-
   .doc-content :global(hr) {
-    border: none;
+    border: 0;
     border-top: 1px solid var(--rule);
     margin: 2rem 0;
   }
-
   .doc-content :global(strong) {
     color: var(--ink);
-  }
-
-  @media (max-width: 640px) {
-    .doc-page {
-      padding: 1.5rem 1rem 3rem;
-    }
-
-    .doc-content :global(h1) {
-      font-size: 1.7rem;
-    }
   }
 </style>

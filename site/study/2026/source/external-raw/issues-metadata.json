@@ -1,0 +1,8 @@
+{
+  "retrieved_at": "2026-09-09T13:51:34Z",
+  "query": "/repos/counterfact/api-simulator/issues?state=all&sort=created&direction=asc&per_page=100",
+  "pages": 17,
+  "records": 1406,
+  "terminal_empty_page": 18,
+  "sha256": "34d67399a5c50b0a609f0f82724bde1f1382e7967351d55b24cd07867e845b15"
+}

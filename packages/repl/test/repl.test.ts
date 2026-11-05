@@ -1,4 +1,5 @@
-import type { REPLServer } from "node:repl";
+import repl, { type REPLServer, type ReplOptions } from "node:repl";
+import { PassThrough, Writable } from "node:stream";
 
 import { afterEach, jest } from "@jest/globals";
 
@@ -52,6 +53,14 @@ class ReplHarness {
 
   private readonly mock = new MockRepl();
 
+  private readonly input = new PassThrough();
+
+  private readonly replOutput = new Writable({
+    write(_chunk, _encoding, callback) {
+      callback();
+    },
+  });
+
   public output: string[] = [];
 
   public constructor(
@@ -64,18 +73,34 @@ class ReplHarness {
     reportEvent?: ReplEventReporter,
     chaosRegistry?: ChaosRegistry,
   ) {
-    this.server = startRepl(
-      contextRegistry,
-      registry,
-      config,
-      (line) => this.output.push(line),
-      undefined,
-      scenarioRegistry,
-      apiBindings,
-      store,
-      reportEvent,
-      chaosRegistry,
-    );
+    const originalStart = repl.start;
+    const startSpy = jest.spyOn(repl, "start").mockImplementation((options) => {
+      const replOptions: ReplOptions =
+        typeof options === "string" ? { prompt: options } : (options ?? {});
+
+      return originalStart({
+        ...replOptions,
+        input: this.input,
+        output: this.replOutput,
+      });
+    });
+
+    try {
+      this.server = startRepl(
+        contextRegistry,
+        registry,
+        config,
+        (line) => this.output.push(line),
+        undefined,
+        scenarioRegistry,
+        apiBindings,
+        store,
+        reportEvent,
+        chaosRegistry,
+      );
+    } finally {
+      startSpy.mockRestore();
+    }
   }
 
   public call(name: string, options: string) {
@@ -91,6 +116,12 @@ class ReplHarness {
       this.mock.commandLog[0] === "clearBufferedCommand" &&
       this.mock.commandLog[1] === "displayPrompt"
     );
+  }
+
+  public close() {
+    this.server.close();
+    this.input.destroy();
+    this.replOutput.destroy();
   }
 }
 
@@ -118,16 +149,16 @@ function createHarness(
     chaosRegistry,
   );
 
-  openServers.push(harness.server);
+  openServers.push(harness);
 
   return { config, contextRegistry, harness, registry };
 }
 
-const openServers: REPLServer[] = [];
+const openServers: ReplHarness[] = [];
 
 afterEach(() => {
-  for (const server of openServers) {
-    server.close();
+  for (const harness of openServers) {
+    harness.close();
   }
 
   openServers.length = 0;
@@ -276,6 +307,31 @@ describe("REPL", () => {
     expect(harness.output).toEqual([
       "Requests to /foo/bar will be handled by local code",
     ]);
+  });
+
+  it("describes the root proxy target when the proxy URL is not configured", () => {
+    const { config, harness } = createHarness();
+
+    config.proxyUrl = "";
+    harness.call("proxy", "on");
+
+    expect(config.proxyPaths.get("")).toBe(true);
+    expect(harness.output).toEqual([
+      "Requests to / will be proxied to <proxy URL>/",
+    ]);
+    expect(harness.isReset()).toBe(true);
+  });
+
+  it("sorts proxy status paths before displaying them", () => {
+    const { config, harness } = createHarness();
+
+    config.proxyPaths.set("/zebra", false);
+    config.proxyPaths.set("/alpha", true);
+
+    harness.call("proxy", "status");
+
+    expect(harness.output.slice(-2)).toEqual(["[+] /alpha/", "[-] /zebra/"]);
+    expect(harness.isReset()).toBe(true);
   });
 
   it.each(["", "help"])("displays a proxy help message (%s)", () => {
@@ -735,6 +791,64 @@ describe("REPL", () => {
       expect(harness.output[0]).toMatch(/Error: Path must not contain/u);
       expect(harness.isReset()).toBe(true);
     });
+
+    it("rejects dot-only scenario path segments", async () => {
+      const { harness } = createHarness();
+
+      await harness.callAsync("scenario", "./setup");
+
+      expect(harness.output).toEqual([
+        "Error: Path must not contain '.' or '..' segments",
+      ]);
+      expect(harness.isReset()).toBe(true);
+    });
+
+    it("reports an error when the scenario function throws", async () => {
+      const scenarioRegistry = new ScenarioRegistry();
+      scenarioRegistry.add("index", {
+        setup() {
+          throw new Error("seed data unavailable");
+        },
+      });
+      const { harness } = createHarness(scenarioRegistry);
+
+      await harness.callAsync("scenario", "setup");
+
+      expect(harness.output).toEqual(["Error: Error: seed data unavailable"]);
+      expect(harness.isReset()).toBe(true);
+    });
+
+    it("reports an error when a selected multi-API group has no routes binding", async () => {
+      const scenarioRegistry = new ScenarioRegistry();
+      scenarioRegistry.add("index", { setup() {} });
+      const { harness } = createHarness(undefined, [
+        {
+          contextRegistry: new ContextRegistry(),
+          group: "billing",
+          registry: new Registry(),
+          scenarioRegistry,
+        },
+        {
+          contextRegistry: new ContextRegistry(),
+          group: "inventory",
+          registry: new Registry(),
+          scenarioRegistry: new ScenarioRegistry(),
+        },
+      ]);
+
+      delete (
+        harness.server.context["routes"] as Record<
+          string,
+          Record<string, unknown>
+        >
+      )["billing"];
+      await harness.callAsync("scenario", "billing setup");
+
+      expect(harness.output).toEqual([
+        'Error: Could not resolve routes for API group "billing"',
+      ]);
+      expect(harness.isReset()).toBe(true);
+    });
   });
 
   describe("route autocomplete", () => {
@@ -765,6 +879,22 @@ describe("REPL", () => {
 
       expect(prefix).toBe("/p");
       expect(completions).toEqual(["/pets", "/pets/{petId}"]);
+    });
+
+    it("reads routes when completion is requested", async () => {
+      const registry = new Registry();
+      const completer = createCompleter(registry);
+
+      registry.add("/pets", { GET() {} });
+      registry.add("/users", { GET() {} });
+
+      const [completions, prefix] = await callCompleter(
+        completer,
+        'client.get("/',
+      );
+
+      expect(prefix).toBe("/");
+      expect(completions).toEqual(["/pets", "/users"]);
     });
 
     it("returns all routes when no partial is provided", async () => {
@@ -902,6 +1032,8 @@ describe("REPL", () => {
       expect(prefix).toBe("");
       expect(completions).toEqual([
         "body(",
+        "cookies(",
+        "form(",
         "headers(",
         "help(",
         "method(",
@@ -948,6 +1080,8 @@ describe("REPL", () => {
       expect(prefix).toBe("");
       expect(completions).toEqual([
         "body(",
+        "cookies(",
+        "form(",
         "headers(",
         "help(",
         "method(",

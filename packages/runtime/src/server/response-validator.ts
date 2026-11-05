@@ -24,12 +24,13 @@ export function validateResponse(
 
   const errors: string[] = [];
 
-  const statusKey =
-    response.status !== undefined ? String(response.status) : undefined;
+  // The HTTP layer sends 200 when a handler omits status. Validate against the
+  // same effective status so an implicit success response cannot bypass its
+  // OpenAPI response contract.
+  const statusKey = String(response.status ?? 200);
 
   const responseSpec =
-    (statusKey !== undefined ? operation.responses[statusKey] : undefined) ??
-    operation.responses.default;
+    operation.responses[statusKey] ?? operation.responses.default;
 
   if (!responseSpec) {
     return { errors: [], valid: true };
@@ -37,10 +38,15 @@ export function validateResponse(
 
   const specHeaders = responseSpec.headers ?? {};
   const actualHeaders = response.headers ?? {};
+  const actualHeadersByLowercaseName = new Map(
+    Object.entries(actualHeaders).map(([name, value]) => [
+      name.toLowerCase(),
+      value,
+    ]),
+  );
 
   for (const [name, headerSpec] of Object.entries(specHeaders)) {
-    const actualValue =
-      actualHeaders[name] ?? actualHeaders[name.toLowerCase()];
+    const actualValue = actualHeadersByLowercaseName.get(name.toLowerCase());
 
     if (headerSpec.required === true && actualValue === undefined) {
       errors.push(`response header '${name}' is required`);

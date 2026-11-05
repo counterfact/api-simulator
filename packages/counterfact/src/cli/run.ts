@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 /* eslint-disable security/detect-non-literal-fs-filename -- CLI migration cleanup operates on known child directories under config.basePath. */
@@ -13,8 +12,17 @@ import { pathsToRoutes } from "../migrate/paths-to-routes.js";
 import { updateRouteTypes } from "../migrate/update-route-types.js";
 import { pathResolve } from "../util/forward-slash-path.js";
 import { loadConfigFile } from "../util/load-config-file.js";
-import { createIntroduction } from "./banner.js";
 import { checkForUpdates } from "./check-for-updates.js";
+import { runIntro } from "./intro.js";
+import {
+  createGeneratedArtifactsSummary,
+  createRuntimeProgressMessage,
+  createStartupOutput,
+  createStartupReporter,
+  createSwaggerUrls,
+  createWatchSummary,
+  shouldUseColor,
+} from "./startup-output.js";
 import {
   hashTelemetryLocation,
   isTelemetryEnabled,
@@ -149,10 +157,13 @@ export function buildStartupTelemetryProperties(
  * Builds the Commander program with all CLI options and the action handler.
  * Factored out of `runCli` so it is easy to test or extend.
  *
- * @param version  - Package version string shown in `--version` output.
- * @param taglines - Array of random taglines for the startup banner.
+ * @param version - Package version string shown in `--version` output.
  */
-function buildProgram(version: string, taglines: string[]): Command {
+function buildProgram(
+  version: string,
+  tagline: string,
+  noArguments: boolean,
+): Command {
   const program = new Command();
 
   async function main(source: string, destination: string): Promise<void> {
@@ -184,11 +195,6 @@ function buildProgram(version: string, taglines: string[]): Command {
       watchTypes?: boolean;
     }>();
 
-    const updateCheckPromise =
-      options.updateCheck === false
-        ? Promise.resolve()
-        : checkForUpdates(version);
-
     // Load the config file (counterfact.yaml by default, or --config <path>).
     // CLI options always take precedence over config file settings.
     const configFilePath = resolve(options.config ?? "counterfact.yaml");
@@ -197,6 +203,20 @@ function buildProgram(version: string, taglines: string[]): Command {
       options.config !== undefined,
     );
     debug("fileConfig: %o", fileConfig);
+    // Even an empty config file signals an existing project. Only a truly
+    // argument-free, unconfigured invocation enters the first-run flow.
+    if (noArguments && !fs.existsSync(configFilePath)) {
+      const selection = await runIntro();
+      if (selection === undefined) return;
+      ({ source, destination } = selection);
+      options.port = selection.port;
+    }
+
+    const updateCheckPromise =
+      options.updateCheck === false
+        ? Promise.resolve()
+        : checkForUpdates(version);
+
     const knownOptionKeys = new Set(
       program.options.map((option) => option.attributeName()),
     );
@@ -270,9 +290,9 @@ function buildProgram(version: string, taglines: string[]): Command {
     );
 
     const openBrowser = options.open;
-    const url = `http://localhost:${options.port}${options.prefix}`;
-    const guiUrl = `${url}/counterfact/`;
-    const swaggerUrl = `${url}/counterfact/swagger/`;
+    const origin = `http://localhost:${options.port}`;
+    const url = `${origin}${options.prefix}`;
+    const guiUrl = `${origin}/counterfact/`;
 
     const config = {
       adminApiToken:
@@ -326,78 +346,149 @@ function buildProgram(version: string, taglines: string[]): Command {
 
     debug("loading counterfact (%o)", configForLogging);
 
+    const startupOutput = createStartupOutput(
+      shouldUseColor({
+        isTTY: process.stdout.isTTY,
+        noColor: process.env["NO_COLOR"],
+      }),
+    );
+    const startupReporter = createStartupReporter(
+      startupOutput,
+      process.stdout,
+      process.stderr,
+    );
+    const writeStartupLine = (line: string) => {
+      process.stdout.write(`${line}\n`);
+    };
+    const writeWarning = (message: string) => {
+      process.stderr.write(`${startupOutput.warning(message)}\n`);
+    };
+    const hasOpenApi =
+      specs?.some((spec) => spec.source !== "_") ?? source !== "_";
+    const swaggerUrls = createSwaggerUrls(
+      origin,
+      specs ?? [{ source, group: "" }],
+    );
+
+    writeStartupLine(startupOutput.title(version));
+    writeStartupLine(tagline);
+    writeStartupLine("");
+
     if (config.startAdminApi && !config.adminApiToken) {
-      process.stderr.write(
+      writeWarning(
         "⚠️  WARNING: The admin API is enabled without an authentication token.\n" +
           "   Any process on this machine can read and modify server state via /_counterfact/api/*.\n" +
-          "   Set --admin-api-token or COUNTERFACT_ADMIN_API_TOKEN to restrict access.\n\n",
+          "   Set --admin-api-token or COUNTERFACT_ADMIN_API_TOKEN to restrict access.",
       );
+      process.stderr.write("\n");
     }
 
     let didMigrate = false;
 
     if (fs.existsSync(join(config.basePath, "paths"))) {
-      await pathsToRoutes(config.basePath);
-      await fs.promises.rmdir(join(config.basePath, "paths"), {
-        recursive: true,
-      });
-      await fs.promises.rmdir(join(config.basePath, "path-types"), {
-        recursive: true,
-      });
-      await fs.promises.rmdir(join(config.basePath, "components"), {
-        recursive: true,
-      });
-
+      await startupReporter.step(
+        "Updating legacy project layout…",
+        async () => {
+          await pathsToRoutes(config.basePath);
+          await fs.promises.rmdir(join(config.basePath, "paths"), {
+            recursive: true,
+          });
+          await fs.promises.rmdir(join(config.basePath, "path-types"), {
+            recursive: true,
+          });
+          await fs.promises.rmdir(join(config.basePath, "components"), {
+            recursive: true,
+          });
+        },
+      );
       didMigrate = true;
+      writeStartupLine(startupOutput.success("Legacy project layout updated"));
     }
 
     const { start, startRepl } = await (async () => {
       try {
-        return await counterfact(config, specs);
+        return await startupReporter.step(
+          hasOpenApi
+            ? "Reading OpenAPI document…"
+            : "Preparing spec-free mock…",
+          () => counterfact(config, specs),
+        );
       } catch (error) {
         process.stderr.write(
-          `\n❌ ${error instanceof Error ? error.message : String(error)}\n\n`,
+          `\n${startupOutput.error(`❌ ${error instanceof Error ? error.message : String(error)}`)}\n\n`,
         );
         process.exit(1);
       }
     })();
+    writeStartupLine(
+      startupOutput.success(
+        hasOpenApi ? "OpenAPI document ready" : "Spec-free mock ready",
+      ),
+    );
 
     debug("loaded counterfact", configForLogging);
 
     // Migrate route type imports if needed.
     debug("checking if route type migration is needed");
-    const didMigrateRouteTypes = await updateRouteTypes(
-      config.basePath,
-      config.openApiPath,
-    );
+    let didMigrateRouteTypes = false;
+    for (const spec of specs ?? [
+      { source: config.openApiPath, group: "", overlays: config.overlays },
+    ]) {
+      const migrated = await updateRouteTypes(
+        join(config.basePath, spec.group),
+        spec.source,
+        spec.overlays,
+      );
+      didMigrateRouteTypes = migrated || didMigrateRouteTypes;
+    }
     debug("route type migration check complete: %s", didMigrateRouteTypes);
+    if (didMigrateRouteTypes) {
+      writeStartupLine(startupOutput.success("Route type imports updated"));
+    }
 
     const isTelemetryDisabled = !isTelemetryEnabled();
 
-    process.stdout.write(
-      createIntroduction({
-        config,
-        isTelemetryDisabled,
-        source,
-        swaggerUrl,
-        taglines,
-        url,
-        version,
-      }),
-    );
-
-    process.stdout.write("\n\n");
+    if (!isTelemetryDisabled) {
+      writeWarning(
+        "⚠️  Telemetry will be enabled by default starting May 1, 2026.\n" +
+          "   Learn more and how to disable: https://counterfact.dev/telemetry-discussion",
+      );
+    }
 
     debug("starting server");
     try {
-      await start(config);
+      await startupReporter.step(
+        createRuntimeProgressMessage(config, hasOpenApi),
+        () => start(config),
+      );
     } catch (error) {
       process.stderr.write(
-        `\n❌ ${error instanceof Error ? error.message : String(error)}\n\n`,
+        `\n${startupOutput.error(`❌ ${error instanceof Error ? error.message : String(error)}`)}\n\n`,
       );
       process.exit(1);
     }
     debug("started server");
+
+    const generatedArtifactsSummary = createGeneratedArtifactsSummary(
+      config,
+      hasOpenApi,
+    );
+    if (generatedArtifactsSummary !== undefined) {
+      writeStartupLine(startupOutput.success(generatedArtifactsSummary));
+    }
+
+    if (config.startServer) {
+      writeStartupLine(startupOutput.success("Mock server", url));
+      for (const swaggerUrl of swaggerUrls) {
+        writeStartupLine(startupOutput.success("Swagger UI", swaggerUrl));
+      }
+    }
+
+    const watchSummary = createWatchSummary(config, hasOpenApi);
+    if (watchSummary !== undefined) {
+      writeStartupLine(startupOutput.success(watchSummary));
+    }
+
     sendTelemetry("counterfact_started", startupTelemetryProperties);
 
     await updateCheckPromise;
@@ -435,14 +526,12 @@ function buildProgram(version: string, taglines: string[]): Command {
       process.stdout.write("\n\n\n*******************************\n");
       process.stdout.write("MIGRATING ROUTE TYPE IMPORTS\n\n");
       process.stdout.write(
-        "Operation types now use operationId from your OpenAPI spec when available.\n",
+        "Operation types now use stable HTTP_<METHOD> names.\n",
       );
       process.stdout.write(
         "Your route files have been automatically updated to use the new type names.\n",
       );
-      process.stdout.write(
-        "Example: 'HTTP_GET' may now be 'getPetById' if operationId is defined.\n",
-      );
+      process.stdout.write("Example: 'getPetById' is now 'HTTP_GET'.\n");
       process.stdout.write(
         "Please review the changes and report any issues to:\n",
       );
@@ -534,8 +623,8 @@ function buildProgram(version: string, taglines: string[]): Command {
 /**
  * Entry point for the Counterfact CLI.
  *
- * Reads the package version and taglines, fires telemetry (if enabled),
- * then hands off to Commander to parse `argv` and invoke the action handler.
+ * Reads the package version and a random tagline, then hands off to Commander to parse `argv` and
+ * invoke the action handler.
  *
  * @param argv - Raw argument vector, typically `process.argv`.
  */
@@ -544,27 +633,31 @@ export async function runCli(argv: string[]): Promise<void> {
   // src/cli/ and dist/cli/ are both two levels below the project root,
   // so "../../package.json" resolves correctly in both environments.
   const packageJson = JSON.parse(
-    await readFile(resolve(__dirname, "../../package.json"), "utf8"),
+    await fs.promises.readFile(
+      resolve(__dirname, "../../package.json"),
+      "utf8",
+    ),
   ) as { version: string };
   const version = packageJson.version;
 
-  // Taglines live in bin/taglines.txt; both src/cli/ and dist/cli/ are two
-  // levels below the project root, so "../bin/taglines.txt" (or the equivalent
-  // from the root) resolves correctly.  We go up two levels to the root and
-  // then into bin/.
-  let taglines: string[];
+  let tagline = "counterfact — mock API server";
   try {
-    const taglinesFile = await readFile(
+    const taglinesFile = await fs.promises.readFile(
       resolve(__dirname, "../../bin/taglines.txt"),
       "utf8",
     );
-    taglines = taglinesFile.split("\n").slice(0, -1);
+    const taglines = taglinesFile
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    tagline =
+      taglines.at(Math.floor(Math.random() * taglines.length)) ?? tagline;
   } catch {
-    taglines = ["counterfact — mock API server"];
+    // A missing optional tagline file must not prevent startup.
   }
 
   debug("running counterfact CLI v%s", version);
 
-  const program = buildProgram(version, taglines);
+  const program = buildProgram(version, tagline, argv.length === 2);
   await program.parseAsync(argv);
 }

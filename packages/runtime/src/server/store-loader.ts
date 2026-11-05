@@ -7,6 +7,7 @@ import { waitForEvent } from "../util/wait-for-event.js";
 import { CHOKIDAR_OPTIONS } from "./constants.js";
 import { determineModuleKind } from "./determine-module-kind.js";
 import { uncachedImport } from "./uncached-import.js";
+import { UpdateQueue } from "./update-queue.js";
 
 const { uncachedRequire } = await import("./uncached-require.cjs");
 
@@ -23,7 +24,7 @@ export interface StoreLoaderCallbacks {
 
 /**
  * Loads and watches the conventional application-level `_.store.ts` module.
- * A successfully loaded store keeps its identity for this loader's lifetime.
+ * Hot reload preserves identity; an explicit reset constructs a new store.
  */
 export class StoreLoader {
   public readonly sourcePath: string;
@@ -34,11 +35,28 @@ export class StoreLoader {
 
   private initialized = false;
 
+  private createStore: (() => Store) | undefined;
+
+  private readonly factories = new WeakMap<Store, () => Store>();
+
+  /** Constructs a fresh store using the last successfully loaded code. */
+  public reset(): Store | undefined {
+    this.store = this.createStore?.();
+    return this.store;
+  }
+
   private sourcePresent = false;
 
   private watcher: FSWatcher | undefined;
 
   private eventQueue: Promise<void> = Promise.resolve();
+
+  private readonly updates = new UpdateQueue();
+
+  /** Holds file events during an explicit reset. */
+  public pauseUpdates(): Promise<() => void> {
+    return this.updates.pause();
+  }
 
   public constructor(basePath: string, callbacks: StoreLoaderCallbacks = {}) {
     this.sourcePath = path.resolve(basePath, "_.store.ts");
@@ -60,6 +78,7 @@ export class StoreLoader {
     this.sourcePresent = true;
     const candidate = await this.importCandidate();
     this.store = candidate;
+    this.createStore = this.factories.get(candidate);
     this.initialized = true;
     return candidate;
   }
@@ -112,11 +131,9 @@ export class StoreLoader {
   }
 
   private enqueue(operation: () => Promise<void>): void {
-    this.eventQueue = this.eventQueue
-      .then(operation)
-      .catch((error: unknown) => {
-        this.writeDiagnostic(error);
-      });
+    this.eventQueue = this.updates.run(operation).catch((error: unknown) => {
+      this.writeDiagnostic(error);
+    });
   }
 
   private async handleWatchEvent(
@@ -163,6 +180,7 @@ export class StoreLoader {
   private async applyCandidate(candidate: Store): Promise<void> {
     if (this.store === undefined) {
       this.store = candidate;
+      this.createStore = this.factories.get(candidate);
       await this.callbacks.onStoreChange?.(candidate);
       return;
     }
@@ -198,6 +216,7 @@ export class StoreLoader {
       throw error;
     }
 
+    this.createStore = this.factories.get(candidate);
     await this.callbacks.onStoreChange?.(liveStore);
   }
 
@@ -215,7 +234,10 @@ export class StoreLoader {
         throw new TypeError('the module must export a constructable "Store"');
       }
 
-      return new imported.Store();
+      const Store = imported.Store;
+      const candidate = new Store();
+      this.factories.set(candidate, () => new Store());
+      return candidate;
     } catch (error: unknown) {
       throw this.createLoadError(error);
     }

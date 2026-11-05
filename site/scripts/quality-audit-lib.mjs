@@ -1,0 +1,310 @@
+import { validateCaseStudy } from "./quality-case-study-lib.mjs";
+
+export const categories = [
+  "Same-year regression",
+  "Defect in same-year feature",
+  "Pre-existing",
+];
+
+export function summarizeCases(cases, year) {
+  const selected = cases.filter(
+    (item) => (item.reportYear ?? item.year) === year,
+  );
+  const counts = Object.fromEntries(
+    categories.map((category) => [
+      category,
+      selected.filter((item) => item.category === category).length,
+    ]),
+  );
+  return { year, total: selected.length, counts };
+}
+
+export function isWithinWindow(timestamp, window) {
+  const value = Date.parse(timestamp);
+  return (
+    value >= Date.parse(window.start) && value < Date.parse(window.endExclusive)
+  );
+}
+
+export function selectReportedCases(cases, year, window) {
+  return cases.filter(
+    (item) =>
+      item.reportYear === year && isWithinWindow(item.reportedAt, window),
+  );
+}
+
+export function selectIntroducedCases(cases, year, window) {
+  return selectReportedCases(cases, year, window).filter((item) =>
+    isWithinWindow(item.firstAffectedPublishedAt, window),
+  );
+}
+
+export function median(values) {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[middle - 1] + sorted[middle]) / 2
+    : sorted[middle];
+}
+
+export function matureCases(cases, windowEndExclusive, maturityDays) {
+  const end = Date.parse(windowEndExclusive);
+  const threshold = maturityDays * 24 * 60 * 60 * 1000;
+  return cases.filter(
+    (item) => end - Date.parse(item.firstAffectedPublishedAt) >= threshold,
+  );
+}
+
+export function poissonCdf(count, mean) {
+  let term = Math.exp(-mean);
+  let total = term;
+  for (let index = 1; index <= count; index += 1) {
+    term *= mean / index;
+    total += term;
+  }
+  return total;
+}
+
+function solvePoissonMean(count, probability) {
+  let low = 0;
+  let high = Math.max(8, count * 4 + 8);
+  while (poissonCdf(count, high) > probability) high *= 2;
+  for (let iteration = 0; iteration < 100; iteration += 1) {
+    const middle = (low + high) / 2;
+    if (poissonCdf(count, middle) > probability) low = middle;
+    else high = middle;
+  }
+  return (low + high) / 2;
+}
+
+export function exactPoissonInterval(events, exposure, alpha = 0.05) {
+  if (exposure <= 0) return null;
+  const lowerMean =
+    events === 0 ? 0 : solvePoissonMean(events - 1, 1 - alpha / 2);
+  const upperMean = solvePoissonMean(events, alpha / 2);
+  return {
+    lower: lowerMean / exposure,
+    upper: upperMean / exposure,
+  };
+}
+
+export function kaplanMeier(observations) {
+  const grouped = Map.groupBy(
+    [...observations].sort((left, right) => left.days - right.days),
+    (item) => item.days,
+  );
+  let atRisk = observations.length;
+  let survival = 1;
+  const points = [];
+  for (const [days, items] of grouped) {
+    const events = items.filter((item) => item.event).length;
+    const censored = items.length - events;
+    if (events > 0) survival *= 1 - events / atRisk;
+    points.push({ days, atRisk, events, censored, survival });
+    atRisk -= items.length;
+  }
+  const medianPoint = points.find((point) => point.survival <= 0.5);
+  return {
+    observations: observations.length,
+    events: observations.filter((item) => item.event).length,
+    medianDays: medianPoint?.days ?? null,
+    resolvedBy90: observations.length === 0 ? null : 1 - survival,
+    points,
+  };
+}
+
+export function validateManifest(manifest) {
+  try {
+    return validateManifestUnchecked(manifest);
+  } catch (error) {
+    return [`manifest validation could not complete: ${error.message}`];
+  }
+}
+
+function validateManifestUnchecked(manifest) {
+  const errors = [];
+  if (manifest.schemaVersion === 4) {
+    errors.push(...validateCaseStudy(manifest.caseStudy ?? manifest).errors);
+  } else if (manifest.schemaVersion !== 3)
+    errors.push(`unsupported schema version: ${manifest.schemaVersion}`);
+  if (manifest.analysis?.coverageMetric !== "branch") {
+    errors.push("analysis coverage metric must be branch");
+  }
+  if (
+    !manifest.study?.primaryOutcomes?.some((outcome) =>
+      outcome.includes("reported branch coverage"),
+    )
+  ) {
+    errors.push("primary outcomes must declare reported branch coverage");
+  }
+
+  if (manifest.matureAnalysis?.primaryMeasure !== "raw event count") {
+    errors.push("mature analysis must declare raw event count as primary");
+  }
+  const historicalCandidates = manifest.historicalCandidates;
+  if (!Array.isArray(historicalCandidates) && manifest.schemaVersion !== 4) {
+    errors.push("missing historical candidate ledger");
+  } else if (Array.isArray(historicalCandidates)) {
+    const expected = { 2022: 173, 2023: 152, 2024: 242 };
+    const expectedDefects = { 2022: 0, 2023: 4, 2024: 7 };
+    for (const year of [2022, 2023, 2024]) {
+      const records = historicalCandidates.filter((item) => item.year === year);
+      const defects = records.filter(
+        (item) => item.disposition === "product-defect",
+      );
+      if (records.length !== expected[year]) {
+        errors.push(`${year} historical ledger has ${records.length} records`);
+      }
+      if (defects.length !== expectedDefects[year]) {
+        errors.push(`${year} historical ledger has ${defects.length} defects`);
+      }
+    }
+  }
+
+  for (const [year, cohort] of Object.entries(
+    manifest.matureAnalysis?.cohorts ?? {},
+  )) {
+    const expectedEnd = `${year}-06-06T00:00:00Z`;
+    if (cohort.releaseWindowEndExclusive !== expectedEnd) {
+      errors.push(`${year} mature cohort has the wrong intake boundary`);
+    }
+    for (const observation of cohort.responseObservations) {
+      if (observation.days > manifest.maturityDays) {
+        errors.push(`${observation.id} exceeds the 90-day follow-up`);
+      }
+    }
+  }
+  if (
+    manifest.analysis?.coverageComparability?.["2025"] !==
+    "not_comparable_mixed_sources"
+  ) {
+    errors.push("2025 coverage pair must be marked not comparable");
+  }
+
+  const ids = new Set();
+  for (const item of manifest.productCases) {
+    if (ids.has(item.id)) errors.push(`duplicate product case id: ${item.id}`);
+    ids.add(item.id);
+    if (!categories.includes(item.category))
+      errors.push(`unknown category for ${item.id}`);
+    if (Number.isNaN(Date.parse(item.firstAffectedPublishedAt))) {
+      errors.push(`invalid publication timestamp for ${item.id}`);
+    }
+    if (!Array.isArray(item.sources) || item.sources.length < 2) {
+      errors.push(`missing primary sources for ${item.id}`);
+    }
+  }
+
+  const candidateIds = new Set();
+  for (const candidate of manifest.candidates) {
+    if (candidateIds.has(candidate.id))
+      errors.push(`duplicate candidate id: ${candidate.id}`);
+    candidateIds.add(candidate.id);
+    if (!candidate.title || !candidate.author || !candidate.sourceUrl) {
+      errors.push(`incomplete candidate metadata: ${candidate.id}`);
+    }
+    if (Number.isNaN(Date.parse(candidate.openedAt))) {
+      errors.push(`invalid candidate timestamp: ${candidate.id}`);
+    }
+  }
+
+  for (const candidate of manifest.candidates) {
+    if (
+      candidate.linkedCandidateId &&
+      !candidateIds.has(candidate.linkedCandidateId)
+    ) {
+      errors.push(
+        `missing linked candidate ${candidate.linkedCandidateId} for ${candidate.id}`,
+      );
+    }
+  }
+
+  const includedCandidateIds = new Set(
+    manifest.candidates
+      .filter((item) => item.disposition === "product-defect")
+      .map((item) => item.id),
+  );
+  for (const id of ids) {
+    if (!includedCandidateIds.has(id))
+      errors.push(`product case has no included candidate: ${id}`);
+  }
+
+  for (const year of [2025, 2026]) {
+    const included = manifest.candidates.filter(
+      (item) => item.year === year && item.disposition === "product-defect",
+    );
+    const cases = manifest.productCases.filter(
+      (item) => item.reportYear === year,
+    );
+    if (included.length !== cases.length) {
+      errors.push(
+        `${year} included candidate count ${included.length} does not match case count ${cases.length}`,
+      );
+    }
+    for (const candidate of included) {
+      if (!ids.has(candidate.id))
+        errors.push(`included candidate has no case: ${candidate.id}`);
+    }
+  }
+
+  const processCandidateIds = new Set(
+    manifest.candidates
+      .filter((item) => item.disposition === "process-incident")
+      .map((item) => item.id),
+  );
+  const processIds = new Set(manifest.processIncidents.map((item) => item.id));
+  for (const id of processCandidateIds) {
+    if (!processIds.has(id))
+      errors.push(`process candidate has no incident: ${id}`);
+  }
+
+  for (const year of [2025, 2026]) {
+    const authorTotal = Object.values(
+      manifest.activity.primaryWindow.pullRequestAuthors[String(year)],
+    ).reduce((sum, value) => sum + value, 0);
+    const expected =
+      manifest.activity.primaryWindow.mergedPullRequests[String(year)];
+    if (authorTotal !== expected) {
+      errors.push(
+        `${year} pull-request author groups total ${authorTotal}, expected ${expected}`,
+      );
+    }
+  }
+
+  const gitCohorts = manifest.activity.cohortGitMetrics?.cohorts;
+  if (
+    manifest.activity.cohortGitMetrics?.analysisRef !==
+    manifest.generatedForCommit
+  ) {
+    errors.push("cohort Git analysis ref does not match generated-for commit");
+  }
+  if (!gitCohorts) {
+    errors.push("missing cohort Git metrics");
+  } else {
+    for (const year of [2022, 2023, 2024, 2025, 2026]) {
+      const cohort = gitCohorts[String(year)];
+      if (!cohort) {
+        errors.push(`missing ${year} cohort Git metrics`);
+        continue;
+      }
+      if (cohort.additions + cohort.deletions !== cohort.churn) {
+        errors.push(`${year} additions and deletions do not equal churn`);
+      }
+      const categorizedChurn = Object.values(cohort.categoryChurn).reduce(
+        (total, value) => total + value,
+        0,
+      );
+      if (categorizedChurn !== cohort.churn) {
+        errors.push(
+          `${year} categorized churn ${categorizedChurn} does not equal ${cohort.churn}`,
+        );
+      }
+    }
+  }
+
+  if (!manifest.study?.retrospectiveComparison?.constructedAfterObservation) {
+    errors.push("retrospective comparison disclosure is missing");
+  }
+  return errors;
+}

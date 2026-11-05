@@ -102,6 +102,27 @@ describe("validateResponse", () => {
     expect(result.valid).toBe(true);
   });
 
+  it("matches response header names case-insensitively", () => {
+    const result = validateResponse(
+      {
+        responses: {
+          200: {
+            content: {},
+            headers: {
+              "x-trace-id": {
+                required: true,
+                schema: { type: "integer" },
+              },
+            },
+          },
+        },
+      },
+      { body: "ok", headers: { "X-Trace-ID": "42" }, status: 200 },
+    );
+
+    expect(result).toStrictEqual({ errors: [], valid: true });
+  });
+
   it("coerces boolean-typed header strings before validation", () => {
     const result = validateResponse(
       {
@@ -156,6 +177,45 @@ describe("validateResponse", () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors[0]).toContain("x-required");
+  });
+
+  it("uses the 200 response spec when response status is undefined", () => {
+    const result = validateResponse(
+      {
+        responses: {
+          200: {
+            content: {},
+            headers: {
+              "x-required": { required: true, schema: { type: "string" } },
+            },
+          },
+          default: { content: {} },
+        },
+      },
+      { body: "ok", headers: {} },
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toContain("x-required");
+  });
+
+  it("does not use the 200 response spec for an explicit non-200 status", () => {
+    const result = validateResponse(
+      {
+        responses: {
+          200: {
+            content: {},
+            headers: {
+              "x-required": { required: true, schema: { type: "string" } },
+            },
+          },
+          201: { content: {} },
+        },
+      },
+      { body: "created", headers: {}, status: 201 },
+    );
+
+    expect(result).toStrictEqual({ errors: [], valid: true });
   });
 
   it("returns multiple errors when multiple headers are invalid", () => {

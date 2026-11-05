@@ -5,8 +5,10 @@ import nodePath from "node:path";
 
 import { type FSWatcher, watch } from "chokidar";
 import createDebug from "debug";
+import { getLocalOpenApiSourcePaths } from "@counterfact/openapi";
 
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
+import { centralTypes } from "./central-types.js";
 import { OperationCoder } from "./operation-coder.js";
 import {
   assertNoNormalizedPathCollisions,
@@ -14,7 +16,7 @@ import {
 } from "./openapi-path.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
 import { pruneRoutes, pruneTypes } from "./prune.js";
-import type { Requirement } from "./requirement.js";
+import { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
 import { Specification } from "./specification.js";
 import { waitForEvent } from "./wait-for-event.js";
@@ -105,15 +107,16 @@ export class CodeGenerator extends EventTarget {
     specification: Specification,
   ): Promise<ReturnType<Specification["getRequirement"]>> {
     try {
-      return specification.getRequirement("#/paths") ?? new Set<never>();
+      return (
+        specification.getRequirement("#/paths") ??
+        new Requirement({}, "#/paths", specification)
+      );
     } catch (error) {
       process.stderr.write(
         `Could not find #/paths in the specification.\n${error as string}\n`,
       );
 
-      return undefined as unknown as ReturnType<
-        Specification["getRequirement"]
-      >;
+      return new Requirement({}, "#/paths", specification);
     }
   }
 
@@ -146,6 +149,8 @@ export class CodeGenerator extends EventTarget {
     debug("created specification: $o", specification);
 
     debug("reading the #/paths from the specification");
+
+    centralTypes(repository).addComponents(specification, this.version);
 
     const paths = await this.getPathsFromSpecification(specification);
 
@@ -182,8 +187,10 @@ export class CodeGenerator extends EventTarget {
 
     const operationMethodsForPath = (
       pathDefinition: Requirement,
-    ): Array<[Requirement, string]> =>
-      pathDefinition.flatMap((operation, requestMethod) => {
+    ): Array<[Requirement, string]> => {
+      let resolved = pathDefinition;
+      while (resolved.isReference) resolved = resolved.reference();
+      return resolved.flatMap((operation, requestMethod) => {
         if (requestMethod === "additionalOperations") {
           return operation.map(
             (additionalOperation, additionalMethod): [Requirement, string] => [
@@ -199,6 +206,7 @@ export class CodeGenerator extends EventTarget {
 
         return [[operation, requestMethod]];
       });
+    };
 
     paths.forEach((pathDefinition, key: string) => {
       debug("processing path %s", key);
@@ -207,11 +215,19 @@ export class CodeGenerator extends EventTarget {
       const path = normalizedPath === "/" ? "/index" : normalizedPath;
       operationMethodsForPath(pathDefinition).forEach(
         ([operation, requestMethod]) => {
+          // Keep the logical route location when a Path Item is a reference or
+          // a method is declared under OpenAPI 3.2 additionalOperations.
+          const logicalOperation = new Requirement(
+            operation.data,
+            `${pathDefinition.url}/${requestMethod}`,
+            specification,
+          );
+          logicalOperation.parent = pathDefinition;
           repository
             .get(`routes${path}.ts`)
             .export(
               new OperationCoder(
-                operation,
+                logicalOperation,
                 this.version,
                 requestMethod,
                 securitySchemes,
@@ -247,9 +263,10 @@ export class CodeGenerator extends EventTarget {
    * Resolves once the watcher is ready.
    */
   public async watch() {
-    const watchablePaths = this.openapiPath.startsWith("http")
-      ? [...this.overlays]
-      : [this.openapiPath, ...this.overlays];
+    const watchablePaths = getLocalOpenApiSourcePaths([
+      this.openapiPath,
+      ...this.overlays,
+    ]);
 
     if (watchablePaths.length === 0) {
       return;

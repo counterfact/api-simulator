@@ -381,6 +381,80 @@ describe("koa middleware", () => {
     expect(ctx.body).toBe("Hello, Homer!");
   });
 
+  it("does not intercept a path that only shares the prefix text", async () => {
+    const registry = new Registry();
+    registry.add("/pets", { GET: () => ({ body: "pets" }) });
+
+    const middleware = routesMiddleware(
+      "/api",
+      new Dispatcher(registry, new ContextRegistry()),
+      CONFIG,
+    );
+    const next = jest.fn(async () => await Promise.resolve());
+    const ctx = {
+      request: {
+        headers: {},
+        method: "GET",
+        path: "/apiary/pets",
+      },
+    } as unknown as ParameterizedContext;
+
+    await middleware(ctx, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(ctx.body).toBeUndefined();
+  });
+
+  it("maps an exact prefix match to the root route", async () => {
+    const registry = new Registry();
+    registry.add("/", { GET: () => ({ body: "root" }) });
+
+    const middleware = routesMiddleware(
+      "/api/",
+      new Dispatcher(registry, new ContextRegistry()),
+      CONFIG,
+    );
+    const ctx = {
+      req: { path: "/api" },
+      request: {
+        headers: {},
+        method: "GET",
+        path: "/api",
+      },
+      set: jest.fn(),
+    } as unknown as ParameterizedContext;
+
+    await middleware(ctx, async () => await Promise.resolve());
+
+    expect(ctx.status).toBe(200);
+    expect(ctx.body).toBe("root");
+  });
+
+  it("normalizes long trailing-slash prefixes in linear time", async () => {
+    const registry = new Registry();
+    registry.add("/", { GET: () => ({ body: "root" }) });
+
+    const middleware = routesMiddleware(
+      `/api${"/".repeat(100_000)}`,
+      new Dispatcher(registry, new ContextRegistry()),
+      CONFIG,
+    );
+    const ctx = {
+      req: { path: "/api" },
+      request: {
+        headers: {},
+        method: "GET",
+        path: "/api",
+      },
+      set: jest.fn(),
+    } as unknown as ParameterizedContext;
+
+    await middleware(ctx, async () => await Promise.resolve());
+
+    expect(ctx.status).toBe(200);
+    expect(ctx.body).toBe("root");
+  });
+
   it("does not pass a request body for a GET request", async () => {
     const registry = new Registry();
 

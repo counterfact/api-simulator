@@ -3,10 +3,7 @@ import { createServer } from "node:http";
 import { describe, expect, it } from "@jest/globals";
 import { usingTemporaryFiles } from "using-temporary-files";
 
-import {
-  bundleOpenApiDocument,
-  loadOpenApiDocument,
-} from "@counterfact/openapi";
+import { bundleOpenApiDocument, loadOpenApiDocument } from "../src/index.js";
 
 describe("OpenAPI document loading", () => {
   it("loads a local document and dereferences a relative file", async () => {

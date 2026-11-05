@@ -17,7 +17,48 @@ describe("a Repository", () => {
   });
 
   it.each([
+    "",
+    "../escaped.ts",
+    "/absolute.ts",
+    "C:\\absolute.ts",
+    "types\\..\\escaped.ts",
+    "types//escaped.ts",
+    "types/./escaped.ts",
+    "types/../escaped.ts",
+    "types/escaped\0.ts",
+  ])("rejects unsafe repository path %p", (path) => {
+    const repository = new Repository();
+
+    expect(() => repository.get(path)).toThrow(
+      "must be a safe, relative, forward-slash path",
+    );
+  });
+
+  it("rejects a destination escape injected directly into the scripts map", async () => {
+    await usingTemporaryFiles(async ({ path }) => {
+      const repository = new Repository();
+      const script = repository.get("types/safe.ts");
+
+      repository.scripts.clear();
+      repository.scripts.set("../escaped.ts", script);
+
+      await expect(
+        repository.writeFiles(path("output"), { routes: false, types: true }),
+      ).rejects.toThrow("escapes destination");
+    });
+  });
+
+  it.each([
     ["./types/paths/x.ts", "../../routes/_.context.ts"],
+    ["./types/paths/a/b.types.ts", "../../../routes/a/b/_.context.ts"],
+    ["./types/paths/a/b/{id}.types.ts", "../../../../routes/a/b/_.context.ts"],
+    ["./types/v1/paths/a/b.types.ts", "../../../../routes/a/b/_.context.ts"],
+    [
+      "./types/v1/paths/a/b/{id}.types.ts",
+      "../../../../../routes/a/b/_.context.ts",
+    ],
+    ["./types/v1/paths/a/x.types.ts", "../../../../routes/_.context.ts"],
+    ["./routes/a/b.ts", "b/_.context.ts"],
     ["./types/paths/a/x.ts", "../../../routes/_.context.ts"],
     ["./types/paths/a/b/x.ts", "../../../../routes/a/b/_.context.ts"],
     ["./types/paths/a/b/c/x.ts", "../../../../../routes/a/b/_.context.ts"],
@@ -55,7 +96,7 @@ describe("a Repository", () => {
 
       await repository.writeFiles(path("."), { routes: false, types: true });
 
-      await expect(read("./paths/_.context.ts")).rejects.toThrow(
+      await expect(read("./routes/_.context.ts")).rejects.toThrow(
         "no such file or directory",
       );
     });
@@ -66,13 +107,13 @@ describe("a Repository", () => {
       const repository = new Repository();
 
       await add(
-        "./paths/_.context.ts",
+        "./routes/_.context.ts",
         "export class Context { /* do not overwrite me */ }",
       );
 
       await repository.writeFiles(path("."), { routes: true, types: true });
 
-      await expect(read("./paths/_.context.ts")).resolves.toContain(
+      await expect(read("./routes/_.context.ts")).resolves.toContain(
         "do not overwrite me",
       );
     });
@@ -149,8 +190,8 @@ describe("a Repository", () => {
         await $.add(
           "routes/pet.ts",
           original.replace(
-            "$.response[200]",
-            "/* user edit */ $.response[200]",
+            "$.response.status(200)",
+            "/* user edit */ $.response.status(200)",
           ),
         );
 
@@ -194,10 +235,52 @@ describe("a Repository", () => {
         }).generate();
 
         const finalContent = await $.read("routes/pet.ts");
-        expect(finalContent.startsWith("import type { addPet }")).toBe(true);
+        expect(finalContent.startsWith("import type { Routes }")).toBe(true);
         expect(finalContent).toContain("export const POST");
       });
     });
+
+    it.each(["", "async "])(
+      "preserves an exported %sfunction expression across regeneration",
+      async (asyncPrefix) => {
+        await usingTemporaryFiles(async ($) => {
+          await $.add("openapi.json", JSON.stringify(specWithGet));
+          const customRoute = `import type { getPets } from "../types/paths/pet.types.js";
+
+export const GET: getPets = ${asyncPrefix}function ($) {
+  // Keep this custom behavior.
+  return $.response[200].empty();
+};
+`;
+          await $.add("routes/pet.ts", customRoute);
+
+          await new CodeGenerator($.path("openapi.json"), $.path(""), {
+            routes: true,
+            types: true,
+          }).generate();
+          expect(await $.read("routes/pet.ts")).toBe(customRoute);
+
+          await $.remove("openapi.json");
+          await $.add("openapi.json", JSON.stringify(specWithGetAndPost));
+          await new CodeGenerator($.path("openapi.json"), $.path(""), {
+            routes: true,
+            types: true,
+          }).generate();
+          const updatedRoute = await $.read("routes/pet.ts");
+          expect(updatedRoute).toContain(
+            customRoute.slice(customRoute.indexOf("export ")).trim(),
+          );
+          expect(updatedRoute.match(/export const GET/gu)).toHaveLength(1);
+          expect(updatedRoute).toContain("export const POST");
+
+          await new CodeGenerator($.path("openapi.json"), $.path(""), {
+            routes: true,
+            types: true,
+          }).generate();
+          expect(await $.read("routes/pet.ts")).toBe(updatedRoute);
+        });
+      },
+    );
 
     it("does not modify an existing route file when no new methods are present", async () => {
       await usingTemporaryFiles(async ($) => {

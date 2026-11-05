@@ -1,0 +1,32 @@
+---
+import InlineLink from "../components/InlineLink.astro";
+---
+<html lang="en">
+  <head><title>Inline whitespace regression fixture</title></head>
+  <body>
+    <p id="multiline">
+      Read
+      <a href="/docs/getting-started/">the docs</a>
+      for help.
+    </p>
+    <p id="component">
+      Read
+      <InlineLink />
+      for help.
+    </p>
+    <p id="neighbors">
+      <a href="/docs/getting-started/">Read</a>
+      <a href="/docs/getting-started/">the docs</a>
+      <strong>for</strong>
+      <em>help</em>.
+    </p>
+    <p id="same-line">Read <a href="/docs/getting-started/">the docs</a> for help.</p>
+    <p id="punctuation">Read (<a href="/docs/getting-started/">the docs</a>), then try <code>npx counterfact</code>.</p>
+    <p id="component-punctuation">Read (<InlineLink />), then try <code>npx counterfact</code>.</p>
+    <p id="joined">counter<a href="/docs/getting-started/">fact</a></p>
+    <p id="explicit">Read{" "}<InlineLink />{" "}for help.</p>
+    <pre id="code"><code>line one
+  line two
+</code></pre>
+  </body>
+</html>

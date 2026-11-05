@@ -12,10 +12,28 @@ export interface RouteParameter {
   type?: string;
 }
 
+/** OpenAPI 3 request-body metadata consumed by request validation and help. */
+export interface RouteRequestBody {
+  content?: Readonly<
+    Record<
+      string,
+      {
+        schema?: {
+          type?: string;
+        };
+      }
+    >
+  >;
+  description?: string;
+  required?: boolean;
+}
+
 /** Operation metadata consumed by request help and validation. */
 export interface RouteOperation {
+  consumes?: readonly string[];
   description?: string;
   parameters?: readonly RouteParameter[];
+  requestBody?: RouteRequestBody;
   responses?: Readonly<Record<string, { description?: string }>>;
   summary?: string;
 }
@@ -31,7 +49,33 @@ export interface RouteCatalog {
 
 /** The only OpenAPI document shape needed to create a route catalog. */
 export interface OpenApiRouteDocument {
+  readonly consumes?: readonly string[];
   readonly paths: Readonly<Record<string, object>>;
+}
+
+function mergeParameters(
+  pathItemParameters: readonly RouteParameter[] | undefined,
+  operationParameters: readonly RouteParameter[] | undefined,
+): readonly RouteParameter[] | undefined {
+  if (!pathItemParameters || pathItemParameters.length === 0) {
+    return operationParameters;
+  }
+
+  if (!operationParameters || operationParameters.length === 0) {
+    return pathItemParameters;
+  }
+
+  const parameters = new Map<string, RouteParameter>();
+
+  for (const parameter of pathItemParameters) {
+    parameters.set(`${parameter.in}:${parameter.name}`, parameter);
+  }
+
+  for (const parameter of operationParameters) {
+    parameters.set(`${parameter.in}:${parameter.name}`, parameter);
+  }
+
+  return [...parameters.values()];
 }
 
 /**
@@ -56,7 +100,29 @@ export function createOpenApiRouteCatalog(
       const pathItem = document.paths[matchingPath] as
         Record<string, unknown> | undefined;
 
-      return pathItem?.[method.toLowerCase()] as RouteOperation | undefined;
+      const operation = pathItem?.[method.toLowerCase()] as
+        RouteOperation | undefined;
+
+      if (!operation) {
+        return undefined;
+      }
+
+      const pathItemParameters = pathItem?.parameters as
+        readonly RouteParameter[] | undefined;
+      const parameters = mergeParameters(
+        pathItemParameters,
+        operation.parameters,
+      );
+      const consumes = operation.consumes ?? document.consumes;
+
+      if (
+        (!pathItemParameters || pathItemParameters.length === 0) &&
+        consumes === operation.consumes
+      ) {
+        return operation;
+      }
+
+      return { ...operation, consumes, parameters };
     },
     listPaths() {
       return Object.keys(document.paths);

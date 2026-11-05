@@ -1,3 +1,6 @@
+import { fileURLToPath } from "node:url";
+
+import { jest } from "@jest/globals";
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { ApiRunner } from "../src/api-runner.js";
@@ -11,6 +14,10 @@ import {
   ScenarioRegistry,
   Transpiler,
 } from "@counterfact/runtime";
+
+const exampleOpenApiPath = fileURLToPath(
+  new URL("./fixtures/openapi/example.yaml", import.meta.url),
+);
 
 const baseConfig = {
   openApiPath: "_",
@@ -165,9 +172,9 @@ describe("ApiRunner", () => {
         const runner = await ApiRunner.create({
           ...baseConfig,
           basePath: $.path("."),
-          openApiPath: "test/fixtures/openapi/example.yaml",
+          openApiPath: exampleOpenApiPath,
         });
-        expect(runner.openApiPath).toBe("test/fixtures/openapi/example.yaml");
+        expect(runner.openApiPath).toBe(exampleOpenApiPath);
       });
     });
 
@@ -227,7 +234,7 @@ describe("ApiRunner", () => {
         const runner = await ApiRunner.create({
           ...baseConfig,
           basePath: $.path("."),
-          openApiPath: "test/fixtures/openapi/example.yaml",
+          openApiPath: exampleOpenApiPath,
         });
         expect(runner.openApiDocument).toBeDefined();
       });
@@ -298,6 +305,33 @@ describe("ApiRunner", () => {
         });
         await runner.start({ startServer: false, buildCache: false });
         await expect(runner.stopWatching()).resolves.toBeUndefined();
+      });
+    });
+
+    it("attempts every watcher shutdown when one fails", async () => {
+      await usingTemporaryFiles(async ($) => {
+        const runner = await ApiRunner.create({
+          ...baseConfig,
+          basePath: $.path("."),
+        });
+        const codeGeneratorStop = jest
+          .spyOn(runner.codeGenerator, "stopWatching")
+          .mockRejectedValue(new Error("code generator failed"));
+        const scenarioGeneratorStop = jest
+          .spyOn(runner.scenarioFileGenerator, "stopWatching")
+          .mockResolvedValue(undefined);
+        const transpilerStop = jest
+          .spyOn(runner.transpiler, "stopWatching")
+          .mockResolvedValue(undefined);
+        const moduleLoaderStop = jest
+          .spyOn(runner.moduleLoader, "stopWatching")
+          .mockResolvedValue(undefined);
+
+        await expect(runner.stopWatching()).rejects.toThrow(AggregateError);
+        expect(codeGeneratorStop).toHaveBeenCalledTimes(1);
+        expect(scenarioGeneratorStop).toHaveBeenCalledTimes(1);
+        expect(transpilerStop).toHaveBeenCalledTimes(1);
+        expect(moduleLoaderStop).toHaveBeenCalledTimes(1);
       });
     });
   });

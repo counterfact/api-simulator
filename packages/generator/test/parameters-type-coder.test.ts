@@ -1,3 +1,4 @@
+import { printNode } from "../src/ast.js";
 import { describe, expect, it } from "@jest/globals";
 import { format as formatCode } from "prettier";
 
@@ -34,13 +35,13 @@ describe("a ParametersTypeCoder", () => {
     const headerCoder = new ParametersTypeCoder(requirement, "", "header");
 
     await expect(
-      format(`type TestType =${pathCoder.write({})}`),
+      format(`type TestType =${printNode(pathCoder.write({}))}`),
     ).resolves.toMatchSnapshot("path");
     await expect(
-      format(`type TestType =${queryCoder.write({})}`),
+      format(`type TestType =${printNode(queryCoder.write({}))}`),
     ).resolves.toMatchSnapshot("query");
     await expect(
-      format(`type TestType =${headerCoder.write({})}`),
+      format(`type TestType =${printNode(headerCoder.write({}))}`),
     ).resolves.toMatchSnapshot("header");
   });
 
@@ -57,13 +58,13 @@ describe("a ParametersTypeCoder", () => {
     const headerCoder = new ParametersTypeCoder(requirement, "", "header");
 
     await expect(
-      format(`type TestType =${pathCoder.write({})}`),
+      format(`type TestType =${printNode(pathCoder.write({}))}`),
     ).resolves.toMatchSnapshot("path");
     await expect(
-      format(`type TestType =${queryCoder.write({})}`),
+      format(`type TestType =${printNode(queryCoder.write({}))}`),
     ).resolves.toMatchSnapshot("query");
     await expect(
-      format(`type TestType =${headerCoder.write({})}`),
+      format(`type TestType =${printNode(headerCoder.write({}))}`),
     ).resolves.toMatchSnapshot("header");
   });
 
@@ -75,14 +76,14 @@ describe("a ParametersTypeCoder", () => {
     const coder = new ParametersTypeCoder(requirement, "", "query");
 
     await expect(
-      format(`type TestType =${coder.write({})}`),
+      format(`type TestType =${printNode(coder.write({}))}`),
     ).resolves.toMatchSnapshot();
   });
 
   it("has no type", () => {
     const coder = new ParametersTypeCoder(new Requirement({}));
 
-    expect(coder.typeDeclaration(undefined, {})).toBe("");
+    expect(coder.typeDeclaration(undefined, {})).toBeUndefined();
   });
 
   it("includes JSDoc from parameter description", async () => {
@@ -96,7 +97,9 @@ describe("a ParametersTypeCoder", () => {
     ]);
 
     const coder = new ParametersTypeCoder(requirement, "", "query");
-    const result = await format(`type TestType = ${coder.write({})}`);
+    const result = await format(
+      `type TestType = ${printNode(coder.write({}))}`,
+    );
 
     expect(result).toContain("* Status values for filter");
     expect(result).toContain("status?: string");
@@ -114,7 +117,9 @@ describe("a ParametersTypeCoder", () => {
     ]);
 
     const coder = new ParametersTypeCoder(requirement, "", "query");
-    const result = await format(`type TestType = ${coder.write({})}`);
+    const result = await format(
+      `type TestType = ${printNode(coder.write({}))}`,
+    );
 
     expect(result).toContain("@deprecated");
     expect(result).toContain('@example "foo"');

@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from "node:util";
+
 /**
  * A context object that lives at a specific route path and is shared across
  * all requests to that path (and its descendants).
@@ -163,7 +165,12 @@ export class ContextRegistry extends EventTarget {
     const context = this.find(path);
 
     for (const property in updatedContext) {
-      if (updatedContext[property] !== this.cache.get(path)?.[property]) {
+      if (
+        !isDeepStrictEqual(
+          updatedContext[property],
+          this.cache.get(path)?.[property],
+        )
+      ) {
         context[property] = updatedContext[property];
       }
     }
@@ -171,6 +178,14 @@ export class ContextRegistry extends EventTarget {
     Object.setPrototypeOf(context, Object.getPrototypeOf(updatedContext));
 
     this.cache.set(path, cloneForCache(updatedContext) as Context);
+  }
+
+  /** Discards live contexts and hot-reload snapshots before reconstruction. */
+  public clear(): void {
+    this.entries.clear();
+    this.cache.clear();
+    this.seen.clear();
+    this.add("/", {});
   }
 
   /** Returns all registered route paths as an array. */

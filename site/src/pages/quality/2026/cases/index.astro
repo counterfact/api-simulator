@@ -1,0 +1,91 @@
+---
+import QualityLayout from "../../../../layouts/QualityLayout.astro";
+import {
+  auditCasesInReportOrder,
+  baselineCases,
+  caseIsInPrimaryWindow,
+  casePath,
+  categoryLabel,
+  processIncidents,
+} from "../../../../data/quality-2026";
+
+const cohorts = [
+  { year: 2025 as const, cases: baselineCases },
+  { year: 2026 as const, cases: auditCasesInReportOrder },
+];
+const incident = processIncidents[0];
+---
+
+<QualityLayout
+  title="Case records — Counterfact quality study"
+  description="Source and release histories for every product defect included in the Counterfact quality study."
+  canonicalPath="/quality/2026/cases"
+  active="cases"
+>
+  <article class="appendix-page">
+    <header class="appendix-header quality-reading">
+      <p class="breadcrumbs"><a href="/quality/2026">Article</a> / Case records</p>
+      <h1>Case records</h1>
+      <p>
+        These detailed external-report cases from 2025–2026 trace reported behavior through the available source and release evidence. Matched-window membership remains separate from defect origin. The <a href="/quality/2026/candidates#census">public-record census</a> provides the broader candidate record.
+      </p>
+    </header>
+
+    {
+      cohorts.map((cohort) => (
+        <section class="candidate-cohort quality-figure-wide" aria-labelledby={`cases-${cohort.year}`}>
+          <h2 id={`cases-${cohort.year}`}>{cohort.year} product cases</h2>
+          <div class="table-scroll">
+            <table class="research-table case-table">
+              <thead>
+                <tr>
+                  <th scope="col">Report</th>
+                  <th scope="col">Reported</th>
+                  <th scope="col">Matched window</th>
+                  <th scope="col">Origin classification</th>
+                  <th scope="col">First fixed release</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cohort.cases.map((item) => (
+                  <tr>
+                    <th scope="row"><a href={casePath(item)}>#{item.issue}: {item.shortTitle}</a><span class="cell-detail">{item.reporter} · {item.area}</span></th>
+                    <td>{item.reportedOn}</td>
+                    <td>{caseIsInPrimaryWindow(item) ? "Included" : "Outside matched window"}</td>
+                    <td>{categoryLabel(item.category, item.reportYear)}</td>
+                    <td>{item.fixedRelease}<span class="cell-detail">{item.responseDays} calendar {item.responseDays === 1 ? "day" : "days"} after report</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))
+    }
+
+    <section class="appendix-notes quality-reading quality-prose" aria-labelledby="process-case">
+      <h2 id="process-case">Process-quality incident: issue #{incident.issue}</h2>
+      <p>
+        <a href={incident.sourceUrl}>{incident.title}</a>. {incident.finding}{" "}
+        GitHub-based publishing resumed with release 2.16.5. The incident is
+        included in the study’s interpretation but excluded from product-defect
+        percentages because the published code was authentic.
+      </p>
+      <ul>
+        {incident.sources.map((source, index) => (
+          <li><a href={source}>{index === 0 ? "External report" : index === 1 ? "npm release 2.16.2" : "Restored GitHub release"}</a></li>
+        ))}
+      </ul>
+    </section>
+
+    <footer class="appendix-notes quality-reading quality-prose">
+      <h2>Population transparency</h2>
+      <p>
+        The <a href="/quality/2026/candidates#original-ledger">detailed external-report ledger</a>{" "}
+        shows the screening decisions for these cases. The
+        <a href="/quality/2026/candidates#census">public-record census</a> provides
+        the broader candidate record.
+      </p>
+    </footer>
+  </article>
+</QualityLayout>

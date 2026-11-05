@@ -1,0 +1,58 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`schema type accuracy generates referenced models that accept valid values and reject invalid ones 1`] = `
+{
+  "types/components/schemas/Animal.ts": "import type { Cat } from "./Cat.js";
+import type { Dog } from "./Dog.js";
+export type Animal =
+  | ((Cat & { kind: "cat" }) | (Cat & { kind: "kitten" }))
+  | (Dog & { kind: "dog" });
+",
+  "types/components/schemas/Cat.ts": "export type Cat = { kind: string; meows: boolean };
+",
+  "types/components/schemas/Cats.ts": "import type { Cat } from "./Cat.js";
+export type Cats = { [key: string]: Cat };
+",
+  "types/components/schemas/Dog.ts": "export type Dog = { kind: string; barks: boolean };
+",
+  "types/components/schemas/Fixed.ts": "export type Fixed = { kind: "cat" };
+",
+  "types/components/schemas/Named.ts": "export type Named = { name?: string; optional?: number };
+",
+  "types/components/schemas/NamedUnion.ts": "import type { Named } from "./Named.js";
+export type NamedUnion = Named | { name?: number } | string;
+",
+  "types/components/schemas/OpenTuple.ts": "export type OpenTuple = [number, ...boolean[]];
+",
+  "types/components/schemas/OptionalTuple.ts": "export type OptionalTuple = [number?, string?];
+",
+  "types/components/schemas/RequiredName.ts": "import type { Named } from "./Named.js";
+export type RequiredName = Named extends infer RequiredSchema
+  ? RequiredSchema extends object
+    ? RequiredSchema & {
+        [
+          RequiredKey in keyof RequiredSchema as RequiredKey extends "name"
+            ? RequiredKey
+            : never
+        ]-?: RequiredSchema[RequiredKey];
+      } & { name: unknown }
+    : RequiredSchema
+  : never;
+",
+  "types/components/schemas/RequiredUnion.ts": "import type { NamedUnion } from "./NamedUnion.js";
+export type RequiredUnion = NamedUnion extends infer RequiredSchema
+  ? RequiredSchema extends object
+    ? RequiredSchema & {
+        [
+          RequiredKey in keyof RequiredSchema as RequiredKey extends "name"
+            ? RequiredKey
+            : never
+        ]-?: RequiredSchema[RequiredKey];
+      } & { name: unknown }
+    : RequiredSchema
+  : never;
+",
+  "types/components/schemas/Tuple.ts": "export type Tuple = [number, string];
+",
+}
+`;

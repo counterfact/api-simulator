@@ -1,4 +1,5 @@
 node_modules
+.yarn/
 yarn-error.log
 dist
 site/node_modules

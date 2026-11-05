@@ -96,9 +96,7 @@ describe("ChaosRule", () => {
     "accepts the valid status code %s",
     (status) => {
       expect(
-        new ChaosRule("")
-          .status(status)
-          .tryApply({ body: "ok", status: 200 }),
+        new ChaosRule("").status(status).tryApply({ body: "ok", status: 200 }),
       ).toMatchObject({ response: { status } });
     },
   );

@@ -1,0 +1,29 @@
+openapi: 3.0.3
+
+info:
+  title: Multipart Form Acceptance Test
+  version: "1.0.0"
+
+paths:
+  /upload:
+    post:
+      operationId: uploadTextFields
+      requestBody:
+        required: true
+        description: Text fields only
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - count
+              properties:
+                name:
+                  type: string
+                count:
+                  type: integer
+
+      responses:
+        "200":
+          description: Text fields received

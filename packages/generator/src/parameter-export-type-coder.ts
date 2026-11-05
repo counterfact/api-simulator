@@ -1,9 +1,10 @@
+import type ts from "typescript";
 import { TypeCoder } from "./type-coder.js";
 import type { Requirement } from "./requirement.js";
 
 export class ParameterExportTypeCoder extends TypeCoder {
   public _typeName: string;
-  public _typeCode: string;
+  public _typeCode: ts.TypeNode;
   public _parameterKind: string;
   public _modulePath!: string;
 
@@ -11,7 +12,7 @@ export class ParameterExportTypeCoder extends TypeCoder {
     requirement: Requirement,
     version: string,
     typeName: string,
-    typeCode: string,
+    typeCode: ts.TypeNode,
     parameterKind: string,
   ) {
     super(requirement, version);
@@ -29,7 +30,7 @@ export class ParameterExportTypeCoder extends TypeCoder {
     yield this._typeName;
   }
 
-  public override writeCode(): string {
+  public override writeCode(): ts.TypeNode {
     return this._typeCode;
   }
 

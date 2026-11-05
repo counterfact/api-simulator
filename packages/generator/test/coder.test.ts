@@ -1,3 +1,5 @@
+import ts from "typescript";
+import { objectExpression, valueExpression, printNode } from "../src/ast.js";
 import { describe, expect, it } from "@jest/globals";
 
 import { Coder } from "../src/coder.js";
@@ -65,7 +67,7 @@ describe("a Coder", () => {
   it("writes code synchronously given a requirement that is loaded", () => {
     class JsonCoder extends Coder {
       write() {
-        return JSON.stringify(this.requirement.data);
+        return valueExpression(this.requirement.data);
       }
     }
 
@@ -73,7 +75,9 @@ describe("a Coder", () => {
       name: "Alice",
     });
 
-    expect(new JsonCoder(requirement).write()).toBe('{"name":"Alice"}');
+    expect(printNode(new JsonCoder(requirement).write())).toBe(
+      '{ "name": "Alice" }',
+    );
   });
 
   it("references an object that will written by another coder instance and imported into the script", () => {
@@ -81,9 +85,10 @@ describe("a Coder", () => {
       write(script) {
         const accountCoder = new Coder();
 
-        return `{ name: "${
-          this.requirement.data.name
-        }", account: ${script.import(accountCoder)} }`;
+        return objectExpression([
+          ["name", valueExpression(this.requirement.data.name)],
+          ["account", ts.factory.createIdentifier(script.import(accountCoder))],
+        ]);
       }
     }
 
@@ -97,8 +102,8 @@ describe("a Coder", () => {
       name: "example",
     });
 
-    expect(new DelegatingCoder(requirement).write(script)).toBe(
-      '{ name: "example", account: Account }',
+    expect(printNode(new DelegatingCoder(requirement).write(script))).toBe(
+      '{ "name": "example", "account": Account }',
     );
   });
 
