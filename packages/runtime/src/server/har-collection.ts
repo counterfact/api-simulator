@@ -249,7 +249,10 @@ function parseEntry(
     request: {
       ...normalized,
       body,
-      bodyAvailable: postData === undefined || rawBody !== undefined,
+      bodyAvailable:
+        postData === undefined
+          ? !(typeof request.bodySize === "number" && request.bodySize > 0)
+          : rawBody !== undefined,
     },
     response: {
       status,

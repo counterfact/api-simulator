@@ -100,3 +100,5 @@ Recorded status, content type, body and repeated headers are preserved, includin
 Recordings do not reproduce elapsed time, stream event timing, or WebSocket conversations. Redirect responses are returned to the client without an automatic upstream fetch.
 
 HAR files can contain credentials and personal data in headers, URLs and bodies. Review and redact recordings locally before committing them. Counterfact does not upload recordings or log captured payloads in load diagnostics.
+
+MSW requests use their concrete public path (including any base path) for recording matching; rawPath selects the registered handler pattern. Known omitted HAR request payloads do not match bodyless requests by default. Response media-type parameters are preserved while negotiation compares the media type, and singleton transport header arrays validate against scalar schemas without flattening repeated wire headers.

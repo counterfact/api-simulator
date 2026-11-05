@@ -40,8 +40,9 @@ const mswHandlers: MswHandlerMap = {};
  * matching Counterfact route handler registered via {@link createMswHandlers}.
  *
  * @param request - The intercepted request, including the HTTP method, path,
- *   headers, query, body, and a `rawPath` that preserves the original URL
- *   before base-path stripping.
+ *   headers, query, body, a concrete public `path` including its base prefix,
+ *   and a `rawPath` matching the registered handler pattern. `originalUrl`
+ *   can preserve a separately captured request URL for HAR matching.
  * @returns The response produced by the matching handler, or a 404 object when
  *   no handler has been registered for the given method and path.
  */
@@ -120,9 +121,9 @@ export async function createMswHandlers(
             ...request,
             originalUrl:
               request.originalUrl ??
-              (request.rawPath.includes("?")
-                ? request.rawPath
-                : `${request.rawPath}?${query}`),
+              (request.path.includes("?")
+                ? request.path
+                : `${request.path}?${query}`),
           });
         };
         mswHandlers[`${method}:${apiPath}`] = handler;

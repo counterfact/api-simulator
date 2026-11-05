@@ -54,10 +54,20 @@ export function validateResponse(
     }
 
     if (actualValue !== undefined && headerSpec.schema !== undefined) {
-      const coercedValue =
-        typeof actualValue === "string"
-          ? coerceHeaderValue(actualValue, headerSpec.schema)
+      // Retain transport arrays on the wire, but validate a single scalar value.
+      const scalar =
+        typeof headerSpec.schema.type === "string" &&
+        ["string", "integer", "number", "boolean"].includes(
+          headerSpec.schema.type,
+        );
+      const value =
+        Array.isArray(actualValue) && actualValue.length === 1 && scalar
+          ? actualValue[0]
           : actualValue;
+      const coercedValue =
+        typeof value === "string"
+          ? coerceHeaderValue(value, headerSpec.schema)
+          : value;
 
       const valid = ajv.validate(headerSpec.schema, coercedValue);
 

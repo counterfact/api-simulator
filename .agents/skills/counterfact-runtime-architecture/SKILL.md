@@ -80,3 +80,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
 
 - For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.
+
+- Keep replay request identity separate from adapter handler-map patterns. Treat known omitted archive payloads as unavailable, compare media types without parameters, and validate scalar transport headers without altering repeated wire values. Deletion regressions must repeat a request that matched before removal.

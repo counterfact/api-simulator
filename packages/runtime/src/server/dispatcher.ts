@@ -564,9 +564,17 @@ export class Dispatcher {
       return true;
     }
 
-    const [baseType, subType] = type.split("/");
+    const [baseType, subType] = type
+      .split(";", 1)[0]!
+      .trim()
+      .toLowerCase()
+      .split("/");
 
-    const [patternType, patternSubType] = pattern.split("/");
+    const [patternType, patternSubType] = pattern
+      .split(";", 1)[0]!
+      .trim()
+      .toLowerCase()
+      .split("/");
 
     if (baseType === patternType) {
       return subType === patternSubType || patternSubType === "*";

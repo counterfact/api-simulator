@@ -81,7 +81,7 @@ def remove(journey):
 
 @then("matching requests use the handler fallback")
 def removed(journey):
-    journey.wait_for_http("/api/items?kind=recorded", lambda response: response.status_code == 404 and response.text == "fallback")
+    journey.wait_for_http("/api/items?kind=recorded", lambda response: response.status_code == 404 and response.text == "fallback", headers={"x-id": "recorded"})
 
 
 @then("requests with a different header use the handler fallback")
