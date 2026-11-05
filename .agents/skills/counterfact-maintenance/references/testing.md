@@ -50,3 +50,5 @@ Keep focused unit/type tests even when a broader product journey covers the same
 - Preserve the ordered ancestor node_modules chain and package module scopes when relocating API source; test mixed local/hoisted dependencies and JavaScript ESM scenarios.
 - Verify multiple-worker isolation and cleanup after startup, reset, scenario, and test failures.
 - Include adapter workspaces in builds, CI, package boundaries, and isolated packed-consumer checks.
+
+- Compiler tests spanning fixture mutations need separate TypeScript programs. Give a demonstrated slow scenario its own timeout when coverage and concurrent compiler checks exceed the default; retain the suite-wide timeout for other tests.
