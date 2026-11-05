@@ -147,7 +147,10 @@ export function validateRequest(
         ? multipartValidationSchema(selected)
         : selected;
 
-    if (schema !== undefined) {
+    if (request.body === undefined) {
+      if (operation.requestBody.required === true)
+        errors.push("body is required");
+    } else if (schema !== undefined) {
       const valid = ajv.validate(schema as object | boolean, request.body);
 
       if (!valid && ajv.errors) {
@@ -157,15 +160,15 @@ export function validateRequest(
           errors.push(`body${path} ${error.message ?? "is invalid"}`);
         }
       }
-    } else if (operation.requestBody.required === true && !request.body) {
-      errors.push("body is required");
     }
   }
 
   // Validate request body (OpenAPI 2.x body parameter)
   const bodyParam = parameters.find((p) => p.in === "body");
 
-  if (bodyParam?.schema !== undefined) {
+  if (bodyParam && request.body === undefined) {
+    if (bodyParam.required === true) errors.push("body is required");
+  } else if (bodyParam?.schema !== undefined) {
     const valid = ajv.validate(bodyParam.schema, request.body);
 
     if (!valid && ajv.errors) {

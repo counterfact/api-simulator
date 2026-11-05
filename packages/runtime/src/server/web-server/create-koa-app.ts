@@ -172,7 +172,18 @@ export function createKoaApp({
   });
 
   app.use(multipartBodyParser());
-  app.use(bodyParser());
+  const parseBody = bodyParser({ strict: false });
+  app.use(async (ctx, next) => {
+    await parseBody(ctx, async () => {
+      const raw = ctx.request.rawBody;
+      const noFraming =
+        !ctx.get("transfer-encoding") &&
+        Number(ctx.get("content-length") || 0) === 0;
+      if (raw === "" || (raw === undefined && noFraming))
+        ctx.request.body = undefined;
+      await next();
+    });
+  });
 
   app.use(async (ctx, next) => {
     await next();

@@ -22,7 +22,7 @@ const schema = {
   },
 };
 
-function appForUpload() {
+function appForUpload(required = true) {
   const registry = new Registry();
   const contextRegistry = new ContextRegistry();
   const handler = jest.fn(({ body }) => ({
@@ -44,7 +44,7 @@ function appForUpload() {
     ].map((type) => [type, { schema }]),
   );
   const operation = {
-    requestBody: { required: true, content },
+    requestBody: { required, content },
     responses: { 200: { description: "Received" } },
   };
   const dispatcher = new Dispatcher(registry, contextRegistry, {
@@ -220,4 +220,17 @@ describe("multipart requests over HTTP", () => {
       expect(handler.mock.calls[0][0].body).toEqual({ name: "Narrator" });
     },
   );
+});
+
+it("preserves optional body absence without dropping parsed multipart fields", async () => {
+  const { app, handler } = appForUpload(false);
+  const agent = request(app.callback());
+  expect((await agent.post("/upload")).status).toBe(200);
+  expect(handler.mock.calls[0][0].body).toBeUndefined();
+  expect((await agent.post("/upload").field("name", "Present")).status).toBe(
+    200,
+  );
+  expect(handler.mock.calls[1][0].body).toEqual({ name: "Present" });
+  expect((await agent.post("/upload").field("count", "3")).status).toBe(400);
+  expect(handler).toHaveBeenCalledTimes(2);
 });
