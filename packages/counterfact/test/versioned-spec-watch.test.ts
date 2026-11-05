@@ -105,26 +105,29 @@ it("retains sibling versions when either watched specification changes", async (
         };
       `,
       );
-      const program = ts.createProgram(
-        [$.path("api/greetings/routes/greeting.ts")],
-        {
-          strict: true,
-          noEmit: true,
-          skipLibCheck: true,
-          types: [],
-          target: ts.ScriptTarget.ES2022,
-          module: ts.ModuleKind.ESNext,
-          moduleResolution: ts.ModuleResolutionKind.Bundler,
-          allowImportingTsExtensions: true,
-        },
-      );
-      expect(
-        ts
-          .getPreEmitDiagnostics(program)
-          .map((diagnostic) =>
-            ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"),
-          ),
-      ).toEqual([]);
+      // A second watcher event can still be publishing shared type files.
+      await eventually(async () => {
+        const program = ts.createProgram(
+          [$.path("api/greetings/routes/greeting.ts")],
+          {
+            strict: true,
+            noEmit: true,
+            skipLibCheck: true,
+            types: [],
+            target: ts.ScriptTarget.ES2022,
+            module: ts.ModuleKind.ESNext,
+            moduleResolution: ts.ModuleResolutionKind.Bundler,
+            allowImportingTsExtensions: true,
+          },
+        );
+        expect(
+          ts
+            .getPreEmitDiagnostics(program)
+            .map((diagnostic) =>
+              ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n"),
+            ),
+        ).toEqual([]);
+      });
 
       await Promise.all([
         $.add("v1.json", spec({ "/greeting": operation("bar") })),
