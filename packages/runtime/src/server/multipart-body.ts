@@ -26,7 +26,7 @@ export function normalizeMultipartBody(
   schema: unknown,
 ): unknown {
   const definition = asSchema(schema);
-  if (!definition || isMultipartFile(body)) return body;
+  if (!definition) return body;
   const branches = definition.anyOf ?? definition.oneOf;
   if (Array.isArray(branches)) {
     const nonNull = branches.filter(
