@@ -128,11 +128,20 @@ export function validateRequest(
       ?.trim()
       .toLowerCase();
     const content = operation.requestBody.content;
+    const declared = contentType
+      ? [contentType, contentType.split("/")[0] + "/*", "*/*"].find((type) =>
+          Object.hasOwn(content, type),
+        )
+      : undefined;
     const selected = contentType
-      ? content[contentType]?.schema
+      ? declared === undefined
+        ? undefined
+        : content[declared]?.schema
       : (content["application/json"]?.schema ??
         content["application/x-www-form-urlencoded"]?.schema ??
         content["multipart/form-data"]?.schema);
+    if (contentType && declared === undefined && request.body !== undefined)
+      errors.push("body content type is not declared: " + contentType);
     const schema =
       contentType === "multipart/form-data"
         ? multipartValidationSchema(selected)

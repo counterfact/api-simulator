@@ -158,3 +158,62 @@ describe("multipart request types", () => {
     },
   );
 });
+
+it.each(["", "v1"])(
+  "compiles colliding and nullable binary multipart types (%s)",
+  async (version) => {
+    await usingTemporaryFiles(async ($) => {
+      const binary = { type: "string", format: "binary" };
+      await $.add(
+        "spec.json",
+        JSON.stringify({
+          openapi: "3.1.0",
+          info: { title: "Files", version: "1" },
+          components: { schemas: { MultipartFile: binary } },
+          paths: {
+            "/upload": {
+              post: {
+                requestBody: {
+                  required: true,
+                  content: {
+                    "multipart/form-data": {
+                      schema: {
+                        type: "object",
+                        required: ["file", "nullableFile"],
+                        properties: {
+                          file: { $ref: "#/components/schemas/MultipartFile" },
+                          nullableFile: {
+                            type: ["string", "null"],
+                            format: "binary",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: { 204: { description: "OK" } },
+              },
+            },
+          },
+        }),
+      );
+      await new CodeGenerator(
+        $.path("spec.json"),
+        $.path("api"),
+        { routes: true, types: true },
+        version,
+      ).generate();
+      if (version)
+        await $.add(
+          "api/types/versions.ts",
+          await generateVersionsTsContent([version]),
+        );
+      await $.add(
+        "consumer.ts",
+        'import type {Routes} from "./api/types/index.js"; const route: Routes["/upload"]["POST"] = ($)=>{ const bytes:Uint8Array=$.body.file.data; if ($.body.nullableFile!==null) { const optionalBytes:Uint8Array=$.body.nullableFile.data; } const nullable: typeof $.body.nullableFile=null; return $.response.status(204).empty(); };',
+      );
+      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+    });
+  },
+  30000,
+);

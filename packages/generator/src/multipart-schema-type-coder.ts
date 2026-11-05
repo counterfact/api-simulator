@@ -1,6 +1,6 @@
 import type ts from "typescript";
 
-import { typeReference } from "./ast.js";
+import { typeReference, literalType, unionType } from "./ast.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
 import type { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
@@ -16,12 +16,21 @@ export class MultipartSchemaTypeCoder extends SchemaTypeCoder {
   }
 
   protected override writeSchema(script: Script): ts.TypeNode {
+    const rawType = this.requirement.get("type")?.data;
+    const types = Array.isArray(rawType) ? rawType : [rawType];
     if (
-      (this.requirement.get("type")?.data === "string" &&
+      (types.includes("string") &&
         this.requirement.get("format")?.data === "binary") ||
-      this.requirement.get("type")?.data === "file"
+      types.includes("file")
     ) {
-      return typeReference(script.importSharedType("MultipartFile"));
+      const file = typeReference(script.importSharedType("MultipartFile"));
+      const alternatives: ts.TypeNode[] = [file];
+      if (
+        types.includes("null") ||
+        this.requirement.get("nullable")?.data === true
+      )
+        alternatives.push(literalType(null));
+      return unionType(alternatives);
     }
     return super.writeSchema(script);
   }

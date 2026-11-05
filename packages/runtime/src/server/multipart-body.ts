@@ -1,3 +1,4 @@
+import Ajv from "ajv";
 import type { MultipartFile } from "@counterfact/types";
 
 type Schema = Record<string, unknown>;
@@ -20,49 +21,56 @@ export function isMultipartFile(value: unknown): value is MultipartFile {
   );
 }
 
-/** Decode only declared fields. Invalid values are left for request validation. */
+const normalizationAjv = new Ajv({
+  allErrors: false,
+  strict: false,
+  coerceTypes: false,
+});
+normalizationAjv.addKeyword({
+  keyword: "counterfactMultipartFile",
+  validate: (_schema: boolean, data: unknown) => isMultipartFile(data),
+  errors: false,
+});
+
+/** Decode declared fields, preserving already-valid unions and oneOf exclusivity. */
 export function normalizeMultipartBody(
   body: unknown,
   schema: unknown,
 ): unknown {
   const definition = asSchema(schema);
   if (!definition) return body;
-  const branches = definition.anyOf ?? definition.oneOf;
-  if (Array.isArray(branches)) {
-    const nonNull = branches.filter(
-      (branch) => asSchema(branch)?.type !== "null",
-    );
-    if (nonNull.length === 1) return normalizeMultipartBody(body, nonNull[0]);
-  }
-  const type = Array.isArray(definition.type)
-    ? definition.type.find((item) => item !== "null")
-    : definition.type;
+  const types = Array.isArray(definition.type)
+    ? definition.type.filter((type) => type !== "null")
+    : [definition.type];
+  const type = types.length === 1 ? types[0] : undefined;
+  const objectType =
+    type === "object" ||
+    (type === undefined &&
+      (definition.properties !== undefined ||
+        definition.additionalProperties !== undefined));
   if (type === "array") {
-    const values = Array.isArray(body) ? body : [body];
-    return values.map((value) =>
+    body = (Array.isArray(body) ? body : [body]).map((value) =>
       normalizeMultipartBody(value, definition.items),
     );
-  }
-  if (
+  } else if (
     typeof body === "string" &&
-    ["object", "number", "integer", "boolean"].includes(type as string)
+    (objectType || ["number", "integer", "boolean"].includes(type as string))
   ) {
     try {
       const decoded: unknown = JSON.parse(body);
       if (
-        type === "object"
+        objectType
           ? asSchema(decoded) !== undefined
           : typeof decoded === (type === "integer" ? "number" : type)
-      ) {
+      )
         body = decoded;
-      }
     } catch {
-      // Keep the original string so Ajv reports the declared type mismatch.
+      /* Preserve invalid wire text for request validation. */
     }
   }
-  const object = asSchema(body);
-  const properties = asSchema(definition.properties);
-  if (object && properties) {
+  const object = asSchema(body),
+    properties = asSchema(definition.properties);
+  if (object && properties)
     body = Object.fromEntries(
       Object.entries(object).map(([name, value]) => [
         name,
@@ -72,10 +80,17 @@ export function normalizeMultipartBody(
         ),
       ]),
     );
-  }
-  if (Array.isArray(definition.allOf)) {
+  if (Array.isArray(definition.allOf))
     for (const branch of definition.allOf)
       body = normalizeMultipartBody(body, branch);
+  const branches = definition.anyOf ?? definition.oneOf;
+  if (Array.isArray(branches)) {
+    const adapted = multipartValidationSchema(definition) as object | boolean;
+    if (normalizationAjv.validate(adapted, body)) return body;
+    for (const branch of branches) {
+      const candidate = normalizeMultipartBody(body, branch);
+      if (normalizationAjv.validate(adapted, candidate)) return candidate;
+    }
   }
   return body;
 }
@@ -87,12 +102,20 @@ export function multipartValidationSchema(schema: unknown): unknown {
   const cached = validationSchemas.get(definition);
   if (cached) return cached;
   if (
-    (definition.type === "string" && definition.format === "binary") ||
+    ((definition.type === "string" ||
+      (Array.isArray(definition.type) && definition.type.includes("string"))) &&
+      definition.format === "binary") ||
     definition.type === "file"
   ) {
     const file = { counterfactMultipartFile: true };
-    const result =
-      definition.nullable === true ? { anyOf: [file, { type: "null" }] } : file;
+    const otherTypes = Array.isArray(definition.type)
+      ? definition.type.filter((type) => type !== "string")
+      : [];
+    if (definition.nullable === true && !otherTypes.includes("null"))
+      otherTypes.push("null");
+    const result = otherTypes.length
+      ? { anyOf: [file, { type: otherTypes }] }
+      : file;
     validationSchemas.set(definition, result);
     return result;
   }

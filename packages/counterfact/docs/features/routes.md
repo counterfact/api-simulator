@@ -128,18 +128,17 @@ import type { Routes } from "../../../types/index.js";
 
 type Route = Routes["/groups"]["/{groupName}"]["/search"];
 
-export const POST: Route["POST"] =
-  function ($) {
-    if ($.headers["x-token"] !== "super-secret") {
-      return $.response.status(401).text("Unauthorized");
-    }
+export const POST: Route["POST"] = function ($) {
+  if ($.headers["x-token"] !== "super-secret") {
+    return $.response.status(401).text("Unauthorized");
+  }
 
-    const content =
-      `Results for "${$.query.keyword}" in ${$.path.groupName}` +
-      ` with tags: ${$.body.tags.join(", ")}`;
+  const content =
+    `Results for "${$.query.keyword}" in ${$.path.groupName}` +
+    ` with tags: ${$.body.tags.join(", ")}`;
 
-    return $.response.status(200).text(content);
-  };
+  return $.response.status(200).text(content);
+};
 ```
 
 All four properties are typed from your OpenAPI spec, so autocomplete works for parameter names and values. GET and HEAD handlers receive no body; put their inputs in path, query, or header parameters.
@@ -285,3 +284,13 @@ multipart bodies return HTTP 400 even when request validation is disabled.
 Missing required fields and invalid file or field types return HTTP 400 under
 the normal request-validation settings. The original multipart bytes are
 preserved for `$.proxy(url)` forwarding.
+
+For multipart unions, already-valid values are preserved. Otherwise Counterfact
+tries decoded branch candidates in declaration order and selects the first that
+satisfies the complete schema, including oneOf exclusivity. Object fields with
+properties or additionalProperties can contain JSON object text even when type
+is omitted. Nullable binary type arrays expose MultipartFile or null.
+
+Request-body validation selects the declared exact media type, then subtype
+and full wildcard entries. A present body with an undeclared media type returns
+400 before the handler runs.
