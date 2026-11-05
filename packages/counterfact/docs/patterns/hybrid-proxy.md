@@ -1,5 +1,7 @@
 # Hybrid Proxy
 
+The [REPL](../features/repl.md) is the live JavaScript prompt in the terminal running Counterfact. Enter the `.proxy` commands below there.
+
 Keep stable endpoints live while you build or replace the rest. Counterfact can serve local handlers for selected paths and forward everything else to the real backend.
 
 ## Why teams use this
@@ -20,8 +22,12 @@ Add a route handler for any path you want to mock:
 
 ```ts
 // api/routes/payments.ts
-export const POST: HTTP_POST = function ($) {
-  return $.response[200].json({ transactionId: "mock-txn-001" });
+import type { Routes } from "../types/index.js";
+
+type Route = Routes["/payments"];
+
+export const POST: Route["POST"] = function ($) {
+  return $.response.status(200).json({ transactionId: "mock-txn-001" });
 };
 ```
 
@@ -49,21 +55,25 @@ Install and pin Counterfact as a development dependency and commit its lockfile.
 
 ```ts
 // api/routes/users.ts
-import type { HTTP_GET } from "../types/paths/users.types.js";
-export const GET: HTTP_GET = function ($) {
+import type { Routes } from "../types/index.js";
+
+type Route = Routes["/users"];
+export const GET: Route["GET"] = function ($) {
   return $.proxy("http://127.0.0.1:9000/users");
 };
 ```
 
 ```ts
 // api/routes/payments.ts
-import type { HTTP_POST } from "../types/paths/payments.types.js";
-export const POST: HTTP_POST = function ($) {
-  return $.response[200].json({ transactionId: "mock-txn-001" });
+import type { Routes } from "../types/index.js";
+
+type Route = Routes["/payments"];
+export const POST: Route["POST"] = function ($) {
+  return $.response.status(200).json({ transactionId: "mock-txn-001" });
 };
 ```
 
-This example assumes the specification declares the shown operations and the payment's 200 JSON response. Choose your upstream URL, including the operation path, in the authored forwarding handler. The helper does not automatically append an incoming path or query string; construct those explicitly if the operation needs them. Start with **no global proxy default**:
+This example assumes the specification declares the shown operations and the payment's 200 JSON response. Choose your upstream URL, including the operation path, in the forwarding handler. The helper does not automatically append an incoming path or query string; construct those explicitly if the operation needs them. Start with **no global proxy default**:
 
 ```sh
 npx counterfact ./openapi.yaml api

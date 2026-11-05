@@ -5,6 +5,7 @@ import { jsonToXml } from "./json-to-xml.js";
 import type {
   CookieOptions,
   OpenApiOperation,
+  MiddlewareResponseBuilderFactory,
   ResponseBuilder,
 } from "@counterfact/types";
 import { STREAMING_CONTENT_TYPES } from "@counterfact/types/streaming-content-types";
@@ -78,6 +79,24 @@ function serializeCookie(
   return parts.join("; ");
 }
 
+function withCookie(
+  headers: ResponseBuilder["headers"],
+  name: string,
+  value: string,
+  options?: CookieOptions,
+): ResponseBuilder["headers"] {
+  const existing = headers?.["set-cookie"];
+  const cookies = Array.isArray(existing)
+    ? existing
+    : existing === undefined
+      ? []
+      : [existing];
+  return {
+    ...headers,
+    "set-cookie": [...cookies, serializeCookie(name, value, options)],
+  };
+}
+
 function unknownStatusCodeResponse(statusCode: number | undefined) {
   return {
     content: [
@@ -101,7 +120,7 @@ function unknownStatusCodeResponse(statusCode: number | undefined) {
  * in a route handler:
  *
  * ```ts
- * return $.response[200].json({ id: 1, name: "Fluffy" });
+ * return $.response.status(200).json({ id: 1, name: "Fluffy" });
  * ```
  *
  * @param operation - The OpenAPI operation descriptor used for schema-driven
@@ -112,9 +131,10 @@ function unknownStatusCodeResponse(statusCode: number | undefined) {
 export function createResponseBuilder(
   operation: OpenApiOperation,
   config?: Pick<DispatcherConfig, "alwaysFakeOptionals">,
-): ResponseBuilder {
-  return new Proxy({} as ResponseBuilder, {
-    get: (target, statusCode: string) => ({
+): MiddlewareResponseBuilderFactory {
+  function selectStatus(statusCode: number | string): ResponseBuilder {
+    return {
+      headers: {},
       header(
         this: ResponseBuilder,
         name: string,
@@ -145,21 +165,9 @@ export function createResponseBuilder(
         value: string,
         options: CookieOptions = {},
       ): ResponseBuilder {
-        const cookieString = serializeCookie(name, value, options);
-        const existing = this.headers?.["set-cookie"];
-        const existingArray: string[] = Array.isArray(existing)
-          ? existing
-          : existing !== undefined
-            ? [existing]
-            : [];
-
         return {
           ...this,
-
-          headers: {
-            ...this.headers,
-            "set-cookie": [...existingArray, cookieString],
-          },
+          headers: withCookie(this.headers, name, value, options),
         };
       },
 
@@ -376,7 +384,7 @@ export function createResponseBuilder(
         };
       },
 
-      status: Number.parseInt(statusCode, 10),
+      status: Number.parseInt(String(statusCode), 10),
 
       text(this: ResponseBuilder, body: unknown) {
         return this.match("text/plain", body);
@@ -385,8 +393,37 @@ export function createResponseBuilder(
       xml(this: ResponseBuilder, body: unknown) {
         return this.match("application/xml", body).match("text/xml", body);
       },
-    }),
-  });
+    } as ResponseBuilder;
+  }
+
+  function factory(
+    headers: ResponseBuilder["headers"] = {},
+  ): MiddlewareResponseBuilderFactory {
+    return new Proxy({} as MiddlewareResponseBuilderFactory, {
+      get: (target, key: string) => {
+        if (key === "status") {
+          return (statusCode: number | string) => ({
+            ...selectStatus(statusCode),
+            headers,
+          });
+        }
+
+        if (key === "header") {
+          return (name: string, value: string) =>
+            factory({ ...headers, [name]: value });
+        }
+
+        if (key === "cookie") {
+          return (name: string, value: string, options?: CookieOptions) =>
+            factory(withCookie(headers, name, value, options));
+        }
+
+        return { ...selectStatus(key), headers };
+      },
+    });
+  }
+
+  return factory();
 }
 
 export type { OpenApiOperation };

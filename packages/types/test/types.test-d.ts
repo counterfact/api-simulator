@@ -432,3 +432,84 @@ expectAssignable<COUNTERFACT_RESPONSE>(optionalHeadersFactory[200].empty());
 expectAssignable<(header: "x-request-id", value: string) => unknown>(
   optionalHeadersFactory[200].header,
 );
+
+// Function-based status selection retains the exact indexed builder type.
+expectType<(typeof generatedResponse)[200]>(generatedResponse.status(200));
+expectError(generatedResponse.status(404));
+expectError(generatedResponse.status(200).json({ id: "wrong" }));
+expectAssignable<COUNTERFACT_RESPONSE>(
+  generatedResponse.status(200).json({ id: 1 }),
+);
+
+type HeaderResponse<Kind extends string> = {
+  content: { "application/json": { schema: { kind: Kind } } };
+  headers: { "x-kind": { schema: Kind }; "x-id": { schema: string } };
+  requiredHeaders: "x-kind" | "x-id";
+  examples: {};
+};
+declare const statusFactory: ResponseBuilderFactory<{
+  200: HeaderResponse<"success">;
+  404: HeaderResponse<"missing">;
+  204: { content: never; headers: never; requiredHeaders: never; examples: {} };
+}>;
+const successFactory = statusFactory.header("x-kind", "success");
+expectError(successFactory.status(404));
+expectError(successFactory.status(204));
+expectError(statusFactory.header("unknown", "value"));
+expectError(statusFactory.header("x-kind", "invalid"));
+expectError(successFactory.header("x-kind", "success"));
+expectError(successFactory.status(200).json({ kind: "missing" }));
+expectNotAssignable<COUNTERFACT_RESPONSE>(
+  successFactory.status(200).json({ kind: "success" }),
+);
+expectAssignable<COUNTERFACT_RESPONSE>(
+  successFactory.header("x-id", "123").status(200).json({ kind: "success" }),
+);
+expectAssignable<COUNTERFACT_RESPONSE>(
+  statusFactory
+    .header("x-id", "123")
+    .status(404)
+    .header("x-kind", "missing")
+    .json({ kind: "missing" }),
+);
+expectAssignable<COUNTERFACT_RESPONSE>(statusFactory.status(204).empty());
+expectType<(typeof generatedResponse)[200]>(
+  generatedResponse.cookie("session", "abc").status(200),
+);
+
+declare const stringStatusFactory: ResponseBuilderFactory<{
+  "200": SchemaCheckedJsonResponse;
+}>;
+expectType<(typeof stringStatusFactory)["200"]>(
+  stringStatusFactory.status(200),
+);
+expectType<(typeof stringStatusFactory)["200"]>(
+  stringStatusFactory.status("200"),
+);
+declare const defaultStatusFactory: ResponseBuilderFactory<{
+  default: SchemaCheckedJsonResponse;
+}>;
+expectType<(typeof defaultStatusFactory)["default"]>(
+  defaultStatusFactory.status(418),
+);
+expectError(defaultStatusFactory.status(418).json("wrong"));
+expectType<ResponseBuilder>(
+  middlewareResponse.header("x-id", "123").status(201),
+);
+const wideStatusRoute: WideRoute = ($) =>
+  $.x.response.header("x-id", "123").status(201).json({ ok: true });
+expectAssignable<WideRoute>(wideStatusRoute);
+
+// An explicit response ruled out by a header must not fall back to default.
+declare const defaultHeaderFactory: ResponseBuilderFactory<{
+  200: HeaderResponse<"success">;
+  default: HeaderResponse<"missing">;
+}>;
+const missingFactory = defaultHeaderFactory.header("x-kind", "missing");
+expectError(missingFactory.status(200));
+expectError(missingFactory.cookie("session", "abc").status(200));
+expectAssignable<COUNTERFACT_RESPONSE>(
+  missingFactory.status(418).header("x-id", "123").json({ kind: "missing" }),
+);
+declare const uncertainKind: "success" | "missing";
+expectError(statusFactory.header("x-kind", uncertainKind).status(200));

@@ -1,16 +1,51 @@
 # Handler arguments
 
-Export one function per HTTP method from a file under `routes/`. The generated `HTTP_GET`, `HTTP_POST`, and related types describe that operation. A handler receives one `$` argument.
+Export one function per HTTP method from a file under `routes/`. Import `Routes`
+from the generated `types/index.js` entry point and define a local `Route` alias for the slash-prefixed path segments. Select the
+uppercase method from that alias:
 
-| Property        | Type               | Description                                                                             |
-| --------------- | ------------------ | --------------------------------------------------------------------------------------- |
-| `$.path`        | typed object       | Path parameters from the URL                                                            |
-| `$.query`       | typed object       | Query string parameters                                                                 |
-| `$.querystring` | typed object       | Entire query string as a single typed object (OpenAPI 3.2 `in: querystring` parameters) |
-| `$.headers`     | typed object       | Request headers                                                                         |
-| `$.body`        | typed object       | Parsed request body                                                                     |
-| `$.context`     | `Context` instance | Shared state for this route subtree                                                     |
-| `$.response[N]` | response builder   | Fluent builder for HTTP status code N (e.g. `$.response[200]`, `$.response[404]`)       |
+```ts
+// api/routes/pet/{petId}.ts
+import type { Routes } from "../../types/index.js";
+
+type Route = Routes["/pet"]["/{petId}"];
+
+export const GET: Route["GET"] = function ($) {
+  return $.response.status(200).random();
+};
+```
+
+A handler receives one `$` argument. Its type includes the request inputs,
+response builders, and nearest context. To name an input type outside a handler,
+derive it from the same contract:
+
+```ts
+import type { Routes } from "./api/types/index.js";
+
+type Route = Routes["/pet"]["/{petId}"];
+
+type GetPet = Route["GET"];
+type GetPetPath = Parameters<GetPet>[0]["path"];
+```
+
+Use `Schemas["Pet"]` or `Components["schemas"]["Pet"]` for named schemas; both
+are exported by the same entry point. See [central type exports](../features/generated-code.md#central-type-exports).
+
+Direct imports from generated operation and component modules are deprecated.
+Existing imports continue to work, and regeneration preserves existing handlers;
+update their imports and annotations explicitly when adopting the central maps.
+The startup migration for older operationId-based names remains a compatibility
+step; it does not migrate deep imports to `Routes` automatically.
+
+| Property               | Type               | Description                                                                                     |
+| ---------------------- | ------------------ | ----------------------------------------------------------------------------------------------- |
+| `$.path`               | typed object       | Path parameters from the URL                                                                    |
+| `$.query`              | typed object       | Query string parameters                                                                         |
+| `$.querystring`        | typed object       | Entire query string as a single typed object (OpenAPI 3.2 `in: querystring` parameters)         |
+| `$.headers`            | typed object       | Request headers                                                                                 |
+| `$.body`               | typed object       | Parsed request body                                                                             |
+| `$.context`            | `Context` instance | Shared state for this route subtree                                                             |
+| `$.response.status(N)` | response builder   | Fluent builder for HTTP status code N (e.g. `$.response.status(200)`, `$.response.status(404)`) |
 
 | Member                | Contract                                                                                                                               |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |

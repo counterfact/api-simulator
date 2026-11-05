@@ -18,3 +18,10 @@ Feature: Generate and run an OpenAPI simulation
     Then its implicit 200 response is still validated
     When I customize the generated binary handler
     Then the hot-reloaded handler serves the expected bytes and content type
+
+  Scenario: Upgrade operationId-based route types automatically
+    Given an existing customized route using operationId-based types
+    When I regenerate the legacy project through the CLI
+    Then method-based types replace operationId-based types without changing handler logic
+    When I regenerate the legacy project through the CLI
+    Then the migrated route stays unchanged

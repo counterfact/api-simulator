@@ -1,6 +1,8 @@
 # Share State Across API Groups
 
-Model one product across several OpenAPI groups without coupling one group's
+An [API group](../manual/concepts.md#api-groups-versions-and-url-prefixes) is a named collection of specs that share generated routes and context state. `basePath` is the output directory containing the group subdirectories.
+
+Model one product across several API groups without coupling one group's
 routes to another group's context tree.
 
 ## Why teams use this
@@ -18,7 +20,21 @@ facts and transitions that a supported client workflow observes.
 
 ## How it works
 
-Add one user-authored `_.store.ts` at the root of `basePath`:
+First configure the groups using your local `customers.yaml` and `orders.yaml` contracts:
+
+```yaml
+# counterfact.yaml
+destination: api
+spec:
+  - source: ./customers.yaml
+    group: customers
+  - source: ./orders.yaml
+    group: orders
+```
+
+Run `npx counterfact --config counterfact.yaml` to generate both groups. The contracts must declare the operations, bodies, and responses used below, including the orders POST's 201 JSON response. The group names select directories, not URL prefixes; see [multiple APIs](../manual/multiple-apis.md).
+
+Add one custom `_.store.ts` at the root of `basePath`:
 
 ```text
 api/
@@ -73,7 +89,7 @@ generated `Context$` type imports the concrete `Store` type from `_.store.ts`:
 
 ```ts
 // api/customers/routes/_.context.ts
-import type { Context$ } from "../types/_.context.js";
+import type { Context$ } from "../types/index.js";
 
 export class Context {
   private readonly store: Context$["store"];
@@ -91,7 +107,7 @@ export class Context {
 
 ```ts
 // api/orders/routes/_.context.ts
-import type { Context$ } from "../types/_.context.js";
+import type { Context$ } from "../types/index.js";
 
 export class Context {
   private readonly store: Context$["store"];
@@ -110,8 +126,12 @@ Handlers stay small and do not receive the store directly:
 
 ```ts
 // api/orders/routes/orders.ts
-export const POST: HTTP_POST = function ($) {
-  return $.response[201].json($.context.createOrder($.body));
+import type { Routes } from "../types/index.js";
+
+type Route = Routes["/orders"];
+
+export const POST: Route["POST"] = function ($) {
+  return $.response.status(201).json($.context.createOrder($.body));
 };
 ```
 
@@ -131,7 +151,10 @@ want typed access from a test or setup script:
 import { counterfact } from "counterfact";
 import type { Store } from "./api/_.store.js";
 
-const simulator = await counterfact<Store>(config, specs);
+const simulator = await counterfact<Store>({ basePath: "api" }, [
+  { source: "./customers.yaml", group: "customers" },
+  { source: "./orders.yaml", group: "orders" },
+]);
 
 if (simulator.store === undefined) {
   throw new Error("Expected api/_.store.ts");

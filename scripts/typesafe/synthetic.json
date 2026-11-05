@@ -1,0 +1,21 @@
+{
+  "model": "jev-1.14.0",
+  "state": {
+    "example": "Synthetic documentation excerpt: POST /reset restores the initial store values. GET /items lists current items.",
+    "claim": "POST /reset restores the initial store values."
+  },
+  "questions": {
+    "supports_claim": {
+      "type": "noul",
+      "instructions": "Does the example explicitly support the claim?",
+      "criteria": {
+        "true": "The example states the behavior described in the claim.",
+        "false": "The example contradicts the claim or supplies no evidence for it."
+      }
+    },
+    "describes_authentication": {
+      "type": "noul",
+      "instructions": "Does the example describe authentication requirements?"
+    }
+  }
+}

@@ -2,21 +2,21 @@
 
 exports[`an OperationCoder generates a complex get operation 1`] = `
 "async ($) => {
-  return $.response[200].random();
+  return $.response.status(200).random();
 };
 "
 `;
 
 exports[`an OperationCoder generates a simple post operation 1`] = `
 "async ($) => {
-  return $.response[200].random();
+  return $.response.status(200).random();
 };
 "
 `;
 
 exports[`an OperationCoder generates an operation with no response body using .empty() 1`] = `
 "async ($) => {
-  return $.response[204].empty();
+  return $.response.status(204).empty();
 };
 "
 `;

@@ -11,8 +11,11 @@ import {
   formatStatements,
   importDeclaration,
   parameter,
+  stringType,
+  typeAlias,
   typeReference,
   withJsDoc,
+  withComment,
 } from "./ast.js";
 
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
@@ -21,6 +24,7 @@ import {
   pathRelative,
   pathDirname,
 } from "./forward-slash-path.js";
+import { writeHelperTypes } from "./scenario-file-generator.js";
 import { Script } from "./script.js";
 import { escapePathForWindows } from "./windows-escape.js";
 
@@ -192,7 +196,7 @@ export class Repository {
       async ([path, script]) => {
         const fullPath = resolveDestinationPath(destination, path);
         const contents = await script.contents(
-          this.findContextPath(destination, path),
+          this.findContextPath(destination, path, script.contextRoutePath),
         );
 
         await ensureDirectoryExists(fullPath);
@@ -229,6 +233,7 @@ export class Repository {
     if (routes) {
       await this.createDefaultContextFile(destination);
     }
+    if (types) await writeHelperTypes(destination, destination, true);
   }
 
   /**
@@ -257,6 +262,14 @@ export class Repository {
         undefined,
         undefined,
         [
+          withComment(
+            ts.factory.createIndexSignature(
+              undefined,
+              [parameter("key", stringType())],
+              ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+            ),
+            "/* Delete this line to make the context type safe. */",
+          ),
           ts.factory.createConstructorDeclaration(
             undefined,
             [parameter("$", typeReference("Context$"))],
@@ -284,7 +297,7 @@ export class Repository {
     await fs.writeFile(
       contextFilePath,
       await formatStatements([
-        importDeclaration("Context$", "../types/_.context.js", true),
+        importDeclaration("Context$", "../types/index.js", true),
         context,
       ]),
     );
@@ -438,8 +451,39 @@ export class Repository {
     }
 
     const newImports: ts.ImportDeclaration[] = [];
+    const newAliases: ts.TypeAliasDeclaration[] = [];
+    const aliases = new Map<string, string>();
+    const typeKey = (node: ts.TypeNode): string | undefined => {
+      const keys: string[] = [];
+      while (ts.isIndexedAccessTypeNode(node)) {
+        if (
+          !ts.isLiteralTypeNode(node.indexType) ||
+          !ts.isStringLiteral(node.indexType.literal)
+        )
+          return undefined;
+        keys.unshift(node.indexType.literal.text);
+        node = node.objectType;
+      }
+      return ts.isTypeReferenceNode(node) &&
+        ts.isIdentifier(node.typeName) &&
+        !node.typeArguments?.length
+        ? JSON.stringify([node.typeName.text, ...keys])
+        : undefined;
+    };
+    for (const statement of source.statements) {
+      if (
+        ts.isTypeAliasDeclaration(statement) &&
+        !statement.typeParameters?.length
+      ) {
+        const key = typeKey(statement.type);
+        if (key) aliases.set(key, statement.name.text);
+      }
+    }
     const handlers: ts.Statement[] = [];
-    const generatedImports = script.importStatements();
+    const generatedImports = [
+      ...script.importStatements(),
+      ...script.externalImportStatements(),
+    ];
     for (const statement of script.exportStatements()) {
       if (!ts.isVariableStatement(statement)) continue;
       const declaration = statement.declarationList.declarations[0];
@@ -456,16 +500,32 @@ export class Repository {
             ": a local binding already exists in " +
             fullPath,
         );
+      let handlerType = declaration.type!;
+      const generatedAlias =
+        ts.isIndexedAccessTypeNode(handlerType) &&
+        ts.isTypeReferenceNode(handlerType.objectType) &&
+        ts.isIdentifier(handlerType.objectType.typeName)
+          ? script.localTypes.get(handlerType.objectType.typeName.text)
+          : undefined;
+      if (generatedAlias && ts.isIndexedAccessTypeNode(handlerType)) {
+        handlerType = ts.factory.createIndexedAccessTypeNode(
+          generatedAlias,
+          handlerType.indexType,
+        );
+      }
+      let rootType: ts.TypeNode | undefined = handlerType;
+      while (rootType && ts.isIndexedAccessTypeNode(rootType))
+        rootType = rootType.objectType;
       if (
-        !declaration.type ||
-        !ts.isTypeReferenceNode(declaration.type) ||
-        !ts.isIdentifier(declaration.type.typeName)
+        !rootType ||
+        !ts.isTypeReferenceNode(rootType) ||
+        !ts.isIdentifier(rootType.typeName)
       ) {
         throw new Error(
           "Generated handler lacks a named type: " + declaration.name.text,
         );
       }
-      let localType = declaration.type.typeName.text;
+      let localType = rootType.typeName.text;
       const originalType = localType;
       const imported = generatedImports.flatMap((item) => {
         const named = item.importClause?.namedBindings;
@@ -482,6 +542,11 @@ export class Repository {
       const module = imported.item.moduleSpecifier.text;
       const exportedType =
         imported.element.propertyName?.text ?? imported.element.name.text;
+      const matchingImport = [...imports].find(
+        ([, entry]) =>
+          entry.module === module && entry.exported === exportedType,
+      );
+      if (matchingImport) localType = matchingImport[0];
       const existingImport = imports.get(localType);
       if (
         !existingImport ||
@@ -496,6 +561,23 @@ export class Repository {
         imports.set(localType, { module, exported: exportedType });
         bindings.add(localType);
       }
+      handlerType = renameTypeRoot(handlerType, localType);
+      if (generatedAlias && ts.isIndexedAccessTypeNode(handlerType)) {
+        const key = typeKey(handlerType.objectType)!;
+        let alias = aliases.get(key);
+        if (!alias) {
+          alias = "Route";
+          let suffix = 2;
+          while (bindings.has(alias)) alias = "Route" + suffix++;
+          newAliases.push(typeAlias(alias, handlerType.objectType, false));
+          aliases.set(key, alias);
+          bindings.add(alias);
+        }
+        handlerType = ts.factory.createIndexedAccessTypeNode(
+          typeReference(alias),
+          handlerType.indexType,
+        );
+      }
       handlers.push(
         ts.factory.updateVariableStatement(
           statement,
@@ -505,7 +587,7 @@ export class Repository {
               declaration,
               declaration.name,
               declaration.exclamationToken,
-              typeReference(localType),
+              handlerType,
               declaration.initializer,
             ),
           ]),
@@ -581,12 +663,12 @@ export class Repository {
       }
     }
     let updated = existing;
-    if (newImports.length > 0) {
+    if (newImports.length > 0 || newAliases.length > 0) {
       const prefix = existing.slice(0, insertAt);
       updated =
         prefix +
         (prefix !== "" && !prefix.endsWith("\n") ? "\n" : "") +
-        (await formatStatements(newImports)) +
+        (await formatStatements([...newImports, ...newAliases])) +
         existing.slice(insertAt);
     }
     updated +=
@@ -602,10 +684,14 @@ export class Repository {
    * @param destination - Output root directory.
    * @param path - Repository-relative path of the script being generated.
    */
-  public findContextPath(destination: string, path: string): string {
+  public findContextPath(
+    destination: string,
+    path: string,
+    logicalPath?: string,
+  ): string {
     return pathRelative(
       nodePath.join(destination, nodePath.dirname(path)),
-      this.nearestContextFile(destination, path),
+      this.nearestContextFile(destination, path, logicalPath),
     );
   }
 
@@ -616,20 +702,45 @@ export class Repository {
    * @param destination - Output root directory.
    * @param path - Repository-relative path to start from.
    */
-  public nearestContextFile(destination: string, path: string): string {
-    const directory = pathDirname(path).replace("types/paths", "routes");
+  public nearestContextFile(
+    destination: string,
+    path: string,
+    logicalPath?: string,
+  ): string {
+    // Operation contracts describe the endpoint itself, not just its parent.
+    const parts = path
+      .replace(/(?:\.types)?\.ts$/u, "")
+      .split("/")
+      .filter((part) => part !== ".");
+    const pathsIndex = parts[0] === "types" ? parts.indexOf("paths") : -1;
+    let directory =
+      pathsIndex === 1 || pathsIndex === 2
+        ? ["routes", ...parts.slice(pathsIndex + 1)].join("/")
+        : parts.join("/");
 
-    const candidate = nodePath.join(destination, directory, "_.context.ts");
+    if (logicalPath !== undefined)
+      directory = ["routes", ...logicalPath.split("/").filter(Boolean)].join(
+        "/",
+      );
 
-    if (directory.length <= 1) {
-      // No _context.ts was found so import the one that should be in the root
-      return nodePath.join(destination, "routes", "_.context.ts");
+    while (directory !== "." && directory !== "routes") {
+      const candidate = nodePath.join(destination, directory, "_.context.ts");
+      if (existsSync(candidate)) {
+        return candidate;
+      }
+      directory = pathDirname(directory);
     }
 
-    if (existsSync(candidate)) {
-      return candidate;
-    }
-
-    return this.nearestContextFile(destination, nodePath.join(path, ".."));
+    return nodePath.join(destination, "routes", "_.context.ts");
   }
+}
+
+function renameTypeRoot(type: ts.TypeNode, name: string): ts.TypeNode {
+  return ts.isIndexedAccessTypeNode(type)
+    ? ts.factory.updateIndexedAccessTypeNode(
+        type,
+        renameTypeRoot(type.objectType, name),
+        type.indexType,
+      )
+    : typeReference(name);
 }

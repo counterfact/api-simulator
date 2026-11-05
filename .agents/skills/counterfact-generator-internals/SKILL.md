@@ -5,6 +5,8 @@ description: >
   generated file writing behavior without regressing regeneration guarantees.
 applyTo:
   - "packages/generator/src/**/*.ts"
+  - "packages/openapi/src/**/*.ts"
+  - "packages/openapi/test/**/*.test.ts"
   - "packages/runtime/src/server/openapi-document.ts"
   - "packages/runtime/src/server/load-openapi-document.ts"
   - "packages/generator/test/**/*.test.ts"
@@ -24,22 +26,36 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - `packages/generator/src/requirement.ts`
 - `packages/generator/src/repository.ts`
 - `packages/generator/src/schema-type-coder.ts`
+- `packages/openapi/src/load-openapi-document.ts` and `packages/openapi/src/openapi-source.ts` for loading, overlays, and source classification
 
 ## Existing conventions to follow
 
 - Keep the generator architecture layered: `Specification/Requirement` -> coders -> `Script` -> `Repository`.
+- Generate the default Context class with `[key: string]: any` and an instruction to remove it for strict typing. Preserve existing authored context files, including classes where that signature was removed. Compiler-check both the flexible default and the strict opt-in.
 - Preserve regeneration contract: existing route files are not overwritten; generated types are overwritten.
 - Support OpenAPI features through typed coders and requirement traversal rather than ad-hoc string logic.
 - Keep generated output deterministic and formatted via existing script/repository pipeline.
 - Type coders return `TypeNode`s and runtime coders return `Expression`s from `write()`. Compose nodes with TypeScript factories and the AST helpers; do not print and reparse fragments or interpolate TypeScript source text.
 - Assemble imports, exports, and version declarations as statements in `Script`. Resolve context module references before printing; do not replace placeholder tokens in generated source.
 - Use the same AST helpers for versions, scenarios, middleware, and starter files. For route regeneration, inspect user-authored ASTs and insert printed generated declarations at source offsets; do not reprint the existing route or match handlers with regular expressions.
+- Compiler-check both outcomes of generated type predicates, including early returns, nested checks, and union-valued arguments. Versioned handler variants need compatible guard signatures so false branches can exclude matching variants; dynamic thresholds must not claim a single boundary that would make reachable branches disappear.
 - Distinguish source-specific coder IDs from logical export identity: the same route and HTTP method across versioned source files must share handler/type names, while every version still registers its argument type. Test distinct input files through one shared Repository.
+- When supplying an in-memory TypeScript compiler host for route analysis or migration, normalize source filenames to forward slashes before creating the source file, registering program roots, and comparing `getSourceFile` requests. TypeScript normalizes Windows paths internally; native backslash comparisons can silently leave the program empty and symbol-based edits unapplied.
+- When traversing referenced Path Items or OpenAPI 3.2 `additionalOperations`, resolve the definition for traversal but retain the logical route path and path-item parent on operation requirements. Public route maps and operation contracts must identify the endpoint, not the referenced component or `additionalOperations` container.
+- Build route-tree exports and handler annotations from the same path-segment logic. Keep leading slashes and literal parameter names, preserve root/trailing empty segments, and test parent operations alongside child branches in both declaration orders.
+- When generated handler annotations use indexed access types, preserve the complete annotation during regeneration and rename only its imported root when resolving a local binding collision. Compile both newly generated and incrementally updated routes.
+- When generated handlers use a local type alias, resolve its underlying central import before inserting new handlers. Reuse matching aliases and imported names, allocate collision-free local names, and preserve existing declarations verbatim.
 - During route regeneration, distinguish runtime exports and value-binding collisions from type names. Type aliases, interfaces, and type-only re-exports do not supply handlers; reserve all local names when allocating new type-import aliases. Resolve re-export symbols without executing user code.
+- Publish watcher-generated helper modules with an atomic same-directory replacement, and skip unchanged content. Serialized writers alone do not prevent compiler readers from observing a truncated module; watcher tests must await the relevant context and middleware outputs before compiling consumers.
+- Keep the public generated index stable across independent OpenAPI and context-watch generation. Put watcher-owned helper exports in a separate generated module, serialize helper writes per API group, and preserve existing group-level store typing when OpenAPI regeneration initializes helpers.
+- Resolve both `types/paths/` and `types/<version>/paths/` context references against the authored `routes/` tree. Generated `types/_.context.ts` exports helper interfaces, not the context class.
 - Keep context import aliases unique and valid even when path names sanitize to the same identifier or start with a digit. Build parameterized path types with template literal nodes.
 - Keep TypeScript's compiler API dependency explicit and pinned in `@counterfact/generator`; a sibling package's dependency does not satisfy the packed generator.
 - Use the AST helpers for literal names, comments, and grouping. Preserve compact type-literal printing so Prettier does not introduce avoidable snapshot churn.
 - Validate generated syntax and assignment behavior for escaping and union/intersection precedence; snapshots alone do not establish type correctness.
+- When extending generated-output fixtures on an older PR branch, validate with current main integrated: CI tests the merge result, and newer handler type names or response APIs can invalidate newly added snapshots and compiler consumers.
+- Preserve composition siblings and containing `required` constraints without mutating referenced models. Compiler-check referenced unions as well as inline properties, and keep required constraints limited to object branches.
+- Emit a separate discriminator union arm for each mapping value, including multiple values that select the same model; grouping those values in one property union can prevent TypeScript from narrowing the remaining branches.
 - Finish builds and packed-consumer checks before running unit tests that import workspace packages; those checks replace shared `dist` files while rebuilding.
 - Build generator watch sets through `@counterfact/openapi` source classification: watch every unique local contributing input (base document plus overlays), exclude remote inputs and `_`, and regenerate from the complete ordered input set after any change. Do not infer URL-ness from a string prefix.
 
@@ -53,5 +69,7 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 ## How to validate the change
 
 - Run: `yarn lint`, `yarn build`, `yarn test`.
-- Run focused generator tests first (affected coder + integration/snapshot tests in `packages/generator/test/`).
+- After required workspace dependency builds finish, run focused generator tests before the full suite (affected coder + integration/snapshot tests in `packages/generator/test/`).
 - If behavior changes for generated artifacts, verify snapshots and relevant docs (`packages/counterfact/docs/features/generated-code.md`, `packages/counterfact/docs/faq.md`).
+
+- Resolve operation context imports from the logical endpoint, not the generated filename. The root endpoint uses index.types.ts but must not inherit a real /index child context.

@@ -6,6 +6,7 @@ export interface OpenApiDocumentConfig {
   path: string;
   baseUrl: string;
   overlays?: readonly string[];
+  version?: string;
 }
 
 /**
@@ -29,7 +30,11 @@ export function openapiMiddleware(
   document: OpenApiDocumentConfig,
 ): Koa.Middleware {
   return async (ctx: Koa.ExtendableContext, next: Koa.Next) => {
-    if (ctx.URL.pathname !== pathPrefix) {
+    if (
+      ctx.URL.pathname !== pathPrefix ||
+      (ctx.query.version !== undefined &&
+        ctx.query.version !== document.version)
+    ) {
       return await next();
     }
 

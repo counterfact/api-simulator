@@ -6,7 +6,9 @@ import {
   typeReference,
   unionType,
   unknownType,
+  neverType,
 } from "./ast.js";
+import { requireProperties } from "./schema-required-properties.js";
 import { TypeCoder } from "./type-coder.js";
 import { pathJoin } from "./forward-slash-path.js";
 import { buildJsDoc } from "./jsdoc.js";
@@ -24,15 +26,17 @@ export class SchemaTypeCoder extends TypeCoder {
 
   public additionalPropertiesType(script: Script): ts.TypeNode {
     const { additionalProperties, properties } = this.requirement.data as {
-      additionalProperties: { type?: string };
+      additionalProperties: { type?: string } | boolean;
       properties?: Record<string, { type?: string }>;
     };
 
     if (
-      !additionalProperties.type ||
-      Object.values(properties ?? {}).some(
-        (property) => property.type !== additionalProperties.type,
-      )
+      typeof additionalProperties !== "object" ||
+      (Object.keys(properties ?? {}).length > 0 &&
+        (!additionalProperties.type ||
+          Object.values(properties ?? {}).some(
+            (property) => property.type !== additionalProperties.type,
+          )))
     ) {
       return unknownType();
     }
@@ -88,10 +92,50 @@ export class SchemaTypeCoder extends TypeCoder {
   }
 
   public arraySchema(script: Script): ts.TypeNode {
+    const data = this.requirement.data as {
+      prefixItems?: unknown[];
+      items?: unknown;
+      additionalItems?: unknown;
+      minItems?: number;
+      maxItems?: number;
+    };
+    const tupleKey = Array.isArray(data.prefixItems)
+      ? "prefixItems"
+      : Array.isArray(data.items)
+        ? "items"
+        : undefined;
+    if (tupleKey) {
+      const items = this.requirement.get(tupleKey)!;
+      const members = items
+        .map((item, index) => {
+          const type = new SchemaTypeCoder(item, this.version).write(script);
+          return Number(index) < (data.minItems ?? 0)
+            ? type
+            : ts.factory.createOptionalTypeNode(type);
+        })
+        .slice(0, data.maxItems);
+      const restKey = tupleKey === "prefixItems" ? "items" : "additionalItems";
+      const rest = this.requirement.get(restKey);
+      if (
+        rest?.data !== false &&
+        (data.maxItems === undefined || data.maxItems > members.length)
+      ) {
+        const restType = rest
+          ? new SchemaTypeCoder(rest, this.version).write(script)
+          : unknownType();
+        members.push(
+          ts.factory.createRestTypeNode(
+            ts.factory.createArrayTypeNode(restType),
+          ),
+        );
+      }
+      return ts.factory.createTupleTypeNode(members);
+    }
+    const items = this.requirement.get("items");
     return typeReference("Array", [
-      new SchemaTypeCoder(this.requirement.get("items")!, this.version).write(
-        script,
-      ),
+      items
+        ? new SchemaTypeCoder(items, this.version).write(script)
+        : unknownType(),
     ]);
   }
 
@@ -149,6 +193,13 @@ export class SchemaTypeCoder extends TypeCoder {
       case "null":
         return ts.factory.createLiteralTypeNode(ts.factory.createNull());
       default:
+        if (
+          type === undefined &&
+          (this.requirement.has("properties") ||
+            this.requirement.has("additionalProperties"))
+        ) {
+          return this.objectSchema(script);
+        }
         return unknownType();
     }
   }
@@ -163,12 +214,34 @@ export class SchemaTypeCoder extends TypeCoder {
   ): ts.TypeNode {
     const key = allOf ? "allOf" : anyOf ? "anyOf" : "oneOf";
     const items = (allOf ?? anyOf ?? oneOf)!;
-    const types = items.map((_item, index) =>
-      new SchemaTypeCoder(
-        this.requirement.get(key)!.get(index)!,
-        this.version,
-      ).write(script),
-    );
+    const { discriminator } = this.requirement.data as {
+      discriminator?: {
+        propertyName?: string;
+        mapping?: Record<string, string>;
+      };
+    };
+    const types = items.map((_item, index) => {
+      const branch = this.requirement.get(key)!.get(index)!;
+      const type = new SchemaTypeCoder(branch, this.version).write(script);
+      const values =
+        !allOf && branch.refUrl && discriminator?.propertyName
+          ? Object.entries(discriminator.mapping ?? {})
+              .filter(([, ref]) => ref === branch.refUrl)
+              .map(([value]) => this.writePrimitive(value))
+          : [];
+      return values.length > 0
+        ? unionType(
+            values.map((value) =>
+              ts.factory.createIntersectionTypeNode([
+                type,
+                typeLiteral([
+                  typeProperty(discriminator!.propertyName!, value),
+                ]),
+              ]),
+            ),
+          )
+        : type;
+    });
 
     // OpenAPI 3.2 discriminator fallback participates in the union.
     if (!allOf) {
@@ -212,6 +285,24 @@ export class SchemaTypeCoder extends TypeCoder {
   }
 
   public override writeCode(script: Script): ts.TypeNode {
+    if (this.requirement.data === false) return neverType();
+    if (this.requirement.data === true || this.requirement.data === null)
+      return unknownType();
+    const type = this.writeSchema(script);
+    const data = this.requirement.data as {
+      nullable?: boolean;
+      type?: unknown;
+    };
+    // nullable expands the declared type; enum/const remain independent constraints.
+    return data.nullable === true &&
+      data.type !== undefined &&
+      !this.requirement.has("enum") &&
+      !this.requirement.has("const")
+      ? unionType([type, this.writePrimitive(null)])
+      : type;
+  }
+
+  private writeSchema(script: Script): ts.TypeNode {
     const { allOf, anyOf, oneOf, type, format, itemSchema } = this.requirement
       .data as {
       allOf?: unknown[];
@@ -232,7 +323,30 @@ export class SchemaTypeCoder extends TypeCoder {
     }
 
     if (allOf ?? anyOf ?? oneOf) {
-      return this.writeGroup(script, { allOf, anyOf, oneOf });
+      const parts: ts.TypeNode[] = [];
+      for (const group of [{ allOf }, { anyOf }, { oneOf }]) {
+        if (Object.values(group)[0] !== undefined)
+          parts.push(this.writeGroup(script, group));
+      }
+      if (
+        this.requirement.has("properties") ||
+        this.requirement.has("additionalProperties")
+      ) {
+        parts.push(this.objectSchema(script));
+      }
+      const result =
+        parts.length === 1
+          ? parts[0]!
+          : ts.factory.createIntersectionTypeNode(parts);
+      const required = (this.requirement.data as { required?: unknown })
+        .required;
+      return Array.isArray(required) && required.length > 0
+        ? requireProperties(result, required as string[])
+        : result;
+    }
+
+    if (this.requirement.has("const")) {
+      return this.writePrimitive(this.requirement.get("const")!.data);
     }
 
     if (this.requirement.has("enum")) {
