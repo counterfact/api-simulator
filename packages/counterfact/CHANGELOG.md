@@ -1,5 +1,32 @@
 # counterfact
 
+## 3.2.0
+
+### Minor Changes
+
+- 61a6d3f: Remove the bundled coffee-shop walkthrough and its tutorial dependency. The first-run menu now defaults to choosing an OpenAPI document and still offers documentation. Update route-handler documentation to use the generated local `Route` alias.
+
+### Patch Changes
+
+- 498c47d: Resolve generated handler context types from the endpoint directory before checking ancestors, matching runtime context resolution for collection endpoints in ordinary and versioned APIs.
+- 354e288: Support OpenAPI 3 multipart/form-data request bodies in generated handler types
+  and the built-in Koa server. Expose uploaded bytes and metadata through
+  MultipartFile, decode declared fields and repeated arrays, validate required
+  fields and uploads, and reject malformed or oversized multipart requests.
+- 9995fa2: Restore the string index signature in the generated default Context class so handlers can add shared state immediately. Remove the index signature to opt into strict typing; existing context files are preserved during regeneration.
+- Updated dependencies [7503f57]
+- Updated dependencies [610b1fc]
+- Updated dependencies [c9cae8c]
+- Updated dependencies [83e11d3]
+- Updated dependencies [498c47d]
+- Updated dependencies [354e288]
+- Updated dependencies [c77a381]
+- Updated dependencies [9995fa2]
+- Updated dependencies [2bbdca5]
+  - @counterfact/runtime@0.4.0
+  - @counterfact/generator@1.2.0
+  - @counterfact/repl@0.1.10
+
 ## 3.1.0
 
 ### Minor Changes

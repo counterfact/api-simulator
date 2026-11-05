@@ -1,5 +1,18 @@
 # @counterfact/repl
 
+## 0.1.10
+
+### Patch Changes
+
+- Updated dependencies [7503f57]
+- Updated dependencies [610b1fc]
+- Updated dependencies [c9cae8c]
+- Updated dependencies [83e11d3]
+- Updated dependencies [354e288]
+- Updated dependencies [c77a381]
+- Updated dependencies [2bbdca5]
+  - @counterfact/runtime@0.4.0
+
 ## 0.1.9
 
 ### Patch Changes
