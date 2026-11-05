@@ -521,7 +521,7 @@ try {
     recursive: true,
   });
   process.stdout.write(
-    "Packing counterfact with its prepack lifecycle (builds all workspaces)...\n",
+    "Packing counterfact with its prepack lifecycle (builds its dependency closure)...\n",
   );
 
   const tarballs = new Map();
@@ -534,13 +534,19 @@ try {
       true,
     ),
   );
+  const facadeClosure = dependencyClosure("counterfact", workspaces);
   for (const name of topologicalOrder) {
     if (name === "counterfact") continue;
     const workspace = workspaces.get(name);
     assert(workspace);
     tarballs.set(
       name,
-      await packWorkspace(workspace, tarballDirectory, cacheDirectory),
+      await packWorkspace(
+        workspace,
+        tarballDirectory,
+        cacheDirectory,
+        !facadeClosure.has(name),
+      ),
     );
   }
 
