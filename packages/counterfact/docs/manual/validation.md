@@ -22,6 +22,8 @@ Request and response validation are enabled by default. Start the simulator with
 
 The current AJV instance uses its default JSON Schema dialect, `strict: false`, and `coerceTypes: false` for request bodies. Common type, required-field, enum, and object/array constraints are useful checks; this is not full OpenAPI 3.1/3.2 JSON Schema-dialect coverage. Optional formats and dialect-specific keywords are not promised. Test the schemas your API uses before relying on these checks.
 
+Boolean query, header, and cookie values are an exception to the general parameter-schema limitation: the case-sensitive strings true and false are accepted, while malformed text returns 400 before the handler runs. With request validation disabled, malformed boolean text remains unchanged.
+
 ## Understand response checks
 
 Response validation currently checks declared response headers, including required headers and their schemas. It does **not** perform general response-body schema validation. An undeclared response status with no applicable default response is not rejected merely for being undeclared. Streaming items are not checked against their response schemas.
