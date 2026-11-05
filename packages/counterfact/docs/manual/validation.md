@@ -30,6 +30,15 @@ Boolean query, header, and cookie values are an exception to the general paramet
 
 Optional request bodies may be absent. A present body, including explicit JSON null, is validated against the selected schema. Required bodies reject absence. This rule also applies to Swagger 2 body parameters.
 
+Scalar integer and number query parameters also require a complete finite decimal
+value before conversion. Decimal fractions are accepted for numbers; integers
+must have an integral value. Exponent notation such as `1e3` is supported. Text
+such as `3600junk`, whitespace-padded numbers, radix spellings, and non-finite
+values returns 400 before the handler runs. Nullable numeric schemas use the
+same conversion. With request validation disabled, malformed numeric text is
+passed through unchanged rather than truncated. Other parameter constraints
+such as minimum, maximum, and enum remain outside these scalar checks.
+
 ## Recursive request bodies
 
 Dereferenced recursive request schemas are converted back to JSON Schema references for AJV compilation. Finite nested values retain their recursive constraints; both self-recursive and mutually recursive schemas are supported.
