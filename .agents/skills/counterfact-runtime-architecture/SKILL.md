@@ -83,5 +83,7 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 - Canonical ESM entry imports belong only to the first import attempt during an explicit initial load. Track attempts across loader instances, independently of successful context construction; watcher updates and retries must refresh entries.
 
+- Read supplied request parameter values using own-property checks; optional parameters named constructor or other prototype keys must remain absent when not supplied.
+
 - Preserve request-body absence at the HTTP parsing boundary. Empty-wire input, explicit {}, and explicit JSON null must remain distinct before optionality and schema validation.
 - For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.
