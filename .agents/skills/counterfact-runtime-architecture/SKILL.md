@@ -63,6 +63,8 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 ## Recursive request schemas
 
+- Preserve shared schema nodes as references as well as cycles. Identity memoization must survive sibling visits; disable Ajv reference inlining to avoid exponential validator compilation. Verify the public Dispatcher path in a bounded-heap subprocess, with valid and invalid nested bodies.
+
 - OpenAPI dereferencing can produce cyclic JavaScript schema graphs. Convert back edges to JSON Schema references before passing them to Ajv; keep recursive constraints and verify finite valid and invalid nested data.
 
 - Schema cycle references must respect nested $id resource scopes and URI-fragment encoding in addition to JSON Pointer escaping. Preserve boolean schemas before object caching and leave annotations unchanged.
@@ -90,6 +92,8 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - When resolving primitive unions, retain null-only alternatives separately from unresolved schemas. A nested null-only union or null-only type array must not erase the single non-null conversion.
 
 - Do not enable Ajv allErrors for untrusted request bodies. Stop body-error collection early and regression-test large invalid collections; a request byte limit does not bound the number of validation error objects.
+
+- Coerce scalar and array numeric text with the same complete finite decimal parser. Retain integer versus number declarations through dispatch; reject malformed scalar query values before handler entry, and preserve original text when request validation is disabled.
 
 - Normalize array query cardinality and primitive items from the declared schema and serialization style. Do not split commas for default exploded form arrays or invent values for absent optional parameters.
 

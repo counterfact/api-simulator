@@ -1,3 +1,5 @@
+import { numericParameterValue } from "./numeric-parameter.js";
+import { parameterType } from "./parameter-type.js";
 import Ajv from "ajv";
 import { validationSchema } from "./validation-schema.js";
 import {
@@ -12,6 +14,8 @@ const ajv = new Ajv({
   allErrors: false,
   strict: false,
   coerceTypes: false,
+  // Shared schema references must compile once, rather than expanding a DAG.
+  inlineRefs: false,
 });
 
 ajv.addKeyword({
@@ -117,6 +121,29 @@ export function validateRequest(
   errors.push(...findMissingRequired(parameters, "query", request.query));
   errors.push(...findMissingRequired(parameters, "header", request.headers));
   errors.push(...findMissingRequired(parameters, "cookie", request.cookie));
+
+  // Validate numeric spellings before registry coercion can lose information.
+  for (const parameter of parameters) {
+    if (
+      parameter.in !== "query" ||
+      !Object.hasOwn(request.query, parameter.name)
+    )
+      continue;
+    const type = parameter.type ?? parameterType(parameter.schema);
+    if (type !== "integer" && type !== "number") continue;
+    const raw = request.query[parameter.name];
+    if (raw === undefined) continue;
+    const value = numericParameterValue(raw, type);
+    if (
+      typeof value !== "number" ||
+      !Number.isFinite(value) ||
+      (type === "integer" && !Number.isInteger(value))
+    ) {
+      errors.push(
+        "query parameter '" + parameter.name + "' must be a finite " + type,
+      );
+    }
+  }
 
   // Boolean wire values are case-sensitive. Never turn malformed text into false.
   for (const parameter of parameters) {

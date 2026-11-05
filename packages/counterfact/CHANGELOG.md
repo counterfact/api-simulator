@@ -1,5 +1,16 @@
 # counterfact
 
+## 3.2.2
+
+### Patch Changes
+
+- b55f3e4: Preserve shared request-schema graphs as references and compile them without reference inlining, preventing exponential memory use while retaining nested and recursive validation.
+- 3390560: Reject malformed scalar numeric query values before handler execution instead of silently discarding invalid suffixes. Preserve complete decimal and exponent conversion, nullable numeric schemas, and unmodified invalid text when request validation is disabled.
+- Updated dependencies [b55f3e4]
+- Updated dependencies [3390560]
+  - @counterfact/runtime@0.4.2
+  - @counterfact/repl@0.1.12
+
 ## 3.2.1
 
 ### Patch Changes
