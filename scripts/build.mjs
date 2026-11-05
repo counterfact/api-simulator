@@ -24,14 +24,6 @@ const stages = [
   { label: "Client", workspace: "@counterfact/client", commands: [["build"]] },
   { label: "REPL", workspace: "@counterfact/repl", commands: [["build"]] },
   {
-    label: "Tutorials",
-    workspace: "@counterfact/tutorials",
-    commands: [
-      ["exec", "rimraf", "dist"],
-      ["exec", "tsc", "--build", "--force"],
-    ],
-  },
-  {
     label: "Counterfact CLI",
     workspace: "counterfact",
     commands: [

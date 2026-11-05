@@ -19,7 +19,6 @@ const packageRoot = path.resolve(testDirectory, "../..");
 const clientPackageRoot = path.resolve(packageRoot, "../client");
 const generatorPackageRoot = path.resolve(packageRoot, "../generator");
 const openApiPackageRoot = path.resolve(packageRoot, "../openapi");
-const tutorialsPackageRoot = path.resolve(packageRoot, "../tutorials");
 const replPackageRoot = path.resolve(packageRoot, "../repl");
 const runtimePackageRoot = path.resolve(packageRoot, "../runtime");
 const typesPackageRoot = path.resolve(packageRoot, "../types");
@@ -154,11 +153,7 @@ async function compareOrUpdate(pathname, actual) {
   assert.deepEqual(actual, await json(pathname));
 }
 
-export async function verifyPackedConsumer({
-  consumerDirectory,
-  pack,
-  tutorialsPack,
-}) {
+export async function verifyPackedConsumer({ consumerDirectory, pack }) {
   const packFiles = pack.files
     .map(({ path: packedPath }) => packedPath.split(path.sep).join("/"))
     .sort();
@@ -168,19 +163,6 @@ export async function verifyPackedConsumer({
   );
   await compareOrUpdate(expectedPackFilesPath, publicPackFiles);
 
-  for (const required of [
-    "dist/index.js",
-    "dist/prepare-tour.js",
-    "dist/coffee-shop/coffee-shop-page.js",
-    "dist/coffee-shop/coffee-shop-validation.js",
-  ]) {
-    assert(
-      tutorialsPack.files.some(
-        ({ path: packedPath }) => packedPath === required,
-      ),
-      `Missing tutorial file: ${required}`,
-    );
-  }
   await copyFile(
     path.join(fixturesDirectory, "openapi.yaml"),
     path.join(consumerDirectory, "openapi.yaml"),
@@ -244,7 +226,6 @@ export async function verifyPackedConsumer({
     `import assert from "node:assert/strict";
 import path from "node:path";
 import * as counterfactPackage from "counterfact";
-import { prepareTour } from "@counterfact/tutorials";
 
 assert.deepEqual(Object.keys(counterfactPackage).sort(), ${JSON.stringify(expectedManifest.runtimeExports)});
 await assert.rejects(import("counterfact/dist/app.js"), { code: "ERR_PACKAGE_PATH_NOT_EXPORTED" });
@@ -269,28 +250,6 @@ const simulator = await counterfactPackage.counterfact(config);
 const running = await simulator.start(config);
 await running.stop();
 
-const prepared = await prepareTour(process.cwd(), "tour");
-const tour = await counterfactPackage.counterfact({ basePath: prepared.destination, port: 0, startRepl: false, openApiPath: prepared.source });
-const runningTour = await tour.start();
-try {
-  const origin = "http://127.0.0.1:" + tour.status().address.port;
-  const page = await fetch(origin + prepared.walkthroughPath);
-  assert.equal(page.status, 200);
-  assert.match(await page.text(), /Counterfact Coffee/);
-  const info = await (await fetch(origin + "/tutorial-info")).json();
-  assert.match(info.revision, /^[a-f0-9]{64}$/);
-  const check = await (await fetch(origin + "/tutorial-check", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ step: 5 }),
-  })).json();
-  assert.equal(check.ok, true, check.message);
-  const milestone = await fetch(origin + "/tutorial-event", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event: "opened", step: 0 }),
-  });
-  assert.equal(milestone.status, 200);
-  assert.deepEqual(await milestone.json(), { ok: true });
-} finally {
-  await runningTour.stop();
-}
 `,
   );
   await run(process.execPath, [runtimeCheckPath], {
@@ -560,15 +519,6 @@ async function main() {
       cacheDirectory,
     );
     const replTarballPath = path.join(tarballDirectory, replPack.filename);
-    const tutorialsPack = await packPackage(
-      tutorialsPackageRoot,
-      tarballDirectory,
-      cacheDirectory,
-    );
-    const tutorialsTarballPath = path.join(
-      tarballDirectory,
-      tutorialsPack.filename,
-    );
     const runtimePack = await packPackage(
       runtimePackageRoot,
       tarballDirectory,
@@ -604,7 +554,6 @@ async function main() {
         generatorTarballPath,
         openApiTarballPath,
         replTarballPath,
-        tutorialsTarballPath,
         runtimeTarballPath,
         typesTarballPath,
         tarballPath,
@@ -612,7 +561,7 @@ async function main() {
       { cwd: consumerDirectory },
     );
 
-    await verifyPackedConsumer({ consumerDirectory, pack, tutorialsPack });
+    await verifyPackedConsumer({ consumerDirectory, pack });
   } finally {
     await rm(temporaryRoot, { force: true, recursive: true });
   }

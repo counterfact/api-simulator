@@ -39,7 +39,9 @@ npx counterfact status.yaml api --generate --no-update-check
 ```ts
 // api/routes/status.ts
 import type { Routes } from "../types/index.js";
-export const GET: Routes["/status"]["GET"] = function ($) {
+
+type Route = Routes["/status"];
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).json({ status: "ready" });
 };
 ```
@@ -78,7 +80,9 @@ Update the handler:
 ```ts
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/status"]["GET"] = function ($) {
+type Route = Routes["/status"];
+
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).json({
     status: "ready",
     message: "Accepting requests",

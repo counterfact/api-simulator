@@ -10,18 +10,20 @@ Use typed function expressions for route handlers. This example assumes your spe
 // routes/pets.ts — keep the imports generated for your operation
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/pets"]["GET"] = function ($) {
+type Route = Routes["/pets"];
+
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).random();
 };
 
-export const POST: Routes["/pets"]["POST"] = function ($) {
+export const POST: Route["POST"] = function ($) {
   return $.response.status(200).random();
 };
 ```
 
 Prefer function expressions with a block body and an explicit `return` in route files. You can add logging, local variables, or other statements without restructuring the handler. Convert generated arrow-function handlers to this form when editing them.
 
-The generated handler type on the exported constant (for example, `GET: Routes["/pets"]["GET"]`) gives `$` its request type automatically. Leave `$` unannotated, and use `async function ($)` when you need `await`.
+The generated handler type on the exported constant (for example, `GET: Route["GET"]`) gives `$` its request type automatically. Leave `$` unannotated, and use `async function ($)` when you need `await`.
 
 Each exported function handles one HTTP method. The single argument `$` gives you everything you need: request data, response builders, server state, and utilities.
 
@@ -124,7 +126,9 @@ This example assumes a generated `POST /groups/{groupName}/search` operation wit
 // api/routes/groups/{groupName}/search.ts
 import type { Routes } from "../../../types/index.js";
 
-export const POST: Routes["/groups"]["/{groupName}"]["/search"]["POST"] =
+type Route = Routes["/groups"]["/{groupName}"]["/search"];
+
+export const POST: Route["POST"] =
   function ($) {
     if ($.headers["x-token"] !== "super-secret") {
       return $.response.status(401).text("Unauthorized");
@@ -155,7 +159,9 @@ Counterfact automatically assembles these individual query parameters back into 
 ```ts
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/items"]["GET"] = function ($) {
+type Route = Routes["/items"];
+
+export const GET: Route["GET"] = function ($) {
   const { page, size, sort } = $.query.pageable;
   // page = "0", size = "100", sort = "name"
   // ...
@@ -193,7 +199,9 @@ Counterfact translates your OpenAPI spec into strict TypeScript types. If your s
 ```ts
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/pets"]["GET"] = function ($) {
+type Route = Routes["/pets"];
+
+export const GET: Route["GET"] = function ($) {
   // header not defined in OpenAPI spec
   $.headers["my-undocumented-header"]; // TypeScript error
   $.x.headers["my-undocumented-header"]; // ok
@@ -213,7 +221,9 @@ Use `$.response.status(<status>).stream(iterable)` to return a stream from any r
 ```ts
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/events"]["GET"] = function ($) {
+type Route = Routes["/events"];
+
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).stream(events());
 };
 

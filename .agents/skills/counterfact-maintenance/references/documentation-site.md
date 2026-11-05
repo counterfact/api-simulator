@@ -39,7 +39,7 @@ Paths and commands below are relative to the repository root.
 
 - User documentation ships in the npm package as well as the site. Keep the package `files` allowlist and `test/package/fixtures/pack-files.json` aligned with new pages; inspect inventory changes and run the packed-consumer check after adding documentation paths.
 
-- Keep introductory walkthroughs in a linked manual chapter, with setup and discovery rules in `packages/counterfact/docs/api/cli.md`; preserve the direct OpenAPI quick start when integrating older onboarding changes.
+- Keep setup and discovery rules in `packages/counterfact/docs/api/cli.md` and preserve the direct OpenAPI quick start. Handler examples should define a local `Route` alias from `Routes` and annotate methods with `Route["GET"]` (or the corresponding method), matching generated route files.
 
 - The documentation has a feature-based manual and a separate API reference. Keep `site/src/data/navigation.json`, the Markdown manual/reference indexes, and the home-page feature count aligned when adding chapters. Reuse canonical Markdown pages rather than duplicating existing guides, preserve published documentation URLs through the site redirect map when retiring redundant Markdown sources, and check rendered anchors as well as page destinations after restructuring.
 

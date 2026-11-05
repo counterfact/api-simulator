@@ -104,7 +104,9 @@ small shared context:
 ```ts
 import type { Routes } from "../types/index.js";
 
-export const POST: Routes["/pet"]["POST"] = function ($) {
+type Route = Routes["/pet"];
+
+export const POST: Route["POST"] = function ($) {
   if (!$.body.name) return $.response.status(400).text("name is required");
   const pet = $.context.add($.body);
   return $.response.status(200).json(pet);

@@ -60,15 +60,13 @@ For multiple specifications, `spec` can be a list of entries; see [multiple APIs
 
 Running with no arguments and no `counterfact.yaml` starts an interactive intro.
 Even an empty config file bypasses the intro, as does any explicit CLI argument.
-The opening menu offers a guided example (the default), your own OpenAPI
-document, and documentation. Local discovery starts only when you choose your
+The opening menu offers your own OpenAPI document (the default) and
+documentation. Local discovery starts only when you choose your
 own document; you can also enter a path or HTTP(S) URL. Setup asks for an output
 directory (default: `api/`) and an available port (default: `3100`).
 
-For the bundled shop, editor controls, lesson progression, and recovery behavior,
-see [Try the guided coffee shop](../manual/guided-example.md). Setup preserves
-existing files, directories, and symlinks. Port availability checks are advisory;
-another process can claim the selected port before startup.
+Port availability checks are advisory; another process can claim the selected
+port before startup.
 
 Discovery recognizes YAML/JSON root documents for Swagger 2.0 and OpenAPI 3.0,
 3.1, and 3.2; it ignores malformed files, ordinary config, and schema fragments.

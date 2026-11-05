@@ -42,11 +42,12 @@ installation makes them available to Node.
 From the repository root, run:
 
 ```sh
-yarn go:first-run
+yarn build
+node ./packages/counterfact/bin/counterfact.js
 ```
 
-Like the other `go:*` launchers, this builds the current checkout and runs its
-CLI from the repository root. It passes no arguments, reproducing
+These commands build the current checkout and run its CLI from the repository
+root. The CLI receives no arguments, reproducing
 `npx counterfact@latest` with this branch's code as the installed version.
 Normal configuration detection applies: a `counterfact.yaml` bypasses the
 intro. Use an interactive terminal with `CI` unset to see the menu when no

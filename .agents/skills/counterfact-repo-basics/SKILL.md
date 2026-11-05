@@ -39,7 +39,6 @@ packages/
   openapi/                    # Specification loading, source classification, overlays
   client/                     # Typed request builder and route catalog
   repl/                       # Interactive terminal and completion
-  tutorials/                  # Guided tours, exercise preparation, and lesson checks
   types/src/                  # Shared types copied into generated projects
 test-black-box/               # Gherkin journeys with Python harness and step glue
 examples/                     # Checked consumer examples

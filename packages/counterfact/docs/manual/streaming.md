@@ -43,7 +43,9 @@ Replace `api/routes/events.ts` with the handler below. Use `$.response.status(<s
 // api/routes/events.ts
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/events"]["GET"] = function ($) {
+type Route = Routes["/events"];
+
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).stream(events());
 };
 

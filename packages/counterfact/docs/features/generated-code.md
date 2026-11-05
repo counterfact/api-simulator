@@ -11,7 +11,7 @@ No OpenAPI document? See [using Counterfact without OpenAPI](./without-openapi.m
 
 ## Generated file structure
 
-The output directory is called `basePath` in library options and `destination` in the CLI YAML config. The optional context and store files below are custom: a context shares behavior within a route subtree; a [store](../patterns/shared-store.md) shares state across separately configured [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes).
+The output directory is called `basePath` in library options and `destination` in the CLI YAML config. Counterfact creates `routes/_.context.ts` with a `[key: string]: any` index signature so you can add shared state immediately. Remove that signature and declare fields to enable strict typing. Existing context files are preserved. The context and optional store files below are yours to customize: a context shares behavior within a route subtree; a [store](../patterns/shared-store.md) shares state across separately configured [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes).
 
 ```
 <output-directory>/
@@ -146,6 +146,12 @@ expose unions across versions.
 
 ## Context, scenario, and middleware types
 
+Handler context types follow the same lookup as runtime: an endpoint such as
+`/dictionaries` uses `routes/dictionaries/_.context.ts` when it exists.
+Descendant endpoints inherit that context unless a closer context is defined.
+Otherwise, lookup falls back through ancestor directories to `routes/_.context.ts`.
+This applies to both ordinary and versioned APIs.
+
 Use the same central import for constructor helpers and scenarios:
 
 ```ts
@@ -205,7 +211,9 @@ unversioned API:
 // routes/pets.ts
 import type { Routes } from "../types/index.js";
 
-export const GET: Routes["/pets"]["GET"] = function ($) {
+type Route = Routes["/pets"];
+
+export const GET: Route["GET"] = function ($) {
   if ($.minVersion("v2")) {
     return $.response.status(200).random();
   }
@@ -223,3 +231,5 @@ import the internal versioned operation modules.
 - [Routes](./routes.md) — writing route handlers, reading request data, building responses
 - [State](./state.md) — sharing state across routes with context objects
 - [Find your workflow](../usage.md)
+
+The root endpoint always uses the root context, even though its generated type file is named index.types.ts. A real /index child context applies only to that child endpoint and its descendants.

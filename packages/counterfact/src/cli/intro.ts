@@ -4,7 +4,6 @@ import { createInterface } from "node:readline/promises";
 import open from "open";
 
 import { discoverOpenApiSpecs } from "./discover-openapi.js";
-import { findTourDirectory, prepareTour } from "@counterfact/tutorials";
 import { isPortAvailable } from "./is-port-available.js";
 
 const DOCS_URL = "https://counterfact.dev/docs/getting-started/";
@@ -24,7 +23,6 @@ export type IntroSelection = {
   source: string;
   destination: string;
   port: number;
-  walkthroughPath?: string;
 };
 
 export async function runIntro(): Promise<IntroSelection | undefined> {
@@ -78,13 +76,12 @@ export async function runIntro(): Promise<IntroSelection | undefined> {
     write("\nWelcome to Counterfact!");
     write("Build your frontend against a local API you can change.");
     while (!cancellation.signal.aborted) {
-      write("\n1) Try a guided example (recommended)");
-      write("2) Use my OpenAPI document");
-      write("3) Open documentation");
+      write("\n1) Use my OpenAPI document");
+      write("2) Open documentation");
       write("q) Quit (Ctrl+C or Ctrl+D also cancels)");
       const answer = await question("Choose [1]: ");
       if (answer === undefined) break;
-      if (answer === "3") {
+      if (answer === "2") {
         write(`Documentation: ${DOCS_URL}`);
         try {
           await open(DOCS_URL);
@@ -93,61 +90,7 @@ export async function runIntro(): Promise<IntroSelection | undefined> {
         }
         return undefined;
       }
-      if (answer === "" || answer === "1") {
-        const destination = await findTourDirectory(process.cwd());
-        write(
-          `\nShop for coffee, change the API in your editor, and restock through the REPL.`,
-        );
-        write(
-          `This creates ${destination}/ and starts a local server. No download needed.`,
-        );
-        write(
-          "The walkthrough opens in your browser. Keep this terminal open and use your own editor. Your files are kept.",
-        );
-        let port = 3100;
-        while (!cancellation.signal.aborted) {
-          write(`Server: http://localhost:${port}`);
-          const start = await question(
-            "Start [Enter] (p: change port, b: back, q: quit): ",
-          );
-          if (start === undefined) return undefined;
-          if (start === "b") break;
-          if (start === "p") {
-            const chosen = await choosePort();
-            if (chosen === undefined) return undefined;
-            port = chosen;
-            continue;
-          }
-          if (start !== "") {
-            write(
-              "Press Enter to start, p to change port, b to go back, or q to quit.",
-            );
-            continue;
-          }
-          if (!(await isPortAvailable(port))) {
-            write(`Port ${port} is already in use. Choose another port.`);
-            const chosen = await choosePort();
-            if (chosen === undefined) return undefined;
-            port = chosen;
-            continue;
-          }
-          if (cancellation.signal.aborted) return undefined;
-          try {
-            const prepared = await prepareTour(process.cwd(), destination);
-            return { ...prepared, port };
-          } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === "EEXIST") {
-              write(
-                "That directory was created while you were choosing. Nothing was overwritten; choose the example again for a new directory.",
-              );
-              break;
-            }
-            throw error;
-          }
-        }
-        continue;
-      }
-      if (answer !== "2") {
+      if (answer !== "" && answer !== "1") {
         write("Choose one of the listed numbers, or q to quit.");
         continue;
       }

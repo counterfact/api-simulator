@@ -14,7 +14,7 @@ dependency closure. Two consumers run at a time. Checks cover installed public
 imports, rejection of private deep imports, declaration compilation, shipped
 examples, required files, and exclusion of source, tests, and build metadata.
 The Counterfact consumer additionally checks the installed CLI, runtime,
-tutorial endpoints, generated-file hashes, and generated-code compilation.
+generated-file hashes, and generated-code compilation.
 The assertions for the existing [public package contract](public-package-contract.md)
 remain in the packed-consumer verifier.
 
@@ -28,7 +28,7 @@ Command timings and a suite total help distinguish builds, installs, and checks.
 and for `--update-fixtures`. Do not run it in addition to package closures for
 routine validation: the latter already executes those assertions.
 `yarn test:packaging-runner` runs fast regression checks for rejection of omitted
-published documents and compiled tutorial assets.
+published documents.
 
 Keep packaging separate from unit and product tests that read workspace `dist`:
 prepack replaces build output. Consumer concurrency is safe only after all builds

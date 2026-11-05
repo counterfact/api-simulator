@@ -51,3 +51,5 @@ Reacquire contexts with `loadContext()` and read `api.store` again after reset. 
 `scenario(path, group?)` resolves and awaits a named scenario with the same arguments as the REPL. Select a group explicitly when several API groups exist. `loadContext(path = "/", group?)` likewise requires a group in a multi-group simulator.
 
 See the [programmatic manual](../features/programmatic-api.md) for complete test-suite examples.
+
+Versioned dispatchers only execute operations declared in their selected contract. An absent path returns 404; an absent method returns 405. Unversioned dispatchers continue to support custom routes.

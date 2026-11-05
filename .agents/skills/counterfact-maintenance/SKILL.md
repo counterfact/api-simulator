@@ -51,9 +51,6 @@ relative to the repository root.
 | Gherkin journeys or shipped CLI/HTTP/terminal behavior            | [Product black-box testing](references/black-box-testing.md) |
 | Historical experiment evidence or public research reports         | [Historical audits](references/historical-audits.md)         |
 
-For lesson progression, saved-handler checks, or tutorial UI behavior, use
-[tutorial guidance](../counterfact-tutorials/SKILL.md).
-
 ## Validate according to the change
 
 - Guidance/prose only: check diffs, local links and paths, and skill metadata

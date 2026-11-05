@@ -2,13 +2,17 @@
 
 The `$.context` object is how routes share in-memory state. It's an instance of the `Context` class exported from `_.context.ts` in the same directory (or the nearest parent directory that has one).
 
+The generated default class includes `[key: string]: any` so you can add properties directly to `$.context`. Remove that line and declare your fields and methods when you want TypeScript to check their names and values. Regeneration preserves your context edits.
+
 These examples extend the [stateful Petstore example](../first-10-minutes.md). `add`, `get`, and the other context methods below are methods you write; Counterfact supplies `$.context`. Keep the generated handler-type imports in your route files.
 
 ```ts
 // routes/pet.ts
 import type { Routes } from "../types/index.js";
 
-export const POST: Routes["/pet"]["POST"] = function ($) {
+type Route = Routes["/pet"];
+
+export const POST: Route["POST"] = function ($) {
   return $.response.status(200).json($.context.add($.body));
 };
 ```
@@ -17,7 +21,9 @@ export const POST: Routes["/pet"]["POST"] = function ($) {
 // routes/pet/{petId}.ts
 import type { Routes } from "../../types/index.js";
 
-export const GET: Routes["/pet"]["/{petId}"]["GET"] = function ($) {
+type Route = Routes["/pet"]["/{petId}"];
+
+export const GET: Route["GET"] = function ($) {
   const pet = $.context.get($.path.petId);
   if (pet === undefined) return $.response.status(404).empty();
   return $.response.status(200).json(pet);

@@ -76,7 +76,9 @@ export class Context {
 // api/routes/v1/customers/{customerId}.ts
 import type { Routes } from "../../../types/index.js";
 
-export const GET: Routes["/v1"]["/customers"]["/{customerId}"]["GET"] =
+type Route = Routes["/v1"]["/customers"]["/{customerId}"];
+
+export const GET: Route["GET"] =
   function ($) {
     if ($.context.rateLimited) {
       return $.response.status(429).json({

@@ -24,7 +24,9 @@ Add a route handler for any path you want to mock:
 // api/routes/payments.ts
 import type { Routes } from "../types/index.js";
 
-export const POST: Routes["/payments"]["POST"] = function ($) {
+type Route = Routes["/payments"];
+
+export const POST: Route["POST"] = function ($) {
   return $.response.status(200).json({ transactionId: "mock-txn-001" });
 };
 ```
@@ -54,7 +56,9 @@ Install and pin Counterfact as a development dependency and commit its lockfile.
 ```ts
 // api/routes/users.ts
 import type { Routes } from "../types/index.js";
-export const GET: Routes["/users"]["GET"] = function ($) {
+
+type Route = Routes["/users"];
+export const GET: Route["GET"] = function ($) {
   return $.proxy("http://127.0.0.1:9000/users");
 };
 ```
@@ -62,7 +66,9 @@ export const GET: Routes["/users"]["GET"] = function ($) {
 ```ts
 // api/routes/payments.ts
 import type { Routes } from "../types/index.js";
-export const POST: Routes["/payments"]["POST"] = function ($) {
+
+type Route = Routes["/payments"];
+export const POST: Route["POST"] = function ($) {
   return $.response.status(200).json({ transactionId: "mock-txn-001" });
 };
 ```

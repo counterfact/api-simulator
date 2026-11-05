@@ -34,7 +34,7 @@
     "test:package-closures": "node scripts/test-package-closures.mjs",
     "test:tsd": "tsd --typings ./packages/types/dist/index.d.ts --files \"./packages/types/test/**/*.test-d.ts\"",
     "build": "node scripts/build.mjs",
-    "typecheck": "tsc --noEmit --pretty false -p packages/types && tsc --noEmit --pretty false -p packages/openapi && tsc --noEmit --pretty false -p packages/runtime && tsc --noEmit --pretty false -p packages/client && tsc --noEmit --pretty false -p packages/generator && tsc --noEmit --pretty false -p packages/repl && tsc --noEmit --pretty false -p packages/tutorials && tsc --noEmit --pretty false -p packages/counterfact",
+    "typecheck": "tsc --noEmit --pretty false -p packages/types && tsc --noEmit --pretty false -p packages/openapi && tsc --noEmit --pretty false -p packages/runtime && tsc --noEmit --pretty false -p packages/client && tsc --noEmit --pretty false -p packages/generator && tsc --noEmit --pretty false -p packages/repl && tsc --noEmit --pretty false -p packages/counterfact",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release:version": "changeset version && yarn install --mode skip-build --no-immutable",
     "release": "changeset publish",
@@ -51,8 +51,7 @@
     "go:multiple-apis": "yarn workspace counterfact go:multiple-apis",
     "go:multiple-versions": "yarn workspace counterfact go:multiple-versions",
     "counterfact": "./packages/counterfact/bin/counterfact.js",
-    "check:drift": "catchmydrift",
-    "test:tutorials": "yarn workspace @counterfact/tutorials test"
+    "check:drift": "catchmydrift"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",

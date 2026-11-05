@@ -11,9 +11,11 @@ import {
   formatStatements,
   importDeclaration,
   parameter,
+  stringType,
   typeAlias,
   typeReference,
   withJsDoc,
+  withComment,
 } from "./ast.js";
 
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
@@ -194,7 +196,7 @@ export class Repository {
       async ([path, script]) => {
         const fullPath = resolveDestinationPath(destination, path);
         const contents = await script.contents(
-          this.findContextPath(destination, path),
+          this.findContextPath(destination, path, script.contextRoutePath),
         );
 
         await ensureDirectoryExists(fullPath);
@@ -260,6 +262,14 @@ export class Repository {
         undefined,
         undefined,
         [
+          withComment(
+            ts.factory.createIndexSignature(
+              undefined,
+              [parameter("key", stringType())],
+              ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+            ),
+            "/* Delete this line to make the context type safe. */",
+          ),
           ts.factory.createConstructorDeclaration(
             undefined,
             [parameter("$", typeReference("Context$"))],
@@ -674,10 +684,14 @@ export class Repository {
    * @param destination - Output root directory.
    * @param path - Repository-relative path of the script being generated.
    */
-  public findContextPath(destination: string, path: string): string {
+  public findContextPath(
+    destination: string,
+    path: string,
+    logicalPath?: string,
+  ): string {
     return pathRelative(
       nodePath.join(destination, nodePath.dirname(path)),
-      this.nearestContextFile(destination, path),
+      this.nearestContextFile(destination, path, logicalPath),
     );
   }
 
@@ -688,28 +702,36 @@ export class Repository {
    * @param destination - Output root directory.
    * @param path - Repository-relative path to start from.
    */
-  public nearestContextFile(destination: string, path: string): string {
-    const parts = pathDirname(path)
+  public nearestContextFile(
+    destination: string,
+    path: string,
+    logicalPath?: string,
+  ): string {
+    // Operation contracts describe the endpoint itself, not just its parent.
+    const parts = path
+      .replace(/(?:\.types)?\.ts$/u, "")
       .split("/")
       .filter((part) => part !== ".");
     const pathsIndex = parts[0] === "types" ? parts.indexOf("paths") : -1;
-    const directory =
+    let directory =
       pathsIndex === 1 || pathsIndex === 2
         ? ["routes", ...parts.slice(pathsIndex + 1)].join("/")
         : parts.join("/");
 
-    const candidate = nodePath.join(destination, directory, "_.context.ts");
+    if (logicalPath !== undefined)
+      directory = ["routes", ...logicalPath.split("/").filter(Boolean)].join(
+        "/",
+      );
 
-    if (directory.length <= 1) {
-      // No _context.ts was found so import the one that should be in the root
-      return nodePath.join(destination, "routes", "_.context.ts");
+    while (directory !== "." && directory !== "routes") {
+      const candidate = nodePath.join(destination, directory, "_.context.ts");
+      if (existsSync(candidate)) {
+        return candidate;
+      }
+      directory = pathDirname(directory);
     }
 
-    if (existsSync(candidate)) {
-      return candidate;
-    }
-
-    return this.nearestContextFile(destination, nodePath.join(path, ".."));
+    return nodePath.join(destination, "routes", "_.context.ts");
   }
 }
 
