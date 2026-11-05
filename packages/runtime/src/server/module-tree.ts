@@ -360,6 +360,31 @@ export class ModuleTree {
     );
   }
 
+  /** Select an already-matched contract pattern without shared-registry shadowing. */
+  public matchPattern(url: string, pattern: string): Match | undefined {
+    const parts = pattern.split("/").slice(1);
+    let directory = this.root;
+    for (const part of parts.slice(0, -1)) {
+      const child = directory.directories.get(part.toLowerCase());
+      if (!child) return undefined;
+      directory = child;
+    }
+    const name = parts.at(-1) ?? "";
+    const file = [...directory.files.values()].find(
+      (entry) => entry.rawName.toLowerCase() === name.toLowerCase(),
+    );
+    if (!file) return undefined;
+    const values = url.split("/").slice(1);
+    const pathVariables = Object.fromEntries(
+      parts.flatMap((part, index) =>
+        part.startsWith("{") && part.endsWith("}")
+          ? [[part.slice(1, -1), values[index] ?? ""]]
+          : [],
+      ),
+    );
+    return { module: file.module, matchedPath: pattern, pathVariables };
+  }
+
   /** Returns all registered routes sorted alphabetically by path. */
   public get routes(): Route[] {
     const routes: Route[] = [];
