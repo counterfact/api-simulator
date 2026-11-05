@@ -28,7 +28,7 @@ In a second terminal, start Vite:
 npm run dev
 ```
 
-Open [http://127.0.0.1:4309](http://127.0.0.1:4309). The screen displays the
+Open `http://127.0.0.1:4309`. The screen displays the
 Ada Lovelace profile served by Counterfact at `http://127.0.0.1:4310`. Stop
 each process with <kbd>Ctrl</kbd>+<kbd>C</kbd> when you are finished.
 
