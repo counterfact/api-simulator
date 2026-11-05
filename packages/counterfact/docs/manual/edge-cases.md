@@ -7,7 +7,13 @@ Use controlled responses to see what the client does when an API is slow, return
 Change the relevant handler to return a deterministic body. For a collection operation, an empty collection can exercise an empty screen:
 
 ```ts
-export const GET: HTTP_GET = ($) => $.response[200].json([]);
+import type { Routes } from "../types/index.js";
+
+type Route = Routes["/pets"];
+
+export const GET: Route["GET"] = function ($) {
+  return $.response.status(200).json([]);
+};
 ```
 
 Choose a body that matches your operation's schema. For an error, choose a status and body declared by your specification. If the test intentionally violates the contract, use `$.x.response` and check the validation settings explicitly.
@@ -15,9 +21,13 @@ Choose a body that matches your operation's schema. For an error, choose a statu
 ## Add a delay
 
 ```ts
-export const GET: HTTP_GET = async ($) => {
+import type { Routes } from "../types/index.js";
+
+type Route = Routes["/pets"];
+
+export const GET: Route["GET"] = async function ($) {
   await $.delay(1500);
-  return $.response[200].random();
+  return $.response.status(200).random();
 };
 ```
 
@@ -25,7 +35,7 @@ The delay is in milliseconds. Supply two numbers for a random duration within th
 
 ## Switch failures at runtime
 
-Define failure flags in the context:
+A [context](../features/state.md) is a class you write shared by routes in its directory and below. Define failure flags in that class:
 
 ```ts
 // api/routes/_.context.ts
@@ -40,16 +50,20 @@ Read those flags in the route handler. The OpenAPI operation must declare the sh
 
 ```ts
 // api/routes/payments/{paymentId}.ts
-import type { HTTP_GET } from "../../types/paths/payments/{paymentId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = ($) => {
-  if ($.context.isRateLimited) return $.response[429].text("Too Many Requests");
-  if ($.context.isBroken) return $.response[500].text("Internal Server Error");
-  return $.response[200].json({ id: $.path.paymentId, amount: 42.0 });
+type Route = Routes["/payments"]["/{paymentId}"];
+
+export const GET: Route["GET"] = function ($) {
+  if ($.context.isRateLimited)
+    return $.response.status(429).text("Too Many Requests");
+  if ($.context.isBroken)
+    return $.response.status(500).text("Internal Server Error");
+  return $.response.status(200).json({ id: $.path.paymentId, amount: 42.0 });
 };
 ```
 
-Toggle failures from the REPL or from a test without restarting the server. This abbreviated `client` output omits request logs, headers, and colors; the client returns a promise of raw HTTP text, not a `{ status, body }` object:
+The [REPL](../features/repl.md) is the JavaScript prompt in the terminal running Counterfact. Toggle failures from that prompt or from a test without restarting the server. This abbreviated `client` output omits request logs, headers, and colors; the client returns a promise of raw HTTP text, not a `{ status, body }` object:
 
 ```
 ⬣> context.isRateLimited = true
@@ -69,29 +83,39 @@ Internal Server Error
 To simulate intermittent failures, use a counter or a random function:
 
 ```ts
-export const GET: HTTP_GET = ($) => {
+import type { Routes } from "../../types/index.js";
+
+type Route = Routes["/payments"]["/{paymentId}"];
+
+export const GET: Route["GET"] = function ($) {
   $.context.callCount += 1;
   if ($.context.callCount % 3 === 0) {
-    return $.response[503].text("Flaky error");
+    return $.response.status(503).text("Flaky error");
   }
-  return $.response[200].json({ id: $.path.paymentId });
+  return $.response.status(200).json({ id: $.path.paymentId });
 };
 ```
 
 Or vary the response probabilistically:
 
 ```ts
-export const GET: HTTP_GET = ($) => {
+import type { Routes } from "../../types/index.js";
+
+type Route = Routes["/payments"]["/{paymentId}"];
+
+export const GET: Route["GET"] = function ($) {
   if (Math.random() < 0.2) {
-    return $.response[503].text("Flaky error");
+    return $.response.status(503).text("Flaky error");
   }
-  return $.response[200].json({ id: $.path.paymentId });
+  return $.response.status(200).json({ id: $.path.paymentId });
 };
 ```
 
 Flag-based failures are repeatable when setup is controlled. Reset counters before comparing runs; random failures are intentionally nondeterministic. Use the complete [payment retry recipe](../patterns/payment-retry.md) for a contract, handlers, scenarios, and executable assertions.
 
 ## Configure latency at runtime
+
+Extend the pet context from the [state guide](../features/state.md) with `latencyMs = 0`; retain its `get(id)` method. The following context snippet shows only the added field, not a replacement class. The GET operation must declare the shown JSON 200 and text 404 responses.
 
 ```ts
 // api/routes/_.context.ts
@@ -102,10 +126,16 @@ export class Context {
 
 ```ts
 // api/routes/pet/{petId}.ts
-export const GET: HTTP_GET = async ($) => {
+import type { Routes } from "../../types/index.js";
+
+type Route = Routes["/pet"]["/{petId}"];
+
+export const GET: Route["GET"] = async function ($) {
   await $.delay($.context.latencyMs);
   const pet = $.context.get($.path.petId);
-  return pet ? $.response[200].json(pet) : $.response[404].text("Not found");
+  return pet
+    ? $.response.status(200).json(pet)
+    : $.response.status(404).text("Not found");
 };
 ```
 

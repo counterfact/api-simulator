@@ -1,0 +1,23 @@
+openapi: 3.0.4
+info:
+  title: Greetings API v1
+  version: 1.0.0
+paths:
+  /greeting:
+    get:
+      operationId: getGreeting
+      responses:
+        "200":
+          description: A greeting
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message]
+                properties:
+                  message:
+                    type: string
+              examples:
+                hello:
+                  value:
+                    message: Hello from v1

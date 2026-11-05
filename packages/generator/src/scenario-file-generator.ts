@@ -16,6 +16,8 @@ import {
   readonlyProperty,
   stringType,
   typeAlias,
+  typeLiteral,
+  typeProperty,
   typeReference,
   unionType,
   unknownType,
@@ -107,7 +109,7 @@ async function collectRouteDirectories(
   const routesDir = nodePath.join(destination, "routes");
 
   if (!existsSync(routesDir)) {
-    return [];
+    return [{ relativePath: "" }];
   }
 
   const results: RouteDirectoryInfo[] = [];
@@ -443,8 +445,34 @@ async function collectGeneratedMiddlewareTypeFiles(
   return files;
 }
 
-async function writeMiddlewareTypes(destination: string): Promise<void> {
-  const routeDirectories = await collectRouteDirectories(destination);
+/** Readers must see a complete module while watcher events are queued. */
+async function writeGeneratedType(
+  filePath: string,
+  content: string,
+): Promise<void> {
+  const previous = await fs
+    .readFile(filePath, "utf8")
+    .catch((error: NodeJS.ErrnoException) => {
+      if (error.code !== "ENOENT") throw error;
+      return undefined;
+    });
+  if (previous === content) return;
+  const temporaryDirectory = await fs.mkdtemp(
+    nodePath.join(nodePath.dirname(filePath), ".counterfact-type-"),
+  );
+  try {
+    const temporaryFile = nodePath.join(temporaryDirectory, "contents.tmp");
+    await fs.writeFile(temporaryFile, content, "utf8");
+    await fs.rename(temporaryFile, filePath);
+  } finally {
+    await fs.rm(temporaryDirectory, { recursive: true, force: true });
+  }
+}
+
+async function writeMiddlewareTypes(
+  destination: string,
+  routeDirectories: RouteDirectoryInfo[],
+): Promise<void> {
   const expectedFiles = new Set<string>();
 
   for (const routeDirectory of routeDirectories) {
@@ -456,10 +484,9 @@ async function writeMiddlewareTypes(destination: string): Promise<void> {
     );
     expectedFiles.add(nodePath.resolve(filePath));
     await fs.mkdir(nodePath.dirname(filePath), { recursive: true });
-    await fs.writeFile(
+    await writeGeneratedType(
       filePath,
       await buildMiddlewareTypeContent(destination, routeDirectory),
-      "utf8",
     );
   }
 
@@ -488,6 +515,7 @@ async function writeMiddlewareTypes(destination: string): Promise<void> {
 async function writeScenarioContextType(
   destination: string,
   rootDestination: string,
+  preserveStore = false,
 ): Promise<void> {
   const typesDir = nodePath.join(destination, "types");
   const filePath = nodePath.join(typesDir, "_.context.ts");
@@ -497,14 +525,152 @@ async function writeScenarioContextType(
   const relativeStorePath = pathRelative(typesDir, storePath);
   const storeImportPath = existsSync(storePath)
     ? `${relativeStorePath.startsWith(".") ? "" : "./"}${relativeStorePath.replace(/\.ts$/u, ".js")}`
-    : undefined;
+    : preserveStore
+      ? await existingStoreImport(filePath, typesDir)
+      : undefined;
   const content = await buildScenarioContextContent(
     contextFiles,
     storeImportPath,
   );
 
   await fs.mkdir(typesDir, { recursive: true });
-  await fs.writeFile(filePath, content, "utf8");
+  await writeGeneratedType(filePath, content);
+}
+
+// OpenAPI generation knows the group directory but not the application's root.
+// Recover only an existing, still-live store reference; regenerate context
+// overloads from the current route tree on every pass.
+async function existingStoreImport(
+  filePath: string,
+  typesDir: string,
+): Promise<string | undefined> {
+  const contents = await fs
+    .readFile(filePath, "utf8")
+    .catch((error: NodeJS.ErrnoException) => {
+      if (error.code !== "ENOENT") throw error;
+      return undefined;
+    });
+  if (contents === undefined) return undefined;
+  const source = ts.createSourceFile(
+    filePath,
+    contents,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  for (const statement of source.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      !ts.isStringLiteral(statement.moduleSpecifier)
+    )
+      continue;
+    const bindings = statement.importClause?.namedBindings;
+    if (
+      bindings &&
+      ts.isNamedImports(bindings) &&
+      bindings.elements.some(
+        (element) =>
+          element.name.text === "Store" &&
+          (element.propertyName?.text ?? element.name.text) === "Store",
+      )
+    ) {
+      const modulePath = statement.moduleSpecifier.text;
+      if (
+        existsSync(
+          nodePath.resolve(typesDir, modulePath.replace(/\.js$/u, ".ts")),
+        )
+      )
+        return modulePath;
+    }
+  }
+  return undefined;
+}
+
+/** Stable public exports; the filesystem watcher owns only their target module. */
+export function helperTypeExports(): ts.ExportDeclaration {
+  return ts.factory.createExportDeclaration(
+    undefined,
+    true,
+    ts.factory.createNamedExports(
+      ["Context$", "Scenario", "Scenario$", "Middleware"].map((name) =>
+        ts.factory.createExportSpecifier(false, undefined, name),
+      ),
+    ),
+    ts.factory.createStringLiteral("./helpers.js"),
+  );
+}
+
+const helperWrites = new Map<string, Promise<void>>();
+
+/** Serialize OpenAPI generation and context-watch updates for each API group. */
+export async function writeHelperTypes(
+  destination: string,
+  rootDestination = destination,
+  preserveStore = false,
+): Promise<void> {
+  const key = nodePath.resolve(destination);
+  const previous = helperWrites.get(key) ?? Promise.resolve();
+  const pending = (async () => {
+    await previous.catch(() => undefined);
+    await writeScenarioContextType(destination, rootDestination, preserveStore);
+    const directories = (await collectRouteDirectories(destination)).sort(
+      (a, b) =>
+        a.relativePath < b.relativePath
+          ? -1
+          : a.relativePath > b.relativePath
+            ? 1
+            : 0,
+    );
+    await writeMiddlewareTypes(destination, directories);
+    const declarations: ts.Statement[] = [
+      ts.factory.createExportDeclaration(
+        undefined,
+        true,
+        ts.factory.createNamedExports(
+          ["Context$", "Scenario", "Scenario$"].map((name) =>
+            ts.factory.createExportSpecifier(false, undefined, name),
+          ),
+        ),
+        ts.factory.createStringLiteral("./_.context.js"),
+      ),
+    ];
+    const properties = directories.map((directory, index) => {
+      const alias = `Middleware${index}`;
+      const modulePath = ensureRelativeImportPath(
+        nodePath.posix.join(directory.relativePath, "_.middleware.js"),
+      );
+      declarations.push(
+        importDeclaration(alias, modulePath, true, false, "Middleware"),
+      );
+      return typeProperty(
+        directory.relativePath === "" ? "/" : `/${directory.relativePath}`,
+        typeReference(alias),
+      );
+    });
+    declarations.push(typeAlias("Middleware", typeLiteral(properties)));
+    await writeGeneratedType(
+      nodePath.join(destination, "types/helpers.ts"),
+      await formatStatements(declarations, [GENERATED_FILE_COMMENT.slice(3)]),
+    );
+    // Spec-free projects can generate helpers independently of the OpenAPI index.
+    await fs
+      .writeFile(
+        nodePath.join(destination, "types/index.ts"),
+        await formatStatements(
+          [helperTypeExports()],
+          [GENERATED_FILE_COMMENT.slice(3)],
+        ),
+        { encoding: "utf8", flag: "wx" },
+      )
+      .catch((error: NodeJS.ErrnoException) => {
+        if (error.code !== "EEXIST") throw error;
+      });
+  })();
+  helperWrites.set(key, pending);
+  try {
+    await pending;
+  } finally {
+    if (helperWrites.get(key) === pending) helperWrites.delete(key);
+  }
 }
 
 async function defaultScenariosContent(): Promise<string> {
@@ -544,7 +710,7 @@ async function defaultScenariosContent(): Promise<string> {
     [valueExpression("\n")],
   );
   return formatStatements([
-    importDeclaration("Scenario", "../types/_.context.js", true),
+    importDeclaration("Scenario", "../types/index.js", true),
     withJsDoc(
       exportedConst(
         "startup",
@@ -633,8 +799,7 @@ export class ScenarioFileGenerator {
 
   /** Generates both scenario-related files once and resolves when complete. */
   public async generate(): Promise<void> {
-    await writeScenarioContextType(this.destination, this.rootDestination);
-    await writeMiddlewareTypes(this.destination);
+    await writeHelperTypes(this.destination, this.rootDestination);
     await writeDefaultScenariosIndex(this.destination);
   }
 
@@ -649,12 +814,11 @@ export class ScenarioFileGenerator {
     const routesDir = nodePath.join(this.destination, "routes");
     const storePath = nodePath.join(this.rootDestination, "_.store.ts");
     const regenerate = (): void => {
-      void Promise.all([
-        writeScenarioContextType(this.destination, this.rootDestination),
-        writeMiddlewareTypes(this.destination),
-      ]).catch((error: unknown) => {
-        console.error("Failed to regenerate scenario files:", error);
-      });
+      void writeHelperTypes(this.destination, this.rootDestination).catch(
+        (error: unknown) => {
+          console.error("Failed to regenerate scenario files:", error);
+        },
+      );
     };
 
     this.watcher = watch(routesDir, CHOKIDAR_OPTIONS).on(
@@ -690,5 +854,8 @@ export class ScenarioFileGenerator {
   /** Closes the file-system watcher. */
   public async stopWatching(): Promise<void> {
     await Promise.all([this.watcher?.close(), this.storeWatcher?.close()]);
+    await helperWrites
+      .get(nodePath.resolve(this.destination))
+      ?.catch(() => undefined);
   }
 }

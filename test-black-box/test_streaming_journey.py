@@ -39,9 +39,9 @@ def generate_streaming_project(journey):
     result = journey.run_cli(journey.spec_path, journey.output, "--generate", "--no-update-check")
     assert result.returncode == 0, result.stdout + result.stderr
     journey.write_text(journey.output / "routes/events.ts", '''
-import type { feed } from "../types/paths/events.types.ts";
+import type { Routes } from "../types/index.js";
 let release: (() => void) | undefined;
-export const GET: feed = ($) => $.response[200].sse(events($.headers["last-event-id"]));
+export const GET: Routes["/events"]["GET"] = ($) => $.response[200].sse(events($.headers["last-event-id"]));
 async function* events(lastId?: string) {
   if (lastId !== "1") {
     yield { comment: "heartbeat" };

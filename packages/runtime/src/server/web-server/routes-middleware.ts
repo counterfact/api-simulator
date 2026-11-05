@@ -202,7 +202,7 @@ export function routesMiddleware(
 
     addCors(
       ctx,
-      allowedMethodsOverride ?? dispatcher.registry.allowedMethods(path),
+      allowedMethodsOverride ?? dispatcher.allowedMethodsForPath(path),
       headers,
     );
 
@@ -271,7 +271,15 @@ export function routesMiddleware(
       }
     }
 
-    if (response.status === 405 && allowedMethodsOverride !== undefined) {
+    if (
+      response.status === 405 &&
+      allowedMethodsOverride !== undefined &&
+      (dispatcher.version === "" ||
+        !dispatcher.openApiDocument ||
+        !Object.keys(response.headers ?? {}).some(
+          (name) => name.toLowerCase() === "allow",
+        ))
+    ) {
       ctx.set("Allow", allowedMethodsOverride);
     }
 
@@ -311,7 +319,7 @@ export function routesMiddlewareForRunners(
     for (const candidate of candidates) {
       if (
         (config.proxyUrl && isProxyEnabledForPath(candidate.path, config)) ||
-        candidate.runner.dispatcher.registry.exists(method, candidate.path)
+        candidate.runner.dispatcher.canHandleRequest(candidate.path, method)
       ) {
         return routesMiddleware(
           candidate.runner.prefix,
@@ -326,7 +334,7 @@ export function routesMiddlewareForRunners(
     let pathOwner: (typeof candidates)[number] | undefined;
 
     for (const candidate of candidates) {
-      const methods = candidate.runner.dispatcher.registry.allowedMethods(
+      const methods = candidate.runner.dispatcher.allowedMethodsForPath(
         candidate.path,
       );
 

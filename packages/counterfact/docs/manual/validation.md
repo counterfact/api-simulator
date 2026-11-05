@@ -20,17 +20,17 @@ Request and response validation are enabled by default. Start the simulator with
 | Response bodies and streaming items                    | No general schema validation.                                                                                                                                                                                |
 | Configuration-selected upstream traffic                | Bypasses local dispatch validation. Route-level `$.proxy()` runs through local checks.                                                                                                                       |
 
-The current AJV instance uses its default JSON Schema dialect, `strict: false`, and `coerceTypes: false` for request bodies. Common type, required-field, enum, and object/array constraints are useful checks; this is not full OpenAPI 3.1/3.2 JSON Schema-dialect coverage. Optional formats and dialect-specific keywords are not promised. Exercise representative schemas before relying on a contract gate.
+The current AJV instance uses its default JSON Schema dialect, `strict: false`, and `coerceTypes: false` for request bodies. Common type, required-field, enum, and object/array constraints are useful checks; this is not full OpenAPI 3.1/3.2 JSON Schema-dialect coverage. Optional formats and dialect-specific keywords are not promised. Test the schemas your API uses before relying on these checks.
 
 ## Understand response checks
 
-Response validation currently checks declared response headers, including required headers and their schemas. It does **not** perform general response-body schema validation. An undeclared response status with no applicable default response is not rejected merely for being undeclared. Streaming content is not a promise of item-by-item runtime schema validation.
+Response validation currently checks declared response headers, including required headers and their schemas. It does **not** perform general response-body schema validation. An undeclared response status with no applicable default response is not rejected merely for being undeclared. Streaming items are not checked against their response schemas.
 
 When supported response checks fail, the server adds `response-type-error` headers and keeps the handler’s status and body. Do not treat these checks as a complete OpenAPI conformance suite.
 
 ## Make advisory errors fail a test
 
-After starting the simulator and obtaining `baseUrl`, a Node test can make supported response-header diagnostics actionable:
+After starting the simulator and obtaining `baseUrl`, fail your Node test if the response contains a `response-type-error` header:
 
 ```js
 import assert from "node:assert/strict";

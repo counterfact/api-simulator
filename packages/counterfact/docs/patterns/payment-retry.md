@@ -4,7 +4,7 @@ This recipe gives a test runner a complete local workflow: an empty order collec
 
 ## Install and generate
 
-Follow the [project installation setup](./lifecycle-setup.md), then keep the contract, authored code, and verification script together in that project for review.
+Follow the [project installation setup](./lifecycle-setup.md), then keep the contract, your code, and verification script together in that project for review.
 
 Save this as `orders.yaml`:
 
@@ -14,7 +14,6 @@ info: { title: Order workflow, version: 1.0.0 }
 paths:
   /orders:
     post:
-      operationId: placeOrder
       requestBody:
         required: true
         content:
@@ -38,7 +37,6 @@ paths:
         "403": { description: Permission denied }
   /orders/{orderId}:
     get:
-      operationId: getOrder
       parameters:
         - name: orderId
           in: path
@@ -90,30 +88,35 @@ Replace the generated handlers:
 
 ```ts
 // api/routes/orders.ts
-import type { placeOrder } from "../types/paths/orders.types.js";
+import type { Routes } from "../types/index.js";
 
-export const POST: placeOrder = ($) => {
+type Route = Routes["/orders"];
+
+export const POST: Route["POST"] = function ($) {
   const outcome = $.context.placeOrder($.body.id);
-  if (outcome === "forbidden") return $.response[403].empty();
-  if (outcome === "declined") return $.response[402].empty();
-  return $.response[201].json({ id: $.body.id });
+  if (outcome === "forbidden") return $.response.status(403).empty();
+  if (outcome === "declined") return $.response.status(402).empty();
+  return $.response.status(201).json({ id: $.body.id });
 };
 ```
 
 ```ts
 // api/routes/orders/{orderId}.ts
-import type { getOrder } from "../../types/paths/orders/{orderId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: getOrder = ($) =>
-  $.context.hasOrder($.path.orderId)
-    ? $.response[200].json({ id: $.path.orderId })
-    : $.response[404].empty();
+type Route = Routes["/orders"]["/{orderId}"];
+
+export const GET: Route["GET"] = function ($) {
+  return $.context.hasOrder($.path.orderId)
+    ? $.response.status(200).json({ id: $.path.orderId })
+    : $.response.status(404).empty();
+};
 ```
 
 Create `api/scenarios/index.ts`:
 
 ```ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const declinedPayment: Scenario = ($) => {
   $.context.paymentOutcome = "declined";

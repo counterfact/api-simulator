@@ -1,5 +1,7 @@
 export default {
-  collectCoverage: true,
+  collectCoverage: false,
+
+  maxWorkers: 2,
 
   collectCoverageFrom: [
     "packages/client/src/**/*.{js,jsx,ts,tsx}",
