@@ -75,7 +75,10 @@ jobs:
         with:
           node-version: 26.x
       - name: Enable Corepack
-        run: corepack enable
+        run: |
+          npm install --global --force corepack
+          corepack enable
+          yarn --version
       - name: Locate Yarn download cache
         if: matrix.check == 'Black-box tests'
         id: yarn-cache

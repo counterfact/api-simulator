@@ -29,7 +29,10 @@ jobs:
         with:
           node-version: 26.x
       - name: Enable Corepack
-        run: corepack enable
+        run: |
+          npm install --global --force corepack
+          corepack enable
+          yarn --version
       - name: Install trusted-publishing toolchain
         run: npm install --global npm@11.18.0
       - name: Release preflight
@@ -65,7 +68,10 @@ jobs:
         with:
           node-version: 26.x
       - name: Enable Corepack
-        run: corepack enable
+        run: |
+          npm install --global --force corepack
+          corepack enable
+          yarn --version
       - name: Install trusted-publishing toolchain
         run: npm install --global npm@11.18.0
       - name: Install frozen dependencies
