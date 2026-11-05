@@ -60,7 +60,7 @@
     "@stryker-mutator/core": "10.1.1",
     "@stryker-mutator/jest-runner": "10.1.1",
     "@stryker-mutator/typescript-checker": "10.1.1",
-    "@swc/core": "1.16.20",
+    "@swc/core": "1.16.21",
     "@swc/jest": "0.2.39",
     "@testing-library/dom": "10.4.2",
     "@types/debug": "4.1.13",
