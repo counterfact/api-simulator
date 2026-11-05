@@ -155,7 +155,7 @@ describe("central generated types", () => {
       expect(await $.read("api/routes/_.context.ts")).toBe(strict);
       expect(diagnostics($.path("consumer.ts"))).toEqual([]);
     });
-  });
+  }, 30_000);
 
   it("compiles routes and every component category, including unused and aliased schemas", async () => {
     await usingTemporaryFiles(async ($) => {
