@@ -124,7 +124,8 @@ export function validateRequest(
             : undefined;
     const name =
       parameter.in === "header" ? parameter.name.toLowerCase() : parameter.name;
-    const value = values?.[name];
+    const value =
+      values && Object.hasOwn(values, name) ? values[name] : undefined;
     if (
       value !== undefined &&
       value !== true &&
