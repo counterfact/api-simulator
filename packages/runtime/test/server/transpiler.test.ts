@@ -36,8 +36,6 @@ describe("a Transpiler", () => {
 
       await transpiler.watch();
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       expect(normalize(await $.read("dist/found.js"))).toBe(
         normalize(JAVASCRIPT_SOURCE),
       );
@@ -140,8 +138,6 @@ describe("a Transpiler", () => {
 
       await transpiler.watch();
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       expect(normalize(await $.read("dist/found.cjs"))).toBe(
         normalize(JAVASCRIPT_SOURCE_COMMONJS),
       );
@@ -164,8 +160,6 @@ describe("a Transpiler", () => {
       );
 
       await transpiler.watch();
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const contents = await $.read("dist/importer.cjs");
 

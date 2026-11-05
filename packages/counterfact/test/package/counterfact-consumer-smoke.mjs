@@ -35,6 +35,7 @@ function executable(name) {
 }
 
 async function run(command, args, options = {}) {
+  const started = performance.now();
   const result = await new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: options.cwd ?? packageRoot,
@@ -68,6 +69,14 @@ async function run(command, args, options = {}) {
     );
   }
 
+  process.stdout.write(
+    `${path.basename(command)} ${args
+      .slice(0, 2)
+      .map((argument) =>
+        path.isAbsolute(argument) ? path.basename(argument) : argument,
+      )
+      .join(" ")}: ${((performance.now() - started) / 1000).toFixed(1)}s\n`,
+  );
   return result;
 }
 
@@ -80,6 +89,7 @@ async function packPackage(packageDirectory, tarballDirectory, cacheDirectory) {
     executable("npm"),
     [
       "pack",
+      ...(packageDirectory === packageRoot ? [] : ["--ignore-scripts"]),
       "--json",
       "--pack-destination",
       tarballDirectory,
@@ -143,21 +153,7 @@ async function compareOrUpdate(pathname, actual) {
   assert.deepEqual(actual, await json(pathname));
 }
 
-const temporaryRoot = await mkdtemp(
-  path.join(tmpdir(), "counterfact-packed-consumer-"),
-);
-
-try {
-  const cacheDirectory = path.join(temporaryRoot, "npm-cache");
-  const consumerDirectory = path.join(temporaryRoot, "consumer");
-  const tarballDirectory = path.join(temporaryRoot, "tarballs");
-  await Promise.all([
-    mkdir(cacheDirectory),
-    mkdir(consumerDirectory),
-    mkdir(tarballDirectory),
-  ]);
-
-  const pack = await packPackage(packageRoot, tarballDirectory, cacheDirectory);
+export async function verifyPackedConsumer({ consumerDirectory, pack }) {
   const packFiles = pack.files
     .map(({ path: packedPath }) => packedPath.split(path.sep).join("/"))
     .sort();
@@ -167,76 +163,10 @@ try {
   );
   await compareOrUpdate(expectedPackFilesPath, publicPackFiles);
 
-  const tarballPath = path.join(tarballDirectory, pack.filename);
-  const clientPack = await packPackage(
-    clientPackageRoot,
-    tarballDirectory,
-    cacheDirectory,
-  );
-  const clientTarballPath = path.join(tarballDirectory, clientPack.filename);
-  const generatorPack = await packPackage(
-    generatorPackageRoot,
-    tarballDirectory,
-    cacheDirectory,
-  );
-  const generatorTarballPath = path.join(
-    tarballDirectory,
-    generatorPack.filename,
-  );
-  const openApiPack = await packPackage(
-    openApiPackageRoot,
-    tarballDirectory,
-    cacheDirectory,
-  );
-  const openApiTarballPath = path.join(tarballDirectory, openApiPack.filename);
-  const replPack = await packPackage(
-    replPackageRoot,
-    tarballDirectory,
-    cacheDirectory,
-  );
-  const replTarballPath = path.join(tarballDirectory, replPack.filename);
-  const runtimePack = await packPackage(
-    runtimePackageRoot,
-    tarballDirectory,
-    cacheDirectory,
-  );
-  const runtimeTarballPath = path.join(tarballDirectory, runtimePack.filename);
-  const typesPack = await packPackage(
-    typesPackageRoot,
-    tarballDirectory,
-    cacheDirectory,
-  );
-  const typesTarballPath = path.join(tarballDirectory, typesPack.filename);
   await copyFile(
     path.join(fixturesDirectory, "openapi.yaml"),
     path.join(consumerDirectory, "openapi.yaml"),
   );
-  await writeFile(
-    path.join(consumerDirectory, "package.json"),
-    `${JSON.stringify({ name: "counterfact-packed-consumer", private: true, type: "module" }, undefined, 2)}\n`,
-  );
-
-  await run(
-    executable("npm"),
-    [
-      "install",
-      "--ignore-scripts",
-      "--no-audit",
-      "--no-fund",
-      "--package-lock=false",
-      "--cache",
-      cacheDirectory,
-      clientTarballPath,
-      generatorTarballPath,
-      openApiTarballPath,
-      replTarballPath,
-      runtimeTarballPath,
-      typesTarballPath,
-      tarballPath,
-    ],
-    { cwd: consumerDirectory },
-  );
-
   const installedRoot = path.join(
     consumerDirectory,
     "node_modules",
@@ -319,6 +249,7 @@ const config = {
 const simulator = await counterfactPackage.counterfact(config);
 const running = await simulator.start(config);
 await running.stop();
+
 `,
   );
   await run(process.execPath, [runtimeCheckPath], {
@@ -442,7 +373,8 @@ assert.equal(typeof createMswHandlers, "function");
     path.join(consumerDirectory, "consumer.ts"),
     `import { loadOpenApiDocument } from "@counterfact/openapi";
 import type { Middleware } from "@counterfact/types";
-import type { ping } from "./generated/types/paths/ping.types.js";
+import type { Routes } from "./generated/types/index.js";
+type ping = Routes["/ping"]["GET"];
 import { counterfact, type MockRequest, type SpecConfig } from "counterfact";
 
 const spec: SpecConfig = { group: "smoke", source: "./openapi.yaml" };
@@ -546,6 +478,112 @@ void runner;
       ? "Updated packed-consumer compatibility fixtures.\n"
       : "Packed-consumer compatibility checks passed.\n",
   );
-} finally {
-  await rm(temporaryRoot, { force: true, recursive: true });
+}
+
+async function main() {
+  const temporaryRoot = await mkdtemp(
+    path.join(tmpdir(), "counterfact-packed-consumer-"),
+  );
+
+  try {
+    const cacheDirectory =
+      process.env.COUNTERFACT_PACKAGE_CACHE ??
+      path.join(tmpdir(), "counterfact-package-npm-cache");
+    const consumerDirectory = path.join(temporaryRoot, "consumer");
+    const tarballDirectory = path.join(temporaryRoot, "tarballs");
+    await Promise.all([
+      mkdir(cacheDirectory, { recursive: true }),
+      mkdir(consumerDirectory),
+      mkdir(tarballDirectory),
+    ]);
+
+    const pack = await packPackage(
+      packageRoot,
+      tarballDirectory,
+      cacheDirectory,
+    );
+    const tarballPath = path.join(tarballDirectory, pack.filename);
+    const clientPack = await packPackage(
+      clientPackageRoot,
+      tarballDirectory,
+      cacheDirectory,
+    );
+    const clientTarballPath = path.join(tarballDirectory, clientPack.filename);
+    const generatorPack = await packPackage(
+      generatorPackageRoot,
+      tarballDirectory,
+      cacheDirectory,
+    );
+    const generatorTarballPath = path.join(
+      tarballDirectory,
+      generatorPack.filename,
+    );
+    const openApiPack = await packPackage(
+      openApiPackageRoot,
+      tarballDirectory,
+      cacheDirectory,
+    );
+    const openApiTarballPath = path.join(
+      tarballDirectory,
+      openApiPack.filename,
+    );
+    const replPack = await packPackage(
+      replPackageRoot,
+      tarballDirectory,
+      cacheDirectory,
+    );
+    const replTarballPath = path.join(tarballDirectory, replPack.filename);
+    const runtimePack = await packPackage(
+      runtimePackageRoot,
+      tarballDirectory,
+      cacheDirectory,
+    );
+    const runtimeTarballPath = path.join(
+      tarballDirectory,
+      runtimePack.filename,
+    );
+    const typesPack = await packPackage(
+      typesPackageRoot,
+      tarballDirectory,
+      cacheDirectory,
+    );
+    const typesTarballPath = path.join(tarballDirectory, typesPack.filename);
+    await writeFile(
+      path.join(consumerDirectory, "package.json"),
+      `${JSON.stringify({ name: "counterfact-packed-consumer", private: true, type: "module" }, undefined, 2)}\n`,
+    );
+
+    await run(
+      executable("npm"),
+      [
+        "install",
+        "--ignore-scripts",
+        "--prefer-offline",
+        "--no-audit",
+        "--no-fund",
+        "--package-lock=false",
+        "--cache",
+        cacheDirectory,
+        clientTarballPath,
+        generatorTarballPath,
+        openApiTarballPath,
+        replTarballPath,
+        runtimeTarballPath,
+        typesTarballPath,
+        tarballPath,
+      ],
+      { cwd: consumerDirectory },
+    );
+
+    await verifyPackedConsumer({ consumerDirectory, pack });
+  } finally {
+    await rm(temporaryRoot, { force: true, recursive: true });
+  }
+}
+
+if (
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
+  await main();
 }

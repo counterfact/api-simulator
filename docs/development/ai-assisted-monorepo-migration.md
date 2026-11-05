@@ -2,6 +2,12 @@
 
 _August 6, 2026_
 
+> Historical retrospective, recorded at
+> [commit 9a9ab8a](https://github.com/counterfact/api-simulator/tree/9a9ab8afc2c9df8cbd502ec02c53d6eb254295d4).
+> Package counts, verification results, release status, and prompts describe
+> that migration. For the maintained consumer contract, see
+> [Public Package Compatibility Contract](./public-package-contract.md).
+
 On March 31, 2026, I took part in a conversation with people who use
 Counterfact in real projects. We discussed the request builder, generated
 TypeScript clients, using externally generated models, OpenAPI overlays,

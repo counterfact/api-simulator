@@ -10,5 +10,6 @@
   "patterns/multiple-versions": "/docs/features/multiple-versions",
   "patterns/reference-implementation": "/docs/patterns/model-the-workflow",
   "patterns/simulate-failures": "/docs/manual/edge-cases",
-  "patterns/simulate-latency": "/docs/manual/edge-cases"
+  "patterns/simulate-latency": "/docs/manual/edge-cases",
+  "manual/guided-example": "/docs/getting-started/"
 }

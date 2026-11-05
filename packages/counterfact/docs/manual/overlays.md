@@ -1,5 +1,7 @@
 # OpenAPI overlays
 
+Use the [project installation setup](../patterns/lifecycle-setup.md) to run these examples with Counterfact 3 or newer.
+
 Use overlays when an upstream specification needs local examples or corrections for a simulation. Counterfact applies the changes while loading the document, leaving the source document untouched.
 
 ## Define and apply changes
@@ -53,18 +55,21 @@ polled or watched.
 
 ### Programmatic usage
 
-Pass `overlays` on each `SpecConfig` entry:
+Pass `overlays` on each specification entry (`SpecConfig`). This example assumes `openapi.yaml`, `base-overlay.yaml`, and `env-overlay.yaml` exist in the working directory. `basePath` names the generated API directory; an empty `group` uses the single-API layout. See [programmatic setup](../features/programmatic-api.md).
 
 ```ts
 import { counterfact } from "counterfact";
 
-await counterfact(config, [
+const api = await counterfact({ basePath: "api" }, [
   {
     source: "openapi.yaml",
     group: "",
     overlays: ["base-overlay.yaml", "env-overlay.yaml"],
   },
 ]);
+
+const { stop } = await api.start();
+// Call await stop() when your application or test suite finishes.
 ```
 
 ### Config file usage (`counterfact.yaml`)

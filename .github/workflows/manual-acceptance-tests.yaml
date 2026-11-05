@@ -15,6 +15,7 @@
 #
 #   Validation is NOT enforced when:
 #     - The PR carries a "design" label (design-only PRs have no observable runtime behavior to test).
+#     - The PR carries a "skip-manual-acceptance-tests" label (explicit reviewer opt-out).
 #
 #   What the section must contain:
 #     - At least one checked item: - [x] some observable behavior
@@ -55,7 +56,8 @@ jobs:
           import json, os, sys
           try:
               labels = json.loads(os.environ.get('PR_LABELS', '[]'))
-              sys.exit(0 if 'design' in labels else 1)
+              skip_labels = {'design', 'skip-manual-acceptance-tests'}
+              sys.exit(0 if skip_labels.intersection(labels) else 1)
           except Exception as e:
               print(f'Error parsing PR labels: {e}', file=sys.stderr)
               sys.exit(1)
@@ -69,7 +71,7 @@ jobs:
           fi
       - name: Skip (no enforcement needed)
         if: steps.decide.outputs.enforce == 'false'
-        run: echo "Skipping manual acceptance test validation (design PR, not a Copilot PR, or no section present)"
+        run: echo "Skipping manual acceptance test validation (design or skip-manual-acceptance-tests label, or neither a Copilot branch nor a manual acceptance section)"
 
       - name: Validate PR body
         if: github.event_name == 'pull_request' && steps.decide.outputs.enforce == 'true'

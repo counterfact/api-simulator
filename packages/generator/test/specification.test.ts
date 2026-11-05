@@ -1,4 +1,5 @@
 import { pathToFileURL } from "node:url";
+import { promisify } from "node:util";
 
 import { describe, expect, it } from "@jest/globals";
 import Koa from "koa";
@@ -50,22 +51,16 @@ describe("a Specification", () => {
     });
 
     const server = app.listen(0);
-    const url = `http://localhost:${server.address().port}/`;
-    const specification = await Specification.fromFile(url);
+    try {
+      const url = `http://localhost:${server.address().port}/`;
+      const specification = await Specification.fromFile(url);
 
-    expect(specification.rootRequirement.data).toStrictEqual({
-      hello: "world",
-    });
-
-    await new Promise((resolve) => {
-      server.close(resolve);
-    });
-
-    // The server still might not be completely shut down at this point so wait a bit longer
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 1000);
-    });
+      expect(specification.rootRequirement.data).toStrictEqual({
+        hello: "world",
+      });
+    } finally {
+      await promisify(server.close.bind(server))();
+    }
   });
 
   it("looks for requirements in the root document if no path is provided", () => {

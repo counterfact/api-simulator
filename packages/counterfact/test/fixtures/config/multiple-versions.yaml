@@ -1,0 +1,10 @@
+spec:
+  - source: ./test/fixtures/openapi/versions/v1.yaml
+    prefix: /v1
+    group: greetings
+    version: v1
+  - source: ./test/fixtures/openapi/versions/v2.yaml
+    prefix: /v2
+    group: greetings
+    version: v2
+destination: out/multiple-versions

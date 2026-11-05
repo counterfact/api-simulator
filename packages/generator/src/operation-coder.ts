@@ -2,7 +2,9 @@ import { STREAMING_CONTENT_TYPES } from "@counterfact/types/streaming-content-ty
 
 import { pathJoin } from "./forward-slash-path.js";
 import ts from "typescript";
-import { parameter, typeReference } from "./ast.js";
+import { literalType, parameter, typeReference } from "./ast.js";
+import { routeTypeReference } from "./route-type-tree.js";
+import { centralTypes } from "./central-types.js";
 import { Coder } from "./coder.js";
 import { normalizeOpenApiPath } from "./openapi-path.js";
 import {
@@ -16,7 +18,7 @@ import type { Script } from "./script.js";
 /**
  * Generates the default route handler stub for a single OpenAPI operation.
  *
- * The generated stub calls `$.response[statusCode].random()` (or `.empty()`)
+ * The generated stub calls `$.response.status(statusCode).random()` (or `.empty()`)
  * for the first response defined in the spec.  It is only written when no
  * handler file exists yet — users are expected to replace it with real logic.
  *
@@ -100,16 +102,22 @@ export class OperationCoder extends Coder {
     }
     const result = ts.factory.createCallExpression(
       ts.factory.createPropertyAccessExpression(
-        ts.factory.createElementAccessExpression(
+        ts.factory.createCallExpression(
           ts.factory.createPropertyAccessExpression(
-            ts.factory.createIdentifier("$"),
-            "response",
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createIdentifier("$"),
+              "response",
+            ),
+            "status",
           ),
-          /^\d+$/u.test(status ?? "")
-            ? ts.factory.createNumericLiteral(status!)
-            : status === "default"
-              ? ts.factory.createNumericLiteral(200)
-              : ts.factory.createStringLiteral(status ?? "200"),
+          undefined,
+          [
+            /^\d+$/u.test(status ?? "")
+              ? ts.factory.createNumericLiteral(status!)
+              : status === "default"
+                ? ts.factory.createNumericLiteral(200)
+                : ts.factory.createStringLiteral(status ?? "200"),
+          ],
         ),
         method,
       ),
@@ -167,7 +175,24 @@ export class OperationCoder extends Coder {
       );
     }
 
-    return typeReference(script.importType(operationTypeCoder));
+    const path =
+      this.requirement.parent?.url.split("/").at(-1) ??
+      this.requirement.url.split("/").at(-2)!;
+    const routePath = path.replaceAll("~1", "/").replaceAll("~0", "~");
+    centralTypes(script.repository).addOperation(
+      routePath,
+      this.requestMethod,
+      operationTypeCoder,
+    );
+    const routes = script.importExternalType(
+      "Routes",
+      pathJoin(script.relativePathToBase, "types/index.js"),
+    );
+    script.localTypes.set("Route", routeTypeReference(routes, routePath));
+    return ts.factory.createIndexedAccessTypeNode(
+      typeReference("Route"),
+      literalType(this.requestMethod.toUpperCase()),
+    );
   }
 
   public override modulePath(): string {

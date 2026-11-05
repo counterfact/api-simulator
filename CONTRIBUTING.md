@@ -21,11 +21,52 @@ git clone git@github.com:counterfact/api-simulator.git
 cd api-simulator
 corepack enable
 yarn install
+yarn build
 yarn lint
 yarn test
 ```
 
-The [code generator](./packages/generator/README.md) and [server runtime](./packages/runtime/README.md) are separate workspace packages. The `counterfact` package composes them with the CLI, client, and REPL. Root scripts coordinate builds and checks, so contributors do not need to change directories for the standard workflow.
+Unit tests use two workers and skip coverage collection for faster feedback.
+Run `yarn test:coverage` to collect coverage and enforce the same thresholds as
+CI. Focused commands such as `yarn test:generator` also skip coverage unless you
+add `--coverage`.
+
+The [code generator](./packages/generator/README.md) and [server runtime](./packages/runtime/README.md) are separate workspace packages. The `counterfact` package composes them with the CLI, client, and REPL. Guided tours live in [`packages/tutorials`](./packages/tutorials/README.md); add future chapter tours there. Root scripts coordinate builds and checks, so contributors do not need to change directories for the standard workflow.
+
+### Try the guided tour from a checkout
+
+After pulling changes that add or update workspace packages, refresh the
+dependency links with `yarn install --immutable`. Building compiles the packages;
+installation makes them available to Node.
+
+From the repository root, run:
+
+```sh
+yarn build
+node ./packages/counterfact/bin/counterfact.js
+```
+
+These commands build the current checkout and run its CLI from the repository
+root. The CLI receives no arguments, reproducing
+`npx counterfact@latest` with this branch's code as the installed version.
+Normal configuration detection applies: a `counterfact.yaml` bypasses the
+intro. Use an interactive terminal with `CI` unset to see the menu when no
+config exists. Generated tutorial files stay in the repository directory.
+
+Choose **Try a guided example**. Running the built CLI exercises this checkout;
+`npx counterfact@latest` uses the published release. Keep the checkout available
+because generated lesson checks load its tutorial helpers. The [guided-example
+chapter](./packages/counterfact/docs/manual/guided-example.md) describes the
+exercise, restart behavior, and follow-up guides.
+
+### Black-box test timings
+
+Run `yarn test:black-box` to build the application and execute every product
+journey. After an existing build, `yarn test:black-box:run` executes the same
+suite without rebuilding; CI uses this command after its workspace build.
+Both commands report the ten slowest pytest setup, call, or teardown phases.
+CI caches Yarn and pip downloads, while still installing dependencies into each
+fresh job and enforcing the Yarn lockfile.
 
 ### Build feedback
 
@@ -61,6 +102,11 @@ bash .devcontainer/verify.sh
 Use a separate Git worktree and branch for each task. Install dependencies with
 `yarn install --immutable`, then use the root scripts for the affected packages.
 Run `yarn lint`, `yarn typecheck`, and appropriate tests before submitting a PR.
+For installed-package verification, run `yarn test:package-closures`; it includes
+the Counterfact packed-consumer checks. See [package verification](./docs/development/package-verification.md)
+for coverage, cache settings, and standalone commands.
+Build required workspace dependencies before tests that consume their `dist`
+output, and finish packing/prepack checks before running those tests.
 Use `.devcontainer/verify.sh` for the complete Linux verification sequence.
 
 ### Documentation drift checks
@@ -78,11 +124,10 @@ their own modules rather than the whole application.
 
 Package READMEs and the whole-product README, FAQ, API reference, comparison, and
 design principles retain package-level scopes because they describe those full
-interfaces. The monorepo migration account also spans package boundaries,
-packaging, and releases. Navigation indexes follow their linked guide inventory;
+interfaces. Navigation indexes follow their linked guide inventory;
 agent instructions follow the referenced guidance and test conventions.
 
-The initial threshold is 20%, used as a review reminder. Implementation groups
+The default threshold is 10%, used as a review reminder. Implementation groups
 exclude Markdown, fixtures, and snapshots so prose and generated test artifacts
 do not dilute code measurements. Guide-navigation and agent-guidance groups
 include the Markdown they directly describe. Lockfiles, changelogs, historical
@@ -90,6 +135,10 @@ studies, issue proposals, and ADRs are not watched; they record dependencies or
 historical decisions rather than current behavior. This check is opt-in and is
 not a required CI gate. Relationships operate at file granularity: a change to
 an unrelated function in a shared module can still contribute drift.
+
+The dated monorepo retrospective and lint-warning assessment are historical
+records with commit-pinned context. They are excluded from ongoing implementation
+watches; current compatibility and contributor guides remain watched.
 
 Read the diagnostic when a check exits unsuccessfully: a percentage above the threshold requests document review, while an unhealthy-state or configuration message means the check could not complete. Drift measures changed lines since the newer of the watched file's last update or recorded review, so a successful setup can still report existing drift.
 

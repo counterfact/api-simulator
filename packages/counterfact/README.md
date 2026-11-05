@@ -18,7 +18,7 @@ const response = await fetch("http://localhost:3100/pet/1");
 const pet = await response.json();
 ```
 
-Requires Node.js 22 or newer. Counterfact supports Swagger 2.0 and OpenAPI
+Requires Node.js 22.22 or newer. Counterfact supports Swagger 2.0 and OpenAPI
 3.0, 3.1, and 3.2. For a project or CI workflow, install Counterfact as a dev
 dependency and commit the lockfile:
 

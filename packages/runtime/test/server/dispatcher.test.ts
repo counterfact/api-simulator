@@ -17,6 +17,34 @@ function acceptsBody(acceptsHtml: boolean): string {
 }
 
 describe("a dispatcher", () => {
+  it("dispatches a response with headers and cookies before status selection", async () => {
+    const registry = new Registry();
+    registry.add("/created", {
+      GET({ response }) {
+        return response
+          .header("x-request-id", "123")
+          .cookie("session", "abc")
+          .status(201)
+          .json({ ok: true });
+      },
+    });
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const response = await dispatcher.request({
+      body: "",
+      headers: { accept: "application/json" },
+      method: "GET",
+      path: "/created",
+      query: {},
+      req: { path: "/created" },
+    });
+    expect(response.status).toBe(201);
+    expect(response.headers).toMatchObject({
+      "x-request-id": "123",
+      "set-cookie": ["session=abc"],
+    });
+    expect(response.body).toStrictEqual({ ok: true });
+  });
+
   it("dispatches a get request to a server and returns the response", async () => {
     const registry = new Registry();
 
