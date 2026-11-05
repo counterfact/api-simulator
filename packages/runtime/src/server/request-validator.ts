@@ -1,4 +1,5 @@
 import Ajv from "ajv";
+import { validationSchema } from "./validation-schema.js";
 
 import type { OpenApiOperation, OpenApiParameters } from "@counterfact/types";
 
@@ -114,7 +115,7 @@ export function validateRequest(
         ?.schema;
 
     if (schema !== undefined) {
-      const valid = ajv.validate(schema, request.body);
+      const valid = ajv.validate(validationSchema(schema), request.body);
 
       if (!valid && ajv.errors) {
         for (const error of ajv.errors) {
@@ -132,7 +133,10 @@ export function validateRequest(
   const bodyParam = parameters.find((p) => p.in === "body");
 
   if (bodyParam?.schema !== undefined) {
-    const valid = ajv.validate(bodyParam.schema, request.body);
+    const valid = ajv.validate(
+      validationSchema(bodyParam.schema),
+      request.body,
+    );
 
     if (!valid && ajv.errors) {
       for (const error of ajv.errors) {
