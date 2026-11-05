@@ -83,6 +83,10 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 - Canonical ESM entry imports belong only to the first import attempt during an explicit initial load. Track attempts across loader instances, independently of successful context construction; watcher updates and retries must refresh entries.
 
+- Normalize array query cardinality and primitive items from the declared schema and serialization style. Do not split commas for default exploded form arrays or invent values for absent optional parameters.
+
+- Query array conversion must retain enclosing union constraints, honor positional prefixItems before trailing items, preserve explicitly exploded occurrences, and reject non-decimal numeric coercion without hiding the original text.
+
 - Read supplied request parameter values using own-property checks; optional parameters named constructor or other prototype keys must remain absent when not supplied.
 
 - Preserve request-body absence at the HTTP parsing boundary. Empty-wire input, explicit {}, and explicit JSON null must remain distinct before optionality and schema validation.
