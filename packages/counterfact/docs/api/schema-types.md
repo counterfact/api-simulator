@@ -309,3 +309,5 @@ interface declarations, runtime enums, or serialization. Default generation must
 succeed before the callback can run. Schema type changes do not change validation
 or convert request/response values. Existing route edits retain the usual
 [regeneration guarantees](../features/generated-code.md).
+
+Startup generate overrides retain the configured transform callback. The simulator status snapshot reports effective generation flags and the listener address; executable callbacks are excluded from that cloneable snapshot.

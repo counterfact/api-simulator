@@ -99,7 +99,10 @@ export type CounterfactStartOptions = Partial<
 };
 
 /** Snapshot of the simulator's API directory and current HTTP listener. */
-export interface CounterfactStatus extends Omit<Config, "adminApiToken"> {
+export interface CounterfactStatus extends Omit<
+  Config,
+  "adminApiToken" | "schemaTypeTransform"
+> {
   listening: boolean;
   address: AddressInfo | null;
 }
@@ -458,6 +461,7 @@ export async function counterfact<TStore = unknown>(
       buildCache: startupOptions.buildCache,
     };
     delete snapshot.adminApiToken;
+    delete snapshot.schemaTypeTransform;
     return {
       ...structuredClone(snapshot),
       listening: httpServer?.listening ?? false,

@@ -115,6 +115,8 @@ export class ApiRunner {
   }
 
   private readonly config: Config;
+  private readonly generationOptions: Config["generate"] &
+    Pick<Config, "schemaTypeTransform">;
 
   private constructor(
     config: Config,
@@ -157,13 +159,14 @@ export class ApiRunner {
       config.basePath,
     );
 
+    this.generationOptions = {
+      ...this.config.generate,
+      schemaTypeTransform: this.config.schemaTypeTransform,
+    };
     this.codeGenerator = new CodeGenerator(
       this.openApiPath,
       config.basePath + this.subdirectory,
-      {
-        ...this.config.generate,
-        schemaTypeTransform: this.config.schemaTypeTransform,
-      },
+      this.generationOptions,
       version,
       config.overlays ?? [],
     );
@@ -254,6 +257,7 @@ export class ApiRunner {
   /** Applies effective startup controls to generation and spec watchers. */
   public configureStartup(options: Pick<Config, "generate" | "watch">): void {
     Object.assign(this.config.generate, options.generate);
+    Object.assign(this.generationOptions, options.generate);
     Object.assign(this.config.watch, options.watch);
   }
 
