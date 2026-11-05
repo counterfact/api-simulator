@@ -231,3 +231,5 @@ import the internal versioned operation modules.
 - [Routes](./routes.md) — writing route handlers, reading request data, building responses
 - [State](./state.md) — sharing state across routes with context objects
 - [Find your workflow](../usage.md)
+
+The root endpoint always uses the root context, even though its generated type file is named index.types.ts. A real /index child context applies only to that child endpoint and its descendants.

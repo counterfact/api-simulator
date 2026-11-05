@@ -196,7 +196,7 @@ export class Repository {
       async ([path, script]) => {
         const fullPath = resolveDestinationPath(destination, path);
         const contents = await script.contents(
-          this.findContextPath(destination, path),
+          this.findContextPath(destination, path, script.contextRoutePath),
         );
 
         await ensureDirectoryExists(fullPath);
@@ -684,10 +684,14 @@ export class Repository {
    * @param destination - Output root directory.
    * @param path - Repository-relative path of the script being generated.
    */
-  public findContextPath(destination: string, path: string): string {
+  public findContextPath(
+    destination: string,
+    path: string,
+    logicalPath?: string,
+  ): string {
     return pathRelative(
       nodePath.join(destination, nodePath.dirname(path)),
-      this.nearestContextFile(destination, path),
+      this.nearestContextFile(destination, path, logicalPath),
     );
   }
 
@@ -698,7 +702,11 @@ export class Repository {
    * @param destination - Output root directory.
    * @param path - Repository-relative path to start from.
    */
-  public nearestContextFile(destination: string, path: string): string {
+  public nearestContextFile(
+    destination: string,
+    path: string,
+    logicalPath?: string,
+  ): string {
     // Operation contracts describe the endpoint itself, not just its parent.
     const parts = path
       .replace(/(?:\.types)?\.ts$/u, "")
@@ -709,6 +717,11 @@ export class Repository {
       pathsIndex === 1 || pathsIndex === 2
         ? ["routes", ...parts.slice(pathsIndex + 1)].join("/")
         : parts.join("/");
+
+    if (logicalPath !== undefined)
+      directory = ["routes", ...logicalPath.split("/").filter(Boolean)].join(
+        "/",
+      );
 
     while (directory !== "." && directory !== "routes") {
       const candidate = nodePath.join(destination, directory, "_.context.ts");

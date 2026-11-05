@@ -221,6 +221,52 @@ describe("central generated types", () => {
     },
   );
 
+  it.each(["", "v1"])(
+    "keeps the root endpoint separate from the index child context (%s)",
+    async (version) => {
+      await usingTemporaryFiles(async ($) => {
+        await $.add(
+          "spec.json",
+          JSON.stringify({
+            openapi: "3.0.3",
+            info: { title: "Root", version: "1" },
+            paths: {
+              "/": { get: { responses: { 204: { description: "OK" } } } },
+              "/index/{id}": {
+                get: { responses: { 204: { description: "OK" } } },
+              },
+            },
+          }),
+        );
+        await $.add(
+          "api/routes/_.context.ts",
+          "export class Context { rootOnly(): void {} }",
+        );
+        await $.add(
+          "api/routes/index/_.context.ts",
+          "export class Context { childOnly(): void {} }",
+        );
+        await new CodeGenerator(
+          $.path("spec.json"),
+          $.path("api"),
+          { routes: true, types: true },
+          version,
+        ).generate();
+        if (version)
+          await $.add(
+            "api/types/versions.ts",
+            await generateVersionsTsContent([version]),
+          );
+        await $.add(
+          "consumer.ts",
+          'import type {Routes} from "./api/types/index.js"; const root: Routes["/"]["GET"] = ($) => { $.context.rootOnly();\n// @ts-expect-error Root must not use the index child.\n$.context.childOnly(); return $.response.status(204).empty(); }; const child: Routes["/index"]["/{id}"]["GET"] = ($) => { $.context.childOnly(); return $.response.status(204).empty(); };',
+        );
+        expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+      });
+    },
+    30_000,
+  );
+
   it("compiles routes and every component category, including unused and aliased schemas", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("spec.json", JSON.stringify(spec));
