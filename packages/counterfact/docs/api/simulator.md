@@ -51,3 +51,5 @@ Reacquire contexts with `loadContext()` and read `api.store` again after reset. 
 `scenario(path, group?)` resolves and awaits a named scenario with the same arguments as the REPL. Select a group explicitly when several API groups exist. `loadContext(path = "/", group?)` likewise requires a group in a multi-group simulator.
 
 See the [programmatic manual](../features/programmatic-api.md) for complete test-suite examples.
+
+On initial load, ESM routes and contexts share the same canonical module URL, so imported classes, domain errors, and singletons have consistent identity. Hot reload continues to use cache-busted entry imports; unchanged static dependencies retain the normal Node module cache.

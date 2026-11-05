@@ -1,4 +1,5 @@
 import { once } from "node:events";
+import { pathToFileURL } from "node:url";
 import fs from "node:fs/promises";
 import nodePath, { basename } from "node:path";
 /* eslint-disable security/detect-non-literal-fs-filename -- readJson resolves paths against the current context directory before file access. */
@@ -384,7 +385,9 @@ export class ModuleLoader extends EventTarget {
       const doImport =
         (await determineModuleKind(pathName)) === "commonjs"
           ? uncachedRequire
-          : uncachedImport;
+          : this.loaded
+            ? uncachedImport
+            : (path: string) => import(pathToFileURL(path).href);
 
       const module = await doImport(pathName);
 
@@ -417,7 +420,9 @@ export class ModuleLoader extends EventTarget {
       const doImport =
         (await determineModuleKind(pathName)) === "commonjs"
           ? uncachedRequire
-          : uncachedImport;
+          : this.loaded
+            ? uncachedImport
+            : (path: string) => import(pathToFileURL(path).href);
 
       let importError: unknown;
 

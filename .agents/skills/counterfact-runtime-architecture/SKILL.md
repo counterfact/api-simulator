@@ -78,3 +78,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   preserve one startup per group in declaration order across versioned runners.
 - Verify lifecycle changes with real HTTP mutation/restoration, same-listener
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
+
+- Use canonical ESM URLs for initial entry imports so static imports share class and singleton identity. Reserve cache-busting for reloads; a query suffix creates a distinct Node module identity even before any files change.
