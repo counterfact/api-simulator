@@ -4232,7 +4232,7 @@ __metadata:
     eslint-plugin-no-explicit-type-exports: "npm:0.12.1"
     eslint-plugin-prettier: "npm:5.5.7"
     eslint-plugin-promise: "npm:7.3.0"
-    eslint-plugin-regexp: "npm:3.3.1"
+    eslint-plugin-regexp: "npm:3.3.3"
     eslint-plugin-security: "npm:4.2.0"
     eslint-plugin-unused-imports: "npm:4.4.1"
     fs-extra: "npm:11.4.1"
@@ -5242,9 +5242,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-regexp@npm:3.3.1":
-  version: 3.3.1
-  resolution: "eslint-plugin-regexp@npm:3.3.1"
+"eslint-plugin-regexp@npm:3.3.3":
+  version: 3.3.3
+  resolution: "eslint-plugin-regexp@npm:3.3.3"
   dependencies:
     "@eslint-community/eslint-utils": "npm:^4.2.0"
     "@eslint-community/regexpp": "npm:^4.11.0"
@@ -5255,7 +5255,7 @@ __metadata:
     scslre: "npm:^0.3.0"
   peerDependencies:
     eslint: ">=9.38.0"
-  checksum: 10c0/fc88e8282e860b7af0c15c80000412db88b66c2f30c069037593b71b42492f328a4c024bed1fb11795bc93000c7ce7d6dfea52a381311bd9625ea6f50cdf1cfc
+  checksum: 10c0/25e3094a095bbd39d1c33dece1117a79f4814f41c9085fbf8a3ec2e118e2769fbe69b2cdb64fab3c54c2578cc5a02ed0330332c5a58570ed0a57e47a206c27a0
   languageName: node
   linkType: hard
 
