@@ -59,3 +59,9 @@ Explicit form serialization with explode false splits commas; spaceDelimited and
 pipeDelimited split their declared separators. Default exploded arrays do not
 split commas. Declared primitive items receive number or boolean conversion for
 valid values; malformed text remains visible. Other styles are left unchanged.
+
+Enclosing schema constraints remain active around array unions. Tuple prefix
+schemas apply by item position before the trailing items schema. Numeric item
+conversion accepts finite decimal text, preserving radix forms and malformed
+text. Explicit explode true preserves each query occurrence as one item,
+including spaces and pipe characters inside that item.

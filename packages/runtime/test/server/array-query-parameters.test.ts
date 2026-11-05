@@ -126,3 +126,94 @@ it("delivers singleton and repeated arrays through real HTTP", async () => {
   ).toEqual({ tags: ["one,two"] });
   expect((await request(app.callback()).get("/items")).body).toEqual({});
 });
+
+it.each(["anyOf", "oneOf"])(
+  "preserves sibling item constraints around %s",
+  async (keyword) => {
+    const schema = {
+      items: { type: "integer" },
+      [keyword]: [{ type: "array" }, { type: "null" }],
+    };
+    const { dispatcher } = setup(schema);
+    expect(
+      (await dispatcher.request({ ...input, query: { tags: "1" } })).body,
+    ).toEqual({ tags: [1] });
+    const combined = setup({
+      type: "array",
+      items: { type: "number" },
+      allOf: [{ items: { type: "integer" } }],
+    });
+    expect(
+      (
+        await combined.dispatcher.request({
+          ...input,
+          query: { tags: ["1", "1.5"] },
+        })
+      ).body,
+    ).toEqual({ tags: [1, "1.5"] });
+  },
+);
+it.each(["integer", "number"])(
+  "keeps radix and malformed text visible for %s items",
+  async (type) => {
+    const { dispatcher } = setup({ type: "array", items: { type } });
+    const malformed = ["0x10", "0b10", "0o10", "NaN", "Infinity", " 1 ", ""];
+    expect(
+      (await dispatcher.request({ ...input, query: { tags: malformed } })).body,
+    ).toEqual({ tags: malformed });
+    expect(
+      (
+        await dispatcher.request({
+          ...input,
+          query: { tags: ["001", "-2", "1e2"] },
+        })
+      ).body,
+    ).toEqual({ tags: [1, -2, 100] });
+  },
+);
+it.each(["spaceDelimited", "pipeDelimited"])(
+  "preserves each explicit exploded %s occurrence over HTTP",
+  async (style) => {
+    const { app } = setup(array, { style, explode: true });
+    const values =
+      style === "spaceDelimited"
+        ? ["New York", "Boston"]
+        : ["one|two", "three"];
+    const query = values
+      .map((value) => "tags=" + encodeURIComponent(value))
+      .join("&");
+    expect((await request(app.callback()).get("/items?" + query)).body).toEqual(
+      { tags: values },
+    );
+  },
+);
+it("uses prefix schemas before the trailing items schema", async () => {
+  const { dispatcher, app } = setup({
+    type: "array",
+    prefixItems: [{ type: "string" }, { type: "boolean" }],
+    items: { type: "integer" },
+  });
+  expect(
+    (
+      await dispatcher.request({
+        ...input,
+        query: { tags: ["001", "false", "2"] },
+      })
+    ).body,
+  ).toEqual({ tags: ["001", false, 2] });
+  expect(
+    (await request(app.callback()).get("/items?tags=001&tags=false&tags=2"))
+      .body,
+  ).toEqual({ tags: ["001", false, 2] });
+});
+it("normalizes cardinality across alternatives that all declare arrays", async () => {
+  const { dispatcher } = setup({
+    anyOf: [
+      { type: "array", items: { type: "string" } },
+      { type: "array", items: { type: "integer" } },
+    ],
+  });
+  expect(
+    (await dispatcher.request({ ...input, query: { tags: "001" } })).body,
+  ).toEqual({ tags: ["001"] });
+});
