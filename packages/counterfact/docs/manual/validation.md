@@ -53,3 +53,5 @@ npx counterfact ./openapi.yaml api --no-validate-request --no-validate-response
 From code, pass `validateRequests: false` or `validateResponses: false`. These flags are independent of `$.x`, which widens TypeScript types but does not itself turn validation off.
 
 Without a specification there is no operation contract to validate against. See [CLI configuration](../api/cli.md) and [handler arguments](../api/handlers.md).
+
+The built-in HTTP server preserves an omitted body as absent; it does not replace it with an empty object. Explicit empty objects and JSON null remain present values for schema validation.
