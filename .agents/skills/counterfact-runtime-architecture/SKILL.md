@@ -80,4 +80,6 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
 
 - When resolving primitive unions, retain null-only alternatives separately from unresolved schemas. A nested null-only union or null-only type array must not erase the single non-null conversion.
+
+- Preserve request-body absence at the HTTP parsing boundary. Empty-wire input, explicit {}, and explicit JSON null must remain distinct before optionality and schema validation.
 - For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.

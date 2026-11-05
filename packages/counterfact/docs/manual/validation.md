@@ -24,6 +24,8 @@ The current AJV instance uses its default JSON Schema dialect, `strict: false`, 
 
 Nullable parameters expressed with anyOf, oneOf, or a type array keep their primitive conversion when there is exactly one non-null primitive type. Ambiguous unions keep string values. No null wire representation is introduced.
 
+Optional request bodies may be absent. A present body, including explicit JSON null, is validated against the selected schema. Required bodies reject absence. This rule also applies to Swagger 2 body parameters.
+
 ## Understand response checks
 
 Response validation currently checks declared response headers, including required headers and their schemas. It does **not** perform general response-body schema validation. An undeclared response status with no applicable default response is not rejected merely for being undeclared. Streaming items are not checked against their response schemas.
@@ -53,3 +55,5 @@ npx counterfact ./openapi.yaml api --no-validate-request --no-validate-response
 From code, pass `validateRequests: false` or `validateResponses: false`. These flags are independent of `$.x`, which widens TypeScript types but does not itself turn validation off.
 
 Without a specification there is no operation contract to validate against. See [CLI configuration](../api/cli.md) and [handler arguments](../api/handlers.md).
+
+The built-in HTTP server preserves an omitted body as absent; it does not replace it with an empty object. Explicit empty objects and JSON null remain present values for schema validation.

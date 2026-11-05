@@ -41,3 +41,5 @@ Paths and commands below are relative to the repository root.
   request entity.
 
 Keep focused unit/type tests even when a broader product journey covers the same behavior. Package-consumer coverage and packed-artifact coverage establish different guarantees.
+
+- Compiler tests spanning fixture mutations need separate TypeScript programs. Give a demonstrated slow scenario its own timeout when coverage and concurrent compiler checks exceed the default; retain the suite-wide timeout for other tests.
