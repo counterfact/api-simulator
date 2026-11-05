@@ -78,3 +78,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   preserve one startup per group in declaration order across versioned runners.
 - Verify lifecycle changes with real HTTP mutation/restoration, same-listener
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
+
+- For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.
