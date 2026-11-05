@@ -30,6 +30,12 @@ Boolean query, header, and cookie values are an exception to the general paramet
 
 Optional request bodies may be absent. A present body, including explicit JSON null, is validated against the selected schema. Required bodies reject absence. This rule also applies to Swagger 2 body parameters.
 
+## Recursive request bodies
+
+Dereferenced recursive request schemas are converted back to JSON Schema references for AJV compilation. Finite nested values retain their recursive constraints; both self-recursive and mutually recursive schemas are supported.
+
+Recursive schema normalization preserves boolean schemas, nested id resources, and property names that require URI-fragment encoding.
+
 ## Understand response checks
 
 Response validation currently checks declared response headers, including required headers and their schemas. It does **not** perform general response-body schema validation. An undeclared response status with no applicable default response is not rejected merely for being undeclared. Streaming items are not checked against their response schemas.

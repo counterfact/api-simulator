@@ -1,4 +1,5 @@
 import Ajv from "ajv";
+import { validationSchema } from "./validation-schema.js";
 import {
   isMultipartFile,
   multipartValidationSchema,
@@ -187,7 +188,13 @@ export function validateRequest(
       if (operation.requestBody.required === true)
         errors.push("body is required");
     } else if (schema !== undefined) {
-      const valid = ajv.validate(schema as object | boolean, request.body);
+      const valid = ajv.validate(
+        validationSchema(
+          schema as Record<string, unknown> | boolean,
+          ajv.opts.uriResolver.resolve,
+        ),
+        request.body,
+      );
 
       if (!valid && ajv.errors) {
         for (const error of ajv.errors) {
@@ -205,7 +212,10 @@ export function validateRequest(
   if (bodyParam && request.body === undefined) {
     if (bodyParam.required === true) errors.push("body is required");
   } else if (bodyParam?.schema !== undefined) {
-    const valid = ajv.validate(bodyParam.schema, request.body);
+    const valid = ajv.validate(
+      validationSchema(bodyParam.schema, ajv.opts.uriResolver.resolve),
+      request.body,
+    );
 
     if (!valid && ajv.errors) {
       for (const error of ajv.errors) {
