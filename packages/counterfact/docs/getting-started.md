@@ -8,7 +8,7 @@ OpenAPI, formerly Swagger, describes an API’s endpoints, parameters, and respo
 
 ## Prerequisite
 
-Use Node.js 22 or newer. Counterfact supports Swagger 2.0 and OpenAPI 3.0,
+Use Node.js 22 or newer and Counterfact 3 or newer for the examples below. Counterfact supports Swagger 2.0 and OpenAPI 3.0,
 3.1, and 3.2.
 
 ## Run one command
@@ -66,16 +66,16 @@ server is running.
 
 ## Customize a response
 
-The handler below uses the `response.status(...)` API from `main`, which is not in the published 2.17.0 package. Stop the trial server with Ctrl+C, complete the [pinned source setup](./patterns/lifecycle-setup.md#run-examples-from-the-current-source), and run `npx --no-install counterfact https://petstore3.swagger.io/api/v3/openapi.json api` from its exercise directory before editing.
-
 When a screen needs a specific case, replace the generated response in the
-corresponding handler. Counterfact supplies `$`: `$.path` contains URL parameters and `$.response` builds the HTTP response. The imported `HTTP_GET` type comes from the generated contract:
+corresponding handler. Counterfact supplies `$`: `$.path` contains URL parameters and `$.response` builds the HTTP response. The local `Route` alias selects the path, and `Route["GET"]` selects the generated contract for this operation:
 
 ```ts
 // api/routes/pet/{petId}.ts
-import type { HTTP_GET } from "../../types/paths/pet/{petId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+type Route = Routes["/pet"]["/{petId}"];
+
+export const GET: Route["GET"] = function ($) {
   return $.response.status(200).json({
     id: $.path.petId,
     name: "Fluffy",
@@ -89,11 +89,10 @@ Save the file, then repeat the browser request above—no server restart is need
 
 ## Use a repeatable project
 
-For a project or CI workflow, install a pinned version and commit the lockfile. [First 10 minutes](./first-10-minutes.md#install-a-pinned-version) walks through stopping this trial, using a pinned implementation and contract in a separate project, and adding state. Use [project installation](./patterns/lifecycle-setup.md) for automated workflows.
+For a project or CI workflow, install Counterfact as a development dependency and commit the lockfile. [First 10 minutes](./first-10-minutes.md#install-in-a-project) walks through stopping this trial, installing Counterfact and using a pinned contract in a separate project, and adding state. Use [project installation](./patterns/lifecycle-setup.md) for automated workflows.
 
 ## Next steps
 
-- [Try the guided coffee shop](./manual/guided-example.md) — learn by changing real handlers beside a working storefront; no document required.
 - [First 10 minutes](./first-10-minutes.md) — create a pet, fetch it, and test an error response.
 - [Find your workflow](./usage.md) — find a guide for what you’re working on.
 - [Custom responses](./features/routes.md), [state](./features/state.md), [failures](manual/edge-cases.md), and [proxying](./features/proxy.md) — add capabilities only when the workflow needs them.

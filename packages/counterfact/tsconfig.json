@@ -13,7 +13,6 @@
     { "path": "../generator" },
     { "path": "../openapi" },
     { "path": "../runtime" },
-    { "path": "../tutorials" },
     { "path": "../repl" }
   ]
 }

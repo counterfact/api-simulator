@@ -10,7 +10,6 @@ export const ADR_DEPENDENCY_ALLOWLIST = Object.freeze({
   "@counterfact/openapi": ["@counterfact/types"],
   "@counterfact/repl": ["@counterfact/client", "@counterfact/runtime"],
   "@counterfact/runtime": ["@counterfact/openapi", "@counterfact/types"],
-  "@counterfact/tutorials": ["@counterfact/runtime"],
   "@counterfact/types": [],
   counterfact: [
     "@counterfact/client",
@@ -18,7 +17,6 @@ export const ADR_DEPENDENCY_ALLOWLIST = Object.freeze({
     "@counterfact/openapi",
     "@counterfact/repl",
     "@counterfact/runtime",
-    "@counterfact/tutorials",
     "@counterfact/types",
   ],
 });

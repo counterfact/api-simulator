@@ -1,6 +1,6 @@
 # OpenAPI overlays
 
-The examples on this page follow the current source. Use the [pinned source setup](../patterns/lifecycle-setup.md#run-examples-from-the-current-source) to run them with matching generated types and runtime APIs.
+Use the [project installation setup](../patterns/lifecycle-setup.md) to run these examples with Counterfact 3 or newer.
 
 Use overlays when an upstream specification needs local examples or corrections for a simulation. Counterfact applies the changes while loading the document, leaving the source document untouched.
 

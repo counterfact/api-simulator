@@ -1,6 +1,6 @@
 {
   "name": "counterfact",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Turn an OpenAPI document into a useful local API for frontend development in one command.",
   "type": "module",
   "main": "./dist/app.js",
@@ -54,7 +54,7 @@
     "swagger-tools"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=22.22"
   },
   "bin": "bin/counterfact.js",
   "files": [
@@ -70,7 +70,7 @@
   "scripts": {
     "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js --testPathIgnorePatterns=black-box --testPathIgnorePatterns=examples",
     "test:packed-consumer": "node test/package/counterfact-consumer-smoke.mjs",
-    "build": "yarn workspace @counterfact/generator build && yarn workspace @counterfact/runtime build && yarn workspace @counterfact/client build && yarn workspace @counterfact/repl build && yarn workspace @counterfact/tutorials build && rimraf dist && tsc --build --force",
+    "build": "yarn workspace @counterfact/generator build && yarn workspace @counterfact/runtime build && yarn workspace @counterfact/client build && yarn workspace @counterfact/repl build && rimraf dist && tsc --build --force",
     "prepack": "yarn build",
     "go:petstore": "yarn build && yarn counterfact https://petstore3.swagger.io/api/v3/openapi.json out",
     "go:petstore2": "yarn build && yarn counterfact https://petstore.swagger.io/v2/swagger.json out",
@@ -81,17 +81,16 @@
   },
   "dependencies": {
     "@counterfact/client": "0.2.1",
-    "@counterfact/generator": "1.0.0",
-    "@counterfact/openapi": "0.1.6",
-    "@counterfact/repl": "0.1.7",
-    "@counterfact/runtime": "0.3.0",
-    "@counterfact/tutorials": "0.2.0",
+    "@counterfact/generator": "1.1.0",
+    "@counterfact/openapi": "0.1.7",
+    "@counterfact/repl": "0.1.9",
+    "@counterfact/runtime": "0.3.2",
     "commander": "15.0.0",
     "debug": "4.4.3",
     "http-terminator": "3.2.0",
     "js-yaml": "5.5.0",
     "open": "11.0.4",
-    "posthog-node": "5.57.0",
+    "posthog-node": "5.57.2",
     "typescript": "6.0.3"
   }
 }

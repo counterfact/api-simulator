@@ -1,5 +1,22 @@
 # @counterfact/runtime
 
+## 0.3.2
+
+### Patch Changes
+
+- 40656be: Require Node 22.22 or later for Chokidar 6 compatibility.
+- 93944c6: Updated dependency `chokidar` in `@counterfact/generator` to `6.0.0`.
+  Updated dependency `chokidar` in `@counterfact/runtime` to `6.0.0`.
+- Updated dependencies [1f340b6]
+  - @counterfact/openapi@0.1.7
+
+## 0.3.1
+
+### Patch Changes
+
+- ad9068d: Use Swagger UI 5.32.0 so documentation pages render OpenAPI 3.0.4 and 3.2.0 documents instead of reporting an invalid version field.
+- 9871d4c: Print distinct Swagger UI links for versioned APIs and serve the selected version's OpenAPI document and request prefix instead of always showing the first version in the group.
+
 ## 0.3.0
 
 ### Minor Changes

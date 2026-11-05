@@ -29,7 +29,6 @@ import {
   isTelemetryEnabled,
   sendTelemetry,
 } from "./telemetry.js";
-import { enableWalkthroughTelemetry } from "./walkthrough-telemetry.js";
 
 const debug = createDebug("counterfact:cli:run");
 
@@ -170,7 +169,6 @@ function buildProgram(
 
   async function main(source: string, destination: string): Promise<void> {
     debug("executing the main function");
-    enableWalkthroughTelemetry(version);
 
     const options = program.opts<{
       adminApi: boolean;
@@ -198,8 +196,6 @@ function buildProgram(
       watchTypes?: boolean;
     }>();
 
-    let walkthroughPath: string | undefined;
-
     // Load the config file (counterfact.yaml by default, or --config <path>).
     // CLI options always take precedence over config file settings.
     const configFilePath = resolve(options.config ?? "counterfact.yaml");
@@ -219,8 +215,6 @@ function buildProgram(
       if (selection === undefined) return;
       ({ source, destination } = selection);
       options.port = selection.port;
-      walkthroughPath = selection.walkthroughPath;
-      if (walkthroughPath) options.updateCheck = false;
     }
 
     const updateCheckPromise =
@@ -508,17 +502,6 @@ function buildProgram(
     await updateCheckPromise;
 
     if (config.startRepl) {
-      if (walkthroughPath) {
-        const walkthroughUrl = `${origin}${walkthroughPath}`;
-        writeStartupLine(`Coffee shop walkthrough → ${walkthroughUrl}`);
-        try {
-          await open(walkthroughUrl);
-        } catch {
-          writeStartupLine(
-            "Could not open a browser. Open the walkthrough URL above.",
-          );
-        }
-      }
       startRepl();
     }
 

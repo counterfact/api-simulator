@@ -43,6 +43,8 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Versioned runners can share a group and documentation pathname. Select Swagger UI and OpenAPI middleware by version as well as group, preserve unqualified links to the first configured spec, and validate each served contract and Try it out server prefix.
 - Select Swagger UI's asset version explicitly: `koa2-swagger-ui` derives its default from its own development dependency, which can lag supported OpenAPI versions. Verify the selected CDN serves every referenced script and stylesheet, then verify actual browser rendering for current OpenAPI versions and legacy Swagger; HTTP 200 on the documentation page and a valid version field do not establish UI compatibility.
 
+- When terminal output displays an HTTP message, split its head and body at the first `\r\n\r\n` separator only: multipart bodies contain additional separators that must remain visible.
+
 ## Common mistakes to avoid
 
 - Coupling generator concerns into `packages/runtime/src/server/*` code paths.
@@ -76,3 +78,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   preserve one startup per group in declaration order across versioned runners.
 - Verify lifecycle changes with real HTTP mutation/restoration, same-listener
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
+
+- For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.

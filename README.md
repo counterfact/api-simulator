@@ -34,7 +34,7 @@ returns simulated responses or forwards selected requests to a real service.
 
 ## Try it
 
-With Node.js 22 or newer, run this example in a new directory:
+With Node.js 22.22 or newer, run this example in a new directory:
 
 ```sh
 npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api

@@ -1,5 +1,7 @@
 export default {
-  collectCoverage: true,
+  collectCoverage: false,
+
+  maxWorkers: 2,
 
   collectCoverageFrom: [
     "packages/client/src/**/*.{js,jsx,ts,tsx}",
@@ -8,7 +10,6 @@ export default {
     "packages/openapi/src/**/*.{js,jsx,ts,tsx}",
     "packages/runtime/src/**/*.{js,jsx,ts,tsx}",
     "packages/repl/src/**/*.{js,jsx,ts,tsx}",
-    "packages/tutorials/src/**/*.{js,jsx,ts,tsx}",
     "!**/node_modules/**",
     "!**/*.d.ts",
     "!packages/types/src/**",
@@ -39,7 +40,6 @@ export default {
     "<rootDir>/packages/openapi/test",
     "<rootDir>/packages/runtime/test",
     "<rootDir>/packages/repl/test",
-    "<rootDir>/packages/tutorials/test",
   ],
 
   testEnvironment: "node",

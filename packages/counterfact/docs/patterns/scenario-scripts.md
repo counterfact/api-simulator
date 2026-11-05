@@ -2,7 +2,7 @@
 
 Save the REPL setups you use more than once: seed data, configure state, and build reusable request sequences that run on demand. Seed context state at startup.
 
-Use the pet `Context` from the [state guide](../features/state.md), with custom `reset()` and `add()` methods. Counterfact generates `Scenario` and `Scenario$` in `types/_.context.ts` when type generation is enabled. Put `scenarios/` alongside `routes/` under the API output directory.
+Use the pet `Context` from the [state guide](../features/state.md), with custom `reset()` and `add()` methods. Counterfact exports `Scenario` and `Scenario$` from `types/index.ts` when type generation is enabled. They describe the API group's root context and context registry. Put `scenarios/` alongside `routes/` under the API output directory.
 
 The [REPL](../features/repl.md) is the terminal’s live JavaScript prompt; the [route builder](../features/route-builder.md) prepares HTTP requests. A scenario receives setup helpers, rather than the handler request object; see [function arguments](../manual/concepts.md#function-arguments).
 
@@ -20,7 +20,7 @@ Scenario functions are typed with the generated `Scenario` type:
 
 ```ts
 // scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const soldPets: Scenario = ($) => {
   // Mutate context directly — the same object route handlers see as $.context
@@ -70,7 +70,7 @@ Export a function named `startup` from `scenarios/index.ts` and Counterfact call
 
 ```ts
 // scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const startup: Scenario = ($) => {
   $.context.add({ name: "Fluffy", status: "available", photoUrls: [] });
@@ -88,7 +88,7 @@ Split large scenarios into focused helper functions in separate files and pass `
 
 ```ts
 // scenarios/index.ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 import { addPets } from "./pets.js";
 import { addOrders } from "./orders.js";
 
@@ -100,7 +100,7 @@ export const startup: Scenario = ($) => {
 
 ```ts
 // scenarios/pets.ts
-import type { Scenario$ } from "../types/_.context.js";
+import type { Scenario$ } from "../types/index.js";
 
 export function addPets($: Scenario$, count: number, species: string) {
   for (let i = 0; i < count; i++) {
@@ -115,7 +115,7 @@ export function addPets($: Scenario$, count: number, species: string) {
 
 ```ts
 // scenarios/orders.ts
-import type { Scenario$ } from "../types/_.context.js";
+import type { Scenario$ } from "../types/index.js";
 
 export function addOrders($: Scenario$, count: number) {
   for (let i = 0; i < count; i++) {
@@ -128,7 +128,7 @@ Named scenario exports that need no extra arguments can also be called as standa
 
 ```ts
 // scenarios/pets.ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const addThreeDogs: Scenario = ($) => addPets($, 3, "dog");
 ```

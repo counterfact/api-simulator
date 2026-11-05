@@ -39,6 +39,7 @@ interface ExternalImportEntry {
 export class Script {
   public repository: Repository;
   public comments: string[] = [];
+  public contextRoutePath?: string;
   public exports = new Map<string, ExportStatement>();
   public versions = new Map<string, Map<string, ExportStatement>>();
   public versionBuilders = new Map<
@@ -52,6 +53,9 @@ export class Script {
     string,
     { module: string; exported: string; local: string }
   >();
+  public reservedNames = new Set<string>();
+  public localTypes = new Map<string, ts.TypeNode>();
+  public statementBuilders = new Map<string, () => ts.Statement[]>();
 
   public constructor(
     repository: Repository,
@@ -75,8 +79,10 @@ export class Script {
   ): string {
     for (const name of coder.names()) {
       if (
+        !this.reservedNames.has(name) &&
         (!this.imports.has(name) ||
           (this.imports.get(name)!.id === coder.exportId &&
+            this.imports.get(name)!.script.path === coder.modulePath() &&
             this.imports.get(name)!.isType === isType &&
             this.imports.get(name)!.isDefault === isDefault)) &&
         (!this.exports.has(name) ||
@@ -131,12 +137,28 @@ export class Script {
     this.export(coder, isType, true);
   }
 
-  public import(coder: Coder, isType = false, isDefault = false): string {
+  public import(
+    coder: Coder,
+    isType = false,
+    isDefault = false,
+    preferredName?: string,
+  ): string {
     const modulePath = coder.modulePath();
     const key = `${coder.id}@${modulePath}:${isType}:${isDefault}`;
     if (this.cache.has(key)) return this.cache.get(key)!;
     if (modulePath === this.path) return this.export(coder, isType, isDefault);
-    const name = this.firstUniqueName(coder, isType, isDefault);
+    let name: string;
+    if (preferredName) {
+      name = preferredName;
+      let suffix = 2;
+      while (
+        this.imports.has(name) ||
+        this.exports.has(name) ||
+        this.externalImport.has(name) ||
+        this.reservedNames.has(name)
+      )
+        name = preferredName + suffix++;
+    } else name = this.firstUniqueName(coder, isType, isDefault);
     this.cache.set(key, name);
     const script = this.repository.get(modulePath);
     const exportedName = script.export(coder, isType, isDefault);
@@ -151,8 +173,8 @@ export class Script {
     return name;
   }
 
-  public importType(coder: Coder): string {
-    return this.import(coder, true);
+  public importType(coder: Coder, preferredName?: string): string {
+    return this.import(coder, true, false, preferredName);
   }
   public importDefault(coder: Coder, isType = false): string {
     return this.import(coder, isType, true);
@@ -397,7 +419,11 @@ export class Script {
     this.assertTransformsSucceeded();
     const statements = [
       ...this.versionsTypeStatements(),
+      ...[...this.localTypes].map(([name, type]) =>
+        typeAlias(name, type, false),
+      ),
       ...this.exportStatements(),
+      ...[...this.statementBuilders.values()].flatMap((build) => build()),
     ];
     const imports = [
       ...this.externalImportStatements(contextPath),

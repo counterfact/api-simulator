@@ -14,7 +14,9 @@ This example uses the same `add`, `get`, `list`, and `remove` methods as the [pe
 
 ```ts
 // api/routes/_.context.ts
-import type { Pet } from "../types/components/schemas/Pet.js";
+import type { Schemas } from "../types/index.js";
+
+type Pet = Schemas["Pet"];
 
 export class Context {
   private pets = new Map<number, Pet>();

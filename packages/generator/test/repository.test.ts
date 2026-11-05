@@ -50,6 +50,15 @@ describe("a Repository", () => {
 
   it.each([
     ["./types/paths/x.ts", "../../routes/_.context.ts"],
+    ["./types/paths/a/b.types.ts", "../../../routes/a/b/_.context.ts"],
+    ["./types/paths/a/b/{id}.types.ts", "../../../../routes/a/b/_.context.ts"],
+    ["./types/v1/paths/a/b.types.ts", "../../../../routes/a/b/_.context.ts"],
+    [
+      "./types/v1/paths/a/b/{id}.types.ts",
+      "../../../../../routes/a/b/_.context.ts",
+    ],
+    ["./types/v1/paths/a/x.types.ts", "../../../../routes/_.context.ts"],
+    ["./routes/a/b.ts", "b/_.context.ts"],
     ["./types/paths/a/x.ts", "../../../routes/_.context.ts"],
     ["./types/paths/a/b/x.ts", "../../../../routes/a/b/_.context.ts"],
     ["./types/paths/a/b/c/x.ts", "../../../../../routes/a/b/_.context.ts"],
@@ -87,7 +96,7 @@ describe("a Repository", () => {
 
       await repository.writeFiles(path("."), { routes: false, types: true });
 
-      await expect(read("./paths/_.context.ts")).rejects.toThrow(
+      await expect(read("./routes/_.context.ts")).rejects.toThrow(
         "no such file or directory",
       );
     });
@@ -98,13 +107,13 @@ describe("a Repository", () => {
       const repository = new Repository();
 
       await add(
-        "./paths/_.context.ts",
+        "./routes/_.context.ts",
         "export class Context { /* do not overwrite me */ }",
       );
 
       await repository.writeFiles(path("."), { routes: true, types: true });
 
-      await expect(read("./paths/_.context.ts")).resolves.toContain(
+      await expect(read("./routes/_.context.ts")).resolves.toContain(
         "do not overwrite me",
       );
     });
@@ -226,7 +235,7 @@ describe("a Repository", () => {
         }).generate();
 
         const finalContent = await $.read("routes/pet.ts");
-        expect(finalContent.startsWith("import type { HTTP_POST }")).toBe(true);
+        expect(finalContent.startsWith("import type { Routes }")).toBe(true);
         expect(finalContent).toContain("export const POST");
       });
     });

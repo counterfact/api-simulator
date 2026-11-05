@@ -6,9 +6,9 @@ The `$` argument contains typed request data and the nearest context, as in a ro
 
 ```ts
 // routes/_.middleware.ts
-import type { Middleware } from "../types/_.middleware.js";
+import type { Middleware } from "../types/index.js";
 
-export const middleware: Middleware = async ($, respondTo) => {
+export const middleware: Middleware["/"] = async ($, respondTo) => {
   if (!$.context.isAuthorized($.auth?.apiKey)) {
     return $.response.status(401).json({ error: "Unauthorized" });
   }
@@ -19,7 +19,9 @@ export const middleware: Middleware = async ($, respondTo) => {
 
 `respondTo($)` passes the request to the next middleware layer or the route handler, and returns the response. You can modify `$` before calling `respondTo`, modify the response after, or both.
 
-Counterfact generates a `_.middleware.ts` type file for every directory in the routes tree. Import the matching type from the mirrored directory under `types/`. For example, `routes/admin/_.middleware.ts` imports `Middleware` from `types/admin/_.middleware.ts`. The generated type automatically uses the nearest `_.context.ts` file for `$.context`.
+Import the `Middleware` map from the generated `types/index.js` entry point. Select the route-directory path: `Middleware["/"]` for root middleware or `Middleware["/admin"]` for `routes/admin/_.middleware.ts`. Each entry uses the nearest context for that directory, including an inherited parent context. Keys are relative to the API group and do not include a configured URL prefix. Creating or removing route directories refreshes the map.
+
+Direct imports from the mirrored `_.middleware.ts` type files are deprecated; existing imports remain compatible.
 
 ## Response headers, logging, and scoped middleware
 
@@ -32,9 +34,9 @@ Attach headers to every response in a subtree — useful for simulating CORS, ra
 ```ts
 // routes/_.middleware.ts
 import { randomUUID } from "node:crypto";
-import type { Middleware } from "../types/_.middleware.js";
+import type { Middleware } from "../types/index.js";
 
-export const middleware: Middleware = async ($, respondTo) => {
+export const middleware: Middleware["/"] = async ($, respondTo) => {
   const response = await respondTo($);
   return {
     ...response,
@@ -54,9 +56,9 @@ Log each matched route and its response status without touching any handler:
 
 ```ts
 // routes/_.middleware.ts
-import type { Middleware } from "../types/_.middleware.js";
+import type { Middleware } from "../types/index.js";
 
-export const middleware: Middleware = async ($, respondTo) => {
+export const middleware: Middleware["/"] = async ($, respondTo) => {
   const start = Date.now();
   const response = await respondTo($);
   const elapsed = Date.now() - start;
@@ -72,9 +74,9 @@ Apply middleware only to a specific domain. The `_.middleware.ts` under `routes/
 
 ```ts
 // routes/admin/_.middleware.ts
-import type { Middleware } from "../../types/admin/_.middleware.js";
+import type { Middleware } from "../../types/index.js";
 
-export const middleware: Middleware = async ($, respondTo) => {
+export const middleware: Middleware["/admin"] = async ($, respondTo) => {
   const token = $.headers["x-admin-token"];
   if (token !== "super-secret") {
     return $.response.status(403).text("Forbidden");

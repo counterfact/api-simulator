@@ -88,9 +88,11 @@ Replace the generated handlers:
 
 ```ts
 // api/routes/orders.ts
-import type { HTTP_POST } from "../types/paths/orders.types.js";
+import type { Routes } from "../types/index.js";
 
-export const POST: HTTP_POST = function ($) {
+type Route = Routes["/orders"];
+
+export const POST: Route["POST"] = function ($) {
   const outcome = $.context.placeOrder($.body.id);
   if (outcome === "forbidden") return $.response.status(403).empty();
   if (outcome === "declined") return $.response.status(402).empty();
@@ -100,9 +102,11 @@ export const POST: HTTP_POST = function ($) {
 
 ```ts
 // api/routes/orders/{orderId}.ts
-import type { HTTP_GET } from "../../types/paths/orders/{orderId}.types.js";
+import type { Routes } from "../../types/index.js";
 
-export const GET: HTTP_GET = function ($) {
+type Route = Routes["/orders"]["/{orderId}"];
+
+export const GET: Route["GET"] = function ($) {
   return $.context.hasOrder($.path.orderId)
     ? $.response.status(200).json({ id: $.path.orderId })
     : $.response.status(404).empty();
@@ -112,7 +116,7 @@ export const GET: HTTP_GET = function ($) {
 Create `api/scenarios/index.ts`:
 
 ```ts
-import type { Scenario } from "../types/_.context.js";
+import type { Scenario } from "../types/index.js";
 
 export const declinedPayment: Scenario = ($) => {
   $.context.paymentOutcome = "declined";

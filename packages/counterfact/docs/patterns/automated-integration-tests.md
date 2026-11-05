@@ -13,7 +13,7 @@ up state for each test.
 
 Use Counterfact's programmatic API to embed the mock server directly in your test suite. Start it in a `beforeAll` hook, run every test against it, and stop it in `afterAll`. Local execution removes dependence on a remote environment. Repeatable tests additionally need fixed responses or named examples, controlled delays, isolated simulator instances, and awaited reset/scenario setup. Generated `.random()` responses can still vary after reset. See [sample responses](../manual/sample-responses.md) and [edge cases](../manual/edge-cases.md).
 
-Follow the [project installation setup](./lifecycle-setup.md), install Counterfact as an exact development dependency, and commit the lockfile. Keep the contract, handlers, and test files in that project.
+Follow the [project installation setup](./lifecycle-setup.md), install Counterfact as a development dependency, and commit the lockfile. Keep the contract, handlers, and test files in that project.
 
 Supplying `openApiPath` generates routes and types at startup, then watches the
 spec for changes. Missing API directories are created automatically. To use

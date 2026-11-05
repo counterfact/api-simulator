@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { usingTemporaryFiles } from "using-temporary-files";
 import {
   access,
   mkdir,
@@ -143,15 +144,25 @@ paths:
       responses:
         "204":
           description: Healthy
+  /health/check:
+    get:
+      responses:
+        "204":
+          description: Check complete
+components:
+  schemas:
+    HealthStatus:
+      type: string
 `,
   );
   await writeFile(
     path.join(consumerDirectory, "generate.mjs"),
-    `import { CodeGenerator } from "@counterfact/generator";
+    `import { CodeGenerator, ScenarioFileGenerator } from "@counterfact/generator";
 await new CodeGenerator(${JSON.stringify(openApiPath)}, ${JSON.stringify(outputPath)}, {
   routes: true,
   types: true,
 }).generate();
+await new ScenarioFileGenerator(${JSON.stringify(outputPath)}).generate();
 `,
   );
   await run(executable("node"), ["generate.mjs"], consumerDirectory);
@@ -167,6 +178,45 @@ await new CodeGenerator(${JSON.stringify(openApiPath)}, ${JSON.stringify(outputP
     ),
     /export type HTTP_GET/u,
   );
+  await usingTemporaryFiles(async ($) => {
+    await $.add(
+      "consumer.ts",
+      `
+import type { Components, Routes, Schemas, Context$, Scenario, Scenario$, Middleware } from ${JSON.stringify(path.join(outputPath, "types/index.js"))};
+type Same<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+const alias: Same<Schemas, Components["schemas"]> = true;
+const model: Schemas["HealthStatus"] = "healthy";
+const same: Components["schemas"]["HealthStatus"] = model;
+const handler: Routes["/health"]["GET"] = ($) => $.response.status(204).empty();
+const child: Routes["/health"]["/check"]["GET"] = ($) => $.response.status(204).empty();
+// @ts-expect-error Nested paths use one index per segment.
+type Flat = Routes["/health/check"];
+const startup: Scenario = ($) => { const arg: Scenario$ = $; void arg.context; };
+const middleware: Middleware["/"] = ($, next) => next($);
+function constructorHelper($: Context$) { const json: Promise<unknown> = $.readJson("seed.json"); }
+// @ts-expect-error HealthStatus is a string.
+const invalid: Schemas["HealthStatus"] = 123;
+`,
+    );
+    await run(
+      executable("node"),
+      [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--strict",
+        "--skipLibCheck",
+        "--target",
+        "es2022",
+        "--module",
+        "esnext",
+        "--moduleResolution",
+        "bundler",
+        "--allowImportingTsExtensions",
+        $.path("consumer.ts"),
+      ],
+      consumerDirectory,
+    );
+  });
   await access(path.join(outputPath, "counterfact-types", "index.ts"));
   await access(
     path.join(

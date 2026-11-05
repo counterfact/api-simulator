@@ -1,4 +1,11 @@
-import { describe, expect, it } from "@jest/globals";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals";
 
 import {
   checkForUpdates,
@@ -36,9 +43,35 @@ describe("isOutdated", () => {
 });
 
 describe("checkForUpdates", () => {
-  it("does not throw when called", async () => {
-    // In the test environment CI=true (set by jest config or environment),
-    // so the update check is skipped immediately — no network call is made.
+  beforeEach(() => {
+    jest.replaceProperty(process, "env", { ...process.env, CI: "" });
+    jest.spyOn(globalThis, "fetch").mockRejectedValue(new Error("offline"));
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it("skips the registry request in CI", async () => {
+    process.env["CI"] = "true";
+
     await expect(checkForUpdates("1.0.0")).resolves.toBeUndefined();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("checks the registry outside CI", async () => {
+    jest
+      .mocked(fetch)
+      .mockResolvedValue(new Response(JSON.stringify({ version: "1.0.0" })));
+
+    await expect(checkForUpdates("1.0.0")).resolves.toBeUndefined();
+    expect(fetch).toHaveBeenCalledWith(
+      "https://registry.npmjs.org/counterfact/latest",
+    );
+  });
+
+  it("ignores registry connection failures", async () => {
+    await expect(checkForUpdates("1.0.0")).resolves.toBeUndefined();
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
