@@ -12,6 +12,8 @@ const ajv = new Ajv({
   allErrors: false,
   strict: false,
   coerceTypes: false,
+  // Shared schema references must compile once, rather than expanding a DAG.
+  inlineRefs: false,
 });
 
 ajv.addKeyword({

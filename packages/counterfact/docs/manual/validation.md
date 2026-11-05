@@ -32,6 +32,11 @@ Optional request bodies may be absent. A present body, including explicit JSON n
 
 ## Recursive request bodies
 
+Shared request-schema subgraphs are compiled as references rather than expanded
+into copies for each use. This keeps preprocessing and validator compilation
+bounded by the schema graph, including documents that combine shared nodes and
+recursive references; finite request bodies still undergo normal validation.
+
 Dereferenced recursive request schemas are converted back to JSON Schema references for AJV compilation. Finite nested values retain their recursive constraints; both self-recursive and mutually recursive schemas are supported.
 
 Recursive schema normalization preserves boolean schemas, nested id resources, and property names that require URI-fragment encoding.
