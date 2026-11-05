@@ -80,3 +80,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
 
 - OpenAPI dereferencing can produce cyclic JavaScript schema graphs. Convert back edges to JSON Schema references before passing them to Ajv; keep recursive constraints and verify finite valid and invalid nested data.
+
+- Schema cycle references must respect nested $id resource scopes and URI-fragment encoding in addition to JSON Pointer escaping. Preserve boolean schemas before object caching and leave annotations unchanged.

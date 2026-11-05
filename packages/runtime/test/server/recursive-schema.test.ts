@@ -88,3 +88,78 @@ it("supports mutually recursive and shared schemas without mutating them", () =>
   ).toBe(false);
   expect((b.properties as Record<string, unknown>).a).toBe(a);
 });
+
+it.each([true, false])(
+  "accepts boolean request schema %s without object caching",
+  (schema) => {
+    const operation = {
+      requestBody: {
+        content: {
+          "application/json": {
+            schema: schema as unknown as Record<string, unknown>,
+          },
+        },
+      },
+      responses: {},
+    };
+    expect(
+      validateRequest(operation, {
+        body: {},
+        headers: {},
+        cookie: {},
+        query: {},
+      }).valid,
+    ).toBe(schema);
+  },
+);
+it.each(["a%2Fb", "a%", "a/b~c"])(
+  "encodes recursive pointer tokens %s",
+  (name) => {
+    const node: Record<string, unknown> = { type: "object", properties: {} };
+    node.properties = { next: node, value: { type: "integer" } };
+    const schema = { type: "object", properties: { [name]: node } };
+    const operation = {
+      requestBody: { content: { "application/json": { schema } } },
+      responses: {},
+    };
+    const request = { headers: {}, cookie: {}, query: {} };
+    expect(
+      validateRequest(operation, {
+        ...request,
+        body: { [name]: { next: { value: 1 } } },
+      }).valid,
+    ).toBe(true);
+    expect(
+      validateRequest(operation, {
+        ...request,
+        body: { [name]: { next: { value: "bad" } } },
+      }).valid,
+    ).toBe(false);
+  },
+);
+it("resolves recursive targets within and across nested id resources", () => {
+  const root: Record<string, unknown> = { type: "object" };
+  const child: Record<string, unknown> = {
+    $id: "https://example.test/child",
+    type: "object",
+  };
+  root.properties = { node: child };
+  child.properties = { next: child, parent: root, value: { type: "integer" } };
+  const operation = {
+    requestBody: { content: { "application/json": { schema: root } } },
+    responses: {},
+  };
+  const request = { headers: {}, cookie: {}, query: {} };
+  expect(
+    validateRequest(operation, {
+      ...request,
+      body: { node: { next: { value: 1 }, parent: { node: { value: 2 } } } },
+    }).valid,
+  ).toBe(true);
+  expect(
+    validateRequest(operation, {
+      ...request,
+      body: { node: { next: { value: "bad" } } },
+    }).valid,
+  ).toBe(false);
+});

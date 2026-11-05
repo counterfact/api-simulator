@@ -115,7 +115,10 @@ export function validateRequest(
         ?.schema;
 
     if (schema !== undefined) {
-      const valid = ajv.validate(validationSchema(schema), request.body);
+      const valid = ajv.validate(
+        validationSchema(schema, ajv.opts.uriResolver.resolve),
+        request.body,
+      );
 
       if (!valid && ajv.errors) {
         for (const error of ajv.errors) {
@@ -134,7 +137,7 @@ export function validateRequest(
 
   if (bodyParam?.schema !== undefined) {
     const valid = ajv.validate(
-      validationSchema(bodyParam.schema),
+      validationSchema(bodyParam.schema, ajv.opts.uriResolver.resolve),
       request.body,
     );
 
