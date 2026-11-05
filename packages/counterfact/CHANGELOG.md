@@ -1,5 +1,14 @@
 # counterfact
 
+## 3.2.1
+
+### Patch Changes
+
+- Updated dependencies [4069652]
+- Updated dependencies [9f9fd7e]
+  - @counterfact/runtime@0.4.1
+  - @counterfact/repl@0.1.11
+
 ## 3.2.0
 
 ### Minor Changes

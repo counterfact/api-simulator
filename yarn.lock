@@ -1083,16 +1083,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@counterfact/repl@npm:0.1.10, @counterfact/repl@workspace:packages/repl":
+"@counterfact/repl@npm:0.1.11, @counterfact/repl@workspace:packages/repl":
   version: 0.0.0-use.local
   resolution: "@counterfact/repl@workspace:packages/repl"
   dependencies:
     "@counterfact/client": "npm:0.2.1"
-    "@counterfact/runtime": "npm:0.4.0"
+    "@counterfact/runtime": "npm:0.4.1"
   languageName: unknown
   linkType: soft
 
-"@counterfact/runtime@npm:0.4.0, @counterfact/runtime@workspace:packages/runtime":
+"@counterfact/runtime@npm:0.4.1, @counterfact/runtime@workspace:packages/runtime":
   version: 0.0.0-use.local
   resolution: "@counterfact/runtime@workspace:packages/runtime"
   dependencies:
@@ -4256,8 +4256,8 @@ __metadata:
     "@counterfact/client": "npm:0.2.1"
     "@counterfact/generator": "npm:1.2.0"
     "@counterfact/openapi": "npm:0.1.7"
-    "@counterfact/repl": "npm:0.1.10"
-    "@counterfact/runtime": "npm:0.4.0"
+    "@counterfact/repl": "npm:0.1.11"
+    "@counterfact/runtime": "npm:0.4.1"
     commander: "npm:15.0.0"
     debug: "npm:4.4.3"
     http-terminator: "npm:3.2.0"

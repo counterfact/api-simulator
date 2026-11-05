@@ -1,5 +1,12 @@
 # @counterfact/runtime
 
+## 0.4.1
+
+### Patch Changes
+
+- 4069652: Use canonical ESM URLs on initial module load to preserve context class identity.
+- 9f9fd7e: Compile dereferenced recursive request schemas using JSON Schema back references.
+
 ## 0.4.0
 
 ### Minor Changes
