@@ -49,6 +49,8 @@ Schema types also preserve:
 
 Generation does not replace runtime validation. TypeScript cannot express every JSON Schema constraint. In particular, `oneOf` is represented as a union rather than a guarantee that exactly one branch validates.
 
+Generated operation argument types include only the request inputs available for that operation. For example, an operation without query parameters has no `$.query` property. Versioned arguments include their version literal; unversioned arguments omit `version`. These properties are selected during generation, so the emitted argument is a plain object type.
+
 ## Customize schema types
 
 Set [`schema-type-transform` in `counterfact.yaml`](../api/cli.md#customize-generated-schema-types)

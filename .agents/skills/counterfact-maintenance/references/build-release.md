@@ -15,6 +15,11 @@ Paths and commands below are relative to the repository root.
   Finish all builds and packs before running consumers concurrently, and await
   all active consumers before cleaning up after a failure.
 
+- When generated TypeScript output changes intentionally, refresh the packed
+  consumer hashes with `yarn test:package-closures --update-fixtures` as well as
+  the generator snapshots. Inspect the generated source before accepting new
+  hashes, then rerun the affected packed-consumer checks without the update flag.
+
 - Black-box CI should build once in its isolated job and use
   `yarn test:black-box:run` against that output. Keep `yarn test:black-box`
   self-contained for local use. Cache dependency downloads rather than installed

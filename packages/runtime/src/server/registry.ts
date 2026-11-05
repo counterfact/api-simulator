@@ -1,3 +1,4 @@
+import { numericParameterValue } from "./numeric-parameter.js";
 import createDebugger from "debug";
 
 import { ModuleTree } from "./module-tree.js";
@@ -113,16 +114,14 @@ function castParameter(value: string | number | boolean, type: string) {
     return value;
   }
 
-  if (type === "integer") {
-    return Number.parseInt(value);
-  }
-
-  if (type === "number") {
-    return Number.parseFloat(value);
+  if (type === "integer" || type === "number") {
+    return numericParameterValue(value, type);
   }
 
   if (type === "boolean") {
-    return value === "true";
+    if (value === "true") return true;
+    if (value === "false") return false;
+    return value;
   }
 
   return value;

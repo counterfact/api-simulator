@@ -10,6 +10,8 @@ import type {
   CounterfactResponseObject,
   Registry,
 } from "./registry.js";
+import { parameterType } from "./parameter-type.js";
+import { normalizeArrayQueryParameters } from "./array-query-parameters.js";
 import { ModuleTree } from "./module-tree.js";
 import { createResponseBuilder } from "./response-builder.js";
 import {
@@ -17,6 +19,7 @@ import {
   validateRequest,
 } from "./request-validator.js";
 import { validateResponse } from "./response-validator.js";
+import { normalizeMultipartBody } from "./multipart-body.js";
 import { Tools } from "./tools.js";
 import type { OpenApiOperation, OpenApiParameters } from "@counterfact/types";
 import type { DispatcherConfig } from "../runtime-config.js";
@@ -129,7 +132,7 @@ export type DispatcherRequest = {
   query: {
     [key: string]: string | string[];
   };
-  rawBody?: string;
+  rawBody?: string | Buffer;
   req: {
     path?: string;
   };
@@ -326,13 +329,10 @@ export class Dispatcher {
         continue;
       }
 
-      const type = parameter?.type ?? parameter?.schema?.type;
+      const type = parameter.type ?? parameterType(parameter.schema);
 
       if (type !== undefined) {
-        types[parameter.in].set(
-          parameter.name,
-          type === "integer" ? "number" : type,
-        );
+        types[parameter.in].set(parameter.name, type);
       }
     }
 
@@ -633,6 +633,17 @@ export class Dispatcher {
       };
     }
 
+    const contentType =
+      headers["content-type"] ?? headers["Content-Type"] ?? "";
+    if (
+      contentType.split(";", 1)[0]?.trim().toLowerCase() ===
+      "multipart/form-data"
+    ) {
+      body = normalizeMultipartBody(
+        body,
+        operation?.requestBody?.content?.["multipart/form-data"]?.schema,
+      );
+    }
     const requestCookie = parseCookies(headers.cookie ?? headers.Cookie ?? "");
 
     if (this.config?.validateRequests !== false) {
@@ -654,8 +665,8 @@ export class Dispatcher {
 
     // Reconstruct exploded object query parameters so that `$.query.<name>`
     // contains the assembled object instead of only the individual flat keys.
-    const processedQuery = collectExplodedObjectParams(
-      query,
+    const processedQuery = normalizeArrayQueryParameters(
+      collectExplodedObjectParams(query, operation?.parameters ?? []),
       operation?.parameters ?? [],
     );
 
