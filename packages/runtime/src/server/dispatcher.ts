@@ -531,6 +531,43 @@ export class Dispatcher {
 
     const { matchedPath } = this.registry.handler(path, method);
 
+    const operation = this.operationForPathAndMethod(matchedPath, method);
+    // A shared registry contains routes for every version in the group.
+    // Only the selected contract determines which operations are available.
+    if (
+      this.version !== "" &&
+      this.openApiDocument &&
+      operation === undefined
+    ) {
+      const pathItem = this.findPathItem(matchedPath);
+      const allowed = pathItem
+        ? Object.keys(pathItem)
+            .filter((key) =>
+              [
+                "get",
+                "put",
+                "post",
+                "delete",
+                "options",
+                "head",
+                "patch",
+                "trace",
+                "query",
+              ].includes(key),
+            )
+            .concat(Object.keys(pathItem.additionalOperations ?? {}))
+            .map((key) => key.toUpperCase())
+            .join(", ")
+        : "";
+      return {
+        status: pathItem ? 405 : 404,
+        body: pathItem
+          ? `The ${method} method is not allowed for ${path}\n`
+          : `No operation for ${path}\n`,
+        contentType: "text/plain",
+        ...(pathItem && { headers: { allow: allowed } }),
+      };
+    }
     if (
       !this.registry.exists(method, path) &&
       this.registry.pathExistsWithAnyMethod(path, method)
@@ -543,7 +580,6 @@ export class Dispatcher {
       };
     }
 
-    const operation = this.operationForPathAndMethod(matchedPath, method);
     const requestCookie = parseCookies(headers.cookie ?? headers.Cookie ?? "");
 
     if (this.config?.validateRequests !== false) {
