@@ -24,9 +24,31 @@ Request-body schema validation stops at the first validation failure rather than
 
 The current AJV instance uses its default JSON Schema dialect, `strict: false`, and `coerceTypes: false` for request bodies. Common type, required-field, enum, and object/array constraints are useful checks; this is not full OpenAPI 3.1/3.2 JSON Schema-dialect coverage. Optional formats and dialect-specific keywords are not promised. Test the schemas your API uses before relying on these checks.
 
+Nullable parameters expressed with anyOf, oneOf, or a type array keep their primitive conversion when there is exactly one non-null primitive type. Ambiguous unions keep string values. No null wire representation is introduced.
+
 Boolean query, header, and cookie values are an exception to the general parameter-schema limitation: the case-sensitive strings true and false are accepted, while malformed text returns 400 before the handler runs. With request validation disabled, malformed boolean text remains unchanged.
 
 Optional request bodies may be absent. A present body, including explicit JSON null, is validated against the selected schema. Required bodies reject absence. This rule also applies to Swagger 2 body parameters.
+
+Scalar integer and number query parameters also require a complete finite decimal
+value before conversion. Decimal fractions are accepted for numbers; integers
+must have an integral value. Exponent notation such as `1e3` is supported. Text
+such as `3600junk`, whitespace-padded numbers, radix spellings, and non-finite
+values returns 400 before the handler runs. Nullable numeric schemas use the
+same conversion. With request validation disabled, malformed numeric text is
+passed through unchanged rather than truncated. Other parameter constraints
+such as minimum, maximum, and enum remain outside these scalar checks.
+
+## Recursive request bodies
+
+Shared request-schema subgraphs are compiled as references rather than expanded
+into copies for each use. This keeps preprocessing and validator compilation
+bounded by the schema graph, including documents that combine shared nodes and
+recursive references; finite request bodies still undergo normal validation.
+
+Dereferenced recursive request schemas are converted back to JSON Schema references for AJV compilation. Finite nested values retain their recursive constraints; both self-recursive and mutually recursive schemas are supported.
+
+Recursive schema normalization preserves boolean schemas, nested id resources, and property names that require URI-fragment encoding.
 
 ## Understand response checks
 

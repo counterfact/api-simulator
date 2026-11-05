@@ -35,6 +35,8 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Keep orchestration in `app.ts` / `ApiRunner`; avoid leaking server details into generator modules.
 - Keep subsystems separated (`registry`, `context-registry`, `module-loader`, `dispatcher`) and connected through explicit constructor interfaces.
 - Preserve hot-reload expectations: route/module changes should apply without restart and context should survive reloads. Compare reloaded object/array initializers structurally against the cached declaration, not by identity or against live state; otherwise an unchanged initializer can erase scenario seeds, request mutations, or REPL edits. Test both preserved live state and intentional initializer changes.
+- Use canonical ESM URLs for initial entry imports so static imports share class and singleton identity. Reserve cache-busting for reloads; a query suffix creates a distinct Node module identity even before any files change.
+- Canonical ESM entry imports belong only to the first import attempt during an explicit initial load. Track attempts across loader instances, independently of successful context construction; watcher updates and retries must refresh entries.
 - Keep programmatic defaults in `counterfact()` separate from CLI action defaults. Embedding an API needs only `basePath`; generation, watching, and cache building default to enabled regardless of whether a spec is supplied. Explicit options override those defaults, and `start()` merges partial startup overrides into the resolved configuration. Use the effective port for binding, startup scenarios, REPL requests, and status reporting. `watch` flags govern code regeneration, while server startup also enables runtime module/spec/store watching.
 - Initialize route and compiled-output directories even when the API is missing or empty; cache creation must not depend on a source file being compiled.
 - Resolve HTTP startup only after the listener is ready and reject bind errors through the startup promise. Report listener status from the actual server, including the allocated port when configured with port 0.
@@ -59,6 +61,14 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Run focused runtime tests first (for touched areas), e.g. `packages/runtime/test/server/dispatcher.test.ts`, `packages/runtime/test/server/module-loader.test.ts`, `packages/counterfact/test/app.test.ts`.
 - Manually sanity-check startup + runtime flow with `yarn go:example` when behavior changes.
 
+## Recursive request schemas
+
+- Preserve shared schema nodes as references as well as cycles. Identity memoization must survive sibling visits; disable Ajv reference inlining to avoid exponential validator compilation. Verify the public Dispatcher path in a bounded-heap subprocess, with valid and invalid nested bodies.
+
+- OpenAPI dereferencing can produce cyclic JavaScript schema graphs. Convert back edges to JSON Schema references before passing them to Ajv; keep recursive constraints and verify finite valid and invalid nested data.
+
+- Schema cycle references must respect nested $id resource scopes and URI-fragment encoding in addition to JSON Pointer escaping. Preserve boolean schemas before object caching and leave annotations unchanged.
+
 ## Explicit reset versus hot reload
 
 - Keep reset reconstruction distinct from hot reload's state-preserving merge.
@@ -79,7 +89,11 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Verify lifecycle changes with real HTTP mutation/restoration, same-listener
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
 
+- When resolving primitive unions, retain null-only alternatives separately from unresolved schemas. A nested null-only union or null-only type array must not erase the single non-null conversion.
+
 - Do not enable Ajv allErrors for untrusted request bodies. Stop body-error collection early and regression-test large invalid collections; a request byte limit does not bound the number of validation error objects.
+
+- Coerce scalar and array numeric text with the same complete finite decimal parser. Retain integer versus number declarations through dispatch; reject malformed scalar query values before handler entry, and preserve original text when request validation is disabled.
 
 - Normalize array query cardinality and primitive items from the declared schema and serialization style. Do not split commas for default exploded form arrays or invent values for absent optional parameters.
 

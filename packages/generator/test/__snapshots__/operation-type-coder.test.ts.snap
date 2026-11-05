@@ -1,436 +1,348 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`an OperationTypeCoder falls back to root level produces (OpenAPI 2) 1`] = `
-"type TestType = (
-  $: OmitValueWhenNever<{
-    query: never;
-    querystring: never;
-    path: never;
-    headers: never;
-    cookie: never;
-    body: never;
-    context: ExternalType;
-    har: SharedType;
-    response: ResponseBuilderFactory<{
-      [statusCode in HttpStatusCode]: {
-        headers: never;
-        requiredHeaders: never;
-        content: {
-          "text/plain": {
-            schema: Type;
-          };
+"type TestType = ($: {
+  context: ExternalType;
+  har: SharedType;
+  response: ResponseBuilderFactory<{
+    [statusCode in HttpStatusCode]: {
+      headers: never;
+      requiredHeaders: never;
+      content: {
+        "text/plain": {
+          schema: Type;
         };
-        examples: {};
       };
-    }>;
-    x: SharedType;
-    proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: never;
-    user: never;
-    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
-    version: never;
-  }>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+      examples: {};
+    };
+  }>;
+  x: SharedType;
+  proxy: (url: string) => COUNTERFACT_RESPONSE;
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
 "
 `;
 
 exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2 with produces at the root) 1`] = `
-"type TestType = (
-  $: OmitValueWhenNever<{
-    query: HTTP_GET_Query;
-    querystring: never;
-    path: HTTP_GET_Path;
-    headers: HTTP_GET_Headers;
-    cookie: never;
-    body: Type;
-    context: ExternalType;
-    har: SharedType;
-    response: ResponseBuilderFactory<
-      {
-        200: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
+"type TestType = ($: {
+  query: HTTP_GET_Query;
+  path: HTTP_GET_Path;
+  headers: HTTP_GET_Headers;
+  body: Type;
+  context: ExternalType;
+  har: SharedType;
+  response: ResponseBuilderFactory<
+    {
+      200: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
-          examples: {};
         };
-        400: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
+        examples: {};
+      };
+      400: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
-          examples: {};
         };
-      } & {
-        [statusCode in Exclude<HttpStatusCode, 200 | 400>]: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
+        examples: {};
+      };
+    } & {
+      [statusCode in Exclude<HttpStatusCode, 200 | 400>]: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
-          examples: {};
         };
-      }
-    >;
-    x: SharedType;
-    proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: never;
-    user: never;
-    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
-    version: never;
-  }>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+        examples: {};
+      };
+    }
+  >;
+  x: SharedType;
+  proxy: (url: string) => COUNTERFACT_RESPONSE;
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
 "
 `;
 
 exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2) 1`] = `
-"type TestType = (
-  $: OmitValueWhenNever<{
-    query: HTTP_GET_Query;
-    querystring: never;
-    path: HTTP_GET_Path;
-    headers: HTTP_GET_Headers;
-    cookie: never;
-    body: Type;
-    context: ExternalType;
-    har: SharedType;
-    response: ResponseBuilderFactory<
-      {
-        200: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
+"type TestType = ($: {
+  query: HTTP_GET_Query;
+  path: HTTP_GET_Path;
+  headers: HTTP_GET_Headers;
+  body: Type;
+  context: ExternalType;
+  har: SharedType;
+  response: ResponseBuilderFactory<
+    {
+      200: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
-          examples: {};
         };
-        400: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
+        examples: {};
+      };
+      400: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
-          examples: {};
         };
-      } & {
-        [statusCode in Exclude<HttpStatusCode, 200 | 400>]: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
+        examples: {};
+      };
+    } & {
+      [statusCode in Exclude<HttpStatusCode, 200 | 400>]: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
-          examples: {};
         };
-      }
-    >;
-    x: SharedType;
-    proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: never;
-    user: never;
-    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
-    version: never;
-  }>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+        examples: {};
+      };
+    }
+  >;
+  x: SharedType;
+  proxy: (url: string) => COUNTERFACT_RESPONSE;
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
 "
 `;
 
 exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2, consumes in root) 1`] = `
-"type TestType = (
-  $: OmitValueWhenNever<{
-    query: HTTP_GET_Query;
-    querystring: never;
-    path: HTTP_GET_Path;
-    headers: HTTP_GET_Headers;
-    cookie: never;
-    body: Type;
-    context: ExternalType;
-    har: SharedType;
-    response: ResponseBuilderFactory<
-      {
-        200: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
+"type TestType = ($: {
+  query: HTTP_GET_Query;
+  path: HTTP_GET_Path;
+  headers: HTTP_GET_Headers;
+  body: Type;
+  context: ExternalType;
+  har: SharedType;
+  response: ResponseBuilderFactory<
+    {
+      200: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
-          examples: {};
         };
-        400: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
+        examples: {};
+      };
+      400: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
-          examples: {};
         };
-      } & {
-        [statusCode in Exclude<HttpStatusCode, 200 | 400>]: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
+        examples: {};
+      };
+    } & {
+      [statusCode in Exclude<HttpStatusCode, 200 | 400>]: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
-          examples: {};
         };
-      }
-    >;
-    x: SharedType;
-    proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: never;
-    user: never;
-    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
-    version: never;
-  }>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+        examples: {};
+      };
+    }
+  >;
+  x: SharedType;
+  proxy: (url: string) => COUNTERFACT_RESPONSE;
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
 "
 `;
 
 exports[`an OperationTypeCoder generates a complex post operation 1`] = `
-"type TestType = (
-  $: OmitValueWhenNever<{
-    query: HTTP_GET_Query;
-    querystring: never;
-    path: HTTP_GET_Path;
-    headers: HTTP_GET_Headers;
-    cookie: never;
-    body: Type;
-    context: ExternalType;
-    har: SharedType;
-    response: ResponseBuilderFactory<
-      {
-        200: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
-          };
-          examples: {
-            "first-example": unknown;
-            "second-example": unknown;
+"type TestType = ($: {
+  query: HTTP_GET_Query;
+  path: HTTP_GET_Path;
+  headers: HTTP_GET_Headers;
+  body: Type;
+  context: ExternalType;
+  har: SharedType;
+  response: ResponseBuilderFactory<
+    {
+      200: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
         };
-        400: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
-          };
-          examples: {};
+        examples: {
+          "first-example": unknown;
+          "second-example": unknown;
         };
-      } & {
-        [statusCode in Exclude<HttpStatusCode, 200 | 400>]: {
-          headers: never;
-          requiredHeaders: never;
-          content: {
-            "application/json": {
-              schema: Type;
-            };
+      };
+      400: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
           };
-          examples: {};
         };
-      }
-    >;
-    x: SharedType;
-    proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: never;
-    user: never;
-    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
-    version: never;
-  }>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+        examples: {};
+      };
+    } & {
+      [statusCode in Exclude<HttpStatusCode, 200 | 400>]: {
+        headers: never;
+        requiredHeaders: never;
+        content: {
+          "application/json": {
+            schema: Type;
+          };
+        };
+        examples: {};
+      };
+    }
+  >;
+  x: SharedType;
+  proxy: (url: string) => COUNTERFACT_RESPONSE;
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
 "
 `;
 
 exports[`an OperationTypeCoder generates a simple get operation (OpenAPI 2) 1`] = `
-"type TestType = (
-  $: OmitValueWhenNever<{
-    query: never;
-    querystring: never;
-    path: never;
-    headers: never;
-    cookie: never;
-    body: never;
-    context: ExternalType;
-    har: SharedType;
-    response: ResponseBuilderFactory<{
-      [statusCode in HttpStatusCode]: {
-        headers: never;
-        requiredHeaders: never;
-        content: {
-          "application/json": {
-            schema: Type;
-          };
+"type TestType = ($: {
+  context: ExternalType;
+  har: SharedType;
+  response: ResponseBuilderFactory<{
+    [statusCode in HttpStatusCode]: {
+      headers: never;
+      requiredHeaders: never;
+      content: {
+        "application/json": {
+          schema: Type;
         };
-        examples: {};
       };
-    }>;
-    x: SharedType;
-    proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: never;
-    user: never;
-    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
-    version: never;
-  }>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+      examples: {};
+    };
+  }>;
+  x: SharedType;
+  proxy: (url: string) => COUNTERFACT_RESPONSE;
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
 "
 `;
 
 exports[`an OperationTypeCoder generates a simple get operation 1`] = `
-"type TestType = (
-  $: OmitValueWhenNever<{
-    query: never;
-    querystring: never;
-    path: never;
-    headers: never;
-    cookie: never;
-    body: never;
-    context: ExternalType;
-    har: SharedType;
-    response: ResponseBuilderFactory<{
-      [statusCode in HttpStatusCode]: {
-        headers: never;
-        requiredHeaders: never;
-        content: {
-          "application/json": {
-            schema: Type;
-          };
+"type TestType = ($: {
+  context: ExternalType;
+  har: SharedType;
+  response: ResponseBuilderFactory<{
+    [statusCode in HttpStatusCode]: {
+      headers: never;
+      requiredHeaders: never;
+      content: {
+        "application/json": {
+          schema: Type;
         };
-        examples: {};
       };
-    }>;
-    x: SharedType;
-    proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: never;
-    user: never;
-    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
-    version: never;
-  }>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+      examples: {};
+    };
+  }>;
+  x: SharedType;
+  proxy: (url: string) => COUNTERFACT_RESPONSE;
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
 "
 `;
 
 exports[`an OperationTypeCoder generates an auth object for basic authentication 1`] = `
-"type TestType = (
-  $: OmitValueWhenNever<{
-    query: never;
-    querystring: never;
-    path: never;
-    headers: never;
-    cookie: never;
-    body: never;
-    context: ExternalType;
-    har: SharedType;
-    response: ResponseBuilderFactory<{
-      [statusCode in HttpStatusCode]: {
-        headers: never;
-        requiredHeaders: never;
-        content: {
-          "application/json": {
-            schema: Type;
-          };
+"type TestType = ($: {
+  context: ExternalType;
+  har: SharedType;
+  response: ResponseBuilderFactory<{
+    [statusCode in HttpStatusCode]: {
+      headers: never;
+      requiredHeaders: never;
+      content: {
+        "application/json": {
+          schema: Type;
         };
-        examples: {};
       };
-    }>;
-    x: SharedType;
-    proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { username?: string; password?: string };
-    user: { username?: string; password?: string };
-    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
-    version: never;
-  }>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+      examples: {};
+    };
+  }>;
+  x: SharedType;
+  proxy: (url: string) => COUNTERFACT_RESPONSE;
+  auth: { username?: string; password?: string };
+  user: { username?: string; password?: string };
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
 "
 `;
 
 exports[`an OperationTypeCoder generates required api key auth and cookie for apiKey security 1`] = `
-"type TestType = (
-  $: OmitValueWhenNever<{
-    query: never;
-    querystring: never;
-    path: never;
-    headers: never;
-    cookie: HTTP_GET_Cookie;
-    body: never;
-    context: ExternalType;
-    har: SharedType;
-    response: ResponseBuilderFactory<{
-      [statusCode in HttpStatusCode]: {
-        headers: never;
-        requiredHeaders: never;
-        content: {
-          "application/json": {
-            schema: Type;
-          };
+"type TestType = ($: {
+  cookie: HTTP_GET_Cookie;
+  context: ExternalType;
+  har: SharedType;
+  response: ResponseBuilderFactory<{
+    [statusCode in HttpStatusCode]: {
+      headers: never;
+      requiredHeaders: never;
+      content: {
+        "application/json": {
+          schema: Type;
         };
-        examples: {};
       };
-    }>;
-    x: SharedType;
-    proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
-    user: never;
-    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
-    version: never;
-  }>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+      examples: {};
+    };
+  }>;
+  x: SharedType;
+  proxy: (url: string) => COUNTERFACT_RESPONSE;
+  auth: { apiKey: string };
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
 "
 `;
 
 exports[`an OperationTypeCoder generates required api key auth and headers for apiKey security 1`] = `
-"type TestType = (
-  $: OmitValueWhenNever<{
-    query: never;
-    querystring: never;
-    path: never;
-    headers: HTTP_GET_Headers;
-    cookie: never;
-    body: never;
-    context: ExternalType;
-    har: SharedType;
-    response: ResponseBuilderFactory<{
-      [statusCode in HttpStatusCode]: {
-        headers: never;
-        requiredHeaders: never;
-        content: {
-          "application/json": {
-            schema: Type;
-          };
+"type TestType = ($: {
+  headers: HTTP_GET_Headers;
+  context: ExternalType;
+  har: SharedType;
+  response: ResponseBuilderFactory<{
+    [statusCode in HttpStatusCode]: {
+      headers: never;
+      requiredHeaders: never;
+      content: {
+        "application/json": {
+          schema: Type;
         };
-        examples: {};
       };
-    }>;
-    x: SharedType;
-    proxy: (url: string) => COUNTERFACT_RESPONSE;
-    auth: { apiKey: string };
-    user: never;
-    delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
-    version: never;
-  }>,
-) => MaybePromise<COUNTERFACT_RESPONSE>;
+      examples: {};
+    };
+  }>;
+  x: SharedType;
+  proxy: (url: string) => COUNTERFACT_RESPONSE;
+  auth: { apiKey: string };
+  delay: (milliseconds: number, maxMilliseconds?: number) => Promise<void>;
+}) => MaybePromise<COUNTERFACT_RESPONSE>;
 "
 `;
