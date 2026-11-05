@@ -332,10 +332,7 @@ export class Dispatcher {
       const type = parameter.type ?? parameterType(parameter.schema);
 
       if (type !== undefined) {
-        types[parameter.in].set(
-          parameter.name,
-          type === "integer" ? "number" : type,
-        );
+        types[parameter.in].set(parameter.name, type);
       }
     }
 

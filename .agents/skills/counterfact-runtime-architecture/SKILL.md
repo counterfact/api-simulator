@@ -93,6 +93,8 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 - Do not enable Ajv allErrors for untrusted request bodies. Stop body-error collection early and regression-test large invalid collections; a request byte limit does not bound the number of validation error objects.
 
+- Coerce scalar and array numeric text with the same complete finite decimal parser. Retain integer versus number declarations through dispatch; reject malformed scalar query values before handler entry, and preserve original text when request validation is disabled.
+
 - Normalize array query cardinality and primitive items from the declared schema and serialization style. Do not split commas for default exploded form arrays or invent values for absent optional parameters.
 
 - Query array conversion must retain enclosing union constraints, honor positional prefixItems before trailing items, preserve explicitly exploded occurrences, and reject non-decimal numeric coercion without hiding the original text.
