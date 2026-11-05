@@ -60,4 +60,18 @@ Without a specification there is no operation contract to validate against. See 
 
 Recursive schema normalization preserves boolean schemas, nested id resources, and property names that require URI-fragment encoding.
 
+Array query parameters using default form/explode serialization reach handlers as
+arrays even for one occurrence. Repeated occurrences retain their order. Optional
+missing parameters remain absent, and nullable array schemas retain this behavior.
+Explicit form serialization with explode false splits commas; spaceDelimited and
+pipeDelimited split their declared separators. Default exploded arrays do not
+split commas. Declared primitive items receive number or boolean conversion for
+valid values; malformed text remains visible. Other styles are left unchanged.
+
+Enclosing schema constraints remain active around array unions. Tuple prefix
+schemas apply by item position before the trailing items schema. Numeric item
+conversion accepts finite decimal text, preserving radix forms and malformed
+text. Explicit explode true preserves each query occurrence as one item,
+including spaces and pipe characters inside that item.
+
 The built-in HTTP server preserves an omitted body as absent; it does not replace it with an empty object. Explicit empty objects and JSON null remain present values for schema validation.
