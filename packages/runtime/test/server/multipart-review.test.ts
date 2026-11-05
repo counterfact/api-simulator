@@ -142,3 +142,40 @@ it("rejects undeclared media before invoking the handler", async () => {
   expect(response.status).toBe(400);
   expect(calls).toBe(0);
 });
+
+it("normalizes multipart against the selected version contract before exact-pattern dispatch", async () => {
+  const registry = new Registry();
+  registry.add("/items/special", {
+    POST: () => ({ status: 200, body: "wrong version" }),
+  });
+  registry.add("/items/{id}", {
+    POST: ($) => ({ status: 200, body: { id: $.path?.id, value: $.body } }),
+  });
+  const dispatcher = new Dispatcher(
+    registry,
+    new ContextRegistry(),
+    {
+      paths: {
+        "/items/{id}": {
+          post: operation({
+            type: "object",
+            required: ["count"],
+            properties: { count: { type: "integer" } },
+          }),
+        },
+      },
+    },
+    undefined,
+    "v2",
+  );
+  const result = await dispatcher.request({
+    method: "POST",
+    path: "/items/special",
+    body: { count: "3" },
+    headers: { "content-type": "multipart/form-data" },
+    query: {},
+    req: {},
+  });
+  expect(result.status).toBe(200);
+  expect(result.body).toEqual({ id: "special", value: { count: 3 } });
+});

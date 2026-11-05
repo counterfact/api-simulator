@@ -335,6 +335,9 @@ export class OperationTypeCoder extends TypeCoder {
     script.importSharedType("OmitValueWhenNever");
     script.importSharedType("COUNTERFACT_RESPONSE");
 
+    script.contextRoutePath = normalizeOpenApiPath(
+      this.requirement.url.split("/").at(-2)!.replaceAll("~1", "/"),
+    );
     const contextTypeImportName = script.importExternalType("Context", {
       context: true,
     });

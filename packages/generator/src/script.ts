@@ -39,6 +39,7 @@ interface ExternalImportEntry {
 export class Script {
   public repository: Repository;
   public comments: string[] = [];
+  public contextRoutePath?: string;
   public exports = new Map<string, ExportStatement>();
   public versions = new Map<string, Map<string, ExportStatement>>();
   public versionBuilders = new Map<
