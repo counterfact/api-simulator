@@ -82,4 +82,6 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Use canonical ESM URLs for initial entry imports so static imports share class and singleton identity. Reserve cache-busting for reloads; a query suffix creates a distinct Node module identity even before any files change.
 
 - Canonical ESM entry imports belong only to the first import attempt during an explicit initial load. Track attempts across loader instances, independently of successful context construction; watcher updates and retries must refresh entries.
+
+- Preserve request-body absence at the HTTP parsing boundary. Empty-wire input, explicit {}, and explicit JSON null must remain distinct before optionality and schema validation.
 - For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.
