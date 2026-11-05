@@ -1,6 +1,6 @@
 {
   "name": "@counterfact/runtime",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Run Counterfact routes with hot reload, validation, proxying, Koa, or MSW.",
   "type": "module",
   "main": "./dist/index.js",
