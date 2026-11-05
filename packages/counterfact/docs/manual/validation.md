@@ -8,21 +8,33 @@ Request and response validation are enabled by default. Start the simulator with
 
 ## Runtime coverage
 
-| Traffic property                                       | Current check                                                                                                                                                                                                |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Required query, header, and cookie parameters          | Presence checks. Header names are case-insensitive. Exploded object query parameters use their property names.                                                                                               |
-| Parameter value schemas, including optional parameters | Not generally validated here; parsing/coercion and generated types are separate mechanisms.                                                                                                                  |
-| Path parameters                                        | Routing extracts the path; this validator does not check path-parameter schemas.                                                                                                                             |
-| OpenAPI 3 request body                                 | Selects `application/json` schema first, or `application/x-www-form-urlencoded` schema if JSON is absent, and passes the parsed body to AJV. It does not choose a schema by the request's actual media type. |
-| Swagger 2 body parameter                               | Passes its schema and parsed body to AJV.                                                                                                                                                                    |
-| Other request-body media types                         | No general schema check. Where no selected schema exists, a required body is checked for presence. Multipart/file validation is not a conformance guarantee.                                                 |
-| Declared response headers                              | Required presence and schema checks for the applicable status/default response; numeric and boolean header strings are coerced for validation.                                                               |
-| Response bodies and streaming items                    | No general schema validation.                                                                                                                                                                                |
-| Configuration-selected upstream traffic                | Bypasses local dispatch validation. Route-level `$.proxy()` runs through local checks.                                                                                                                       |
+| Traffic property                                       | Current check                                                                                                                                                                                                                      |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Required query, header, and cookie parameters          | Presence checks. Header names are case-insensitive. Exploded object query parameters use their property names.                                                                                                                     |
+| Parameter value schemas, including optional parameters | Not generally validated here; parsing/coercion and generated types are separate mechanisms.                                                                                                                                        |
+| Path parameters                                        | Routing extracts the path; this validator does not check path-parameter schemas.                                                                                                                                                   |
+| OpenAPI 3 request body                                 | Selects the declared request media type (exact, subtype wildcard, then full wildcard) and validates its parsed body. Without a media-type header, programmatic requests use the JSON, URL-encoded, then multipart schema fallback. |
+| Swagger 2 body parameter                               | Passes its schema and parsed body to AJV.                                                                                                                                                                                          |
+| Other request-body media types                         | Present bodies with undeclared media types are rejected. Other declared media types still depend on available parsing; this is not a complete media-type conformance guarantee.                                                    |
+| Declared response headers                              | Required presence and schema checks for the applicable status/default response; numeric and boolean header strings are coerced for validation.                                                                                     |
+| Response bodies and streaming items                    | No general schema validation.                                                                                                                                                                                                      |
+| Configuration-selected upstream traffic                | Bypasses local dispatch validation. Route-level `$.proxy()` runs through local checks.                                                                                                                                             |
+
+Request-body schema validation stops at the first validation failure rather than collecting an error for every invalid item or field. This limits error-allocation work for malformed input. Required-parameter presence errors are still reported together.
 
 The current AJV instance uses its default JSON Schema dialect, `strict: false`, and `coerceTypes: false` for request bodies. Common type, required-field, enum, and object/array constraints are useful checks; this is not full OpenAPI 3.1/3.2 JSON Schema-dialect coverage. Optional formats and dialect-specific keywords are not promised. Test the schemas your API uses before relying on these checks.
 
+Nullable parameters expressed with anyOf, oneOf, or a type array keep their primitive conversion when there is exactly one non-null primitive type. Ambiguous unions keep string values. No null wire representation is introduced.
+
+Boolean query, header, and cookie values are an exception to the general parameter-schema limitation: the case-sensitive strings true and false are accepted, while malformed text returns 400 before the handler runs. With request validation disabled, malformed boolean text remains unchanged.
+
 Optional request bodies may be absent. A present body, including explicit JSON null, is validated against the selected schema. Required bodies reject absence. This rule also applies to Swagger 2 body parameters.
+
+## Recursive request bodies
+
+Dereferenced recursive request schemas are converted back to JSON Schema references for AJV compilation. Finite nested values retain their recursive constraints; both self-recursive and mutually recursive schemas are supported.
+
+Recursive schema normalization preserves boolean schemas, nested id resources, and property names that require URI-fragment encoding.
 
 ## Understand response checks
 
@@ -53,5 +65,19 @@ npx counterfact ./openapi.yaml api --no-validate-request --no-validate-response
 From code, pass `validateRequests: false` or `validateResponses: false`. These flags are independent of `$.x`, which widens TypeScript types but does not itself turn validation off.
 
 Without a specification there is no operation contract to validate against. See [CLI configuration](../api/cli.md) and [handler arguments](../api/handlers.md).
+
+Array query parameters using default form/explode serialization reach handlers as
+arrays even for one occurrence. Repeated occurrences retain their order. Optional
+missing parameters remain absent, and nullable array schemas retain this behavior.
+Explicit form serialization with explode false splits commas; spaceDelimited and
+pipeDelimited split their declared separators. Default exploded arrays do not
+split commas. Declared primitive items receive number or boolean conversion for
+valid values; malformed text remains visible. Other styles are left unchanged.
+
+Enclosing schema constraints remain active around array unions. Tuple prefix
+schemas apply by item position before the trailing items schema. Numeric item
+conversion accepts finite decimal text, preserving radix forms and malformed
+text. Explicit explode true preserves each query occurrence as one item,
+including spaces and pipe characters inside that item.
 
 The built-in HTTP server preserves an omitted body as absent; it does not replace it with an empty object. Explicit empty objects and JSON null remain present values for schema validation.

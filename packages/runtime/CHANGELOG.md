@@ -1,5 +1,29 @@
 # @counterfact/runtime
 
+## 0.4.0
+
+### Minor Changes
+
+- 354e288: Support OpenAPI 3 multipart/form-data request bodies in generated handler types
+  and the built-in Koa server. Expose uploaded bytes and metadata through
+  MultipartFile, decode declared fields and repeated arrays, validate required
+  fields and uploads, and reject malformed or oversized multipart requests.
+
+### Patch Changes
+
+- 7503f57: Normalize declared array query parameters consistently for single and repeated values, nullable arrays, primitive items, and explicit form/space/pipe serialization.
+
+  Retain enclosing schema and tuple-prefix item constraints, preserve explicitly
+  exploded items, and avoid converting non-decimal numeric text.
+
+- 610b1fc: Reject malformed boolean query, header, and cookie values before handlers run.
+- c9cae8c: Convert nullable primitive parameters using their non-null primitive type.
+- 83e11d3: Allow omitted optional request bodies while validating explicit null and present bodies.
+- c77a381: Stop request-body validation at the first failure instead of collecting errors for every invalid field or item, avoiding excessive error allocation from malformed input.
+- 2bbdca5: Restrict versioned dispatchers to operations in the selected contract.
+- Updated dependencies [354e288]
+  - @counterfact/types@0.3.0
+
 ## 0.3.2
 
 ### Patch Changes

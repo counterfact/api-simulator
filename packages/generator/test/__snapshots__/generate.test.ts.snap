@@ -2908,6 +2908,7 @@ import type { OmitValueWhenNever } from "../../counterfact-types/index.ts";
 import type { MaybePromise } from "../../counterfact-types/index.ts";
 import type { COUNTERFACT_RESPONSE } from "../../counterfact-types/index.ts";
 import type { Context } from "../../routes/_.context.ts";
+import type { MultipartFile } from "../../counterfact-types/index.ts";
 import type { ResponseBuilderFactory } from "../../counterfact-types/index.ts";
 import type { Error } from "../components/schemas/Error.js";
 /**
@@ -2920,7 +2921,18 @@ export type HTTP_POST = (
     path: never;
     headers: HTTP_POST_Headers;
     cookie: never;
-    body: never;
+    body: {
+      /**
+       * The file to upload
+       * @format binary
+       */
+      file: MultipartFile;
+      /**
+       * Human-readable label for the file
+       */
+      label?: string;
+      tags?: Array<string>;
+    };
     context: Context;
     response: ResponseBuilderFactory<{
       201: {

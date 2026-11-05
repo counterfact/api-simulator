@@ -1,7 +1,7 @@
 # @counterfact/playwright
 
 Run one Counterfact API simulator per Playwright worker, with fresh application
-state before every test. Requires Node.js 22 or later and Playwright Test 1.39 or
+state before every test. Requires Node.js 22.22 or later and Playwright Test 1.39 or
 later (1.x). This is an ESM package; set `"type": "module"` in your project's
 `package.json`, or use `.mts` for your Playwright configuration and fixtures.
 

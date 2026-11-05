@@ -128,18 +128,17 @@ import type { Routes } from "../../../types/index.js";
 
 type Route = Routes["/groups"]["/{groupName}"]["/search"];
 
-export const POST: Route["POST"] =
-  function ($) {
-    if ($.headers["x-token"] !== "super-secret") {
-      return $.response.status(401).text("Unauthorized");
-    }
+export const POST: Route["POST"] = function ($) {
+  if ($.headers["x-token"] !== "super-secret") {
+    return $.response.status(401).text("Unauthorized");
+  }
 
-    const content =
-      `Results for "${$.query.keyword}" in ${$.path.groupName}` +
-      ` with tags: ${$.body.tags.join(", ")}`;
+  const content =
+    `Results for "${$.query.keyword}" in ${$.path.groupName}` +
+    ` with tags: ${$.body.tags.join(", ")}`;
 
-    return $.response.status(200).text(content);
-  };
+  return $.response.status(200).text(content);
+};
 ```
 
 All four properties are typed from your OpenAPI spec, so autocomplete works for parameter names and values. GET and HEAD handlers receive no body; put their inputs in path, query, or header parameters.
@@ -250,3 +249,48 @@ For `text/event-stream` responses, Counterfact also sets `Cache-Control: no-cach
 - [Middleware](./middleware.md) — cross-cutting request/response logic
 - [Reference](../api.md) — complete `$` parameter and response builder API reference
 - [Find your workflow](../usage.md)
+
+## Multipart form requests
+
+For OpenAPI 3 operations with a `multipart/form-data` request body, generated
+handlers read form fields from `$.body`. Required and optional fields follow the
+schema, including referenced schemas and versioned APIs. JSON and URL-encoded
+request bodies keep their existing runtime parsing.
+
+A `type: string, format: binary` multipart property is a `MultipartFile`:
+
+| Property      | Value                                               |
+| ------------- | --------------------------------------------------- |
+| `data`        | `Uint8Array` containing the complete uploaded bytes |
+| `filename`    | Client-supplied filename                            |
+| `contentType` | Client-supplied media type                          |
+| `size`        | Byte length of `data`                               |
+
+For example, given a required `name` string and an optional `files` array whose
+items have `type: string, format: binary`, a handler can read `$.body.name` and
+`$.body.files?.[0]?.data`. Treat filenames and media types as untrusted input.
+Uploads are kept in memory and are never saved to disk automatically.
+
+Send array fields as repeated parts with the same name. A single part for a
+schema-declared array becomes a one-item array. Repeated scalar fields remain an
+array and fail request validation. Numeric and boolean fields are decoded from
+JSON scalar text (`3`, `false`); object fields accept JSON object text. Strings
+remain strings. Invalid values are rejected when request validation is enabled.
+Custom OpenAPI multipart `encoding` serialization styles are not interpreted.
+
+The built-in Koa server limits the entire multipart request, including files and
+part headers, to 10 MiB and returns HTTP 413 when it exceeds that limit. Malformed
+multipart bodies return HTTP 400 even when request validation is disabled.
+Missing required fields and invalid file or field types return HTTP 400 under
+the normal request-validation settings. The original multipart bytes are
+preserved for `$.proxy(url)` forwarding.
+
+For multipart unions, already-valid values are preserved. Otherwise Counterfact
+tries decoded branch candidates in declaration order and selects the first that
+satisfies the complete schema, including oneOf exclusivity. Object fields with
+properties or additionalProperties can contain JSON object text even when type
+is omitted. Nullable binary type arrays expose MultipartFile or null.
+
+Request-body validation selects the declared exact media type, then subtype
+and full wildcard entries. A present body with an undeclared media type returns
+400 before the handler runs.
