@@ -1,3 +1,6 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
 import { usingTemporaryFiles } from "using-temporary-files";
 import { ContextRegistry } from "../../src/server/context-registry.js";
 import { Dispatcher } from "../../src/server/dispatcher.js";
@@ -43,3 +46,15 @@ it("shares initial ESM context constructors, errors, and singletons with routes"
     });
   });
 });
+
+it("preserves native Node identity while retrying and reloading ESM entries", async () => {
+  await promisify(execFile)(
+    process.execPath,
+    [
+      fileURLToPath(
+        new URL("../fixtures/module-loader-cache.mjs", import.meta.url),
+      ),
+    ],
+    { timeout: 15000, env: { ...process.env, CHOKIDAR_USEPOLLING: "1" } },
+  );
+}, 20000);

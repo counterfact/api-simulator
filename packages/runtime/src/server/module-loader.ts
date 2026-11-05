@@ -31,6 +31,8 @@ import { unescapePathForWindows } from "../util/windows-escape.js";
 
 const { uncachedRequire } = await import("./uncached-require.cjs");
 
+const attemptedEsmImports = new Set<string>();
+
 const debug = createDebug("counterfact:server:module-loader");
 
 /**
@@ -128,6 +130,17 @@ export class ModuleLoader extends EventTarget {
   private readonly updates = new UpdateQueue();
 
   private loaded = false;
+
+  private initialImportPass = false;
+
+  private async importModule(pathName: string): Promise<unknown> {
+    if ((await determineModuleKind(pathName)) === "commonjs")
+      return uncachedRequire(pathName);
+    const url = pathToFileURL(pathName).href;
+    const canonical = this.initialImportPass && !attemptedEsmImports.has(url);
+    attemptedEsmImports.add(url);
+    return canonical ? import(url) : uncachedImport(pathName);
+  }
 
   /** Holds file events while an explicit reset reconstructs the state graph. */
   public pauseUpdates(): Promise<() => void> {
@@ -317,13 +330,18 @@ export class ModuleLoader extends EventTarget {
    * @param directory - Sub-directory to load, defaults to the root (`""`).
    */
   public async load(directory = ""): Promise<void> {
-    const files = await this.fileDiscovery.findFiles(directory);
-    await Promise.all(
-      files.map((file) => this.loadEndpoint(file, !this.loaded)),
-    );
-    if (!this.loaded && this.contextFactories.size > 0) this.resetContexts();
-    await this.loadScenarios();
-    this.loaded = true;
+    this.initialImportPass = !this.loaded;
+    try {
+      const files = await this.fileDiscovery.findFiles(directory);
+      await Promise.all(
+        files.map((file) => this.loadEndpoint(file, !this.loaded)),
+      );
+      if (!this.loaded && this.contextFactories.size > 0) this.resetContexts();
+      await this.loadScenarios();
+      this.loaded = true;
+    } finally {
+      this.initialImportPass = false;
+    }
   }
 
   /** Reloads every context module without disturbing preserved live state. */
@@ -382,14 +400,7 @@ export class ModuleLoader extends EventTarget {
     const fileKey = this.scenarioFileKey(pathName);
 
     try {
-      const doImport =
-        (await determineModuleKind(pathName)) === "commonjs"
-          ? uncachedRequire
-          : this.loaded
-            ? uncachedImport
-            : (path: string) => import(pathToFileURL(path).href);
-
-      const module = await doImport(pathName);
+      const module = await this.importModule(pathName);
 
       if (module) {
         this.scenarioRegistry.add(fileKey, module as Record<string, unknown>);
@@ -417,18 +428,13 @@ export class ModuleLoader extends EventTarget {
     this.dependencyGraph.load(pathName);
 
     try {
-      const doImport =
-        (await determineModuleKind(pathName)) === "commonjs"
-          ? uncachedRequire
-          : this.loaded
-            ? uncachedImport
-            : (path: string) => import(pathToFileURL(path).href);
-
       let importError: unknown;
 
-      const endpoint = (await doImport(pathName).catch((error: unknown) => {
-        importError = error;
-      })) as ContextModule | Module;
+      const endpoint = (await this.importModule(pathName).catch(
+        (error: unknown) => {
+          importError = error;
+        },
+      )) as ContextModule | Module;
 
       if (importError !== undefined) {
         const isSyntaxError =
