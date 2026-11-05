@@ -122,7 +122,9 @@ function castParameter(value: string | number | boolean, type: string) {
   }
 
   if (type === "boolean") {
-    return value === "true";
+    if (value === "true") return true;
+    if (value === "false") return false;
+    return value;
   }
 
   return value;

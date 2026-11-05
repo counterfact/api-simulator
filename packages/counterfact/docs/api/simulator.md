@@ -51,3 +51,5 @@ Reacquire contexts with `loadContext()` and read `api.store` again after reset. 
 `scenario(path, group?)` resolves and awaits a named scenario with the same arguments as the REPL. Select a group explicitly when several API groups exist. `loadContext(path = "/", group?)` likewise requires a group in a multi-group simulator.
 
 See the [programmatic manual](../features/programmatic-api.md) for complete test-suite examples.
+
+Boolean query, header, and cookie parameters accept the case-sensitive wire values true and false. With request validation enabled, malformed text returns 400 before the handler executes. With validation disabled, malformed boolean text remains unchanged instead of becoming false.
