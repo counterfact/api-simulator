@@ -197,12 +197,13 @@ describe("multipart requests over HTTP", () => {
     },
   );
 
-  it("rejects uploads larger than 10 MiB", async () => {
+  it("rejects uploads declared larger than 10 MiB before reading the body", async () => {
     const { app, handler } = appForUpload();
     const response = await request(app.callback())
       .post("/upload")
-      .field("name", "Narrator")
-      .attach("files", Buffer.alloc(MULTIPART_BODY_LIMIT), "large.bin");
+      .set("Content-Type", "multipart/form-data; boundary=limit")
+      .set("Content-Length", String(MULTIPART_BODY_LIMIT + 1))
+      .send("rejected before reading");
     expect(response.status).toBe(413);
     expect(handler).not.toHaveBeenCalled();
   });

@@ -20,6 +20,8 @@ Request and response validation are enabled by default. Start the simulator with
 | Response bodies and streaming items                    | No general schema validation.                                                                                                                                                                                |
 | Configuration-selected upstream traffic                | Bypasses local dispatch validation. Route-level `$.proxy()` runs through local checks.                                                                                                                       |
 
+Request-body schema validation stops at the first validation failure rather than collecting an error for every invalid item or field. This limits error-allocation work for malformed input. Required-parameter presence errors are still reported together.
+
 The current AJV instance uses its default JSON Schema dialect, `strict: false`, and `coerceTypes: false` for request bodies. Common type, required-field, enum, and object/array constraints are useful checks; this is not full OpenAPI 3.1/3.2 JSON Schema-dialect coverage. Optional formats and dialect-specific keywords are not promised. Test the schemas your API uses before relying on these checks.
 
 ## Understand response checks

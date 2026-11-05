@@ -78,3 +78,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   preserve one startup per group in declaration order across versioned runners.
 - Verify lifecycle changes with real HTTP mutation/restoration, same-listener
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
+
+- Do not enable Ajv allErrors for untrusted request bodies. Stop body-error collection early and regression-test large invalid collections; a request byte limit does not bound the number of validation error objects.

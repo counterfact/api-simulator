@@ -7,7 +7,8 @@ import {
 import type { OpenApiOperation, OpenApiParameters } from "@counterfact/types";
 
 const ajv = new Ajv({
-  allErrors: true,
+  // Stop at the first body validation failure instead of collecting unbounded errors.
+  allErrors: false,
   strict: false,
   coerceTypes: false,
 });
