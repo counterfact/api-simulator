@@ -1,12 +1,23 @@
 import Ajv from "ajv";
 import { validationSchema } from "./validation-schema.js";
+import {
+  isMultipartFile,
+  multipartValidationSchema,
+} from "./multipart-body.js";
 
 import type { OpenApiOperation, OpenApiParameters } from "@counterfact/types";
 
 const ajv = new Ajv({
-  allErrors: true,
+  // Stop at the first body validation failure instead of collecting unbounded errors.
+  allErrors: false,
   strict: false,
   coerceTypes: false,
+});
+
+ajv.addKeyword({
+  keyword: "counterfactMultipartFile",
+  validate: (_schema: boolean, data: unknown) => isMultipartFile(data),
+  errors: false,
 });
 
 export interface ValidationResult {
@@ -145,17 +156,43 @@ export function validateRequest(
 
   // Validate request body (OpenAPI 3.x requestBody)
   if (operation.requestBody?.content !== undefined) {
+    const contentType = (
+      request.headers["content-type"] ??
+      request.headers["Content-Type"] ??
+      ""
+    )
+      .split(";", 1)[0]
+      ?.trim()
+      .toLowerCase();
+    const content = operation.requestBody.content;
+    const declared = contentType
+      ? [contentType, contentType.split("/")[0] + "/*", "*/*"].find((type) =>
+          Object.hasOwn(content, type),
+        )
+      : undefined;
+    const selected = contentType
+      ? declared === undefined
+        ? undefined
+        : content[declared]?.schema
+      : (content["application/json"]?.schema ??
+        content["application/x-www-form-urlencoded"]?.schema ??
+        content["multipart/form-data"]?.schema);
+    if (contentType && declared === undefined && request.body !== undefined)
+      errors.push("body content type is not declared: " + contentType);
     const schema =
-      operation.requestBody.content["application/json"]?.schema ??
-      operation.requestBody.content["application/x-www-form-urlencoded"]
-        ?.schema;
+      contentType === "multipart/form-data"
+        ? multipartValidationSchema(selected)
+        : selected;
 
     if (request.body === undefined) {
       if (operation.requestBody.required === true)
         errors.push("body is required");
     } else if (schema !== undefined) {
       const valid = ajv.validate(
-        validationSchema(schema, ajv.opts.uriResolver.resolve),
+        validationSchema(
+          schema as Record<string, unknown> | boolean,
+          ajv.opts.uriResolver.resolve,
+        ),
         request.body,
       );
 

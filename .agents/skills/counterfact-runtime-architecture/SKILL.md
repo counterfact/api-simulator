@@ -83,6 +83,8 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 - Schema cycle references must respect nested $id resource scopes and URI-fragment encoding in addition to JSON Pointer escaping. Preserve boolean schemas before object caching and leave annotations unchanged.
 
+- Do not enable Ajv allErrors for untrusted request bodies. Stop body-error collection early and regression-test large invalid collections; a request byte limit does not bound the number of validation error objects.
+
 - Normalize array query cardinality and primitive items from the declared schema and serialization style. Do not split commas for default exploded form arrays or invent values for absent optional parameters.
 
 - Query array conversion must retain enclosing union constraints, honor positional prefixItems before trailing items, preserve explicitly exploded occurrences, and reject non-decimal numeric coercion without hiding the original text.

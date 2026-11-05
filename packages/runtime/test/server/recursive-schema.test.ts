@@ -163,3 +163,42 @@ it("resolves recursive targets within and across nested id resources", () => {
     }).valid,
   ).toBe(false);
 });
+
+it("retains recursive constraints after multipart file-schema adaptation", () => {
+  const node: Record<string, unknown> = {
+    type: "object",
+    properties: {
+      name: { type: "string" },
+      file: { type: "string", format: "binary" },
+    },
+  };
+  (node.properties as Record<string, unknown>).next = node;
+  const file = {
+    data: new Uint8Array([1]),
+    filename: "one.bin",
+    contentType: "application/octet-stream",
+    size: 1,
+  };
+  const operation = {
+    requestBody: { content: { "multipart/form-data": { schema: node } } },
+    responses: {},
+  };
+  const input = {
+    headers: { "content-type": "multipart/form-data" },
+    query: {},
+    cookie: {},
+  };
+  expect(
+    validateRequest(operation, {
+      ...input,
+      body: { file, next: { name: "nested", file } },
+    }).valid,
+  ).toBe(true);
+  expect(
+    validateRequest(operation, {
+      ...input,
+      body: { file, next: { name: 123, file } },
+    }).valid,
+  ).toBe(false);
+  expect((node.properties as Record<string, unknown>).next).toBe(node);
+});
