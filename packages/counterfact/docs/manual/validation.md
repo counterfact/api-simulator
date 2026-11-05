@@ -24,11 +24,15 @@ Request-body schema validation stops at the first validation failure rather than
 
 The current AJV instance uses its default JSON Schema dialect, `strict: false`, and `coerceTypes: false` for request bodies. Common type, required-field, enum, and object/array constraints are useful checks; this is not full OpenAPI 3.1/3.2 JSON Schema-dialect coverage. Optional formats and dialect-specific keywords are not promised. Test the schemas your API uses before relying on these checks.
 
-Dereferenced recursive request schemas are converted back to JSON Schema references for AJV compilation. Finite nested values retain their recursive constraints; both self-recursive and mutually recursive schemas are supported.
-
 Boolean query, header, and cookie values are an exception to the general parameter-schema limitation: the case-sensitive strings true and false are accepted, while malformed text returns 400 before the handler runs. With request validation disabled, malformed boolean text remains unchanged.
 
 Optional request bodies may be absent. A present body, including explicit JSON null, is validated against the selected schema. Required bodies reject absence. This rule also applies to Swagger 2 body parameters.
+
+## Recursive request bodies
+
+Dereferenced recursive request schemas are converted back to JSON Schema references for AJV compilation. Finite nested values retain their recursive constraints; both self-recursive and mutually recursive schemas are supported.
+
+Recursive schema normalization preserves boolean schemas, nested id resources, and property names that require URI-fragment encoding.
 
 ## Understand response checks
 
@@ -59,8 +63,6 @@ npx counterfact ./openapi.yaml api --no-validate-request --no-validate-response
 From code, pass `validateRequests: false` or `validateResponses: false`. These flags are independent of `$.x`, which widens TypeScript types but does not itself turn validation off.
 
 Without a specification there is no operation contract to validate against. See [CLI configuration](../api/cli.md) and [handler arguments](../api/handlers.md).
-
-Recursive schema normalization preserves boolean schemas, nested id resources, and property names that require URI-fragment encoding.
 
 Array query parameters using default form/explode serialization reach handlers as
 arrays even for one occurrence. Repeated occurrences retain their order. Optional

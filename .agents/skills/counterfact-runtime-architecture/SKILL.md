@@ -59,6 +59,12 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Run focused runtime tests first (for touched areas), e.g. `packages/runtime/test/server/dispatcher.test.ts`, `packages/runtime/test/server/module-loader.test.ts`, `packages/counterfact/test/app.test.ts`.
 - Manually sanity-check startup + runtime flow with `yarn go:example` when behavior changes.
 
+## Recursive request schemas
+
+- OpenAPI dereferencing can produce cyclic JavaScript schema graphs. Convert back edges to JSON Schema references before passing them to Ajv; keep recursive constraints and verify finite valid and invalid nested data.
+
+- Schema cycle references must respect nested $id resource scopes and URI-fragment encoding in addition to JSON Pointer escaping. Preserve boolean schemas before object caching and leave annotations unchanged.
+
 ## Explicit reset versus hot reload
 
 - Keep reset reconstruction distinct from hot reload's state-preserving merge.
@@ -78,10 +84,6 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   preserve one startup per group in declaration order across versioned runners.
 - Verify lifecycle changes with real HTTP mutation/restoration, same-listener
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
-
-- OpenAPI dereferencing can produce cyclic JavaScript schema graphs. Convert back edges to JSON Schema references before passing them to Ajv; keep recursive constraints and verify finite valid and invalid nested data.
-
-- Schema cycle references must respect nested $id resource scopes and URI-fragment encoding in addition to JSON Pointer escaping. Preserve boolean schemas before object caching and leave annotations unchanged.
 
 - Do not enable Ajv allErrors for untrusted request bodies. Stop body-error collection early and regression-test large invalid collections; a request byte limit does not bound the number of validation error objects.
 
