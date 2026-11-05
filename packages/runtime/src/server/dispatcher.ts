@@ -10,6 +10,7 @@ import type {
   CounterfactResponseObject,
   Registry,
 } from "./registry.js";
+import { normalizeArrayQueryParameters } from "./array-query-parameters.js";
 import { createResponseBuilder } from "./response-builder.js";
 import {
   isExplodedObjectQueryParam,
@@ -565,8 +566,8 @@ export class Dispatcher {
 
     // Reconstruct exploded object query parameters so that `$.query.<name>`
     // contains the assembled object instead of only the individual flat keys.
-    const processedQuery = collectExplodedObjectParams(
-      query,
+    const processedQuery = normalizeArrayQueryParameters(
+      collectExplodedObjectParams(query, operation?.parameters ?? []),
       operation?.parameters ?? [],
     );
 

@@ -51,3 +51,11 @@ npx counterfact ./openapi.yaml api --no-validate-request --no-validate-response
 From code, pass `validateRequests: false` or `validateResponses: false`. These flags are independent of `$.x`, which widens TypeScript types but does not itself turn validation off.
 
 Without a specification there is no operation contract to validate against. See [CLI configuration](../api/cli.md) and [handler arguments](../api/handlers.md).
+
+Array query parameters using default form/explode serialization reach handlers as
+arrays even for one occurrence. Repeated occurrences retain their order. Optional
+missing parameters remain absent, and nullable array schemas retain this behavior.
+Explicit form serialization with explode false splits commas; spaceDelimited and
+pipeDelimited split their declared separators. Default exploded arrays do not
+split commas. Declared primitive items receive number or boolean conversion for
+valid values; malformed text remains visible. Other styles are left unchanged.

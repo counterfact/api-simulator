@@ -78,3 +78,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
   preserve one startup per group in declaration order across versioned runners.
 - Verify lifecycle changes with real HTTP mutation/restoration, same-listener
   checks, async barriers, concurrent calls, failure recovery, and shutdown.
+
+- Normalize array query cardinality and primitive items from the declared schema and serialization style. Do not split commas for default exploded form arrays or invent values for absent optional parameters.
