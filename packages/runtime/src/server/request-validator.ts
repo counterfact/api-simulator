@@ -106,6 +106,42 @@ export function validateRequest(
   errors.push(...findMissingRequired(parameters, "header", request.headers));
   errors.push(...findMissingRequired(parameters, "cookie", request.cookie));
 
+  // Boolean wire values are case-sensitive. Never turn malformed text into false.
+  for (const parameter of parameters) {
+    if ((parameter.type ?? parameter.schema?.type) !== "boolean") continue;
+    const values =
+      parameter.in === "query"
+        ? request.query
+        : parameter.in === "header"
+          ? Object.fromEntries(
+              Object.entries(request.headers).map(([key, value]) => [
+                key.toLowerCase(),
+                value,
+              ]),
+            )
+          : parameter.in === "cookie"
+            ? request.cookie
+            : undefined;
+    const name =
+      parameter.in === "header" ? parameter.name.toLowerCase() : parameter.name;
+    const value =
+      values && Object.hasOwn(values, name) ? values[name] : undefined;
+    if (
+      value !== undefined &&
+      value !== true &&
+      value !== false &&
+      value !== "true" &&
+      value !== "false"
+    ) {
+      errors.push(
+        parameter.in +
+          " parameter '" +
+          parameter.name +
+          "' must be true or false",
+      );
+    }
+  }
+
   // Validate request body (OpenAPI 3.x requestBody)
   if (operation.requestBody?.content !== undefined) {
     const schema =
