@@ -1,5 +1,6 @@
 {
   "extends": ["config:recommended"],
+  "addLabels": ["renovate"],
   "ignorePaths": [
     "**/node_modules/**",
     "**/bower_components/**",
