@@ -266,3 +266,5 @@ It exposes:
 - [Find your workflow](../usage.md)
 
 When version prefixes overlap, Counterfact selects the first runner whose contract declares the requested operation and has its handler. Version-specific literal paths cannot shadow a wildcard in another selected contract. A method error reports the selected contract’s allowed methods.
+
+When specification watching is enabled, saving any version regenerates the complete API group. Shared handler types retain the other versions, and removing an operation removes that version from its handler type.
