@@ -21,8 +21,8 @@ void roundTrip;
 const missingName: Schemas["Pet"] = { id: 1, status: PetStatus.AVAILABLE };
 // @ts-expect-error A matching wire string is not the SDK's nominal enum.
 const rawString: Schemas["PetStatus"] = "available";
-// @ts-expect-error A missing or wrong model export must not turn into any.
 const badId: Schemas["Pet"] = {
+  // @ts-expect-error A missing or wrong model export must not turn into any.
   id: "1",
   name: "Milo",
   status: PetStatus.AVAILABLE,

@@ -7,8 +7,8 @@
     "generate:counterfact": "counterfact --config counterfact.yaml --generate",
     "generate": "npm run generate:models && npm run generate:counterfact",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run typecheck",
-    "check": "npm run generate && npm run verify",
+    "verify": "npm run generate && npm run typecheck",
+    "check": "npm run verify",
     "start": "counterfact --config counterfact.yaml --serve"
   },
   "devDependencies": {

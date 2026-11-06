@@ -16,6 +16,8 @@ npm run verify
 
 The application chooses the file location through the `@app/api-models` path in `tsconfig.json`. This is a project-local TypeScript alias, not an npm package. It gives imports in Counterfact's nested output a stable name. These generated imports are type-only, so there is no corresponding runtime alias to resolve. Your frontend typecheck must use the same mapping.
 
+This example pins TypeScript 5.9.3 to satisfy openapi-typescript 7.13.0's TypeScript 5 peer dependency. Its `module: "ESNext"` and `moduleResolution: "Bundler"` options match a frontend application's compiler setup. Use a TypeScript version supported by your generator and module options supported by that compiler. Counterfact can keep its own nested TypeScript dependency.
+
 The authored `api/routes/pets/{petId}.ts` and `api/routes/index.ts` handlers return the shared model from `src/pet.ts` through Counterfact's typed response builder. This checks both nested and root route types. Counterfact preserves those authored handlers when regenerating. Inline schemas still use Counterfact's own generation.
 
 To serve after generating, run `npx counterfact --config counterfact.yaml --serve --port 3100`. `GET /pets/42` returns `{"id":"42","name":"Milo","status":"available"}`; `GET /` uses the id `default`.

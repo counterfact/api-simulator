@@ -14,7 +14,8 @@ const executable = path.join(
 function run(command, args) {
   const result = spawnSync(command, args, { stdio: "inherit" });
   if (result.error) throw result.error;
-  if (result.status !== 0) process.exit(result.status ?? 1);
+  if (result.status !== 0)
+    throw new Error(`${command} failed with exit code ${result.status}`);
 }
 
 // A local, pinned .NET tool; no globally installed NSwag is assumed.

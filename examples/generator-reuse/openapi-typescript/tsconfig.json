@@ -5,10 +5,11 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "noEmit": true,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "paths": {
       "@app/api-models": ["./src/generated/schema.ts"]
-    }
+    },
+    "allowImportingTsExtensions": true
   },
   "include": ["src/**/*.ts", "api/**/*.ts", "typecheck.ts"],
   "exclude": ["api/.cache"]

@@ -179,8 +179,8 @@ async function verify(name, smoke) {
           port: 0, generate: { routes: false, types: false }, watch: { routes: false, types: false },
           startServer: true, startRepl: false,
         });
+        const running = await simulator.start();
         try {
-          await simulator.start();
           const status = simulator.status();
           const response = await fetch(\`http://127.0.0.1:\${status.address.port}${smoke.path}\`, {
             method: ${JSON.stringify(smoke.method)}, headers: { "content-type": "application/json" },
@@ -189,7 +189,7 @@ async function verify(name, smoke) {
           assert.equal(response.status, ${smoke.status});
           assert.deepEqual(await response.json(), ${JSON.stringify(smoke.expected ?? smoke.body)});
           console.log("Real Counterfact HTTP response matched the generated SDK model example.");
-        } finally { await simulator.stop(); }
+        } finally { await running.stop(); }
       `,
       );
       await run(process.execPath, ["smoke-counterfact.mjs"], $.path("project"));

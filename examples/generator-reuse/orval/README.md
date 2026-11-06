@@ -12,6 +12,10 @@ npm run check
 npm start
 ```
 
+`npm run verify` (also available as `npm run check`) generates the real Orval
+models, generates Counterfact's types, and then runs the compiler checks. It works
+from a clean copy without any generated files present.
+
 The `file:` dependencies select this checkout because the adapter is unreleased.
 For a standalone copy, install a Counterfact release containing `orvalTransform`
 and its matching `@counterfact/generator` instead. Node 22.22 or newer is required.

@@ -12,6 +12,6 @@
   "devDependencies": {
     "counterfact": "file:../../../packages/counterfact",
     "openapi-typescript": "7.13.0",
-    "typescript": "6.0.3"
+    "typescript": "5.9.3"
   }
 }
