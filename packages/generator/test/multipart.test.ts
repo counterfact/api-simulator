@@ -128,12 +128,14 @@ describe("multipart request types", () => {
           return $.response.status(204).empty();
         };
         export const json: Routes["/json"]["POST"] = ($) => {
+          if ($.body === undefined) return $.response.status(204).empty();
           const original: Uint8Array | string = $.body.files[0]!;
           // @ts-expect-error JSON binary fields have no multipart metadata
           const filename = $.body.files[0]!.filename;
           return $.response.status(204).empty();
         };
         export const form: Routes["/form"]["POST"] = ($) => {
+          if ($.body === undefined) return $.response.status(204).empty();
           const name: string = $.body.name;
           return $.response.status(204).empty();
         };

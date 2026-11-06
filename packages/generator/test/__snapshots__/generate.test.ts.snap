@@ -880,7 +880,7 @@ export type HTTP_POST = (
     path: never;
     headers: HTTP_POST_Headers;
     cookie: never;
-    body: Order;
+    body: Order | undefined;
     context: Context;
     response: ResponseBuilderFactory<{
       200: {
@@ -1064,7 +1064,7 @@ export type HTTP_POST = (
     path: never;
     headers: HTTP_POST_Headers;
     cookie: never;
-    body: User;
+    body: User | undefined;
     context: Context;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {
@@ -1124,7 +1124,7 @@ export type HTTP_POST = (
     path: never;
     headers: HTTP_POST_Headers;
     cookie: never;
-    body: Array<User>;
+    body: Array<User> | undefined;
     context: Context;
     response: ResponseBuilderFactory<
       {
@@ -1366,7 +1366,7 @@ export type HTTP_PUT = (
     path: HTTP_PUT_Path;
     headers: HTTP_PUT_Headers;
     cookie: never;
-    body: User;
+    body: User | undefined;
     context: Context;
     response: ResponseBuilderFactory<{
       [statusCode in HttpStatusCode]: {

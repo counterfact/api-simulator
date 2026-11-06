@@ -17,6 +17,49 @@ function acceptsBody(acceptsHtml: boolean): string {
 }
 
 describe("a dispatcher", () => {
+  it.each([false, undefined])(
+    "passes an absent optional JSON body to the handler (required=%s)",
+    async (required) => {
+      const registry = new Registry();
+      let handlerCalls = 0;
+      const handler = ({ body }) => {
+        handlerCalls += 1;
+        expect(body).toBeUndefined();
+        return { status: 204 };
+      };
+      registry.add("/items", { PATCH: handler });
+      const dispatcher = new Dispatcher(registry, new ContextRegistry(), {
+        paths: {
+          "/items": {
+            patch: {
+              requestBody: {
+                ...(required === undefined ? {} : { required }),
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: { name: { type: "string" } },
+                    },
+                  },
+                },
+              },
+              responses: { 204: { description: "Empty" } },
+            },
+          },
+        },
+      });
+      const response = await dispatcher.request({
+        method: "PATCH",
+        path: "/items",
+        headers: {},
+        query: {},
+        req: {},
+      });
+      expect(response.status).toBe(204);
+      expect(handlerCalls).toBe(1);
+    },
+  );
+
   it("dispatches a response with headers and cookies before status selection", async () => {
     const registry = new Registry();
     registry.add("/created", {

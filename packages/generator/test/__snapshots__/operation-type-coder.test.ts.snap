@@ -209,7 +209,7 @@ exports[`an OperationTypeCoder generates a complex post operation 1`] = `
     path: HTTP_GET_Path;
     headers: HTTP_GET_Headers;
     cookie: never;
-    body: Type;
+    body: Type | undefined;
     context: ExternalType;
     response: ResponseBuilderFactory<
       {

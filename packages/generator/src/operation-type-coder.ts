@@ -381,17 +381,14 @@ export class OperationTypeCoder extends TypeCoder {
     const bodyTypes: ts.TypeNode[] = legacyBody
       ? [new SchemaTypeCoder(legacyBody, this.version).write(script)]
       : [];
+    const requestBody = this.requirement.get("requestBody");
     const seenBodySchemas = new Set<string>();
     for (const mediaType of [
       "application/json",
       "application/x-www-form-urlencoded",
       "multipart/form-data",
     ]) {
-      const schema = this.requirement
-        .get("requestBody")
-        ?.get("content")
-        ?.get(mediaType)
-        ?.get("schema");
+      const schema = requestBody?.get("content")?.get(mediaType)?.get("schema");
       if (schema) {
         const Coder =
           mediaType === "multipart/form-data"
@@ -403,6 +400,15 @@ export class OperationTypeCoder extends TypeCoder {
           bodyTypes.push(coder.write(script));
         }
       }
+    }
+    if (
+      requestBody &&
+      bodyTypes.length > 0 &&
+      requestBody.get("required")?.data !== true
+    ) {
+      bodyTypes.push(
+        ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
+      );
     }
     const bodyType =
       bodyTypes.length === 0 ? neverType() : unionType(bodyTypes);
