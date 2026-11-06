@@ -138,9 +138,7 @@ function castParameters(
   parameters: { [key: string]: string | number | boolean } = {},
   parameterTypes: Map<string, string> = new Map(),
   caseInsensitive = false,
-) {
-  const copy: { [key: string]: boolean | number | string } = {};
-
+): Record<string, boolean | number | string> {
   const types = caseInsensitive
     ? new Map(
         Array.from(parameterTypes, ([key, value]) => [
@@ -150,12 +148,12 @@ function castParameters(
       )
     : parameterTypes;
 
-  Object.entries(parameters).forEach(([key, value]) => {
-    const lookupKey = caseInsensitive ? key.toLowerCase() : key;
-    copy[key] = castParameter(value, types.get(lookupKey) ?? "string");
-  });
-
-  return copy;
+  return Object.fromEntries(
+    Object.entries(parameters).map(([key, value]) => {
+      const lookupKey = caseInsensitive ? key.toLowerCase() : key;
+      return [key, castParameter(value, types.get(lookupKey) ?? "string")];
+    }),
+  );
 }
 
 /**
@@ -239,6 +237,7 @@ export class Registry {
     }
 
     return (
+      // eslint-disable-next-line security/detect-object-injection -- Route handler dispatch intentionally reads dynamic method exports from locally authored modules.
       module[method] ??
       module[method.toUpperCase()] ??
       module[method.toLowerCase()]

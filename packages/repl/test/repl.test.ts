@@ -101,10 +101,12 @@ class ReplHarness {
   }
 
   public call(name: string, options: string) {
+    // eslint-disable-next-line security/detect-object-injection -- The test harness invokes commands registered by the local REPL using literal command names supplied by tests.
     this.server.commands[name]?.action.call(this.mock, options);
   }
 
   public async callAsync(name: string, options: string): Promise<void> {
+    // eslint-disable-next-line security/detect-object-injection -- The test harness invokes commands registered by the local REPL using literal command names supplied by tests.
     await this.server.commands[name]?.action.call(this.mock, options);
   }
 
@@ -1254,33 +1256,36 @@ describe("REPL", () => {
       expect(nestedCompletions).toEqual(["pets/orders/pending"]);
     });
 
-    it("returns empty completions for unknown groups in multi-runner mode", async () => {
-      const completer = createCompleter(
-        new Registry(),
-        undefined,
-        undefined,
-        undefined,
-        {
-          billing: new ScenarioRegistry(),
-          inventory: new ScenarioRegistry(),
-        },
-      );
+    it.each(["payments", "constructor", "__proto__", "toString"])(
+      "returns empty completions for unknown group %s in multi-runner mode",
+      async (group) => {
+        const completer = createCompleter(
+          new Registry(),
+          undefined,
+          undefined,
+          undefined,
+          {
+            billing: new ScenarioRegistry(),
+            inventory: new ScenarioRegistry(),
+          },
+        );
 
-      const [completionsWithSpace, prefixWithSpace] = await callCompleter(
-        completer,
-        ".scenario payments ",
-      );
+        const [completionsWithSpace, prefixWithSpace] = await callCompleter(
+          completer,
+          `.scenario ${group} `,
+        );
 
-      expect(prefixWithSpace).toBe("");
-      expect(completionsWithSpace).toEqual([]);
+        expect(prefixWithSpace).toBe("");
+        expect(completionsWithSpace).toEqual([]);
 
-      const [completions, prefix] = await callCompleter(
-        completer,
-        ".scenario payments set",
-      );
+        const [completions, prefix] = await callCompleter(
+          completer,
+          `.scenario ${group} set`,
+        );
 
-      expect(prefix).toBe("set");
-      expect(completions).toEqual([]);
-    });
+        expect(prefix).toBe("set");
+        expect(completions).toEqual([]);
+      },
+    );
   });
 });

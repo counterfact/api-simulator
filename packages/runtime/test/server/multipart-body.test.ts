@@ -175,13 +175,13 @@ describe("multipart parsing and dispatch", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it.each([true, false])(
+  it.each([MULTIPART_BODY_LIMIT + 1, undefined])(
     "enforces upload limits with declared length: %s",
-    async (declared) => {
+    async (declaredLength) => {
       const ctx = context(
         [Buffer.alloc(MULTIPART_BODY_LIMIT), Buffer.from("x")],
         "multipart/form-data; boundary=test",
-        declared ? MULTIPART_BODY_LIMIT + 1 : undefined,
+        declaredLength,
       );
       const next = jest.fn(async () => {});
       await expect(multipartBodyParser()(ctx, next)).rejects.toMatchObject({

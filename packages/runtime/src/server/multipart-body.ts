@@ -76,6 +76,7 @@ export function normalizeMultipartBody(
         name,
         normalizeMultipartBody(
           value,
+          // eslint-disable-next-line security/detect-object-injection -- The own-property check limits this lookup to declared property schemas.
           Object.hasOwn(properties, name) ? properties[name] : undefined,
         ),
       ]),
@@ -128,8 +129,10 @@ export function multipartValidationSchema(schema: unknown): unknown {
     "definitions",
     "dependentSchemas",
   ]) {
+    // eslint-disable-next-line security/detect-object-injection -- keyword comes from the fixed JSON Schema keyword list in this loop.
     const children = asSchema(definition[keyword]);
     if (children)
+      // eslint-disable-next-line security/detect-object-injection -- keyword comes from the fixed JSON Schema keyword list in this loop.
       result[keyword] = Object.fromEntries(
         Object.entries(children).map(([name, child]) => [
           name,
@@ -150,8 +153,10 @@ export function multipartValidationSchema(schema: unknown): unknown {
     "then",
     "else",
   ]) {
+    // eslint-disable-next-line security/detect-object-injection -- keyword comes from the fixed JSON Schema keyword list in this loop.
     const child = definition[keyword];
     if (child !== undefined)
+      // eslint-disable-next-line security/detect-object-injection -- keyword comes from the fixed JSON Schema keyword list in this loop.
       result[keyword] = Array.isArray(child)
         ? child.map(multipartValidationSchema)
         : multipartValidationSchema(child);

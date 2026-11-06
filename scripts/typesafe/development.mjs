@@ -63,6 +63,7 @@ export function commonGitDirectory(cwd) {
 }
 
 export async function loadKey(envFile) {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- This opt-in local CLI intentionally reads the user-selected request/credential file; credential permissions are checked by loadKey.
   const metadata = await stat(envFile);
   requireValue(
     metadata.isFile() &&
@@ -70,6 +71,7 @@ export async function loadKey(envFile) {
     "Credential file must be a regular owner-only file (chmod 600).",
   );
   // Parse without sourcing shell code or exporting unrelated variables.
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- This opt-in local CLI intentionally reads the user-selected request/credential file; credential permissions are checked by loadKey.
   const key = parseEnv(await readFile(envFile, "utf8")).TYPESAFE_API_KEY;
   requireValue(Boolean(key?.trim()), "Credential file has no TypeSafe key.");
   return key;
@@ -101,6 +103,7 @@ export async function runRequest({ request, getKey, fetchImpl = fetch }) {
     );
     const answers = {};
     for (const name of Object.keys(request.questions)) {
+      // eslint-disable-next-line security/detect-object-injection -- Question names were validated by planRequest; the response value is type/range-checked before being copied.
       const answer = result.answers?.[name];
       requireValue(
         answer?.type === "noul" &&
@@ -109,6 +112,7 @@ export async function runRequest({ request, getKey, fetchImpl = fetch }) {
           answer.noul <= 1,
         "Invalid TypeSafe Noul response.",
       );
+      // eslint-disable-next-line security/detect-object-injection -- Question names were validated by planRequest; the response value is type/range-checked before being copied.
       answers[name] = { type: "noul", noul: answer.noul };
     }
     // Select fields; never echo arbitrary provider text/headers or payloads.
@@ -140,6 +144,7 @@ async function main() {
     values.request,
     "Usage: --request file.json [--send] [--credential-file path]",
   );
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- This opt-in local CLI intentionally reads the user-selected request/credential file; credential permissions are checked by loadKey.
   const request = JSON.parse(await readFile(values.request, "utf8"));
   const plan = planRequest(request);
   if (!values.send) {
