@@ -1,6 +1,8 @@
 // Stryker disable all
 
 import { once } from "node:events";
+import { randomUUID } from "node:crypto";
+import nodePath from "node:path";
 import fs from "node:fs/promises";
 /* eslint-disable security/detect-non-literal-fs-filename -- transpiler consumes watched source files and writes paired outputs under configured directories. */
 
@@ -28,9 +30,9 @@ const debug = createDebug("counterfact:server:transpiler");
  * after a source file is removed, and `"error"` on write or compilation errors.
  */
 export class Transpiler extends EventTarget {
-  private readonly sourcePath: string;
+  private sourcePath: string;
 
-  private readonly destinationPath: string;
+  private destinationPath: string;
 
   private readonly moduleKind: string;
 
@@ -47,6 +49,22 @@ export class Transpiler extends EventTarget {
     this.moduleKind = moduleKind;
   }
 
+  private async canonicalPath(path: string): Promise<string> {
+    try {
+      return toForwardSlashPath(await fs.realpath(path));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      const parent = nodePath.dirname(path);
+      if (parent === path) throw error;
+      return toForwardSlashPath(
+        nodePath.join(
+          await this.canonicalPath(parent),
+          nodePath.basename(path),
+        ),
+      );
+    }
+  }
+
   private destinationFor(sourcePath: string): string {
     const commonjs =
       /\.(?:cjs|cts)$/u.test(sourcePath) ||
@@ -57,8 +75,11 @@ export class Transpiler extends EventTarget {
         ? ".mjs"
         : ".js";
     return toForwardSlashPath(
-      sourcePath
-        .replace(this.sourcePath, this.destinationPath)
+      nodePath
+        .join(
+          this.destinationPath,
+          nodePath.relative(this.sourcePath, sourcePath),
+        )
         .replace(/\.[cm]?[jt]s$/u, extension),
     );
   }
@@ -71,6 +92,8 @@ export class Transpiler extends EventTarget {
   public async watch(): Promise<void> {
     debug("transpiler: watch");
     await fs.mkdir(this.destinationPath, { recursive: true });
+    this.sourcePath = await this.canonicalPath(this.sourcePath);
+    this.destinationPath = await this.canonicalPath(this.destinationPath);
     this.watcher = chokidarWatch(this.sourcePath, {
       ...CHOKIDAR_OPTIONS,
       ignored: `${this.sourcePath}/js`,
@@ -184,9 +207,20 @@ export class Transpiler extends EventTarget {
     const resultWithTransformedFileExtensions =
       convertFileExtensionsToCjs(result);
 
+    const temporaryPath = `${destinationPath}.${randomUUID()}.tmp`;
     try {
-      await fs.writeFile(destinationPath, resultWithTransformedFileExtensions);
+      // Publish complete files even if duplicate watch events overlap. Readers
+      // must never observe the truncate/write window of an in-place update.
+      await fs.writeFile(temporaryPath, resultWithTransformedFileExtensions);
+      await fs.rename(temporaryPath, destinationPath);
     } catch (error) {
+      await fs.rm(temporaryPath, { force: true }).catch((cleanup: unknown) => {
+        debug(
+          "could not remove temporary output %s: %o",
+          temporaryPath,
+          cleanup,
+        );
+      });
       debug(
         "error writing transpiled output to %s: %o",
         destinationPath,

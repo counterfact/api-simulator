@@ -256,7 +256,15 @@ test("the compiled fallback loads explicit CommonJS routes, middleware, and loca
     );
     t.after(() => transpiler.stopWatching());
     await transpiler.watch();
-    assert.ok((await $.read("cache/probe.cjs")).includes("exports.GET"));
+    const cached = await $.read("cache/probe.cjs");
+    assert.ok(
+      cached.includes("exports.GET"),
+      `Incomplete cache entry: ${JSON.stringify(cached)}`,
+    );
+    assert.ok(
+      (await $.read("routes.ts-files/probe.cts")).includes("export const GET"),
+    );
+    await assert.rejects($.read("routes.ts-files/probe.cjs"), /ENOENT/u);
     assert.ok(
       (await $.read("cache/_.middleware.cjs")).includes("exports.middleware"),
     );
