@@ -33,7 +33,7 @@ export default {
       ),
     )]: { branches: 90 },
     global: {
-      branches: 80,
+      branches: 90,
       functions: 80,
       lines: 77,
       statements: 77,

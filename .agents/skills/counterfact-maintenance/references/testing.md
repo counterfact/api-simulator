@@ -3,8 +3,8 @@
 Paths and commands below are relative to the repository root.
 
 - Use `yarn test` for routine unit tests and `yarn test:coverage` to collect
-  coverage and enforce the existing Jest thresholds plus a 90% branch floor for
-  the native module/application boundary. Both commands first build workspaces
+  coverage and enforce a 90% branch floor in both Jest and the native
+  module/application boundary. Other existing Jest thresholds are retained. Both commands first build workspaces
   and run node:test integration tests, then run Jest (two workers by default).
   Extra Jest flags are forwarded to the final Jest command. CI must use the
   coverage command.
