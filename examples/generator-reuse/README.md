@@ -49,7 +49,7 @@ release and keeps its existing generator and local generated-files workflow.
 You can also open one folder in this checkout and follow its individual commands.
 
 The CI matrix runs these same checks on Linux with Node 24, Java 21 for OpenAPI
-Generator, and .NET 8 for NSwag. Compiler errors, missing exports, and HTTP failures
+Generator, and .NET 10 for NSwag. Compiler errors, missing exports, and HTTP failures
 fail the proof rather than silently falling back to handwritten models.
 
 ## What these examples establish

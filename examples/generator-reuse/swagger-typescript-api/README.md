@@ -8,7 +8,7 @@ When testing packed builds, replace that dependency with the branch's packed Cou
 Run `npm install`, then `npm run verify`.
 The command runs swagger-typescript-api 13.13.0, generates Counterfact types through the YAML configuration, and compiles both actual outputs plus the authored handler.
 TypeScript is pinned to 5.9.3 alongside the third-party generator.
-Run `npm start`, then request `http://localhost:3215/pets`.
+Run `npm start`, then request `http://localhost:3100/pets`.
 The response is `[{"id":1,"name":"Ada","status":"available"}]`.
 
 `scripts/generate-models.mjs` generates a normal modular fetch client and its models, including a nominal `PetStatus` enum, from `openapi.yaml`.

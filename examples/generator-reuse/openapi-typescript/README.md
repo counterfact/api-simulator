@@ -20,7 +20,7 @@ This example pins TypeScript 5.9.3 to satisfy openapi-typescript 7.13.0's TypeSc
 
 The authored `api/routes/pets/{petId}.ts` and `api/routes/index.ts` handlers return the shared model from `src/pet.ts` through Counterfact's typed response builder. This checks both nested and root route types. Counterfact preserves those authored handlers when regenerating. Inline schemas still use Counterfact's own generation.
 
-To serve after generating, run `npx counterfact --config counterfact.yaml --serve --port 3100`. `GET /pets/42` returns `{"id":"42","name":"Milo","status":"available"}`; `GET /` uses the id `default`.
+To serve after generating, run `npm start`. `GET /pets/42` returns `{"id":"42","name":"Milo","status":"available"}`; `GET /` uses the id `default`.
 
 `typecheck.ts` compares the actual upstream and Counterfact model types, checks assignments in both directions, and includes negative controls for invalid enums, missing required fields, and recursive models. `verify.mjs` separately checks the generated upstream export and Counterfact's imported indexed alias, so accidentally generating a structurally similar local interface does not pass as reuse.
 

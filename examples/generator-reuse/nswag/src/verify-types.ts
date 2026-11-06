@@ -23,9 +23,11 @@ void plainObject;
 
 // This function is compiled but is never imported by the running application.
 const invalidResponse: HTTP_GET = ($) => {
-  // @ts-expect-error The response requires the actual NSwag DTO class shape.
-  return $.response
-    .status(200)
-    .json({ id: 1, name: "Buddy", status: pet.status });
+  return (
+    $.response
+      .status(200)
+      // @ts-expect-error The response requires the actual NSwag DTO class shape.
+      .json({ id: 1, name: "Buddy", status: pet.status })
+  );
 };
 void invalidResponse;

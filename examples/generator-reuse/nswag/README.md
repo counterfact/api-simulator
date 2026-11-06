@@ -6,7 +6,7 @@ model definition, or model registry. Both generators read `openapi.json`.
 
 ## Run
 
-Prerequisites: Node 22.22 or later, npm, and the .NET 8 SDK/runtime. The pinned
+Prerequisites: Node 22.22 or later, npm, and the .NET 10 SDK/runtime. The pinned
 NSwag.ConsoleCore tool is 14.6.3 and TypeScript is 5.9.3. The script installs
 NSwag locally under `.tools`, so the first run needs NuGet access. No global
 NSwag install is required.
@@ -33,7 +33,7 @@ the verification itself.
 To serve the authored handlers after generation:
 
 ```sh
-npx counterfact --config counterfact.yaml --serve --no-update-check
+npm start
 curl http://localhost:3100/pets
 curl http://localhost:3100/pets/1
 ```
@@ -83,16 +83,6 @@ the DTO methods is rejected and that a raw string cannot replace the nominal
 `PetStatus` enum. An unused handler in the compiler-only file checks that
 responses reject a plain object too. The live handlers only return valid DTOs.
 `Pet.fromJS` accepts untyped JSON; it is hydration, not input validation.
-
-## Verification evidence
-
-Counterfact generation ran successfully against this spec and emitted direct
-aliases to `Pet` and `PetStatus`. The local machine has only .NET 10, so
-NSwag's .NET 8 tool, the final compiler checks, and the HTTP requests have
-not been run locally. The integration runner must run `npm run verify` with
-the actual third-party generator and smoke-test both endpoints before this
-example is described as passing end to end. No upstream output is checked in
-or hand-written as a substitute for generation.
 
 The `start` script uses tsx to run local TypeScript helpers and generated SDK
 values alongside Counterfact. This avoids Counterfact’s fallback CommonJS
