@@ -309,3 +309,279 @@ it("snapshots RegExp internals without reading overridden source or flags", () =
   expect(context.pattern.lastIndex).toBe(7);
   expect(metadataReads).toBe(0);
 });
+
+it("preserves generation-stable nested classes and their own methods", () => {
+  const declaration = () => {
+    class Cart {
+      public items: string[] = [];
+      public total = () => this.items.length;
+    }
+    return { cart: new Cart(), action: () => "current" };
+  };
+  const registry = new ContextRegistry();
+  const first = declaration();
+  registry.update("/", first);
+  const cart = first.cart;
+  const action = first.action;
+  cart.items.push("saved");
+  const next = declaration();
+  registry.update("/", next);
+  registry.update("/", declaration());
+  expect(registry.find("/").cart).toBe(cart);
+  expect(cart.total()).toBe(1);
+  expect(registry.find("/").action).not.toBe(action);
+});
+
+it("preserves class instances inside cyclic arrays, maps and sets", () => {
+  const declaration = () => {
+    class Cart {
+      public items: string[] = [];
+      public self: Cart = this;
+    }
+    const cart = new Cart();
+    return {
+      graph: {
+        array: [cart],
+        map: new Map([[cart, cart]]),
+        set: new Set([cart]),
+      },
+    };
+  };
+  const registry = new ContextRegistry();
+  const first = declaration();
+  registry.update("/", first);
+  const graph = first.graph;
+  graph.array[0]!.items.push("saved");
+  registry.update("/", declaration());
+  expect(registry.find("/").graph).toBe(graph);
+  expect(graph.array[0]!.items).toEqual(["saved"]);
+});
+
+it("still applies changed class initializer data, class types and declarations", () => {
+  class Cart {
+    public constructor(public currency: string) {}
+  }
+  class OtherCart {
+    public constructor(public currency: string) {}
+  }
+  const registry = new ContextRegistry();
+  registry.update("/", { cart: new Cart("USD") });
+  const changed = new Cart("EUR");
+  registry.update("/", { cart: changed });
+  expect(registry.find("/").cart).toBe(changed);
+  const other = new OtherCart("EUR");
+  registry.update("/", { cart: other });
+  expect(registry.find("/").cart).toBe(other);
+  const plain = { currency: "EUR" };
+  registry.update("/", { cart: plain });
+  expect(registry.find("/").cart).toBe(plain);
+});
+
+it("keeps plain callbacks and bound class callables identity-sensitive", () => {
+  const registry = new ContextRegistry();
+  class Cart {
+    public callback: () => number;
+    public constructor(value: number) {
+      this.callback = (() => value).bind(this);
+    }
+  }
+  const callback = () => 1;
+  registry.update("/", { cart: new Cart(1), plain: { callback } });
+  const updated = { cart: new Cart(2), plain: { callback: () => 2 } };
+  registry.update("/", updated);
+  expect(registry.find("/").cart).toBe(updated.cart);
+  expect(registry.find("/").plain).toBe(updated.plain);
+});
+
+it("compares symbols and decorated native/array declarations without losing own keys", () => {
+  const key = Symbol("declaration");
+  const declaration = (value: number) => {
+    const data = Object.create(null) as Record<string | symbol, unknown>;
+    Object.defineProperty(data, "__proto__", { enumerable: true, value });
+    data[key] = value;
+    return {
+      data,
+      array: Object.assign([1], { extra: value }),
+      map: Object.assign(new Map([["key", 1]]), { extra: value }),
+      date: Object.assign(new Date(0), { extra: value }),
+    };
+  };
+  const registry = new ContextRegistry();
+  registry.update("/", declaration(1));
+  const changed = declaration(2);
+  registry.update("/", changed);
+  expect(registry.find("/").data).toBe(changed.data);
+  expect(registry.find("/").array).toBe(changed.array);
+  expect(registry.find("/").map).toBe(changed.map);
+  expect(registry.find("/").date).toBe(changed.date);
+  registry.update("/", declaration(2));
+  expect(registry.find("/").data).toBe(changed.data);
+});
+
+it("preserves opaque prototypes and native-subclass declaration data", () => {
+  const prototype = { inherited: true };
+  const create = () => {
+    class Values extends Uint8Array {}
+    const opaque = Object.assign(Object.create(prototype), { count: 0 });
+    return { opaque, values: new Values([1, 2]) };
+  };
+  const registry = new ContextRegistry();
+  const first = create();
+  registry.update("/", first);
+  const { opaque, values } = first;
+  opaque.count = 7;
+  values[0] = 9;
+  registry.update("/", create());
+  expect(registry.find("/").opaque).toBe(opaque);
+  expect(registry.find("/").values).toBe(values);
+});
+
+it.each([
+  ["Error", () => new Error("one"), () => new Error("two")],
+  ["boxed primitive", () => Object(1), () => Object(2)],
+  ["Promise", () => Promise.resolve(1), () => Promise.resolve(2)],
+  ["WeakMap", () => new WeakMap(), () => new WeakMap()],
+])(
+  "keeps opaque %s initializer identity instead of discarding internal slots",
+  (_name, firstValue, nextValue) => {
+    const registry = new ContextRegistry();
+    const first = firstValue();
+    registry.update("/", { value: first });
+    registry.update("/", { value: first });
+    expect(registry.find("/").value).toBe(first);
+    const next = nextValue();
+    registry.update("/", { value: next });
+    expect(registry.find("/").value).toBe(next);
+  },
+);
+
+it("detects a changed native superclass with otherwise identical class source", () => {
+  const create = (Base: typeof Error) => {
+    class Value extends Base {}
+    return new Value("message");
+  };
+  const registry = new ContextRegistry();
+  registry.update("/", { value: create(Error) });
+  const next = create(TypeError);
+  registry.update("/", { value: next });
+  expect(registry.find("/").value).toBe(next);
+});
+
+it("compares enumerable data and cycles attached to class-owned callables", () => {
+  class Cart {
+    public callback;
+    public constructor(value: number) {
+      this.callback = Object.assign(() => "same", { data: value });
+      Object.defineProperty(this.callback, "self", {
+        enumerable: true,
+        value: this.callback,
+      });
+    }
+  }
+  const registry = new ContextRegistry();
+  const first = new Cart(1);
+  registry.update("/", { cart: first });
+  registry.update("/", { cart: new Cart(1) });
+  expect(registry.find("/").cart).toBe(first);
+  const next = new Cart(2);
+  registry.update("/", { cart: next });
+  expect(registry.find("/").cart).toBe(next);
+});
+
+it("applies inherited enumerable context initializer changes after live overrides", () => {
+  const create = (value: number) => {
+    class InheritedContext {
+      [key: string]: unknown;
+    }
+    Object.defineProperty(InheritedContext.prototype, "value", {
+      enumerable: true,
+      writable: true,
+      value,
+    });
+    return new InheritedContext();
+  };
+  const registry = new ContextRegistry();
+  registry.update("/", create(1));
+  registry.find("/").value = 99;
+  registry.update("/", create(2));
+  expect(registry.find("/").value).toBe(2);
+});
+
+it("does not mistake native-code text in user declarations for native functions", () => {
+  const create = () => {
+    class Cart {
+      public items: string[] = [];
+      public label = "[native code]";
+      public describe = () => "[native code]";
+    }
+    return new Cart();
+  };
+  const registry = new ContextRegistry();
+  const cart = create();
+  registry.update("/", { cart });
+  cart.items.push("saved");
+  registry.update("/", { cart: create() });
+  expect(registry.find("/").cart).toBe(cart);
+  expect(cart.items).toEqual(["saved"]);
+});
+
+it("preserves tagged user classes without invoking nonenumerable tag getters", () => {
+  const create = () => {
+    class Cart {
+      public items: string[] = [];
+      public [Symbol.toStringTag] = "Cart";
+    }
+    return new Cart();
+  };
+  const registry = new ContextRegistry();
+  const cart = create();
+  const plain = { value: 1 };
+  Object.defineProperty(plain, Symbol.toStringTag, {
+    get() {
+      throw new Error("must not inspect tag");
+    },
+  });
+  registry.update("/", { cart, plain });
+  cart.items.push("saved");
+  registry.update("/", { cart: create(), plain: { value: 1 } });
+  expect(registry.find("/").cart).toBe(cart);
+  expect(cart.items).toEqual(["saved"]);
+});
+
+it("does not leak method source comparison into aliased direct and plain callbacks", () => {
+  const create = (value: number) => {
+    const callback = () => value;
+    class Cart {
+      public callback = callback;
+      public items: string[] = [];
+    }
+    return { cart: new Cart(), action: callback, plain: { callback } };
+  };
+  const registry = new ContextRegistry();
+  const first = create(1);
+  const cart = first.cart;
+  registry.update("/", first);
+  cart.items.push("saved");
+  const next = create(2);
+  registry.update("/", next);
+  expect(registry.find("/").cart).toBe(cart);
+  expect(registry.find("/").action).toBe(next.action);
+  expect((registry.find("/").plain as typeof next.plain).callback()).toBe(2);
+});
+
+it("does not drop hidden state of JavaScript-implemented Node globals", () => {
+  const registry = new ContextRegistry();
+  registry.update("/", { url: new URL("https://example.com/one") });
+  const url = new URL("https://example.com/two");
+  registry.update("/", { url });
+  expect(registry.find("/").url).toBe(url);
+});
+
+it("refreshes hidden queuing-strategy state", () => {
+  for (const Strategy of [CountQueuingStrategy, ByteLengthQueuingStrategy]) {
+    const registry = new ContextRegistry();
+    registry.add("/", { value: new Strategy({ highWaterMark: 1 }) });
+    registry.update("/", { value: new Strategy({ highWaterMark: 2 }) });
+    expect((registry.find("/").value as QueuingStrategy).highWaterMark).toBe(2);
+  }
+});

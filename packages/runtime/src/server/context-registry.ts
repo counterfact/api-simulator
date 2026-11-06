@@ -23,74 +23,182 @@ export function parentPath(path: string): string {
   return String(path.split("/").slice(0, -1).join("/")) || "/";
 }
 
+const DECLARATION_CLASS = Symbol("declaration class");
+const DECLARATION_METHOD = Symbol("declaration method");
+const DECLARATION_OPAQUE = Symbol("opaque declaration");
+const opaqueIdentities = new WeakMap<object, symbol>();
+
+function isNativeSource(source: string): boolean {
+  return /^function\b[^{]*\{\s*\[native code\]\s*\}$/u.test(source);
+}
+
+function hasOpaqueSlots(value: object): boolean {
+  let prototype = Object.getPrototypeOf(value) as object | null;
+  while (prototype !== null && prototype !== Object.prototype) {
+    const constructor = Object.getOwnPropertyDescriptor(
+      prototype,
+      "constructor",
+    )?.value as unknown;
+    if (typeof constructor === "function") {
+      const source = Function.prototype.toString.call(constructor);
+      if (
+        isNativeSource(source) &&
+        source !== Function.prototype.toString.call(Object)
+      )
+        return true;
+      // JavaScript-implemented platform globals can also own hidden slots.
+      const name = Object.getOwnPropertyDescriptor(constructor, "name")
+        ?.value as unknown;
+      if (
+        typeof name === "string" &&
+        Object.getOwnPropertyDescriptor(globalThis, name)?.value === constructor
+      )
+        return true;
+    }
+    prototype = Object.getPrototypeOf(prototype) as object | null;
+  }
+  return false;
+}
+
+/** Describe user constructors without relying on generation-specific identity. */
+function classDeclaration(
+  value: object,
+): { constructors: string[]; nativePrototype: object | null } | undefined {
+  const declarations: string[] = [];
+  let prototype = Object.getPrototypeOf(value) as object | null;
+  while (prototype !== null && prototype !== Object.prototype) {
+    const constructor = Object.getOwnPropertyDescriptor(
+      prototype,
+      "constructor",
+    )?.value as unknown;
+    if (typeof constructor !== "function") return undefined;
+    const source = Function.prototype.toString.call(constructor);
+    if (isNativeSource(source)) {
+      if (declarations.length > 0) declarations.push(source);
+      break;
+    }
+    declarations.push(source);
+    prototype = Object.getPrototypeOf(prototype) as object | null;
+  }
+  return declarations.length === 0
+    ? undefined
+    : { constructors: declarations, nativePrototype: prototype };
+}
+
 /**
- * Deep-clones an object for caching purposes.
- * Plain objects and class instances have their own enumerable properties
- * recursively cloned (preserving the prototype chain). Functions are copied
- * by reference since they are not structurally comparable data.
+ * Snapshot declaration data independently of local ESM generation prototypes.
+ * Class instances retain a constructor-source descriptor, so switching classes
+ * or changing their declarations is still observable. Supported native values
+ * retain real slots, enumerable properties, symbols and cycles. Other opaque
+ * values compare by identity instead of discarding their internal state.
+ *
+ * Own methods of nested class instances are compared by source, like prototype
+ * methods. Retained instances are not migrated to new closure captures. Direct
+ * context functions and opaque/bound functions remain identity-sensitive.
  */
 function cloneForCache(
   value: unknown,
-  seen = new WeakMap<object, object>(),
+  seen = new Map<object, object>(),
+  contextRoot = false,
+  classMethod = false,
 ): unknown {
-  if (value === null || typeof value === "function") {
+  if (
+    value === null ||
+    (typeof value !== "object" && typeof value !== "function")
+  )
     return value;
-  }
-
-  if (typeof value !== "object") {
-    return value;
-  }
-
+  // Method snapshots have a private memo table. Their source normalization must
+  // never leak into identity-sensitive direct/plain callbacks through aliases.
+  if (typeof value === "function" && !classMethod)
+    return seen.get(value) ?? value;
   if (seen.has(value)) return seen.get(value);
 
-  // Native collections need real internal slots. Object.create(Map.prototype)
-  // is not a Map snapshot and makes an unchanged initializer appear changed.
-  if (value instanceof Map) {
-    const clone = new Map<unknown, unknown>();
+  let methodSource: string | undefined;
+  if (typeof value === "function") {
+    methodSource = Function.prototype.toString.call(value);
+    if (isNativeSource(methodSource)) return value;
+  }
+  const declaration =
+    methodSource === undefined ? classDeclaration(value) : undefined;
+  let clone: object;
+  if (methodSource !== undefined) {
+    clone = { [DECLARATION_METHOD]: methodSource };
+    seen = new Map(seen);
+  } else if (value instanceof Map) {
+    const entries = new Map<unknown, unknown>();
+    clone = entries;
     seen.set(value, clone);
     for (const [key, entry] of value)
-      clone.set(cloneForCache(key, seen), cloneForCache(entry, seen));
-    return clone;
-  }
-  if (value instanceof Set) {
-    const clone = new Set<unknown>();
+      entries.set(cloneForCache(key, seen), cloneForCache(entry, seen));
+  } else if (value instanceof Set) {
+    const entries = new Set<unknown>();
+    clone = entries;
     seen.set(value, clone);
-    for (const entry of value) clone.add(cloneForCache(entry, seen));
-    return clone;
-  }
-  if (value instanceof Date) return new Date(value.getTime());
-  if (value instanceof RegExp) {
-    // Copy the existing regex's internal pattern instead of compiling strings.
-    const clone = structuredClone(value);
-    // Host-provided structuredClone may return a different realm's prototype.
-    Object.setPrototypeOf(clone, RegExp.prototype);
-    // Structured cloning resets the cursor, but declaration comparisons need it.
-    clone.lastIndex = value.lastIndex;
-    return clone;
-  }
-  if (Buffer.isBuffer(value)) return Buffer.from(value);
-  if (value instanceof ArrayBuffer || ArrayBuffer.isView(value))
-    return structuredClone(value);
-  if (Array.isArray(value)) {
-    const clone: unknown[] = new Array(value.length);
+    for (const entry of value) entries.add(cloneForCache(entry, seen));
+  } else if (value instanceof Date) {
+    clone = new Date(value.getTime());
+  } else if (value instanceof RegExp) {
+    const expression = structuredClone(value);
+    Object.setPrototypeOf(expression, RegExp.prototype);
+    expression.lastIndex = value.lastIndex;
+    clone = expression;
+  } else if (Buffer.isBuffer(value)) {
+    clone = Buffer.from(value);
+  } else if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
+    clone = structuredClone(value);
+    Object.setPrototypeOf(
+      clone,
+      declaration?.nativePrototype ?? Object.getPrototypeOf(value),
+    );
+  } else if (Array.isArray(value)) {
+    clone = new Array(value.length);
+  } else if (!contextRoot && hasOpaqueSlots(value)) {
+    // Unsupported internal slots cannot be reconstructed from enumerable data.
+    // Compare opaque values by identity, including on older Node versions whose
+    // deep comparison treats different Promise/WeakMap instances as equal.
+    let identity = opaqueIdentities.get(value);
+    if (identity === undefined) {
+      identity = Symbol("opaque value");
+      opaqueIdentities.set(value, identity);
+    }
+    clone = { [DECLARATION_OPAQUE]: identity };
     seen.set(value, clone);
-    value.forEach((entry, index) => {
-      clone[index] = cloneForCache(entry, seen);
-    });
     return clone;
+  } else {
+    clone = Object.create(
+      declaration ? Object.prototype : Object.getPrototypeOf(value),
+    ) as object;
   }
-
-  const proto = Object.getPrototypeOf(value) as object | null;
-  const clone: Record<string, unknown> =
-    proto !== null && proto !== Object.prototype
-      ? (Object.create(proto) as Record<string, unknown>)
-      : {};
 
   seen.set(value, clone);
-  for (const key of Object.keys(value)) {
-    clone[key] = cloneForCache((value as Record<string, unknown>)[key], seen);
+  if (declaration !== undefined && !contextRoot) {
+    Object.defineProperty(clone, DECLARATION_CLASS, {
+      enumerable: true,
+      value: declaration.constructors,
+    });
   }
-
+  const inherited = new Set<string>();
+  if (contextRoot) for (const key in value) inherited.add(key);
+  const keys = new Set([...Reflect.ownKeys(value), ...inherited]);
+  for (const key of keys) {
+    if (
+      !Object.prototype.propertyIsEnumerable.call(value, key) &&
+      !(typeof key === "string" && inherited.has(key))
+    )
+      continue;
+    const entry: unknown = Reflect.get(value, key);
+    Object.defineProperty(clone, key, {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value: cloneForCache(
+        entry,
+        seen,
+        false,
+        declaration !== undefined && !contextRoot,
+      ),
+    });
+  }
   return clone;
 }
 
@@ -141,7 +249,7 @@ export class ContextRegistry extends EventTarget {
   public add(path: string, context: Context): void {
     this.entries.set(path, context);
 
-    this.cache.set(path, cloneForCache(context) as Context);
+    this.cache.set(path, cloneForCache(context, new Map(), true) as Context);
 
     this.dispatchEvent(new Event("context-changed"));
   }
@@ -202,13 +310,11 @@ export class ContextRegistry extends EventTarget {
     }
 
     const context = this.find(path);
+    const snapshot = cloneForCache(updatedContext, new Map(), true) as Context;
 
     for (const property in updatedContext) {
       if (
-        !isDeepStrictEqual(
-          updatedContext[property],
-          this.cache.get(path)?.[property],
-        )
+        !isDeepStrictEqual(snapshot[property], this.cache.get(path)?.[property])
       ) {
         context[property] = updatedContext[property];
       }
@@ -216,7 +322,7 @@ export class ContextRegistry extends EventTarget {
 
     Object.setPrototypeOf(context, Object.getPrototypeOf(updatedContext));
 
-    this.cache.set(path, cloneForCache(updatedContext) as Context);
+    this.cache.set(path, snapshot);
   }
 
   /** Discards live contexts and hot-reload snapshots before reconstruction. */
