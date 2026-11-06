@@ -66,8 +66,9 @@ describe("a module loader", () => {
       t.after(() => loader.stopWatching());
       await loader.watch();
       assert.equal(registry.exists("GET", "/delete-me"), true);
+      const removed = once(loader, "remove");
       await $.remove("delete-me.js");
-      await once(loader, "remove");
+      await removed;
       assert.equal(registry.exists("GET", "/delete-me"), false);
       await loader.stopWatching();
     });
@@ -85,8 +86,9 @@ describe("a module loader", () => {
       await loader.load();
       t.after(() => loader.stopWatching());
       await loader.watch();
+      const removed = once(loader, "remove");
       await $.remove("_.context.js");
-      await once(loader, "remove");
+      await removed;
       // Should not crash and the route should still be accessible
       assert.equal(registry.exists("GET", "/hello"), true);
       await loader.stopWatching();

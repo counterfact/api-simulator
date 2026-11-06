@@ -24,6 +24,7 @@ export default {
   coverageProvider: "v8",
 
   coverageThreshold: {
+    "./packages/runtime/src/server/context-registry.ts": { branches: 90 },
     global: {
       branches: 80,
       functions: 80,

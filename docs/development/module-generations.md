@@ -30,6 +30,7 @@ before editing files, and register watcher cleanup before assertions.
 
 Coverage ownership follows execution: Jest measures the pure source boundary;
 Node measures the compiled loader/generation and application orchestration files.
+The pure context-registry snapshot tests also enforce a 90% branch floor in Jest.
 Native reports enforce at least 90% branch coverage, and are separate from the
 Jest report uploaded to Coveralls. Do not lower either threshold to migrate tests.
 CI exercises native runtime tests on Node 22.22/Linux and Node 24/Windows in

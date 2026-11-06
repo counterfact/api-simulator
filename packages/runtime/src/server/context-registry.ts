@@ -29,7 +29,10 @@ export function parentPath(path: string): string {
  * recursively cloned (preserving the prototype chain). Functions are copied
  * by reference since they are not structurally comparable data.
  */
-function cloneForCache(value: unknown): unknown {
+function cloneForCache(
+  value: unknown,
+  seen = new WeakMap<object, object>(),
+): unknown {
   if (value === null || typeof value === "function") {
     return value;
   }
@@ -38,8 +41,39 @@ function cloneForCache(value: unknown): unknown {
     return value;
   }
 
+  if (seen.has(value)) return seen.get(value);
+
+  // Native collections need real internal slots. Object.create(Map.prototype)
+  // is not a Map snapshot and makes an unchanged initializer appear changed.
+  if (value instanceof Map) {
+    const clone = new Map<unknown, unknown>();
+    seen.set(value, clone);
+    for (const [key, entry] of value)
+      clone.set(cloneForCache(key, seen), cloneForCache(entry, seen));
+    return clone;
+  }
+  if (value instanceof Set) {
+    const clone = new Set<unknown>();
+    seen.set(value, clone);
+    for (const entry of value) clone.add(cloneForCache(entry, seen));
+    return clone;
+  }
+  if (value instanceof Date) return new Date(value.getTime());
+  if (value instanceof RegExp) {
+    const clone = new RegExp(value.source, value.flags);
+    clone.lastIndex = value.lastIndex;
+    return clone;
+  }
+  if (Buffer.isBuffer(value)) return Buffer.from(value);
+  if (value instanceof ArrayBuffer || ArrayBuffer.isView(value))
+    return structuredClone(value);
   if (Array.isArray(value)) {
-    return (value as unknown[]).map(cloneForCache);
+    const clone: unknown[] = new Array(value.length);
+    seen.set(value, clone);
+    value.forEach((entry, index) => {
+      clone[index] = cloneForCache(entry, seen);
+    });
+    return clone;
   }
 
   const proto = Object.getPrototypeOf(value) as object | null;
@@ -48,8 +82,9 @@ function cloneForCache(value: unknown): unknown {
       ? (Object.create(proto) as Record<string, unknown>)
       : {};
 
+  seen.set(value, clone);
   for (const key of Object.keys(value)) {
-    clone[key] = cloneForCache((value as Record<string, unknown>)[key]);
+    clone[key] = cloneForCache((value as Record<string, unknown>)[key], seen);
   }
 
   return clone;

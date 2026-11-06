@@ -182,3 +182,70 @@ it("applies changed object initializers while preserving unrelated live state", 
   expect(context.inventory).toEqual({ "house-blend": 10 });
   expect(context.orders).toEqual(["order-1"]);
 });
+
+it("preserves live Map and Set mutations until their declarations change", () => {
+  const callback = () => "unchanged";
+  const declaration = () => ({
+    pets: new Map([[1, { name: "Original", callback }]]),
+    labels: new Set(["original"]),
+  });
+  const registry = new ContextRegistry();
+  const context = declaration();
+  registry.update("/", context);
+  context.pets.get(1)!.name = "Edited";
+  context.pets.set(2, { name: "Added", callback });
+  context.labels.add("live");
+  registry.update("/", declaration());
+  expect(registry.find("/").pets).toBe(context.pets);
+  expect(context.pets.get(1)!.name).toBe("Edited");
+  expect(context.pets.size).toBe(2);
+  expect(context.labels).toEqual(new Set(["original", "live"]));
+  registry.update("/", {
+    pets: new Map([[3, { name: "New", callback }]]),
+    labels: new Set(["new"]),
+  });
+  expect(context.pets).toEqual(new Map([[3, { name: "New", callback }]]));
+  expect(context.labels).toEqual(new Set(["new"]));
+});
+
+it("compares cyclic initializer snapshots without aliasing live objects", () => {
+  const declaration = () => {
+    const root: Record<string, unknown> = { count: 0 };
+    root.self = root;
+    root.items = [root];
+    root.map = new Map([["root", root]]);
+    root.set = new Set([root]);
+    return { root };
+  };
+  const registry = new ContextRegistry();
+  const context = declaration();
+  registry.update("/", context);
+  context.root.count = 7;
+  registry.update("/", declaration());
+  expect(registry.find("/").root).toBe(context.root);
+  expect(context.root.count).toBe(7);
+});
+
+it("preserves changed dates and binary state when native-value declarations are unchanged", () => {
+  const declaration = () => ({
+    date: new Date(0),
+    pattern: /test/gu,
+    buffer: Buffer.from([1]),
+    bytes: new Uint8Array([2]),
+    raw: new Uint8Array([3]).buffer,
+  });
+  const registry = new ContextRegistry();
+  const context = declaration();
+  registry.update("/", context);
+  context.date.setTime(100);
+  context.pattern.lastIndex = 2;
+  context.buffer[0] = 4;
+  context.bytes[0] = 5;
+  new Uint8Array(context.raw)[0] = 6;
+  registry.update("/", declaration());
+  expect(context.date.getTime()).toBe(100);
+  expect(context.pattern.lastIndex).toBe(2);
+  expect(context.buffer[0]).toBe(4);
+  expect(context.bytes[0]).toBe(5);
+  expect(new Uint8Array(context.raw)[0]).toBe(6);
+});

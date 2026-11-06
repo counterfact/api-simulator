@@ -205,3 +205,32 @@ test("a scoped refresh retains coherence with previously loaded parent contexts"
     assert.deepEqual(response.body, [true, 13, "new"]);
   });
 });
+
+test("route-only reloads preserve live Map and Set entries in unchanged context declarations", async () => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add(
+      "_.context.mjs",
+      "export class Context { pets=new Map(); labels=new Set(); }",
+    );
+    await $.add(
+      "probe.mjs",
+      "export const GET=$=>({status:200,body:[...$.context.pets.values()]});",
+    );
+    const current = runtime($);
+    await current.loader.load();
+    const { pets, labels } = current.contexts.find("/");
+    pets.set(1, { name: "Fluffy" });
+    labels.add("live");
+    await $.add(
+      "probe.mjs",
+      "export const GET=$=>({status:200,body:{pets:[...$.context.pets.values()],labels:[...$.context.labels]}});",
+    );
+    await current.loader.load();
+    assert.equal(current.contexts.find("/").pets, pets);
+    assert.equal(current.contexts.find("/").labels, labels);
+    assert.deepEqual((await current.request()).body, {
+      pets: [{ name: "Fluffy" }],
+      labels: ["live"],
+    });
+  });
+});
