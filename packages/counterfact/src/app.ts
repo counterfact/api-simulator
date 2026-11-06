@@ -27,6 +27,7 @@ import { ensureDirectoryExists } from "./util/ensure-directory-exists.js";
 
 export type {
   JsonSchema,
+  SchemaTypeLocation,
   SchemaTypeScript,
   SchemaTypeTransform,
 } from "@counterfact/generator";
@@ -844,3 +845,14 @@ export type Simulator<TStore = unknown> = Awaited<
   ReturnType<typeof counterfact<TStore>>
 >;
 export type { Config } from "./config.js";
+
+export {
+  openapiTypescriptTransform,
+  heyApiTransform,
+  nswagTransform,
+  orvalTransform,
+  openapiGeneratorTransform,
+  swaggerTypescriptApiTransform,
+  openapiTypescriptCodegenTransform,
+  type GeneratedModelTransformOptions,
+} from "@counterfact/generator";
