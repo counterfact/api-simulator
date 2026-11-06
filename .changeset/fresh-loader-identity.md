@@ -10,3 +10,5 @@ Constructors imported outside a simulator can differ from constructors inside it
 Preserve Map/Set declaration snapshots during graph refresh and include explicit CommonJS routes and middleware in the compiled fallback cache.
 
 Clone existing regular expressions without recompiling their source properties, while preserving declaration cursors and live state across unchanged reloads.
+
+Retry transient Windows sharing violations when publishing compiled cache files, including concurrent startup of versions in one API group, without exposing partial or missing output.

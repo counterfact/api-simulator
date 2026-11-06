@@ -146,6 +146,34 @@ describe("a Transpiler", () => {
     });
   });
 
+  it("publishes complete shared cache files from concurrent versioned runners", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("catalog/routes/_.context.ts", TYPESCRIPT_SOURCE);
+      await $.add("catalog/.cache/_.context.cjs", "exports.stale = true;");
+      const compilers = Array.from(
+        { length: 2 },
+        () =>
+          new Transpiler(
+            $.path("catalog/routes"),
+            $.path("catalog/.cache"),
+            "commonjs",
+          ),
+      );
+      try {
+        await Promise.all(
+          compilers.map(async (compiler) => {
+            await compiler.watch();
+            expect(
+              normalize(await $.read("catalog/.cache/_.context.cjs")),
+            ).toBe(normalize(JAVASCRIPT_SOURCE_COMMONJS));
+          }),
+        );
+      } finally {
+        await Promise.all(compilers.map((compiler) => compiler.stopWatching()));
+      }
+    });
+  });
+
   it("converts requires of .js files to .cjs", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(

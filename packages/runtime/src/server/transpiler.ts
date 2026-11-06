@@ -1,7 +1,6 @@
 // Stryker disable all
 
 import { once } from "node:events";
-import { randomUUID } from "node:crypto";
 import nodePath from "node:path";
 import fs from "node:fs/promises";
 /* eslint-disable security/detect-non-literal-fs-filename -- transpiler consumes watched source files and writes paired outputs under configured directories. */
@@ -12,6 +11,7 @@ import ts from "typescript";
 
 import { ensureDirectoryExists } from "../util/ensure-directory-exists.js";
 import { toForwardSlashPath } from "../util/forward-slash-path.js";
+import { writeFileAtomically } from "../util/write-file-atomically.js";
 import { CHOKIDAR_OPTIONS } from "./constants.js";
 import { FileDiscovery } from "./file-discovery.js";
 import { convertFileExtensionsToCjs } from "./convert-js-extensions-to-cjs.js";
@@ -207,20 +207,14 @@ export class Transpiler extends EventTarget {
     const resultWithTransformedFileExtensions =
       convertFileExtensionsToCjs(result);
 
-    const temporaryPath = `${destinationPath}.${randomUUID()}.tmp`;
     try {
       // Publish complete files even if duplicate watch events overlap. Readers
       // must never observe the truncate/write window of an in-place update.
-      await fs.writeFile(temporaryPath, resultWithTransformedFileExtensions);
-      await fs.rename(temporaryPath, destinationPath);
+      await writeFileAtomically(
+        destinationPath,
+        resultWithTransformedFileExtensions,
+      );
     } catch (error) {
-      await fs.rm(temporaryPath, { force: true }).catch((cleanup: unknown) => {
-        debug(
-          "could not remove temporary output %s: %o",
-          temporaryPath,
-          cleanup,
-        );
-      });
       debug(
         "error writing transpiled output to %s: %o",
         destinationPath,

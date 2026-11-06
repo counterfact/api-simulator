@@ -40,6 +40,8 @@ Each specification entry accepts `source`, `group`, optional `version`, optional
 
 `start(options?)` accepts partial overrides for `port`, `startServer`, `buildCache`, `generate`, and `watch`. It awaits the HTTP listener. Use `port: 0` for an OS-assigned port and read the bound address from `status()`.
 
+Compiled cache updates are published as complete files. On Windows, startup and reload briefly retry file-sharing conflicts, including when multiple versions share a group's cache. If replacement still fails, the previous complete file remains intact and the error is reported.
+
 ## Reset and state identity
 
 `reset()` requires a started simulator. It reconstructs the store, contexts, and route modules, then awaits startup scenarios. The HTTP listener stays bound; requests receive 503 while state is unavailable. Concurrent resets share one operation. A failed reset leaves state unavailable until a successful reset.
