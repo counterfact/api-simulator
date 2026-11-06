@@ -56,6 +56,51 @@ This assumes `openapi.yaml` exists beside the config. Run `npx counterfact@lates
 
 For multiple specifications, `spec` can be a list of entries; see [multiple APIs](../manual/multiple-apis.md).
 
+## Customize generated schema types
+
+Set `schema-type-transform` in `counterfact.yaml` to the path of a JavaScript
+module that default-exports your schema type transform:
+
+```yaml
+spec: ./openapi.yaml
+destination: ./api
+generate: true
+schema-type-transform: ./schema-type-transform.mjs
+```
+
+```js
+// schema-type-transform.mjs
+/** @type {import("counterfact").SchemaTypeTransform} */
+export default function transform(schema, defaultType, script) {
+  if (typeof schema === "object" && schema.format === "uuid") {
+    return script.importType("@example/domain", "UUID");
+  }
+  return defaultType;
+}
+```
+
+This example assumes the generated project can resolve `@example/domain` and its
+exported `UUID` type. The script facade handles type imports and aliases.
+
+Unlike spec and destination paths, the transform module path is relative to the
+configuration file, including when selected with `--config`. Both
+`schema-type-transform` and `schemaTypeTransform` are accepted. This is a
+config-only setting; there is no corresponding CLI flag. Use `.mjs` for an ES
+module or `.cjs` for CommonJS (`module.exports = transform`). A `.js` file follows
+its project's Node.js module rules. Restart the CLI after editing the callback
+module; specification changes reuse the loaded callback while watching.
+
+The callback applies to inline schemas and referenced definitions, including
+shared versioned output. It receives the schema, Counterfact's generated type
+node, and a script facade, and returns the type node to use. It changes generated
+types without changing runtime validation or conversion. Missing modules,
+non-function default exports, and callback failures produce startup/generation
+errors.
+
+For the exact callback signature, all three arguments, import handling, traversal
+rules, errors, and a complete example with a compiler check, see
+[Schema type transforms](./schema-types.md).
+
 ## First-run intro
 
 Running with no arguments and no `counterfact.yaml` starts an interactive intro.

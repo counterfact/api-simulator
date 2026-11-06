@@ -103,3 +103,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 - Preserve request-body absence at the HTTP parsing boundary. Empty-wire input, explicit {}, and explicit JSON null must remain distinct before optionality and schema validation.
 - For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.
+
+- When generator options include callbacks, keep effective startup flags synchronized with the generator-owned option object. Exclude executable configuration from cloneable status snapshots and match the public snapshot type to the returned data.
