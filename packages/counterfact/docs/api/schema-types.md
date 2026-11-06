@@ -21,7 +21,12 @@ type SchemaTypeTransform = (
   schema: JsonSchema,
   defaultType: ts.TypeNode,
   script: SchemaTypeScript,
+  location: SchemaTypeLocation,
 ) => ts.TypeNode;
+
+interface SchemaTypeLocation {
+  readonly schemaPath: string;
+}
 
 interface SchemaTypeScript {
   importType(
@@ -36,6 +41,10 @@ interface SchemaTypeScript {
 | `schema`      | The schema object being translated, after bundling and overlays, or a boolean schema. Schema properties have type `unknown`. | Inspect standard keywords such as `type`, `format`, and `enum`, or your own `x-*` extensions. Narrow values before using them. |
 | `defaultType` | Counterfact's generated TypeScript AST node, including changes already made to child schemas.                                | Return it unchanged, update it with TypeScript factories, or replace it with another type node.                                |
 | `script`      | A facade for the generated file receiving this type. It exposes `importType()` only.                                         | Register a named type import and return or compose the resulting reference.                                                    |
+
+`location.schemaPath` identifies the schema in the bundled document, for example
+`#/components/schemas/Pet`. It is a JSON Pointer without the source filename.
+Three-argument callbacks remain valid implementations.
 
 An **AST node** represents TypeScript syntax. Return a `ts.TypeNode`, not a source
 string, a runtime value, or a Promise. TypeScript's `ts.factory` constructs new
@@ -311,3 +320,171 @@ or convert request/response values. Existing route edits retain the usual
 [regeneration guarantees](../features/generated-code.md).
 
 Startup generate overrides retain the configured transform callback. The simulator status snapshot reports effective generation flags and the listener address; executable callbacks are excluded from that cloneable snapshot.
+
+## Compatibility presets
+
+Use `schemaTypeCompatibility()` to change Counterfact's own generated model
+shapes toward the conventions of another OpenAPI-to-TypeScript generator.
+Counterfact still generates independent models. You do not need an SDK package,
+and no types from another generator are imported.
+
+The factory and its option/target types are exported from `counterfact` and
+`@counterfact/generator`. Create `schema-type-transform.mjs`:
+
+```js
+import { schemaTypeCompatibility } from "counterfact";
+
+export default schemaTypeCompatibility("orval");
+```
+
+Select it through the existing configuration setting:
+
+```yaml
+spec: ./openapi.yaml
+destination: ./api
+generate: true
+schema-type-transform: ./schema-type-transform.mjs
+```
+
+For example, given this schema:
+
+```yaml
+type: object
+required: [id, attachment]
+properties:
+  id:
+    type: integer
+    readOnly: true
+  attachment:
+    type: string
+    format: binary
+  uploadedAt:
+    type: string
+    format: date-time
+```
+
+Counterfact normally generates `attachment: Uint8Array | string`. With the
+Orval preset it generates this independent model:
+
+```ts
+export type Model = {
+  readonly id: number;
+  attachment: globalThis.Blob;
+  uploadedAt?: string;
+};
+```
+
+The Fetch preset for OpenAPI Generator instead gives `uploadedAt?:
+globalThis.Date`. `globalThis` prevents a generated model called `Date`, `Blob`,
+`File`, or `ArrayBuffer` from shadowing the built-in type. Standard DOM library
+types must be available when selecting browser binary types.
+
+### Preset conventions
+
+The table describes targeted model conventions, not a guarantee of complete
+compatibility with every release or configuration. The source links below
+identify the mapping logic inspected for these presets.
+
+| Target                       | date / date-time | string binary | string byte | readOnly properties |
+| ---------------------------- | ---------------- | ------------- | ----------- | ------------------- |
+| `openapi-typescript`         | string           | string        | string      | readonly            |
+| `hey-api`                    | string           | Blob or File  | string      | readonly            |
+| `orval`                      | string           | Blob          | string      | readonly            |
+| `openapi-generator-fetch`    | Date             | Blob          | string      | readonly            |
+| `openapi-generator-axios`    | string           | File          | string      | mutable             |
+| `swagger-typescript-api`     | string           | File          | Blob        | mutable             |
+| `openapi-typescript-codegen` | string           | Blob          | string      | readonly            |
+| `nswag`                      | Date             | string        | string      | readonly            |
+
+Legacy Swagger `type: file` follows the binary mapping except NSwag uses `any`. NSwag's string-binary mapping targets its DTO string
+resolver, not endpoint-specific `FileParameter`/file-response wrappers.
+
+The openapi-typescript preset also emits an empty explicit object as
+`{ [key: string]: never }`, and makes properties with defaults required outside
+inline request bodies/parameters. This matches the model conventions with
+`emptyObjectsUnknown: false` and `defaultNonNullable: true`. Shared referenced
+models keep their definition's optionality even when referenced by a request.
+Other presets preserve Counterfact's empty-object and default-property behavior.
+
+Source references:
+
+- [openapi-typescript schema transformation](https://github.com/openapi-ts/openapi-typescript/blob/main/packages/openapi-typescript/src/transform/schema-object.ts)
+- [Hey API scalar mapping](https://github.com/hey-api/hey-api/blob/main/packages/openapi-ts/src/plugins/@hey-api/typescript/v1/toAst/string.ts) and [object properties](https://github.com/hey-api/hey-api/blob/main/packages/openapi-ts/src/plugins/@hey-api/typescript/v1/toAst/object.ts)
+- [Orval scalar mapping](https://github.com/orval-labs/orval/blob/master/packages/core/src/getters/scalar.ts) and [object properties](https://github.com/orval-labs/orval/blob/master/packages/core/src/getters/object.ts)
+- [OpenAPI Generator shared TypeScript mappings](https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractTypeScriptClientCodegen.java) and [Fetch overrides](https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/TypeScriptFetchClientCodegen.java)
+- [swagger-typescript-api primitive mappings](https://github.com/acacode/swagger-typescript-api/blob/main/src/configuration.ts) and [property modifiers](https://github.com/acacode/swagger-typescript-api/blob/main/src/schema-parser/base-schema-parsers/object.ts)
+- [openapi-typescript-codegen scalar mappings](https://github.com/ferdikoomen/openapi-typescript-codegen/blob/master/src/openApi/v3/parser/getMappedType.ts) and [binary output](https://github.com/ferdikoomen/openapi-typescript-codegen/blob/master/src/templates/partials/base.hbs)
+- [NSwag/NJsonSchema TypeScript resolver](https://github.com/RicoSuter/NJsonSchema/blob/master/src/NJsonSchema.CodeGeneration.TypeScript/TypeScriptTypeResolver.cs)
+
+### Match custom generator settings
+
+Pass overrides when the other generator uses different options:
+
+```js
+import { schemaTypeCompatibility } from "counterfact";
+
+export default schemaTypeCompatibility("orval", {
+  dateType: "Date", // Orval useDates: true
+  readonlyProperties: "none", // Orval suppressReadonlyModifier: true
+});
+```
+
+```ts
+interface SchemaTypeCompatibilityOptions {
+  readonly dateType?: "string" | "Date";
+  readonly binaryType?:
+    "string" | "Blob" | "File" | "Blob | File" | "ArrayBuffer" | "any";
+  readonly byteType?: "string" | "Blob";
+  readonly readonlyProperties?: "schema" | "all" | "none";
+  readonly emptyObjectType?: "preserve" | "unknown-record" | "never-record";
+  readonly defaultPropertiesRequired?: boolean;
+}
+```
+
+`readonlyProperties: "schema"` marks named properties with a direct
+`readOnly: true` schema; `all` marks all named properties; `none` keeps them
+mutable. This setting does not make arrays immutable or remove read/write-only
+fields. Setting `binaryType` also overrides the legacy `type: file` mapping.
+`emptyObjectType` changes only empty explicit object schemas, not unspecified
+schemas, populated objects, or dictionaries.
+
+For programmatic generation:
+
+```js
+import { CodeGenerator, schemaTypeCompatibility } from "@counterfact/generator";
+
+await new CodeGenerator("./openapi.yaml", "./api", {
+  routes: true,
+  types: true,
+  schemaTypeTransform: schemaTypeCompatibility("hey-api"),
+}).generate();
+```
+
+### Compatibility boundaries
+
+These presets change static types. They do not hydrate `Date`, construct `Blob`
+or `File`, or alter request validation, parsing, response serialization, or
+random example generation. For wire-oriented dates, use `dateType: "string"`
+and configure the other generator accordingly. This distinction matters most
+for handler request inputs: a Date annotation does not convert incoming JSON.
+
+Parsed multipart uploads deliberately retain Counterfact's `MultipartFile`
+contract, including its buffer and file metadata. They are not browser `File`
+instances. This remains a compatibility boundary even with a binary preset;
+regular JSON model generation and parsed multipart model generation are distinct.
+
+Literal enums/const, boolean schemas, nullability, arrays, recursive references,
+and schema composition retain Counterfact's generation. Enum and const
+constraints are not broadened into Date or binary object types. The presets
+match structural enum unions, not separate nominal TypeScript enums. Configure
+union enums in the other tool, such as codegen's `useUnionTypes`, or NSwag's
+`EnumStyle: StringLiteral` with interface DTOs and `NullValue: Null`. DTO classes
+with methods or constructors require a separate conversion layer.
+
+Keep property names unchanged in the other tool (for example, OpenAPI Generator
+`modelPropertyNaming: original`). These callbacks do not rename wire fields,
+reproduce SDK layout, synthesize operation wrappers, emulate every dictionary,
+discriminator, read/write model split, or support custom templates, Temporal,
+Moment, or branded types. The compiler tests compare the supported model shapes
+in both assignment directions with strict optional-property checking. They do
+not execute the upstream generators or establish compatibility for every schema.
