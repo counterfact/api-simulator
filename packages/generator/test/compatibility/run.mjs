@@ -78,6 +78,7 @@ async function runTarget(target, tool, specification) {
           "--no-fund",
           "--package-lock=false",
           `${tool.package}@${tool.version}`,
+          "typescript@5.9.3",
         ]);
         const installed = JSON.parse(
           await $.read(`tools/node_modules/${tool.package}/package.json`),
@@ -111,7 +112,7 @@ async function runTarget(target, tool, specification) {
           break;
         case "swagger-typescript-api":
           await toolScript(`import { generateApi } from "swagger-typescript-api";
-            await generateApi({ input: ${JSON.stringify(input)}, output: ${JSON.stringify(upstream)}, name: "models.ts", generateClient: false, enumStyle: "union", addReadonly: false });`);
+            await generateApi({ input: ${JSON.stringify(input)}, output: ${JSON.stringify(upstream)}, name: "models.ts", generateClient: false, modular: true, fileNames: { dataContracts: "models" }, enumStyle: "union", addReadonly: false });`);
           break;
         case "openapi-typescript-codegen":
           await toolScript(`import { generate } from "openapi-typescript-codegen";
@@ -130,12 +131,7 @@ async function runTarget(target, tool, specification) {
             jar,
             `https://repo.maven.apache.org/maven2/org/openapitools/openapi-generator-cli/${tool.version}/openapi-generator-cli-${tool.version}.jar`,
           ]);
-          const version = await run("java", [
-            "-jar",
-            jar,
-            "version",
-            "--short",
-          ]);
+          const version = await run("java", ["-jar", jar, "version"]);
           assert.equal(version.trim(), tool.version);
           await run("java", [
             "-jar",
@@ -218,6 +214,7 @@ async function runTarget(target, tool, specification) {
           getNewLine: () => "\n",
         },
       );
+      assert.equal(diagnostics.length, 0, report.diagnostics);
       const checker = program.getTypeChecker();
       const source = program.getSourceFile($.path("compare.ts"));
       const exported = checker.getExportsOfModule(
