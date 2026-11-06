@@ -100,7 +100,7 @@ describe("generated operation argument properties", () => {
           const token: string | undefined = input.headers.token;
           const session: string | undefined = input.cookie.session;
           const active: boolean | undefined = input.querystring.active;
-          const name: string | undefined = input.body.name;
+          const name: string | undefined = input.body?.name;
           const username: string | undefined = input.auth.username;
           const password: string | undefined = input.user.password;
           ${version === "" ? "" : `const version: "${version}" = input.version;`}

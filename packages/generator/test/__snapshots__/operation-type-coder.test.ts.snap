@@ -174,7 +174,7 @@ exports[`an OperationTypeCoder generates a complex post operation 1`] = `
   query: HTTP_GET_Query;
   path: HTTP_GET_Path;
   headers: HTTP_GET_Headers;
-  body: Type;
+  body: Type | undefined;
   context: ExternalType;
   response: ResponseBuilderFactory<
     {
