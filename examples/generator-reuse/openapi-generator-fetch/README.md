@@ -36,8 +36,7 @@ A stable local alias is explicit configuration. If an existing SDK uses another 
 
 This example keeps wire property names and uses ordinary JSON objects. It does not establish compatibility for renamed fields, custom templates, class hydration, or date conversion. The adapter reuses the SDK's declared contract; it does not repair differences between a generated SDK and the OpenAPI document. In particular, an earlier real comparison found that OpenAPI Generator 7.27.0's Axios output omitted an inline `allOf` field. That issue is outside this deliberately simple fixture. Fetch implementation code also does not compile with TypeScript's `exactOptionalPropertyTypes` enabled; this application uses ordinary `strict` mode without that additional setting.
 
-The verification command also runs `build:runtime`. This ordinary TypeScript
-build emits app helpers and generated SDK values as adjacent JavaScript files
-for Counterfact's Node server to import. The model aliases are type-only and
-need no runtime alias. SDK enum values and DTO constructors are real runtime
-imports and need this build; they are not supplied by the adapter.
+The `start` script uses tsx to run local TypeScript helpers and generated SDK
+values alongside Counterfact. This avoids Counterfact’s fallback CommonJS
+cache rewriting relative imports to `.cjs`. Type-only model aliases require
+only the local `tsconfig.json` mapping; the transformer does not load SDK values.

@@ -32,8 +32,7 @@ Reuse shares declarations, not runtime serialization, validation, or class const
 The SDK uses its normal optional-property settings; the example does not enable `exactOptionalPropertyTypes` for the generated fetch implementation.
 Generated output is intentionally not checked in: verification must run the real tool.
 
-The verification command also runs `build:runtime`. This ordinary TypeScript
-build emits app helpers and generated SDK values as adjacent JavaScript files
-for Counterfact's Node server to import. The model aliases are type-only and
-need no runtime alias. SDK enum values and DTO constructors are real runtime
-imports and need this build; they are not supplied by the adapter.
+The `start` script uses tsx to run local TypeScript helpers and generated SDK
+values alongside Counterfact. This avoids Counterfact’s fallback CommonJS
+cache rewriting relative imports to `.cjs`. Type-only model aliases require
+only the local `tsconfig.json` mapping; the transformer does not load SDK values.

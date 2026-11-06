@@ -8,3 +8,13 @@ type Equal<A, B> =
     : false;
 type Assert<T extends true> = T;
 export type SamePet = Assert<Equal<HeyApiPet, CounterfactPet>>;
+
+// Compile these controls without executing invalid responses at runtime.
+export function checkResponseContract(
+  $: Parameters<import("../api/types/paths/pets.types.js").HTTP_GET>[0],
+): void {
+  // @ts-expect-error The generated response requires Pet.name.
+  $.response.status(200).json({ id: 1, status: "available" });
+  // @ts-expect-error The generated response rejects unknown Pet.status values.
+  $.response.status(200).json({ id: 1, name: "Buddy", status: "lost" });
+}

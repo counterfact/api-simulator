@@ -10,11 +10,12 @@
     "generate:counterfact": "counterfact --config counterfact.yaml --generate --no-update-check",
     "generate": "npm run generate:models && npm run generate:counterfact",
     "typecheck": "tsc --project tsconfig.json",
-    "verify": "npm run generate && npm run typecheck && npm run build:runtime",
-    "build:runtime": "tsc --project tsconfig.runtime.json"
+    "verify": "npm run generate && npm run typecheck",
+    "start": "node --import tsx ./node_modules/counterfact/bin/counterfact.js --config counterfact.yaml --serve --no-update-check"
   },
   "devDependencies": {
     "counterfact": "file:../../../packages/counterfact",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "tsx": "4.20.6"
   }
 }

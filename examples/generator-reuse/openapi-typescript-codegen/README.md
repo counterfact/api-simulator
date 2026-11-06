@@ -61,8 +61,7 @@ Sharing the SDK enum establishes type identity; it does not turn HTTP JSON strin
 Generated output is intentionally not hand-written or checked in.
 Execution requires the real third-party generator; this example does not substitute a mock generator or claim an unperformed live run.
 
-The verification command also runs `build:runtime`. This ordinary TypeScript
-build emits app helpers and generated SDK values as adjacent JavaScript files
-for Counterfact's Node server to import. The model aliases are type-only and
-need no runtime alias. SDK enum values and DTO constructors are real runtime
-imports and need this build; they are not supplied by the adapter.
+The `start` script uses tsx to run local TypeScript helpers and generated SDK
+values alongside Counterfact. This avoids Counterfact’s fallback CommonJS
+cache rewriting relative imports to `.cjs`. Type-only model aliases require
+only the local `tsconfig.json` mapping; the transformer does not load SDK values.

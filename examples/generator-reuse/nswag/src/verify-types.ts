@@ -1,5 +1,6 @@
 import type { Pet, PetStatus } from "#api-models";
 import type { Pet as CounterfactPet } from "../api/types/components/schemas/Pet.js";
+import type { HTTP_GET } from "../api/types/paths/pets.types.js";
 import { pet } from "./pet.js";
 
 // Bidirectional assignment includes the DTO methods and nominal enum identity.
@@ -19,3 +20,12 @@ const plainObject: CounterfactPet = {
   status: pet.status,
 };
 void plainObject;
+
+// This function is compiled but is never imported by the running application.
+const invalidResponse: HTTP_GET = ($) => {
+  // @ts-expect-error The response requires the actual NSwag DTO class shape.
+  return $.response
+    .status(200)
+    .json({ id: 1, name: "Buddy", status: pet.status });
+};
+void invalidResponse;

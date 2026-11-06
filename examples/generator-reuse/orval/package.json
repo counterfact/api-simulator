@@ -7,15 +7,15 @@
     "generate:counterfact": "counterfact --config counterfact.yaml --generate",
     "generate": "npm run generate:models && npm run generate:counterfact",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run generate && npm run typecheck && npm run build:runtime",
+    "verify": "npm run generate && npm run typecheck",
     "check": "npm run verify",
-    "start": "counterfact --config counterfact.yaml --serve",
-    "build:runtime": "tsc --project tsconfig.runtime.json"
+    "start": "node --import tsx ./node_modules/counterfact/bin/counterfact.js --config counterfact.yaml --serve --no-update-check"
   },
   "devDependencies": {
     "@counterfact/generator": "file:../../../packages/generator",
     "counterfact": "file:../../../packages/counterfact",
     "orval": "8.46.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "tsx": "4.20.6"
   }
 }

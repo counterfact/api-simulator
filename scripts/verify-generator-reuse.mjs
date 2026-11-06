@@ -15,6 +15,12 @@ const cases = {
     path: "/pets/42",
     status: 200,
     expected: { id: "42", name: "Milo", status: "available" },
+    extraRequests: [
+      {
+        path: "/",
+        expected: { id: "default", name: "Milo", status: "available" },
+      },
+    ],
   },
   "hey-api": {
     spec: "openapi.json",
@@ -22,6 +28,12 @@ const cases = {
     path: "/pets/1",
     status: 200,
     expected: { id: 1, name: "Buddy", status: "available" },
+    extraRequests: [
+      {
+        path: "/pets",
+        expected: { id: 1, name: "Buddy", status: "available" },
+      },
+    ],
   },
   orval: {
     method: "POST",
@@ -72,6 +84,12 @@ const cases = {
     path: "/pets/1",
     status: 200,
     expected: { id: 1, name: "Buddy", status: "available" },
+    extraRequests: [
+      {
+        path: "/pets",
+        expected: { id: 1, name: "Buddy", status: "available" },
+      },
+    ],
   },
 };
 const selected = process.argv[2];
@@ -182,18 +200,24 @@ async function verify(name, smoke) {
         const running = await simulator.start();
         try {
           const status = simulator.status();
-          const response = await fetch(\`http://127.0.0.1:\${status.address.port}${smoke.path}\`, {
-            method: ${JSON.stringify(smoke.method)}, headers: { "content-type": "application/json" },
-            body: ${smoke.body ? `JSON.stringify(${JSON.stringify(smoke.body)})` : "undefined"},
-          });
-          const responseText = await response.text();
-          assert.equal(response.status, ${smoke.status}, responseText);
-          assert.deepEqual(JSON.parse(responseText), ${JSON.stringify(smoke.expected ?? smoke.body)});
+          for (const request of ${JSON.stringify([smoke, ...(smoke.extraRequests ?? []).map((extra) => ({ ...smoke, ...extra }))])}) {
+            const response = await fetch(\`http://127.0.0.1:\${status.address.port}\${request.path}\`, {
+              method: request.method, headers: { "content-type": "application/json" },
+              body: request.body ? JSON.stringify(request.body) : undefined,
+            });
+            const responseText = await response.text();
+            assert.equal(response.status, request.status, responseText);
+            assert.deepEqual(JSON.parse(responseText), request.expected ?? request.body);
+          }
           console.log("Real Counterfact HTTP response matched the generated SDK model example.");
         } finally { await running.stop(); }
       `,
       );
-      await run(process.execPath, ["smoke-counterfact.mjs"], $.path("project"));
+      await run(
+        process.execPath,
+        ["--import", "tsx", "smoke-counterfact.mjs"],
+        $.path("project"),
+      );
       report.httpPassed = true;
       report.passed = true;
       console.log(

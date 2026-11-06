@@ -80,7 +80,8 @@ constructed. NSwag's `toJSON` produces the HTTP response's plain wire data.
 `src/verify-types.ts` checks assignment in both directions between the NSwag
 and Counterfact model. It also checks that an ordinary JSON object without
 the DTO methods is rejected and that a raw string cannot replace the nominal
-`PetStatus` enum. The route includes a negative response-type check too.
+`PetStatus` enum. An unused handler in the compiler-only file checks that
+responses reject a plain object too. The live handlers only return valid DTOs.
 `Pet.fromJS` accepts untyped JSON; it is hydration, not input validation.
 
 ## Verification evidence
@@ -93,8 +94,7 @@ the actual third-party generator and smoke-test both endpoints before this
 example is described as passing end to end. No upstream output is checked in
 or hand-written as a substitute for generation.
 
-The verification command also runs `build:runtime`. This ordinary TypeScript
-build emits app helpers and generated SDK values as adjacent JavaScript files
-for Counterfact's Node server to import. The model aliases are type-only and
-need no runtime alias. SDK enum values and DTO constructors are real runtime
-imports and need this build; they are not supplied by the adapter.
+The `start` script uses tsx to run local TypeScript helpers and generated SDK
+values alongside Counterfact. This avoids Counterfact’s fallback CommonJS
+cache rewriting relative imports to `.cjs`. Type-only model aliases require
+only the local `tsconfig.json` mapping; the transformer does not load SDK values.
