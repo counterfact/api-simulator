@@ -56,6 +56,8 @@ See the [programmatic manual](../features/programmatic-api.md) for complete test
 
 Each explicit module load, retry, or watcher refresh creates an ESM module generation. Routes, contexts, scenarios, and their local ESM dependencies share that generation, so a handler's context and custom-error imports agree. Separate simulator instances construct independent contexts and can have different class definitions. Reloads preserve live context values and update methods; retained objects from an older generation are not automatically converted to new classes.
 
+Versioned runners in the same API group share both context state and the ESM generation. Refreshing one runner refreshes its loaded siblings before reporting completion. Adding another version preserves existing live context values.
+
 A direct import outside a simulator belongs to a different generation. Do not use an externally imported context or error constructor to check objects created inside the simulator with `instanceof`. Compare classes within the same generation, or use an explicit error code when values cross generations. Builtins, bare package dependencies, and CommonJS loading keep their normal Node behavior; the generation guarantee applies to local ESM graphs.
 
 Native ESM loading uses Node module hooks. Integration tests that construct simulators or use `ModuleLoader` should run under Node's built-in `node:test` runner, or in a separate Node process. Jest's sandbox rejects these hooks; changing the assertion library does not change that limitation.

@@ -5,6 +5,8 @@
 
 Load routes, contexts, scenarios, and local ESM dependencies in coherent module generations. Fresh loaders and initialization retries recover from failed imports without reusing stale canonical modules, while reloads preserve live context state.
 
+Coordinate generation refreshes across versioned runners sharing a context registry, preserving handler and custom-error identity across every version. Keep extensionless dotted helper imports and symlinked helper directories working in the compiled fallback.
+
 Constructors imported outside a simulator can differ from constructors inside its generation. Run module-loading integration tests under native Node rather than Jest's module sandbox.
 
 Preserve Map/Set declaration snapshots during graph refresh and include explicit CommonJS routes and middleware in the compiled fallback cache.

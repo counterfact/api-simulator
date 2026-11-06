@@ -31,6 +31,13 @@ const { uncachedRequire } = await import("./uncached-require.cjs");
 
 const debug = createDebug("counterfact:server:module-loader");
 
+// Versioned runners have separate route registries but share one state graph.
+// Keep that graph's code generation and refresh queue at the same boundary.
+const loaderGroups = new WeakMap<
+  ContextRegistry,
+  { loaders: Set<ModuleLoader>; updates: UpdateQueue }
+>();
+
 /**
  * Watches the compiled routes directory and dynamically loads/reloads route
  * modules, context files, and middleware as files are added, changed, or
@@ -125,6 +132,11 @@ export class ModuleLoader extends EventTarget {
 
   private readonly updates = new UpdateQueue();
 
+  private readonly group: {
+    loaders: Set<ModuleLoader>;
+    updates: UpdateQueue;
+  };
+
   private loaded = false;
 
   private loadedFiles = new Set<string>();
@@ -159,6 +171,13 @@ export class ModuleLoader extends EventTarget {
     this.basePath = toForwardSlashPath(basePath);
     this.registry = registry;
     this.contextRegistry = contextRegistry;
+    const group = loaderGroups.get(contextRegistry) ?? {
+      loaders: new Set<ModuleLoader>(),
+      updates: new UpdateQueue(),
+    };
+    loaderGroups.set(contextRegistry, group);
+    group.loaders.add(this);
+    this.group = group;
     this.scenariosPath =
       scenariosPath === undefined
         ? undefined
@@ -225,31 +244,37 @@ export class ModuleLoader extends EventTarget {
             );
 
             if (eventName === "unlink") {
-              this.registry.remove(url);
-              this.sourceRoutes.delete(url);
-              if (basename(pathName).startsWith("_.middleware.")) {
-                this.sourceMiddlewares.delete(
-                  url.slice(0, url.lastIndexOf("/")) || "/",
-                );
-              }
-              if (url === "/index") {
-                this.sourceRoutes.delete("/");
-                this.registry.remove("/");
-              }
-              if (this.isContextFile(pathName)) {
-                this.contextFactories.delete(
-                  unescapePathForWindows(toForwardSlashPath(parts.dir)) || "/",
-                );
-                this.contextRegistry.remove(
-                  unescapePathForWindows(toForwardSlashPath(parts.dir)) || "/",
-                );
-              }
-              await this.loadModules();
+              await this.refreshGroup("", () => {
+                for (const loader of this.group.loaders) {
+                  if (loader.basePath !== this.basePath) continue;
+                  loader.registry.remove(url);
+                  loader.sourceRoutes.delete(url);
+                  if (basename(pathName).startsWith("_.middleware.")) {
+                    loader.sourceMiddlewares.delete(
+                      url.slice(0, url.lastIndexOf("/")) || "/",
+                    );
+                  }
+                  if (url === "/index") {
+                    loader.sourceRoutes.delete("/");
+                    loader.registry.remove("/");
+                  }
+                  if (this.isContextFile(pathName)) {
+                    loader.contextFactories.delete(
+                      unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
+                        "/",
+                    );
+                    loader.contextRegistry.remove(
+                      unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
+                        "/",
+                    );
+                  }
+                }
+              });
               this.dispatchEvent(new Event("remove"));
               return;
             }
 
-            await this.loadModules();
+            await this.refreshGroup();
           })
           .catch((error: unknown) =>
             process.stderr.write(`Module reload failed: ${String(error)}\n`),
@@ -281,7 +306,7 @@ export class ModuleLoader extends EventTarget {
                 this.scenarioRegistry?.remove(fileKey);
               }
 
-              await this.loadModules();
+              await this.refreshGroup();
             })
             .catch((error: unknown) =>
               process.stderr.write(
@@ -312,11 +337,39 @@ export class ModuleLoader extends EventTarget {
    * @param directory - Sub-directory to load, defaults to the root (`""`).
    */
   public load(directory = ""): Promise<void> {
-    return this.updates.run(() => this.loadModules(directory));
+    return this.updates.run(() => this.refreshGroup(directory));
   }
 
-  private async loadModules(directory = ""): Promise<void> {
-    this.generation = new ModuleGeneration();
+  private refreshGroup(
+    directory = "",
+    beforeRefresh: () => void = () => {},
+  ): Promise<void> {
+    return this.group.updates.run(async () => {
+      beforeRefresh();
+      const generation = new ModuleGeneration();
+      const loaders = [...this.group.loaders].filter(
+        (loader) => loader === this || loader.loaded,
+      );
+      let initializeContexts = !loaders.some((loader) => loader.loaded);
+      for (const loader of loaders) {
+        await loader.loadModules(
+          loader === this ? directory : "",
+          generation,
+          initializeContexts,
+        );
+        initializeContexts = false;
+      }
+      // Consumers observing completion must see every version in one generation.
+      for (const loader of loaders) loader.dispatchEvent(new Event("add"));
+    });
+  }
+
+  private async loadModules(
+    directory: string,
+    generation: ModuleGeneration,
+    initializeContexts: boolean,
+  ): Promise<void> {
+    this.generation = generation;
     if (!this.loaded) this.contextFactories.clear();
     const discovered = await this.fileDiscovery.findFiles(directory);
     // A scoped refresh must also refresh previously loaded contexts/handlers;
@@ -332,13 +385,13 @@ export class ModuleLoader extends EventTarget {
     await Promise.allSettled(modules);
     await Promise.all(
       files.map((file, index) =>
-        this.loadEndpoint(file, !this.loaded, modules[index]),
+        this.loadEndpoint(file, initializeContexts, modules[index]),
       ),
     );
-    if (!this.loaded && this.contextFactories.size > 0) this.resetContexts();
+    if (initializeContexts && this.contextFactories.size > 0)
+      this.resetContexts();
     await this.loadScenarios();
     this.loaded = true;
-    this.dispatchEvent(new Event("add"));
   }
 
   /** Refreshes the graph with a new store while preserving live context state. */

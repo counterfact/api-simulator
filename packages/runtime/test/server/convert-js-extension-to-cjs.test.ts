@@ -48,3 +48,9 @@ it("preserves dots in local module basenames when rewriting the suffix", () => {
     'require("./helper.v1.cjs")',
   );
 });
+
+it("rewrites dotted extensionless specifiers when they resolve to source files", () => {
+  expect(convertFileExtensionsToCjs('require("./my.helper")', () => true)).toBe(
+    'require("./my.helper.cjs")',
+  );
+});

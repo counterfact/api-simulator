@@ -1,6 +1,7 @@
 // Stryker disable all
 
 import { once } from "node:events";
+import { existsSync } from "node:fs";
 import nodePath from "node:path";
 import fs from "node:fs/promises";
 /* eslint-disable security/detect-non-literal-fs-filename -- transpiler consumes watched source files and writes paired outputs under configured directories. */
@@ -204,8 +205,23 @@ export class Transpiler extends EventTarget {
 
     const result: string = transpileOutput.outputText;
 
-    const resultWithTransformedFileExtensions =
-      convertFileExtensionsToCjs(result);
+    const resultWithTransformedFileExtensions = convertFileExtensionsToCjs(
+      result,
+      (specifier) => {
+        const target = nodePath.resolve(
+          nodePath.dirname(sourcePath),
+          specifier,
+        );
+        // A dot in a basename is not necessarily an extension: ./my.helper
+        // can resolve my.helper.ts. Preserve actual assets such as data.json.
+        return (
+          !existsSync(target) &&
+          ["js", "ts", "cjs", "cts", "mjs", "mts"].some((extension) =>
+            existsSync(`${target}.${extension}`),
+          )
+        );
+      },
+    );
 
     try {
       // Publish complete files even if duplicate watch events overlap. Readers
