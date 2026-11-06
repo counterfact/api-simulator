@@ -40,7 +40,7 @@ jobs:
       - name: Install repository dependencies
         run: yarn install --immutable
       - name: Build generator and dependencies
-        run: yarn workspace @counterfact/generator build
+        run: yarn build
       - uses: actions/setup-java@v5
         if: startsWith(matrix.target, 'openapi-generator-')
         with:
@@ -51,9 +51,10 @@ jobs:
         with:
           dotnet-version: "8.0.x"
       - name: Generate and compare real tool outputs
+        id: comparison
         run: yarn test:generator-compatibility "${{ matrix.target }}"
       - name: Preserve generated outputs and comparison report
-        if: always()
+        if: always() && steps.comparison.outcome != 'skipped'
         uses: actions/upload-artifact@v6
         with:
           name: generator-compatibility-${{ matrix.target }}
