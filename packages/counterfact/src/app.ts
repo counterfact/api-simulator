@@ -507,24 +507,38 @@ export async function counterfact<TStore = unknown>(
     // When multiple versioned specs share the same group, they also share a
     // single Repository instance so that the shared `types/paths/…` files
     // accumulate all versions into a merged Versioned<…> type instead of each
-    // overwriting the previous version's types.
+    // overwriting the previous version's types. Watcher updates rebuild the
+    // entire group with a fresh repository so siblings are retained and removed
+    // operations do not survive from an earlier generation.
     const runnersByGroup = new Map<string, ApiRunner[]>();
     for (const runner of runners) {
       const bucket = runnersByGroup.get(runner.group) ?? [];
       bucket.push(runner);
       runnersByGroup.set(runner.group, bucket);
     }
+    const regenerateByGroup = new Map<string, () => Promise<void>>();
     await Promise.all(
-      Array.from(runnersByGroup.values()).map(async (bucket) => {
-        const sharedRepository =
-          bucket.length > 1
-            ? new Repository({
-                schemaTypeTransform: config.schemaTypeTransform,
-              })
-            : undefined;
-        for (const runner of bucket) {
-          await runner.generate(sharedRepository);
-        }
+      Array.from(runnersByGroup.entries()).map(async ([group, bucket]) => {
+        let pending = Promise.resolve();
+        const regenerate = () => {
+          const result = pending.then(async () => {
+            const sharedRepository =
+              bucket.length > 1
+                ? new Repository({
+                    schemaTypeTransform: config.schemaTypeTransform,
+                  })
+                : undefined;
+            for (const runner of bucket) {
+              await runner.generate(sharedRepository);
+            }
+            return undefined;
+          });
+          // A failed save must not prevent later edits from regenerating.
+          pending = result.catch(() => undefined);
+          return result;
+        };
+        regenerateByGroup.set(group, regenerate);
+        await regenerate();
       }),
     );
 
@@ -588,7 +602,11 @@ export async function counterfact<TStore = unknown>(
     }
 
     try {
-      await completeStage(runners.map((runner) => runner.watch()));
+      await completeStage(
+        runners.map((runner) =>
+          runner.watch(regenerateByGroup.get(runner.group)),
+        ),
+      );
       await completeStage(runners.map((runner) => runner.start(options)));
 
       if (options.startServer) {
