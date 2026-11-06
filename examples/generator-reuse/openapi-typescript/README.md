@@ -33,3 +33,9 @@ Local Counterfact generation was run successfully and its Pet alias imports `com
 ## Limits
 
 This adapter expects the OpenAPI 3 `components["schemas"]` shape. Use the same input specification for both generators. Custom transformations that rename schema keys need an explicit `typeName` mapping. Reuse checks TypeScript contracts; it does not convert JSON values, validate network responses, or supply runtime DTO constructors.
+
+The verification command also runs `build:runtime`. This ordinary TypeScript
+build emits app helpers and generated SDK values as adjacent JavaScript files
+for Counterfact's Node server to import. The model aliases are type-only and
+need no runtime alias. SDK enum values and DTO constructors are real runtime
+imports and need this build; they are not supplied by the adapter.

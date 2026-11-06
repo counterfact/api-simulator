@@ -186,8 +186,9 @@ async function verify(name, smoke) {
             method: ${JSON.stringify(smoke.method)}, headers: { "content-type": "application/json" },
             body: ${smoke.body ? `JSON.stringify(${JSON.stringify(smoke.body)})` : "undefined"},
           });
-          assert.equal(response.status, ${smoke.status});
-          assert.deepEqual(await response.json(), ${JSON.stringify(smoke.expected ?? smoke.body)});
+          const responseText = await response.text();
+          assert.equal(response.status, ${smoke.status}, responseText);
+          assert.deepEqual(JSON.parse(responseText), ${JSON.stringify(smoke.expected ?? smoke.body)});
           console.log("Real Counterfact HTTP response matched the generated SDK model example.");
         } finally { await running.stop(); }
       `,

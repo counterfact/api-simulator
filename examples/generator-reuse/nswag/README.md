@@ -92,3 +92,9 @@ not been run locally. The integration runner must run `npm run verify` with
 the actual third-party generator and smoke-test both endpoints before this
 example is described as passing end to end. No upstream output is checked in
 or hand-written as a substitute for generation.
+
+The verification command also runs `build:runtime`. This ordinary TypeScript
+build emits app helpers and generated SDK values as adjacent JavaScript files
+for Counterfact's Node server to import. The model aliases are type-only and
+need no runtime alias. SDK enum values and DTO constructors are real runtime
+imports and need this build; they are not supplied by the adapter.

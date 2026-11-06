@@ -1,4 +1,4 @@
-import { PetStatus } from "../../src/generated/sdk/index.js";
+import { PetStatus } from "../../src/generated/sdk/models/PetStatus.js";
 import type { Pet } from "../../src/generated/sdk/index.js";
 import type { Routes } from "../types/index.js";
 

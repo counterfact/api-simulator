@@ -6,8 +6,9 @@
     "generate:models": "node scripts/generate-models.mjs",
     "generate:counterfact": "counterfact --config counterfact.yaml --generate --no-update-check",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run generate:models && npm run generate:counterfact && npm run typecheck",
-    "start": "counterfact --config counterfact.yaml --serve --port 3215 --no-update-check"
+    "verify": "npm run generate:models && npm run generate:counterfact && npm run typecheck && npm run build:runtime",
+    "start": "counterfact --config counterfact.yaml --serve --port 3215 --no-update-check",
+    "build:runtime": "tsc --project tsconfig.runtime.json"
   },
   "devDependencies": {
     "counterfact": "file:../../../packages/counterfact",

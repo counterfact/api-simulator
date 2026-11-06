@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "noEmitOnError": true,
+    "rewriteRelativeImportExtensions": true,
+    "allowImportingTsExtensions": true,
+    "declaration": false
+  },
+  "include": ["src/**/*.ts", "generated/**/*.ts"],
+  "exclude": ["src/contracts.ts", "src/typecheck.ts", "src/typechecks.ts"]
+}

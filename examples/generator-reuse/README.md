@@ -21,7 +21,9 @@ Read that project's README for the individual commands and runtime limitations.
 The namespace-like aliases above are `tsconfig.json` path mappings to local
 files, not npm packages. They keep the type-only imports stable across
 Counterfact's generated directories. Runtime SDK values use normal local
-imports; TypeScript aliases alone do not implement runtime module resolution.
+imports. Each project builds its app helpers and SDK TypeScript to JavaScript
+with `build:runtime` before serving; TypeScript aliases alone do not implement
+runtime module resolution. Type-only reuse itself needs no runtime alias.
 
 ## Run and verify
 

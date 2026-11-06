@@ -8,7 +8,8 @@
     "typecheck": "tsc --noEmit",
     "start": "counterfact --config counterfact.yaml --serve --watch",
     "generate:models": "node generate-sdk.mjs",
-    "verify": "npm run generate && npm run typecheck"
+    "verify": "npm run generate && npm run typecheck && npm run build:runtime",
+    "build:runtime": "tsc --project tsconfig.runtime.json"
   },
   "devDependencies": {
     "counterfact": "file:../../../packages/counterfact",

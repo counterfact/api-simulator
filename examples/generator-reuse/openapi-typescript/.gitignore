@@ -12,3 +12,6 @@ src/simulation/counterfact-types/
 src/simulation/routes/_.context.ts
 src/simulation/.cache/
 src/simulation/.gitignore
+src/**/*.js
+src/**/*.js.map
+generated/**/*.js

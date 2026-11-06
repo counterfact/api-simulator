@@ -10,7 +10,8 @@
     "generate:counterfact": "counterfact --config counterfact.yaml --generate --no-update-check",
     "generate": "npm run generate:models && npm run generate:counterfact",
     "typecheck": "tsc --project tsconfig.json",
-    "verify": "npm run generate && npm run typecheck"
+    "verify": "npm run generate && npm run typecheck && npm run build:runtime",
+    "build:runtime": "tsc --project tsconfig.runtime.json"
   },
   "devDependencies": {
     "counterfact": "file:../../../packages/counterfact",

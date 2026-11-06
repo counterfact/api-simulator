@@ -20,18 +20,18 @@ export function bothDirections(
 }
 
 // These controls must fail. Unused @ts-expect-error directives fail the check.
-// @ts-expect-error The upstream-generated enum rejects unknown wire values.
 export const invalidStatus: CounterfactPet = {
   id: "1",
   name: "Milo",
+  // @ts-expect-error The upstream-generated enum rejects unknown wire values.
   status: "lost",
 };
 // @ts-expect-error The upstream-generated model requires name.
 export const missingName: CounterfactPet = { id: "1", status: "available" };
-// @ts-expect-error Nested recursive values use the upstream-generated model too.
 export const invalidFriend: CounterfactPet = {
   id: "1",
   name: "Milo",
   status: "available",
+  // @ts-expect-error Nested recursive values use the upstream-generated model too.
   friend: { id: 2 },
 };

@@ -35,3 +35,9 @@ The exact CLI properties are `modelPropertyNaming=original,stringEnums=false,hid
 A stable local alias is explicit configuration. If an existing SDK uses another folder, model prefix, or suffix, change the alias and/or supply the adapter's `typeName` resolver. Every selected schema must actually have the configured named export. Dictionary and empty schemas may be inlined by this generator, so they cannot blindly use the same naming rule; return `undefined` from `typeName` for such schemas to retain Counterfact's default type.
 
 This example keeps wire property names and uses ordinary JSON objects. It does not establish compatibility for renamed fields, custom templates, class hydration, or date conversion. The adapter reuses the SDK's declared contract; it does not repair differences between a generated SDK and the OpenAPI document. In particular, an earlier real comparison found that OpenAPI Generator 7.27.0's Axios output omitted an inline `allOf` field. That issue is outside this deliberately simple fixture. Fetch implementation code also does not compile with TypeScript's `exactOptionalPropertyTypes` enabled; this application uses ordinary `strict` mode without that additional setting.
+
+The verification command also runs `build:runtime`. This ordinary TypeScript
+build emits app helpers and generated SDK values as adjacent JavaScript files
+for Counterfact's Node server to import. The model aliases are type-only and
+need no runtime alias. SDK enum values and DTO constructors are real runtime
+imports and need this build; they are not supplied by the adapter.

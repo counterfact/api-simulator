@@ -7,9 +7,10 @@
     "generate:counterfact": "counterfact --config counterfact.yaml --generate",
     "generate": "npm run generate:models && npm run generate:counterfact",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run generate && npm run typecheck",
+    "verify": "npm run generate && npm run typecheck && npm run build:runtime",
     "check": "npm run verify",
-    "start": "counterfact --config counterfact.yaml --serve"
+    "start": "counterfact --config counterfact.yaml --serve",
+    "build:runtime": "tsc --project tsconfig.runtime.json"
   },
   "devDependencies": {
     "@counterfact/generator": "file:../../../packages/generator",
