@@ -497,4 +497,11 @@ access and, for OpenAPI Generator/NSwag, Java/.NET respectively. The version pin
 and generator settings live in `packages/generator/test/compatibility/`. The
 Generator compatibility workflow runs all eight targets, including both OpenAPI
 Generator backends, and retains actual generated sources and JSON comparison
-reports as job artifacts. Ordinary focused tests remain offline AST regressions.
+reports as job artifacts. SDK source is first checked with its normal optional
+property setting and emitted to declarations; those unchanged public declaration
+shapes are compared with `exactOptionalPropertyTypes` enabled. This separates
+model compatibility from Fetch SDK implementation errors under that flag.
+OpenAPI Generator can inline dictionary/empty-object aliases instead of exporting
+them; those cases compare the actual generated property type that uses the alias.
+Original SDK sources and emitted declarations are both retained. Ordinary focused
+tests remain offline AST regressions.

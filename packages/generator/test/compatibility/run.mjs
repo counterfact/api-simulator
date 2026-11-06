@@ -63,6 +63,7 @@ async function runTarget(target, tool, specification) {
       await $.add("tools/run.mjs", source);
       await run(process.execPath, [$.path("tools/run.mjs")]);
     };
+    let upstreamProgram;
     try {
       await $.add("spec.json", specification);
       await $.add("package.json", '{"private":true,"type":"module"}');
@@ -180,11 +181,58 @@ async function runTarget(target, tool, specification) {
         types: true,
         schemaTypeTransform: schemaTypeCompatibility(target),
       }).generate();
+      // Compile the upstream SDK under its native optional-property setting,
+      // then compare its unmodified public declarations under our stricter setting.
+      // Fetch SDK implementation bodies currently fail exactOptionalPropertyTypes.
+      const writes = [];
+      upstreamProgram = ts.createProgram(
+        [$.path(modelModule.replace(/\.js$/u, ".ts"))],
+        {
+          strict: true,
+          exactOptionalPropertyTypes: false,
+          skipLibCheck: false,
+          declaration: true,
+          emitDeclarationOnly: true,
+          types: [],
+          target: ts.ScriptTarget.ES2022,
+          module: ts.ModuleKind.ESNext,
+          moduleResolution: ts.ModuleResolutionKind.Bundler,
+          rootDir: $.path("upstream"),
+          outDir: $.path("upstream-declarations"),
+        },
+      );
+      const upstreamDiagnostics = ts.getPreEmitDiagnostics(upstreamProgram);
+      assert.equal(
+        upstreamDiagnostics.length,
+        0,
+        ts.formatDiagnostics(upstreamDiagnostics, {
+          getCanonicalFileName: (name) => name,
+          getCurrentDirectory: () => $.path("."),
+          getNewLine: () => "\n",
+        }),
+      );
+      const emitted = upstreamProgram.emit(undefined, (name, text) =>
+        writes.push($.add(path.relative($.path("."), name), text)),
+      );
+      await Promise.all(writes);
+      assert.equal(
+        emitted.emitSkipped,
+        false,
+        "Upstream declaration emission failed",
+      );
+      modelModule = modelModule.replace(
+        "./upstream/",
+        "./upstream-declarations/",
+      );
       const names = Object.keys(JSON.parse(specification).components.schemas);
       const aliases = names
         .map((name) => {
-          const other =
-            target === "openapi-typescript"
+          const inlined =
+            target.startsWith("openapi-generator-") &&
+            ["Dictionary", "EmptyObject"].includes(name);
+          const other = inlined
+            ? `NonNullable<import(${JSON.stringify(modelModule)}).Profile[${JSON.stringify(name === "Dictionary" ? "dictionary" : "empty")}]>`
+            : target === "openapi-typescript"
               ? `import(${JSON.stringify(modelModule)}).components["schemas"][${JSON.stringify(name)}]`
               : `import(${JSON.stringify(modelModule)}).${name}`;
           return `export type Ours${name} = import("./counterfact/types/components/schemas/${name}.js").${name};
@@ -304,10 +352,14 @@ async function runTarget(target, tool, specification) {
           module: ts.ModuleKind.ESNext,
         },
       );
-      for (const file of capture.getSourceFiles()) {
+      for (const file of [
+        ...capture.getSourceFiles(),
+        ...(upstreamProgram?.getSourceFiles() ?? []),
+      ]) {
         const relative = path.relative($.path("."), file.fileName);
         if (
           relative.startsWith("upstream/") ||
+          relative.startsWith("upstream-declarations/") ||
           relative.startsWith("counterfact/") ||
           relative.startsWith("counterfact-default/")
         )
