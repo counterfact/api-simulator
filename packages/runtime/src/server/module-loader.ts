@@ -31,7 +31,10 @@ import { unescapePathForWindows } from "../util/windows-escape.js";
 
 const { uncachedRequire } = await import("./uncached-require.cjs");
 
-const attemptedEsmImports = new Set<string>();
+const esmImports = new Map<
+  string,
+  { source: string; module: Promise<unknown> }
+>();
 
 const debug = createDebug("counterfact:server:module-loader");
 
@@ -133,13 +136,24 @@ export class ModuleLoader extends EventTarget {
 
   private initialImportPass = false;
 
+  private readonly attemptedEsmImports = new Set<string>();
+
   private async importModule(pathName: string): Promise<unknown> {
     if ((await determineModuleKind(pathName)) === "commonjs")
       return uncachedRequire(pathName);
     const url = pathToFileURL(pathName).href;
-    const canonical = this.initialImportPass && !attemptedEsmImports.has(url);
-    attemptedEsmImports.add(url);
-    return canonical ? import(url) : uncachedImport(pathName);
+    const source = await fs.readFile(pathName, "utf8");
+    const previous = esmImports.get(url);
+    const initial =
+      this.initialImportPass && !this.attemptedEsmImports.has(url);
+    this.attemptedEsmImports.add(url);
+    if (initial && previous?.source === source) return previous.module;
+    const module =
+      initial && previous === undefined
+        ? import(url)
+        : uncachedImport(pathName);
+    esmImports.set(url, { source, module });
+    return module;
   }
 
   /** Holds file events while an explicit reset reconstructs the state graph. */

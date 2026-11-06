@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
 import { once, EventEmitter } from "node:events";
 import { usingTemporaryFiles } from "using-temporary-files";
 import {
@@ -18,24 +19,35 @@ await usingTemporaryFiles(async ($) => {
     "identity/item.mjs",
     "import {Context,DomainError} from './_.context.mjs'; export function GET($){try{$.context.fail();}catch(e){return {status:200,body:[$.context instanceof Context,e instanceof DomainError]};}}",
   );
-  const identityRoutes = new Registry(),
-    identityContexts = new ContextRegistry();
-  await new ModuleLoader(
-    $.path("identity"),
-    identityRoutes,
-    identityContexts,
-  ).load();
-  const result = await new Dispatcher(identityRoutes, identityContexts).request(
-    {
+  const direct = await import(
+    pathToFileURL($.path("identity/_.context.mjs")).href
+  );
+  const instances = [];
+  for (let run = 0; run < 3; run++) {
+    const identityRoutes = new Registry(),
+      identityContexts = new ContextRegistry();
+    await new ModuleLoader(
+      $.path("identity"),
+      identityRoutes,
+      identityContexts,
+    ).load();
+    const context = identityContexts.find("/");
+    assert.ok(context instanceof direct.Context);
+    assert.ok(!instances.includes(context));
+    instances.push(context);
+    const result = await new Dispatcher(
+      identityRoutes,
+      identityContexts,
+    ).request({
       method: "GET",
       path: "/item",
       body: undefined,
       headers: {},
       query: {},
       req: {},
-    },
-  );
-  assert.deepEqual(result.body, [true, true]);
+    });
+    assert.deepEqual(result.body, [true, true]);
+  }
 
   await $.add("two/item.mjs", "export const GET=()=>({body:'original'});");
   await $.add("two-scenarios/seed.mjs", "export const seed=()=> 'original';");
