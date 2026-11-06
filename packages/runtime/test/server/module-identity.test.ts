@@ -48,13 +48,15 @@ it("shares initial ESM context constructors, errors, and singletons with routes"
 });
 
 it("preserves native Node identity while retrying and reloading ESM entries", async () => {
-  await promisify(execFile)(
-    process.execPath,
-    [
-      fileURLToPath(
-        new URL("../fixtures/module-loader-cache.mjs", import.meta.url),
-      ),
-    ],
-    { timeout: 15000, env: { ...process.env, CHOKIDAR_USEPOLLING: "1" } },
-  );
+  await expect(
+    promisify(execFile)(
+      process.execPath,
+      [
+        fileURLToPath(
+          new URL("../fixtures/module-loader-cache.mjs", import.meta.url),
+        ),
+      ],
+      { timeout: 15000, env: { ...process.env, CHOKIDAR_USEPOLLING: "1" } },
+    ),
+  ).resolves.toHaveProperty("stdout");
 }, 20000);

@@ -1,4 +1,6 @@
 import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
+import { promisify } from "node:util";
 
 import { describe, expect, it } from "@jest/globals";
 import { usingTemporaryFiles } from "using-temporary-files";
@@ -56,10 +58,8 @@ describe("OpenAPI document loading", () => {
     });
 
     try {
-      const address = server.address();
-      if (address === null || typeof address === "string") {
-        throw new Error("The test server did not expose a TCP port.");
-      }
+      const address = server.address() as AddressInfo;
+      expect(address).toMatchObject({ port: expect.any(Number) });
 
       const document = await bundleOpenApiDocument(
         `http://127.0.0.1:${address.port}/openapi.yaml`,
@@ -67,9 +67,7 @@ describe("OpenAPI document loading", () => {
 
       expect((document.info as { title: string }).title).toBe("Remote");
     } finally {
-      await new Promise<void>((resolve, reject) => {
-        server.close((error) => (error ? reject(error) : resolve()));
-      });
+      await promisify(server.close.bind(server))();
     }
   });
 

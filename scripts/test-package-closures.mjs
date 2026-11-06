@@ -106,6 +106,7 @@ async function loadPackages() {
     if (!(await pathExists(manifestPath))) continue;
 
     packages.push({
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- The packaging harness intentionally reads workspace files and writes fixtures in its generated consumer/cache directories.
       manifest: JSON.parse(await readFile(manifestPath, "utf8")),
       root: packageRoot,
     });
@@ -120,6 +121,7 @@ function internalDependencies(workspace, workspaces) {
   const dependencies = new Set();
 
   for (const field of dependencyFields) {
+    // eslint-disable-next-line security/detect-object-injection -- field is selected from the fixed production dependency-field list above.
     for (const name of Object.keys(workspace.manifest[field] ?? {})) {
       if (workspaces.has(name)) dependencies.add(name);
     }
@@ -249,6 +251,7 @@ async function verifyPackageContents(packageDirectory, packageName) {
   }
 
   async function findBuildInfo(directory) {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The packaging harness intentionally reads workspace files and writes fixtures in its generated consumer/cache directories.
     const entries = await readdir(directory, { withFileTypes: true });
     for (const entry of entries) {
       const entryPath = path.join(directory, entry.name);
@@ -279,6 +282,7 @@ function collectInstalledWorkspaces(tree, workspaceNames, found = new Set()) {
 async function verifyImports(consumerDirectory, manifest) {
   const specifiers = exportSpecifiers(manifest);
   const deepImport = representativeDeepImport(manifest);
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The packaging harness intentionally reads workspace files and writes fixtures in its generated consumer/cache directories.
   await writeFile(
     path.join(consumerDirectory, "verify-imports.mjs"),
     `import assert from "node:assert/strict";
@@ -303,6 +307,7 @@ async function verifyDeclarations(consumerDirectory, manifest, examplePath) {
         `import type * as PackageExport${index} from ${JSON.stringify(specifier)};`,
     )
     .join("\n");
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The packaging harness intentionally reads workspace files and writes fixtures in its generated consumer/cache directories.
   await writeFile(path.join(consumerDirectory, "contract.ts"), `${imports}\n`);
   const files = ["contract.ts"];
 
@@ -310,6 +315,7 @@ async function verifyDeclarations(consumerDirectory, manifest, examplePath) {
     files.push(examplePath);
   }
 
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The packaging harness intentionally reads workspace files and writes fixtures in its generated consumer/cache directories.
   await writeFile(
     path.join(consumerDirectory, "tsconfig.json"),
     `${JSON.stringify(
@@ -354,7 +360,9 @@ async function verifyConsumer({
 }) {
   const slug = name.replaceAll("@", "").replaceAll("/", "-");
   const consumerDirectory = path.join(temporaryRoot, "consumers", slug);
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The packaging harness intentionally reads workspace files and writes fixtures in its generated consumer/cache directories.
   await mkdir(consumerDirectory, { recursive: true });
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The packaging harness intentionally reads workspace files and writes fixtures in its generated consumer/cache directories.
   await writeFile(
     path.join(consumerDirectory, "package.json"),
     `${JSON.stringify({ name: `${slug}-closure-consumer`, private: true, type: "module" }, undefined, 2)}\n`,
@@ -430,8 +438,11 @@ try {
     path.join(tmpdir(), "counterfact-package-npm-cache");
   const tarballDirectory = path.join(temporaryRoot, "tarballs");
   await Promise.all([
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The packaging harness intentionally reads workspace files and writes fixtures in its generated consumer/cache directories.
     mkdir(cacheDirectory, { recursive: true }),
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The packaging harness intentionally reads workspace files and writes fixtures in its generated consumer/cache directories.
     mkdir(tarballDirectory),
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The packaging harness intentionally reads workspace files and writes fixtures in its generated consumer/cache directories.
     mkdir(path.join(temporaryRoot, "consumers")),
   ]);
 

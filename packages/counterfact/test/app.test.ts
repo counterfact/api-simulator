@@ -39,6 +39,11 @@ async function waitUntil(predicate: () => boolean): Promise<void> {
   throw new Error("Condition was not met within five seconds");
 }
 
+function isRunner(group: string, version: string) {
+  return (runner: ApiRunner) =>
+    runner.group === group && runner.version === version;
+}
+
 describe("counterfact", () => {
   it("merges a startup port override with configured defaults and reports the listening port", async () => {
     await usingTemporaryFiles(async ($) => {
@@ -141,9 +146,17 @@ describe("counterfact", () => {
     });
   });
 
-  it.each(["configuration", "startup"])(
-    "honors generation, watching, and cache opt-outs at %s",
-    async (overrideAt) => {
+  const disabled = {
+    generate: { routes: false, types: false },
+    watch: { routes: false, types: false },
+    buildCache: false,
+  };
+  it.each([
+    { overrideAt: "configuration", configured: disabled, startup: {} },
+    { overrideAt: "startup", configured: {}, startup: disabled },
+  ])(
+    "honors generation, watching, and cache opt-outs at $overrideAt",
+    async ({ configured, startup }) => {
       await usingTemporaryFiles(async ($) => {
         await $.add(
           "openapi.json",
@@ -157,20 +170,13 @@ describe("counterfact", () => {
             },
           }),
         );
-        const disabled = {
-          generate: { routes: false, types: false },
-          watch: { routes: false, types: false },
-          buildCache: false,
-        };
         const simulator = await app.counterfact({
           basePath: $.path("api"),
           openApiPath: $.path("openapi.json"),
-          ...(overrideAt === "configuration" ? disabled : {}),
+          ...configured,
           startServer: false,
         });
-        const { stop } = await simulator.start(
-          overrideAt === "startup" ? disabled : {},
-        );
+        const { stop } = await simulator.start(startup);
         try {
           expect(simulator.status()).toMatchObject({
             generate: { routes: false, types: false },
@@ -296,13 +302,14 @@ describe("counterfact", () => {
     });
   });
 
-  it.each(["missing", "empty"])(
-    "starts and stops with a %s API directory",
-    async (directoryState) => {
+  it.each([
+    { directoryState: "missing", directories: [] },
+    { directoryState: "empty", directories: ["api"] },
+  ])(
+    "starts and stops with a $directoryState API directory",
+    async ({ directories }) => {
       await usingTemporaryFiles(async ($) => {
-        if (directoryState === "empty") {
-          await $.addDirectory("api");
-        }
+        for (const directory of directories) await $.addDirectory(directory);
         const simulator = await app.counterfact({
           basePath: $.path("api"),
           port: 0,
@@ -762,12 +769,8 @@ describe("counterfact", () => {
       { source: "_", group: "billing", version: "v2" },
     ]);
 
-    const billingV1 = capturedRunners.find(
-      ({ group, version }) => group === "billing" && version === "v1",
-    )!;
-    const billingV2 = capturedRunners.find(
-      ({ group, version }) => group === "billing" && version === "v2",
-    )!;
+    const billingV1 = capturedRunners.find(isRunner("billing", "v1"))!;
+    const billingV2 = capturedRunners.find(isRunner("billing", "v2"))!;
     const inventory = capturedRunners.find(
       ({ group }) => group === "inventory",
     )!;
@@ -802,10 +805,7 @@ describe("counterfact", () => {
     const createSpy = jest.spyOn(ApiRunner, "create");
     createSpy.mockImplementation(async (...args) => {
       const runner = await realCreate.apply(ApiRunner, args);
-      const group = args[1];
-      if (group) {
-        capturedRunnersByGroup.set(group, runner);
-      }
+      capturedRunnersByGroup.set(runner.group, runner);
       return runner;
     });
 
@@ -1113,12 +1113,8 @@ describe("counterfact", () => {
           { source: "_", group: "billing", version: "v2" },
         ],
       );
-      const billingV1 = capturedRunners.find(
-        ({ group, version }) => group === "billing" && version === "v1",
-      )!;
-      const billingV2 = capturedRunners.find(
-        ({ group, version }) => group === "billing" && version === "v2",
-      )!;
+      const billingV1 = capturedRunners.find(isRunner("billing", "v1"))!;
+      const billingV2 = capturedRunners.find(isRunner("billing", "v2"))!;
       const inventory = capturedRunners.find(
         ({ group }) => group === "inventory",
       )!;
