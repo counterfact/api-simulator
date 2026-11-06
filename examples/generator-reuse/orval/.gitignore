@@ -1,0 +1,15 @@
+node_modules/
+generated/
+api/types/
+api/counterfact-types/
+api/scenarios/
+api/.gitignore
+api/.cache/
+api/routes/_.context.ts
+package-lock.json
+src/generated/
+src/simulation/types/
+src/simulation/counterfact-types/
+src/simulation/routes/_.context.ts
+src/simulation/.cache/
+src/simulation/.gitignore

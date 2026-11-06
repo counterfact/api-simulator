@@ -1,0 +1,20 @@
+{
+  "name": "counterfact-orval-reuse-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:models": "orval --config orval.config.mjs",
+    "generate:counterfact": "counterfact --config counterfact.yaml --generate",
+    "generate": "npm run generate:models && npm run generate:counterfact",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck",
+    "check": "npm run generate && npm run verify",
+    "start": "counterfact --config counterfact.yaml --serve"
+  },
+  "devDependencies": {
+    "@counterfact/generator": "file:../../../packages/generator",
+    "counterfact": "file:../../../packages/counterfact",
+    "orval": "8.46.0",
+    "typescript": "5.9.3"
+  }
+}

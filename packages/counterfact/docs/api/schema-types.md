@@ -338,16 +338,38 @@ installed or executed by Counterfact.
 | [openapi-typescript-codegen](https://github.com/ferdikoomen/openapi-typescript-codegen) | `openapiTypescriptCodegenTransform` | Named model exports from the models barrel                               |
 | [NSwag](https://github.com/RicoSuter/NSwag/wiki/TypeScriptClientGenerator)              | `nswagTransform`                    | Exported DTO interfaces in module output, without a namespace            |
 
-For example, generate your openapi-typescript models into an importable package
-such as `@example/api-contracts`, then create `schema-type-transform.mjs`:
+Generate the other tool's types into your application's normal generated-files
+folder, for example `src/generated/schema.ts`. You do not need a separate SDK
+package. Give that local file a TypeScript path alias in your app's `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "paths": { "#api-models": ["./src/generated/schema.ts"] }
+  }
+}
+```
+
+Then create `schema-type-transform.mjs`:
 
 ```js
 import { openapiTypescriptTransform } from "counterfact";
 
 export default openapiTypescriptTransform({
-  moduleSpecifier: "@example/api-contracts",
+  moduleSpecifier: "#api-models",
 });
 ```
+
+The alias is a local compiler setting, not an installed package. Counterfact
+emits type-only imports, so those imports do not require a runtime alias.
+Generate the other tool's files before type-checking Counterfact's handlers.
+See the [eight runnable local SDK examples](https://github.com/counterfact/api-simulator/tree/codex/builtin-model-transformers/examples/generator-reuse)
+for normal file layouts, generator settings, handlers, and compiler checks.
 
 Select it with the existing configuration setting:
 
@@ -371,10 +393,11 @@ interface GeneratedModelTransformOptions {
 }
 ```
 
-`moduleSpecifier` is required. Use a package name, a TypeScript path alias that
-your project resolves, or a resolver for one-file-per-model output. Relative
+`moduleSpecifier` is required. Use a local TypeScript path alias, a package
+name if your project already uses a shared package, or a resolver for
+one-file-per-model output. Relative
 paths resolve from each generated type file, not the configuration module.
-Prefer a package or path alias because generated files can have different depths.
+Prefer a stable local alias because generated files can have different depths.
 The resolver receives the original, JSON Pointer-unescaped schema key.
 
 The default exported name is the exact schema key. For flat exports, configure

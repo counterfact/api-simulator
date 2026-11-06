@@ -1,0 +1,17 @@
+{
+  "name": "counterfact-local-openapi-typescript-codegen-poc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:models": "node scripts/generate-models.mjs",
+    "generate:counterfact": "counterfact --generate",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run generate:models && npm run generate:counterfact && npm run typecheck",
+    "start": "counterfact --serve --port 3100"
+  },
+  "devDependencies": {
+    "counterfact": "file:../../../packages/counterfact",
+    "openapi-typescript-codegen": "0.29.0",
+    "typescript": "5.9.3"
+  }
+}

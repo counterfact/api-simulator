@@ -1,0 +1,20 @@
+{
+  "name": "counterfact-hey-api-reuse-example",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.22"
+  },
+  "scripts": {
+    "generate:models": "node generate-models.mjs",
+    "generate:counterfact": "counterfact --config counterfact.yaml --generate --no-update-check",
+    "generate": "npm run generate:models && npm run generate:counterfact",
+    "typecheck": "tsc --project tsconfig.json",
+    "verify": "npm run generate && npm run typecheck"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "0.99.0",
+    "counterfact": "file:../../../packages/counterfact",
+    "typescript": "5.9.3"
+  }
+}

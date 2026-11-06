@@ -1,0 +1,17 @@
+{
+  "name": "counterfact-openapi-typescript-reuse-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:models": "openapi-typescript openapi.yaml --output src/generated/schema.ts",
+    "generate:counterfact": "counterfact --config counterfact.yaml",
+    "generate": "npm run generate:models && npm run generate:counterfact",
+    "typecheck": "tsc --project tsconfig.json",
+    "verify": "npm run generate && npm run typecheck && node verify.mjs"
+  },
+  "devDependencies": {
+    "counterfact": "file:../../../packages/counterfact",
+    "openapi-typescript": "7.13.0",
+    "typescript": "6.0.3"
+  }
+}

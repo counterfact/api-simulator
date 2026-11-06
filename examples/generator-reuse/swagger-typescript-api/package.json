@@ -1,0 +1,17 @@
+{
+  "name": "counterfact-swagger-typescript-api-reuse-poc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:models": "node scripts/generate-models.mjs",
+    "generate:counterfact": "counterfact --config counterfact.yaml --generate --no-update-check",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run generate:models && npm run generate:counterfact && npm run typecheck",
+    "start": "counterfact --config counterfact.yaml --serve --port 3215 --no-update-check"
+  },
+  "devDependencies": {
+    "counterfact": "file:../../../packages/counterfact",
+    "swagger-typescript-api": "13.13.0",
+    "typescript": "5.9.3"
+  }
+}
