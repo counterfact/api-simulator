@@ -10,7 +10,7 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 
 ## Frontend workflows
 
-- [Getting started](./getting-started.md) — run a local API and make a browser request.
+- [Getting started](./getting-started.md) — generate an API, try Swagger UI, edit handlers, and share state.
 - [Routes and custom responses](./features/routes.md) — shape the response a screen needs.
 - [State](./features/state.md) — share small in-memory state across routes.
 - [Hot reload](./features/hot-reload.md) — update handlers without restarting.
@@ -19,7 +19,7 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 
 ## Team and test workflows
 
-- [First 10 minutes](./first-10-minutes.md) — a small create/read workflow with one failure.
+- [Stateful Petstore example](./first-10-minutes.md) — an optional create/read workflow with one failure.
 - [Automated integration tests](./patterns/automated-integration-tests.md) — start and stop a local API in tests.
 - [Scenario scripts](./patterns/scenario-scripts.md) — create repeatable starting states.
 - [Model the workflow](./patterns/model-the-workflow.md) — keep state small and document supported behavior.
@@ -54,6 +54,20 @@ Node.js version, operating system, and architecture; startup events also include
 the Counterfact version and a subset of resolved options such as port and enabled
 actions. API file locations are SHA-256 hashed before sending. REPL command
 arguments are not included in these events.
+
+The guided coffee-shop walkthrough also reports opening, starting, completed
+exercise phases, skipped lessons, and reaching the final screen. Each milestone
+is counted once per running simulator session, including across browser reloads
+and Back navigation. Events include the tour ID, phase number, elapsed seconds,
+and Counterfact version. The final event records how many of the ten exercise
+phases were completed, so skipping to the end does not count as completing all
+exercises. A separate completion event fires when every exercise has been
+completed, including when returning to skipped lessons. A random session ID connects these events and changes when the
+simulator restarts; it does not identify a person across runs. Walkthrough events
+exclude project paths, file contents, cart contents, and error text. The browser
+sends only milestone names and phase numbers to the local simulator; the CLI
+forwards events through the same telemetry transport and opt-out settings.
+Reporting failures do not interrupt the walkthrough.
 
 To disable Counterfact telemetry, set `COUNTERFACT_TELEMETRY_DISABLED=true`
 before starting the process. For example, in a POSIX shell:
