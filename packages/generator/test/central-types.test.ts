@@ -110,6 +110,86 @@ function diagnostics(...files: string[]): string[] {
 }
 
 describe("central generated types", () => {
+  it("requires guards for optional request bodies across supported media types", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const paths = {};
+      const requestBodies = {};
+      const consumers: string[] = [];
+      for (const [format, media] of [
+        ["json", "application/json"],
+        ["form", "application/x-www-form-urlencoded"],
+        ["multipart", "multipart/form-data"],
+      ]) {
+        for (const required of [true, false, undefined]) {
+          for (const nullable of [true, false]) {
+            const name = `${format}_${String(required)}_${String(nullable)}`;
+            const body = {
+              ...(required === undefined ? {} : { required }),
+              content: {
+                [media]: {
+                  schema: {
+                    type: "object",
+                    nullable,
+                    required: ["name"],
+                    properties: { name: { type: "string" } },
+                  },
+                },
+              },
+            };
+            // Exercise reference resolution as well as inline request bodies.
+            Object.assign(requestBodies, { [name]: body });
+            Object.assign(paths, {
+              [`/${name}`]: {
+                patch: {
+                  requestBody:
+                    required === false
+                      ? { $ref: `#/components/requestBodies/${name}` }
+                      : body,
+                  responses: { 204: { description: "Empty" } },
+                },
+              },
+            });
+            consumers.push(`
+              type Body_${name} = Parameters<Routes["/${name}"]["PATCH"]>[0]["body"];
+              const value_${name}: Body_${name} = { name: "ok" };
+              ${required === true ? "// @ts-expect-error Required bodies exclude undefined." : ""}
+              const absent_${name}: Body_${name} = undefined;
+              ${nullable ? "" : "// @ts-expect-error Non-nullable bodies exclude null."}
+              const null_${name}: Body_${name} = null;
+              const handler_${name}: Routes["/${name}"]["PATCH"] = ($) => {
+                ${required !== true || nullable ? "// @ts-expect-error Guard the body before dereferencing." : ""}
+                $.body.name;
+                if ($.body != null) { const name: string = $.body.name; }
+                return $.response.status(204).empty();
+              };
+            `);
+          }
+        }
+      }
+      await $.add(
+        "spec.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "Optional bodies", version: "1" },
+          paths,
+          components: { requestBodies },
+        }),
+      );
+      await new CodeGenerator($.path("spec.json"), $.path("api"), {
+        routes: true,
+        types: true,
+      }).generate();
+      await $.add(
+        "consumer.ts",
+        `
+        import type { Routes } from "./api/types/index.js";
+        ${consumers.join("\n")}
+      `,
+      );
+      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+    });
+  });
+
   it("starts with flexible context properties and supports opting into strict typing", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("spec.json", JSON.stringify(spec));
@@ -155,7 +235,117 @@ describe("central generated types", () => {
       expect(await $.read("api/routes/_.context.ts")).toBe(strict);
       expect(diagnostics($.path("consumer.ts"))).toEqual([]);
     });
-  });
+  }, 30_000);
+
+  it.each(["", "v1"])(
+    "uses the endpoint context for collection and descendant handlers (version %p)",
+    async (version) => {
+      await usingTemporaryFiles(async ($) => {
+        await $.add(
+          "spec.json",
+          JSON.stringify({
+            openapi: "3.0.3",
+            info: { title: "Collection contexts", version: "1" },
+            paths: Object.fromEntries(
+              ["/dictionaries", "/dictionaries/{id}", "/other"].map((path) => [
+                path,
+                { get: { responses: { 204: { description: "Empty" } } } },
+              ]),
+            ),
+          }),
+        );
+        await $.add(
+          "api/routes/_.context.ts",
+          "export class Context { rootOnly(): void {} }",
+        );
+        await $.add(
+          "api/routes/dictionaries/_.context.ts",
+          "export class Context { listDictionaries(): void {} }",
+        );
+        await new CodeGenerator(
+          $.path("spec.json"),
+          $.path("api"),
+          { routes: true, types: true },
+          version,
+        ).generate();
+        if (version !== "") {
+          await $.add(
+            "api/types/versions.ts",
+            await generateVersionsTsContent([version]),
+          );
+        }
+        await $.add(
+          "consumer.ts",
+          `
+          import type { Routes } from "./api/types/index.js";
+          export const collection: Routes["/dictionaries"]["GET"] = ($) => {
+            $.context.listDictionaries();
+            // @ts-expect-error The root context is not supplied here.
+            $.context.rootOnly();
+            return $.response.status(204).empty();
+          };
+          export const descendant: Routes["/dictionaries"]["/{id}"]["GET"] = ($) => {
+            $.context.listDictionaries();
+            return $.response.status(204).empty();
+          };
+          export const fallback: Routes["/other"]["GET"] = ($) => {
+            $.context.rootOnly();
+            // @ts-expect-error An unrelated route does not use the dictionaries context.
+            $.context.listDictionaries();
+            return $.response.status(204).empty();
+          };
+          `,
+        );
+        expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+      });
+    },
+  );
+
+  it.each(["", "v1"])(
+    "keeps the root endpoint separate from the index child context (%s)",
+    async (version) => {
+      await usingTemporaryFiles(async ($) => {
+        await $.add(
+          "spec.json",
+          JSON.stringify({
+            openapi: "3.0.3",
+            info: { title: "Root", version: "1" },
+            paths: {
+              "/": { get: { responses: { 204: { description: "OK" } } } },
+              "/index/{id}": {
+                get: { responses: { 204: { description: "OK" } } },
+              },
+            },
+          }),
+        );
+        await $.add(
+          "api/routes/_.context.ts",
+          "export class Context { rootOnly(): void {} }",
+        );
+        await $.add(
+          "api/routes/index/_.context.ts",
+          "export class Context { childOnly(): void {} }",
+        );
+        await new CodeGenerator(
+          $.path("spec.json"),
+          $.path("api"),
+          { routes: true, types: true },
+          version,
+        ).generate();
+        if (version)
+          await $.add(
+            "api/types/versions.ts",
+            await generateVersionsTsContent([version]),
+          );
+        await $.add(
+          "consumer.ts",
+          'import type {Routes} from "./api/types/index.js"; const root: Routes["/"]["GET"] = ($) => { $.context.rootOnly();\n// @ts-expect-error Root must not use the index child.\n$.context.childOnly(); return $.response.status(204).empty(); }; const child: Routes["/index"]["/{id}"]["GET"] = ($) => { $.context.childOnly(); return $.response.status(204).empty(); };',
+        );
+        expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+      });
+    },
+    30_000,
+  );
 
   it("compiles routes and every component category, including unused and aliased schemas", async () => {
     await usingTemporaryFiles(async ($) => {

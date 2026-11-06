@@ -29,6 +29,7 @@ interface ImportEntry {
 export type ModuleReference = string | { context: true };
 
 interface ExternalImportEntry {
+  exportedName?: string;
   isDefault?: boolean;
   isType: boolean;
   modulePath: ModuleReference;
@@ -38,6 +39,7 @@ interface ExternalImportEntry {
 export class Script {
   public repository: Repository;
   public comments: string[] = [];
+  public contextRoutePath?: string;
   public exports = new Map<string, ExportStatement>();
   public versions = new Map<string, Map<string, ExportStatement>>();
   public versionBuilders = new Map<
@@ -178,8 +180,26 @@ export class Script {
     modulePath: ModuleReference,
     isType = false,
   ): string {
-    this.externalImport.set(name, { isType, modulePath });
-    return name;
+    const existing = [...this.externalImport].find(
+      ([, entry]) =>
+        (entry.modulePath === modulePath ||
+          (typeof entry.modulePath !== "string" &&
+            typeof modulePath !== "string")) &&
+        entry.isType === isType &&
+        entry.exportedName === name,
+    );
+    if (existing) return existing[0];
+    let local = name;
+    let suffix = 2;
+    while (
+      this.reservedNames.has(local) ||
+      this.exports.has(local) ||
+      this.imports.has(local) ||
+      this.externalImport.has(local)
+    )
+      local = name + suffix++;
+    this.externalImport.set(local, { isType, modulePath, exportedName: name });
+    return local;
   }
   public importExternalType(name: string, path: ModuleReference): string {
     return this.importExternal(name, path, true);
@@ -272,6 +292,7 @@ export class Script {
           : `./${modulePath}`,
         entry.isType,
         entry.isDefault,
+        entry.exportedName ?? name,
       );
     });
   }

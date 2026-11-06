@@ -1,3 +1,4 @@
+import { numericParameterValue } from "./numeric-parameter.js";
 import createDebugger from "debug";
 
 import { ModuleTree } from "./module-tree.js";
@@ -113,16 +114,14 @@ function castParameter(value: string | number | boolean, type: string) {
     return value;
   }
 
-  if (type === "integer") {
-    return Number.parseInt(value);
-  }
-
-  if (type === "number") {
-    return Number.parseFloat(value);
+  if (type === "integer" || type === "number") {
+    return numericParameterValue(value, type);
   }
 
   if (type === "boolean") {
-    return value === "true";
+    if (value === "true") return true;
+    if (value === "false") return false;
+    return value;
   }
 
   return value;
@@ -253,6 +252,19 @@ export class Registry {
     );
   }
 
+  public existsForPattern(
+    method: RequestMethod,
+    url: string,
+    pattern: string,
+  ): boolean {
+    return (
+      this.methodFromModule(
+        this.handler(url, method, pattern).module,
+        method,
+      ) !== undefined
+    );
+  }
+
   private methodsForPath(url: string): string[] {
     return [...this.methodNames].filter(
       (method) =>
@@ -272,8 +284,11 @@ export class Registry {
    * @returns An object with `module`, `path` (variable bindings),
    *   `matchedPath`, and `ambiguous` flag.
    */
-  public handler(url: string, method: string) {
-    const match = this.moduleTree.match(url, method);
+  public handler(url: string, method: string, pattern?: string) {
+    const match =
+      pattern === undefined
+        ? this.moduleTree.match(url, method)
+        : this.moduleTree.matchPattern(url, pattern);
 
     return {
       ambiguous: match?.ambiguous ?? false,
@@ -333,8 +348,9 @@ export class Registry {
       path?: Map<string, string>;
       query?: Map<string, string>;
     } = {},
+    pattern?: string,
   ) {
-    const handler = this.handler(url, httpRequestMethod);
+    const handler = this.handler(url, httpRequestMethod, pattern);
 
     debug("handler for %s: %o", url, handler);
 
