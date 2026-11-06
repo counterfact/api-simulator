@@ -50,3 +50,7 @@ Paths and commands below are relative to the repository root.
 - When a status check is required by a merge-queue ruleset, configure its workflow to run on `merge_group` with `checks_requested`; a `pull_request`-only workflow leaves the queue's synthetic commit without that check and eventually times out.
 
 - When a pull-request workflow's decision depends on labels, include `labeled` and `unlabeled` activity types so a label change refreshes the required status rather than leaving a stale result.
+
+- Scope matrix-specific commands to their own check label and give integration checks an explicit workspace build. Do not retain conditions referencing outputs from removed pre-matrix steps; they can run adapter tests in jobs that deliberately skip builds.
+
+- A facade prepack builds only its dependency closure. Build adapters outside that closure through their own prepack before collecting tarballs, and verify packaging with the adapter dist directory absent.

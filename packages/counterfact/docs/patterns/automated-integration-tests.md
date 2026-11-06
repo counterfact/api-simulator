@@ -22,24 +22,35 @@ existing routes without regeneration, set both `generate` and `watch` to
 
 ## Playwright: one simulator per worker
 
-Use a worker-scoped fixture to start Counterfact once, and an automatic test
-fixture to await `simulator.reset()` before each test. An optional test option
-can select a scenario after reset:
+Install `@counterfact/playwright` and `@playwright/test` as development dependencies
+in an ESM project. The adapter starts Counterfact once per worker and awaits
+reset before every test. Select an optional scenario with `test.use()`:
 
 ```ts
-// Inside your automatic test fixture:
-await workerSimulator.reset();
-if (scenarioName) await workerSimulator.scenario(scenarioName);
-await use(workerSimulator);
+import { createCounterfactTest, expect } from "@counterfact/playwright";
+
+const test = createCounterfactTest({ basePath: "./api" });
+test.use({ scenarioName: "emptyProjects" });
+
+test("has no projects", async ({ request, simulatorURL }) => {
+  expect(await (await request.get(`${simulatorURL}/projects`)).json()).toEqual(
+    [],
+  );
+});
 ```
 
-The complete [runnable Playwright example](https://github.com/counterfact/api-simulator/blob/0e4f31b8ccb827036085b452d8e18a76236a029a/examples/playwright-reset/README.md)
+The complete [runnable Playwright example](https://github.com/counterfact/api-simulator/blob/7ab6e6a0ceb2bc2ffd2cb3eebf9107f1def8e05f/examples/playwright-reset/README.md)
 includes configuration, routes, startup, fixture teardown, a per-test scenario
 option, and assertions that deleted baseline data returns before the next test.
 It uses Playwright's HTTP request fixture, so no browser installation is required.
 
-Each worker needs its own simulator and port. Tests on one worker share a
-listener but reset before every test. Await outstanding requests before reset;
+The adapter gives each worker an isolated API source copy and compiled caches,
+plus an OS-assigned port reported by `simulatorURL`. The copy preserves ancestor
+`node_modules` lookup order and package module scopes, so local and hoisted
+dependencies and JavaScript ESM scenarios remain available. Tests on one worker share a
+listener but reset before every test. Pass an existing extended Playwright test
+as the factory's second argument to compose its fixtures. Use the `simulator`
+fixture for direct store and context access. Await outstanding requests before reset;
 requests arriving while reset runs receive 503. A failed reset keeps HTTP
 unavailable until a later reset succeeds. Discard saved contexts and stores,
 and reacquire them with `simulator.loadContext()` and `simulator.store` after

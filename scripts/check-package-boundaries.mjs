@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
 export const ADR_DEPENDENCY_ALLOWLIST = Object.freeze({
+  "@counterfact/playwright": ["counterfact"],
   "@counterfact/client": ["@counterfact/openapi"],
   "@counterfact/generator": ["@counterfact/openapi", "@counterfact/types"],
   "@counterfact/openapi": ["@counterfact/types"],
@@ -263,6 +264,16 @@ export async function validatePackageBoundaries(
     const internalDependencies = new Set();
 
     for (const dependency of packageInfo.dependencies) {
+      if (
+        packageInfo.name !== "@counterfact/playwright" &&
+        ["@playwright/test", "playwright", "playwright-core"].includes(
+          dependency,
+        )
+      ) {
+        errors.push(
+          `${packageInfo.name}: Playwright dependencies belong in @counterfact/playwright`,
+        );
+      }
       if (byName.has(dependency)) {
         internalDependencies.add(dependency);
         if (!allowed.has(dependency)) {
@@ -369,6 +380,7 @@ export async function validatePackageBoundaries(
 
         if (
           packageInfo.name !== "counterfact" &&
+          packageInfo.name !== "@counterfact/playwright" &&
           targetName === "counterfact"
         ) {
           errors.push(

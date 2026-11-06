@@ -31,6 +31,11 @@ const stages = [
       ["exec", "tsc", "--build", "--force"],
     ],
   },
+  {
+    label: "Playwright fixtures",
+    workspace: "@counterfact/playwright",
+    commands: [["build"]],
+  },
 ];
 
 async function run(workspace, args) {

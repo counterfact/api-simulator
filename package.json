@@ -34,7 +34,7 @@
     "test:package-closures": "node scripts/test-package-closures.mjs",
     "test:tsd": "tsd --typings ./packages/types/dist/index.d.ts --files \"./packages/types/test/**/*.test-d.ts\"",
     "build": "node scripts/build.mjs",
-    "typecheck": "tsc --noEmit --pretty false -p packages/types && tsc --noEmit --pretty false -p packages/openapi && tsc --noEmit --pretty false -p packages/runtime && tsc --noEmit --pretty false -p packages/client && tsc --noEmit --pretty false -p packages/generator && tsc --noEmit --pretty false -p packages/repl && tsc --noEmit --pretty false -p packages/counterfact",
+    "typecheck": "tsc --noEmit --pretty false -p packages/types && tsc --noEmit --pretty false -p packages/openapi && tsc --noEmit --pretty false -p packages/runtime && tsc --noEmit --pretty false -p packages/client && tsc --noEmit --pretty false -p packages/generator && tsc --noEmit --pretty false -p packages/repl && tsc --noEmit --pretty false -p packages/counterfact && yarn workspace @counterfact/playwright typecheck",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release:version": "changeset version && yarn install --mode skip-build --no-immutable",
     "release": "changeset publish",
@@ -51,7 +51,9 @@
     "go:multiple-apis": "yarn workspace counterfact go:multiple-apis",
     "go:multiple-versions": "yarn workspace counterfact go:multiple-versions",
     "counterfact": "./packages/counterfact/bin/counterfact.js",
-    "check:drift": "catchmydrift"
+    "check:drift": "catchmydrift",
+    "test:playwright": "yarn workspace @counterfact/playwright test",
+    "test:playwright-example": "yarn workspace @counterfact/playwright exec playwright test --config ../../examples/playwright-reset/playwright.config.ts"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",

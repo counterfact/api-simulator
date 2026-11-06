@@ -162,19 +162,23 @@ reason to create a generic `core` package.
 
 ### Allowed dependency direction
 
-| Package                  | Counterfact packages it may depend on     |
-| ------------------------ | ----------------------------------------- |
-| `@counterfact/types`     | none                                      |
-| `@counterfact/openapi`   | `types`                                   |
-| `@counterfact/generator` | `types`, `openapi`                        |
-| `@counterfact/runtime`   | `types`, `openapi`                        |
-| `@counterfact/client`    | `openapi`                                 |
-| `@counterfact/repl`      | `client`, narrow contracts from `runtime` |
-| `counterfact`            | all focused packages                      |
+| Package                   | Counterfact packages it may depend on     |
+| ------------------------- | ----------------------------------------- |
+| `@counterfact/types`      | none                                      |
+| `@counterfact/openapi`    | `types`                                   |
+| `@counterfact/generator`  | `types`, `openapi`                        |
+| `@counterfact/runtime`    | `types`, `openapi`                        |
+| `@counterfact/client`     | `openapi`                                 |
+| `@counterfact/repl`       | `client`, narrow contracts from `runtime` |
+| `counterfact`             | foundational focused packages             |
+| `@counterfact/playwright` | `counterfact` (public orchestration API)  |
 
 The important rules are that leaf packages do not import orchestration
-concerns, runtime does not depend on generator, and no package depends on the
-facade.
+concerns and runtime does not depend on generator. Test-framework adapters sit
+above the facade: `@counterfact/playwright` depends on its public orchestration
+API, while the facade and foundational packages must never depend on that
+adapter or Playwright. Playwright is a peer of the adapter, keeping the host
+test runner authoritative and avoiding a second runner installation.
 
 Workspace imports use package names and declared `exports`; cross-package deep
 imports into another package's `src/` directory are prohibited. CI enforces the
