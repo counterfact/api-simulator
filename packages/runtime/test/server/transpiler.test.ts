@@ -169,3 +169,32 @@ describe("a Transpiler", () => {
     });
   });
 });
+
+it.each([
+  ["commonjs", "cjs", "cjs"],
+  ["commonjs", "cts", "cjs"],
+  ["commonjs", "js", "cjs"],
+  ["module", "cts", "cjs"],
+  ["module", "mts", "mjs"],
+])("caches %s .%s sources under .%s filenames", async (kind, input, output) => {
+  await usingTemporaryFiles(async ($) => {
+    const source =
+      input === "cjs" ? "exports.value=7;" : "export const value=7;";
+    await $.add(`src.ts-files/probe.${input}`, source);
+    const compiler = new Transpiler(
+      $.path("src.ts-files"),
+      $.path("cache"),
+      kind,
+    );
+    try {
+      await compiler.watch();
+      expect(await $.read(`cache/probe.${output}`)).toContain("7");
+      const removed = once(compiler, "delete");
+      await $.remove(`src.ts-files/probe.${input}`);
+      await removed;
+      await expect($.read(`cache/probe.${output}`)).rejects.toThrow(/ENOENT/u);
+    } finally {
+      await compiler.stopWatching();
+    }
+  });
+});

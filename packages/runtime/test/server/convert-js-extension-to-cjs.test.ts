@@ -25,3 +25,26 @@ describe("convertFileExtensionsToCjs", () => {
     );
   });
 });
+
+it.each(["cjs", "cts", "mjs", "mts"])(
+  "maps explicit .%s imports to one cached .cjs suffix",
+  (extension) => {
+    expect(convertFileExtensionsToCjs(`require("./helper.${extension}")`)).toBe(
+      'require("./helper.cjs")',
+    );
+  },
+);
+
+it.each(["json", "node", "yaml"])(
+  "leaves non-code .%s imports unchanged",
+  (extension) => {
+    const source = `require("./data.${extension}")`;
+    expect(convertFileExtensionsToCjs(source)).toBe(source);
+  },
+);
+
+it("preserves dots in local module basenames when rewriting the suffix", () => {
+  expect(convertFileExtensionsToCjs('require("./helper.v1.js")')).toBe(
+    'require("./helper.v1.cjs")',
+  );
+});

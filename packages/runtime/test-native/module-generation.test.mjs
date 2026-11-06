@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { once } from "node:events";
 import { pathToFileURL } from "node:url";
 import { usingTemporaryFiles } from "using-temporary-files";
 import {
@@ -232,5 +233,46 @@ test("route-only reloads preserve live Map and Set entries in unchanged context 
       pets: [{ name: "Fluffy" }],
       labels: ["live"],
     });
+  });
+});
+
+test("the compiled fallback loads explicit CommonJS routes, middleware, and local imports", async (t) => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add("routes.ts-files/helper.js", "export const value=7;");
+    await $.add("routes.ts-files/shared.cjs", "exports.value=11;");
+    await $.add(
+      "routes.ts-files/probe.cts",
+      'import {value} from "./helper.js"; import {value as shared} from "./shared.cjs"; export const GET=()=>({status:200,body:value+shared});',
+    );
+    await $.add(
+      "routes.ts-files/_.middleware.cjs",
+      'exports.middleware=async ($,next)=>({...await next($),headers:{"x-cache":"present"}});',
+    );
+    const { Transpiler } = await import("@counterfact/runtime");
+    const transpiler = new Transpiler(
+      $.path("routes.ts-files"),
+      $.path("cache"),
+      "commonjs",
+    );
+    t.after(() => transpiler.stopWatching());
+    await transpiler.watch();
+    const registry = new Registry();
+    const contexts = new ContextRegistry();
+    await new ModuleLoader($.path("cache"), registry, contexts).load();
+    const dispatcher = new Dispatcher(registry, contexts);
+    const response = await dispatcher.request({
+      method: "GET",
+      path: "/probe",
+      headers: {},
+      query: {},
+      req: {},
+    });
+    assert.equal(response.body, 18);
+    assert.equal(response.headers["x-cache"], "present");
+    assert.ok((await $.read("cache/helper.cjs")).includes("exports.value"));
+    const removed = once(transpiler, "delete");
+    await $.remove("routes.ts-files/probe.cts");
+    await removed;
+    await assert.rejects($.read("cache/probe.cjs"), /ENOENT/u);
   });
 });

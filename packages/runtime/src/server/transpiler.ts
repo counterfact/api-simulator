@@ -9,7 +9,7 @@ import createDebug from "debug";
 import ts from "typescript";
 
 import { ensureDirectoryExists } from "../util/ensure-directory-exists.js";
-import { toForwardSlashPath, pathJoin } from "../util/forward-slash-path.js";
+import { toForwardSlashPath } from "../util/forward-slash-path.js";
 import { CHOKIDAR_OPTIONS } from "./constants.js";
 import { convertFileExtensionsToCjs } from "./convert-js-extensions-to-cjs.js";
 
@@ -46,8 +46,20 @@ export class Transpiler extends EventTarget {
     this.moduleKind = moduleKind;
   }
 
-  private get extension() {
-    return this.moduleKind.toLowerCase() === "commonjs" ? ".cjs" : ".js";
+  private destinationFor(sourcePath: string): string {
+    const commonjs =
+      /\.(?:cjs|cts)$/u.test(sourcePath) ||
+      this.moduleKind.toLowerCase() !== "module";
+    const extension = commonjs
+      ? ".cjs"
+      : /\.(?:mjs|mts)$/u.test(sourcePath)
+        ? ".mjs"
+        : ".js";
+    return toForwardSlashPath(
+      sourcePath
+        .replace(this.sourcePath, this.destinationPath)
+        .replace(/\.[cm]?[jt]s$/u, extension),
+    );
   }
 
   /**
@@ -71,7 +83,7 @@ export class Transpiler extends EventTarget {
       async (eventName: string, sourcePathOriginal: string) => {
         debug("transpiler event: %s <%s>", eventName, sourcePathOriginal);
 
-        const JS_EXTENSIONS = ["js", "mjs", "ts", "mts"];
+        const JS_EXTENSIONS = ["js", "mjs", "cjs", "ts", "mts", "cts"];
 
         if (
           !JS_EXTENSIONS.some((extension) =>
@@ -82,16 +94,10 @@ export class Transpiler extends EventTarget {
 
         const sourcePath = toForwardSlashPath(sourcePathOriginal);
 
-        const destinationPath = toForwardSlashPath(
-          sourcePath
-            .replace(this.sourcePath, this.destinationPath)
-            .replace(".ts", this.extension),
-        );
+        const destinationPath = this.destinationFor(sourcePath);
 
         if (["add", "change"].includes(eventName)) {
-          transpiles.push(
-            this.transpileFile(eventName, sourcePath, destinationPath),
-          );
+          transpiles.push(this.transpileFile(sourcePath, destinationPath));
         }
 
         if (eventName === "unlink") {
@@ -122,7 +128,6 @@ export class Transpiler extends EventTarget {
   }
 
   private async transpileFile(
-    eventName: string,
     sourcePath: string,
     destinationPath: string,
   ): Promise<void> {
@@ -134,7 +139,10 @@ export class Transpiler extends EventTarget {
       compilerOptions: {
         module:
           ts.ModuleKind[
-            this.moduleKind.toLowerCase() === "module" ? "ES2022" : "CommonJS"
+            /\.(?:cjs|cts)$/u.test(sourcePath) ||
+            this.moduleKind.toLowerCase() !== "module"
+              ? "CommonJS"
+              : "ES2022"
           ],
 
         target: ts.ScriptTarget.ES2015,
@@ -154,21 +162,15 @@ export class Transpiler extends EventTarget {
 
     const result: string = transpileOutput.outputText;
 
-    const fullDestination = pathJoin(
-      sourcePath
-        .replace(this.sourcePath, this.destinationPath)
-        .replace(".ts", this.extension),
-    );
-
     const resultWithTransformedFileExtensions =
       convertFileExtensionsToCjs(result);
 
     try {
-      await fs.writeFile(fullDestination, resultWithTransformedFileExtensions);
+      await fs.writeFile(destinationPath, resultWithTransformedFileExtensions);
     } catch (error) {
       debug(
         "error writing transpiled output to %s: %o",
-        fullDestination,
+        destinationPath,
         error,
       );
       this.dispatchEvent(new Event("error"));
