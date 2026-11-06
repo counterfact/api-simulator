@@ -251,6 +251,13 @@ const invalid: Schemas["HealthStatus"] = 123;
     `
     import type { JsonSchema, SchemaTypeScript, SchemaTypeTransform } from "@counterfact/generator";
     import ts from "typescript";
+    import { openapiTypescriptTransform, heyApiTransform, orvalTransform,
+      openapiGeneratorTransform, swaggerTypescriptApiTransform,
+      openapiTypescriptCodegenTransform, nswagTransform } from "@counterfact/generator";
+    export const adapters: SchemaTypeTransform[] = [openapiTypescriptTransform,
+      heyApiTransform, orvalTransform, openapiGeneratorTransform,
+      swaggerTypescriptApiTransform, openapiTypescriptCodegenTransform,
+      nswagTransform].map((adapter) => adapter({ moduleSpecifier: "@example/models" }));
     const schema: JsonSchema = { type: "string", format: "uuid" };
     export const transform: SchemaTypeTransform = (input, type, script: SchemaTypeScript) => {
       if (typeof input === "object" && input.format === "uuid") return script.importType("@domain/types", "UUID");

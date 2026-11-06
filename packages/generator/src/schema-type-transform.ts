@@ -9,7 +9,7 @@ export type JsonSchema = boolean | Readonly<Record<string, unknown>>;
 
 /**
  * The generated file's output facade. It exposes named type imports, not the
- * internal Script, source locations, declaration names, or traversal controls.
+ * internal Script, declaration names, or traversal controls.
  */
 export interface SchemaTypeScript {
   /**
@@ -27,6 +27,12 @@ export interface SchemaTypeScript {
   ): ts.TypeReferenceNode;
 }
 
+/** Location of the schema after bundling and overlays. */
+export interface SchemaTypeLocation {
+  /** JSON Pointer of the schema being transformed, not its reference site. */
+  readonly schemaPath: string;
+}
+
 /**
  * Customize an inline schema or referenced definition after default generation.
  * Return the default type, update it with TypeScript factories, or replace it.
@@ -34,10 +40,11 @@ export interface SchemaTypeScript {
  * Treat the schema and AST as immutable. Keep results deterministic across runs.
  *
  * @param schema The bundled schema after overlays; true defaults to unknown and
- * false to never. No source pointer or definition name is exposed.
+ * false to never.
  * @param defaultType Counterfact's generated type, including transformed children.
  * A containing schema can still add constraints around the returned node.
  * @param script Facade for registering imports in the current generated file.
+ * @param location The bundled schema location, including its definition key.
  * @returns A synchronous TypeNode on every branch, never a string or Promise.
  * @throws Generation fails with the schema location if the callback throws or
  * returns an invalid result. Default generation happens before this callback.
@@ -51,6 +58,7 @@ export type SchemaTypeTransform = (
   schema: JsonSchema,
   defaultType: ts.TypeNode,
   script: SchemaTypeScript,
+  location: SchemaTypeLocation,
 ) => ts.TypeNode;
 
 /** Internal marker so customization failures cannot become fallback types. */
