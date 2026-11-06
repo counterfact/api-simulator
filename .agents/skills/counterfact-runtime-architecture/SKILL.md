@@ -9,7 +9,8 @@ applyTo:
   - "packages/runtime/src/server/**/*.ts"
   - "packages/counterfact/src/util/**/*.ts"
   - "packages/runtime/test/server/**/*.test.ts"
-  - "packages/counterfact/test/app.test.ts"
+  - "packages/runtime/test-native/*.test.mjs"
+  - "packages/counterfact/test-native/*.test.mjs"
   - "packages/repl/src/**/*.ts"
   - "packages/repl/test/**/*.test.ts"
 ---
@@ -35,8 +36,8 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Keep orchestration in `app.ts` / `ApiRunner`; avoid leaking server details into generator modules.
 - Keep subsystems separated (`registry`, `context-registry`, `module-loader`, `dispatcher`) and connected through explicit constructor interfaces.
 - Preserve hot-reload expectations: route/module changes should apply without restart and context should survive reloads. Compare reloaded object/array initializers structurally against the cached declaration, not by identity or against live state; otherwise an unchanged initializer can erase scenario seeds, request mutations, or REPL edits. Test both preserved live state and intentional initializer changes.
-- Use canonical ESM URLs for initial entry imports so static imports share class and singleton identity. Reserve cache-busting for reloads; a query suffix creates a distinct Node module identity even before any files change.
-- Fresh loaders over unchanged ESM files must reuse the previously loaded module to preserve handler/context/error identity while constructing independent context state. Compare source contents across loaders; track attempts per loader independently of successful construction so watcher updates, edited entries, and initialization retries still refresh entries. Verify this in a native Node subprocess with a direct context import and repeated fresh loaders, alongside edited-file and retry regressions.
+- Load ESM entries and local static/dynamic dependencies in one generation per explicit load/retry or watcher refresh. Different simulators may have different constructors; handlers and contexts within each simulator must agree. Keep bare packages and builtins in Node's normal module cache. Do not infer the provenance of Node's canonical module cache by reading current disk contents or reuse failed import promises across generations.
+- Keep context state construction/reset separate from code generation refresh. Use state-preserving context merges during reloads; objects retained from a previous generation are not automatically converted to new classes. Document that external direct imports need not share simulator class identity.
 - Keep programmatic defaults in `counterfact()` separate from CLI action defaults. Embedding an API needs only `basePath`; generation, watching, and cache building default to enabled regardless of whether a spec is supplied. Explicit options override those defaults, and `start()` merges partial startup overrides into the resolved configuration. Use the effective port for binding, startup scenarios, REPL requests, and status reporting. `watch` flags govern code regeneration, while server startup also enables runtime module/spec/store watching.
 - Initialize route and compiled-output directories even when the API is missing or empty; cache creation must not depend on a source file being compiled.
 - Resolve HTTP startup only after the listener is ready and reject bind errors through the startup promise. Report listener status from the actual server, including the allocated port when configured with port 0.
@@ -57,8 +58,9 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 ## How to validate the change
 
-- Run: `yarn lint`, `yarn build`, `yarn test`. The root test command uses the shared Jest configuration across application, runtime, REPL, generator, client, and OpenAPI test roots. Use `yarn test:runtime` or `yarn test:repl` to select those boundaries for focused runs.
-- Run focused runtime tests first (for touched areas), e.g. `packages/runtime/test/server/dispatcher.test.ts`, `packages/runtime/test/server/module-loader.test.ts`, `packages/counterfact/test/app.test.ts`.
+- Run: `yarn lint`, `yarn build`, `yarn test`. The root test command builds and runs native module/application integration tests before the shared Jest suite. Use `yarn test:runtime` or `yarn test:repl` to select those boundaries for focused runs.
+- Run focused runtime tests first (for touched areas), e.g. `packages/runtime/test/server/dispatcher.test.ts`, `packages/runtime/test-native/module-loader.test.mjs`, `packages/counterfact/test-native/app.test.mjs`.
+- Run `yarn workspace @counterfact/runtime test:native:coverage` for the loader/generation boundary, enforcing at least 90% branch coverage. Run real module loading under node:test against built output; Jest sandboxes cannot host Node module hooks. Keep pure registry/dispatch tests in Jest.
 - Manually sanity-check startup + runtime flow with `yarn go:example` when behavior changes.
 
 ## Recursive request schemas

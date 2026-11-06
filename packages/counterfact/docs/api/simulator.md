@@ -52,9 +52,11 @@ Reacquire contexts with `loadContext()` and read `api.store` again after reset. 
 
 See the [programmatic manual](../features/programmatic-api.md) for complete test-suite examples.
 
-On initial load, ESM routes and contexts share the same canonical module URL, so imported classes, domain errors, and singletons have consistent identity. Hot reload continues to use cache-busted entry imports; unchanged static dependencies retain the normal Node module cache.
+Each explicit module load, retry, or watcher refresh creates an ESM module generation. Routes, contexts, scenarios, and their local ESM dependencies share that generation, so a handler's context and custom-error imports agree. Separate simulator instances construct independent contexts and can have different class definitions. Reloads preserve live context values and update methods; retained objects from an older generation are not automatically converted to new classes.
 
-Fresh loaders reuse unchanged ESM modules, including modules imported directly before creating a simulator. Each loader still constructs its own context instances. Edited entries, failed-initialization retries, and watcher updates refresh entries; unchanged static dependencies still follow Node’s module cache.
+A direct import outside a simulator belongs to a different generation. Do not use an externally imported context or error constructor to check objects created inside the simulator with `instanceof`. Compare classes within the same generation, or use an explicit error code when values cross generations. Builtins, bare package dependencies, and CommonJS loading keep their normal Node behavior; the generation guarantee applies to local ESM graphs.
+
+Native ESM loading uses Node module hooks. Integration tests that construct simulators or use `ModuleLoader` should run under Node's built-in `node:test` runner, or in a separate Node process. Jest's sandbox rejects these hooks; changing the assertion library does not change that limitation.
 
 Boolean query, header, and cookie parameters accept the case-sensitive wire values true and false. With request validation enabled, malformed text returns 400 before the handler executes. With validation disabled, malformed boolean text remains unchanged instead of becoming false.
 Versioned dispatchers only execute operations declared in their selected contract. An absent path returns 404; an absent method returns 405. Unversioned dispatchers continue to support custom routes.

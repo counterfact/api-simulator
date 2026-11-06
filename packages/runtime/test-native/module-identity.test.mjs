@@ -1,11 +1,10 @@
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-import { fileURLToPath } from "node:url";
+import assert from "node:assert/strict";
+import { it } from "node:test";
 import { usingTemporaryFiles } from "using-temporary-files";
-import { ContextRegistry } from "../../src/server/context-registry.js";
-import { Dispatcher } from "../../src/server/dispatcher.js";
-import { ModuleLoader } from "../../src/server/module-loader.js";
-import { Registry } from "../../src/server/registry.js";
+import { ContextRegistry } from "../dist/server/context-registry.js";
+import { Dispatcher } from "../dist/server/dispatcher.js";
+import { ModuleLoader } from "../dist/server/module-loader.js";
+import { Registry } from "../dist/server/registry.js";
 
 it("shares initial ESM context constructors, errors, and singletons with routes", async () => {
   await usingTemporaryFiles(async ($) => {
@@ -39,22 +38,10 @@ it("shares initial ESM context constructors, errors, and singletons with routes"
       query: {},
       req: {},
     });
-    expect(response.body).toEqual({
+    assert.deepEqual(response.body, {
       context: true,
       error: true,
       singleton: true,
     });
   });
 });
-
-it("preserves native Node identity while retrying and reloading ESM entries", async () => {
-  await promisify(execFile)(
-    process.execPath,
-    [
-      fileURLToPath(
-        new URL("../fixtures/module-loader-cache.mjs", import.meta.url),
-      ),
-    ],
-    { timeout: 15000, env: { ...process.env, CHOKIDAR_USEPOLLING: "1" } },
-  );
-}, 20000);

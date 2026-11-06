@@ -58,7 +58,11 @@
   "scripts": {
     "build": "rimraf dist && tsc --build --force && copyfiles -f \"src/server/*.cjs\" dist/server",
     "prepack": "yarn build",
-    "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/runtime/test"
+    "test": "yarn test:native && yarn test:jest",
+    "test:jest": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/runtime/test",
+    "test:native": "yarn --cwd ../.. build && yarn test:native:run",
+    "test:native:coverage": "yarn --cwd ../.. build && node --test --test-timeout=30000 --experimental-test-coverage --test-coverage-lines=77 --test-coverage-functions=80 --test-coverage-branches=90 --test-coverage-include=\"**/dist/server/module-loader.js\" --test-coverage-include=\"**/dist/server/module-generation.js\" \"test-native/*.test.mjs\"",
+    "test:native:run": "node --test --test-timeout=30000 \"test-native/*.test.mjs\""
   },
   "dependencies": {
     "@counterfact/openapi": "0.1.7",

@@ -1,6 +1,8 @@
 ---
-"@counterfact/runtime": patch
+"@counterfact/runtime": minor
 "counterfact": patch
 ---
 
-Preserve ESM context and custom error class identity across fresh loaders over unchanged files while constructing independent context instances.
+Load routes, contexts, scenarios, and local ESM dependencies in coherent module generations. Fresh loaders and initialization retries recover from failed imports without reusing stale canonical modules, while reloads preserve live context state.
+
+Constructors imported outside a simulator can differ from constructors inside its generation. Run module-loading integration tests under native Node rather than Jest's module sandbox.
