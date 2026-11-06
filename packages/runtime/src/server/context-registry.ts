@@ -60,7 +60,11 @@ function cloneForCache(
   }
   if (value instanceof Date) return new Date(value.getTime());
   if (value instanceof RegExp) {
-    const clone = new RegExp(value.source, value.flags);
+    // Copy the existing regex's internal pattern instead of compiling strings.
+    const clone = structuredClone(value);
+    // Host-provided structuredClone may return a different realm's prototype.
+    Object.setPrototypeOf(clone, RegExp.prototype);
+    // Structured cloning resets the cursor, but declaration comparisons need it.
     clone.lastIndex = value.lastIndex;
     return clone;
   }

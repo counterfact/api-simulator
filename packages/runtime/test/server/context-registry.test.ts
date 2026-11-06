@@ -249,3 +249,63 @@ it("preserves changed dates and binary state when native-value declarations are 
   expect(context.bytes[0]).toBe(5);
   expect(new Uint8Array(context.raw)[0]).toBe(6);
 });
+
+it("preserves live RegExp state until its pattern, flags, or initial cursor changes", () => {
+  const declaration = () => {
+    const pattern = /a\.b/giu;
+    pattern.lastIndex = 2;
+    return { pattern };
+  };
+  const registry = new ContextRegistry();
+  const context = declaration();
+  const livePattern = context.pattern;
+  registry.update("/", context);
+  livePattern.lastIndex = 7;
+
+  for (let reload = 0; reload < 2; reload += 1) {
+    registry.update("/", declaration());
+    expect(context.pattern).toBe(livePattern);
+    expect(context.pattern.lastIndex).toBe(7);
+  }
+
+  const changedCursor = declaration();
+  changedCursor.pattern.lastIndex = 3;
+  registry.update("/", changedCursor);
+  expect(context.pattern).toBe(changedCursor.pattern);
+  expect(context.pattern.lastIndex).toBe(3);
+
+  const changedFlags = /a\.b/gu;
+  changedFlags.lastIndex = 3;
+  registry.update("/", { pattern: changedFlags });
+  expect(context.pattern).toBe(changedFlags);
+
+  const changedPattern = /c\.d/gu;
+  changedPattern.lastIndex = 3;
+  registry.update("/", { pattern: changedPattern });
+  expect(context.pattern).toBe(changedPattern);
+});
+
+it("snapshots RegExp internals without reading overridden source or flags", () => {
+  const registry = new ContextRegistry();
+  const pattern = /a\.b/giu;
+  pattern.lastIndex = 2;
+  let metadataReads = 0;
+  const readMetadata = () => {
+    metadataReads += 1;
+    throw new Error("RegExp metadata must not be evaluated while snapshotting");
+  };
+  Object.defineProperties(pattern, {
+    source: { get: readMetadata },
+    flags: { get: readMetadata },
+  });
+  const context = { pattern };
+  registry.update("/", context);
+  pattern.lastIndex = 7;
+
+  const unchangedPattern = /a\.b/giu;
+  unchangedPattern.lastIndex = 2;
+  registry.update("/", { pattern: unchangedPattern });
+  expect(context.pattern).toBe(pattern);
+  expect(context.pattern.lastIndex).toBe(7);
+  expect(metadataReads).toBe(0);
+});
