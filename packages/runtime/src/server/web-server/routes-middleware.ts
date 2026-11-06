@@ -220,6 +220,7 @@ export function routesMiddleware(
 
       /* @ts-expect-error the value of a querystring item can be an array and we don't have a solution for that yet */
       query,
+      originalUrl: ctx.originalUrl,
       rawBody: method === "HEAD" || method === "GET" ? undefined : rawBody,
       req: { path: "", ...ctx.req },
     });

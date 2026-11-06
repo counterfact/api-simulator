@@ -22,6 +22,7 @@ npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 ## Use the smallest relevant guide
 
 - `docs/features/routes.md` — custom response handlers.
+- `docs/features/har.md` — recorded responses, custom matching, and live reload with `$.har()`.
 - `docs/features/state.md` — small shared in-memory state.
 - `docs/manual/edge-cases.md` — deterministic frontend states.
 - `docs/features/proxy.md` — selected upstream paths behind one local base URL.

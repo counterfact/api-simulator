@@ -19,6 +19,7 @@ import {
   validateRequest,
 } from "./request-validator.js";
 import { validateResponse } from "./response-validator.js";
+import { HarCollection, createHarRequest } from "./har-collection.js";
 import { normalizeMultipartBody } from "./multipart-body.js";
 import { Tools } from "./tools.js";
 import type { OpenApiOperation, OpenApiParameters } from "@counterfact/types";
@@ -118,6 +119,8 @@ interface ParameterTypes {
 }
 
 export type DispatcherRequest = {
+  /** Original public URL, before routing prefixes are removed. */
+  originalUrl?: string;
   auth?: {
     apiKey?: string;
     password?: string;
@@ -227,6 +230,7 @@ export class Dispatcher {
     config?: DispatcherConfig,
     version = "",
     versions: readonly string[] = [],
+    private readonly harCollection?: HarCollection,
   ) {
     this.registry = registry;
     this.contextRegistry = contextRegistry;
@@ -560,9 +564,17 @@ export class Dispatcher {
       return true;
     }
 
-    const [baseType, subType] = type.split("/");
+    const [baseType, subType] = type
+      .split(";", 1)[0]!
+      .trim()
+      .toLowerCase()
+      .split("/");
 
-    const [patternType, patternSubType] = pattern.split("/");
+    const [patternType, patternSubType] = pattern
+      .split(";", 1)[0]!
+      .trim()
+      .toLowerCase()
+      .split("/");
 
     if (baseType === patternType) {
       return subType === patternSubType || patternSubType === "*";
@@ -590,13 +602,30 @@ export class Dispatcher {
     headers = {},
     method,
     path,
-    query,
+    query = {},
     rawBody,
     req,
+    originalUrl,
   }: DispatcherRequest): Promise<CounterfactResponseObject> {
     debug(`request: ${method} ${path}`);
     debug(`headers: ${JSON.stringify(headers)}`);
     debug(`body: ${JSON.stringify(body)}`);
+
+    const params = new URLSearchParams();
+    for (const [name, value] of Object.entries(query)) {
+      for (const item of Array.isArray(value) ? value : [value])
+        params.append(name, item);
+    }
+    const har =
+      this.harCollection?.lookup(
+        createHarRequest({
+          method,
+          url: originalUrl ?? `${path}?${params}`,
+          headers,
+          body,
+          rawBody,
+        }),
+      ) ?? (() => undefined);
 
     path = this.withoutBasePath(path);
     const versioned = this.version !== "" && this.openApiDocument !== undefined;
@@ -683,6 +712,7 @@ export class Dispatcher {
       auth: this.authWithApiKey(auth, requestCookie, headers, query),
       body,
       context: this.contextRegistry.find(matchedPath),
+      har,
 
       async delay(milliseconds = 0, maxMilliseconds = 0) {
         const delayInMs =

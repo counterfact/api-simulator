@@ -8,6 +8,7 @@ import {
 import {
   ContextRegistry,
   Dispatcher,
+  HarCollection,
   loadOpenApiDocument,
   ModuleLoader,
   type OpenApiDocument,
@@ -22,6 +23,7 @@ import { pathJoin } from "./util/forward-slash-path.js";
 
 /** Runtime state shared by every specification runner in one API group. */
 export interface ApiRunnerGroupState {
+  harCollection?: HarCollection;
   contextRegistry: ContextRegistry;
   scenarioRegistry: ScenarioRegistry;
   getStore?: () => object | undefined;
@@ -116,6 +118,8 @@ export class ApiRunner {
 
   private readonly config: Config;
 
+  public readonly harCollection: HarCollection;
+
   private constructor(
     config: Config,
     nativeTs: boolean,
@@ -136,6 +140,8 @@ export class ApiRunner {
       nativeTs ? "routes" : ".cache",
     );
 
+    this.harCollection =
+      groupState?.harCollection ?? new HarCollection(modulesPath);
     this.config = {
       ...config,
       generate: { ...config.generate },
@@ -172,6 +178,7 @@ export class ApiRunner {
       config,
       version,
       versions,
+      this.harCollection,
     );
 
     this.transpiler = new Transpiler(
@@ -284,6 +291,7 @@ export class ApiRunner {
    * appropriate registries.
    */
   public async load(): Promise<void> {
+    await this.harCollection.load();
     await this.moduleLoader.load();
   }
 
@@ -337,6 +345,8 @@ export class ApiRunner {
     const { startServer, buildCache } = options;
 
     if (startServer) {
+      await this.harCollection.load();
+      await this.harCollection.watch();
       await this.openApiDocument?.watch();
 
       if (!this.nativeTs) {
@@ -357,6 +367,7 @@ export class ApiRunner {
    */
   public async stopWatching(): Promise<void> {
     const results = await Promise.allSettled([
+      this.harCollection.stopWatching(),
       this.codeGenerator.stopWatching(),
       this.scenarioFileGenerator.stopWatching(),
       this.transpiler.stopWatching(),

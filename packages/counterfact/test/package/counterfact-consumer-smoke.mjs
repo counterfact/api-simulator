@@ -373,6 +373,8 @@ assert.equal(typeof createMswHandlers, "function");
     path.join(consumerDirectory, "consumer.ts"),
     `import { loadOpenApiDocument } from "@counterfact/openapi";
 import type { Middleware } from "@counterfact/types";
+import type { Routes } from "./generated/types/index.js";
+type ping = Routes["/ping"]["GET"];
 import { counterfact, type MockRequest, type SpecConfig } from "counterfact";
 
 const spec: SpecConfig = { group: "smoke", source: "./openapi.yaml" };
@@ -383,6 +385,18 @@ void loadOpenApiDocument;
 void middleware;
 void request;
 void spec;
+const recorded: ping = ($) => $.har() ?? $.response[200].json("fallback");
+const custom: ping = ($) => $.har(({ request, entry }) =>
+  request.method === entry.request.method && request.pathname === entry.request.pathname
+) ?? $.response[200].json("fallback");
+void recorded;
+const withHeader: ping = ($) => $.har(({ defaultMatch, match }) =>
+  defaultMatch && match("header", "x-id")
+) ?? $.response[200].json("fallback");
+void custom;
+void withHeader;
+const harMiddleware: Middleware = ($, respondTo) => $.har() ?? respondTo($);
+void harMiddleware;
 `,
   );
   await writeFile(

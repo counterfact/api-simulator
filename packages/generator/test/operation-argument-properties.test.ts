@@ -92,7 +92,7 @@ describe("generated operation argument properties", () => {
           type Assert<T extends true> = T;
           type Empty = ${arg("HTTP_GET")};
           type Inputs = ${arg("HTTP_POST")};
-          type EmptyKeys = Assert<Equal<keyof Empty, "context" | "response" | "x" | "proxy" | "delay" | "auth" | "user"${versionKey}>>;
+          type EmptyKeys = Assert<Equal<keyof Empty, "context" | "har" | "response" | "x" | "proxy" | "delay" | "auth" | "user"${versionKey}>>;
           type InputKeys = Assert<Equal<keyof Inputs, keyof Empty | "query" | "querystring" | "path" | "headers" | "cookie" | "body" | "auth" | "user">>;
           declare const input: Inputs;
           const id: string = input.path.id;
