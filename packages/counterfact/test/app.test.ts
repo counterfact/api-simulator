@@ -9,6 +9,7 @@ import { usingTemporaryFiles } from "using-temporary-files";
 import * as app from "../src/app";
 import { ApiRunner } from "../src/api-runner";
 import {
+  ChaosRegistry,
   ContextRegistry,
   ScenarioRegistry,
   StoreLoader,
@@ -683,6 +684,7 @@ describe("counterfact", () => {
         contextRegistry: expect.any(ContextRegistry),
         scenarioRegistry: expect.any(ScenarioRegistry),
       }),
+      expect.any(ChaosRegistry),
     );
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ openApiPath: "_", prefix: "/api/v2" }),
@@ -693,9 +695,54 @@ describe("counterfact", () => {
         contextRegistry: expect.any(ContextRegistry),
         scenarioRegistry: expect.any(ScenarioRegistry),
       }),
+      expect.any(ChaosRegistry),
     );
+    expect(spy.mock.calls[0]?.[5]).toBe(spy.mock.calls[1]?.[5]);
 
     spy.mockRestore();
+  });
+
+  it("applies a REPL chaos rule across every API group", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "billing/routes/hello.js",
+        'export function GET() { return { body: "billing" }; }',
+      );
+      await $.add(
+        "inventory/routes/hello.js",
+        'export function GET() { return { body: "inventory" }; }',
+      );
+
+      const simulator = await app.counterfact(
+        { ...mockConfig, basePath: $.path("."), port: 0 },
+        [
+          { source: "_", prefix: "/billing", group: "billing" },
+          { source: "_", prefix: "/inventory", group: "inventory" },
+        ],
+      );
+      const { stop } = await simulator.start({
+        ...mockConfig,
+        startServer: true,
+      });
+      const replServer = simulator.startRepl();
+
+      try {
+        (replServer.context as any).chaos().status(503);
+
+        const billing = await request(simulator.koaApp.callback()).get(
+          "/billing/hello",
+        );
+        const inventory = await request(simulator.koaApp.callback()).get(
+          "/inventory/hello",
+        );
+
+        expect(billing.status).toBe(503);
+        expect(inventory.status).toBe(503);
+      } finally {
+        replServer.close();
+        await stop();
+      }
+    });
   });
 
   it("throws when multiple specs include an empty group", async () => {
@@ -910,6 +957,7 @@ describe("counterfact", () => {
         contextRegistry: expect.any(ContextRegistry),
         scenarioRegistry: expect.any(ScenarioRegistry),
       }),
+      expect.any(ChaosRegistry),
     );
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ prefix: "" }),
@@ -920,6 +968,7 @@ describe("counterfact", () => {
         contextRegistry: expect.any(ContextRegistry),
         scenarioRegistry: expect.any(ScenarioRegistry),
       }),
+      expect.any(ChaosRegistry),
     );
 
     spy.mockRestore();
@@ -943,6 +992,7 @@ describe("counterfact", () => {
         contextRegistry: expect.any(ContextRegistry),
         scenarioRegistry: expect.any(ScenarioRegistry),
       }),
+      expect.any(ChaosRegistry),
     );
 
     spy.mockRestore();
@@ -964,6 +1014,7 @@ describe("counterfact", () => {
         contextRegistry: expect.any(ContextRegistry),
         scenarioRegistry: expect.any(ScenarioRegistry),
       }),
+      expect.any(ChaosRegistry),
     );
 
     spy.mockRestore();
@@ -985,6 +1036,7 @@ describe("counterfact", () => {
         contextRegistry: expect.any(ContextRegistry),
         scenarioRegistry: expect.any(ScenarioRegistry),
       }),
+      expect.any(ChaosRegistry),
     );
 
     spy.mockRestore();

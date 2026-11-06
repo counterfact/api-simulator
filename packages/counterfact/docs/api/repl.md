@@ -36,3 +36,43 @@ Builder configuration methods return new builders, so requests can be reused and
 ## Standalone client
 
 Import `createOpenApiRouteCatalog` and `createRouteFunction` from `@counterfact/client` to use the builder outside the REPL. See [public packages](./packages.md).
+
+## Chaos API (HTTP-layer fault injection)
+
+The Live REPL exposes `chaos(pathPrefix?)` for changing simulated HTTP
+responses without editing route handlers. The registry is shared by every API
+group in one Counterfact simulator.
+
+```ts
+const fault = chaos("/orders")
+  .next(3)
+  .probability(0.5)
+  .status(503)
+  .delay(1_000)
+  .header("Retry-After", "1")
+  .transformBody((body) => ({ body, degraded: true }));
+
+fault.stop();
+fault.start();
+```
+
+`chaos()` with no prefix matches every request. A new rule is active
+indefinitely; use `next()` or `next(count)` to bound how many successful rule
+applications it consumes. A stopped rule or a request skipped by
+`probability(...)` does not consume that count. Probability must be a finite
+number from `0` through `1`, otherwise Counterfact throws a `RangeError`.
+
+Available mutations are `status(code)`, `delay(ms)`, `header(name, value)`,
+`removeHeader(name)`, `body(value)`, and `transformBody(fn)`. Header names are
+matched case-insensitively and the last mutation for a header wins.
+`Content-Type` is protected because Counterfact owns response serialization.
+Likewise, the last call to `body()` or `transformBody()` wins.
+
+When several active rules match, exactly one applies: the longest path prefix
+wins, then the most recently configured rule. There is no `always()` method
+because indefinite application is already the default, and no `timeout()`
+method because chaos rules model HTTP responses rather than network
+disconnects.
+
+---
+

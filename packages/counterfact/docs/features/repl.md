@@ -94,7 +94,29 @@ await req.send();
 
 See the [Route Builder guide](./route-builder.md) for full documentation.
 
+## HTTP response faults with `chaos()`
+
+Create temporary response-layer faults without editing a handler or restarting
+the server:
+
+```js
+// Fail the next three matching requests.
+chaos("/payments").next(3).status(503).header("Retry-After", "1");
+
+// Apply indefinitely, but fire for about 20% of matching requests.
+const intermittent = chaos("/payments").probability(0.2).status(500);
+
+intermittent.stop();
+intermittent.start();
+```
+
+A rule applies indefinitely unless `next(...)` bounds it. In multi-API mode,
+the unqualified `chaos()` global controls the shared HTTP layer and therefore
+applies to matching routes in every API group. It simulates HTTP responses, not
+network disconnects. See the [Chaos API reference](../api/repl.md#chaos-api-http-layer-fault-injection).
+
 ## Inspect and steer a session
+
 
 These examples use the same pet context’s `add()` and `list()` methods. Start from the [first-ten-minutes handlers](../first-10-minutes.md) so HTTP requests read and write that context.
 
