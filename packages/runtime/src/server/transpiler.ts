@@ -41,8 +41,8 @@ export class Transpiler extends EventTarget {
     moduleKind: string,
   ) {
     super();
-    this.sourcePath = sourcePath;
-    this.destinationPath = destinationPath;
+    this.sourcePath = toForwardSlashPath(sourcePath);
+    this.destinationPath = toForwardSlashPath(destinationPath);
     this.moduleKind = moduleKind;
   }
 

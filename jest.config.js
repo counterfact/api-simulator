@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+
 export default {
   collectCoverage: false,
 
@@ -24,7 +26,12 @@ export default {
   coverageProvider: "v8",
 
   coverageThreshold: {
-    "./packages/runtime/src/server/context-registry.ts": { branches: 90 },
+    [fileURLToPath(
+      new URL(
+        "./packages/runtime/src/server/context-registry.ts",
+        import.meta.url,
+      ),
+    )]: { branches: 90 },
     global: {
       branches: 80,
       functions: 80,
