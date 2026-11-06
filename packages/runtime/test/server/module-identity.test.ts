@@ -58,3 +58,15 @@ it("preserves native Node identity while retrying and reloading ESM entries", as
     { timeout: 15000, env: { ...process.env, CHOKIDAR_USEPOLLING: "1" } },
   );
 }, 20000);
+
+it("recovers native ESM generations from failed imports and stale canonical modules", async () => {
+  await promisify(execFile)(
+    process.execPath,
+    [
+      fileURLToPath(
+        new URL("../fixtures/module-generations.mjs", import.meta.url),
+      ),
+    ],
+    { timeout: 15000 },
+  );
+}, 20000);

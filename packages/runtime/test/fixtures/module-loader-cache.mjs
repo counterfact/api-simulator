@@ -32,7 +32,7 @@ await usingTemporaryFiles(async ($) => {
       identityContexts,
     ).load();
     const context = identityContexts.find("/");
-    assert.ok(context instanceof direct.Context);
+    assert.ok(!(context instanceof direct.Context));
     assert.ok(!instances.includes(context));
     instances.push(context);
     const result = await new Dispatcher(
