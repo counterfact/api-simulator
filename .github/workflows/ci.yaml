@@ -144,6 +144,10 @@ jobs:
         if: matrix.check == 'Native runtime tests'
         timeout-minutes: 5
         run: yarn workspace @counterfact/runtime test:native:coverage
+      - name: Repeat Native Initialization Checks
+        if: matrix.check == 'Native runtime tests' && matrix.os == 'windows-latest'
+        timeout-minutes: 2
+        run: yarn workspace @counterfact/runtime test:native:run
       - name: Unit Tests
         if: matrix.check == 'Unit tests'
         timeout-minutes: 10

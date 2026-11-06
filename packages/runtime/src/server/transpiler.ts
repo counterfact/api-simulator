@@ -11,6 +11,7 @@ import ts from "typescript";
 import { ensureDirectoryExists } from "../util/ensure-directory-exists.js";
 import { toForwardSlashPath } from "../util/forward-slash-path.js";
 import { CHOKIDAR_OPTIONS } from "./constants.js";
+import { FileDiscovery } from "./file-discovery.js";
 import { convertFileExtensionsToCjs } from "./convert-js-extensions-to-cjs.js";
 
 const debug = createDebug("counterfact:server:transpiler");
@@ -69,10 +70,11 @@ export class Transpiler extends EventTarget {
    */
   public async watch(): Promise<void> {
     debug("transpiler: watch");
+    await fs.mkdir(this.destinationPath, { recursive: true });
     this.watcher = chokidarWatch(this.sourcePath, {
       ...CHOKIDAR_OPTIONS,
       ignored: `${this.sourcePath}/js`,
-      ignoreInitial: false,
+      ignoreInitial: true,
     });
 
     const transpiles: Promise<void>[] = [];
@@ -119,7 +121,24 @@ export class Transpiler extends EventTarget {
 
     await once(this.watcher, "ready");
 
-    await Promise.all(transpiles);
+    // Watcher readiness does not reliably deliver every initial add event on
+    // Windows. Enumerate the existing sources explicitly before publishing
+    // a usable cache; keep the watcher active to catch later edits.
+    let sources: string[] = [];
+    try {
+      await fs.access(this.sourcePath);
+      sources = await new FileDiscovery(this.sourcePath).findFiles();
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+    await Promise.all([
+      ...transpiles,
+      ...sources
+        .filter((source) => !source.startsWith(`${this.sourcePath}/js/`))
+        .map((source) =>
+          this.transpileFile(source, this.destinationFor(source)),
+        ),
+    ]);
   }
 
   /** Closes the file-system watcher. */

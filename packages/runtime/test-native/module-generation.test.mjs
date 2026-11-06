@@ -256,6 +256,10 @@ test("the compiled fallback loads explicit CommonJS routes, middleware, and loca
     );
     t.after(() => transpiler.stopWatching());
     await transpiler.watch();
+    assert.ok((await $.read("cache/probe.cjs")).includes("exports.GET"));
+    assert.ok(
+      (await $.read("cache/_.middleware.cjs")).includes("exports.middleware"),
+    );
     const registry = new Registry();
     const contexts = new ContextRegistry();
     await new ModuleLoader($.path("cache"), registry, contexts).load();

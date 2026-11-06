@@ -10,8 +10,9 @@ Paths and commands below are relative to the repository root.
   coverage command.
 
 - Await completed work, watcher events, or server shutdown instead of adding
-  fixed sleeps. `Transpiler.watch()` waits for its initial transpilation before
-  resolving. Explicitly control environment variables and mock external network
+  fixed sleeps. `Transpiler.watch()` explicitly enumerates and awaits its initial compilation
+  before resolving; do not rely on watcher initial-add events (which are
+  unreliable on Windows). Explicitly control environment variables and mock external network
   calls in unit tests; do not assume Jest sets `CI`.
 
 - Run module loading, simulator startup/reset, and versioned-spec watching under
