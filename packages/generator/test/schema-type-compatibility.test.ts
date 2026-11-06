@@ -57,71 +57,8 @@ async function compile(source: string) {
   return diagnostics;
 }
 
-// Structural contracts derived from the upstream sources linked in the reference.
-// These are independent model shapes, not imports or copies of generated SDKs.
-const contracts: [
-  SchemaTypeCompatibilityTarget,
-  string,
-  string,
-  string,
-  string,
-][] = [
-  ["openapi-typescript", "string", "string", "string", "readonly"],
-  ["hey-api", "string", "Blob | File", "string", "readonly"],
-  ["orval", "string", "Blob", "string", "readonly"],
-  ["openapi-generator-fetch", "Date", "Blob", "string", "readonly"],
-  ["openapi-generator-axios", "string", "File", "string", ""],
-  ["swagger-typescript-api", "string", "File", "Blob", ""],
-  ["openapi-typescript-codegen", "string", "Blob", "string", "readonly"],
-  ["nswag", "Date", "string", "string", "readonly"],
-];
-
+// Cross-tool compatibility is exercised by test/compatibility/run.mjs using real generators.
 describe("schema type compatibility", () => {
-  it.each(contracts)(
-    "%s generates independently assignable model shapes",
-    async (target, date, binary, byte, readonly) => {
-      const source = await model(
-        {
-          type: "object",
-          required: ["id", "created", "data", "encoded", "state", "child"],
-          properties: {
-            id: { type: "number", readOnly: true },
-            created: { type: "string", format: "date-time", nullable: true },
-            data: { type: "string", format: "binary" },
-            encoded: { type: "string", format: "byte" },
-            state: { type: "string", enum: ["active", "inactive"] },
-            child: {
-              type: "object",
-              required: ["dates"],
-              properties: {
-                dates: {
-                  type: "array",
-                  items: { type: "string", format: "date" },
-                },
-              },
-            },
-            note: { type: "string" },
-          },
-        },
-        target,
-      );
-      expect(source).not.toContain("import");
-      expect(
-        await compile(`${source}
-      type OtherModel = { ${readonly} id: number; created: ${date} | null; data: ${binary}; encoded: ${byte}; state: "active" | "inactive"; child: { dates: (${date})[] }; note?: string };
-      declare const ours: Model;
-      declare const other: OtherModel;
-      export const toOther: OtherModel = ours;
-      export const toCounterfact: Model = other;
-      // @ts-expect-error Required property must stay required.
-      export const missing: Model = {};
-      // @ts-expect-error Enum constraints must stay narrow.
-      export const badState: Model["state"] = "unexpected";
-    `),
-      ).toEqual([]);
-    },
-  );
-
   it.each(targets)(
     "%s preserves boolean schemas and literal format constraints",
     async (target) => {

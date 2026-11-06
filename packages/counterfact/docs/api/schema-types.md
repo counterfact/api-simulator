@@ -485,6 +485,16 @@ Keep property names unchanged in the other tool (for example, OpenAPI Generator
 `modelPropertyNaming: original`). These callbacks do not rename wire fields,
 reproduce SDK layout, synthesize operation wrappers, emulate every dictionary,
 discriminator, read/write model split, or support custom templates, Temporal,
-Moment, or branded types. The compiler tests compare the supported model shapes
-in both assignment directions with strict optional-property checking. They do
-not execute the upstream generators or establish compatibility for every schema.
+Moment, or branded types. The live compatibility suite installs pinned third-party generators, runs them
+and Counterfact on the same OpenAPI fixture, then compiles assignments in both
+directions between their actual outputs. It also compares property names,
+optionality, and read-only flags, and rejects an untransformed Counterfact output
+as a negative control. It does not establish compatibility for every schema.
+
+Run `yarn test:generator-compatibility` after building the generator, or append
+a target such as `orval` to run one tool. This separate suite requires registry
+access and, for OpenAPI Generator/NSwag, Java/.NET respectively. The version pins
+and generator settings live in `packages/generator/test/compatibility/`. The
+Generator compatibility workflow runs all eight targets, including both OpenAPI
+Generator backends, and retains actual generated sources and JSON comparison
+reports as job artifacts. Ordinary focused tests remain offline AST regressions.

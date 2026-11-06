@@ -51,7 +51,8 @@
     "go:multiple-apis": "yarn workspace counterfact go:multiple-apis",
     "go:multiple-versions": "yarn workspace counterfact go:multiple-versions",
     "counterfact": "./packages/counterfact/bin/counterfact.js",
-    "check:drift": "catchmydrift"
+    "check:drift": "catchmydrift",
+    "test:generator-compatibility": "node packages/generator/test/compatibility/run.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",
