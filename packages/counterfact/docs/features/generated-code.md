@@ -235,3 +235,9 @@ import the internal versioned operation modules.
 - [Find your workflow](../usage.md)
 
 The root endpoint always uses the root context, even though its generated type file is named index.types.ts. A real /index child context applies only to that child endpoint and its descendants.
+
+Optional request bodies include `undefined` in the generated `$.body` type for
+JSON, URL-encoded forms, and multipart forms. In OpenAPI 3, a body is optional
+when `requestBody.required` is `false` or omitted. Guard or normalize `$.body`
+before accessing its properties, for example `const body = $.body ?? {};`.
+Required bodies exclude `undefined`; nullable schemas independently allow `null`.
