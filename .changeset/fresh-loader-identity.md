@@ -20,3 +20,5 @@ Retry transient Windows sharing violations when publishing compiled cache files,
 Reuse unchanged local ESM dependency graphs during watcher refreshes so unrelated route edits preserve root context arrow receivers and private-field state. Continue invalidating changed modules and their importers, and keep explicit loads/retries fresh.
 
 Dynamic-import detection uses syntax parsing instead of a backtracking regular expression, so comment-heavy source cannot stall graph loading.
+
+Keep successful context graphs alive while unrelated route syntax or evaluation failures are corrected. Track failed module evaluations separately, retry unconfirmed dependency graphs, and scope constructor failures to their own module. Restore each CommonJS watcher's known cache graph before reloading changed entries so another simulator's cached code cannot mask edits or replace its context constructors.

@@ -312,3 +312,148 @@ test("dynamic imports separated by comments and inside template expressions are 
     assert.equal(await after.get(), "value:2");
   });
 });
+
+test("failed entries retry without invalidating successfully evaluated siblings", async () => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add(
+      "context.mjs",
+      "export class Context { #n=0; next=()=>++this.#n; }",
+    );
+    await $.add("route.mjs", "export const GET = ;");
+    const first = new ModuleGeneration();
+    const context = await first.import($.path("context.mjs"));
+    await assert.rejects(first.import($.path("route.mjs")), SyntaxError);
+    await $.add("route.mjs", "export const GET = ()=>1;");
+    const second = await first.refresh();
+    assert.equal(
+      (await second.import($.path("context.mjs"))).Context,
+      context.Context,
+    );
+    assert.equal((await second.import($.path("route.mjs"))).GET(), 1);
+  });
+});
+
+test("failed transitive evaluations are not reused even when source is unchanged", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const key = "counterfactFailedDependencyReady";
+    try {
+      globalThis[key] = false;
+      await $.add(
+        "helper.mjs",
+        `if (!globalThis.${key}) throw new Error('not ready'); export const value=1;`,
+      );
+      await $.add("route.mjs", "export {value} from './helper.mjs';");
+      const first = new ModuleGeneration();
+      await assert.rejects(first.import($.path("route.mjs")), /not ready/u);
+      globalThis[key] = true;
+      const second = await first.refresh();
+      assert.equal((await second.import($.path("route.mjs"))).value, 1);
+    } finally {
+      delete globalThis[key];
+    }
+  });
+});
+
+test("CommonJS watcher graphs retain their own contexts when another loader replaces Node's cache", async () => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add(
+      "context.cjs",
+      "exports.Context=class Context { #n=0; increment=()=>++this.#n; }",
+    );
+    await $.add(
+      "route.cjs",
+      "exports.Context=require('./context.cjs').Context; exports.value=1;",
+    );
+    const first = new ModuleGeneration();
+    const context = await first.importCommonJS($.path("context.cjs"));
+    await first.importCommonJS($.path("route.cjs"));
+    const live = new context.Context();
+    assert.equal(live.increment(), 1);
+    const foreign = new ModuleGeneration();
+    const otherContext = await foreign.importCommonJS($.path("context.cjs"));
+    await foreign.importCommonJS($.path("route.cjs"));
+    assert.notEqual(otherContext.Context, context.Context);
+    await $.add(
+      "route.cjs",
+      "exports.Context=require('./context.cjs').Context; exports.value=2;",
+    );
+    const second = await first.refresh();
+    const route = await second.importCommonJS($.path("route.cjs"));
+    assert.equal(route.value, 2);
+    assert.equal(route.Context, context.Context);
+    assert.equal(
+      (await second.importCommonJS($.path("context.cjs"))).Context,
+      context.Context,
+    );
+    assert.ok(live instanceof route.Context);
+    assert.equal(live.increment(), 2);
+  });
+});
+
+test("CommonJS pending invalidations survive interleaved foreign generation imports", async () => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add("helper.cjs", "exports.value=1;");
+    await $.add("route.cjs", "exports.value=require('./helper.cjs').value;");
+    await $.add("other.cjs", "exports.value=1;");
+    const first = new ModuleGeneration();
+    await first.importCommonJS($.path("route.cjs"));
+    await first.importCommonJS($.path("other.cjs"));
+    const foreign = await first.refresh();
+    await foreign.importCommonJS($.path("route.cjs"));
+    await $.add("helper.cjs", "exports.value=2;");
+    await $.add("other.cjs", "exports.value=2;");
+    const second = await first.refresh();
+    assert.equal((await second.importCommonJS($.path("other.cjs"))).value, 2);
+    assert.equal((await foreign.importCommonJS($.path("route.cjs"))).value, 1);
+    assert.equal((await second.importCommonJS($.path("route.cjs"))).value, 2);
+  });
+});
+
+for (const kind of ["esm", "commonjs"]) {
+  test(`a failed ${kind} constructor invalidates only its graph`, async () => {
+    await usingTemporaryFiles(async ($) => {
+      const extension = kind === "esm" ? "mjs" : "cjs";
+      const source =
+        kind === "esm"
+          ? "export class Context {}"
+          : "exports.Context=class Context {};";
+      await $.add(`good.${extension}`, source);
+      await $.add(`bad.${extension}`, source);
+      const first = new ModuleGeneration();
+      const load = (generation, name) =>
+        kind === "esm"
+          ? generation.import($.path(`${name}.${extension}`))
+          : generation.importCommonJS($.path(`${name}.${extension}`));
+      const good = await load(first, "good");
+      const bad = await load(first, "bad");
+      first.markFailed($.path(`bad.${extension}`));
+      const next = await first.refresh();
+      assert.equal((await load(next, "good")).Context, good.Context);
+      assert.notEqual((await load(next, "bad")).Context, bad.Context);
+    });
+  });
+}
+
+test("a caught dynamic import rejection does not certify the failed dependency", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const key = "counterfactCaughtDynamicReady";
+    try {
+      globalThis[key] = false;
+      await $.add(
+        "helper.mjs",
+        `if (!globalThis.${key}) throw new Error('not ready'); export const value=1;`,
+      );
+      await $.add(
+        "route.mjs",
+        "let value=0; try { value=(await import('./helper.mjs')).value; } catch {} export {value};",
+      );
+      const first = new ModuleGeneration();
+      assert.equal((await first.import($.path("route.mjs"))).value, 0);
+      globalThis[key] = true;
+      const second = await first.refresh();
+      assert.equal((await second.import($.path("route.mjs"))).value, 1);
+    } finally {
+      delete globalThis[key];
+    }
+  });
+});

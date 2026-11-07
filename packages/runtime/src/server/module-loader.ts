@@ -370,16 +370,11 @@ export class ModuleLoader extends EventTarget {
       let initializeContexts = previous === undefined;
       if (initializeContexts) this.group.contextConstructors.clear();
       for (const loader of loaders) {
-        try {
-          await loader.loadModules(
-            loader === this ? directory : "",
-            generation,
-            initializeContexts,
-          );
-        } catch (error) {
-          generation.markFailed();
-          throw error;
-        }
+        await loader.loadModules(
+          loader === this ? directory : "",
+          generation,
+          initializeContexts,
+        );
         initializeContexts = false;
       }
       // Consumers observing completion must see every version in one generation.
@@ -586,12 +581,17 @@ export class ModuleLoader extends EventTarget {
 
         const createContext = (lookup: typeof loadContext) => {
           const currentStore = this.getStore?.();
-          // @ts-expect-error ContextModule describes instances; the export is a constructor.
-          return new endpoint.Context({
-            loadContext: lookup,
-            readJson,
-            ...(currentStore === undefined ? {} : { store: currentStore }),
-          }) as ReturnType<ContextRegistry["find"]>;
+          try {
+            // @ts-expect-error ContextModule describes instances; the export is a constructor.
+            return new endpoint.Context({
+              loadContext: lookup,
+              readJson,
+              ...(currentStore === undefined ? {} : { store: currentStore }),
+            }) as ReturnType<ContextRegistry["find"]>;
+          } catch (error) {
+            this.generation.markFailed(pathName);
+            throw error;
+          }
         };
         this.contextFactories.set(contextKey, createContext);
         // An unchanged module still owns this instance's arrow closures and
@@ -629,6 +629,7 @@ export class ModuleLoader extends EventTarget {
       debug(`adding "${url}" to registry`);
       this.registry.add(url, endpoint as Module);
     } catch (error: unknown) {
+      this.generation.markFailed(pathName);
       if (
         String(error) ===
         "SyntaxError: Identifier 'Context' has already been declared"

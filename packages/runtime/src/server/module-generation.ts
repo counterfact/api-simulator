@@ -17,6 +17,8 @@ let hooksRegistered = false;
 type ModuleRecord = {
   url: string;
   hasDynamicImport?: boolean;
+  evaluated?: boolean;
+  failed?: boolean;
   sourceHash?: string;
   dependencies: Set<ModuleRecord>;
 };
@@ -66,7 +68,8 @@ function registerGenerationHook(): void {
       try {
         resolved = nextResolve(specifier, context);
       } catch (error) {
-        if (state !== undefined) state.failed = true;
+        const record = parent && state?.records.get(canonicalURL(parent.href));
+        if (record !== undefined) record.failed = true;
         throw error;
       }
       if (
@@ -121,7 +124,8 @@ function registerGenerationHook(): void {
         }
         return result;
       } catch (error) {
-        if (state !== undefined) state.failed = true;
+        const record = state?.records.get(canonicalURL(url));
+        if (record !== undefined) record.failed = true;
         throw error;
       }
     },
@@ -146,8 +150,18 @@ export class ModuleGeneration {
   }
 
   /** A failed evaluation or context construction must never be reused. */
-  public markFailed(): void {
-    this.state.failed = true;
+  public markFailed(pathName?: string): void {
+    if (pathName === undefined) {
+      this.state.failed = true;
+      return;
+    }
+    const url = pathToFileURL(pathName).href;
+    const record = this.state.records.get(url);
+    if (record !== undefined) record.failed = true;
+    const commonJS = [...this.commonJS.values()].find(
+      (entry) => pathToFileURL(entry.module.filename).href === url,
+    );
+    if (commonJS !== undefined) commonJS.sourceHash = undefined;
   }
 
   /** Reuse only modules whose evaluated source and full dependency graph match. */
@@ -227,6 +241,8 @@ export class ModuleGeneration {
           // eslint-disable-next-line security/detect-non-literal-fs-filename -- Compare Node-resolved local module source before reusing its evaluated instance.
           const source = await readFile(fileURLToPath(record.url), "utf8");
           if (
+            record.failed ||
+            !record.evaluated ||
             record.hasDynamicImport ||
             record.sourceHash === undefined ||
             createHash("sha256").update(source).digest("hex") !==
@@ -261,64 +277,78 @@ export class ModuleGeneration {
 
   /** Keep CommonJS identity on watcher refresh, but retain explicit uncached loads. */
   public async importCommonJS(pathName: string): Promise<unknown> {
-    try {
-      const resolved = requireModule.resolve(pathName);
-      // Evict the entire invalidated graph before evaluating any of its entries.
-      for (const [path, record] of this.evictions) {
-        if (Reflect.get(requireModule.cache, path) === record.module)
-          Reflect.deleteProperty(requireModule.cache, path);
-      }
-      this.evictions.clear();
-      const previous = this.commonJS.get(resolved);
-      if (this.watcherGeneration && previous !== undefined)
-        return previous.module.exports;
-      if (!this.watcherGeneration)
-        Reflect.deleteProperty(requireModule.cache, resolved);
-      // A child already in Node's cache may have been evaluated from different
-      // source than is on disk now. Never assign it a fresh provenance hash.
-      const cachedBefore = new Set(Object.values(requireModule.cache));
-      const exports = requireModule(resolved) as unknown;
-      const pending: Promise<void>[] = [];
-      const capture = (module: NodeModule): CommonJSRecord | undefined => {
-        if (module.filename.includes("/node_modules/")) return undefined;
-        const existing = this.commonJS.get(module.filename);
-        if (existing?.module === module) return existing;
-        const record: CommonJSRecord = { module, dependencies: new Set() };
-        this.commonJS.set(module.filename, record);
-        if (!cachedBefore.has(module))
-          pending.push(
-            (async () => {
-              // eslint-disable-next-line security/detect-non-literal-fs-filename -- Record Node-resolved source identity.
-              const source = await readFile(module.filename);
-              record.sourceHash = createHash("sha256")
-                .update(source)
-                .digest("hex");
-            })(),
-          );
-        for (const child of module.children) {
-          const dependency = capture(child);
-          if (dependency) record.dependencies.add(dependency);
-        }
-        return record;
-      };
-      const module = Reflect.get(requireModule.cache, resolved) as
-        NodeModule | undefined;
-      if (module) capture(module);
-      await Promise.all(pending);
-      return exports;
-    } catch (error) {
-      this.markFailed();
-      throw error;
+    const resolved = requireModule.resolve(pathName);
+    // Activate this generation's graph before evaluating an entry. Another
+    // loader may have replaced Node's process-global cache in the meantime.
+    // Keep pending invalidations until their modules have been recaptured.
+    for (const path of this.evictions.keys()) {
+      if (!this.commonJS.has(path))
+        Reflect.deleteProperty(requireModule.cache, path);
     }
+    if (this.watcherGeneration) {
+      for (const [path, record] of this.commonJS)
+        Reflect.set(requireModule.cache, path, record.module);
+    }
+    const previous = this.commonJS.get(resolved);
+    if (this.watcherGeneration && previous !== undefined)
+      return previous.module.exports;
+    Reflect.deleteProperty(requireModule.cache, resolved);
+    // A child already in Node's cache may have been evaluated from different
+    // source than is on disk now. Never assign it a fresh provenance hash.
+    const cachedBefore = new Set(Object.values(requireModule.cache));
+    const exports = requireModule(resolved) as unknown;
+    const pending: Promise<void>[] = [];
+    const capture = (module: NodeModule): CommonJSRecord | undefined => {
+      if (module.filename.includes("/node_modules/")) return undefined;
+      const existing = this.commonJS.get(module.filename);
+      if (existing?.module === module) return existing;
+      const record: CommonJSRecord = { module, dependencies: new Set() };
+      this.commonJS.set(module.filename, record);
+      if (!cachedBefore.has(module))
+        pending.push(
+          (async () => {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename -- Record Node-resolved source identity.
+            const source = await readFile(module.filename);
+            record.sourceHash = createHash("sha256")
+              .update(source)
+              .digest("hex");
+          })(),
+        );
+      for (const child of module.children) {
+        const dependency = capture(child);
+        if (dependency) record.dependencies.add(dependency);
+      }
+      return record;
+    };
+    const module = Reflect.get(requireModule.cache, resolved) as
+      NodeModule | undefined;
+    if (module) capture(module);
+    await Promise.all(pending);
+    return exports;
   }
 
   public async import(pathName: string): Promise<unknown> {
     registerGenerationHook();
     const record = recordFor(this.state, pathToFileURL(pathName).href, this.id);
     try {
-      return await import(record.url);
+      const imported = (await import(record.url)) as unknown;
+      // A successful entry establishes successful evaluation of its static
+      // dependency graph. Failed/unconfirmed modules must be retried, but a
+      // syntax error in one route must not invalidate unrelated live contexts.
+      const visited = new Set<ModuleRecord>();
+      const confirm = (dependency: ModuleRecord): void => {
+        if (visited.has(dependency) || dependency.failed) return;
+        visited.add(dependency);
+        dependency.evaluated = true;
+        // A module can catch a rejected dynamic import and still evaluate
+        // successfully. Its lazy children are not thereby known to have run.
+        if (dependency.hasDynamicImport) return;
+        for (const child of dependency.dependencies) confirm(child);
+      };
+      confirm(record);
+      return imported;
     } catch (error) {
-      this.markFailed();
+      record.failed = true;
       throw error;
     }
   }

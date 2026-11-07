@@ -221,3 +221,117 @@ it("refreshes context behavior when a transitive local dependency changes", asyn
     assert.equal(contexts.find("/"), context);
   });
 });
+
+for (const fixture of [
+  {
+    kind: "ESM syntax error",
+    extension: "mjs",
+    context:
+      "export class Context { count=0; #privateCount=0; increment=()=>++this.count; incrementPrivate(){return ++this.#privateCount;} }",
+    route: (version) =>
+      `import {Context} from './_.context.mjs'; export const GET=$=>({body:{version:${version},identity:$.context instanceof Context}});`,
+    broken: "export const GET = ;",
+  },
+  {
+    kind: "ESM evaluation error",
+    extension: "mjs",
+    context:
+      "export class Context { count=0; #privateCount=0; increment=()=>++this.count; incrementPrivate(){return ++this.#privateCount;} }",
+    route: (version) =>
+      `import {Context} from './_.context.mjs'; export const GET=$=>({body:{version:${version},identity:$.context instanceof Context}});`,
+    broken:
+      "import {Context} from './_.context.mjs'; throw new Error('unfinished route');",
+  },
+  {
+    kind: "CommonJS syntax error",
+    extension: "cjs",
+    context:
+      "exports.Context=class Context { count=0; #privateCount=0; increment=()=>++this.count; incrementPrivate(){return ++this.#privateCount;} }",
+    route: (version) =>
+      `const {Context}=require('./_.context.cjs'); exports.GET=$=>({body:{version:${version},identity:$.context instanceof Context}});`,
+    broken: "exports.GET = ;",
+  },
+  {
+    kind: "CommonJS evaluation error",
+    extension: "cjs",
+    context:
+      "exports.Context=class Context { count=0; #privateCount=0; increment=()=>++this.count; incrementPrivate(){return ++this.#privateCount;} }",
+    route: (version) =>
+      `const {Context}=require('./_.context.cjs'); exports.GET=$=>({body:{version:${version},identity:$.context instanceof Context}});`,
+    broken: "require('./_.context.cjs'); throw new Error('unfinished route');",
+  },
+]) {
+  it(`preserves live contexts while recovering from an unrelated ${fixture.kind}`, async (t) => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(`_.context.${fixture.extension}`, fixture.context);
+      await $.add(`probe.${fixture.extension}`, fixture.route(1));
+      const contexts = new ContextRegistry();
+      const registry = new Registry();
+      const loader = new ModuleLoader($.path(""), registry, contexts);
+      t.after(() => loader.stopWatching());
+      await loader.load();
+      const context = contexts.find("/");
+      context.count = 5;
+      assert.equal(context.incrementPrivate(), 1);
+      await loader.watch();
+      await $.add(`probe.${fixture.extension}`, fixture.broken);
+      let sawError = false;
+      for (let attempt = 0; attempt < 250; attempt += 1) {
+        const response = await new Dispatcher(registry, contexts).request({
+          method: "GET",
+          path: "/probe",
+          headers: {},
+          query: {},
+          req: {},
+        });
+        if (response.status === 500) {
+          sawError = true;
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      }
+      assert.equal(
+        sawError,
+        true,
+        "broken route should produce a diagnostic response",
+      );
+      await $.add(`probe.${fixture.extension}`, fixture.route(2));
+      await waitForRouteVersion([registry], contexts, 2);
+      assert.equal(contexts.find("/"), context);
+      assert.equal(context.increment(), 6);
+      assert.equal(context.count, 6);
+      assert.equal(context.incrementPrivate(), 2);
+    });
+  });
+}
+
+it("reloads changed CommonJS routes without adopting a separate loader's cached graph", async (t) => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add(
+      "_.context.cjs",
+      "exports.Context=class Context { count=0; increment=()=>++this.count; }",
+    );
+    const route = (version) =>
+      `const {Context}=require('./_.context.cjs'); exports.GET=$=>({body:{version:${version},identity:$.context instanceof Context}});`;
+    await $.add("probe.cjs", route(1));
+    const contexts = new ContextRegistry();
+    const registry = new Registry();
+    const first = new ModuleLoader($.path(""), registry, contexts);
+    t.after(() => first.stopWatching());
+    await first.load();
+    const live = contexts.find("/");
+    live.count = 5;
+    const otherContexts = new ContextRegistry();
+    const second = new ModuleLoader($.path(""), new Registry(), otherContexts);
+    await second.load();
+    assert.notEqual(
+      Object.getPrototypeOf(live),
+      Object.getPrototypeOf(otherContexts.find("/")),
+    );
+    await first.watch();
+    await $.add("probe.cjs", route(2));
+    await waitForRouteVersion([registry], contexts, 2);
+    assert.equal(live.increment(), 6);
+    assert.equal(live.count, 6);
+  });
+});

@@ -113,3 +113,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.
 
 - Detect dynamic-import syntax with the existing TypeScript parser, not a regex over comment-separated tokens: repeated block comments can cause exponential regex backtracking even in tiny valid modules. Test comment-heavy static imports and lazy imports inside template expressions.
+
+- Scope module evaluation and constructor failures to the failed graph rather than invalidating successful sibling contexts. Test syntax/evaluation error recovery without touching context source, and verify caught dynamic-import failures are not mistaken for successful dependency evaluations. Restore a CommonJS watcher’s retained graph before reloading invalid entries; another loader can replace the global require cache between refreshes.
