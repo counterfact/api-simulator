@@ -275,3 +275,40 @@ test("preexisting CommonJS children are refreshed even without a separate child 
     assert.equal((await second.importCommonJS($.path("route.cjs"))).value, 2);
   });
 });
+
+test(
+  "comment-heavy static imports do not trigger backtracking or prevent reuse",
+  { timeout: 5000 },
+  async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("helper.mjs", "export const value=1;");
+      await $.add(
+        "context.mjs",
+        `import ${"/* */".repeat(2000)} {value} from './helper.mjs'; export {value};`,
+      );
+      const first = new ModuleGeneration();
+      const context = await first.import($.path("context.mjs"));
+      assert.equal(context.value, 1);
+      assert.equal(
+        await (await first.refresh()).import($.path("context.mjs")),
+        context,
+      );
+    });
+  },
+);
+
+test("dynamic imports separated by comments and inside template expressions are invalidated", async () => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add("helper.mjs", "export const value=1;");
+    await $.add(
+      "context.mjs",
+      "export const get=async()=>`value:${(await import /* comment */ ('./helper.mjs')).value}`;",
+    );
+    const first = new ModuleGeneration();
+    const before = await first.import($.path("context.mjs"));
+    await $.add("helper.mjs", "export const value=2;");
+    const after = await (await first.refresh()).import($.path("context.mjs"));
+    assert.notEqual(before, after);
+    assert.equal(await after.get(), "value:2");
+  });
+});

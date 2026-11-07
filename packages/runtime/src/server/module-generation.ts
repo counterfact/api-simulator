@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { createRequire, registerHooks } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import ts from "typescript";
 
 const requireModule = createRequire(import.meta.url);
 type CommonJSRecord = {
@@ -102,13 +103,20 @@ function registerGenerationHook(): void {
             typeof result.source === "string"
               ? result.source
               : new TextDecoder().decode(result.source);
-          // Lazy imports may not have run yet, so their graph cannot be proven
-          // unchanged. False positives in strings/comments only cost reuse.
-          record.hasDynamicImport =
-            // eslint-disable-next-line security/detect-unsafe-regex -- Inspect trusted local module source; conservatively recognize comments between import and its argument.
-            /\bimport\s*(?:(?:\/\*[\s\S]*?\*\/|\/\/[^\n]*\n)\s*)*\(/.test(
-              source,
-            );
+          // Parse syntax rather than matching comment-separated tokens with a
+          // backtracking regex. Future lazy dependencies cannot be proven stable.
+          const syntax = ts.createSourceFile(
+            "module.ts",
+            source,
+            ts.ScriptTarget.Latest,
+            false,
+            ts.ScriptKind.TS,
+          );
+          const hasDynamicImport = (node: ts.Node): boolean =>
+            (ts.isCallExpression(node) &&
+              node.expression.kind === ts.SyntaxKind.ImportKeyword) ||
+            ts.forEachChild(node, hasDynamicImport) === true;
+          record.hasDynamicImport = hasDynamicImport(syntax);
           record.sourceHash = createHash("sha256").update(source).digest("hex");
         }
         return result;
