@@ -48,7 +48,8 @@ it("retains nested class-backed state after unrelated watched route edits", asyn
         assert.equal(graph.map.get(cart), cart);
         assert.equal(graph.set.has(cart), true);
         assert.equal(context.count, 8);
-        assert.notEqual(context.action, action);
+        // The unchanged context module keeps its original closures.
+        assert.equal(context.action, action);
       }
     } finally {
       await loader.stopWatching();

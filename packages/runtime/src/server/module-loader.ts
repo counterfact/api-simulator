@@ -27,15 +27,17 @@ import {
 } from "../util/forward-slash-path.js";
 import { unescapePathForWindows } from "../util/windows-escape.js";
 
-const { uncachedRequire } = await import("./uncached-require.cjs");
-
 const debug = createDebug("counterfact:server:module-loader");
 
 // Versioned runners have separate route registries but share one state graph.
 // Keep that graph's code generation and refresh queue at the same boundary.
 const loaderGroups = new WeakMap<
   ContextRegistry,
-  { loaders: Set<ModuleLoader>; updates: UpdateQueue }
+  {
+    loaders: Set<ModuleLoader>;
+    updates: UpdateQueue;
+    contextConstructors: Map<string, unknown>;
+  }
 >();
 
 /**
@@ -135,6 +137,7 @@ export class ModuleLoader extends EventTarget {
   private readonly group: {
     loaders: Set<ModuleLoader>;
     updates: UpdateQueue;
+    contextConstructors: Map<string, unknown>;
   };
 
   private loaded = false;
@@ -145,7 +148,7 @@ export class ModuleLoader extends EventTarget {
 
   private async importModule(pathName: string): Promise<unknown> {
     if ((await determineModuleKind(pathName)) === "commonjs")
-      return uncachedRequire(pathName);
+      return this.generation.importCommonJS(pathName);
     return this.generation.import(pathName);
   }
 
@@ -174,6 +177,7 @@ export class ModuleLoader extends EventTarget {
     const group = loaderGroups.get(contextRegistry) ?? {
       loaders: new Set<ModuleLoader>(),
       updates: new UpdateQueue(),
+      contextConstructors: new Map<string, unknown>(),
     };
     loaderGroups.set(contextRegistry, group);
     group.loaders.add(this);
@@ -244,37 +248,45 @@ export class ModuleLoader extends EventTarget {
             );
 
             if (eventName === "unlink") {
-              await this.refreshGroup("", () => {
-                for (const loader of this.group.loaders) {
-                  if (loader.basePath !== this.basePath) continue;
-                  loader.registry.remove(url);
-                  loader.sourceRoutes.delete(url);
-                  if (basename(pathName).startsWith("_.middleware.")) {
-                    loader.sourceMiddlewares.delete(
-                      url.slice(0, url.lastIndexOf("/")) || "/",
-                    );
+              await this.refreshGroup(
+                "",
+                () => {
+                  for (const loader of this.group.loaders) {
+                    if (loader.basePath !== this.basePath) continue;
+                    loader.registry.remove(url);
+                    loader.sourceRoutes.delete(url);
+                    if (basename(pathName).startsWith("_.middleware.")) {
+                      loader.sourceMiddlewares.delete(
+                        url.slice(0, url.lastIndexOf("/")) || "/",
+                      );
+                    }
+                    if (url === "/index") {
+                      loader.sourceRoutes.delete("/");
+                      loader.registry.remove("/");
+                    }
+                    if (this.isContextFile(pathName)) {
+                      loader.group.contextConstructors.delete(
+                        unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
+                          "/",
+                      );
+                      loader.contextFactories.delete(
+                        unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
+                          "/",
+                      );
+                      loader.contextRegistry.remove(
+                        unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
+                          "/",
+                      );
+                    }
                   }
-                  if (url === "/index") {
-                    loader.sourceRoutes.delete("/");
-                    loader.registry.remove("/");
-                  }
-                  if (this.isContextFile(pathName)) {
-                    loader.contextFactories.delete(
-                      unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
-                        "/",
-                    );
-                    loader.contextRegistry.remove(
-                      unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
-                        "/",
-                    );
-                  }
-                }
-              });
+                },
+                true,
+              );
               this.dispatchEvent(new Event("remove"));
               return;
             }
 
-            await this.refreshGroup();
+            await this.refreshGroup("", undefined, true);
           })
           .catch((error: unknown) =>
             process.stderr.write(`Module reload failed: ${String(error)}\n`),
@@ -306,7 +318,7 @@ export class ModuleLoader extends EventTarget {
                 this.scenarioRegistry?.remove(fileKey);
               }
 
-              await this.refreshGroup();
+              await this.refreshGroup("", undefined, true);
             })
             .catch((error: unknown) =>
               process.stderr.write(
@@ -343,20 +355,31 @@ export class ModuleLoader extends EventTarget {
   private refreshGroup(
     directory = "",
     beforeRefresh: () => void = () => {},
+    reuseUnchanged = false,
   ): Promise<void> {
     return this.group.updates.run(async () => {
       beforeRefresh();
-      const generation = new ModuleGeneration();
       const loaders = [...this.group.loaders].filter(
         (loader) => loader === this || loader.loaded,
       );
-      let initializeContexts = !loaders.some((loader) => loader.loaded);
+      const previous = loaders.find((loader) => loader.loaded)?.generation;
+      const generation =
+        previous && (reuseUnchanged || !this.loaded)
+          ? await previous.refresh()
+          : new ModuleGeneration();
+      let initializeContexts = previous === undefined;
+      if (initializeContexts) this.group.contextConstructors.clear();
       for (const loader of loaders) {
-        await loader.loadModules(
-          loader === this ? directory : "",
-          generation,
-          initializeContexts,
-        );
+        try {
+          await loader.loadModules(
+            loader === this ? directory : "",
+            generation,
+            initializeContexts,
+          );
+        } catch (error) {
+          generation.markFailed();
+          throw error;
+        }
         initializeContexts = false;
       }
       // Consumers observing completion must see every version in one generation.
@@ -370,7 +393,9 @@ export class ModuleLoader extends EventTarget {
     initializeContexts: boolean,
   ): Promise<void> {
     this.generation = generation;
-    if (!this.loaded) this.contextFactories.clear();
+    if (!this.loaded) {
+      this.contextFactories.clear();
+    }
     const discovered = await this.fileDiscovery.findFiles(directory);
     // A scoped refresh must also refresh previously loaded contexts/handlers;
     // otherwise it would mix constructors from different generations.
@@ -385,6 +410,7 @@ export class ModuleLoader extends EventTarget {
     await Promise.allSettled(modules);
     await Promise.all(
       files.map((file, index) =>
+        // eslint-disable-next-line security/detect-object-injection -- The index comes from this same files array used to construct modules.
         this.loadEndpoint(file, initializeContexts, modules[index]),
       ),
     );
@@ -535,6 +561,7 @@ export class ModuleLoader extends EventTarget {
       }
 
       if (this.isContextFile(pathName) && isContextModule(endpoint)) {
+        const contextKey = directory || "/";
         const loadContext = (path: string) => this.contextRegistry.find(path);
 
         const contextDir = nodePath.dirname(unescapePathForWindows(pathName));
@@ -566,12 +593,20 @@ export class ModuleLoader extends EventTarget {
             ...(currentStore === undefined ? {} : { store: currentStore }),
           }) as ReturnType<ContextRegistry["find"]>;
         };
+        this.contextFactories.set(contextKey, createContext);
+        // An unchanged module still owns this instance's arrow closures and
+        // private-field brand. Do not reconstruct it after unrelated edits.
+        if (
+          !deferContext &&
+          this.group.contextConstructors.get(contextKey) === endpoint.Context
+        )
+          return;
         if (deferContext) {
-          this.contextFactories.set(directory || "/", createContext);
+          this.group.contextConstructors.set(contextKey, endpoint.Context);
           return;
         }
         const context = createContext(loadContext);
-        this.contextFactories.set(directory || "/", createContext);
+        this.group.contextConstructors.set(contextKey, endpoint.Context);
         this.contextRegistry.update(directory, context);
         return;
       }

@@ -16,3 +16,5 @@ Preserve Map/Set declaration snapshots during graph refresh and include explicit
 Clone existing regular expressions without recompiling their source properties, while preserving declaration cursors and live state across unchanged reloads.
 
 Retry transient Windows sharing violations when publishing compiled cache files, including concurrent startup of versions in one API group, without exposing partial or missing output.
+
+Reuse unchanged local ESM dependency graphs during watcher refreshes so unrelated route edits preserve root context arrow receivers and private-field state. Continue invalidating changed modules and their importers, and keep explicit loads/retries fresh.
