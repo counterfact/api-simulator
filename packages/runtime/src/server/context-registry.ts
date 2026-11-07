@@ -314,8 +314,10 @@ export class ContextRegistry extends EventTarget {
 
     for (const property in updatedContext) {
       if (
+        // eslint-disable-next-line security/detect-object-injection -- Compare enumerable local Context declaration snapshots, not mutable live state.
         !isDeepStrictEqual(snapshot[property], this.cache.get(path)?.[property])
       ) {
+        // eslint-disable-next-line security/detect-object-injection -- Hot reload intentionally compares and updates enumerable properties of locally authored Context instances, preserving class behavior.
         context[property] = updatedContext[property];
       }
     }
@@ -340,12 +342,6 @@ export class ContextRegistry extends EventTarget {
 
   /** Returns a plain object mapping every registered path to its context. */
   public getAllContexts(): Record<string, Context> {
-    const result: Record<string, Context> = {};
-
-    for (const [path, context] of this.entries.entries()) {
-      result[path] = context;
-    }
-
-    return result;
+    return Object.fromEntries(this.entries);
   }
 }

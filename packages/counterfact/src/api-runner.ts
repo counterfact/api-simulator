@@ -225,7 +225,9 @@ export class ApiRunner {
       await rm(compiledPathsDirectory, { force: true, recursive: true });
     }
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The local API runner intentionally creates route/cache directories beneath the configured modules path.
     await mkdir(pathJoin(modulesPath, "routes"), { recursive: true });
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The local API runner intentionally creates route/cache directories beneath the configured modules path.
     await mkdir(compiledPathsDirectory, { recursive: true });
 
     const openApiDocument =

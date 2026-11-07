@@ -24,8 +24,7 @@ function alternatives(
   if (Array.isArray(value.allOf))
     for (const branch of value.allOf)
       result = combine(result, alternatives(branch, seen));
-  for (const keyword of ["anyOf", "oneOf"]) {
-    const union = value[keyword];
+  for (const union of [value.anyOf, value.oneOf]) {
     if (Array.isArray(union))
       result = combine(
         result,
@@ -84,9 +83,11 @@ function itemValue(value: string, index: number, arrays: Choice[]): unknown {
       const prefix = schema.prefixItems;
       const item =
         Array.isArray(prefix) && index < prefix.length
-          ? prefix[index]
+          ? // eslint-disable-next-line security/detect-object-injection -- index is a nonnegative item position supplied by Array.map; these are array element reads.
+            prefix[index]
           : Array.isArray(schema.items)
-            ? schema.items[index]
+            ? // eslint-disable-next-line security/detect-object-injection -- index is a nonnegative item position supplied by Array.map; these are array element reads.
+              schema.items[index]
             : schema.items;
       return item === undefined ? [] : [item];
     });

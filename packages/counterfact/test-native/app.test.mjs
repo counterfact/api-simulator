@@ -752,10 +752,7 @@ describe("counterfact", () => {
     const createSpy = mocks.spyOn(ApiRunner, "create");
     createSpy.mockImplementation(async (...args) => {
       const runner = await realCreate.apply(ApiRunner, args);
-      const group = args[1];
-      if (group) {
-        capturedRunnersByGroup.set(group, runner);
-      }
+      capturedRunnersByGroup.set(runner.group, runner);
       return runner;
     });
     const specs = [

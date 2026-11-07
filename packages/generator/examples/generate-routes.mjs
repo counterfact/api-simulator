@@ -10,6 +10,7 @@ const directory = await mkdtemp(path.join(tmpdir(), "counterfact-generator-"));
 try {
   const specPath = path.join(directory, "openapi.yaml");
   const outputPath = path.join(directory, "generated");
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- This example reads/writes fixed relative filenames beneath its own mkdtemp directory.
   await writeFile(
     specPath,
     `openapi: 3.0.3
@@ -32,6 +33,7 @@ paths:
   }).generate();
 
   assert.match(
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- This example reads/writes fixed relative filenames beneath its own mkdtemp directory.
     await readFile(path.join(outputPath, "routes", "health.ts"), "utf8"),
     /export const GET/u,
   );

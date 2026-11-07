@@ -143,6 +143,10 @@ export const POST: Route["POST"] = function ($) {
 
 All four properties are typed from your OpenAPI spec, so autocomplete works for parameter names and values. GET and HEAD handlers receive no body; put their inputs in path, query, or header parameters.
 
+Cookie and query parameter names such as `constructor` and `__proto__` are
+request data. They are present only when supplied by the client. Duplicate
+cookies keep their first value.
+
 ### Object query parameters (exploded form style)
 
 When a query parameter has `type: object` in the spec, OpenAPI's default serialisation is _exploded form style_: each property of the object becomes its own query parameter.

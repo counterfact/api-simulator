@@ -89,16 +89,15 @@ export function createOpenApiRouteCatalog(
   return {
     getOperation(routePath, method) {
       const normalizedPath = routePath.toLowerCase();
-      const matchingPath = Object.keys(document.paths).find(
-        (path) => path.toLowerCase() === normalizedPath,
+      const matchingPath = Object.entries(document.paths).find(
+        ([path]) => path.toLowerCase() === normalizedPath,
       );
 
       if (matchingPath === undefined) {
         return undefined;
       }
 
-      const pathItem = document.paths[matchingPath] as
-        Record<string, unknown> | undefined;
+      const pathItem = matchingPath[1] as Record<string, unknown> | undefined;
 
       const operation = pathItem?.[method.toLowerCase()] as
         RouteOperation | undefined;

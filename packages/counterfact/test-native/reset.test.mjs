@@ -581,8 +581,7 @@ it("waits for a disconnected stream's blocked producer and asynchronous cleanup"
     });
     try {
       const address = server.address();
-      if (!address || typeof address === "string")
-        throw new Error("Expected a TCP listener");
+      expect(address).toMatchObject({ port: expect.any(Number) });
       const { get } = await import("node:http");
       const client = get(
         `http://localhost:${address.port}/stream`,
