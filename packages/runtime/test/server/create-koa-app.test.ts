@@ -6,6 +6,7 @@ import { usingTemporaryFiles } from "using-temporary-files";
 import { createKoaApp } from "../../src/koa.js";
 import { ContextRegistry } from "../../src/server/context-registry.js";
 import { Dispatcher } from "../../src/server/dispatcher.js";
+import { createResponseBuilder } from "../../src/server/response-builder.js";
 import { Registry } from "../../src/server/registry.js";
 
 describe("createKoaApp", () => {
@@ -241,4 +242,76 @@ describe("JSON prettification middleware", () => {
 
     expect(response.status).toBe(204);
   });
+});
+
+describe("negotiated streaming responses", () => {
+  it.each(["match", "sse-first", "stream-first"])(
+    "keeps SSE framing scoped to its selected representation (%s)",
+    async (composition) => {
+      const registry = new Registry();
+      const contextRegistry = new ContextRegistry();
+      async function* events() {
+        yield { id: "1", event: "update", data: "hello" };
+      }
+      async function* records() {
+        yield { id: "record", data: "JSON" };
+      }
+      registry.add("/feed", {
+        GET() {
+          const builder = createResponseBuilder({
+            responses: {
+              200: {
+                content: {
+                  ...(composition === "stream-first"
+                    ? { "application/jsonl": {}, "text/event-stream": {} }
+                    : { "text/event-stream": {}, "application/jsonl": {} }),
+                },
+              },
+            },
+          })[200]!;
+          if (composition === "sse-first") {
+            return builder
+              .sse(events())
+              .header("X-Trace", "abc")
+              .stream(records());
+          }
+          if (composition === "stream-first") {
+            return builder.stream(records()).sse(events());
+          }
+          return builder.sse(events()).match("application/jsonl", records());
+        },
+      });
+      const app = createKoaApp({
+        runners: [
+          {
+            registry,
+            contextRegistry,
+            dispatcher: new Dispatcher(registry, contextRegistry),
+            openApiPath: "unused.yaml",
+            overlays: [],
+            prefix: "",
+            subdirectory: "",
+          },
+        ],
+        config: {
+          basePath: ".",
+          port: 0,
+          proxyPaths: new Map(),
+          proxyUrl: "",
+          startAdminApi: false,
+        },
+      });
+      const sse = await request(app.callback())
+        .get("/feed")
+        .set("Accept", "text/event-stream");
+      expect(sse.status).toBe(200);
+      expect(sse.text).toBe("event: update\nid: 1\ndata: hello\n\n");
+      const jsonl = await request(app.callback())
+        .get("/feed")
+        .set("Accept", "application/jsonl");
+      expect(jsonl.status).toBe(200);
+      expect(jsonl.text).toBe('{"id":"record","data":"JSON"}\n');
+      expect(jsonl.headers["cache-control"]).toBeUndefined();
+    },
+  );
 });

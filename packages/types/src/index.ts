@@ -28,4 +28,5 @@ export type { ResponseBuilder } from "./response-builder.js";
 export type { ResponseBuilderFactory } from "./response-builder-factory.js";
 export type { WideOperationArgument } from "./wide-operation-argument.js";
 export type { WideResponseBuilder } from "./wide-response-builder.js";
+export type { SseEvent } from "./sse-event.js";
 export type { MultipartFile } from "./multipart-file.js";

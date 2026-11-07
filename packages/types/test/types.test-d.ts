@@ -433,6 +433,108 @@ expectAssignable<(header: "x-request-id", value: string) => unknown>(
   optionalHeadersFactory[200].header,
 );
 
+// Explicit SSE envelopes retain the contract's item schema and required headers.
+type EventResponse = {
+  content: {
+    "text/event-stream": {
+      schema: AsyncIterable<{ event: "update"; data: string }>;
+    };
+    "application/json": { schema: { unrelated: number } };
+  };
+  headers: { "X-Trace": { schema: string } };
+  requiredHeaders: "X-Trace";
+};
+declare const eventBuilder: GenericResponseBuilderInner<EventResponse>;
+declare const events: AsyncIterable<{ event: "update"; data: string }>;
+declare const invalidEvents: AsyncIterable<{ event: "update"; data: number }>;
+expectError(eventBuilder.sse(invalidEvents));
+expectError(eventBuilder.sse({ unrelated: 1 }));
+expectError(noHeaderBuilder.sse(events));
+expectNotAssignable<COUNTERFACT_RESPONSE>(eventBuilder.sse(events));
+eventBuilder.sse(events).header("X-Trace", "abc");
+
+type NdjsonResponse = {
+  content: { "application/x-ndjson": { schema: AsyncIterable<unknown> } };
+  headers: never;
+  requiredHeaders: never;
+};
+declare const ndjsonBuilder: GenericResponseBuilderInner<NdjsonResponse>;
+expectAssignable<COUNTERFACT_RESPONSE>(ndjsonBuilder.stream(stream));
+
+type SseOnlyResponse = {
+  content: {
+    "text/event-stream": {
+      schema: AsyncIterable<{ event: "update"; data: string }>;
+    };
+  };
+  headers: never;
+  requiredHeaders: never;
+};
+declare const sseOnlyBuilder: GenericResponseBuilderInner<SseOnlyResponse>;
+expectAssignable<COUNTERFACT_RESPONSE>(sseOnlyBuilder.sse(events));
+
+// SSE always requires serializable envelopes, including loose or non-item schemas.
+type SseSchemaResponse<Schema> = {
+  content: { "text/event-stream": { schema: Schema } };
+  headers: never;
+  requiredHeaders: never;
+};
+declare const stringItemsBuilder: GenericResponseBuilderInner<
+  SseSchemaResponse<AsyncIterable<string>>
+>;
+declare const stringBodyBuilder: GenericResponseBuilderInner<
+  SseSchemaResponse<string>
+>;
+declare const unknownBodyBuilder: GenericResponseBuilderInner<
+  SseSchemaResponse<unknown>
+>;
+declare const unknownItemsBuilder: GenericResponseBuilderInner<
+  SseSchemaResponse<AsyncIterable<unknown>>
+>;
+declare const unknownItems: AsyncIterable<unknown>;
+expectError(unknownItemsBuilder.sse(unknownItems));
+expectAssignable<COUNTERFACT_RESPONSE>(unknownItemsBuilder.sse(events));
+declare const stringItems: AsyncIterable<string>;
+expectError(stringItemsBuilder.sse(stringItems));
+expectError(stringBodyBuilder.sse("plain body"));
+expectError(unknownBodyBuilder.sse("plain body"));
+expectError(unknownBodyBuilder.sse(stringItems));
+expectAssignable<COUNTERFACT_RESPONSE>(unknownBodyBuilder.sse(events));
+
+type MixedStreamResponse = {
+  content: SseOnlyResponse["content"] & NdjsonResponse["content"];
+  headers: never;
+  requiredHeaders: never;
+};
+declare const mixedStreamBuilder: GenericResponseBuilderInner<MixedStreamResponse>;
+expectAssignable<COUNTERFACT_RESPONSE>(
+  mixedStreamBuilder.sse(events).stream(stream),
+);
+expectAssignable<COUNTERFACT_RESPONSE>(
+  mixedStreamBuilder.sse(events).match("application/x-ndjson", stream),
+);
+expectError(
+  eventBuilder.sse(events).match("application/json", { unrelated: "wrong" }),
+);
+expectError(
+  eventBuilder
+    .sse(events)
+    .match("application/json", { unrelated: 1 })
+    .header("X-Trace", 123),
+);
+expectAssignable<COUNTERFACT_RESPONSE>(
+  eventBuilder
+    .sse(events)
+    .match("application/json", { unrelated: 1 })
+    .header("X-Trace", "abc"),
+);
+
+const wideSseRoute: WideRoute = ($) =>
+  $.x.response[200].sse(events).header("X-Trace", "abc");
+const wideMixedRoute: WideRoute = ($) =>
+  $.x.response[200].sse(events).match("application/jsonl", stream);
+expectAssignable<WideRoute>(wideSseRoute);
+expectAssignable<WideRoute>(wideMixedRoute);
 // Function-based status selection retains the exact indexed builder type.
 expectType<(typeof generatedResponse)[200]>(generatedResponse.status(200));
 expectError(generatedResponse.status(404));

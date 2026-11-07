@@ -848,7 +848,7 @@ describe("a response builder", () => {
         iterable,
       );
 
-      expect(response?.body).toBe(iterable);
+      expect(response?.content?.[0]?.body).toBe(iterable);
     });
 
     it("defaults content type to text/event-stream when spec has no streaming content type", () => {
@@ -856,7 +856,7 @@ describe("a response builder", () => {
         makeStream([]),
       );
 
-      expect(response?.contentType).toBe("text/event-stream");
+      expect(response?.content?.[0]?.type).toBe("text/event-stream");
     });
 
     it("infers the content type from the spec", () => {
@@ -870,7 +870,7 @@ describe("a response builder", () => {
         },
       })[200]?.stream(makeStream([]));
 
-      expect(response?.contentType).toBe("application/jsonl");
+      expect(response?.content?.[0]?.type).toBe("application/jsonl");
     });
 
     it("preserves the status code", () => {
@@ -879,6 +879,27 @@ describe("a response builder", () => {
       );
 
       expect(response?.status).toBe(202);
+    });
+  });
+});
+
+describe("sse()", () => {
+  it("selects SSE explicitly and preserves headers on either side of the call", () => {
+    async function* frames() {
+      yield { id: "1", data: "hello" };
+    }
+    const events = frames();
+    const response = createResponseBuilder({ responses: {} })[200]!
+      .header("X-Before", "before")
+      .sse(events)
+      .header("X-After", "after");
+    expect(response.content).toEqual([
+      { type: "text/event-stream", body: events, streamFormat: "sse" },
+    ]);
+    expect(response.status).toBe(200);
+    expect(response.headers).toEqual({
+      "X-Before": "before",
+      "X-After": "after",
     });
   });
 });

@@ -7,6 +7,7 @@ import type {
   OpenApiOperation,
   MiddlewareResponseBuilderFactory,
   ResponseBuilder,
+  SseEvent,
 } from "@counterfact/types";
 import { STREAMING_CONTENT_TYPES } from "@counterfact/types/streaming-content-types";
 import type { DispatcherConfig } from "../runtime-config.js";
@@ -366,22 +367,39 @@ export function createResponseBuilder(
         };
       },
 
+      sse(this: ResponseBuilder, events: AsyncIterable<SseEvent>) {
+        return {
+          ...this,
+          content: [
+            ...(this.content ?? []).filter(
+              (entry) => entry.type !== "text/event-stream",
+            ),
+            {
+              body: events,
+              type: "text/event-stream",
+              streamFormat: "sse" as const,
+            },
+          ],
+        };
+      },
+
       stream(this: ResponseBuilder, iterable: AsyncIterable<unknown>) {
         const response =
           operation.responses[this.status ?? "default"] ??
           operation.responses.default;
 
         const contentTypes = Object.keys(response?.content ?? {});
+        const streamingTypes = contentTypes.filter((ct) =>
+          STREAMING_CONTENT_TYPES.has(ct),
+        );
         const contentType =
-          contentTypes.find((ct) => STREAMING_CONTENT_TYPES.has(ct)) ??
+          streamingTypes.find(
+            (ct) => !this.content?.some((entry) => entry.type === ct),
+          ) ??
+          streamingTypes[0] ??
           "text/event-stream";
 
-        return {
-          body: iterable,
-          contentType,
-          headers: this.headers,
-          status: this.status,
-        };
+        return this.match(contentType, iterable);
       },
 
       status: Number.parseInt(String(statusCode), 10),

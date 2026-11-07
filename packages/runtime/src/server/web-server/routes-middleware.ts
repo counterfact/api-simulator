@@ -5,6 +5,7 @@ import createDebug from "debug";
 import type Koa from "koa";
 import koaProxy from "koa-proxies";
 
+import { serializeSseEvent } from "../serialize-sse-event.js";
 import type { ProxyConfig } from "../../runtime-config.js";
 import type { Dispatcher } from "../dispatcher.js";
 import { isProxyEnabledForPath } from "../is-proxy-enabled-for-path.js";
@@ -61,9 +62,12 @@ function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
 function asyncIterableToReadable(
   iterable: AsyncIterable<unknown>,
   contentType: string,
+  streamFormat?: "sse",
 ): Readable {
   const formatter =
-    STREAMING_FORMATTERS.get(contentType) ?? defaultStreamFormatter;
+    streamFormat === "sse"
+      ? serializeSseEvent
+      : (STREAMING_FORMATTERS.get(contentType) ?? defaultStreamFormatter);
 
   async function* generate() {
     for await (const item of iterable) {
@@ -228,7 +232,11 @@ export function routesMiddleware(
       const contentType = response.contentType ?? "application/jsonl";
 
       ctx.type = contentType;
-      ctx.body = asyncIterableToReadable(response.body, contentType);
+      ctx.body = asyncIterableToReadable(
+        response.body,
+        contentType,
+        response.streamFormat,
+      );
 
       if (contentType === "text/event-stream") {
         ctx.set("Cache-Control", "no-cache");

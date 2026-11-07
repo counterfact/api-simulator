@@ -579,63 +579,69 @@ it("keeps state guarded when shutdown overlaps pending or failed reset startup",
   });
 });
 
-it("waits for a disconnected stream's blocked producer and asynchronous cleanup", async () => {
-  await usingTemporaryFiles(async ($) => {
-    await $.add(
-      "routes/stream.cjs",
-      `exports.GET = ({context}) => ({contentType: "text/plain", body: (async function* () {
-      try { yield "first"; context.entered(); await context.wait; }
-      finally { context.cleanupEntered(); await context.cleanup; context.cleaned = true; }
-    })()});`,
-    );
-    const simulator = await counterfact({ ...config, basePath: $.path(".") });
-    const listen = jest.spyOn(simulator.koaApp, "listen");
-    const { stop } = await simulator.start(config);
-    const server = listen.mock.results[0]!.value;
-    const entered = deferred();
-    const finish = deferred();
-    const cleanupEntered = deferred();
-    const cleanup = deferred();
-    const closed = deferred();
-    // A deliberate client disconnect can emit Koa's expected premature-close error.
-    simulator.koaApp.on("error", () => {});
-    const context = simulator.loadContext();
-    Object.assign(context, {
-      entered: entered.resolve,
-      wait: finish.promise,
-      cleanupEntered: cleanupEntered.resolve,
-      cleanup: cleanup.promise,
-    });
-    try {
-      const address = server.address() as AddressInfo;
-      expect(address).toMatchObject({ port: expect.any(Number) });
-      const { get } = await import("node:http");
-      const client = get(
-        `http://localhost:${address.port}/stream`,
-        (response) => {
-          response.on("error", () => {});
-          response.once("close", closed.resolve);
-          response.once("data", () => response.destroy());
-        },
+it.each(["raw", "sse"])(
+  "waits for a disconnected %s stream's blocked producer and asynchronous cleanup",
+  async (format) => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "routes/stream.cjs",
+        `exports.GET = ({context, response}) => {
+      const body = (async function* () {
+        try { yield ${format === "sse" ? '{data: "first"}' : '"first"'}; context.entered(); await context.wait; }
+        finally { context.cleanupEntered(); await context.cleanup; context.cleaned = true; }
+      })();
+      return ${format === "sse" ? "response[200].sse(body)" : '{contentType: "text/plain", body}'};
+    };`,
       );
-      client.on("error", () => {});
-      await entered.promise;
-      await closed.promise;
-      const resetting = simulator.reset();
-      await request(server).get("/stream").expect(503);
-      finish.resolve();
-      await cleanupEntered.promise;
-      await request(server).get("/stream").expect(503);
-      expect(context["cleaned"]).toBeUndefined();
-      cleanup.resolve();
-      await resetting;
-      expect(context["cleaned"]).toBe(true);
-      expect(simulator.loadContext()["cleaned"]).toBeUndefined();
-    } finally {
-      finish.resolve();
-      cleanup.resolve();
-      await stop();
-      listen.mockRestore();
-    }
-  });
-});
+      const simulator = await counterfact({ ...config, basePath: $.path(".") });
+      const listen = jest.spyOn(simulator.koaApp, "listen");
+      const { stop } = await simulator.start(config);
+      const server = listen.mock.results[0]!.value;
+      const entered = deferred();
+      const finish = deferred();
+      const cleanupEntered = deferred();
+      const cleanup = deferred();
+      const closed = deferred();
+      // A deliberate client disconnect can emit Koa's expected premature-close error.
+      simulator.koaApp.on("error", () => {});
+      const context = simulator.loadContext();
+      Object.assign(context, {
+        entered: entered.resolve,
+        wait: finish.promise,
+        cleanupEntered: cleanupEntered.resolve,
+        cleanup: cleanup.promise,
+      });
+      try {
+        const address = server.address() as AddressInfo;
+        expect(address).toMatchObject({ port: expect.any(Number) });
+        const { get } = await import("node:http");
+        const client = get(
+          `http://localhost:${address.port}/stream`,
+          (response) => {
+            response.on("error", () => {});
+            response.once("close", closed.resolve);
+            response.once("data", () => response.destroy());
+          },
+        );
+        client.on("error", () => {});
+        await entered.promise;
+        await closed.promise;
+        const resetting = simulator.reset();
+        await request(server).get("/stream").expect(503);
+        finish.resolve();
+        await cleanupEntered.promise;
+        await request(server).get("/stream").expect(503);
+        expect(context["cleaned"]).toBeUndefined();
+        cleanup.resolve();
+        await resetting;
+        expect(context["cleaned"]).toBe(true);
+        expect(simulator.loadContext()["cleaned"]).toBeUndefined();
+      } finally {
+        finish.resolve();
+        cleanup.resolve();
+        await stop();
+        listen.mockRestore();
+      }
+    });
+  },
+);

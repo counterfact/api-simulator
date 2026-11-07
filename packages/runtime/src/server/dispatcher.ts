@@ -510,6 +510,9 @@ export class Dispatcher {
 
         body: content.body as Uint8Array | string | undefined,
         contentType: content.type,
+        ...(content.streamFormat !== undefined && {
+          streamFormat: content.streamFormat,
+        }),
       };
 
       delete normalizedResponse.content;
@@ -539,7 +542,7 @@ export class Dispatcher {
    */
   public selectContent(
     acceptHeader: string,
-    content: { body: unknown; type: string }[],
+    content: { body: unknown; type: string; streamFormat?: "sse" }[],
   ) {
     const preferredMediaTypes = mediaTypes(acceptHeader);
 

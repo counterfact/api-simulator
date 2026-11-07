@@ -44,6 +44,13 @@ return $.response
 
 `.stream(iterable)` accepts an async iterable. The response's OpenAPI streaming media type determines serialization. Supported formats include SSE, JSONL/ndjson, and JSON sequences. See [streaming responses](../manual/streaming.md).
 
+`.sse(events)` accepts an async iterable of explicit SSE frames and selects
+`text/event-stream`. Frames support string `data`, `event`, `id`, and `comment`
+fields plus a nonnegative safe integer `retry` interval in milliseconds.
+Generated handler types derive the frame shape from the SSE `itemSchema`.
+Unlike `.stream()`, `.sse()` sends `data` as already serialized text.
+See [named events and reconnects](../manual/streaming.md#named-events-reconnects-and-heartbeats).
+
 ## Content negotiation
 
 Chain `.match(contentType, content)` to offer explicit representations. An unsupported `Accept` header can produce a 406 response. A 406 response may be plain text; inspect its content type before decoding it.
