@@ -554,12 +554,13 @@ export const notAFunction = 42;`,
 
 it("restores source import errors after initial load and a failed hot reload", async () => {
   // Use Node's real module cache: Jest retains evaluated modules across cache-busted imports.
-  await promisify(execFile)(
-    process.execPath,
-    [
-      "--input-type=module",
-      "--eval",
-      `
+  await expect(
+    promisify(execFile)(
+      process.execPath,
+      [
+        "--input-type=module",
+        "--eval",
+        `
     import assert from "node:assert/strict";
     import { once } from "node:events";
     import { usingTemporaryFiles } from "using-temporary-files";
@@ -586,7 +587,8 @@ it("restores source import errors after initial load and a failed hot reload", a
       } finally { await loader.stopWatching(); }
     });
   `,
-    ],
-    { timeout: 5000 },
-  );
+      ],
+      { timeout: 5000 },
+    ),
+  ).resolves.toHaveProperty("stdout");
 });

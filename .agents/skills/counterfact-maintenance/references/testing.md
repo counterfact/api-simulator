@@ -41,3 +41,13 @@ Paths and commands below are relative to the repository root.
   request entity.
 
 Keep focused unit/type tests even when a broader product journey covers the same behavior. Package-consumer coverage and packed-artifact coverage establish different guarantees.
+
+- Compiler tests spanning fixture mutations need separate TypeScript programs. Give a demonstrated slow scenario its own timeout when coverage and concurrent compiler checks exceed the default; retain the suite-wide timeout for other tests.
+
+- Audit security lint warnings against the actual key/path contract. Prefer Maps,
+  own-property checks, and entry iteration for arbitrary data keys. When a local
+  CLI, installed-consumer harness, or schema lookup intentionally needs dynamic
+  paths/keys, keep any exception at the reported operation and explain its source
+  and boundary. Do not obscure dynamic access or weaken a whole rule to make a
+  scan pass. Put parameterized test expectations in explicit case data; fixture
+  builders may branch outside the test while assertions remain unconditional.

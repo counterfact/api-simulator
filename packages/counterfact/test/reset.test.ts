@@ -1,3 +1,5 @@
+import type { AddressInfo } from "node:net";
+
 import { jest } from "@jest/globals";
 import request from "supertest";
 import { usingTemporaryFiles } from "using-temporary-files";
@@ -481,9 +483,20 @@ it("waits for streamed responses before rebuilding application state", async () 
   });
 });
 
-it.each(["initial configuration", "startup override"])(
-  "uses the assigned port from %s for public scenarios and startup builders recreated by reset",
-  async (portSource) => {
+it.each([
+  {
+    portSource: "initial configuration",
+    configuredPort: 0,
+    startup: undefined,
+  },
+  {
+    portSource: "startup override",
+    configuredPort: 8100,
+    startup: { port: 0 },
+  },
+])(
+  "uses the assigned port from $portSource for public scenarios and startup builders recreated by reset",
+  async ({ configuredPort, startup }) => {
     await usingTemporaryFiles(async ($) => {
       await $.add(
         "routes/state.cjs",
@@ -500,11 +513,9 @@ it.each(["initial configuration", "startup override"])(
       const simulator = await counterfact({
         ...config,
         basePath: $.path("."),
-        port: portSource === "startup override" ? 8100 : 0,
+        port: configuredPort,
       });
-      const { stop } = await simulator.start(
-        portSource === "startup override" ? { port: 0 } : undefined,
-      );
+      const { stop } = await simulator.start(startup);
       try {
         const initialStatus = simulator.status();
         expect(initialStatus.listening).toBe(true);
@@ -596,9 +607,8 @@ it("waits for a disconnected stream's blocked producer and asynchronous cleanup"
       cleanup: cleanup.promise,
     });
     try {
-      const address = server.address();
-      if (!address || typeof address === "string")
-        throw new Error("Expected a TCP listener");
+      const address = server.address() as AddressInfo;
+      expect(address).toMatchObject({ port: expect.any(Number) });
       const { get } = await import("node:http");
       const client = get(
         `http://localhost:${address.port}/stream`,

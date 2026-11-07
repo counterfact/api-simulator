@@ -22,6 +22,7 @@ import { ParameterExportTypeCoder } from "./parameter-export-type-coder.js";
 import { ParametersTypeCoder } from "./parameters-type-coder.js";
 import { READ_ONLY_COMMENTS } from "./read-only-comments.js";
 import { ResponsesTypeCoder } from "./responses-type-coder.js";
+import { MultipartSchemaTypeCoder } from "./multipart-schema-type-coder.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
 import { TypeCoder } from "./type-coder.js";
 import { normalizeOpenApiPath } from "./openapi-path.js";
@@ -314,7 +315,7 @@ export class OperationTypeCoder extends TypeCoder {
   }
 
   /**
-   * Builds the `OmitValueWhenNever<{…}>` dollar-argument type body and sets
+   * Builds the dollar-argument type body and sets
    * up all required shared-type imports on `script`.
    *
    * This helper is reused by both {@link writeCode} (non-versioned) and
@@ -331,7 +332,6 @@ export class OperationTypeCoder extends TypeCoder {
   ): ts.TypeNode {
     const xType = script.importSharedType("WideOperationArgument");
 
-    script.importSharedType("OmitValueWhenNever");
     script.importSharedType("COUNTERFACT_RESPONSE");
 
     script.contextRoutePath = normalizeOpenApiPath(
@@ -367,24 +367,50 @@ export class OperationTypeCoder extends TypeCoder {
       "cookie",
     ).write(script);
 
-    const bodyRequirement =
-      (this.requirement.get("consumes") ??
-      this.requirement.specification?.rootRequirement?.get("consumes"))
-        ? parameters
-            ?.find((parameter) =>
-              ["body", "formData"].includes(
-                parameter.get("in")?.data as string,
-              ),
-            )
-            ?.get("schema")
-        : this.requirement.select(
-            "requestBody/content/application~1json/schema",
-          );
-
+    const consumes =
+      this.requirement.get("consumes") ??
+      this.requirement.specification?.rootRequirement?.get("consumes");
+    const legacyBody = consumes
+      ? parameters
+          ?.find((parameter) =>
+            ["body", "formData"].includes(parameter.get("in")?.data as string),
+          )
+          ?.get("schema")
+      : undefined;
+    const bodyTypes: ts.TypeNode[] = legacyBody
+      ? [new SchemaTypeCoder(legacyBody, this.version).write(script)]
+      : [];
+    const requestBody = this.requirement.get("requestBody");
+    const seenBodySchemas = new Set<string>();
+    for (const mediaType of [
+      "application/json",
+      "application/x-www-form-urlencoded",
+      "multipart/form-data",
+    ]) {
+      const schema = requestBody?.get("content")?.get(mediaType)?.get("schema");
+      if (schema) {
+        const Coder =
+          mediaType === "multipart/form-data"
+            ? MultipartSchemaTypeCoder
+            : SchemaTypeCoder;
+        const coder = new Coder(schema, this.version);
+        if (!seenBodySchemas.has(coder.id)) {
+          seenBodySchemas.add(coder.id);
+          bodyTypes.push(coder.write(script));
+        }
+      }
+    }
+    if (
+      requestBody &&
+      bodyTypes.length > 0 &&
+      requestBody.get("required")?.data !== true
+    ) {
+      bodyTypes.push(
+        ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
+      );
+    }
     const bodyType =
-      bodyRequirement === undefined
-        ? neverType()
-        : new SchemaTypeCoder(bodyRequirement, this.version).write(script);
+      bodyTypes.length === 0 ? neverType() : unionType(bodyTypes);
 
     const openApi2MediaTypes = (this.requirement.get("produces")?.data ??
       this.requirement.specification?.rootRequirement?.get("produces")
@@ -463,8 +489,8 @@ export class OperationTypeCoder extends TypeCoder {
 
     const versionLiteralType =
       this.version !== "" ? literalType(this.version) : neverType();
-    return typeReference("OmitValueWhenNever", [
-      typeLiteral([
+    return typeLiteral(
+      [
         typeProperty("query", queryTypeName),
         typeProperty("querystring", querystringTypeName),
         typeProperty("path", pathTypeName),
@@ -479,8 +505,10 @@ export class OperationTypeCoder extends TypeCoder {
         typeProperty("user", this.userType()),
         typeProperty("delay", delayType),
         typeProperty("version", versionLiteralType),
-      ]),
-    ]);
+      ].filter(
+        (property) => property.type?.kind !== ts.SyntaxKind.NeverKeyword,
+      ),
+    );
   }
 
   public override exportDeclarations(
@@ -522,7 +550,6 @@ export class OperationTypeCoder extends TypeCoder {
   public override writeCode(script: Script): ts.TypeNode {
     script.comments = READ_ONLY_COMMENTS;
     script.importSharedType("WideOperationArgument");
-    script.importSharedType("OmitValueWhenNever");
     script.importSharedType("MaybePromise");
     script.importSharedType("COUNTERFACT_RESPONSE");
     const arg = this.buildDollarArgType(
@@ -546,7 +573,7 @@ export class OperationTypeCoder extends TypeCoder {
  * `script.importType(this)` so that the type is written to the per-version
  * file and an import is added to the calling script.
  *
- * Only the `OmitValueWhenNever<{…}>` type body is emitted — the
+ * Only the dollar-argument type body is emitted — the
  * function-wrapper `($: Versioned<…>) => MaybePromise<COUNTERFACT_RESPONSE>`
  * is assembled by the shared script's `versionsTypeStatements()`.
  */
@@ -615,7 +642,7 @@ export class VersionedArgTypeCoder extends OperationTypeCoder {
   }
 
   /**
-   * Generates the `OmitValueWhenNever<{…}>` dollar-argument type and writes
+   * Generates the dollar-argument type and writes
    * it to the per-version script.
    */
   public override writeCode(script: Script): ts.TypeNode {

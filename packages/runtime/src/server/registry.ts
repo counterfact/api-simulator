@@ -1,3 +1,4 @@
+import { numericParameterValue } from "./numeric-parameter.js";
 import createDebugger from "debug";
 
 import { ModuleTree } from "./module-tree.js";
@@ -113,16 +114,14 @@ function castParameter(value: string | number | boolean, type: string) {
     return value;
   }
 
-  if (type === "integer") {
-    return Number.parseInt(value);
-  }
-
-  if (type === "number") {
-    return Number.parseFloat(value);
+  if (type === "integer" || type === "number") {
+    return numericParameterValue(value, type);
   }
 
   if (type === "boolean") {
-    return value === "true";
+    if (value === "true") return true;
+    if (value === "false") return false;
+    return value;
   }
 
   return value;
@@ -139,9 +138,7 @@ function castParameters(
   parameters: { [key: string]: string | number | boolean } = {},
   parameterTypes: Map<string, string> = new Map(),
   caseInsensitive = false,
-) {
-  const copy: { [key: string]: boolean | number | string } = {};
-
+): Record<string, boolean | number | string> {
   const types = caseInsensitive
     ? new Map(
         Array.from(parameterTypes, ([key, value]) => [
@@ -151,12 +148,12 @@ function castParameters(
       )
     : parameterTypes;
 
-  Object.entries(parameters).forEach(([key, value]) => {
-    const lookupKey = caseInsensitive ? key.toLowerCase() : key;
-    copy[key] = castParameter(value, types.get(lookupKey) ?? "string");
-  });
-
-  return copy;
+  return Object.fromEntries(
+    Object.entries(parameters).map(([key, value]) => {
+      const lookupKey = caseInsensitive ? key.toLowerCase() : key;
+      return [key, castParameter(value, types.get(lookupKey) ?? "string")];
+    }),
+  );
 }
 
 /**
@@ -240,6 +237,7 @@ export class Registry {
     }
 
     return (
+      // eslint-disable-next-line security/detect-object-injection -- Route handler dispatch intentionally reads dynamic method exports from locally authored modules.
       module[method] ??
       module[method.toUpperCase()] ??
       module[method.toLowerCase()]

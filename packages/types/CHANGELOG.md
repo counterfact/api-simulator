@@ -1,5 +1,14 @@
 # @counterfact/types
 
+## 0.3.0
+
+### Minor Changes
+
+- 354e288: Support OpenAPI 3 multipart/form-data request bodies in generated handler types
+  and the built-in Koa server. Expose uploaded bytes and metadata through
+  MultipartFile, decode declared fields and repeated arrays, validate required
+  fields and uploads, and reject malformed or oversized multipart requests.
+
 ## 0.2.0
 
 ### Minor Changes

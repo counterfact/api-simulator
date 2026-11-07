@@ -118,7 +118,13 @@ function getScenarioCompletions(
     }
 
     const selectedGroup = args[0] ?? "";
-    const selectedRegistry = groupedScenarioRegistries[selectedGroup];
+    const selectedRegistry = Object.hasOwn(
+      groupedScenarioRegistries,
+      selectedGroup,
+    )
+      ? // eslint-disable-next-line security/detect-object-injection -- Only an own group key is read; arbitrary API group names are supported.
+        groupedScenarioRegistries[selectedGroup]
+      : undefined;
 
     if (selectedRegistry === undefined) {
       const scenarioPartial = hasTrailingWhitespace

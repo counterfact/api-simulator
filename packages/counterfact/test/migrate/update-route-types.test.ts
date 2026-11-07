@@ -75,30 +75,26 @@ type Query = getPet_Query;
     });
   });
 
-  it.each(["delete", "123get-pet", "get.pet", "get-pet"])(
-    "recognizes sanitized legacy name for %s",
-    async (operationId) => {
-      const legacy = {
-        delete: "delete_",
-        "123get-pet": "_123getPet",
-        "get.pet": "getPet",
-        "get-pet": "getPet",
-      }[operationId];
-      await usingTemporaryFiles(async ($) => {
-        await $.add("openapi.json", JSON.stringify(spec(operationId)));
-        await $.add(
-          "routes/pet.ts",
-          `import type { ${legacy} } from "../types/paths/pet.types";\nexport const GET: ${legacy} = () => ({status: 200});`,
-        );
-        expect(await updateRouteTypes($.path(""), $.path("openapi.json"))).toBe(
-          true,
-        );
-        expect(await $.read("routes/pet.ts")).toContain(
-          "export const GET: HTTP_GET",
-        );
-      });
-    },
-  );
+  it.each([
+    ["delete", "delete_"],
+    ["123get-pet", "_123getPet"],
+    ["get.pet", "getPet"],
+    ["get-pet", "getPet"],
+  ])("recognizes sanitized legacy name for %s", async (operationId, legacy) => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("openapi.json", JSON.stringify(spec(operationId)));
+      await $.add(
+        "routes/pet.ts",
+        `import type { ${legacy} } from "../types/paths/pet.types";\nexport const GET: ${legacy} = () => ({status: 200});`,
+      );
+      expect(await updateRouteTypes($.path(""), $.path("openapi.json"))).toBe(
+        true,
+      );
+      expect(await $.read("routes/pet.ts")).toContain(
+        "export const GET: HTTP_GET",
+      );
+    });
+  });
 
   it("leaves unrelated modules and context files untouched", async () => {
     await usingTemporaryFiles(async ($) => {
