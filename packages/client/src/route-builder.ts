@@ -283,6 +283,7 @@ export class RouteBuilder {
   private getHeaderValue(name: string): RouteParams[string] | undefined {
     const key = findHeaderKey(this._headerParams, name);
 
+    // eslint-disable-next-line security/detect-object-injection -- key comes from own header enumeration; arbitrary header names are supported.
     return key === undefined ? undefined : this._headerParams[key];
   }
 
@@ -305,7 +306,9 @@ export class RouteBuilder {
   }
 
   private getCookieValue(name: string): RouteParams[string] | undefined {
-    if (name in this._cookieParams) return this._cookieParams[name];
+    if (Object.hasOwn(this._cookieParams, name))
+      // eslint-disable-next-line security/detect-object-injection -- The own-property check above limits this read to explicitly supplied cookie parameters.
+      return this._cookieParams[name];
 
     return this.getHeaderCookies().get(name);
   }

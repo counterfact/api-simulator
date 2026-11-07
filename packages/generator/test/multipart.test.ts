@@ -1,7 +1,7 @@
 import ts from "typescript";
 import { usingTemporaryFiles } from "using-temporary-files";
 
-import { generateVersionsTsContent } from "../src/versions-ts-generator.js";
+import { addVersionFile } from "./helpers/version-file.js";
 import { CodeGenerator } from "../src/code-generator.js";
 import { ScenarioFileGenerator } from "../src/scenario-file-generator.js";
 
@@ -105,11 +105,7 @@ describe("multipart request types", () => {
           version,
         );
         await generator.generate();
-        if (version)
-          await $.add(
-            "api/types/versions.ts",
-            await generateVersionsTsContent([version]),
-          );
+        await addVersionFile($, version, "api/types");
         await new ScenarioFileGenerator($.path("api")).generate();
         await $.add(
           "consumer.ts",
@@ -128,12 +124,14 @@ describe("multipart request types", () => {
           return $.response.status(204).empty();
         };
         export const json: Routes["/json"]["POST"] = ($) => {
+          if ($.body === undefined) return $.response.status(204).empty();
           const original: Uint8Array | string = $.body.files[0]!;
           // @ts-expect-error JSON binary fields have no multipart metadata
           const filename = $.body.files[0]!.filename;
           return $.response.status(204).empty();
         };
         export const form: Routes["/form"]["POST"] = ($) => {
+          if ($.body === undefined) return $.response.status(204).empty();
           const name: string = $.body.name;
           return $.response.status(204).empty();
         };
@@ -203,11 +201,7 @@ it.each(["", "v1"])(
         { routes: true, types: true },
         version,
       ).generate();
-      if (version)
-        await $.add(
-          "api/types/versions.ts",
-          await generateVersionsTsContent([version]),
-        );
+      await addVersionFile($, version, "api/types");
       await $.add(
         "consumer.ts",
         'import type {Routes} from "./api/types/index.js"; const route: Routes["/upload"]["POST"] = ($)=>{ const bytes:Uint8Array=$.body.file.data; if ($.body.nullableFile!==null) { const optionalBytes:Uint8Array=$.body.nullableFile.data; } const nullable: typeof $.body.nullableFile=null; return $.response.status(204).empty(); };',

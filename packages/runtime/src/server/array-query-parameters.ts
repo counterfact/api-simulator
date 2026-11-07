@@ -1,3 +1,4 @@
+import { numericParameterValue } from "./numeric-parameter.js";
 import type { OpenApiParameters } from "@counterfact/types";
 type Schema = Record<string, unknown>;
 type Choice = { constraints: Schema[]; type: string | undefined };
@@ -23,8 +24,7 @@ function alternatives(
   if (Array.isArray(value.allOf))
     for (const branch of value.allOf)
       result = combine(result, alternatives(branch, seen));
-  for (const keyword of ["anyOf", "oneOf"]) {
-    const union = value[keyword];
+  for (const union of [value.anyOf, value.oneOf]) {
     if (Array.isArray(union))
       result = combine(
         result,
@@ -77,35 +77,17 @@ function commonType(options: Choice[]): string | undefined {
     : undefined;
 }
 
-function isDecimalText(value: string): boolean {
-  const scientific = value.split(/e/iu);
-  if (
-    scientific.length > 2 ||
-    (scientific.length === 2 && !/^[+-]?\d+$/u.test(scientific[1]!))
-  )
-    return false;
-  const mantissa = scientific[0]!;
-  const unsigned =
-    mantissa.startsWith("+") || mantissa.startsWith("-")
-      ? mantissa.slice(1)
-      : mantissa;
-  const parts = unsigned.split(".");
-  return (
-    parts.length <= 2 &&
-    parts.every((part) => /^\d*$/u.test(part)) &&
-    parts.some((part) => part.length > 0)
-  );
-}
-
 function itemValue(value: string, index: number, arrays: Choice[]): unknown {
   const itemChoices = arrays.flatMap(({ constraints }) => {
     const schemas = constraints.flatMap((schema) => {
       const prefix = schema.prefixItems;
       const item =
         Array.isArray(prefix) && index < prefix.length
-          ? prefix[index]
+          ? // eslint-disable-next-line security/detect-object-injection -- index is a nonnegative item position supplied by Array.map; these are array element reads.
+            prefix[index]
           : Array.isArray(schema.items)
-            ? schema.items[index]
+            ? // eslint-disable-next-line security/detect-object-injection -- index is a nonnegative item position supplied by Array.map; these are array element reads.
+              schema.items[index]
             : schema.items;
       return item === undefined ? [] : [item];
     });
@@ -116,15 +98,8 @@ function itemValue(value: string, index: number, arrays: Choice[]): unknown {
     if (value === "true") return true;
     if (value === "false") return false;
   }
-  // Decimal text only: Number() also accepts radix forms, whitespace and Infinity.
-  if ((type === "integer" || type === "number") && isDecimalText(value)) {
-    const number = Number(value);
-    if (
-      Number.isFinite(number) &&
-      (type !== "integer" || Number.isInteger(number))
-    )
-      return number;
-  }
+  if (type === "integer" || type === "number")
+    return numericParameterValue(value, type);
   return value;
 }
 

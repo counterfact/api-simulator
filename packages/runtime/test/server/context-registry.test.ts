@@ -5,6 +5,26 @@ import {
 } from "../../src/server/context-registry.js";
 
 describe("a context registry", () => {
+  it("preserves live state when an unchanged initializer contains an own __proto__ data property", () => {
+    const initial = () => ({
+      state: Object.fromEntries([
+        ["__proto__", { label: "data" }],
+        ["count", 0],
+      ]),
+    });
+    const registry = new ContextRegistry();
+    const context = initial();
+    registry.update("/special", context);
+    const state = context.state;
+    state.count = 7;
+    registry.update("/special", initial());
+    expect(registry.find("/special")).toBe(context);
+    expect(context.state).toBe(state);
+    expect(context.state.count).toBe(7);
+    expect(Object.hasOwn(context.state, "__proto__")).toBe(true);
+    expect(Object.getPrototypeOf(context.state)).toBe(Object.prototype);
+  });
+
   it("finds a context that exactly matches the path", () => {
     const helloContext = { name: "hello" };
 

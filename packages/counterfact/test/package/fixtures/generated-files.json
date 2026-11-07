@@ -35,6 +35,6 @@
   "types/helpers.ts": "aeadce0f245813c918a7c525f8234a52631d42c190700f12d7ec9efa70089445",
   "types/index.ts": "8af92d759312b6a9da552a1938016bbf6b6193250cc13cc7e7ff9ad9215b2125",
   "types/path/_.middleware.ts": "097031e6c2de870ae15fbb355fd4f1185e1a984fcd3136547b91ae7fc9ace06c",
-  "types/paths/path/with∶colon.types.ts": "432f1a85b2e3cd1971a5c169c786f41178fb782ef57cd87dfa9c9071b05433dc",
-  "types/paths/ping.types.ts": "4e9453233a34bad19da2c47b650394b147fd2382b281b6ca8f18e74c82ef67b5"
+  "types/paths/path/with∶colon.types.ts": "b8db5f662655b061fee771661953f9c1ce68a2f97191aebf0a69d56c9d95a55d",
+  "types/paths/ping.types.ts": "1738affdb560109348d305bc7d672194eef7e1894a76e3efb2b3c30bf75fa80a"
 }
