@@ -9,11 +9,13 @@ function add(
   method: string = "GET",
 ) {
   const module: { [key: string]: () => { body: string } } = {};
+  // eslint-disable-next-line security/detect-object-injection -- The test helper creates/invokes a handler under the explicit HTTP method passed by each fixture.
   module[method] = () => ({ body: name });
   moduleTree.add(url, module);
 }
 
 function match(moduleTree: ModuleTree, path: string, method: string = "GET") {
+  // eslint-disable-next-line security/detect-object-injection -- The test helper creates/invokes a handler under the explicit HTTP method passed by each fixture.
   return moduleTree.match(path, method)?.module[method]?.()?.body;
 }
 

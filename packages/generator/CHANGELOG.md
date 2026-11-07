@@ -1,5 +1,21 @@
 # @counterfact/generator
 
+## 1.2.0
+
+### Minor Changes
+
+- 354e288: Support OpenAPI 3 multipart/form-data request bodies in generated handler types
+  and the built-in Koa server. Expose uploaded bytes and metadata through
+  MultipartFile, decode declared fields and repeated arrays, validate required
+  fields and uploads, and reject malformed or oversized multipart requests.
+
+### Patch Changes
+
+- 498c47d: Resolve generated handler context types from the endpoint directory before checking ancestors, matching runtime context resolution for collection endpoints in ordinary and versioned APIs.
+- 9995fa2: Restore the string index signature in the generated default Context class so handlers can add shared state immediately. Remove the index signature to opt into strict typing; existing context files are preserved during regeneration.
+- Updated dependencies [354e288]
+  - @counterfact/types@0.3.0
+
 ## 1.1.0
 
 ### Minor Changes

@@ -610,15 +610,16 @@ export class Repository {
       scanner.setTextPos(position);
       let end = position;
       for (
-        let token = scanner.scan();
-        token !== ts.SyntaxKind.EndOfFileToken;
-        token = scanner.scan()
+        let syntaxKind = scanner.scan();
+        syntaxKind !== ts.SyntaxKind.EndOfFileToken;
+        syntaxKind = scanner.scan()
       ) {
-        if (token === ts.SyntaxKind.NewLineTrivia) return scanner.getTextPos();
+        if (syntaxKind === ts.SyntaxKind.NewLineTrivia)
+          return scanner.getTextPos();
         if (
-          token !== ts.SyntaxKind.WhitespaceTrivia &&
-          token !== ts.SyntaxKind.SingleLineCommentTrivia &&
-          token !== ts.SyntaxKind.MultiLineCommentTrivia
+          syntaxKind !== ts.SyntaxKind.WhitespaceTrivia &&
+          syntaxKind !== ts.SyntaxKind.SingleLineCommentTrivia &&
+          syntaxKind !== ts.SyntaxKind.MultiLineCommentTrivia
         )
           break;
         end = scanner.getTextPos();

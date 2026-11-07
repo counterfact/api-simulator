@@ -48,8 +48,13 @@ function cloneForCache(value: unknown): unknown {
       ? (Object.create(proto) as Record<string, unknown>)
       : {};
 
-  for (const key of Object.keys(value)) {
-    clone[key] = cloneForCache((value as Record<string, unknown>)[key]);
+  for (const [key, child] of Object.entries(value)) {
+    Object.defineProperty(clone, key, {
+      value: cloneForCache(child),
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
   }
 
   return clone;
@@ -167,10 +172,13 @@ export class ContextRegistry extends EventTarget {
     for (const property in updatedContext) {
       if (
         !isDeepStrictEqual(
+          // eslint-disable-next-line security/detect-object-injection -- Hot reload intentionally compares and updates enumerable properties of locally authored Context instances, preserving class behavior.
           updatedContext[property],
+          // eslint-disable-next-line security/detect-object-injection -- Hot reload intentionally compares and updates enumerable properties of locally authored Context instances, preserving class behavior.
           this.cache.get(path)?.[property],
         )
       ) {
+        // eslint-disable-next-line security/detect-object-injection -- Hot reload intentionally compares and updates enumerable properties of locally authored Context instances, preserving class behavior.
         context[property] = updatedContext[property];
       }
     }
@@ -195,12 +203,6 @@ export class ContextRegistry extends EventTarget {
 
   /** Returns a plain object mapping every registered path to its context. */
   public getAllContexts(): Record<string, Context> {
-    const result: Record<string, Context> = {};
-
-    for (const [path, context] of this.entries.entries()) {
-      result[path] = context;
-    }
-
-    return result;
+    return Object.fromEntries(this.entries);
   }
 }

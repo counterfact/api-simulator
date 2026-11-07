@@ -57,7 +57,8 @@ route("/account").method("get").cookies({ session: "abc 123" });
 Cookie names and values supplied through `.cookies()` are percent-encoded and
 merged with any existing `Cookie` header. A `Cookie` header also satisfies
 required OpenAPI cookie parameters; the header name is matched
-case-insensitively.
+case-insensitively. Only cookies explicitly supplied by the caller satisfy a
+required input, including cookies named `constructor`.
 
 ### Request body
 

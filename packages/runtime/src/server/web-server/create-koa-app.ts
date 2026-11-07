@@ -20,6 +20,8 @@ import {
 } from "./routes-middleware.js";
 import { openapiMiddleware } from "./openapi-middleware.js";
 
+import { multipartBodyParser } from "./multipart-body-parser.js";
+
 const debug = createDebug("counterfact:server:create-koa-app");
 
 /** Runtime-owned view of a facade runner used by the Koa layer. */
@@ -196,7 +198,19 @@ export function createKoaApp({
     await next();
   });
 
-  app.use(bodyParser());
+  app.use(multipartBodyParser());
+  const parseBody = bodyParser({ strict: false });
+  app.use(async (ctx, next) => {
+    await parseBody(ctx, async () => {
+      const raw = ctx.request.rawBody;
+      const noFraming =
+        !ctx.get("transfer-encoding") &&
+        Number(ctx.get("content-length") || 0) === 0;
+      if (raw === "" || (raw === undefined && noFraming))
+        ctx.request.body = undefined;
+      await next();
+    });
+  });
 
   app.use(async (ctx, next) => {
     await next();

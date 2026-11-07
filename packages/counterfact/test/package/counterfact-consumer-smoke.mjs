@@ -191,6 +191,7 @@ function telemetryEnvironment(overrides) {
 }
 
 async function json(pathname) {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
   return JSON.parse(await readFile(pathname, "utf8"));
 }
 
@@ -226,9 +227,10 @@ function normalizeText(content) {
 }
 
 async function fileHashes(directory) {
-  const hashes = {};
+  const hashes = new Map();
 
   async function visit(currentDirectory) {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
     const entries = await readdir(currentDirectory, { withFileTypes: true });
     entries.sort((left, right) => left.name.localeCompare(right.name));
 
@@ -243,19 +245,24 @@ async function fileHashes(directory) {
         .relative(directory, absolutePath)
         .split(path.sep)
         .join("/");
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
       const content = normalizeText(await readFile(absolutePath, "utf8"));
-      hashes[relativePath] = createHash("sha256").update(content).digest("hex");
+      hashes.set(
+        relativePath,
+        createHash("sha256").update(content).digest("hex"),
+      );
     }
   }
 
   await visit(directory);
   return Object.fromEntries(
-    Object.entries(hashes).sort(([left], [right]) => left.localeCompare(right)),
+    [...hashes].sort(([left], [right]) => left.localeCompare(right)),
   );
 }
 
 async function compareOrUpdate(pathname, actual) {
   if (updateFixtures) {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- Only explicit --update-fixtures mode writes this harness-selected compatibility fixture.
     await writeFile(pathname, `${JSON.stringify(actual, undefined, 2)}\n`);
     return;
   }
@@ -289,6 +296,7 @@ export async function verifyPackedConsumer({ consumerDirectory, pack }) {
     path.join(fixturesDirectory, "compatibility-manifest.json"),
   );
   for (const field of ["engines", "name", "sideEffects", "type"]) {
+    // eslint-disable-next-line security/detect-object-injection -- field comes from the fixed compatibility-field list above; both values are parsed package manifests.
     assert.deepEqual(installedManifest[field], expectedManifest[field], field);
   }
   const installedBins =
@@ -337,6 +345,7 @@ export async function verifyPackedConsumer({ consumerDirectory, pack }) {
   }
 
   const runtimeCheckPath = path.join(consumerDirectory, "runtime-check.mjs");
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
   await writeFile(
     runtimeCheckPath,
     `import assert from "node:assert/strict";
@@ -387,6 +396,7 @@ await running.stop();
     installedRuntimeManifest.dependencies["@counterfact/generator"],
     undefined,
   );
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
   await readFile(
     path.join(installedRuntimeRoot, "dist", "server", "uncached-require.cjs"),
   );
@@ -394,6 +404,7 @@ await running.stop();
     consumerDirectory,
     "runtime-consumer.mjs",
   );
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
   await writeFile(
     runtimeConsumerPath,
     `import assert from "node:assert/strict";
@@ -472,6 +483,7 @@ assert.equal(typeof createMswHandlers, "function");
     "scenarios/index.ts",
     "types/paths/ping.types.ts",
   ]) {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
     await readFile(path.join(generatedDirectory, requiredGeneratedPath));
   }
   assert(
@@ -734,6 +746,7 @@ paths:
     await closeServer(telemetryCollector);
   }
 
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
   await writeFile(
     path.join(consumerDirectory, "consumer.ts"),
     `import { loadOpenApiDocument } from "@counterfact/openapi";
@@ -750,6 +763,7 @@ void request;
 void spec;
 `,
   );
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
   await writeFile(
     path.join(consumerDirectory, "runtime-consumer.ts"),
     `import { ContextRegistry, Dispatcher, Registry } from "@counterfact/runtime";
@@ -767,6 +781,7 @@ void request;
 void runner;
 `,
   );
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
   await writeFile(
     path.join(consumerDirectory, "tsconfig.json"),
     `${JSON.stringify(
@@ -795,6 +810,7 @@ void runner;
     ],
     { cwd: consumerDirectory },
   );
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
   await writeFile(
     path.join(consumerDirectory, "runtime-tsconfig.json"),
     `${JSON.stringify(
@@ -843,8 +859,11 @@ async function main() {
     const consumerDirectory = path.join(temporaryRoot, "consumer");
     const tarballDirectory = path.join(temporaryRoot, "tarballs");
     await Promise.all([
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
       mkdir(cacheDirectory, { recursive: true }),
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
       mkdir(consumerDirectory),
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
       mkdir(tarballDirectory),
     ]);
 
@@ -899,6 +918,7 @@ async function main() {
       cacheDirectory,
     );
     const typesTarballPath = path.join(tarballDirectory, typesPack.filename);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The smoke harness intentionally accesses its temporary consumers, configured npm cache, and checked-in compatibility fixtures.
     await writeFile(
       path.join(consumerDirectory, "package.json"),
       `${JSON.stringify({ name: "counterfact-packed-consumer", private: true, type: "module" }, undefined, 2)}\n`,
