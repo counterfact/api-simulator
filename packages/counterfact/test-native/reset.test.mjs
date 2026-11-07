@@ -1,13 +1,12 @@
-import type { AddressInfo } from "node:net";
-
-import { jest } from "@jest/globals";
+import { afterEach, it } from "node:test";
+import { expect } from "expect";
+import { ModuleMocker } from "jest-mock";
+const mocks = new ModuleMocker(globalThis);
+afterEach(() => mocks.restoreAllMocks());
 import request from "supertest";
 import { usingTemporaryFiles } from "using-temporary-files";
-
-import { counterfact } from "../src/app.js";
-import type { Config } from "../src/config.js";
-
-const config: Config = {
+import { counterfact } from "../dist/app.js";
+const config = {
   openApiPath: "_",
   basePath: ".",
   port: 0,
@@ -23,15 +22,13 @@ const config: Config = {
   validateRequests: false,
   validateResponses: false,
 };
-
 function deferred() {
-  let finish!: () => void;
-  const promise = new Promise<void>((resolve) => {
+  let finish;
+  const promise = new Promise((resolve) => {
     finish = resolve;
   });
   return { promise, resolve: finish };
 }
-
 it("reconstructs stores, nested dependencies, records and routes while retaining the listening address", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add(
@@ -95,15 +92,10 @@ it("reconstructs stores, nested dependencies, records and routes while retaining
       await Promise.resolve(); $.loadContext("/").store.records.set("pending", { name: "Pending" });
     }`,
     );
-    const simulator = await counterfact<{
-      records: Map<string, object>;
-      extra?: boolean;
-      count: number;
-      value(): string;
-    }>({ ...config, basePath: $.path(".") });
-    const listen = jest.spyOn(simulator.koaApp, "listen");
+    const simulator = await counterfact({ ...config, basePath: $.path(".") });
+    const listen = mocks.spyOn(simulator.koaApp, "listen");
     const { stop } = await simulator.start(config);
-    const server = listen.mock.results[0]!.value;
+    const server = listen.mock.results[0].value;
     const address = server.address();
     try {
       const initialContext = simulator.loadContext();
@@ -116,7 +108,7 @@ it("reconstructs stores, nested dependencies, records and routes while retaining
       await client.post("/state").expect(200);
       await simulator.scenario("emptyProjects");
       await simulator.scenario("pets/orders/pending");
-      expect(simulator.store!.records.has("pending")).toBe(true);
+      expect(simulator.store.records.has("pending")).toBe(true);
       // Runtime additions and replacement handlers must not become the baseline.
       simulator.registry.add("/temporary", { GET: () => "temporary" });
       simulator.registry.add("/state", { GET: () => "override" });
@@ -133,8 +125,8 @@ it("reconstructs stores, nested dependencies, records and routes while retaining
         expect(restored.headers["x-source"]).toBe("present");
         expect(restored.headers["x-dynamic"]).toBeUndefined();
         await client.get("/temporary").expect(404);
-        expect(simulator.store!.value()).toBe("Original");
-        expect(simulator.store!.extra).toBeUndefined();
+        expect(simulator.store.value()).toBe("Original");
+        expect(simulator.store.extra).toBeUndefined();
         expect(simulator.store).not.toBe(initialStore);
         expect(simulator.loadContext()).not.toBe(initialContext);
         const nested = simulator.loadContext("/nested");
@@ -142,9 +134,7 @@ it("reconstructs stores, nested dependencies, records and routes while retaining
         expect(nested["root"]).toBe(simulator.loadContext());
         const dynamic = { unique: iteration };
         simulator.contextRegistry.add("/runtime", dynamic);
-        expect(
-          (nested["lookup"] as (path: string) => unknown)("/runtime"),
-        ).toBe(dynamic);
+        expect(nested["lookup"]("/runtime")).toBe(dynamic);
         expect(simulator.loadContext()["ready"]).toBe(true);
         expect(simulator.contextRegistry.getAllPaths()).not.toContain(
           "/dynamic",
@@ -172,7 +162,6 @@ it("reconstructs stores, nested dependencies, records and routes while retaining
     );
   });
 });
-
 it("drains active requests, rejects new requests, coalesces resets and awaits async startup", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add(
@@ -250,7 +239,6 @@ it("drains active requests, rejects new requests, coalesces resets and awaits as
     }
   });
 });
-
 it("resets each group once in startup order and selects named scenarios explicitly", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add("_.store.ts", `export class Store { order = []; }`);
@@ -271,18 +259,15 @@ it("resets each group once in startup order and selects named scenarios explicit
       export async function selected($) { await Promise.resolve(); $.context.selected = "${group}"; }`,
       );
     }
-    const simulator = await counterfact<{ order: string[] }>(
-      { ...config, basePath: $.path(".") },
-      [
-        { source: "_", group: "billing", version: "v1", prefix: "/v1" },
-        { source: "_", group: "inventory", prefix: "/inventory" },
-        { source: "_", group: "billing", version: "v2", prefix: "/v2" },
-      ],
-    );
+    const simulator = await counterfact({ ...config, basePath: $.path(".") }, [
+      { source: "_", group: "billing", version: "v1", prefix: "/v1" },
+      { source: "_", group: "inventory", prefix: "/inventory" },
+      { source: "_", group: "billing", version: "v2", prefix: "/v2" },
+    ]);
     const { stop } = await simulator.start(config);
     try {
       for (let i = 0; i < 2; i += 1) {
-        expect(simulator.store!.order).toEqual(["billing", "inventory"]);
+        expect(simulator.store.order).toEqual(["billing", "inventory"]);
         await expect(simulator.scenario("selected")).rejects.toThrow(
           "Select an API group",
         );
@@ -306,7 +291,6 @@ it("resets each group once in startup order and selects named scenarios explicit
     }
   });
 });
-
 it("keeps failed resets unavailable, allows recovery, and cleans up while resetting", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add("_.store.ts", `export class Store { fail = false; }`);
@@ -357,7 +341,6 @@ it("keeps failed resets unavailable, allows recovery, and cleans up while resett
     }
   });
 });
-
 it("reports constructor failures, keeps HTTP gated, and permits a fresh retry", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add(
@@ -377,19 +360,19 @@ it("reports constructor failures, keeps HTTP gated, and permits a fresh retry", 
     }`,
     );
     await $.add("routes/state.js", `export function GET() { return "ready"; }`);
-    const simulator = await counterfact<{ fail(): void }>({
+    const simulator = await counterfact({
       ...config,
       basePath: $.path("."),
     });
     const { stop } = await simulator.start(config);
     try {
-      simulator.store!.fail();
+      simulator.store.fail();
       await expect(simulator.reset()).rejects.toThrow(
         "store construction failed",
       );
       await request(simulator.koaApp.callback()).get("/state").expect(503);
       await simulator.reset();
-      (simulator.loadContext()["fail"] as () => void)();
+      simulator.loadContext()["fail"]();
       await expect(simulator.reset()).rejects.toThrow(
         "context construction failed",
       );
@@ -403,7 +386,6 @@ it("reports constructor failures, keeps HTTP gated, and permits a fresh retry", 
     }
   });
 });
-
 it("rejects circular constructor dependencies and cleans up failed startup", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add(
@@ -423,7 +405,6 @@ it("rejects circular constructor dependencies and cleans up failed startup", asy
     );
   });
 });
-
 it("preserves context identity and mutations across the existing stop/start lifecycle", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add(
@@ -444,7 +425,6 @@ it("preserves context identity and mutations across the existing stop/start life
     }
   });
 });
-
 it("waits for streamed responses before rebuilding application state", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add(
@@ -482,60 +462,54 @@ it("waits for streamed responses before rebuilding application state", async () 
     }
   });
 });
-
-it.each([
-  {
-    portSource: "initial configuration",
-    configuredPort: 0,
-    startup: undefined,
-  },
-  {
-    portSource: "startup override",
-    configuredPort: 8100,
-    startup: { port: 0 },
-  },
-])(
-  "uses the assigned port from $portSource for public scenarios and startup builders recreated by reset",
-  async ({ configuredPort, startup }) => {
-    await usingTemporaryFiles(async ($) => {
-      await $.add(
-        "routes/state.cjs",
-        `exports.GET = ({context}) => {
+for (const portSource of ["initial configuration", "startup override"]) {
+  it(
+    "uses the assigned port from %s for public scenarios and startup builders recreated by reset".replace(
+      "%s",
+      String(portSource),
+    ),
+    async () => {
+      await usingTemporaryFiles(async ($) => {
+        await $.add(
+          "routes/state.cjs",
+          `exports.GET = ({context}) => {
       context.requests = (context.requests || 0) + 1; return "connected";
     };`,
-      );
-      await $.add(
-        "scenarios/index.cjs",
-        `exports.startup = ($) => { $.routes.state = $.route("/state").method("get"); };
+        );
+        await $.add(
+          "scenarios/index.cjs",
+          `exports.startup = ($) => { $.routes.state = $.route("/state").method("get"); };
       exports.request = async ($) => { await $.route("/state").method("get").send(); };
       exports.savedRequest = async ($) => { await $.routes.state.send(); };`,
-      );
-      const simulator = await counterfact({
-        ...config,
-        basePath: $.path("."),
-        port: configuredPort,
+        );
+        const simulator = await counterfact({
+          ...config,
+          basePath: $.path("."),
+          port: portSource === "startup override" ? 8100 : 0,
+        });
+        const { stop } = await simulator.start(
+          portSource === "startup override" ? { port: 0 } : undefined,
+        );
+        try {
+          const initialStatus = simulator.status();
+          expect(initialStatus.listening).toBe(true);
+          expect(initialStatus.port).toBe(0);
+          expect(initialStatus.address?.port).toBeGreaterThan(0);
+          await simulator.scenario("request");
+          expect(simulator.loadContext()["requests"]).toBe(1);
+          await simulator.scenario("savedRequest");
+          expect(simulator.loadContext()["requests"]).toBe(2);
+          await simulator.reset();
+          expect(simulator.status()).toEqual(initialStatus);
+          await simulator.scenario("savedRequest");
+          expect(simulator.loadContext()["requests"]).toBe(1);
+        } finally {
+          await stop();
+        }
       });
-      const { stop } = await simulator.start(startup);
-      try {
-        const initialStatus = simulator.status();
-        expect(initialStatus.listening).toBe(true);
-        expect(initialStatus.port).toBe(0);
-        expect(initialStatus.address?.port).toBeGreaterThan(0);
-        await simulator.scenario("request");
-        expect(simulator.loadContext()["requests"]).toBe(1);
-        await simulator.scenario("savedRequest");
-        expect(simulator.loadContext()["requests"]).toBe(2);
-        await simulator.reset();
-        expect(simulator.status()).toEqual(initialStatus);
-        await simulator.scenario("savedRequest");
-        expect(simulator.loadContext()["requests"]).toBe(1);
-      } finally {
-        await stop();
-      }
-    });
-  },
-);
-
+    },
+  );
+}
 it("keeps state guarded when shutdown overlaps pending or failed reset startup", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.addDirectory("routes");
@@ -578,7 +552,6 @@ it("keeps state guarded when shutdown overlaps pending or failed reset startup",
     }
   });
 });
-
 it("waits for a disconnected stream's blocked producer and asynchronous cleanup", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add(
@@ -589,9 +562,9 @@ it("waits for a disconnected stream's blocked producer and asynchronous cleanup"
     })()});`,
     );
     const simulator = await counterfact({ ...config, basePath: $.path(".") });
-    const listen = jest.spyOn(simulator.koaApp, "listen");
+    const listen = mocks.spyOn(simulator.koaApp, "listen");
     const { stop } = await simulator.start(config);
-    const server = listen.mock.results[0]!.value;
+    const server = listen.mock.results[0].value;
     const entered = deferred();
     const finish = deferred();
     const cleanupEntered = deferred();
@@ -607,7 +580,7 @@ it("waits for a disconnected stream's blocked producer and asynchronous cleanup"
       cleanup: cleanup.promise,
     });
     try {
-      const address = server.address() as AddressInfo;
+      const address = server.address();
       expect(address).toMatchObject({ port: expect.any(Number) });
       const { get } = await import("node:http");
       const client = get(
