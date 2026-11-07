@@ -6,6 +6,31 @@ import { Dispatcher } from "../dist/server/dispatcher.js";
 import { ModuleLoader } from "../dist/server/module-loader.js";
 import { Registry } from "../dist/server/registry.js";
 
+async function waitForRouteVersion(registries, contexts, version) {
+  // Windows can emit multiple notifications for the previous write. Wait for
+  // the requested behavior, not merely the next watcher completion event.
+  for (let attempt = 0; attempt < 250; attempt += 1) {
+    const responses = await Promise.all(
+      registries.map(async (routes) =>
+        new Dispatcher(routes, contexts).request({
+          method: "GET",
+          path: "/probe",
+          headers: {},
+          query: {},
+          req: {},
+        }),
+      ),
+    );
+    if (responses.every((response) => response.body.version === version)) {
+      for (const response of responses)
+        assert.deepEqual(response.body, { version, identity: true });
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  assert.fail(`Route version ${version} was not published to all registries`);
+}
+
 it("shares initial ESM context constructors, errors, and singletons with routes", async () => {
   await usingTemporaryFiles(async ($) => {
     await $.add(
@@ -77,11 +102,8 @@ it("preserves root arrow and private methods through unrelated route edits and g
     assert.equal(context.incrementPrivate(), 2);
     await loader.watch();
     for (const version of [2, 3]) {
-      const refreshed = new Promise((resolve) =>
-        loader.addEventListener("add", resolve, { once: true }),
-      );
       await $.add("probe.mjs", route(version));
-      await refreshed;
+      await waitForRouteVersion([registry, second.registry], contexts, version);
       assert.equal(contexts.find("/"), context);
       assert.equal(context.increment(), version + 5);
       assert.equal(context.count, version + 5);
@@ -136,11 +158,8 @@ it("preserves CommonJS root arrow and private methods through unrelated route ed
     assert.equal(context.incrementPrivate(), 2);
     await loader.watch();
     for (const version of [2, 3]) {
-      const refreshed = new Promise((resolve) =>
-        loader.addEventListener("add", resolve, { once: true }),
-      );
       await $.add("probe.cjs", route(version));
-      await refreshed;
+      await waitForRouteVersion([registry, second.registry], contexts, version);
       assert.equal(contexts.find("/"), context);
       assert.equal(context.increment(), version + 5);
       assert.equal(context.count, version + 5);
