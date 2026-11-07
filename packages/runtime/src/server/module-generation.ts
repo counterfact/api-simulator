@@ -31,6 +31,14 @@ type GenerationState = {
 // a delayed dynamic import must still use the graph belonging to its caller.
 const generations = new Map<string, GenerationState>();
 
+// Node load hooks may decode away a UTF-8 BOM; filesystem reads retain it.
+// Compare the same source representation so unchanged modules keep identity.
+function hashModuleSource(source: string): string {
+  return createHash("sha256")
+    .update(source.replace(/^\uFEFF/, ""))
+    .digest("hex");
+}
+
 function canonicalURL(url: string): string {
   const result = new URL(url);
   result.searchParams.delete(GENERATION);
@@ -120,7 +128,7 @@ function registerGenerationHook(): void {
               node.expression.kind === ts.SyntaxKind.ImportKeyword) ||
             ts.forEachChild(node, hasDynamicImport) === true;
           record.hasDynamicImport = hasDynamicImport(syntax);
-          record.sourceHash = createHash("sha256").update(source).digest("hex");
+          record.sourceHash = hashModuleSource(source);
         }
         return result;
       } catch (error) {
@@ -245,8 +253,7 @@ export class ModuleGeneration {
             !record.evaluated ||
             record.hasDynamicImport ||
             record.sourceHash === undefined ||
-            createHash("sha256").update(source).digest("hex") !==
-              record.sourceHash
+            hashModuleSource(source) !== record.sourceHash
           )
             invalid.add(record);
         } catch {

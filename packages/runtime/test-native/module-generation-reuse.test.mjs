@@ -457,3 +457,40 @@ test("a caught dynamic import rejection does not certify the failed dependency",
     }
   });
 });
+
+for (const extension of ["mjs", "ts"]) {
+  test(`unchanged BOM-prefixed ${extension} modules preserve context identity`, async () => {
+    await usingTemporaryFiles(async ($) => {
+      const filename = `context.${extension}`;
+      await $.add(
+        filename,
+        "\uFEFFexport class Context { #count=0; increment=()=>++this.#count; read() { return this.#count; } }",
+      );
+      await $.add(
+        "route.mjs",
+        `export {Context} from './${filename}'; export const value=1;`,
+      );
+      const first = new ModuleGeneration();
+      const a = await first.import($.path("route.mjs"));
+      const live = new a.Context();
+      assert.equal(live.increment(), 1);
+      await $.add(
+        "route.mjs",
+        `export {Context} from './${filename}'; export const value=2;`,
+      );
+      const second = await first.refresh();
+      const b = await second.import($.path("route.mjs"));
+      assert.equal(b.value, 2);
+      assert.equal(b.Context, a.Context);
+      assert.equal(live.increment(), 2);
+      assert.equal(b.Context.prototype.read.call(live), 2);
+      await $.add(
+        filename,
+        "\uFEFFexport class Context { read() { return 3; } }",
+      );
+      const c = await (await second.refresh()).import($.path("route.mjs"));
+      assert.notEqual(c.Context, a.Context);
+      assert.equal(new c.Context().read(), 3);
+    });
+  });
+}

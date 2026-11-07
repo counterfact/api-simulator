@@ -587,18 +587,74 @@ it("warns about legacy context filenames without registering them", async (t) =>
     const registry = new Registry();
     const loader = new ModuleLoader($.path("routes"), registry);
     await loader.load();
-    t.after(() => loader.stopWatching());
-    await loader.watch();
+    // Keep the empty-directory/add case: retries or a pre-existing target would
+    // conceal the missing notification this integration test is meant to catch.
+    const events = [];
+    const started = performance.now();
+    const record = (event, ...details) => {
+      events.push({
+        ms: Math.round(performance.now() - started),
+        event,
+        details,
+      });
+      if (events.length > 64) events.shift();
+    };
+    const bounded = async (promise, stage) => {
+      let timer;
+      try {
+        return await Promise.race([
+          promise,
+          new Promise((_resolve, reject) => {
+            timer = setTimeout(() => {
+              reject(
+                new Error(
+                  `Timed out waiting for ${stage}: ${JSON.stringify({
+                    platform: process.platform,
+                    polling:
+                      process.env.CHOKIDAR_USEPOLLING ?? "platform default",
+                    watched: loader.watcher?.getWatched(),
+                    events,
+                  })}`,
+                ),
+              );
+            }, 8000);
+          }),
+        ]);
+      } finally {
+        clearTimeout(timer);
+      }
+    };
     let warned;
     const diagnostic = new Promise((resolve) => {
       warned = resolve;
     });
-    t.mock.method(process.stdout, "write", (message) => {
-      if (String(message).includes("needs a minor update")) warned();
+    const stdout = t.mock.method(process.stdout, "write", (message) => {
+      if (String(message).includes("needs a minor update")) {
+        record("warning");
+        warned();
+      }
       return true;
     });
-    await $.add("routes/$.context.mjs", "export const ignored=true;");
-    await diagnostic;
-    assert.equal(registry.exists("GET", "/$.context"), false);
+    t.after(() => loader.stopWatching());
+    try {
+      const ready = loader.watch();
+      // Inspect the actual loader watcher, not a second independent watcher.
+      // Attach synchronously before the initial scan completes.
+      loader.watcher.on("ready", () => record("ready"));
+      loader.watcher.on("raw", (...args) => record("raw", ...args));
+      loader.watcher.on("all", (...args) => record("all", ...args));
+      loader.watcher.on("error", (error) => record("error", String(error)));
+      await bounded(ready, "watcher readiness");
+      record("creating legacy file");
+      await $.add("routes/$.context.mjs", "export const ignored=true;");
+      record("legacy file written");
+      await bounded(diagnostic, "legacy-file warning");
+      assert.equal(registry.exists("GET", "/$.context"), false);
+    } finally {
+      // Close before the temporary directory is removed, including on a
+      // bounded diagnostic failure. Keep t.after as a timeout safety net.
+      await loader.stopWatching();
+      stdout.mock.restore();
+    }
   });
 });
