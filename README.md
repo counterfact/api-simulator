@@ -50,6 +50,12 @@ For a repeatable project or CI workflow,
 [install a pinned version](./packages/counterfact/docs/first-10-minutes.md#install-a-pinned-version)
 and commit the lockfile.
 
+## Runnable examples
+
+- [React and Vite](./examples/react-vite/README.md) — run the frontend and local API in two terminals.
+- [Playwright error states](./examples/playwright-error-states/README.md) — verify success, missing-data and temporary-failure screens.
+- [Packaged example guides](./packages/counterfact/docs/examples/index.md)
+
 ## Keep going
 
 - [Documentation](https://counterfact.dev/docs/getting-started) · [user manual](./packages/counterfact/docs/manual.md) · [CLI and API reference](./packages/counterfact/docs/api.md)

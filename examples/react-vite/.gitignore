@@ -1,0 +1,6 @@
+api/.cache/
+api/counterfact-types/
+api/routes/_.context.ts
+api/scenarios/
+api/types/
+dist/

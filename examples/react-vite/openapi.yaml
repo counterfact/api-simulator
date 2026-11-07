@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: Profiles API
+  version: 1.0.0
+paths:
+  /profiles/{profileId}:
+    get:
+      operationId: getProfile
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Profile found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "404":
+          description: Profile not found
+components:
+  schemas:
+    Profile:
+      type: object
+      required: [id, name, role]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string

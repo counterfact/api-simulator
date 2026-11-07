@@ -61,3 +61,5 @@ Paths and commands below are relative to the repository root.
 - Documentation pages can be direct entry points. Introduce Counterfact-specific terms before using them, linking to `packages/counterfact/docs/manual/concepts.md` for shared definitions. State example prerequisites before snippets, distinguish generated helpers from authored context methods, and explain group/version/prefix and handler/constructor/scenario argument boundaries consistently. Extend current canonical pages rather than restoring retired guides.
 
 - When reconciling changes across the documentation reorganization, keep the Manual/API chapter structure and retired-page redirects. Move API contracts and migration guidance into the matching `api/` chapter and practical examples into `manual/`; do not restore deleted reference or pattern pages to preserve an older edit.
+
+- Put runnable framework applications under examples/ and their packaged guides under docs/examples/. Keep complete startup, browser URL, stop, and verification instructions; link to repository sources and state that they are not shipped in the npm package.

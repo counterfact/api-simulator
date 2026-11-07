@@ -42,6 +42,7 @@ local API is running.
 - [User manual](./docs/manual.md) — feature-by-feature explanations of API generation, behavior, state, and integration.
 - [API reference](./docs/api.md) — CLI configuration, handler contracts, response builders, and simulator lifecycle.
 - [Find your workflow](docs/usage.md) — guides for frontend work, testing, proxying, and agents.
+- [Runnable examples](./docs/examples/index.md) — repository-hosted React/Vite and Playwright apps with complete setup instructions; source is not included in the npm package.
 - [Without OpenAPI](./docs/features/without-openapi.md) — the deeper alternative when no OpenAPI document exists.
 
 For a complete checked-in example, see the
