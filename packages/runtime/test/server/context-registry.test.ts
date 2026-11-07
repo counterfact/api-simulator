@@ -330,7 +330,7 @@ it("snapshots RegExp internals without reading overridden source or flags", () =
   expect(metadataReads).toBe(0);
 });
 
-it("preserves generation-stable nested classes and their own methods", () => {
+it("replaces reconstructed nested class instances rather than migrating their methods", () => {
   const declaration = () => {
     class Cart {
       public items: string[] = [];
@@ -346,13 +346,31 @@ it("preserves generation-stable nested classes and their own methods", () => {
   cart.items.push("saved");
   const next = declaration();
   registry.update("/", next);
-  registry.update("/", declaration());
-  expect(registry.find("/").cart).toBe(cart);
+  expect(registry.find("/").cart).toBe(next.cart);
+  expect(next.cart.total()).toBe(0);
   expect(cart.total()).toBe(1);
   expect(registry.find("/").action).not.toBe(action);
 });
 
-it("preserves class instances inside cyclic arrays, maps and sets", () => {
+it("replaces class instances even when only private state changes", () => {
+  class Cart {
+    #currency: string;
+    public constructor(currency: string) {
+      this.#currency = currency;
+    }
+    public currency() {
+      return this.#currency;
+    }
+  }
+  const registry = new ContextRegistry();
+  registry.update("/", { cart: new Cart("USD") });
+  const cart = new Cart("EUR");
+  registry.update("/", { cart });
+  expect(registry.find("/").cart).toBe(cart);
+  expect(cart.currency()).toBe("EUR");
+});
+
+it("replaces containers holding newly constructed class instances", () => {
   const declaration = () => {
     class Cart {
       public items: string[] = [];
@@ -372,8 +390,9 @@ it("preserves class instances inside cyclic arrays, maps and sets", () => {
   registry.update("/", first);
   const graph = first.graph;
   graph.array[0]!.items.push("saved");
-  registry.update("/", declaration());
-  expect(registry.find("/").graph).toBe(graph);
+  const next = declaration();
+  registry.update("/", next);
+  expect(registry.find("/").graph).toBe(next.graph);
   expect(graph.array[0]!.items).toEqual(["saved"]);
 });
 
@@ -438,7 +457,7 @@ it("compares symbols and decorated native/array declarations without losing own 
   expect(registry.find("/").data).toBe(changed.data);
 });
 
-it("preserves opaque prototypes and native-subclass declaration data", () => {
+it("treats custom prototypes and native subclasses as identity-sensitive", () => {
   const prototype = { inherited: true };
   const create = () => {
     class Values extends Uint8Array {}
@@ -451,9 +470,10 @@ it("preserves opaque prototypes and native-subclass declaration data", () => {
   const { opaque, values } = first;
   opaque.count = 7;
   values[0] = 9;
-  registry.update("/", create());
-  expect(registry.find("/").opaque).toBe(opaque);
-  expect(registry.find("/").values).toBe(values);
+  const next = create();
+  registry.update("/", next);
+  expect(registry.find("/").opaque).toBe(next.opaque);
+  expect(registry.find("/").values).toBe(next.values);
 });
 
 it.each([
@@ -487,7 +507,7 @@ it("detects a changed native superclass with otherwise identical class source", 
   expect(registry.find("/").value).toBe(next);
 });
 
-it("compares enumerable data and cycles attached to class-owned callables", () => {
+it("replaces reconstructed class-owned callables without inspecting their source", () => {
   class Cart {
     public callback;
     public constructor(value: number) {
@@ -501,8 +521,9 @@ it("compares enumerable data and cycles attached to class-owned callables", () =
   const registry = new ContextRegistry();
   const first = new Cart(1);
   registry.update("/", { cart: first });
-  registry.update("/", { cart: new Cart(1) });
-  expect(registry.find("/").cart).toBe(first);
+  const unchangedSource = new Cart(1);
+  registry.update("/", { cart: unchangedSource });
+  expect(registry.find("/").cart).toBe(unchangedSource);
   const next = new Cart(2);
   registry.update("/", { cart: next });
   expect(registry.find("/").cart).toBe(next);
@@ -527,7 +548,7 @@ it("applies inherited enumerable context initializer changes after live override
   expect(registry.find("/").value).toBe(2);
 });
 
-it("does not mistake native-code text in user declarations for native functions", () => {
+it("preserves a reused class instance without inspecting function source", () => {
   const create = () => {
     class Cart {
       public items: string[] = [];
@@ -540,12 +561,12 @@ it("does not mistake native-code text in user declarations for native functions"
   const cart = create();
   registry.update("/", { cart });
   cart.items.push("saved");
-  registry.update("/", { cart: create() });
+  registry.update("/", { cart });
   expect(registry.find("/").cart).toBe(cart);
   expect(cart.items).toEqual(["saved"]);
 });
 
-it("preserves tagged user classes without invoking nonenumerable tag getters", () => {
+it("replaces tagged user classes without invoking nonenumerable tag getters", () => {
   const create = () => {
     class Cart {
       public items: string[] = [];
@@ -563,12 +584,13 @@ it("preserves tagged user classes without invoking nonenumerable tag getters", (
   });
   registry.update("/", { cart, plain });
   cart.items.push("saved");
-  registry.update("/", { cart: create(), plain: { value: 1 } });
-  expect(registry.find("/").cart).toBe(cart);
+  const next = create();
+  registry.update("/", { cart: next, plain: { value: 1 } });
+  expect(registry.find("/").cart).toBe(next);
   expect(cart.items).toEqual(["saved"]);
 });
 
-it("does not leak method source comparison into aliased direct and plain callbacks", () => {
+it("keeps class-owned and aliased plain callbacks identity-sensitive", () => {
   const create = (value: number) => {
     const callback = () => value;
     class Cart {
@@ -584,7 +606,7 @@ it("does not leak method source comparison into aliased direct and plain callbac
   cart.items.push("saved");
   const next = create(2);
   registry.update("/", next);
-  expect(registry.find("/").cart).toBe(cart);
+  expect(registry.find("/").cart).toBe(next.cart);
   expect(registry.find("/").action).toBe(next.action);
   expect((registry.find("/").plain as typeof next.plain).callback()).toBe(2);
 });

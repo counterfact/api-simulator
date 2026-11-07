@@ -354,61 +354,6 @@ test("failed transitive evaluations are not reused even when source is unchanged
   });
 });
 
-test("CommonJS watcher graphs retain their own contexts when another loader replaces Node's cache", async () => {
-  await usingTemporaryFiles(async ($) => {
-    await $.add(
-      "context.cjs",
-      "exports.Context=class Context { #n=0; increment=()=>++this.#n; }",
-    );
-    await $.add(
-      "route.cjs",
-      "exports.Context=require('./context.cjs').Context; exports.value=1;",
-    );
-    const first = new ModuleGeneration();
-    const context = await first.importCommonJS($.path("context.cjs"));
-    await first.importCommonJS($.path("route.cjs"));
-    const live = new context.Context();
-    assert.equal(live.increment(), 1);
-    const foreign = new ModuleGeneration();
-    const otherContext = await foreign.importCommonJS($.path("context.cjs"));
-    await foreign.importCommonJS($.path("route.cjs"));
-    assert.notEqual(otherContext.Context, context.Context);
-    await $.add(
-      "route.cjs",
-      "exports.Context=require('./context.cjs').Context; exports.value=2;",
-    );
-    const second = await first.refresh();
-    const route = await second.importCommonJS($.path("route.cjs"));
-    assert.equal(route.value, 2);
-    assert.equal(route.Context, context.Context);
-    assert.equal(
-      (await second.importCommonJS($.path("context.cjs"))).Context,
-      context.Context,
-    );
-    assert.ok(live instanceof route.Context);
-    assert.equal(live.increment(), 2);
-  });
-});
-
-test("CommonJS pending invalidations survive interleaved foreign generation imports", async () => {
-  await usingTemporaryFiles(async ($) => {
-    await $.add("helper.cjs", "exports.value=1;");
-    await $.add("route.cjs", "exports.value=require('./helper.cjs').value;");
-    await $.add("other.cjs", "exports.value=1;");
-    const first = new ModuleGeneration();
-    await first.importCommonJS($.path("route.cjs"));
-    await first.importCommonJS($.path("other.cjs"));
-    const foreign = await first.refresh();
-    await foreign.importCommonJS($.path("route.cjs"));
-    await $.add("helper.cjs", "exports.value=2;");
-    await $.add("other.cjs", "exports.value=2;");
-    const second = await first.refresh();
-    assert.equal((await second.importCommonJS($.path("other.cjs"))).value, 2);
-    assert.equal((await foreign.importCommonJS($.path("route.cjs"))).value, 1);
-    assert.equal((await second.importCommonJS($.path("route.cjs"))).value, 2);
-  });
-});
-
 for (const kind of ["esm", "commonjs"]) {
   test(`a failed ${kind} constructor invalidates only its graph`, async () => {
     await usingTemporaryFiles(async ($) => {

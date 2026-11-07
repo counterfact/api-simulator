@@ -305,7 +305,7 @@ for (const fixture of [
   });
 }
 
-it("reloads changed CommonJS routes without adopting a separate loader's cached graph", async (t) => {
+it("reloads changed CommonJS routes while retaining the single loader's context", async (t) => {
   await usingTemporaryFiles(async ($) => {
     await $.add(
       "_.context.cjs",
@@ -321,17 +321,42 @@ it("reloads changed CommonJS routes without adopting a separate loader's cached 
     await first.load();
     const live = contexts.find("/");
     live.count = 5;
-    const otherContexts = new ContextRegistry();
-    const second = new ModuleLoader($.path(""), new Registry(), otherContexts);
-    await second.load();
-    assert.notEqual(
-      Object.getPrototypeOf(live),
-      Object.getPrototypeOf(otherContexts.find("/")),
-    );
     await first.watch();
     await $.add("probe.cjs", route(2));
     await waitForRouteVersion([registry], contexts, 2);
     assert.equal(live.increment(), 6);
     assert.equal(live.count, 6);
+  });
+});
+
+it("retains nested class state in unchanged graphs but replaces it on context reconstruction", async (t) => {
+  await usingTemporaryFiles(async ($) => {
+    const source = (version) => `
+      class Counter { #count = 0; increment = () => ++this.#count; }
+      export class Context { counter = new Counter(); version = ${version}; }
+    `;
+    await $.add("_.context.mjs", source(1));
+    const route = (version) => `import { Context } from './_.context.mjs';
+      export const GET = $ => ({body: {version: ${version}, identity: $.context instanceof Context}});`;
+    await $.add("probe.mjs", route(1));
+    const contexts = new ContextRegistry();
+    const registry = new Registry();
+    const loader = new ModuleLoader($.path(""), registry, contexts);
+    t.after(() => loader.stopWatching());
+    await loader.load();
+    const counter = contexts.find("/").counter;
+    assert.equal(counter.increment(), 1);
+    await loader.watch();
+    await $.add("probe.mjs", route(2));
+    await waitForRouteVersion([registry], contexts, 2);
+    assert.equal(contexts.find("/").counter, counter);
+    assert.equal(counter.increment(), 2);
+    await loader.stopWatching();
+    await $.add("_.context.mjs", source(2));
+    await loader.load();
+    const reconstructed = contexts.find("/").counter;
+    assert.notEqual(reconstructed, counter);
+    assert.equal(reconstructed.increment(), 1);
+    assert.equal(contexts.find("/").version, 2);
   });
 });

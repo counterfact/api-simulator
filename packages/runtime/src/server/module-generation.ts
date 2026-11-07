@@ -285,17 +285,13 @@ export class ModuleGeneration {
   /** Keep CommonJS identity on watcher refresh, but retain explicit uncached loads. */
   public async importCommonJS(pathName: string): Promise<unknown> {
     const resolved = requireModule.resolve(pathName);
-    // Activate this generation's graph before evaluating an entry. Another
-    // loader may have replaced Node's process-global cache in the meantime.
-    // Keep pending invalidations until their modules have been recaptured.
-    for (const path of this.evictions.keys()) {
-      if (!this.commonJS.has(path))
+    // Invalidate this loader's changed graph, without swapping another loader's
+    // modules into or out of Node's process-global CommonJS cache.
+    for (const [path, record] of this.evictions) {
+      if (Reflect.get(requireModule.cache, path) === record.module)
         Reflect.deleteProperty(requireModule.cache, path);
     }
-    if (this.watcherGeneration) {
-      for (const [path, record] of this.commonJS)
-        Reflect.set(requireModule.cache, path, record.module);
-    }
+    this.evictions.clear();
     const previous = this.commonJS.get(resolved);
     if (this.watcherGeneration && previous !== undefined)
       return previous.module.exports;

@@ -23,108 +23,57 @@ export function parentPath(path: string): string {
   return String(path.split("/").slice(0, -1).join("/")) || "/";
 }
 
-const DECLARATION_CLASS = Symbol("declaration class");
-const DECLARATION_METHOD = Symbol("declaration method");
-const DECLARATION_OPAQUE = Symbol("opaque declaration");
+const OPAQUE_IDENTITY = Symbol("opaque identity");
 const opaqueIdentities = new WeakMap<object, symbol>();
-
-function isNativeSource(source: string): boolean {
-  return /^function\b[^{]*\{\s*\[native code\]\s*\}$/u.test(source);
-}
-
-function hasOpaqueSlots(value: object): boolean {
-  let prototype = Object.getPrototypeOf(value) as object | null;
-  while (prototype !== null && prototype !== Object.prototype) {
-    const constructor = Object.getOwnPropertyDescriptor(
-      prototype,
-      "constructor",
-    )?.value as unknown;
-    if (typeof constructor === "function") {
-      const source = Function.prototype.toString.call(constructor);
-      if (
-        isNativeSource(source) &&
-        source !== Function.prototype.toString.call(Object)
-      )
-        return true;
-      // JavaScript-implemented platform globals can also own hidden slots.
-      const name = Object.getOwnPropertyDescriptor(constructor, "name")
-        ?.value as unknown;
-      if (
-        typeof name === "string" &&
-        Object.getOwnPropertyDescriptor(globalThis, name)?.value === constructor
-      )
-        return true;
-    }
-    prototype = Object.getPrototypeOf(prototype) as object | null;
-  }
-  return false;
-}
-
-/** Describe user constructors without relying on generation-specific identity. */
-function classDeclaration(
-  value: object,
-): { constructors: string[]; nativePrototype: object | null } | undefined {
-  const declarations: string[] = [];
-  let prototype = Object.getPrototypeOf(value) as object | null;
-  while (prototype !== null && prototype !== Object.prototype) {
-    const constructor = Object.getOwnPropertyDescriptor(
-      prototype,
-      "constructor",
-    )?.value as unknown;
-    if (typeof constructor !== "function") return undefined;
-    const source = Function.prototype.toString.call(constructor);
-    if (isNativeSource(source)) {
-      if (declarations.length > 0) declarations.push(source);
-      break;
-    }
-    declarations.push(source);
-    prototype = Object.getPrototypeOf(prototype) as object | null;
-  }
-  return declarations.length === 0
-    ? undefined
-    : { constructors: declarations, nativePrototype: prototype };
-}
+const snapshotPrototypes = new Set<unknown>([
+  null,
+  Object.prototype,
+  Array.prototype,
+  Map.prototype,
+  Set.prototype,
+  Date.prototype,
+  RegExp.prototype,
+  ArrayBuffer.prototype,
+  DataView.prototype,
+  Buffer.prototype,
+  Int8Array.prototype,
+  Uint8Array.prototype,
+  Uint8ClampedArray.prototype,
+  Int16Array.prototype,
+  Uint16Array.prototype,
+  Int32Array.prototype,
+  Uint32Array.prototype,
+  Float32Array.prototype,
+  Float64Array.prototype,
+  BigInt64Array.prototype,
+  BigUint64Array.prototype,
+]);
 
 /**
- * Snapshot declaration data independently of local ESM generation prototypes.
- * Class instances retain a constructor-source descriptor, so switching classes
- * or changing their declarations is still observable. Supported native values
- * retain real slots, enumerable properties, symbols and cycles. Other opaque
- * values compare by identity instead of discarding their internal state.
- *
- * Own methods of nested class instances are compared by source, like prototype
- * methods. Retained instances are not migrated to new closure captures. Direct
- * context functions and opaque/bound functions remain identity-sensitive.
+ * Snapshot plain declaration data and supported native values. User class
+ * instances and other opaque objects compare by identity, not constructor or
+ * method source: hot reload does not migrate their hidden state or closures.
  */
 function cloneForCache(
   value: unknown,
   seen = new Map<object, object>(),
   contextRoot = false,
-  classMethod = false,
 ): unknown {
-  if (
-    value === null ||
-    (typeof value !== "object" && typeof value !== "function")
-  )
-    return value;
-  // Method snapshots have a private memo table. Their source normalization must
-  // never leak into identity-sensitive direct/plain callbacks through aliases.
-  if (typeof value === "function" && !classMethod)
-    return seen.get(value) ?? value;
+  if (value === null || typeof value !== "object") return value;
   if (seen.has(value)) return seen.get(value);
-
-  let methodSource: string | undefined;
-  if (typeof value === "function") {
-    methodSource = Function.prototype.toString.call(value);
-    if (isNativeSource(methodSource)) return value;
+  if (!contextRoot && !snapshotPrototypes.has(Object.getPrototypeOf(value))) {
+    let identity = opaqueIdentities.get(value);
+    if (identity === undefined) {
+      identity = Symbol("opaque value");
+      opaqueIdentities.set(value, identity);
+    }
+    const snapshot = { [OPAQUE_IDENTITY]: identity };
+    seen.set(value, snapshot);
+    return snapshot;
   }
-  const declaration =
-    methodSource === undefined ? classDeclaration(value) : undefined;
+
   let clone: object;
-  if (methodSource !== undefined) {
-    clone = { [DECLARATION_METHOD]: methodSource };
-    seen = new Map(seen);
-  } else if (value instanceof Map) {
+  if (value instanceof Map) {
     const entries = new Map<unknown, unknown>();
     clone = entries;
     seen.set(value, clone);
@@ -146,37 +95,14 @@ function cloneForCache(
     clone = Buffer.from(value);
   } else if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
     clone = structuredClone(value);
-    Object.setPrototypeOf(
-      clone,
-      declaration?.nativePrototype ?? Object.getPrototypeOf(value),
-    );
+    Object.setPrototypeOf(clone, Object.getPrototypeOf(value));
   } else if (Array.isArray(value)) {
     clone = new Array(value.length);
-  } else if (!contextRoot && hasOpaqueSlots(value)) {
-    // Unsupported internal slots cannot be reconstructed from enumerable data.
-    // Compare opaque values by identity, including on older Node versions whose
-    // deep comparison treats different Promise/WeakMap instances as equal.
-    let identity = opaqueIdentities.get(value);
-    if (identity === undefined) {
-      identity = Symbol("opaque value");
-      opaqueIdentities.set(value, identity);
-    }
-    clone = { [DECLARATION_OPAQUE]: identity };
-    seen.set(value, clone);
-    return clone;
   } else {
-    clone = Object.create(
-      declaration ? Object.prototype : Object.getPrototypeOf(value),
-    ) as object;
+    clone = Object.create(Object.getPrototypeOf(value)) as object;
   }
 
   seen.set(value, clone);
-  if (declaration !== undefined && !contextRoot) {
-    Object.defineProperty(clone, DECLARATION_CLASS, {
-      enumerable: true,
-      value: declaration.constructors,
-    });
-  }
   const inherited = new Set<string>();
   if (contextRoot) for (const key in value) inherited.add(key);
   const keys = new Set([...Reflect.ownKeys(value), ...inherited]);
@@ -191,12 +117,7 @@ function cloneForCache(
       configurable: true,
       enumerable: true,
       writable: true,
-      value: cloneForCache(
-        entry,
-        seen,
-        false,
-        declaration !== undefined && !contextRoot,
-      ),
+      value: cloneForCache(entry, seen),
     });
   }
   return clone;
