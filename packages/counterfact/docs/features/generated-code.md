@@ -49,6 +49,8 @@ Schema types also preserve:
 
 Generation does not replace runtime validation. TypeScript cannot express every JSON Schema constraint. In particular, `oneOf` is represented as a union rather than a guarantee that exactly one branch validates.
 
+Generated operation argument types include only the request inputs available for that operation. For example, an operation without query parameters has no `$.query` property. Versioned arguments include their version literal; unversioned arguments omit `version`. These properties are selected during generation, so the emitted argument is a plain object type.
+
 ## Update a specification
 
 With specification watching enabled, save the OpenAPI document to regenerate the enabled artifacts. Types reflect the updated contract; existing route implementations retain your edits. Use your editor or TypeScript checks to find handlers whose assumptions no longer match the specification.
@@ -233,3 +235,9 @@ import the internal versioned operation modules.
 - [Find your workflow](../usage.md)
 
 The root endpoint always uses the root context, even though its generated type file is named index.types.ts. A real /index child context applies only to that child endpoint and its descendants.
+
+Optional request bodies include `undefined` in the generated `$.body` type for
+JSON, URL-encoded forms, and multipart forms. In OpenAPI 3, a body is optional
+when `requestBody.required` is `false` or omitted. Guard or normalize `$.body`
+before accessing its properties, for example `const body = $.body ?? {};`.
+Required bodies exclude `undefined`; nullable schemas independently allow `null`.

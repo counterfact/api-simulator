@@ -184,6 +184,7 @@ export class ModuleTree {
   }
 
   private fileModuleDefined(file: File, method: string) {
+    // eslint-disable-next-line security/detect-object-injection -- Route modules intentionally expose dynamic HTTP method exports; this lookup reads the locally authored module.
     return (file.module as { [key: string]: unknown })[method] !== undefined;
   }
 
@@ -378,7 +379,8 @@ export class ModuleTree {
     const pathVariables = Object.fromEntries(
       parts.flatMap((part, index) =>
         part.startsWith("{") && part.endsWith("}")
-          ? [[part.slice(1, -1), values[index] ?? ""]]
+          ? // eslint-disable-next-line security/detect-object-injection -- index comes from parts.flatMap and reads the corresponding positional path segment.
+            [[part.slice(1, -1), values[index] ?? ""]]
           : [],
       ),
     );

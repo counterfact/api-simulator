@@ -15,6 +15,7 @@ function executable(name) {
 }
 
 async function readJson(file) {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The publishability checker intentionally reads manifests discovered under the repository packages directory.
   return JSON.parse(await fs.readFile(file, "utf8"));
 }
 
