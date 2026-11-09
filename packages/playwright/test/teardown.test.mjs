@@ -208,6 +208,8 @@ for (const scope of ["inherited", "nested-commonjs", "nested-default"]) {
         ["workspace/node_modules", "local-value", "local"],
         ["workspace/node_modules", "shadowed-value", "nearest"],
         ["workspace/api/node_modules", "api-value", "api"],
+        ["workspace/api/scenarios/node_modules", "nested-value", "nested"],
+        ["workspace/api/scenarios/node_modules", "shadowed-value", "scenario"],
       ]) {
         await $.add(
           `${directory}/${name}/package.json`,
@@ -245,13 +247,17 @@ export const GET = () => ({ status: 200, body: { local, hoisted, shadowed, api }
         scope === "inherited"
           ? `
 import hoisted from "hoisted-value";
+import nested from "nested-value";
+import shadowed from "shadowed-value";
 await Promise.resolve();
-export function startup({ context }) { context.marker = hoisted; }
+export function startup({ context }) { context.marker = [hoisted, nested, shadowed].join(":"); }
 export function selected({ context }) { context.marker = "selected"; }
 `
           : `
 const local = require("local-value");
-exports.startup = ({ context }) => { context.marker = local; };
+const nested = require("nested-value");
+const shadowed = require("shadowed-value");
+exports.startup = ({ context }) => { context.marker = [local, nested, shadowed].join(":"); };
 exports.selected = ({ context }) => { context.marker = "selected"; };
 `,
       );
@@ -261,8 +267,10 @@ exports.selected = ({ context }) => { context.marker = "selected"; };
 import { createCounterfactTest, expect } from ${JSON.stringify(packageEntry)};
 const test = createCounterfactTest({ basePath: ${JSON.stringify($.path("workspace/api"))} });
 test("startup and dependencies", async ({ simulator, request, simulatorURL }) => {
-  expect(simulator.loadContext("/").marker).toBe(${JSON.stringify(scope === "inherited" ? "hoisted" : "local")});
-  expect(await (await request.get(simulatorURL + "/ready")).json()).toEqual({ local: "local", hoisted: "hoisted", shadowed: "nearest", api: "api" });
+  expect(simulator.loadContext("/").marker).toBe(${JSON.stringify(scope === "inherited" ? "hoisted:nested:scenario" : "local:nested:scenario")});
+  const response = await request.get(simulatorURL + "/ready");
+  expect(response.status(), await response.text()).toBe(200);
+  expect(await response.json()).toEqual({ local: "local", hoisted: "hoisted", shadowed: "nearest", api: "api" });
 });
 test.describe("named scenario", () => {
   test.use({ scenarioName: "selected" });

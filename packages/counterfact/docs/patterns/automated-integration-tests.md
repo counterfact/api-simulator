@@ -45,7 +45,7 @@ option, and assertions that deleted baseline data returns before the next test.
 It uses Playwright's HTTP request fixture, so no browser installation is required.
 
 The adapter gives each worker an isolated API source copy and compiled caches,
-plus an OS-assigned port reported by `simulatorURL`. The copy preserves ancestor
+plus an OS-assigned port reported by `simulatorURL`. The copy preserves nested and ancestor
 `node_modules` lookup order and package module scopes, so local and hoisted
 dependencies and JavaScript ESM scenarios remain available. Tests on one worker share a
 listener but reset before every test. Pass an existing extended Playwright test

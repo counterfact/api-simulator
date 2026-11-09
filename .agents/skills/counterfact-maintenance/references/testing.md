@@ -57,7 +57,7 @@ Keep focused unit/type tests even when a broader product journey covers the same
 - Keep framework dependencies in their adapter workspace, with a peer dependency for the host runner.
 - Verify fixtures with the real runner and compile consumer fixture declarations.
 - Keep scenario options test-scoped while listeners and copied sources remain worker-owned.
-- Preserve the ordered ancestor node_modules chain and package module scopes when relocating API source; test mixed local/hoisted dependencies and JavaScript ESM scenarios.
+- Preserve the ordered ancestor node_modules chain and package module scopes when relocating API source; test mixed local/hoisted dependencies and JavaScript ESM scenarios. Restore nested node_modules links too, so source subdirectories retain their own dependency lookup and shadowing.
 - Verify multiple-worker isolation and cleanup after startup, reset, scenario, and test failures.
 - Include adapter workspaces in builds, CI, package boundaries, and isolated packed-consumer checks.
 

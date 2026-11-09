@@ -58,12 +58,27 @@ async function copySource(sourcePath: string, temporaryPath: string) {
     );
     await mkdir(isolatedPath);
     if (directory === sourcePath) {
+      const nestedDependencies: string[] = [];
       await cp(sourcePath, isolatedPath, {
         recursive: true,
         dereference: true,
-        filter: (source) =>
-          ![".cache", "node_modules"].includes(path.basename(source)),
+        filter: (source) => {
+          if (path.basename(source) === ".cache") return false;
+          if (path.basename(source) === "node_modules") {
+            if (path.dirname(source) !== sourcePath)
+              nestedDependencies.push(source);
+            return false;
+          }
+          return true;
+        },
       });
+      for (const dependencies of nestedDependencies) {
+        await symlink(
+          dependencies,
+          path.join(isolatedPath, path.relative(sourcePath, dependencies)),
+          "junction",
+        );
+      }
     } else {
       try {
         const { type } = JSON.parse(

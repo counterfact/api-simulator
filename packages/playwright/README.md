@@ -83,7 +83,7 @@ need API state should likewise be added after creating the Counterfact test.
 Each worker copies the API source into a unique temporary directory, excluding
 `.cache` and `node_modules`. Nested files and symlinked source files are copied;
 new compiled caches belong to that worker. Installed runtime dependencies are
-resolved through links to each `node_modules` directory at or above the source,
+resolved through links to each `node_modules` directory inside, at, or above the source,
 preserving nearest-first lookup for local and hoisted dependencies. Enclosing
 package module types and nested package scopes are preserved for JavaScript
 routes and scenarios. Keep relative runtime imports inside `basePath`, and use a conventional
