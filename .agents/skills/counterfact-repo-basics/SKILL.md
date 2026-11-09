@@ -45,25 +45,27 @@ examples/                     # Checked consumer examples
 site/                         # Documentation website
 ```
 
-Each workspace keeps its implementation in `src/` and its focused tests in
-`test/`. Root `jest.config.js` selects the shared unit-test roots; `package.json`
-is the authority for current commands.
+Each workspace keeps its implementation in `src/`, pure unit tests in `test/`,
+and native module/application integration tests in `test-native/`. Root
+`jest.config.js` selects the pure unit-test roots; `package.json` is the authority
+for the combined and focused commands.
 
 ## Essential commands
 
-| Task                         | Command                       |
-| ---------------------------- | ----------------------------- |
-| Install dependencies         | `yarn install --immutable`    |
-| Build                        | `yarn build`                  |
-| Type-check                   | `yarn typecheck`              |
-| Unit tests                   | `yarn test`                   |
-| Unit tests with coverage     | `yarn test:coverage`          |
-| Product black-box tests      | `yarn test:black-box`         |
-| Installed package smoke test | `yarn test:packed-consumer`   |
-| TypeScript type tests        | `yarn build && yarn test:tsd` |
-| Lint (check)                 | `yarn lint`                   |
-| Lint (auto-fix)              | `yarn lint:fix`               |
-| Run against Petstore         | `yarn go:petstore`            |
+| Task                            | Command                       |
+| ------------------------------- | ----------------------------- |
+| Install dependencies            | `yarn install --immutable`    |
+| Build                           | `yarn build`                  |
+| Type-check                      | `yarn typecheck`              |
+| Native integration + unit tests | `yarn test`                   |
+| Native integration tests        | `yarn test:native`            |
+| Tests with coverage             | `yarn test:coverage`          |
+| Product black-box tests         | `yarn test:black-box`         |
+| Installed package smoke test    | `yarn test:packed-consumer`   |
+| TypeScript type tests           | `yarn build && yarn test:tsd` |
+| Lint (check)                    | `yarn lint`                   |
+| Lint (auto-fix)                 | `yarn lint:fix`               |
+| Run against Petstore            | `yarn go:petstore`            |
 
 ## Development container
 

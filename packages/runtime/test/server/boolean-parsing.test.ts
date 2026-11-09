@@ -63,9 +63,13 @@ it("rejects malformed boolean text without calling the handler", async () => {
   ).toBe("garbage");
 });
 
-it.each(["query", "header", "cookie"] as const)(
+it.each([
+  ["query", "query"],
+  ["header", "headers"],
+  ["cookie", "cookie"],
+] as const)(
   "does not validate inherited %s values as supplied parameters",
-  async (location) => {
+  async (location, key) => {
     const { validateRequest } =
       await import("../../src/server/request-validator.js");
     const operation = {
@@ -76,7 +80,6 @@ it.each(["query", "header", "cookie"] as const)(
     };
     const request = { body: undefined, headers: {}, cookie: {}, query: {} };
     expect(validateRequest(operation, request).valid).toBe(true);
-    const key = location === "header" ? "headers" : location;
     expect(
       validateRequest(operation, {
         ...request,

@@ -3,16 +3,26 @@
 Paths and commands below are relative to the repository root.
 
 - Use `yarn test` for routine unit tests and `yarn test:coverage` to collect
-  coverage and enforce the existing thresholds. Both use two workers by default;
-  CI must use the coverage command. Focused package test commands also omit
-  coverage unless explicitly enabled with `--coverage`.
+  coverage and enforce a 90% branch floor in both Jest and the native
+  module/application boundary. Other existing Jest thresholds are retained. Both commands first build workspaces
+  and run node:test integration tests, then run Jest (two workers by default).
+  Extra Jest flags are forwarded to the final Jest command. CI must use the
+  coverage command.
 
 - Await completed work, watcher events, or server shutdown instead of adding
-  fixed sleeps. `Transpiler.watch()` waits for its initial transpilation before
-  resolving. Explicitly control environment variables and mock external network
+  fixed sleeps. `Transpiler.watch()` explicitly enumerates and awaits its initial compilation
+  before resolving; do not rely on watcher initial-add events (which are
+  unreliable on Windows). Explicitly control environment variables and mock external network
   calls in unit tests; do not assume Jest sets `CI`.
 
-- Use `usingTemporaryFiles()` for filesystem-heavy tests.
+- Run module loading, simulator startup/reset, and versioned-spec watching under
+  `node:test` in each workspace's `test-native/` directory against built output.
+  Keep pure unit tests in `test/` under Jest. Use `yarn test:native` for both
+  native suites or `yarn workspace @counterfact/runtime test:native:coverage`
+  for the loader boundary. Native application tests retain standalone `expect`
+  assertions and `jest-mock` spies without running the Jest module sandbox;
+  restore all spies after each test. Do not mock away module-hook rejection.
+- Use `usingTemporaryFiles()` for filesystem-heavy tests in both frameworks.
 
 - When compiler-checking multiple files in one unchanged generated fixture,
   pass all root files to one TypeScript program rather than creating a fresh
@@ -43,3 +53,11 @@ Paths and commands below are relative to the repository root.
 Keep focused unit/type tests even when a broader product journey covers the same behavior. Package-consumer coverage and packed-artifact coverage establish different guarantees.
 
 - Compiler tests spanning fixture mutations need separate TypeScript programs. Give a demonstrated slow scenario its own timeout when coverage and concurrent compiler checks exceed the default; retain the suite-wide timeout for other tests.
+
+- Audit security lint warnings against the actual key/path contract. Prefer Maps,
+  own-property checks, and entry iteration for arbitrary data keys. When a local
+  CLI, installed-consumer harness, or schema lookup intentionally needs dynamic
+  paths/keys, keep any exception at the reported operation and explain its source
+  and boundary. Do not obscure dynamic access or weaken a whole rule to make a
+  scan pass. Put parameterized test expectations in explicit case data; fixture
+  builders may branch outside the test while assertions remain unconditional.

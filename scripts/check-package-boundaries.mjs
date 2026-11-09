@@ -81,6 +81,7 @@ export function extractModuleSpecifiers(source, filename = "source.ts") {
 }
 
 async function readJson(pathname, { jsonc = false } = {}) {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The boundary checker intentionally reads manifests/source files discovered in the selected local repository.
   const source = await readFile(pathname, "utf8");
   if (!jsonc) return JSON.parse(source);
   const result = ts.parseConfigFileTextToJson(pathname, source);
@@ -95,6 +96,7 @@ async function readJson(pathname, { jsonc = false } = {}) {
 async function collectSourceFiles(directory) {
   let entries;
   try {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The boundary checker intentionally reads manifests/source files discovered in the selected local repository.
     entries = await readdir(directory, { withFileTypes: true });
   } catch (error) {
     if (error.code === "ENOENT") return [];
@@ -115,6 +117,7 @@ async function collectSourceFiles(directory) {
 function productionDependencies(manifest) {
   const names = new Set();
   for (const field of PRODUCTION_DEPENDENCY_FIELDS) {
+    // eslint-disable-next-line security/detect-object-injection -- The dependency field is from a fixed list, or the export subpath is own-checked before reading.
     for (const name of Object.keys(manifest[field] ?? {})) names.add(name);
   }
   return names;
@@ -142,6 +145,7 @@ function isExported(manifest, subpath) {
   if (!keys.some((key) => key.startsWith("."))) {
     return subpath === "." && hasExportTarget(exports);
   }
+  // eslint-disable-next-line security/detect-object-injection -- The dependency field is from a fixed list, or the export subpath is own-checked before reading.
   if (Object.hasOwn(exports, subpath)) return hasExportTarget(exports[subpath]);
 
   // Most-specific pattern wins, even when its target is null. Do not let a
@@ -207,6 +211,7 @@ function findCycles(graph) {
 
 async function discoverPackages(repositoryRoot) {
   const packagesDirectory = path.join(repositoryRoot, "packages");
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- The boundary checker intentionally reads manifests/source files discovered in the selected local repository.
   const entries = await readdir(packagesDirectory, { withFileTypes: true });
   const packages = [];
 
@@ -342,6 +347,7 @@ export async function validatePackageBoundaries(
 
     for (const sourceFile of sourceFiles) {
       const relativeFile = path.relative(repositoryRoot, sourceFile);
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- The boundary checker intentionally reads manifests/source files discovered in the selected local repository.
       const source = await readFile(sourceFile, "utf8");
       for (const { line, specifier } of extractModuleSpecifiers(
         source,

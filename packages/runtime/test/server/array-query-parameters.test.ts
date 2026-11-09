@@ -171,14 +171,13 @@ it.each(["integer", "number"])(
     ).toEqual({ tags: [1, -2, 100] });
   },
 );
-it.each(["spaceDelimited", "pipeDelimited"])(
-  "preserves each explicit exploded %s occurrence over HTTP",
-  async (style) => {
+it.each([
+  { style: "spaceDelimited", values: ["New York", "Boston"] },
+  { style: "pipeDelimited", values: ["one|two", "three"] },
+])(
+  "preserves each explicit exploded $style occurrence over HTTP",
+  async ({ style, values }) => {
     const { app } = setup(array, { style, explode: true });
-    const values =
-      style === "spaceDelimited"
-        ? ["New York", "Boston"]
-        : ["one|two", "three"];
     const query = values
       .map((value) => "tags=" + encodeURIComponent(value))
       .join("&");

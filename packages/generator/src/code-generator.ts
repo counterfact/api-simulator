@@ -281,8 +281,9 @@ export class CodeGenerator extends EventTarget {
    * Has no effect when neither source is watchable (for example, an HTTP
    * OpenAPI source with no local overlays).
    * Resolves once the watcher is ready.
+   * A caller may supply regeneration for a whole group of versioned sources.
    */
-  public async watch() {
+  public async watch(regenerate: () => Promise<void> = () => this.generate()) {
     const watchablePaths = getLocalOpenApiSourcePaths([
       this.openapiPath,
       ...this.overlays,
@@ -293,7 +294,7 @@ export class CodeGenerator extends EventTarget {
     }
 
     this.watcher = watch(watchablePaths, CHOKIDAR_OPTIONS).on("change", () => {
-      void this.generate().then(
+      void regenerate().then(
         () => {
           this.dispatchEvent(new Event("generate"));
 
