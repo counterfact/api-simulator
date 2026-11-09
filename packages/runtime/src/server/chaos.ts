@@ -199,9 +199,12 @@ export class ChaosRegistry {
     return rule;
   }
 
-  public findBestMatch(path: string): ChaosRule | undefined {
+  /** Match public and route-relative paths with the same rule precedence. */
+  public findBestMatch(path: string, routePath = path): ChaosRule | undefined {
     const eligible = this.rules.filter(
-      (rule) => rule.isEligible && path.startsWith(rule.prefix),
+      (rule) =>
+        rule.isEligible &&
+        (path.startsWith(rule.prefix) || routePath.startsWith(rule.prefix)),
     );
 
     return eligible.reduce<ChaosRule | undefined>((best, rule) => {

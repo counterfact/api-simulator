@@ -129,6 +129,8 @@ export type DispatcherRequest = {
     [key: string]: string;
   };
   method: RequestMethod;
+  /** Original HTTP pathname, including any API prefix, before route matching. */
+  originalPath?: string;
   path: string;
   query: {
     [key: string]: string | string[];
@@ -596,6 +598,7 @@ export class Dispatcher {
     headers = {},
     method,
     path,
+    originalPath = path,
     query,
     rawBody,
     req,
@@ -781,20 +784,17 @@ export class Dispatcher {
       const validation = validateResponse(operation, normalizedResponse);
 
       if (!validation.valid) {
-        return {
-          ...normalizedResponse,
-          appendedHeaders: [
-            ...(normalizedResponse.appendedHeaders ?? []),
-            ...validation.errors.map((error): [string, string] => [
-              "response-type-error",
-              error,
-            ]),
-          ],
-        };
+        normalizedResponse.appendedHeaders = [
+          ...(normalizedResponse.appendedHeaders ?? []),
+          ...validation.errors.map((error): [string, string] => [
+            "response-type-error",
+            error,
+          ]),
+        ];
       }
     }
 
-    const chaosRule = this.chaosRegistry?.findBestMatch(path);
+    const chaosRule = this.chaosRegistry?.findBestMatch(originalPath, path);
     const chaosResult = chaosRule?.tryApply(normalizedResponse);
 
     if (chaosResult !== undefined && chaosResult !== null) {

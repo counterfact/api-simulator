@@ -43,6 +43,12 @@ The Live REPL exposes `chaos(pathPrefix?)` for changing simulated HTTP
 responses without editing route handlers. The registry is shared by every API
 group in one Counterfact simulator.
 
+Prefixes match both the incoming URL pathname and the route-relative pathname
+after removing the configured API prefix and OpenAPI `basePath`. For example,
+`chaos("/billing/orders").delay(1_000)` targets `/billing/orders`, while
+`chaos("/orders").delay(1_000)` also matches `/inventory/orders` when those
+APIs use `/billing` and `/inventory` prefixes. Query strings are not matched.
+
 ```ts
 const fault = chaos("/orders")
   .next(3)
@@ -67,6 +73,8 @@ Available mutations are `status(code)`, `delay(ms)`, `header(name, value)`,
 matched case-insensitively and the last mutation for a header wins.
 `Content-Type` is protected because Counterfact owns response serialization.
 Likewise, the last call to `body()` or `transformBody()` wins.
+Response validation warnings remain attached when a rule applies, including
+when it delays the response.
 
 When several active rules match, exactly one applies: the longest path prefix
 wins, then the most recently configured rule. There is no `always()` method

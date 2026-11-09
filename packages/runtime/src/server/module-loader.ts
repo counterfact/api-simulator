@@ -1,5 +1,4 @@
 import { once } from "node:events";
-import { pathToFileURL } from "node:url";
 import fs from "node:fs/promises";
 import nodePath, { basename } from "node:path";
 /* eslint-disable security/detect-non-literal-fs-filename -- readJson resolves paths against the current context directory before file access. */
@@ -16,10 +15,9 @@ import {
   isContextModule,
   isMiddlewareModule,
 } from "./middleware-detector.js";
-import { ModuleDependencyGraph } from "./module-dependency-graph.js";
+import { ModuleGeneration } from "./module-generation.js";
 import type { Module, Registry } from "./registry.js";
 import { ScenarioRegistry } from "./scenario-registry.js";
-import { uncachedImport } from "./uncached-import.js";
 import { UpdateQueue } from "./update-queue.js";
 import type { RuntimeEventReporter } from "../runtime-config.js";
 import {
@@ -29,11 +27,18 @@ import {
 } from "../util/forward-slash-path.js";
 import { unescapePathForWindows } from "../util/windows-escape.js";
 
-const { uncachedRequire } = await import("./uncached-require.cjs");
-
-const attemptedEsmImports = new Set<string>();
-
 const debug = createDebug("counterfact:server:module-loader");
+
+// Versioned runners have separate route registries but share one state graph.
+// Keep that graph's code generation and refresh queue at the same boundary.
+const loaderGroups = new WeakMap<
+  ContextRegistry,
+  {
+    loaders: Set<ModuleLoader>;
+    updates: UpdateQueue;
+    contextConstructors: Map<string, unknown>;
+  }
+>();
 
 /**
  * Watches the compiled routes directory and dynamically loads/reloads route
@@ -129,17 +134,22 @@ export class ModuleLoader extends EventTarget {
 
   private readonly updates = new UpdateQueue();
 
+  private readonly group: {
+    loaders: Set<ModuleLoader>;
+    updates: UpdateQueue;
+    contextConstructors: Map<string, unknown>;
+  };
+
   private loaded = false;
 
-  private initialImportPass = false;
+  private loadedFiles = new Set<string>();
+
+  private generation = new ModuleGeneration();
 
   private async importModule(pathName: string): Promise<unknown> {
     if ((await determineModuleKind(pathName)) === "commonjs")
-      return uncachedRequire(pathName);
-    const url = pathToFileURL(pathName).href;
-    const canonical = this.initialImportPass && !attemptedEsmImports.has(url);
-    attemptedEsmImports.add(url);
-    return canonical ? import(url) : uncachedImport(pathName);
+      return this.generation.importCommonJS(pathName);
+    return this.generation.import(pathName);
   }
 
   /** Holds file events while an explicit reset reconstructs the state graph. */
@@ -147,16 +157,9 @@ export class ModuleLoader extends EventTarget {
     return this.updates.pause();
   }
 
-  private readonly dependencyGraph = new ModuleDependencyGraph();
-
   private readonly fileDiscovery: FileDiscovery;
 
   private readonly reportEvent: RuntimeEventReporter;
-
-  private readonly uncachedImport: (moduleName: string) => Promise<unknown> =
-    async function (moduleName: string) {
-      throw new Error(`uncachedImport not set up; importing ${moduleName}`);
-    };
 
   public constructor(
     basePath: string,
@@ -171,6 +174,14 @@ export class ModuleLoader extends EventTarget {
     this.basePath = toForwardSlashPath(basePath);
     this.registry = registry;
     this.contextRegistry = contextRegistry;
+    const group = loaderGroups.get(contextRegistry) ?? {
+      loaders: new Set<ModuleLoader>(),
+      updates: new UpdateQueue(),
+      contextConstructors: new Map<string, unknown>(),
+    };
+    loaderGroups.set(contextRegistry, group);
+    group.loaders.add(this);
+    this.group = group;
     this.scenariosPath =
       scenariosPath === undefined
         ? undefined
@@ -237,36 +248,45 @@ export class ModuleLoader extends EventTarget {
             );
 
             if (eventName === "unlink") {
-              this.registry.remove(url);
-              this.sourceRoutes.delete(url);
-              if (basename(pathName).startsWith("_.middleware.")) {
-                this.sourceMiddlewares.delete(
-                  url.slice(0, url.lastIndexOf("/")) || "/",
-                );
-              }
-              if (url === "/index") {
-                this.sourceRoutes.delete("/");
-                this.registry.remove("/");
-              }
+              await this.refreshGroup(
+                "",
+                () => {
+                  for (const loader of this.group.loaders) {
+                    if (loader.basePath !== this.basePath) continue;
+                    loader.registry.remove(url);
+                    loader.sourceRoutes.delete(url);
+                    if (basename(pathName).startsWith("_.middleware.")) {
+                      loader.sourceMiddlewares.delete(
+                        url.slice(0, url.lastIndexOf("/")) || "/",
+                      );
+                    }
+                    if (url === "/index") {
+                      loader.sourceRoutes.delete("/");
+                      loader.registry.remove("/");
+                    }
+                    if (this.isContextFile(pathName)) {
+                      loader.group.contextConstructors.delete(
+                        unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
+                          "/",
+                      );
+                      loader.contextFactories.delete(
+                        unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
+                          "/",
+                      );
+                      loader.contextRegistry.remove(
+                        unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
+                          "/",
+                      );
+                    }
+                  }
+                },
+                true,
+              );
               this.dispatchEvent(new Event("remove"));
-              if (this.isContextFile(pathName)) {
-                this.contextFactories.delete(
-                  unescapePathForWindows(toForwardSlashPath(parts.dir)) || "/",
-                );
-                this.contextRegistry.remove(
-                  unescapePathForWindows(toForwardSlashPath(parts.dir)) || "/",
-                );
-              }
               return;
             }
 
-            const dependencies = this.dependencyGraph.dependentsOf(pathName);
-
-            await this.loadEndpoint(pathName);
-
-            for (const dependency of dependencies) {
-              await this.loadEndpoint(dependency);
-            }
+            await this.refreshGroup("", undefined, true);
           })
           .catch((error: unknown) =>
             process.stderr.write(`Module reload failed: ${String(error)}\n`),
@@ -296,10 +316,9 @@ export class ModuleLoader extends EventTarget {
               if (eventName === "unlink") {
                 const fileKey = this.scenarioFileKey(pathName);
                 this.scenarioRegistry?.remove(fileKey);
-                return;
               }
 
-              await this.loadScenarioFile(pathName);
+              await this.refreshGroup("", undefined, true);
             })
             .catch((error: unknown) =>
               process.stderr.write(
@@ -329,29 +348,76 @@ export class ModuleLoader extends EventTarget {
    *
    * @param directory - Sub-directory to load, defaults to the root (`""`).
    */
-  public async load(directory = ""): Promise<void> {
-    this.initialImportPass = !this.loaded;
-    try {
-      const files = await this.fileDiscovery.findFiles(directory);
-      await Promise.all(
-        files.map((file) => this.loadEndpoint(file, !this.loaded)),
-      );
-      if (!this.loaded && this.contextFactories.size > 0) this.resetContexts();
-      await this.loadScenarios();
-      this.loaded = true;
-    } finally {
-      this.initialImportPass = false;
-    }
+  public load(directory = ""): Promise<void> {
+    return this.updates.run(() => this.refreshGroup(directory));
   }
 
-  /** Reloads every context module without disturbing preserved live state. */
-  public async reloadContexts(): Promise<void> {
-    const files = await this.fileDiscovery.findFiles();
+  private refreshGroup(
+    directory = "",
+    beforeRefresh: () => void = () => {},
+    reuseUnchanged = false,
+  ): Promise<void> {
+    return this.group.updates.run(async () => {
+      beforeRefresh();
+      const loaders = [...this.group.loaders].filter(
+        (loader) => loader === this || loader.loaded,
+      );
+      const previous = loaders.find((loader) => loader.loaded)?.generation;
+      const generation =
+        previous && (reuseUnchanged || !this.loaded)
+          ? await previous.refresh()
+          : new ModuleGeneration();
+      let initializeContexts = previous === undefined;
+      if (initializeContexts) this.group.contextConstructors.clear();
+      for (const loader of loaders) {
+        await loader.loadModules(
+          loader === this ? directory : "",
+          generation,
+          initializeContexts,
+        );
+        initializeContexts = false;
+      }
+      // Consumers observing completion must see every version in one generation.
+      for (const loader of loaders) loader.dispatchEvent(new Event("add"));
+    });
+  }
+
+  private async loadModules(
+    directory: string,
+    generation: ModuleGeneration,
+    initializeContexts: boolean,
+  ): Promise<void> {
+    this.generation = generation;
+    if (!this.loaded) {
+      this.contextFactories.clear();
+    }
+    const discovered = await this.fileDiscovery.findFiles(directory);
+    // A scoped refresh must also refresh previously loaded contexts/handlers;
+    // otherwise it would mix constructors from different generations.
+    const files =
+      directory === ""
+        ? discovered
+        : [...new Set([...this.loadedFiles, ...discovered])];
+    this.loadedFiles = new Set(files);
+    const modules = files.map((file) => this.importModule(file));
+    // Finish graph evaluation before registering its handlers and contexts.
+    // Rejections are rendered by loadEndpoint using the normal diagnostics.
+    await Promise.allSettled(modules);
     await Promise.all(
-      files
-        .filter((file) => this.isContextFile(file))
-        .map((file) => this.loadEndpoint(file)),
+      files.map((file, index) =>
+        // eslint-disable-next-line security/detect-object-injection -- The index comes from this same files array used to construct modules.
+        this.loadEndpoint(file, initializeContexts, modules[index]),
+      ),
     );
+    if (initializeContexts && this.contextFactories.size > 0)
+      this.resetContexts();
+    await this.loadScenarios();
+    this.loaded = true;
+  }
+
+  /** Refreshes the graph with a new store while preserving live context state. */
+  public async reloadContexts(): Promise<void> {
+    await this.load();
   }
 
   private shouldLoadScenarioFile(pathName: string): boolean {
@@ -412,7 +478,11 @@ export class ModuleLoader extends EventTarget {
     }
   }
 
-  private async loadEndpoint(pathName: string, deferContext = false) {
+  private async loadEndpoint(
+    pathName: string,
+    deferContext = false,
+    imported?: Promise<unknown>,
+  ) {
     debug("importing module: %s", pathName);
 
     const directory = pathDirname(pathName.slice(this.basePath.length));
@@ -423,14 +493,10 @@ export class ModuleLoader extends EventTarget {
       ).replaceAll(/\/+/gu, "/"),
     );
 
-    debug(`loading pathName from dependencyGraph: ${pathName}`);
-
-    this.dependencyGraph.load(pathName);
-
     try {
       let importError: unknown;
 
-      const endpoint = (await this.importModule(pathName).catch(
+      const endpoint = (await (imported ?? this.importModule(pathName)).catch(
         (error: unknown) => {
           importError = error;
         },
@@ -482,8 +548,6 @@ export class ModuleLoader extends EventTarget {
           this.registry.add("/", errorModule);
         }
 
-        this.dispatchEvent(new Event("add"));
-
         return;
       }
 
@@ -491,9 +555,8 @@ export class ModuleLoader extends EventTarget {
         return;
       }
 
-      this.dispatchEvent(new Event("add"));
-
       if (this.isContextFile(pathName) && isContextModule(endpoint)) {
+        const contextKey = directory || "/";
         const loadContext = (path: string) => this.contextRegistry.find(path);
 
         const contextDir = nodePath.dirname(unescapePathForWindows(pathName));
@@ -518,19 +581,32 @@ export class ModuleLoader extends EventTarget {
 
         const createContext = (lookup: typeof loadContext) => {
           const currentStore = this.getStore?.();
-          // @ts-expect-error ContextModule describes instances; the export is a constructor.
-          return new endpoint.Context({
-            loadContext: lookup,
-            readJson,
-            ...(currentStore === undefined ? {} : { store: currentStore }),
-          }) as ReturnType<ContextRegistry["find"]>;
+          try {
+            // @ts-expect-error ContextModule describes instances; the export is a constructor.
+            return new endpoint.Context({
+              loadContext: lookup,
+              readJson,
+              ...(currentStore === undefined ? {} : { store: currentStore }),
+            }) as ReturnType<ContextRegistry["find"]>;
+          } catch (error) {
+            this.generation.markFailed(pathName);
+            throw error;
+          }
         };
+        this.contextFactories.set(contextKey, createContext);
+        // An unchanged module still owns this instance's arrow closures and
+        // private-field brand. Do not reconstruct it after unrelated edits.
+        if (
+          !deferContext &&
+          this.group.contextConstructors.get(contextKey) === endpoint.Context
+        )
+          return;
         if (deferContext) {
-          this.contextFactories.set(directory || "/", createContext);
+          this.group.contextConstructors.set(contextKey, endpoint.Context);
           return;
         }
         const context = createContext(loadContext);
-        this.contextFactories.set(directory || "/", createContext);
+        this.group.contextConstructors.set(contextKey, endpoint.Context);
         this.contextRegistry.update(directory, context);
         return;
       }
@@ -553,6 +629,7 @@ export class ModuleLoader extends EventTarget {
       debug(`adding "${url}" to registry`);
       this.registry.add(url, endpoint as Module);
     } catch (error: unknown) {
+      this.generation.markFailed(pathName);
       if (
         String(error) ===
         "SyntaxError: Identifier 'Context' has already been declared"

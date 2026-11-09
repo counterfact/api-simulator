@@ -307,11 +307,6 @@ export async function counterfact<TStore = unknown>(
     async onStoreChange(store) {
       const isActivation = !hasStore;
       hasStore = true;
-      exposeStore();
-      for (const replServer of replServers) {
-        replServer.context.store = store;
-      }
-
       if (isActivation) {
         const seenGroups = new Set<string>();
         for (const runner of runners) {
@@ -319,6 +314,11 @@ export async function counterfact<TStore = unknown>(
           seenGroups.add(runner.group);
           await runner.reloadContexts();
         }
+      }
+      // Publish activation only once every context can use the new store.
+      exposeStore();
+      for (const replServer of replServers) {
+        replServer.context.store = store;
       }
     },
   });

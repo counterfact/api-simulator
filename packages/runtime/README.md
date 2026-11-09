@@ -29,3 +29,9 @@ chaosRegistry
 
 Rules apply indefinitely by default. `Content-Type` cannot be changed or
 removed by a chaos rule.
+
+Matching considers both the original HTTP pathname and the route-relative
+pathname, with longest-prefix and then most-recently-configured precedence.
+Custom adapters can provide `DispatcherRequest.originalPath` to preserve an
+API prefix; otherwise the incoming `path` is used before OpenAPI `basePath`
+stripping. Response validation warnings do not bypass chaos rules.

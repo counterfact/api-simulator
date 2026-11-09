@@ -213,6 +213,27 @@ describe("ChaosRegistry", () => {
     expect(registry.findBestMatch("/orders/1")).toBe(first);
   });
 
+  it("uses one precedence across original and route-relative paths", () => {
+    const registry = new ChaosRegistry();
+    const relative = registry.createRule("/orders").status(429);
+    registry.createRule().status(500);
+    expect(registry.findBestMatch("/billing/orders", "/orders")).toBe(relative);
+
+    const original = registry.createRule("/billing/orders").status(503);
+    expect(registry.findBestMatch("/billing/orders", "/orders")).toBe(original);
+    original.stop();
+    expect(registry.findBestMatch("/billing/orders", "/orders")).toBe(relative);
+  });
+
+  it("breaks equal-length ties across path forms by revision", () => {
+    const registry = new ChaosRegistry();
+    const original = registry.createRule("/alpha").status(503);
+    const relative = registry.createRule("/order").status(429);
+    expect(registry.findBestMatch("/alpha/orders", "/orders")).toBe(relative);
+    original.start();
+    expect(registry.findBestMatch("/alpha/orders", "/orders")).toBe(original);
+  });
+
   it("skips stopped and exhausted rules", () => {
     const registry = new ChaosRegistry();
     registry.createRule("/orders").stop();
@@ -247,9 +268,77 @@ describe("Dispatcher chaos integration", () => {
     const registry = new ChaosRegistry();
     registry.createRule("/orders").delay(2_000);
     const responsePromise = get(makeDispatcher(registry), "/orders");
+    const settled = jest.fn();
+    void responsePromise.then(settled);
 
-    await jest.runAllTimersAsync();
+    await jest.advanceTimersByTimeAsync(1_999);
+    expect(settled).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
 
     await expect(responsePromise).resolves.toMatchObject({ status: 200 });
+  });
+
+  it("delays responses with validation warnings without losing diagnostics", async () => {
+    jest.useFakeTimers();
+    const registry = new ChaosRegistry();
+    registry.createRule().delay(2_000).status(503);
+    const dispatcher = makeDispatcher(registry);
+    dispatcher.config = { validateRequests: false, validateResponses: true };
+    dispatcher.openApiDocument = {
+      paths: {
+        "/orders": {
+          get: {
+            responses: {
+              "200": {
+                description: "OK",
+                headers: {
+                  "X-Required": { required: true, schema: { type: "string" } },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const responsePromise = get(dispatcher, "/orders");
+    const settled = jest.fn();
+    void responsePromise.then(settled);
+
+    await jest.advanceTimersByTimeAsync(1_999);
+    expect(settled).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
+    await expect(responsePromise).resolves.toMatchObject({
+      status: 503,
+      appendedHeaders: [
+        ["response-type-error", "response header 'X-Required' is required"],
+      ],
+    });
+  });
+
+  it("matches chaos against the original path before OpenAPI basePath stripping", async () => {
+    const registry = new ChaosRegistry();
+    registry.createRule("/v1/orders").status(503);
+    const dispatcher = makeDispatcher(registry);
+    dispatcher.openApiDocument = { basePath: "/v1", paths: {} };
+
+    expect((await get(dispatcher, "/v1/orders")).status).toBe(503);
+  });
+
+  it("preserves the original path through API-prefix and basePath stripping", async () => {
+    const registry = new ChaosRegistry();
+    registry.createRule("/billing/v1/orders").status(503);
+    const dispatcher = makeDispatcher(registry);
+    dispatcher.openApiDocument = { basePath: "/v1", paths: {} };
+
+    const response = await dispatcher.request({
+      body: "",
+      headers: {},
+      method: "GET",
+      path: "/v1/orders",
+      originalPath: "/billing/v1/orders",
+      query: {},
+      req: {},
+    });
+    expect(response.status).toBe(503);
   });
 });
