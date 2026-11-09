@@ -41,6 +41,7 @@ function versionAtLeast(actual, minimum) {
   const actualParts = actual.split(".").map(Number);
   const minimumParts = minimum.split(".").map(Number);
   for (let index = 0; index < minimumParts.length; index += 1) {
+    // eslint-disable-next-line security/detect-object-injection -- index is a nonnegative position bounded by the parsed minimum-version array length.
     const difference = (actualParts[index] ?? 0) - minimumParts[index];
     if (difference !== 0) return difference > 0;
   }

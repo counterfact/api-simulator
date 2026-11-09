@@ -164,6 +164,7 @@ export function validateRequest(
     const name =
       parameter.in === "header" ? parameter.name.toLowerCase() : parameter.name;
     const value =
+      // eslint-disable-next-line security/detect-object-injection -- The own-property check excludes inherited values for absent request parameters.
       values && Object.hasOwn(values, name) ? values[name] : undefined;
     if (
       value !== undefined &&
@@ -200,7 +201,8 @@ export function validateRequest(
     const selected = contentType
       ? declared === undefined
         ? undefined
-        : content[declared]?.schema
+        : // eslint-disable-next-line security/detect-object-injection -- declared was selected from Object.keys(content) by normalized content type.
+          content[declared]?.schema
       : (content["application/json"]?.schema ??
         content["application/x-www-form-urlencoded"]?.schema ??
         content["multipart/form-data"]?.schema);

@@ -5,6 +5,7 @@ import { CodeGenerator } from "../src/code-generator.js";
 import { ScenarioFileGenerator } from "../src/scenario-file-generator.js";
 import { Repository } from "../src/repository.js";
 import { generateVersionsTsContent } from "../src/versions-ts-generator.js";
+import { addVersionFile } from "./helpers/version-file.js";
 
 const spec = {
   openapi: "3.2.0",
@@ -109,47 +110,45 @@ function diagnostics(...files: string[]): string[] {
     );
 }
 
-describe("central generated types", () => {
-  it("requires guards for optional request bodies across supported media types", async () => {
-    await usingTemporaryFiles(async ($) => {
-      const paths = {};
-      const requestBodies = {};
-      const consumers: string[] = [];
-      for (const [format, media] of [
-        ["json", "application/json"],
-        ["form", "application/x-www-form-urlencoded"],
-        ["multipart", "multipart/form-data"],
-      ]) {
-        for (const required of [true, false, undefined]) {
-          for (const nullable of [true, false]) {
-            const name = `${format}_${String(required)}_${String(nullable)}`;
-            const body = {
-              ...(required === undefined ? {} : { required }),
-              content: {
-                [media]: {
-                  schema: {
-                    type: "object",
-                    nullable,
-                    required: ["name"],
-                    properties: { name: { type: "string" } },
-                  },
-                },
+function optionalBodyFixtures() {
+  const paths = {};
+  const requestBodies = {};
+  const consumers: string[] = [];
+  for (const [format, media] of [
+    ["json", "application/json"],
+    ["form", "application/x-www-form-urlencoded"],
+    ["multipart", "multipart/form-data"],
+  ]) {
+    for (const required of [true, false, undefined]) {
+      for (const nullable of [true, false]) {
+        const name = `${format}_${String(required)}_${String(nullable)}`;
+        const body = {
+          ...(required === undefined ? {} : { required }),
+          content: {
+            [media]: {
+              schema: {
+                type: "object",
+                nullable,
+                required: ["name"],
+                properties: { name: { type: "string" } },
               },
-            };
-            // Exercise reference resolution as well as inline request bodies.
-            Object.assign(requestBodies, { [name]: body });
-            Object.assign(paths, {
-              [`/${name}`]: {
-                patch: {
-                  requestBody:
-                    required === false
-                      ? { $ref: `#/components/requestBodies/${name}` }
-                      : body,
-                  responses: { 204: { description: "Empty" } },
-                },
-              },
-            });
-            consumers.push(`
+            },
+          },
+        };
+        // Exercise reference resolution as well as inline request bodies.
+        Object.assign(requestBodies, { [name]: body });
+        Object.assign(paths, {
+          [`/${name}`]: {
+            patch: {
+              requestBody:
+                required === false
+                  ? { $ref: `#/components/requestBodies/${name}` }
+                  : body,
+              responses: { 204: { description: "Empty" } },
+            },
+          },
+        });
+        consumers.push(`
               type Body_${name} = Parameters<Routes["/${name}"]["PATCH"]>[0]["body"];
               const value_${name}: Body_${name} = { name: "ok" };
               ${required === true ? "// @ts-expect-error Required bodies exclude undefined." : ""}
@@ -163,9 +162,16 @@ describe("central generated types", () => {
                 return $.response.status(204).empty();
               };
             `);
-          }
-        }
       }
+    }
+  }
+  return { paths, requestBodies, consumers };
+}
+
+describe("central generated types", () => {
+  it("requires guards for optional request bodies across supported media types", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const { paths, requestBodies, consumers } = optionalBodyFixtures();
       await $.add(
         "spec.json",
         JSON.stringify({
@@ -268,12 +274,7 @@ describe("central generated types", () => {
           { routes: true, types: true },
           version,
         ).generate();
-        if (version !== "") {
-          await $.add(
-            "api/types/versions.ts",
-            await generateVersionsTsContent([version]),
-          );
-        }
+        await addVersionFile($, version, "api/types");
         await $.add(
           "consumer.ts",
           `
@@ -332,11 +333,7 @@ describe("central generated types", () => {
           { routes: true, types: true },
           version,
         ).generate();
-        if (version)
-          await $.add(
-            "api/types/versions.ts",
-            await generateVersionsTsContent([version]),
-          );
+        await addVersionFile($, version, "api/types");
         await $.add(
           "consumer.ts",
           'import type {Routes} from "./api/types/index.js"; const root: Routes["/"]["GET"] = ($) => { $.context.rootOnly();\n// @ts-expect-error Root must not use the index child.\n$.context.childOnly(); return $.response.status(204).empty(); }; const child: Routes["/index"]["/{id}"]["GET"] = ($) => { $.context.childOnly(); return $.response.status(204).empty(); };',

@@ -12,8 +12,8 @@
   "scripts": {
     "check:boundaries": "node scripts/check-package-boundaries.mjs",
     "check:publishable": "node scripts/check-publishable.mjs",
-    "test": "yarn workspace counterfact test",
-    "test:coverage": "yarn test --coverage",
+    "test": "yarn test:native && yarn workspace counterfact test:jest",
+    "test:coverage": "yarn test:native:coverage && yarn workspace counterfact test:jest --coverage",
     "test:typesafe": "node --test scripts/typesafe/development.test.mjs",
     "test:build": "node --test scripts/build.test.mjs",
     "test:boundaries": "node --test scripts/check-package-boundaries.test.mjs",
@@ -51,7 +51,10 @@
     "go:multiple-apis": "yarn workspace counterfact go:multiple-apis",
     "go:multiple-versions": "yarn workspace counterfact go:multiple-versions",
     "counterfact": "./packages/counterfact/bin/counterfact.js",
-    "check:drift": "catchmydrift"
+    "check:drift": "catchmydrift",
+    "test:native": "yarn build && yarn test:native:run",
+    "test:native:run": "node --test --test-concurrency=1 --test-timeout=30000 \"packages/*/test-native/*.test.mjs\"",
+    "test:native:coverage": "yarn build && node --test --test-concurrency=1 --test-timeout=30000 --experimental-test-coverage --test-coverage-lines=77 --test-coverage-functions=80 --test-coverage-branches=90 --test-coverage-include=\"**/packages/runtime/dist/server/module-loader.js\" --test-coverage-include=\"**/packages/runtime/dist/server/module-generation.js\" --test-coverage-include=\"**/packages/counterfact/dist/app.js\" --test-coverage-include=\"**/packages/counterfact/dist/api-runner.js\" \"packages/*/test-native/*.test.mjs\""
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",
@@ -90,9 +93,11 @@
     "eslint-plugin-regexp": "3.3.1",
     "eslint-plugin-security": "4.2.0",
     "eslint-plugin-unused-imports": "4.4.1",
+    "expect": "30.5.2",
     "fs-extra": "11.4.1",
     "husky": "9.1.7",
     "jest": "30.5.2",
+    "jest-mock": "30.5.2",
     "jest-retries": "1.0.1",
     "node-mocks-http": "1.18.1",
     "prettier": "3.9.10",
@@ -105,8 +110,8 @@
   "packageManager": "yarn@4.18.1",
   "resolutions": {
     "@typescript-eslint/utils": "^8.58.0",
-    "qs@npm:6.15.1": "6.16.1",
-    "koa-proxies/uuid": "11.1.1",
+    "qs@npm:6.15.1": "6.17.1",
+    "koa-proxies/uuid": "14.0.3",
     "chokidar@npm:6.0.0": "patch:chokidar@npm%3A6.0.0#~/.yarn/patches/chokidar-npm-6.0.0-53be5debd5.patch"
   }
 }

@@ -9,6 +9,7 @@ const directory = await mkdtemp(path.join(tmpdir(), "counterfact-openapi-"));
 
 try {
   const specPath = path.join(directory, "openapi.yaml");
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- This example writes a fixed spec filename beneath its own mkdtemp directory.
   await writeFile(
     specPath,
     `openapi: 3.0.3

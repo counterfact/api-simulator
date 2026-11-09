@@ -86,6 +86,7 @@ describe("multipart requests over HTTP", () => {
     async (method) => {
       const { app, handler } = appForUpload();
       const agent = request(app.callback());
+      // eslint-disable-next-line security/detect-object-injection -- method comes from the fixed post/put/patch/delete test table and selects the Supertest request method.
       const response = await agent[method]("/upload").field("name", "Narrator");
       expect(response.status).toBe(200);
       expect(handler.mock.calls[0][0].body).toEqual({ name: "Narrator" });

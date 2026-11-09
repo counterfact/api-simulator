@@ -4,6 +4,7 @@
 import { ContextRegistry } from "../../src/server/context-registry.js";
 import {
   Dispatcher,
+  collectExplodedObjectParams,
   type OpenApiDocument,
 } from "../../src/server/dispatcher.js";
 import { Registry } from "../../src/server/registry.js";
@@ -17,9 +18,109 @@ function acceptsBody(acceptsHtml: boolean): string {
 }
 
 describe("a dispatcher", () => {
-  it.each([false, undefined])(
-    "passes an absent optional JSON body to the handler (required=%s)",
-    async (required) => {
+  it("treats omitted query data as an empty map", async () => {
+    const registry = new Registry();
+    registry.add("/query", { GET: ({ query }) => ({ body: query }) });
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const response = await dispatcher.request({
+      method: "GET",
+      path: "/query",
+      headers: {},
+      body: undefined,
+      req: {},
+    });
+    expect(response.body).toEqual({});
+  });
+
+  it("reads prototype-named cookies as data and keeps the first duplicate", async () => {
+    const registry = new Registry();
+    registry.add("/cookies", {
+      GET: ({ cookie }) => ({
+        body: {
+          constructor: cookie.constructor,
+          proto: cookie["__proto__"],
+        },
+      }),
+    });
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const response = await dispatcher.request({
+      method: "GET",
+      path: "/cookies",
+      query: {},
+      headers: {
+        cookie:
+          "constructor=first; constructor=second; __proto__=hello%20world",
+      },
+      body: undefined,
+      req: {},
+    });
+    expect(response.body).toEqual({
+      constructor: "first",
+      proto: "hello world",
+    });
+  });
+
+  it("collects only supplied own exploded properties and preserves prototype-named data", () => {
+    const parameters = [
+      {
+        name: "filter",
+        in: "query",
+        schema: {
+          type: "object",
+          properties: Object.fromEntries([
+            ["constructor", { type: "string" }],
+            ["__proto__", { type: "string" }],
+          ]),
+        },
+      },
+    ];
+    expect(collectExplodedObjectParams({}, parameters)).toEqual({});
+    const query = Object.fromEntries([
+      ["constructor", "ctor"],
+      ["__proto__", "data"],
+      ["other", "left"],
+    ]);
+    const result = collectExplodedObjectParams(query, parameters);
+    expect(result).toEqual({
+      filter: Object.fromEntries([
+        ["constructor", "ctor"],
+        ["__proto__", "data"],
+      ]),
+      other: "left",
+    });
+    expect(Object.getPrototypeOf(result.filter)).toBe(Object.prototype);
+    expect(query).toEqual(
+      Object.fromEntries([
+        ["constructor", "ctor"],
+        ["__proto__", "data"],
+        ["other", "left"],
+      ]),
+    );
+  });
+
+  it("retains own prototype-named query keys when casting parameters", async () => {
+    const registry = new Registry();
+    registry.add("/query", { GET: ({ query }) => ({ body: query }) });
+    const dispatcher = new Dispatcher(registry, new ContextRegistry());
+    const query = Object.fromEntries([
+      ["__proto__", "value"],
+      ["constructor", "supplied"],
+    ]);
+    const response = await dispatcher.request({
+      method: "GET",
+      path: "/query",
+      query,
+      headers: {},
+      body: undefined,
+      req: {},
+    });
+    expect(response.body).toEqual(query);
+    expect(Object.getPrototypeOf(response.body)).toBe(Object.prototype);
+  });
+
+  it.each([{ required: false }, {}])(
+    "passes an absent optional JSON body to the handler (options=%j)",
+    async (options) => {
       const registry = new Registry();
       let handlerCalls = 0;
       const handler = ({ body }) => {
@@ -33,7 +134,7 @@ describe("a dispatcher", () => {
           "/items": {
             patch: {
               requestBody: {
-                ...(required === undefined ? {} : { required }),
+                ...options,
                 content: {
                   "application/json": {
                     schema: {

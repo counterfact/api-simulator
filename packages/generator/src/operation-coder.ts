@@ -65,10 +65,10 @@ export class OperationCoder extends Coder {
       Record<string, { itemSchema?: unknown }> | undefined;
     const streaming =
       content !== undefined &&
-      Object.keys(content).some(
-        (media) =>
+      Object.entries(content).some(
+        ([media, definition]) =>
           STREAMING_CONTENT_TYPES.has(media) &&
-          content[media]?.itemSchema !== undefined,
+          definition?.itemSchema !== undefined,
       );
     const method = streaming
       ? "stream"

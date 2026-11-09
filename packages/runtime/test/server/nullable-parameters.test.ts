@@ -3,9 +3,13 @@ import { Dispatcher } from "../../src/server/dispatcher.js";
 import { Registry } from "../../src/server/registry.js";
 import { parameterType } from "../../src/server/parameter-type.js";
 
-it.each(["integer", "number", "boolean"])(
+it.each([
+  ["integer", "12", 12],
+  ["number", "12", 12],
+  ["boolean", "true", true],
+])(
   "converts nullable %s parameters like plain primitives",
-  async (type) => {
+  async (type, text, expected) => {
     for (const schema of [
       { type },
       { anyOf: [{ type }, { type: "null" }] },
@@ -36,11 +40,11 @@ it.each(["integer", "number", "boolean"])(
         method: "GET",
         path: "/value",
         headers: {},
-        query: { value: type === "boolean" ? "true" : "12" },
+        query: { value: text },
         body: undefined,
         req: {},
       });
-      expect(result.body).toBe(type === "boolean" ? true : 12);
+      expect(result.body).toBe(expected);
     }
   },
 );

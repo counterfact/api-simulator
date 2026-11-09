@@ -111,6 +111,7 @@ export class Requirement {
 
     const objectData = this.data;
     const child = new Requirement(
+      // eslint-disable-next-line security/detect-object-injection -- Requirement traversal intentionally resolves dynamic OpenAPI property/index names after has(key) checks.
       objectData[key] as RequirementData,
       `${this.url}/${this.escapeJsonPointer(key)}`,
       this.specification,
