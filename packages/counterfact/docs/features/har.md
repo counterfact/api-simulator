@@ -53,7 +53,7 @@ The existing MSW loader reads the same directory when creating handlers, without
 
 The default matcher compares:
 
-- Uppercase HTTP method and exact public pathname, before Counterfact removes routing prefixes. Origins and request headers are ignored.
+- Uppercase HTTP method and exact public pathname, before Counterfact removes routing prefixes. Origins and request headers are ignored. Leading repeated slashes in public paths are preserved.
 - Decoded query parameter names and values. The order of different names does not matter; duplicate values and their order do.
 - Request bodies: structural JSON equality, decoded name/value comparison for URL-encoded forms, and exact text equality otherwise. JSON object key order does not matter; array order and scalar types do. An absent body differs from an explicitly empty body.
 

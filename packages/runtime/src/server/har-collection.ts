@@ -67,7 +67,14 @@ export function createHarRequest(input: {
   body?: unknown;
   rawBody?: string | Uint8Array;
 }): HarRequest {
-  const url = new URL(input.url, "http://counterfact.invalid");
+  // HTTP origin-form targets beginning with // are paths, not network-path
+  // references. Resolving them against a base URL would discard a path segment.
+  const url = new URL(
+    input.url.startsWith("/")
+      ? `http://counterfact.invalid${input.url}`
+      : input.url,
+    "http://counterfact.invalid",
+  );
   const headers: Record<string, string[]> = Object.create(null);
   for (const [name, value] of Object.entries(input.headers)) {
     if (value !== undefined)

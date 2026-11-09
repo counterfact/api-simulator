@@ -116,3 +116,5 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Detect dynamic-import syntax with the existing TypeScript parser, not a regex over comment-separated tokens: repeated block comments can cause exponential regex backtracking even in tiny valid modules. Test comment-heavy static imports and lazy imports inside template expressions.
 
 - Scope module evaluation and constructor failures to the failed graph rather than invalidating successful sibling contexts. Test syntax/evaluation error recovery without touching context source, and verify caught dynamic-import failures are not mistaken for successful dependency evaluations. Do not swap per-loader CommonJS graphs into Node’s shared cache. Independent same-file CommonJS simulators require separate processes for isolation; retain single-loader refresh and compiled fallback coverage.
+
+- Parse origin-form HTTP targets as paths even when they begin with `//`; URL resolution otherwise treats the first segment as an authority and can select the wrong recording.

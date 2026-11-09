@@ -81,6 +81,31 @@ describe("HAR lookup", () => {
     });
   });
 
+  it("preserves leading slashes in origin-form request paths", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "har/slashes.har",
+        archive([
+          exchange("https://recorded.test/items", "wrong path"),
+          exchange("https://recorded.test//api/items", "double slash"),
+          exchange("https://recorded.test///api/items", "triple slash"),
+        ]),
+      );
+      const collection = new HarCollection($.path("."));
+      await collection.load();
+      expect(response(collection.lookup(incoming("//api/items"))()).body).toBe(
+        "double slash",
+      );
+      expect(response(collection.lookup(incoming("///api/items"))()).body).toBe(
+        "triple slash",
+      );
+      expect(
+        response(collection.lookup(incoming("https://local.test//api/items"))())
+          .body,
+      ).toBe("double slash");
+    });
+  });
+
   it("preserves duplicate query values and their order without coercing them", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(
