@@ -1,0 +1,25 @@
+{
+  "openapi-typescript": {
+    "package": "openapi-typescript",
+    "version": "7.13.0"
+  },
+  "hey-api": { "package": "@hey-api/openapi-ts", "version": "0.99.0" },
+  "orval": { "package": "orval", "version": "8.46.0" },
+  "openapi-generator-fetch": {
+    "version": "7.27.0",
+    "generator": "typescript-fetch"
+  },
+  "openapi-generator-axios": {
+    "version": "7.27.0",
+    "generator": "typescript-axios"
+  },
+  "swagger-typescript-api": {
+    "package": "swagger-typescript-api",
+    "version": "13.13.0"
+  },
+  "openapi-typescript-codegen": {
+    "package": "openapi-typescript-codegen",
+    "version": "0.29.0"
+  },
+  "nswag": { "version": "14.6.3" }
+}

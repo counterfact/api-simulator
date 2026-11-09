@@ -259,6 +259,10 @@ const invalid: Schemas["HealthStatus"] = 123;
     `
     import type { JsonSchema, SchemaTypeScript, SchemaTypeTransform } from "@counterfact/generator";
     import ts from "typescript";
+    import { schemaTypeCompatibility } from "@counterfact/generator";
+    export const compatible: SchemaTypeTransform = schemaTypeCompatibility("orval", {
+      dateType: "Date", binaryType: "File", readonlyProperties: "schema",
+    });
     const schema: JsonSchema = { type: "string", format: "uuid" };
     export const transform: SchemaTypeTransform = (input, type, script: SchemaTypeScript) => {
       if (typeof input === "object" && input.format === "uuid") return script.importType("@domain/types", "UUID");
