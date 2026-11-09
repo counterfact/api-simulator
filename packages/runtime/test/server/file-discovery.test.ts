@@ -1,5 +1,7 @@
 import nodePath from "node:path";
 
+import { ensureSymlink } from "fs-extra";
+
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { FileDiscovery } from "../../src/server/file-discovery.js";
@@ -76,5 +78,24 @@ describe("FileDiscovery", () => {
 
       expect(files).toEqual([]);
     });
+  });
+});
+
+it("follows directory aliases while preventing ancestor cycles", async () => {
+  await usingTemporaryFiles(async ($) => {
+    await $.add("src/root.ts", "");
+    await $.add("shared/helper.ts", "");
+    await ensureSymlink($.path("shared"), $.path("src/one"), "junction");
+    await ensureSymlink($.path("shared"), $.path("src/two"), "junction");
+    await ensureSymlink($.path("src"), $.path("shared/back"), "junction");
+    const files = await new FileDiscovery($.path("src")).findFiles();
+    expect(
+      files.map((file) =>
+        nodePath.relative($.path("src"), file).split(nodePath.sep).join("/"),
+      ),
+    ).toEqual(
+      expect.arrayContaining(["root.ts", "one/helper.ts", "two/helper.ts"]),
+    );
+    expect(files).toHaveLength(3);
   });
 });
