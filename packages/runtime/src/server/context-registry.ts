@@ -23,40 +23,103 @@ export function parentPath(path: string): string {
   return String(path.split("/").slice(0, -1).join("/")) || "/";
 }
 
+const OPAQUE_IDENTITY = Symbol("opaque identity");
+const opaqueIdentities = new WeakMap<object, symbol>();
+const snapshotPrototypes = new Set<unknown>([
+  null,
+  Object.prototype,
+  Array.prototype,
+  Map.prototype,
+  Set.prototype,
+  Date.prototype,
+  RegExp.prototype,
+  ArrayBuffer.prototype,
+  DataView.prototype,
+  Buffer.prototype,
+  Int8Array.prototype,
+  Uint8Array.prototype,
+  Uint8ClampedArray.prototype,
+  Int16Array.prototype,
+  Uint16Array.prototype,
+  Int32Array.prototype,
+  Uint32Array.prototype,
+  Float32Array.prototype,
+  Float64Array.prototype,
+  BigInt64Array.prototype,
+  BigUint64Array.prototype,
+]);
+
 /**
- * Deep-clones an object for caching purposes.
- * Plain objects and class instances have their own enumerable properties
- * recursively cloned (preserving the prototype chain). Functions are copied
- * by reference since they are not structurally comparable data.
+ * Snapshot plain declaration data and supported native values. User class
+ * instances and other opaque objects compare by identity, not constructor or
+ * method source: hot reload does not migrate their hidden state or closures.
  */
-function cloneForCache(value: unknown): unknown {
-  if (value === null || typeof value === "function") {
-    return value;
+function cloneForCache(
+  value: unknown,
+  seen = new Map<object, object>(),
+  contextRoot = false,
+): unknown {
+  if (value === null || typeof value !== "object") return value;
+  if (seen.has(value)) return seen.get(value);
+  if (!contextRoot && !snapshotPrototypes.has(Object.getPrototypeOf(value))) {
+    let identity = opaqueIdentities.get(value);
+    if (identity === undefined) {
+      identity = Symbol("opaque value");
+      opaqueIdentities.set(value, identity);
+    }
+    const snapshot = { [OPAQUE_IDENTITY]: identity };
+    seen.set(value, snapshot);
+    return snapshot;
   }
 
-  if (typeof value !== "object") {
-    return value;
+  let clone: object;
+  if (value instanceof Map) {
+    const entries = new Map<unknown, unknown>();
+    clone = entries;
+    seen.set(value, clone);
+    for (const [key, entry] of value)
+      entries.set(cloneForCache(key, seen), cloneForCache(entry, seen));
+  } else if (value instanceof Set) {
+    const entries = new Set<unknown>();
+    clone = entries;
+    seen.set(value, clone);
+    for (const entry of value) entries.add(cloneForCache(entry, seen));
+  } else if (value instanceof Date) {
+    clone = new Date(value.getTime());
+  } else if (value instanceof RegExp) {
+    const expression = structuredClone(value);
+    Object.setPrototypeOf(expression, RegExp.prototype);
+    expression.lastIndex = value.lastIndex;
+    clone = expression;
+  } else if (Buffer.isBuffer(value)) {
+    clone = Buffer.from(value);
+  } else if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
+    clone = structuredClone(value);
+    Object.setPrototypeOf(clone, Object.getPrototypeOf(value));
+  } else if (Array.isArray(value)) {
+    clone = new Array(value.length);
+  } else {
+    clone = Object.create(Object.getPrototypeOf(value)) as object;
   }
 
-  if (Array.isArray(value)) {
-    return (value as unknown[]).map(cloneForCache);
-  }
-
-  const proto = Object.getPrototypeOf(value) as object | null;
-  const clone: Record<string, unknown> =
-    proto !== null && proto !== Object.prototype
-      ? (Object.create(proto) as Record<string, unknown>)
-      : {};
-
-  for (const [key, child] of Object.entries(value)) {
+  seen.set(value, clone);
+  const inherited = new Set<string>();
+  if (contextRoot) for (const key in value) inherited.add(key);
+  const keys = new Set([...Reflect.ownKeys(value), ...inherited]);
+  for (const key of keys) {
+    if (
+      !Object.prototype.propertyIsEnumerable.call(value, key) &&
+      !(typeof key === "string" && inherited.has(key))
+    )
+      continue;
+    const entry: unknown = Reflect.get(value, key);
     Object.defineProperty(clone, key, {
-      value: cloneForCache(child),
-      enumerable: true,
       configurable: true,
+      enumerable: true,
       writable: true,
+      value: cloneForCache(entry, seen),
     });
   }
-
   return clone;
 }
 
@@ -107,7 +170,7 @@ export class ContextRegistry extends EventTarget {
   public add(path: string, context: Context): void {
     this.entries.set(path, context);
 
-    this.cache.set(path, cloneForCache(context) as Context);
+    this.cache.set(path, cloneForCache(context, new Map(), true) as Context);
 
     this.dispatchEvent(new Event("context-changed"));
   }
@@ -168,15 +231,12 @@ export class ContextRegistry extends EventTarget {
     }
 
     const context = this.find(path);
+    const snapshot = cloneForCache(updatedContext, new Map(), true) as Context;
 
     for (const property in updatedContext) {
       if (
-        !isDeepStrictEqual(
-          // eslint-disable-next-line security/detect-object-injection -- Hot reload intentionally compares and updates enumerable properties of locally authored Context instances, preserving class behavior.
-          updatedContext[property],
-          // eslint-disable-next-line security/detect-object-injection -- Hot reload intentionally compares and updates enumerable properties of locally authored Context instances, preserving class behavior.
-          this.cache.get(path)?.[property],
-        )
+        // eslint-disable-next-line security/detect-object-injection -- Compare enumerable local Context declaration snapshots, not mutable live state.
+        !isDeepStrictEqual(snapshot[property], this.cache.get(path)?.[property])
       ) {
         // eslint-disable-next-line security/detect-object-injection -- Hot reload intentionally compares and updates enumerable properties of locally authored Context instances, preserving class behavior.
         context[property] = updatedContext[property];
@@ -185,7 +245,7 @@ export class ContextRegistry extends EventTarget {
 
     Object.setPrototypeOf(context, Object.getPrototypeOf(updatedContext));
 
-    this.cache.set(path, cloneForCache(updatedContext) as Context);
+    this.cache.set(path, snapshot);
   }
 
   /** Discards live contexts and hot-reload snapshots before reconstruction. */

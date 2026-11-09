@@ -68,7 +68,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js --testPathIgnorePatterns=black-box --testPathIgnorePatterns=examples",
+    "test": "yarn --cwd ../.. test:native && yarn test:jest",
     "test:packed-consumer": "node test/package/counterfact-consumer-smoke.mjs",
     "build": "yarn workspace @counterfact/generator build && yarn workspace @counterfact/runtime build && yarn workspace @counterfact/client build && yarn workspace @counterfact/repl build && rimraf dist && tsc --build --force",
     "prepack": "yarn build",
@@ -77,7 +77,8 @@
     "go:example": "yarn build && node ./bin/counterfact.js ./test/fixtures/openapi/example.yaml out",
     "go:multiple-apis": "yarn build && node ./bin/counterfact.js --config ./test/fixtures/config/multiple-apis.yaml",
     "go:multiple-versions": "yarn build && node ./bin/counterfact.js --config ./test/fixtures/config/multiple-versions.yaml",
-    "counterfact": "./bin/counterfact.js"
+    "counterfact": "./bin/counterfact.js",
+    "test:jest": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js --testPathIgnorePatterns=black-box --testPathIgnorePatterns=examples"
   },
   "dependencies": {
     "@counterfact/client": "0.2.1",
