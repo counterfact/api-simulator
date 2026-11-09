@@ -74,6 +74,7 @@ export function validationSchema(
         child !== null &&
         !Array.isArray(child)
       ) {
+        // eslint-disable-next-line security/detect-object-injection -- key comes from own schema entries and is checked against the fixed schema-keyword sets before assignment.
         result[key] = Object.fromEntries(
           Object.entries(child).map(([name, node]) => [
             name,
@@ -81,6 +82,7 @@ export function validationSchema(
           ]),
         );
       } else if (children.has(key)) {
+        // eslint-disable-next-line security/detect-object-injection -- key comes from own schema entries and is checked against the fixed schema-keyword sets before assignment.
         result[key] = Array.isArray(child)
           ? child.map((node, index) =>
               visit(node, path + "/" + index, resource),

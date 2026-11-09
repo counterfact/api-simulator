@@ -79,15 +79,18 @@ it("rejects absent required HTTP bodies without conflating an explicit empty obj
   );
   expect(bodies).toEqual([{}]);
 });
-it.each([true, false])(
-  "validates explicit JSON null against nullable=%s",
-  async (nullable) => {
+it.each([
+  { nullable: true, status: 200, bodies: [null] },
+  { nullable: false, status: 400, bodies: [] },
+])(
+  "validates explicit JSON null against nullable=$nullable",
+  async ({ nullable, status, bodies: expectedBodies }) => {
     const { app, bodies } = appFor(false, { type: "object", nullable });
     const response = await request(app.callback())
       .patch("/items")
       .set("Content-Type", "application/json")
       .send("null");
-    expect(response.status).toBe(nullable ? 200 : 400);
-    expect(bodies).toEqual(nullable ? [null] : []);
+    expect(response.status).toBe(status);
+    expect(bodies).toEqual(expectedBodies);
   },
 );

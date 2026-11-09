@@ -511,6 +511,37 @@ describe("RouteBuilder", () => {
       expect(builder.missing()).toBeUndefined();
     });
 
+    it("does not satisfy a required constructor cookie with an inherited property", () => {
+      const builder = new RouteBuilder("/cookies", {
+        port: 9999,
+        routeCatalog: createOpenApiRouteCatalog({
+          paths: {
+            "/cookies": {
+              get: {
+                parameters: [
+                  {
+                    in: "cookie",
+                    name: "constructor",
+                    required: true,
+                    schema: { type: "string" },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      }).method("get");
+      expect(builder.missing()?.cookie).toEqual([
+        { name: "constructor", type: "string", description: undefined },
+      ]);
+      expect(
+        builder.cookies({ constructor: "supplied" }).missing(),
+      ).toBeUndefined();
+      expect(
+        builder.headers({ Cookie: "constructor=from-header" }).missing(),
+      ).toBeUndefined();
+    });
+
     it("reports and satisfies required cookies", () => {
       const builder = new RouteBuilder("/cookies", {
         port: 9999,
