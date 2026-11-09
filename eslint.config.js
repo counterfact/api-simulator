@@ -56,6 +56,12 @@ export default [
   {
     ignores: [
       "**/node_modules/**",
+      "examples/generator-reuse/*/src/generated/**",
+      "examples/generator-reuse/orval/generated/**",
+      "examples/generator-reuse/*/api/{types,counterfact-types,scenarios}/**",
+      "examples/generator-reuse/*/api/routes/**/_.context.ts",
+      "examples/generator-reuse/*/src/simulation/{types,counterfact-types,scenarios}/**",
+      "examples/generator-reuse/*/src/simulation/routes/**/_.context.ts",
       "**/coverage/**",
       "**/.stryker-tmp/**",
       "**/reports/**",

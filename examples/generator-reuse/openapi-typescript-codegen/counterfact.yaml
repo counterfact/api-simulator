@@ -1,0 +1,8 @@
+spec: ./openapi.yaml
+destination: ./api
+schema-type-transform: ./schema-type-transform.mjs
+generate: true
+serve: false
+watch: false
+repl: false
+update-check: false
