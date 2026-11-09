@@ -20,6 +20,7 @@ export function resolveScenario(
   const module = registry?.getModule(fileKey);
   if (module === undefined)
     throw new Error(`Could not find scenario file "${fileKey}"`);
+  // eslint-disable-next-line security/detect-object-injection -- Scenario dispatch intentionally resolves a named function export from a locally authored module.
   const fn = module[name];
   if (typeof fn !== "function")
     throw new Error(`"${name}" is not a function exported from "${fileKey}"`);
@@ -76,7 +77,9 @@ export class ScenarioRegistry {
 
     if (!module) return [];
 
-    return Object.keys(module).filter((k) => typeof module[k] === "function");
+    return Object.entries(module)
+      .filter(([, value]) => typeof value === "function")
+      .map(([name]) => name);
   }
 
   /**

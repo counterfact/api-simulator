@@ -30,19 +30,22 @@ function deepMerge(
       continue;
     }
 
+    // eslint-disable-next-line security/detect-object-injection -- Prototype-mutating keys are excluded above; overlay properties are intentionally dynamic.
+    const existing = target[key];
     if (
       typeof value === "object" &&
       value !== null &&
       !Array.isArray(value) &&
-      typeof target[key] === "object" &&
-      target[key] !== null &&
-      !Array.isArray(target[key])
+      typeof existing === "object" &&
+      existing !== null &&
+      !Array.isArray(existing)
     ) {
       deepMerge(
-        target[key] as Record<string, unknown>,
+        existing as Record<string, unknown>,
         value as Record<string, unknown>,
       );
     } else {
+      // eslint-disable-next-line security/detect-object-injection -- Prototype-mutating keys are excluded above; overlay property names are intentionally dynamic.
       target[key] = value;
     }
   }

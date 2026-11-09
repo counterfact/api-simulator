@@ -87,8 +87,11 @@ try {
   const consumerDirectory = path.join(temporaryRoot, "consumer");
   const tarballDirectory = path.join(temporaryRoot, "tarballs");
   await Promise.all([
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- This installed-consumer smoke test intentionally reads/writes fixtures beneath its generated temporary consumer/cache directories.
     mkdir(cacheDirectory),
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- This installed-consumer smoke test intentionally reads/writes fixtures beneath its generated temporary consumer/cache directories.
     mkdir(consumerDirectory),
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- This installed-consumer smoke test intentionally reads/writes fixtures beneath its generated temporary consumer/cache directories.
     mkdir(tarballDirectory),
   ]);
 
@@ -108,6 +111,7 @@ try {
     cacheDirectory,
   );
 
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- This installed-consumer smoke test intentionally reads/writes fixtures beneath its generated temporary consumer/cache directories.
   await writeFile(
     path.join(consumerDirectory, "package.json"),
     `${JSON.stringify({ name: "generator-consumer", private: true, type: "module" }, undefined, 2)}\n`,
@@ -131,6 +135,7 @@ try {
 
   const openApiPath = path.join(consumerDirectory, "openapi.yaml");
   const outputPath = path.join(consumerDirectory, "api");
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- This installed-consumer smoke test intentionally reads/writes fixtures beneath its generated temporary consumer/cache directories.
   await writeFile(
     openApiPath,
     `openapi: 3.0.3
@@ -155,6 +160,7 @@ components:
       type: string
 `,
   );
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- This installed-consumer smoke test intentionally reads/writes fixtures beneath its generated temporary consumer/cache directories.
   await writeFile(
     path.join(consumerDirectory, "generate.mjs"),
     `import { CodeGenerator, ScenarioFileGenerator } from "@counterfact/generator";
@@ -168,10 +174,12 @@ await new ScenarioFileGenerator(${JSON.stringify(outputPath)}).generate();
   await run(executable("node"), ["generate.mjs"], consumerDirectory);
 
   assert.match(
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- This installed-consumer smoke test intentionally reads/writes fixtures beneath its generated temporary consumer/cache directories.
     await readFile(path.join(outputPath, "routes", "health.ts"), "utf8"),
     /export const GET/u,
   );
   assert.match(
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- This installed-consumer smoke test intentionally reads/writes fixtures beneath its generated temporary consumer/cache directories.
     await readFile(
       path.join(outputPath, "types", "paths", "health.types.ts"),
       "utf8",

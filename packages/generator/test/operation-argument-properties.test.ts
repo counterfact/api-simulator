@@ -3,12 +3,29 @@ import ts from "typescript";
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import { CodeGenerator } from "../src/code-generator.js";
-import { generateVersionsTsContent } from "../src/versions-ts-generator.js";
+import { addVersionFile } from "./helpers/version-file.js";
 
 describe("generated operation argument properties", () => {
-  it.each(["", "v1"])(
-    "omits absent inputs and preserves declared inputs (version: %s)",
-    async (version) => {
+  it.each([
+    {
+      version: "",
+      prefix: "types",
+      suffix: "",
+      versionKey: "",
+      versionAssertion: "",
+      arg: (name: string) => `Parameters<${name}>[0]`,
+    },
+    {
+      version: "v1",
+      prefix: "types/v1",
+      suffix: "_$_v1",
+      versionKey: ' | "version"',
+      versionAssertion: 'const version: "v1" = input.version;',
+      arg: (name: string) => `${name}_$_v1`,
+    },
+  ])(
+    "omits absent inputs and preserves declared inputs (version: $version)",
+    async ({ version, prefix, suffix, versionKey, versionAssertion, arg }) => {
       await usingTemporaryFiles(async ($) => {
         await $.add(
           "openapi.json",
@@ -70,24 +87,15 @@ describe("generated operation argument properties", () => {
           { routes: true, types: true },
           version,
         ).generate();
-        if (version !== "") {
-          await $.add(
-            "types/versions.ts",
-            await generateVersionsTsContent([version]),
-          );
-        }
-        const prefix = version === "" ? "types" : `types/${version}`;
+        await addVersionFile($, version, "types");
         const empty = await $.read(`${prefix}/paths/empty.types.ts`);
         const inputs = await $.read(`${prefix}/paths/inputs/{id}.types.ts`);
         expect(empty).not.toContain("OmitValueWhenNever");
         expect(inputs).not.toContain("OmitValueWhenNever");
-        const arg = (name: string) =>
-          version === "" ? `Parameters<${name}>[0]` : `${name}_$_${version}`;
-        const versionKey = version === "" ? "" : ' | "version"';
         await $.add(
           "consumer.ts",
-          `import type { HTTP_GET${version === "" ? "" : `_$_${version}`} } from "./${prefix}/paths/empty.types.js";
-          import type { HTTP_POST${version === "" ? "" : `_$_${version}`} } from "./${prefix}/paths/inputs/{id}.types.js";
+          `import type { HTTP_GET${suffix} } from "./${prefix}/paths/empty.types.js";
+          import type { HTTP_POST${suffix} } from "./${prefix}/paths/inputs/{id}.types.js";
           type Equal<A, B> = [A] extends [B] ? [B] extends [A] ? true : false : false;
           type Assert<T extends true> = T;
           type Empty = ${arg("HTTP_GET")};
@@ -100,10 +108,10 @@ describe("generated operation argument properties", () => {
           const token: string | undefined = input.headers.token;
           const session: string | undefined = input.cookie.session;
           const active: boolean | undefined = input.querystring.active;
-          const name: string | undefined = input.body.name;
+          const name: string | undefined = input.body?.name;
           const username: string | undefined = input.auth.username;
           const password: string | undefined = input.user.password;
-          ${version === "" ? "" : `const version: "${version}" = input.version;`}
+          ${versionAssertion}
           `,
         );
         const program = ts.createProgram([$.path("consumer.ts")], {

@@ -30,6 +30,7 @@ export function validateResponse(
   const statusKey = String(response.status ?? 200);
 
   const responseSpec =
+    // eslint-disable-next-line security/detect-object-injection -- statusKey is the string form of the numeric HTTP response status; this is a schema lookup.
     operation.responses[statusKey] ?? operation.responses.default;
 
   if (!responseSpec) {

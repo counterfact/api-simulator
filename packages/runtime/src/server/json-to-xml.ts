@@ -66,6 +66,7 @@ function objectToXml(
   const attributes: string[] = [];
 
   Object.entries(json).forEach(([key, value]) => {
+    // eslint-disable-next-line security/detect-object-injection -- The key comes from the current JSON object; this read intentionally selects the corresponding schema property.
     const properties = schema?.properties?.[key];
     const nodeType = resolveNodeType(properties);
     const xmlName = properties?.xml?.name ?? key;

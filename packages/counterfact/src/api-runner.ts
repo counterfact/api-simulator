@@ -232,7 +232,9 @@ export class ApiRunner {
       await rm(compiledPathsDirectory, { force: true, recursive: true });
     }
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The local API runner intentionally creates route/cache directories beneath the configured modules path.
     await mkdir(pathJoin(modulesPath, "routes"), { recursive: true });
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- The local API runner intentionally creates route/cache directories beneath the configured modules path.
     await mkdir(compiledPathsDirectory, { recursive: true });
 
     const openApiDocument =
@@ -304,17 +306,19 @@ export class ApiRunner {
    * Starts watching the OpenAPI spec and scenario context files for changes
    * and re-generates the corresponding TypeScript files on each change.
    *
+   * The optional callback regenerates all specifications sharing this output group.
+   *
    * - Re-generates route stubs when the spec changes (when
    *   `config.watch.routes` or `config.watch.types` is `true`).
    * - Re-generates `types/_.context.ts` when a `_.context.ts` file changes
    *   (when `config.watch.types` is `true`).
    */
-  public async watch(): Promise<void> {
+  public async watch(regenerate?: () => Promise<void>): Promise<void> {
     if (
       this.config.openApiPath !== "_" &&
       (this.config.watch.routes || this.config.watch.types)
     ) {
-      await this.codeGenerator.watch();
+      await this.codeGenerator.watch(regenerate);
     }
 
     if (this.config.watch.types) {

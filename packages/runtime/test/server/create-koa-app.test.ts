@@ -122,9 +122,12 @@ describe("createKoaApp", () => {
         expect(yamlLoad(defaultDocument.text)).toMatchObject({
           info: { version: "v1" },
         });
-        for (const path of ["openapi", "swagger"]) {
+        for (const [path, suffix] of [
+          ["openapi", ""],
+          ["swagger", "/"],
+        ]) {
           const response = await request(app.callback()).get(
-            `/counterfact/${path}${subdirectory}${path === "swagger" ? "/" : ""}?version=missing`,
+            `/counterfact/${path}${subdirectory}${suffix}?version=missing`,
           );
           expect(response.status).toBe(404);
         }

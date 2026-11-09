@@ -84,7 +84,7 @@ export interface OpenApiDocument {
  * @returns A record mapping cookie name to decoded value.
  */
 function parseCookies(cookieHeader: string): Record<string, string> {
-  const cookies: Record<string, string> = {};
+  const cookies = new Map<string, string>();
 
   for (const part of cookieHeader.split(";")) {
     const eqIndex = part.indexOf("=");
@@ -96,17 +96,17 @@ function parseCookies(cookieHeader: string): Record<string, string> {
     const key = part.slice(0, eqIndex).trim();
     const value = part.slice(eqIndex + 1).trim();
 
-    if (key && !(key in cookies)) {
+    if (key && !cookies.has(key)) {
       try {
-        cookies[key] = decodeURIComponent(value);
+        cookies.set(key, decodeURIComponent(value));
       } catch (error) {
         debug("could not decode cookie value for key %s: %o", key, error);
-        cookies[key] = value;
+        cookies.set(key, value);
       }
     }
   }
 
-  return cookies;
+  return Object.fromEntries(cookies);
 }
 
 interface ParameterTypes {
@@ -163,7 +163,7 @@ export function collectExplodedObjectParams(
   query: Record<string, string | string[] | unknown>,
   parameters: OpenApiParameters[],
 ): Record<string, unknown> {
-  const result: Record<string, unknown> = { ...query };
+  const result = new Map(Object.entries(query ?? {}));
 
   for (const parameter of parameters) {
     if (!isExplodedObjectQueryParam(parameter)) continue;
@@ -171,21 +171,21 @@ export function collectExplodedObjectParams(
     const properties = parameter.schema?.properties;
     if (!properties) continue;
 
-    const obj: Record<string, unknown> = {};
+    const obj = new Map<string, unknown>();
 
     for (const key of Object.keys(properties)) {
-      if (key in result) {
-        obj[key] = result[key];
-        delete result[key];
+      if (result.has(key)) {
+        obj.set(key, result.get(key));
+        result.delete(key);
       }
     }
 
-    if (Object.keys(obj).length > 0) {
-      result[parameter.name] = obj;
+    if (obj.size > 0) {
+      result.set(parameter.name, Object.fromEntries(obj));
     }
   }
 
-  return result;
+  return Object.fromEntries(result);
 }
 
 /**
@@ -355,9 +355,9 @@ export class Dispatcher {
       return undefined;
     }
 
-    for (const key in this.openApiDocument.paths) {
+    for (const [key, pathItem] of Object.entries(this.openApiDocument.paths)) {
       if (key.toLowerCase() === path.toLowerCase()) {
-        return this.openApiDocument.paths[key];
+        return pathItem;
       }
     }
 
@@ -449,6 +449,7 @@ export class Dispatcher {
     );
     const operation =
       ownOperation ??
+      // eslint-disable-next-line security/detect-object-injection -- additionalKey is selected from own additionalOperations keys matched to the requested HTTP method.
       (additionalKey === undefined ? undefined : additional?.[additionalKey]);
 
     if (operation === undefined) {

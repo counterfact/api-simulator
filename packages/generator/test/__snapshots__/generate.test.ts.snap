@@ -813,7 +813,7 @@ import type { Order } from "../../components/schemas/Order.js";
  */
 export type HTTP_POST = ($: {
   headers: HTTP_POST_Headers;
-  body: Order;
+  body: Order | undefined;
   context: Context;
   har: HarLookup;
   response: ResponseBuilderFactory<{
@@ -976,7 +976,7 @@ import type { User } from "../components/schemas/User.js";
  */
 export type HTTP_POST = ($: {
   headers: HTTP_POST_Headers;
-  body: User;
+  body: User | undefined;
   context: Context;
   har: HarLookup;
   response: ResponseBuilderFactory<{
@@ -1029,7 +1029,7 @@ import type { User } from "../../components/schemas/User.js";
  */
 export type HTTP_POST = ($: {
   headers: HTTP_POST_Headers;
-  body: Array<User>;
+  body: Array<User> | undefined;
   context: Context;
   har: HarLookup;
   response: ResponseBuilderFactory<
@@ -1243,7 +1243,7 @@ export type HTTP_GET = ($: {
 export type HTTP_PUT = ($: {
   path: HTTP_PUT_Path;
   headers: HTTP_PUT_Headers;
-  body: User;
+  body: User | undefined;
   context: Context;
   har: HarLookup;
   response: ResponseBuilderFactory<{
