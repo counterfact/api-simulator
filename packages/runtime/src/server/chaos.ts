@@ -181,6 +181,14 @@ export class ChaosRule {
       headers,
     };
 
+    // Appended values are sent after ordinary headers by HTTP adapters, so a
+    // set/remove must suppress every old value, regardless of its storage.
+    if (response.appendedHeaders !== undefined) {
+      result.appendedHeaders = response.appendedHeaders.filter(
+        ([name]) => !this.headerMutations.has(name.toLowerCase()),
+      );
+    }
+
     if (this.statusCode !== undefined) {
       result.status = this.statusCode;
     }

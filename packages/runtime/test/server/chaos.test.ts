@@ -177,6 +177,35 @@ describe("ChaosRule", () => {
     expect(result?.response.headers).toEqual({ "X-SECOND": "changed" });
   });
 
+  it("replaces or removes appended headers without mutating the original response", () => {
+    const response = {
+      body: "ok",
+      headers: { "X-Replace": "original", "X-Remove": "original" },
+      appendedHeaders: [
+        ["x-replace", "appended"],
+        ["X-REMOVE", "appended"],
+        ["Set-Cookie", "first=1"],
+        ["Set-Cookie", "second=2"],
+      ] as [string, string][],
+      status: 200,
+    };
+    const result = new ChaosRule("")
+      .header("X-REPLACE", "changed")
+      .removeHeader("x-remove")
+      .tryApply(response);
+
+    expect(result?.response.headers).toEqual({ "X-REPLACE": "changed" });
+    expect(result?.response.appendedHeaders).toEqual([
+      ["Set-Cookie", "first=1"],
+      ["Set-Cookie", "second=2"],
+    ]);
+    expect(response.appendedHeaders).toHaveLength(4);
+    expect(response.headers).toEqual({
+      "X-Replace": "original",
+      "X-Remove": "original",
+    });
+  });
+
   it("protects Content-Type under every casing", () => {
     const response = {
       body: "ok",
