@@ -98,6 +98,53 @@ describe("a response builder", () => {
     expect(response?.content?.[0]?.body).toStrictEqual(Buffer.from([1, 2, 3]));
   });
 
+  it.each([
+    ["a Buffer", Buffer.from([0, 255, 1])],
+    ["a Uint8Array view", new Uint8Array([9, 0, 255, 1, 9]).subarray(1, 4)],
+    ["a base64 string", "AP8B"],
+  ])("uses an explicit binary content type with %s", (_name, body) => {
+    const response = createResponseBuilder({ responses: {} })
+      .status(200)
+      .binary(body, "application/pdf");
+
+    expect(response.content).toStrictEqual([
+      { body: Buffer.from([0, 255, 1]), type: "application/pdf" },
+    ]);
+  });
+
+  it("preserves raw binary XML bytes instead of converting the body to XML", () => {
+    const body = Buffer.from('<document name="example"/>');
+    const response = createResponseBuilder({ responses: {} })
+      .status(200)
+      .binary(body, "application/xml");
+
+    expect(response.content).toStrictEqual([{ body, type: "application/xml" }]);
+  });
+
+  it("retains headers and alternative representations without mutating the builder", () => {
+    const original = createResponseBuilder({ responses: {} })
+      .header("x-request-id", "binary")
+      .cookie("session", "example")
+      .status(200)
+      .match("text/plain", "alternative")
+      .binary("b2xk", "application/pdf");
+    const response = original.binary("bmV3", "application/pdf");
+
+    expect(response.status).toBe(200);
+    expect(response.headers).toStrictEqual({
+      "x-request-id": "binary",
+      "set-cookie": ["session=example"],
+    });
+    expect(response.content).toStrictEqual([
+      { body: "alternative", type: "text/plain" },
+      { body: Buffer.from("new"), type: "application/pdf" },
+    ]);
+    expect(original.content?.[1]).toStrictEqual({
+      body: Buffer.from("old"),
+      type: "application/pdf",
+    });
+  });
+
   it("has shortcuts for json, text, and html", () => {
     const response = createResponseBuilder({
       responses: { 200: { content: {}, schema: {} } },

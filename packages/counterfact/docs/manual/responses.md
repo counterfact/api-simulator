@@ -14,6 +14,7 @@ Use a custom response when a screen needs a specific body, status, header, or co
 | `.text(content)`               | Returns a plain-text body                                                               |
 | `.html(content)`               | Returns an HTML body                                                                    |
 | `.xml(content)`                | Returns an XML body                                                                     |
+| `.binary(body, contentType?)`  | Returns raw bytes or decoded base64, with an optional explicit content type             |
 | `.match(contentType, content)` | Returns a body with an explicit content type; chain multiple for content negotiation    |
 | `.header(name, value)`         | Adds a response header                                                                  |
 
@@ -23,6 +24,31 @@ return $.response
   .header("x-request-id", "abc123")
   .json({ ok: true });
 ```
+
+### Sending a PDF or other binary file
+
+Declare the response's media type in your OpenAPI spec, for example:
+
+```yaml
+responses:
+  "200":
+    description: A PDF report
+    content:
+      application/pdf:
+        schema:
+          type: string
+          format: binary
+```
+
+Then pass the file bytes and the matching media type to `.binary()`:
+
+```ts
+return $.response.status(200).binary(pdfBuffer, "application/pdf");
+```
+
+Here `pdfBuffer` is a `Buffer` or `Uint8Array` containing your PDF. A client sending `Accept: application/pdf` receives those bytes with `Content-Type: application/pdf`. You can also pass a base64-encoded string; `.binary()` decodes it before sending. To send literal text, use `.text()` instead.
+
+The one-argument form, `.binary(body)`, still uses `application/octet-stream`; it does not select a type from the spec. Supply the second argument for PDFs, images, or other binary media types. Generated handlers check that the chosen binary type is declared for the selected status.
 
 ### Setting cookies
 

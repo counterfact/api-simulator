@@ -377,13 +377,98 @@ type OctetStreamResponse = {
 
 declare const binaryBuilder: GenericResponseBuilderInner<OctetStreamResponse>;
 expectAssignable<(body: Uint8Array | string) => unknown>(binaryBuilder.binary);
+expectAssignable<COUNTERFACT_RESPONSE>(binaryBuilder.binary(new Uint8Array()));
+expectAssignable<COUNTERFACT_RESPONSE>(
+  binaryBuilder.binary("AA==", "application/octet-stream"),
+);
+expectError(binaryBuilder.binary(1));
+expectError(binaryBuilder.binary("AA==", "application/pdf"));
 expectError(binaryBuilder.json);
 expectError(binaryBuilder.html);
 expectError(binaryBuilder.text);
 
+type ParameterizedBinaryResponse = {
+  content: { "application/octet-stream; charset=binary": { schema: string } };
+  headers: {};
+  requiredHeaders: never;
+};
+declare const parameterizedBinaryBuilder: GenericResponseBuilderInner<ParameterizedBinaryResponse>;
+expectAssignable<COUNTERFACT_RESPONSE>(
+  parameterizedBinaryBuilder.binary("AA=="),
+);
+expectAssignable<COUNTERFACT_RESPONSE>(
+  parameterizedBinaryBuilder.binary(
+    "AA==",
+    "application/octet-stream; charset=binary",
+  ),
+);
+
 // GenericResponseBuilderInner: response without application/octet-stream does not expose `binary`
 declare const noBinaryBuilder: GenericResponseBuilderInner<JsonOnlyResponse>;
 expectError(noBinaryBuilder.binary);
+
+type PdfResponse = {
+  content: { "application/pdf": { schema: Uint8Array | string } };
+  headers: {};
+  requiredHeaders: never;
+};
+declare const pdfBuilder: GenericResponseBuilderInner<PdfResponse>;
+expectAssignable<COUNTERFACT_RESPONSE>(
+  pdfBuilder.binary(new Uint8Array(), "application/pdf"),
+);
+expectAssignable<COUNTERFACT_RESPONSE>(
+  pdfBuilder.binary("JVBERi0=", "application/pdf"),
+);
+expectError(pdfBuilder.binary("JVBERi0="));
+expectError(pdfBuilder.binary("JVBERi0=", "application/octet-stream"));
+expectError(pdfBuilder.binary(1, "application/pdf"));
+
+declare const defaultAndPdfBuilder: GenericResponseBuilderInner<{
+  content: OctetStreamResponse["content"] & PdfResponse["content"];
+  headers: {};
+  requiredHeaders: never;
+}>;
+const octetProvided = defaultAndPdfBuilder.binary(new Uint8Array());
+expectError(octetProvided.binary(new Uint8Array()));
+expectAssignable<COUNTERFACT_RESPONSE>(
+  octetProvided.binary(new Uint8Array(), "application/pdf"),
+);
+
+type MixedBinaryResponse = {
+  content: {
+    "application/pdf": { schema: Uint8Array | string };
+    "image/png": { schema: Uint8Array | string };
+    "application/json": { schema: { id: number } };
+  };
+  headers: { "x-request-id": { schema: string } };
+  requiredHeaders: "x-request-id";
+};
+declare const mixedBinaryBuilder: GenericResponseBuilderInner<MixedBinaryResponse>;
+const pdfProvided = mixedBinaryBuilder.binary("JVBERi0=", "application/pdf");
+expectError(pdfProvided.binary("JVBERi0=", "application/pdf"));
+expectError(pdfProvided.match("application/pdf", new Uint8Array()));
+expectError(mixedBinaryBuilder.binary(new Uint8Array(), "application/json"));
+const allBinaryProvided = pdfProvided.binary(new Uint8Array(), "image/png");
+expectError(allBinaryProvided.binary);
+expectNotAssignable<COUNTERFACT_RESPONSE>(allBinaryProvided.json({ id: 1 }));
+expectAssignable<COUNTERFACT_RESPONSE>(
+  allBinaryProvided.json({ id: 1 }).header("x-request-id", "binary"),
+);
+expectAssignable<COUNTERFACT_RESPONSE>(
+  mixedBinaryBuilder
+    .header("x-request-id", "binary")
+    .binary(new Uint8Array(), "application/pdf")
+    .binary(new Uint8Array(), "image/png")
+    .json({ id: 1 }),
+);
+
+expectAssignable<ResponseBuilder>(
+  middlewareResponse.status(200).binary(new Uint8Array(), "application/pdf"),
+);
+declare const wideBinaryArgument: WideOperationArgument;
+expectAssignable<COUNTERFACT_RESPONSE>(
+  wideBinaryArgument.response.status(200).binary("JVBERi0=", "application/pdf"),
+);
 
 // GenericResponseBuilderInner: response with no content exposes `empty`
 type NoContentResponse = {
@@ -394,6 +479,7 @@ type NoContentResponse = {
 
 declare const emptyBuilder: GenericResponseBuilderInner<NoContentResponse>;
 expectAssignable<() => unknown>(emptyBuilder.empty);
+expectError(emptyBuilder.binary);
 
 // GenericResponseBuilderInner: response with content does not expose `empty`
 declare const noEmptyBuilder: GenericResponseBuilderInner<JsonOnlyResponse>;
@@ -415,6 +501,7 @@ declare const noBodyFactory: ResponseBuilderFactory<{
 expectAssignable<COUNTERFACT_RESPONSE>(noBodyFactory[200].empty());
 expectAssignable<COUNTERFACT_RESPONSE>(noBodyFactory[404].empty());
 expectNotAssignable<COUNTERFACT_RESPONSE>(noBodyFactory[200]);
+expectError(noBodyFactory[200].binary);
 
 // GenericResponseBuilder: response with only optional headers (no content) exposes .empty()
 // rather than the old ALL_REMAINING_HEADERS_ARE_OPTIONAL shortcut.

@@ -186,6 +186,14 @@ export const GET: HTTP_GET = function ($) {
         function report($: Parameters<getReport>[0]) {
           $.response.status(200).match("application/pdf", new Uint8Array([1]));
           $.response.status(200).match("application/pdf", "PDF contents");
+          $.response.status(200).binary(new Uint8Array([1]), "application/pdf");
+          $.response[200].binary("JVBERi0=", "application/pdf");
+          // @ts-expect-error The default octet-stream type is not declared.
+          $.response.status(200).binary(new Uint8Array([1]));
+          // @ts-expect-error Only declared binary response types are accepted.
+          $.response.status(200).binary(new Uint8Array([1]), "image/png");
+          // @ts-expect-error Binary response bodies reject numbers.
+          $.response.status(200).binary(1, "application/pdf");
           // @ts-expect-error Binary responses reject numbers.
           $.response.status(200).match("application/pdf", 1);
         }
