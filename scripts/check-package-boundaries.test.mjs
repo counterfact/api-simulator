@@ -126,6 +126,44 @@ workspaceTest(
   },
 );
 
+workspaceTest(
+  "accepts the Playwright adapter above the public facade",
+  async ($) => {
+    const repositoryRoot = await createWorkspace($, [
+      { name: "counterfact" },
+      {
+        dependencies: { counterfact: "workspace:*" },
+        name: "@counterfact/playwright",
+        references: ["counterfact"],
+        source: 'import "counterfact";\n',
+      },
+    ]);
+    const { errors } = await validatePackageBoundaries(repositoryRoot, {
+      allowlist: {
+        "@counterfact/playwright": ["counterfact"],
+        counterfact: [],
+      },
+    });
+    assert.deepEqual(errors, []);
+  },
+);
+
+workspaceTest(
+  "keeps Playwright out of the core dependency closure",
+  async ($) => {
+    const repositoryRoot = await createWorkspace($, [
+      { name: "counterfact", dependencies: { "@playwright/test": "^1.39.0" } },
+    ]);
+    const { errors } = await validatePackageBoundaries(repositoryRoot, {
+      allowlist: { counterfact: [] },
+    });
+    assertHasError(
+      errors,
+      "Playwright dependencies belong in @counterfact/playwright",
+    );
+  },
+);
+
 workspaceTest("rejects a focused package import of the facade", async ($) => {
   const repositoryRoot = await createWorkspace($, [
     { name: "counterfact" },

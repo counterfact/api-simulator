@@ -13,6 +13,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 
+import { usingTemporaryFiles } from "using-temporary-files";
 import { verifyPackedConsumer } from "../packages/counterfact/test/package/counterfact-consumer-smoke.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -321,7 +322,10 @@ async function verifyDeclarations(consumerDirectory, manifest, examplePath) {
     `${JSON.stringify(
       {
         compilerOptions: {
-          lib: ["ES2022"],
+          lib:
+            manifest.name === "@counterfact/playwright"
+              ? ["ES2022", "DOM"]
+              : ["ES2022"],
           module: "NodeNext",
           moduleResolution: "NodeNext",
           noEmit: true,
@@ -347,6 +351,78 @@ async function verifyDeclarations(consumerDirectory, manifest, examplePath) {
 async function runExample(consumerDirectory, examplePath) {
   if (examplePath === undefined || examplePath.endsWith(".ts")) return;
   await run(executable("node"), [examplePath], consumerDirectory);
+}
+
+async function verifyPlaywrightConsumer(consumerDirectory) {
+  await usingTemporaryFiles(async ($) => {
+    const target = (file) =>
+      path.relative($.path("."), path.join(consumerDirectory, file));
+    await $.add(
+      target("api/routes/ready.ts"),
+      `
+import debug from "debug";
+export const GET = () => ({ status: 200, body: typeof debug });
+`,
+    );
+    await $.add(
+      target("fixtures.spec.ts"),
+      `
+import { test as base } from "@playwright/test";
+import { createCounterfactTest, expect } from "@counterfact/playwright";
+const existing = base.extend<{ token: string }, { workerToken: string }>({
+  workerToken: ["worker-token", { scope: "worker" }],
+  token: "test-token",
+});
+const test = createCounterfactTest({ basePath: "./api" }, existing);
+test("installed fixture package", async ({ request, simulatorURL, simulator, token, workerToken }) => {
+  expect(token).toBe("test-token");
+  expect(workerToken).toBe("worker-token");
+  expect(simulator.status().port).toBe(0);
+  expect(await (await request.get(simulatorURL + "/ready")).text()).toBe("function");
+});
+const standalone = createCounterfactTest({ basePath: "./api" });
+standalone.use({ scenarioName: undefined });
+standalone("standalone types and runtime", async ({ simulator }) => {
+  expect(simulator.status().listening).toBe(true);
+});
+`,
+    );
+    await $.add(
+      target("playwright.config.ts"),
+      `
+export default { testMatch: "fixtures.spec.ts", workers: 1 };
+`,
+    );
+    await run(
+      process.execPath,
+      [
+        typeScriptCli,
+        "--ignoreConfig",
+        "--noEmit",
+        "--strict",
+        "--module",
+        "NodeNext",
+        "--target",
+        "ES2022",
+        "fixtures.spec.ts",
+      ],
+      consumerDirectory,
+    );
+    await run(
+      process.execPath,
+      [
+        path.join(
+          consumerDirectory,
+          "node_modules",
+          "@playwright",
+          "test",
+          "cli.js",
+        ),
+        "test",
+      ],
+      consumerDirectory,
+    );
+  });
 }
 
 async function verifyConsumer({
@@ -416,6 +492,8 @@ async function verifyConsumer({
     : undefined;
   await verifyDeclarations(consumerDirectory, manifest, examplePath);
   await runExample(consumerDirectory, examplePath);
+  if (name === "@counterfact/playwright")
+    await verifyPlaywrightConsumer(consumerDirectory);
   if (name === "counterfact") {
     await verifyPackedConsumer({
       consumerDirectory,
@@ -454,7 +532,7 @@ try {
     recursive: true,
   });
   process.stdout.write(
-    "Packing counterfact with its prepack lifecycle (builds all workspaces)...\n",
+    "Packing counterfact with its prepack lifecycle (builds its dependency closure)...\n",
   );
 
   const tarballs = new Map();
@@ -467,13 +545,19 @@ try {
       true,
     ),
   );
+  const facadeClosure = dependencyClosure("counterfact", workspaces);
   for (const name of topologicalOrder) {
     if (name === "counterfact") continue;
     const workspace = workspaces.get(name);
     assert(workspace);
     tarballs.set(
       name,
-      await packWorkspace(workspace, tarballDirectory, cacheDirectory),
+      await packWorkspace(
+        workspace,
+        tarballDirectory,
+        cacheDirectory,
+        !facadeClosure.has(name),
+      ),
     );
   }
 

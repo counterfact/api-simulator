@@ -24,3 +24,7 @@ packages/counterfact/templates/typescript/counterfact/paths
 packages/counterfact/templates/typescript/package-lock.json
 packages/counterfact/templates/typescript/yarn.lock
 sample-inputs
+
+# Playwright output
+test-results/
+playwright-report/

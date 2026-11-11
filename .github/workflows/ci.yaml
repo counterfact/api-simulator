@@ -65,6 +65,8 @@ jobs:
           - { check: Public type tests, os: ubuntu-latest, build: true }
           - { check: Public type tests, os: windows-latest, build: true }
           - { check: Unit tests, os: ubuntu-latest, build: true }
+          - { check: Playwright fixtures, os: ubuntu-latest, build: true }
+          - { check: Playwright fixtures, os: windows-latest, build: true }
           - {
               check: Native runtime tests,
               os: ubuntu-latest,
@@ -143,6 +145,10 @@ jobs:
         env:
           COUNTERFACT_PACKAGE_CACHE: ${{ runner.temp }}/counterfact-package-npm-cache
         run: yarn test:package-closures
+      - name: Playwright Fixtures
+        if: matrix.check == 'Playwright fixtures'
+        timeout-minutes: 3
+        run: yarn test:playwright
       - name: Native Runtime Tests
         if: matrix.check == 'Native runtime tests'
         timeout-minutes: 5
