@@ -6,6 +6,7 @@ import { ContextRegistry } from "./server/context-registry.js";
 import { Dispatcher, type DispatcherRequest } from "./server/dispatcher.js";
 import { loadOpenApiDocument } from "./server/load-openapi-document.js";
 import { ModuleLoader } from "./server/module-loader.js";
+import { HarCollection } from "./server/har-collection.js";
 import { Registry } from "./server/registry.js";
 import { pathJoin } from "./util/forward-slash-path.js";
 
@@ -39,8 +40,9 @@ const mswHandlers: MswHandlerMap = {};
  * matching Counterfact route handler registered via {@link createMswHandlers}.
  *
  * @param request - The intercepted request, including the HTTP method, path,
- *   headers, query, body, and a `rawPath` that preserves the original URL
- *   before base-path stripping.
+ *   headers, query, body, a concrete public `path` including its base prefix,
+ *   and a `rawPath` matching the registered handler pattern. `originalUrl`
+ *   can preserve a separately captured request URL for HAR matching.
  * @returns The response produced by the matching handler, or a 404 object when
  *   no handler has been registered for the given method and path.
  */
@@ -79,11 +81,16 @@ export async function createMswHandlers(
 
   const registry = new Registry();
   const contextRegistry = new ContextRegistry();
+  const harCollection = new HarCollection(config.basePath);
+  await harCollection.load();
   const dispatcher = new Dispatcher(
     registry,
     contextRegistry,
     openApiDocument,
     config,
+    "",
+    [],
+    harCollection,
   );
   const moduleLoader = new ModuleLoaderClass(
     compiledPathsDirectory,
@@ -105,7 +112,19 @@ export async function createMswHandlers(
         const lowerMethod = method.toLowerCase();
         const apiPath = `${openApiDocument.basePath ?? ""}${path.replaceAll("{", ":").replaceAll("}", "")}`;
         const handler = async (request: MockRequest) => {
-          return await dispatcher.request(request);
+          const query = new URLSearchParams();
+          for (const [name, value] of Object.entries(request.query ?? {})) {
+            for (const item of Array.isArray(value) ? value : [value])
+              query.append(name, item);
+          }
+          return await dispatcher.request({
+            ...request,
+            originalUrl:
+              request.originalUrl ??
+              (request.path.includes("?")
+                ? request.path
+                : `${request.path}?${query}`),
+          });
         };
         mswHandlers[`${method}:${apiPath}`] = handler;
         return { method: lowerMethod, path: apiPath };

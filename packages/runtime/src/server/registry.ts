@@ -3,7 +3,11 @@ import createDebugger from "debug";
 
 import { ModuleTree } from "./module-tree.js";
 import type { Tools } from "./tools.js";
-import type { MediaType, ResponseBuilderFactory } from "@counterfact/types";
+import type {
+  HarLookup,
+  MediaType,
+  ResponseBuilderFactory,
+} from "@counterfact/types";
 
 const debug = createDebugger("counterfact:server:registry");
 
@@ -33,6 +37,7 @@ const DEFAULT_HTTP_METHODS: HttpMethods[] = [
 ];
 
 interface RequestData {
+  har?: HarLookup;
   auth?: {
     apiKey?: string;
     password?: string;

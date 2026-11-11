@@ -618,6 +618,7 @@ describe("an OperationTypeCoder", () => {
     // Absent parameter groups are omitted from the generated argument type.
     expect(argument.members.map((member) => printNode(member.name!))).toEqual([
       "context",
+      "har",
       "response",
       "x",
       "proxy",
