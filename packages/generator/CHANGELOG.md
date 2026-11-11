@@ -1,5 +1,13 @@
 # @counterfact/generator
 
+## 1.2.1
+
+### Patch Changes
+
+- 2e52024: Include undefined in generated handler body types for optional OpenAPI 3 request bodies, including JSON, URL-encoded forms, and multipart forms. Preserve required and nullable body distinctions so strict TypeScript catches unguarded access to an absent body.
+- ba0649f: Preserve all versions in shared handler types when a watched OpenAPI specification changes. Regenerate the complete API group in declaration order so version guards retain the older branch and removed operations leave the version map.
+- 14b24e1: Emit operation argument types as plain object types, omitting unavailable request inputs during generation instead of wrapping them in `OmitValueWhenNever`. Apply the same pruning to versioned operation arguments.
+
 ## 1.2.0
 
 ### Minor Changes

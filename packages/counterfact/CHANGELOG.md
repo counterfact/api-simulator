@@ -1,5 +1,16 @@
 # counterfact
 
+## 3.2.3
+
+### Patch Changes
+
+- ba0649f: Preserve all versions in shared handler types when a watched OpenAPI specification changes. Regenerate the complete API group in declaration order so version guards retain the older branch and removed operations leave the version map.
+- 14b24e1: Emit operation argument types as plain object types, omitting unavailable request inputs during generation instead of wrapping them in `OmitValueWhenNever`. Apply the same pruning to versioned operation arguments.
+- Updated dependencies [2e52024]
+- Updated dependencies [ba0649f]
+- Updated dependencies [14b24e1]
+  - @counterfact/generator@1.2.1
+
 ## 3.2.2
 
 ### Patch Changes

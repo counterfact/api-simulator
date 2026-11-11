@@ -1058,7 +1058,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@counterfact/generator@npm:1.2.0, @counterfact/generator@workspace:packages/generator":
+"@counterfact/generator@npm:1.2.1, @counterfact/generator@workspace:packages/generator":
   version: 0.0.0-use.local
   resolution: "@counterfact/generator@workspace:packages/generator"
   dependencies:
@@ -4256,7 +4256,7 @@ __metadata:
   resolution: "counterfact@workspace:packages/counterfact"
   dependencies:
     "@counterfact/client": "npm:0.2.1"
-    "@counterfact/generator": "npm:1.2.0"
+    "@counterfact/generator": "npm:1.2.1"
     "@counterfact/openapi": "npm:0.1.7"
     "@counterfact/repl": "npm:0.1.12"
     "@counterfact/runtime": "npm:0.4.2"

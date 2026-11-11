@@ -1,6 +1,6 @@
 {
   "name": "counterfact",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "description": "Turn an OpenAPI document into a useful local API for frontend development in one command.",
   "type": "module",
   "main": "./dist/app.js",
@@ -82,7 +82,7 @@
   },
   "dependencies": {
     "@counterfact/client": "0.2.1",
-    "@counterfact/generator": "1.2.0",
+    "@counterfact/generator": "1.2.1",
     "@counterfact/openapi": "0.1.7",
     "@counterfact/repl": "0.1.12",
     "@counterfact/runtime": "0.4.2",
