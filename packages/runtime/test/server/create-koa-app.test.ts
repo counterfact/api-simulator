@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import Koa from "koa";
 import request from "supertest";
 import { load as yamlLoad } from "js-yaml";
@@ -174,6 +175,143 @@ describe("createKoaApp", () => {
     expect(response.status).toBe(200);
     expect(response.headers["access-control-allow-origin"]).toBe("*");
     expect(response.body).toEqual({ method: "GET", path: "/health" });
+  });
+
+  it("reports only the first served API request without its path", async () => {
+    const contextRegistry = new ContextRegistry();
+    const registry = new Registry();
+    const reportEvent = jest.fn();
+    registry.add("/health", {
+      GET: () => ({ body: "ok", status: 200 }),
+      POST: () => ({ body: "ok", status: 200 }),
+    });
+
+    const app = createKoaApp({
+      runners: [
+        {
+          contextRegistry,
+          dispatcher: new Dispatcher(registry, contextRegistry),
+          openApiPath: "unused.yaml",
+          overlays: [],
+          prefix: "",
+          registry,
+          subdirectory: "",
+        },
+      ],
+      config: {
+        basePath: ".",
+        port: 0,
+        proxyPaths: new Map(),
+        proxyUrl: "",
+        startAdminApi: false,
+      },
+      reportEvent,
+    });
+
+    await request(app.callback())
+      .post("/health?private-query=value")
+      .set("Authorization", "Bearer private-token")
+      .set("X-Private-Header", "private-header")
+      .send({ privateBody: "private-body" });
+    await request(app.callback()).get("/health?private=value");
+
+    expect(reportEvent).toHaveBeenCalledTimes(1);
+    expect(reportEvent).toHaveBeenCalledWith("first_api_request_served", {
+      statusClass: "2xx",
+    });
+    const reportedPayload = JSON.stringify(reportEvent.mock.calls);
+    for (const privateValue of [
+      "health",
+      "private-query",
+      "private-token",
+      "private-header",
+      "private-body",
+    ]) {
+      expect(reportedPayload).not.toContain(privateValue);
+    }
+  });
+
+  it("does not suppress a valid first-request event after an invalid status", async () => {
+    const contextRegistry = new ContextRegistry();
+    const registry = new Registry();
+    const reportEvent = jest.fn();
+    let requestCount = 0;
+    registry.add("/health", {
+      GET: () => {
+        requestCount += 1;
+        return { body: "ok", status: requestCount === 1 ? 600 : 200 };
+      },
+    });
+
+    const app = createKoaApp({
+      runners: [
+        {
+          contextRegistry,
+          dispatcher: new Dispatcher(registry, contextRegistry),
+          openApiPath: "unused.yaml",
+          overlays: [],
+          prefix: "",
+          registry,
+          subdirectory: "",
+        },
+      ],
+      config: {
+        basePath: ".",
+        port: 0,
+        proxyPaths: new Map(),
+        proxyUrl: "",
+        startAdminApi: false,
+      },
+      reportEvent,
+    });
+
+    await request(app.callback()).get("/health");
+    await request(app.callback()).get("/health");
+
+    expect(reportEvent).toHaveBeenCalledTimes(1);
+    expect(reportEvent).toHaveBeenCalledWith("first_api_request_served", {
+      statusClass: "2xx",
+    });
+  });
+
+  it("does not let telemetry failures interrupt request handling or suppress retry", async () => {
+    const contextRegistry = new ContextRegistry();
+    const registry = new Registry();
+    const reportEvent = jest.fn().mockImplementationOnce(() => {
+      throw new Error("telemetry unavailable");
+    });
+    registry.add("/health", {
+      GET: () => ({ body: "ok", status: 200 }),
+    });
+
+    const app = createKoaApp({
+      runners: [
+        {
+          contextRegistry,
+          dispatcher: new Dispatcher(registry, contextRegistry),
+          openApiPath: "unused.yaml",
+          overlays: [],
+          prefix: "",
+          registry,
+          subdirectory: "",
+        },
+      ],
+      config: {
+        basePath: ".",
+        port: 0,
+        proxyPaths: new Map(),
+        proxyUrl: "",
+        startAdminApi: false,
+      },
+      reportEvent,
+    });
+
+    const firstResponse = await request(app.callback()).get("/health");
+    const secondResponse = await request(app.callback()).get("/health");
+
+    expect(firstResponse.status).toBe(200);
+    expect(secondResponse.status).toBe(200);
+    expect(reportEvent).toHaveBeenCalledTimes(2);
   });
 });
 

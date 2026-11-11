@@ -5,6 +5,8 @@ import {
   normalizeSpecOption,
 } from "../../src/cli/run.js";
 
+const LOCATION_HASH_KEY = "a".repeat(64);
+
 describe("normalizeSpecOption", () => {
   describe("when given undefined", () => {
     it("returns undefined", () => {
@@ -141,9 +143,12 @@ describe("buildStartupTelemetryProperties", () => {
       },
       "/tmp/openapi.yaml",
       "1.2.3",
+      LOCATION_HASH_KEY,
     );
 
     expect(properties["mode"]).toBe("single-spec");
+    expect(properties["sourceKind"]).toBe("local");
+    expect(properties["specCount"]).toBe(1);
     expect(properties["updateCheck"]).toBe(true);
     expect(properties["validateRequest"]).toBe(true);
     expect(properties["validateResponse"]).toBe(true);
@@ -164,6 +169,7 @@ describe("buildStartupTelemetryProperties", () => {
       },
       "_",
       "1.2.3",
+      LOCATION_HASH_KEY,
       [
         { source: "https://example.com/v1/openapi.yaml", group: "v1" },
         { source: "/tmp/v2/openapi.yaml", group: "v2" },
@@ -171,6 +177,8 @@ describe("buildStartupTelemetryProperties", () => {
     );
 
     expect(properties["mode"]).toBe("multi-spec");
+    expect(properties["sourceKind"]).toBe("multi-spec");
+    expect(properties["specCount"]).toBe(2);
     expect(properties["generateRoutes"]).toBe(true);
     expect(properties["generateTypes"]).toBe(true);
     expect(properties["apiFileLocationHashes"]).toEqual([
@@ -189,9 +197,28 @@ describe("buildStartupTelemetryProperties", () => {
       },
       "_",
       "1.2.3",
+      LOCATION_HASH_KEY,
     );
 
     expect(properties["mode"]).toBe("without-openapi");
+    expect(properties["sourceKind"]).toBe("without-openapi");
     expect(properties["apiFileLocationHashes"]).toEqual([]);
+  });
+
+  it("classifies an HTTP OpenAPI source without recording its URL", () => {
+    const properties = buildStartupTelemetryProperties(
+      {
+        port: 3100,
+        updateCheck: true,
+        validateRequest: true,
+        validateResponse: true,
+      },
+      "https://example.com/openapi.yaml",
+      "1.2.3",
+      LOCATION_HASH_KEY,
+    );
+
+    expect(properties["sourceKind"]).toBe("remote");
+    expect(JSON.stringify(properties)).not.toContain("example.com");
   });
 });

@@ -5,7 +5,10 @@ import createDebug from "debug";
 import type Koa from "koa";
 import koaProxy from "koa-proxies";
 
-import type { ProxyConfig } from "../../runtime-config.js";
+import type {
+  ProxyConfig,
+  RuntimeEventReporter,
+} from "../../runtime-config.js";
 import type { Dispatcher } from "../dispatcher.js";
 import { isProxyEnabledForPath } from "../is-proxy-enabled-for-path.js";
 import type { RequestMethod } from "../registry.js";
@@ -173,6 +176,7 @@ export function routesMiddleware(
   config: ProxyConfig,
   proxy = koaProxy,
   allowedMethodsOverride?: string,
+  reportEvent: RuntimeEventReporter = () => {},
 ): Koa.Middleware {
   return async function middleware(ctx, next) {
     const { proxyUrl } = config;
@@ -276,6 +280,10 @@ export function routesMiddleware(
     }
 
     ctx.status = response.status ?? HTTP_STATUS_CODE_OK;
+    const statusClass = `${Math.floor(ctx.status / 100)}xx`;
+    if (["1xx", "2xx", "3xx", "4xx", "5xx"].includes(statusClass)) {
+      reportEvent("first_api_request_served", { statusClass });
+    }
 
     return undefined;
   };
@@ -294,6 +302,7 @@ export function routesMiddlewareForRunners(
   runners: RouteRunner[],
   config: ProxyConfig,
   proxy = koaProxy,
+  reportEvent: RuntimeEventReporter = () => {},
 ): Koa.Middleware {
   return async function multiRunnerRoutesMiddleware(ctx, next) {
     const candidates = runners.flatMap((runner) => {
@@ -318,6 +327,8 @@ export function routesMiddlewareForRunners(
           candidate.runner.dispatcher,
           config,
           proxy,
+          undefined,
+          reportEvent,
         )(ctx, next);
       }
     }
@@ -351,6 +362,7 @@ export function routesMiddlewareForRunners(
         config,
         proxy,
         [...allowedMethods].join(", "),
+        reportEvent,
       )(ctx, next);
     }
 
@@ -364,6 +376,7 @@ export function routesMiddlewareForRunners(
       config,
       proxy,
       [...allowedMethods].join(", "),
+      reportEvent,
     )(ctx, next);
   };
 }

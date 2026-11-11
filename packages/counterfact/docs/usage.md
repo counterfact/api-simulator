@@ -15,12 +15,15 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 - [State](./features/state.md) — share small in-memory state across routes.
 - [Hot reload](./features/hot-reload.md) — update handlers without restarting.
 - [Generated code](./features/generated-code.md) — understand editable routes and generated types.
+- [React and Vite example](./examples/react-vite.md) — run a frontend against a local API.
 - [Failures, latency, and edge cases](./manual/edge-cases.md) — exercise error, empty, loading, and retry states.
+
 
 ## Team and test workflows
 
 - [First 10 minutes](./first-10-minutes.md) — a small create/read workflow with one failure.
 - [Automated integration tests](./patterns/automated-integration-tests.md) — start and stop a local API in tests.
+- [Playwright error states example](./examples/playwright-error-states.md) — run repository-hosted browser checks for success, not-found, and service-unavailable UI states.
 - [Scenario scripts](./patterns/scenario-scripts.md) — create repeatable starting states.
 - [Model the workflow](./patterns/model-the-workflow.md) — keep state small and document supported behavior.
 - [Test context logic](./patterns/test-context-not-handlers.md) — verify domain behavior independently of HTTP adapters.
@@ -39,6 +42,12 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 - [Multiple versions](./features/multiple-versions.md) — serve more than one API version.
 - [TypeScript native mode](./features/typescript-native-mode.md) — understand native loading and installed-CLI limitations.
 
+## Runnable examples
+
+- [Examples index](./examples/index.md) — repository-hosted applications with their own lockfiles and setup instructions.
+- [React and Vite](./examples/react-vite.md) — start Counterfact and Vite in two terminals, then open the Ada Lovelace profile screen.
+- [Playwright error states](./examples/playwright-error-states.md) — install Chromium and let Playwright manage Counterfact and Vite while it verifies three UI states.
+
 ## Reference and troubleshooting
 
 - [API reference](./api.md) — CLI flags, response builders, the `$` parameter, and architecture.
@@ -48,12 +57,16 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 
 ## Telemetry and privacy
 
-Counterfact sends usage events to PostHog: startup options, hot-reload change
-categories (route/context/OpenAPI), and REPL command names. Events include the
-Node.js version, operating system, and architecture; startup events also include
-the Counterfact version and a subset of resolved options such as port and enabled
-actions. API file locations are SHA-256 hashed before sending. REPL command
-arguments are not included in these events.
+Counterfact records start attempts and outcomes, the first API request served,
+startup options, hot-reload change categories (route/context/OpenAPI), and REPL
+command names. A random installation identifier links these anonymous events
+for retention analysis and rotates after 180 days. Each run receives a separate
+session identifier.
+
+API file locations are HMAC-SHA-256 hashed with a private installation key. Counterfact never sends raw paths, OpenAPI
+documents or URLs, request paths or data, headers, tokens, error messages,
+project names, or command arguments. Telemetry is disabled in CI and when
+`COUNTERFACT_TELEMETRY_DISABLED=true`. 
 
 To disable Counterfact telemetry, set `COUNTERFACT_TELEMETRY_DISABLED=true`
 before starting the process. For example, in a POSIX shell:
@@ -70,3 +83,4 @@ analytics on this website.
 
 See [Feedback, Telemetry, and Privacy](https://github.com/counterfact/api-simulator/discussions/1527)
 for the project discussion.
+
