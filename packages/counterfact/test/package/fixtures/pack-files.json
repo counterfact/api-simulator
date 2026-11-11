@@ -50,6 +50,7 @@
   "docs/patterns/scenario-scripts.md",
   "docs/patterns/shared-store.md",
   "docs/patterns/test-context-not-handlers.md",
+  "docs/patterns/test-fault-scenarios-with-chaos.md",
   "docs/usage.md",
   "llms.txt",
   "package.json"

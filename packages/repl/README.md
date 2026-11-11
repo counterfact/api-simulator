@@ -9,6 +9,7 @@ experience without importing Counterfact's CLI or telemetry policy.
 ```js
 import { createOpenApiRouteCatalog } from "@counterfact/client";
 import {
+  ChaosRegistry,
   ContextRegistry,
   Registry,
   ScenarioRegistry,
@@ -18,6 +19,7 @@ import { startRepl } from "@counterfact/repl";
 const contextRegistry = new ContextRegistry();
 const registry = new Registry();
 const scenarioRegistry = new ScenarioRegistry();
+const chaosRegistry = new ChaosRegistry();
 const config = { port: 3000, proxyPaths: new Map(), proxyUrl: "" };
 const routeCatalog = createOpenApiRouteCatalog({ paths: {} });
 
@@ -31,6 +33,7 @@ const replServer = startRepl(
   undefined,
   undefined,
   (event) => console.log(event),
+  chaosRegistry,
 );
 ```
 
@@ -48,10 +51,15 @@ The REPL starts with these live values:
 - `route(path)` creates an immutable request builder.
 - `routes` is shared with scenario functions.
 - `store` is present when the simulator has a shared store.
+- `chaos(pathPrefix?)` creates a fluent HTTP-response fault rule when the
+  embedding application supplies a `ChaosRegistry`.
 
 For multiple APIs, `context`, `loadContext`, `route`, and `routes` are grouped
 by API name. The `.proxy` command changes live proxy configuration and
 `.scenario` applies named scenario functions.
+
+The application should pass the same chaos registry to every runtime
+dispatcher and the REPL so one interactive rule applies across all API groups.
 
 See [`examples/complete-routes.mjs`](./examples/complete-routes.mjs) for a
 complete public-import example.

@@ -54,6 +54,8 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 
 - When terminal output displays an HTTP message, split its head and body at the first `\r\n\r\n` separator only: multipart bodies contain additional separators that must remain visible.
 
+- Preserve the original HTTP pathname separately from the route-relative path when stripping API prefixes or OpenAPI base paths. HTTP-layer chaos rules match both, retaining one longest-prefix/revision precedence across them. Validation warnings must not skip response-layer mutations. Test delays by asserting the response stays pending before the deadline, plus real prefixed HTTP requests.
+
 ## Common mistakes to avoid
 
 - Coupling generator concerns into `packages/runtime/src/server/*` code paths.

@@ -5,6 +5,7 @@ import { afterEach, jest } from "@jest/globals";
 
 import { createOpenApiRouteCatalog } from "@counterfact/client";
 import {
+  ChaosRegistry,
   ContextRegistry,
   Registry,
   ScenarioRegistry,
@@ -70,6 +71,7 @@ class ReplHarness {
     apiBindings?: ReplApiBinding[],
     store?: object,
     reportEvent?: ReplEventReporter,
+    chaosRegistry?: ChaosRegistry,
   ) {
     const originalStart = repl.start;
     const startSpy = jest.spyOn(repl, "start").mockImplementation((options) => {
@@ -94,6 +96,7 @@ class ReplHarness {
         apiBindings,
         store,
         reportEvent,
+        chaosRegistry,
       );
     } finally {
       startSpy.mockRestore();
@@ -129,6 +132,7 @@ function createHarness(
   apiBindings?: ReplApiBinding[],
   store?: object,
   reportEvent?: ReplEventReporter,
+  chaosRegistry?: ChaosRegistry,
 ) {
   const contextRegistry = new ContextRegistry();
   const registry = new Registry();
@@ -144,6 +148,7 @@ function createHarness(
     apiBindings,
     store,
     reportEvent,
+    chaosRegistry,
   );
 
   openServers.push(harness);
@@ -162,6 +167,38 @@ afterEach(() => {
 });
 
 describe("REPL", () => {
+  it("does not expose chaos without a server-owned registry", () => {
+    const { harness } = createHarness();
+
+    expect(harness.server.context.chaos).toBeUndefined();
+  });
+
+  it("exposes a supplied registry as the chaos global", () => {
+    const chaosRegistry = new ChaosRegistry();
+    const { harness } = createHarness(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      chaosRegistry,
+    );
+    const chaos = harness.server.context.chaos as (
+      prefix?: string,
+    ) => ReturnType<ChaosRegistry["createRule"]>;
+
+    const globalRule = chaos().status(503);
+    const scopedRule = chaos("/orders").next(2).status(429);
+
+    expect(globalRule.prefix).toBe("");
+    expect(scopedRule.prefix).toBe("/orders");
+    expect(chaosRegistry.findBestMatch("/orders/1")).toBe(scopedRule);
+
+    harness.call("counterfact", "");
+    expect(harness.output).toContain(
+      "- chaos('/some/path'): create an HTTP-response fault rule for a path prefix",
+    );
+  });
+
   it("turns on the proxy globally", () => {
     const { config, harness } = createHarness();
 
