@@ -4,9 +4,9 @@
       "title": "Start a working API",
       "pages": [
         {
-          "title": "Generate an API from OpenAPI",
+          "title": "Counterfact fundamentals",
           "path": "/docs/getting-started",
-          "description": "Start a local HTTP API from a specification."
+          "description": "Generate a server, try Swagger UI, edit handlers, and share state."
         },
         {
           "title": "How Counterfact fits together",

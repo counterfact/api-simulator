@@ -10,7 +10,7 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 
 ## Frontend workflows
 
-- [Getting started](./getting-started.md) — run a local API and make a browser request.
+- [Getting started](./getting-started.md) — generate an API, try Swagger UI, edit handlers, and share state.
 - [Routes and custom responses](./features/routes.md) — shape the response a screen needs.
 - [State](./features/state.md) — share small in-memory state across routes.
 - [Hot reload](./features/hot-reload.md) — update handlers without restarting.
@@ -19,7 +19,7 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 
 ## Team and test workflows
 
-- [First 10 minutes](./first-10-minutes.md) — a small create/read workflow with one failure.
+- [Stateful Petstore example](./first-10-minutes.md) — an optional create/read workflow with one failure.
 - [Automated integration tests](./patterns/automated-integration-tests.md) — start and stop a local API in tests.
 - [Scenario scripts](./patterns/scenario-scripts.md) — create repeatable starting states.
 - [Model the workflow](./patterns/model-the-workflow.md) — keep state small and document supported behavior.
