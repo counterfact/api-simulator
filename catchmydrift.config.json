@@ -226,9 +226,11 @@
       "include": [
         "packages/runtime/src/server/json-to-xml.ts",
         "packages/runtime/src/server/response-builder.ts",
+        "packages/runtime/src/server/serialize-sse-event.ts",
         "packages/runtime/src/server/response-validator.ts",
         "packages/runtime/test/server/json-to-xml.test.ts",
         "packages/runtime/test/server/response-builder.test.ts",
+        "packages/runtime/test/server/serialize-sse-event.test.ts",
         "packages/runtime/test/server/response-validator.test.ts"
       ],
       "exclude": [

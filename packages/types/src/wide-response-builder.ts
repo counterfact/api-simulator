@@ -1,3 +1,4 @@
+import type { SseEvent } from "./sse-event.js";
 import type { COUNTERFACT_RESPONSE } from "./counterfact-response.js";
 import type { CookieOptions } from "./cookie-options.js";
 import type { MaybePromise } from "./maybe-promise.js";
@@ -24,5 +25,6 @@ export type WideResponseBuilder = COUNTERFACT_RESPONSE & {
   random: () => MaybePromise<WideResponseBuilder>;
   text: (body: unknown) => WideResponseBuilder;
   xml: (body: unknown) => WideResponseBuilder;
+  sse: (events: AsyncIterable<SseEvent>) => WideResponseBuilder;
   stream: (body: AsyncIterable<unknown>) => COUNTERFACT_RESPONSE;
 };
