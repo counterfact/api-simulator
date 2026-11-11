@@ -112,6 +112,7 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Preserve request-body absence at the HTTP parsing boundary. Empty-wire input, explicit {}, and explicit JSON null must remain distinct before optionality and schema validation.
 - For versioned dispatch, match the selected contract independently of the shared registry and dispatch the exact selected pattern. Use contract eligibility for shared-prefix runner selection and preserve its Allow header. Operation lookup must ignore inherited properties.
 
+- When generator options include callbacks, keep effective startup flags synchronized with the generator-owned option object. Exclude executable configuration from cloneable status snapshots and match the public snapshot type to the returned data.
 - Detect dynamic-import syntax with the existing TypeScript parser, not a regex over comment-separated tokens: repeated block comments can cause exponential regex backtracking even in tiny valid modules. Test comment-heavy static imports and lazy imports inside template expressions.
 
 - Scope module evaluation and constructor failures to the failed graph rather than invalidating successful sibling contexts. Test syntax/evaluation error recovery without touching context source, and verify caught dynamic-import failures are not mistaken for successful dependency evaluations. Do not swap per-loader CommonJS graphs into Node’s shared cache. Independent same-file CommonJS simulators require separate processes for isolation; retain single-loader refresh and compiled fallback coverage.

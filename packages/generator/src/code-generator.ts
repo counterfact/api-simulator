@@ -18,6 +18,7 @@ import { type SecurityScheme } from "./operation-type-coder.js";
 import { pruneRoutes, pruneTypes } from "./prune.js";
 import { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
+import type { SchemaTypeTransform } from "./schema-type-transform.js";
 import { Specification } from "./specification.js";
 import { waitForEvent } from "./wait-for-event.js";
 import { CHOKIDAR_OPTIONS } from "./watch-options.js";
@@ -44,6 +45,7 @@ export class CodeGenerator extends EventTarget {
     prune?: boolean;
     routes?: boolean;
     types?: boolean;
+    schemaTypeTransform?: SchemaTypeTransform;
   };
 
   private watcher: FSWatcher | undefined;
@@ -51,7 +53,12 @@ export class CodeGenerator extends EventTarget {
   public constructor(
     openApiPath: string,
     destination: string,
-    generateOptions: { prune?: boolean; routes?: boolean; types?: boolean },
+    generateOptions: {
+      prune?: boolean;
+      routes?: boolean;
+      types?: boolean;
+      schemaTypeTransform?: SchemaTypeTransform;
+    },
     version = "",
     overlays: readonly string[] = [],
   ) {
@@ -130,7 +137,20 @@ export class CodeGenerator extends EventTarget {
    * @param repository - Injectable repository instance; defaults to a fresh one
    *   (primarily useful in tests).
    */
-  public async generate(repository = new Repository()): Promise<void> {
+  public async generate(
+    repository = new Repository({
+      schemaTypeTransform: this.generateOptions.schemaTypeTransform,
+    }),
+  ): Promise<void> {
+    if (
+      this.generateOptions.schemaTypeTransform &&
+      repository.options.schemaTypeTransform !==
+        this.generateOptions.schemaTypeTransform
+    ) {
+      throw new Error(
+        "Configure the same schemaTypeTransform on the supplied Repository, or omit the Repository argument.",
+      );
+    }
     const { destination } = this;
 
     debug("generating code from %s to %s", this.openapiPath, destination);

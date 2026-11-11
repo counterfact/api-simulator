@@ -25,6 +25,11 @@ import { sendTelemetry } from "./cli/telemetry.js";
 import type { Config } from "./config.js";
 import { ensureDirectoryExists } from "./util/ensure-directory-exists.js";
 
+export type {
+  JsonSchema,
+  SchemaTypeScript,
+  SchemaTypeTransform,
+} from "@counterfact/generator";
 export { loadOpenApiDocument } from "@counterfact/runtime";
 export {
   createMswHandlers,
@@ -94,7 +99,10 @@ export type CounterfactStartOptions = Partial<
 };
 
 /** Snapshot of the simulator's API directory and current HTTP listener. */
-export interface CounterfactStatus extends Omit<Config, "adminApiToken"> {
+export interface CounterfactStatus extends Omit<
+  Config,
+  "adminApiToken" | "schemaTypeTransform"
+> {
   listening: boolean;
   address: AddressInfo | null;
 }
@@ -453,6 +461,7 @@ export async function counterfact<TStore = unknown>(
       buildCache: startupOptions.buildCache,
     };
     delete snapshot.adminApiToken;
+    delete snapshot.schemaTypeTransform;
     return {
       ...structuredClone(snapshot),
       listening: httpServer?.listening ?? false,
@@ -514,7 +523,11 @@ export async function counterfact<TStore = unknown>(
         const regenerate = () => {
           const result = pending.then(async () => {
             const sharedRepository =
-              bucket.length > 1 ? new Repository() : undefined;
+              bucket.length > 1
+                ? new Repository({
+                    schemaTypeTransform: config.schemaTypeTransform,
+                  })
+                : undefined;
             for (const runner of bucket) {
               await runner.generate(sharedRepository);
             }
