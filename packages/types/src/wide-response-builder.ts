@@ -9,10 +9,7 @@ import type { MaybePromise } from "./maybe-promise.js";
  * arguments and does not enforce content-type constraints.
  */
 export type WideResponseBuilder = COUNTERFACT_RESPONSE & {
-  binary: (
-    body: Uint8Array | string,
-    contentType?: string,
-  ) => WideResponseBuilder;
+  binary: (body: Uint8Array | string) => WideResponseBuilder;
   empty: () => WideResponseBuilder;
   example: (name: string) => WideResponseBuilder;
   cookie: (

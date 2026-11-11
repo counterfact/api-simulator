@@ -14,7 +14,7 @@ Use a custom response when a screen needs a specific body, status, header, or co
 | `.text(content)`               | Returns a plain-text body                                                               |
 | `.html(content)`               | Returns an HTML body                                                                    |
 | `.xml(content)`                | Returns an XML body                                                                     |
-| `.binary(body, contentType?)`  | Returns raw bytes or decoded base64, with an optional explicit content type             |
+| `.binary(body)`               | Returns raw bytes or decoded base64 as `application/octet-stream`                       |
 | `.match(contentType, content)` | Returns a body with an explicit content type; chain multiple for content negotiation    |
 | `.header(name, value)`         | Adds a response header                                                                  |
 
@@ -40,15 +40,29 @@ responses:
           format: binary
 ```
 
-Then pass the file bytes and the matching media type to `.binary()`:
+Then use `.match()` with that media type and a Node.js `Buffer` containing the PDF:
 
 ```ts
-return $.response.status(200).binary(pdfBuffer, "application/pdf");
+return $.response.status(200).match("application/pdf", pdfBuffer);
 ```
 
-Here `pdfBuffer` is a `Buffer` or `Uint8Array` containing your PDF. A client sending `Accept: application/pdf` receives those bytes with `Content-Type: application/pdf`. You can also pass a base64-encoded string; `.binary()` decodes it before sending. To send literal text, use `.text()` instead.
+A client sending `Accept: application/pdf` receives the buffer's bytes with `Content-Type: application/pdf`. For images and other non-XML file types, declare the appropriate media type in the spec and pass it to `.match()` in the same way. Generated TypeScript types check that the media type and body match the selected response's declaration.
 
-The one-argument form, `.binary(body)`, still uses `application/octet-stream`; it does not select a type from the spec. Supply the second argument for PDFs, images, or other binary media types. Generated handlers check that the chosen binary type is declared for the selected status.
+If your bytes are a plain `Uint8Array`, convert them to a `Buffer` before calling `.match()`:
+
+```ts
+const pdfBuffer = Buffer.from(pdfBytes);
+```
+
+Alternatively, if your source is base64, decode it explicitly:
+
+```ts
+const pdfBuffer = Buffer.from(pdfBase64, "base64");
+```
+
+Passing a base64 string directly to `.match()` sends that string rather than decoding it. `application/xml` and `text/xml` use XML serialization rather than the raw-file path above.
+
+Use `.binary(body)` for `application/octet-stream` responses. It accepts a `Buffer`, `Uint8Array`, or base64-encoded string and decodes strings before sending. It always registers an `application/octet-stream` representation; it does not infer PDF from your spec or file. If the client accepts only `application/pdf`, that mismatch produces 406 even if your handler selected status 200. Setting a `Content-Type` header does not fix the mismatch: return `.match("application/pdf", pdfBuffer)` instead.
 
 ### Setting cookies
 

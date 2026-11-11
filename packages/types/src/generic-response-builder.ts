@@ -58,56 +58,6 @@ type MatchFunction<Response extends OpenApiResponse> = <
   requiredHeaders: Response["requiredHeaders"];
 }>;
 
-/** Binary schemas accept bytes; octet-stream also retains its existing shortcut. */
-type BinaryContentTypes<Response extends OpenApiResponse> = {
-  [
-    ContentType in keyof Response["content"] & MediaType
-  ]: ContentType extends `${string}application/octet-stream${string}`
-    ? ContentType
-    : Uint8Array extends Response["content"][ContentType]["schema"]
-      ? ContentType
-      : never;
-}[keyof Response["content"] & MediaType];
-
-type BinaryResult<
-  Response extends OpenApiResponse,
-  ContentType extends MediaType,
-> = GenericResponseBuilder<{
-  content: NeverIfEmpty<Omit<Response["content"], ContentType>>;
-  headers: Response["headers"];
-  requiredHeaders: Response["requiredHeaders"];
-}>;
-
-/**
- * An explicit binary media type consumes only that representation. Omitting it
- * is valid only when the response declares the runtime's octet-stream default.
- */
-type BinaryFunction<Response extends OpenApiResponse> = [
-  Response["content"],
-] extends [never]
-  ? never
-  : [BinaryContentTypes<Response>] extends [never]
-    ? never
-    : (<ContentType extends BinaryContentTypes<Response>>(
-        body: Uint8Array | string,
-        contentType: ContentType,
-      ) => BinaryResult<Response, ContentType>) &
-        IfHasKey<
-          Response["content"],
-          ["application/octet-stream"],
-          (
-            body: Uint8Array | string,
-            contentType?: undefined,
-          ) => GenericResponseBuilder<{
-            content: NeverIfEmpty<
-              OmitAll<Response["content"], ["application/octet-stream"]>
-            >;
-            headers: Response["headers"];
-            requiredHeaders: Response["requiredHeaders"];
-          }>,
-          unknown
-        >;
-
 /**
  * The type of the `.header(name, value)` method on the generic response
  * builder. Calling it narrows the builder by removing the satisfied header
@@ -138,7 +88,7 @@ type HeaderFunction<Response extends OpenApiResponse> = <
 export type GenericResponseBuilderInner<
   Response extends OpenApiResponse = OpenApiResponse,
 > = OmitValueWhenNever<{
-  binary: BinaryFunction<Response>;
+  binary: MaybeShortcut<["application/octet-stream"], Response>;
   cookie: (
     name: string,
     value: string,

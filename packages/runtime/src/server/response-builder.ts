@@ -97,22 +97,6 @@ function withCookie(
   };
 }
 
-function withContent(
-  response: ResponseBuilder,
-  contentType: string,
-  body: unknown,
-): ResponseBuilder {
-  return {
-    ...response,
-    content: [
-      ...(response.content ?? []).filter(
-        (representation) => representation.type !== contentType,
-      ),
-      { body, type: contentType },
-    ],
-  };
-}
-
 function unknownStatusCodeResponse(statusCode: number | undefined) {
   return {
     content: [
@@ -166,17 +150,13 @@ export function createResponseBuilder(
         };
       },
 
-      binary(
-        this: ResponseBuilder,
-        body: Uint8Array | string,
-        contentType = "application/octet-stream",
-      ) {
+      binary(this: ResponseBuilder, body: Uint8Array | string) {
         const buffer =
           typeof body === "string"
             ? Buffer.from(body, "base64")
             : Buffer.from(body);
 
-        return withContent(this, contentType, buffer);
+        return this.match("application/octet-stream", buffer);
       },
 
       cookie(
@@ -208,17 +188,26 @@ export function createResponseBuilder(
         contentType: string,
         body: unknown,
       ): ResponseBuilder {
-        return withContent(
-          this,
-          contentType,
-          convertToXmlIfNecessary(
-            contentType,
-            body,
-            operation.responses[this.status ?? "default"]?.content?.[
-              contentType
-            ]?.schema,
-          ),
-        );
+        return {
+          ...this,
+
+          content: [
+            ...(this.content ?? []).filter(
+              (response) => response.type !== contentType,
+            ),
+            {
+              body: convertToXmlIfNecessary(
+                contentType,
+                body,
+                operation.responses[this.status ?? "default"]?.content?.[
+                  contentType
+                ]?.schema,
+              ),
+
+              type: contentType,
+            },
+          ],
+        };
       },
 
       empty(this: ResponseBuilder): ResponseBuilder {

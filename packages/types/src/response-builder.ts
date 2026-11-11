@@ -10,7 +10,7 @@ import type { MaybePromise } from "./maybe-promise.js";
 export interface ResponseBuilder {
   /** @deprecated Select a status with response.status(statusCode) instead. */
   [status: number | `${number} ${string}`]: ResponseBuilder;
-  binary: (body: Uint8Array | string, contentType?: string) => ResponseBuilder;
+  binary: (body: Uint8Array | string) => ResponseBuilder;
   content?: { body: unknown; type: string }[];
   cookie: (
     name: string,

@@ -28,7 +28,7 @@ The example requires a response declaring `x-request-id`. If only the 200 respon
 | `.text(content)`                 | Plain-text body                                                                 |
 | `.html(content)`                 | HTML body                                                                       |
 | `.xml(content)`                  | XML body                                                                        |
-| `.binary(body, contentType?)`    | Raw bytes or decoded base64; defaults to `application/octet-stream`             |
+| `.binary(body)`                 | Raw bytes or decoded base64 with `application/octet-stream`                     |
 | `.match(contentType, content)`   | Body with an explicit content type; chain multiple for content negotiation      |
 | `.header(name, value)`           | Adds a response header                                                          |
 | `.cookie(name, value, options?)` | Adds a `Set-Cookie` header                                                      |
@@ -43,15 +43,17 @@ return $.response
 
 ## Binary responses
 
-`.binary(body, contentType?)` accepts a `Buffer`, `Uint8Array`, or base64-encoded string and sends the decoded bytes unchanged. Strings are treated as base64, not as literal text. The optional second argument selects the representation's content type for `Accept` negotiation:
+`.binary(body)` accepts a `Buffer`, `Uint8Array`, or base64-encoded string and sends bytes with `Content-Type: application/octet-stream`. Strings are decoded as base64, not sent as literal text. The helper does not infer a media type from the spec or the file bytes. In generated handlers, it is available when the selected response declares `application/octet-stream`.
+
+For a PDF or another non-XML file type, use `.match(contentType, buffer)` with a Node.js `Buffer`:
 
 ```ts
-return $.response.status(200).binary(pdfBuffer, "application/pdf");
+return $.response.status(200).match("application/pdf", pdfBuffer);
 ```
 
-For a generated handler, declare `application/pdf` with a `type: string`, `format: binary` schema in that response's OpenAPI content. The generated types permit only declared binary representations (and `application/octet-stream`), and each call satisfies only the chosen representation. Chain another body method to offer alternatives.
+Declare `application/pdf` with a `type: string`, `format: binary` schema in that response's OpenAPI content. See the [binary file example](../manual/responses.md#sending-a-pdf-or-other-binary-file) for the spec and body preparation. `.match()` does not decode base64 strings or convert a plain `Uint8Array` to a `Buffer`; prepare those inputs with `Buffer.from(base64, "base64")` or `Buffer.from(bytes)` first. `application/xml` and `text/xml` use XML serialization rather than this raw-file path.
 
-Omitting `contentType` preserves the `application/octet-stream` default; the type is not inferred from the spec. In generated handlers, this one-argument form is available only when that response declares `application/octet-stream`. For a PDF-only response, pass `"application/pdf"` explicitly or use `.match("application/pdf", pdfBuffer)`. Unlike `.binary()`, `.match()` does not decode base64 strings and can transform XML representations.
+The request's `Accept` header is matched against the representation supplied by the body method. If `.binary(body)` is the only representation and the client requests only `application/pdf`, Counterfact returns 406 because `application/octet-stream` does not match. Declaring PDF in the spec or setting a `Content-Type` header does not change the representation registered by `.binary()`; use `.match("application/pdf", pdfBuffer)` instead.
 
 ## Streaming
 
