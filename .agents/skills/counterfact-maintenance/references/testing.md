@@ -52,6 +52,15 @@ Paths and commands below are relative to the repository root.
 
 Keep focused unit/type tests even when a broader product journey covers the same behavior. Package-consumer coverage and packed-artifact coverage establish different guarantees.
 
+## Test-framework adapter packages
+
+- Keep framework dependencies in their adapter workspace, with a peer dependency for the host runner.
+- Verify fixtures with the real runner and compile consumer fixture declarations.
+- Keep scenario options test-scoped while listeners and copied sources remain worker-owned.
+- Preserve the ordered ancestor node_modules chain and package module scopes when relocating API source; test mixed local/hoisted dependencies and JavaScript ESM scenarios. Restore nested node_modules links too, so source subdirectories retain their own dependency lookup and shadowing.
+- Verify multiple-worker isolation and cleanup after startup, reset, scenario, and test failures.
+- Include adapter workspaces in builds, CI, package boundaries, and isolated packed-consumer checks.
+
 - Compiler tests spanning fixture mutations need separate TypeScript programs. Give a demonstrated slow scenario its own timeout when coverage and concurrent compiler checks exceed the default; retain the suite-wide timeout for other tests.
 
 - Audit security lint warnings against the actual key/path contract. Prefer Maps,
