@@ -1,3 +1,5 @@
+import type { SchemaTypeTransform } from "@counterfact/generator";
+
 /** Runtime configuration for a Counterfact server instance. */
 export interface Config {
   /** Optional bearer token that protects the Admin API endpoints. */
@@ -17,6 +19,8 @@ export interface Config {
     /** Generate TypeScript type files. */
     types: boolean;
   };
+  /** Customize generated schema types without changing runtime validation. */
+  schemaTypeTransform?: SchemaTypeTransform;
   /** Path or URL to the OpenAPI document. Use `"_"` to skip spec loading. */
   openApiPath: string;
   /**
