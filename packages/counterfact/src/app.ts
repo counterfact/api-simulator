@@ -21,7 +21,10 @@ import { createKoaApp } from "@counterfact/runtime/koa";
 import { startRepl as startReplServer } from "@counterfact/repl";
 
 import { ApiRunner } from "./api-runner.js";
-import { sendTelemetry } from "./cli/telemetry.js";
+import {
+  reportReplTelemetry,
+  reportRuntimeTelemetry,
+} from "./cli/telemetry.js";
 import type { Config } from "./config.js";
 import { ensureDirectoryExists } from "./util/ensure-directory-exists.js";
 
@@ -405,6 +408,7 @@ export async function counterfact<TStore = unknown>(
     },
     runners,
     config,
+    reportEvent: reportRuntimeTelemetry,
     adminApi: {
       adminApiToken: config.adminApiToken,
       basePath: config.basePath,
@@ -817,7 +821,7 @@ export async function counterfact<TStore = unknown>(
         })),
         storeLoader.store,
         ({ command }) => {
-          sendTelemetry("repl_command_used", { command });
+          reportReplTelemetry(command);
         },
       );
       replServers.add(replServer);

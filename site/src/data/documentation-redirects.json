@@ -11,5 +11,7 @@
   "patterns/reference-implementation": "/docs/patterns/model-the-workflow",
   "patterns/simulate-failures": "/docs/manual/edge-cases",
   "patterns/simulate-latency": "/docs/manual/edge-cases",
-  "manual/guided-example": "/docs/getting-started/"
+  "manual/guided-example": "/docs/getting-started/",
+  "patterns/react-vite": "/docs/examples/react-vite",
+  "patterns/playwright-error-states": "/docs/examples/playwright-error-states"
 }
