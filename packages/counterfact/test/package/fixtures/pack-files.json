@@ -14,6 +14,7 @@
   "docs/comparison.md",
   "docs/faq.md",
   "docs/features/generated-code.md",
+  "docs/features/har.md",
   "docs/features/hot-reload.md",
   "docs/features/middleware.md",
   "docs/features/multiple-versions.md",

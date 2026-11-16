@@ -3,6 +3,7 @@
 exports[`an OperationTypeCoder falls back to root level produces (OpenAPI 2) 1`] = `
 "type TestType = ($: {
   context: ExternalType;
+  har: SharedType;
   response: ResponseBuilderFactory<{
     [statusCode in HttpStatusCode]: {
       headers: never;
@@ -29,6 +30,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2 wit
   headers: HTTP_GET_Headers;
   body: Type;
   context: ExternalType;
+  har: SharedType;
   response: ResponseBuilderFactory<
     {
       200: {
@@ -78,6 +80,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2) 1`
   headers: HTTP_GET_Headers;
   body: Type;
   context: ExternalType;
+  har: SharedType;
   response: ResponseBuilderFactory<
     {
       200: {
@@ -127,6 +130,7 @@ exports[`an OperationTypeCoder generates a complex post operation (OpenAPI 2, co
   headers: HTTP_GET_Headers;
   body: Type;
   context: ExternalType;
+  har: SharedType;
   response: ResponseBuilderFactory<
     {
       200: {
@@ -176,6 +180,7 @@ exports[`an OperationTypeCoder generates a complex post operation 1`] = `
   headers: HTTP_GET_Headers;
   body: Type | undefined;
   context: ExternalType;
+  har: SharedType;
   response: ResponseBuilderFactory<
     {
       200: {
@@ -224,6 +229,7 @@ exports[`an OperationTypeCoder generates a complex post operation 1`] = `
 exports[`an OperationTypeCoder generates a simple get operation (OpenAPI 2) 1`] = `
 "type TestType = ($: {
   context: ExternalType;
+  har: SharedType;
   response: ResponseBuilderFactory<{
     [statusCode in HttpStatusCode]: {
       headers: never;
@@ -246,6 +252,7 @@ exports[`an OperationTypeCoder generates a simple get operation (OpenAPI 2) 1`] 
 exports[`an OperationTypeCoder generates a simple get operation 1`] = `
 "type TestType = ($: {
   context: ExternalType;
+  har: SharedType;
   response: ResponseBuilderFactory<{
     [statusCode in HttpStatusCode]: {
       headers: never;
@@ -268,6 +275,7 @@ exports[`an OperationTypeCoder generates a simple get operation 1`] = `
 exports[`an OperationTypeCoder generates an auth object for basic authentication 1`] = `
 "type TestType = ($: {
   context: ExternalType;
+  har: SharedType;
   response: ResponseBuilderFactory<{
     [statusCode in HttpStatusCode]: {
       headers: never;
@@ -293,6 +301,7 @@ exports[`an OperationTypeCoder generates required api key auth and cookie for ap
 "type TestType = ($: {
   cookie: HTTP_GET_Cookie;
   context: ExternalType;
+  har: SharedType;
   response: ResponseBuilderFactory<{
     [statusCode in HttpStatusCode]: {
       headers: never;
@@ -317,6 +326,7 @@ exports[`an OperationTypeCoder generates required api key auth and headers for a
 "type TestType = ($: {
   headers: HTTP_GET_Headers;
   context: ExternalType;
+  har: SharedType;
   response: ResponseBuilderFactory<{
     [statusCode in HttpStatusCode]: {
       headers: never;

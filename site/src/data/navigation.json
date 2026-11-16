@@ -44,6 +44,11 @@
           "description": "Choose status codes, bodies, headers, cookies, and media types."
         },
         {
+          "title": "HAR recordings",
+          "path": "/docs/features/har",
+          "description": "Serve captured responses with request matching and middleware."
+        },
+        {
           "title": "Streaming responses",
           "path": "/docs/manual/streaming",
           "description": "Return incremental events and records."

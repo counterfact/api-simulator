@@ -85,6 +85,21 @@ export const middleware: Middleware["/admin"] = async ($, respondTo) => {
 };
 ```
 
+## Try HAR recordings before route handlers
+
+Use `$.har()` in middleware to apply recorded responses across registered routes:
+
+```ts
+// routes/_.middleware.ts
+import type { Middleware } from "../types/_.middleware.js";
+
+export const middleware: Middleware = ($, respondTo) => $.har() ?? respondTo($);
+```
+
+A match returns the recorded response; a miss continues to the remaining middleware and route handler. Put the file in a subdirectory to limit it to that subtree. Requests still need a registered handler, and global proxying bypasses route middleware. Checks that must always run should happen before the HAR lookup, because a match skips the remaining chain.
+
+See [HAR middleware](./har.md#apply-recordings-with-middleware) for custom predicates and recording behavior.
+
 ## See also
 
 - [Routes](./routes.md)

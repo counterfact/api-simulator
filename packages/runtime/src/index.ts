@@ -1,3 +1,4 @@
+export { HarCollection } from "./server/har-collection.js";
 export { ContextRegistry, type Context } from "./server/context-registry.js";
 export {
   Dispatcher,
