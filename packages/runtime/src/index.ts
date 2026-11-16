@@ -1,5 +1,10 @@
 export { ContextRegistry, type Context } from "./server/context-registry.js";
 export {
+  type ChaosApplyResult,
+  ChaosRegistry,
+  ChaosRule,
+} from "./server/chaos.js";
+export {
   Dispatcher,
   type DispatcherRequest,
   type OpenApiDocument as DispatcherOpenApiDocument,

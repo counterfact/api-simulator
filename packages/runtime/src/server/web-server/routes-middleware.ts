@@ -216,6 +216,7 @@ export function routesMiddleware(
       /* @ts-expect-error the value of a header can be an array and we don't have a solution for that yet */
       headers,
       method,
+      originalPath: ctx.request.path,
       path,
 
       /* @ts-expect-error the value of a querystring item can be an array and we don't have a solution for that yet */

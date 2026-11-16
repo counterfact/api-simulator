@@ -3,6 +3,7 @@ import createDebugger from "debug";
 
 import fetch, { Headers } from "node-fetch";
 
+import type { ChaosRegistry } from "./chaos.js";
 import type { ContextRegistry } from "./context-registry.js";
 import type {
   HttpMethods,
@@ -128,6 +129,8 @@ export type DispatcherRequest = {
     [key: string]: string;
   };
   method: RequestMethod;
+  /** Original HTTP pathname, including any API prefix, before route matching. */
+  originalPath?: string;
   path: string;
   query: {
     [key: string]: string | string[];
@@ -206,6 +209,8 @@ export class Dispatcher {
 
   public config?: DispatcherConfig;
 
+  public chaosRegistry?: ChaosRegistry;
+
   /**
    * The version label for this dispatcher's spec (e.g. `"v1"`, `"v2"`).
    * Empty string when running without a version.
@@ -227,6 +232,7 @@ export class Dispatcher {
     config?: DispatcherConfig,
     version = "",
     versions: readonly string[] = [],
+    chaosRegistry?: ChaosRegistry,
   ) {
     this.registry = registry;
     this.contextRegistry = contextRegistry;
@@ -235,6 +241,7 @@ export class Dispatcher {
     this.config = config;
     this.version = version;
     this.versions = versions;
+    this.chaosRegistry = chaosRegistry;
   }
 
   private contractPaths?: OpenApiDocument["paths"];
@@ -591,6 +598,7 @@ export class Dispatcher {
     headers = {},
     method,
     path,
+    originalPath = path,
     query,
     rawBody,
     req,
@@ -776,17 +784,27 @@ export class Dispatcher {
       const validation = validateResponse(operation, normalizedResponse);
 
       if (!validation.valid) {
-        return {
-          ...normalizedResponse,
-          appendedHeaders: [
-            ...(normalizedResponse.appendedHeaders ?? []),
-            ...validation.errors.map((error): [string, string] => [
-              "response-type-error",
-              error,
-            ]),
-          ],
-        };
+        normalizedResponse.appendedHeaders = [
+          ...(normalizedResponse.appendedHeaders ?? []),
+          ...validation.errors.map((error): [string, string] => [
+            "response-type-error",
+            error,
+          ]),
+        ];
       }
+    }
+
+    const chaosRule = this.chaosRegistry?.findBestMatch(originalPath, path);
+    const chaosResult = chaosRule?.tryApply(normalizedResponse);
+
+    if (chaosResult !== undefined && chaosResult !== null) {
+      if (chaosResult.delayMs !== undefined && chaosResult.delayMs > 0) {
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, chaosResult.delayMs);
+        });
+      }
+
+      return chaosResult.response;
     }
 
     return normalizedResponse;

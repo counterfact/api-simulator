@@ -160,3 +160,7 @@ await $.delay(Math.random() * 500 + 100); // 100–600ms
 Delays run inside the handler; they do not model connection setup, packet loss, or network jitter. Use fixed values for repeatable checks and restore zero delay for fast development. Controlled state and delays do not make generated random data deterministic.
 
 Hot reload preserves live state. Resetting state in tests is an explicit [programmatic operation](../api/simulator.md). See [validation](./validation.md) for contract boundaries.
+
+## HTTP response fault rules
+
+Use [chaos rules](../patterns/test-fault-scenarios-with-chaos.md) to inject bounded or probabilistic status, delay, header, and body changes from the REPL. See the [API reference](../api/repl.md#chaos-api-http-layer-fault-injection).
