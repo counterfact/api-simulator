@@ -1,3 +1,4 @@
+import type { SseEvent } from "./sse-event.js";
 import type { CookieOptions } from "./cookie-options.js";
 import type { MaybePromise } from "./maybe-promise.js";
 
@@ -11,7 +12,7 @@ export interface ResponseBuilder {
   /** @deprecated Select a status with response.status(statusCode) instead. */
   [status: number | `${number} ${string}`]: ResponseBuilder;
   binary: (body: Uint8Array | string) => ResponseBuilder;
-  content?: { body: unknown; type: string }[];
+  content?: { body: unknown; type: string; streamFormat?: "sse" }[];
   cookie: (
     name: string,
     value: string,
@@ -27,11 +28,8 @@ export interface ResponseBuilder {
   random: () => MaybePromise<ResponseBuilder>;
   randomLegacy: () => MaybePromise<ResponseBuilder>;
   status?: number;
-  stream: (iterable: AsyncIterable<unknown>) => {
-    body: AsyncIterable<unknown>;
-    contentType: string;
-    status?: number;
-  };
+  sse: (events: AsyncIterable<SseEvent>) => ResponseBuilder;
+  stream: (iterable: AsyncIterable<unknown>) => ResponseBuilder;
   text: (body: unknown) => ResponseBuilder;
   xml: (body: unknown) => ResponseBuilder;
 }

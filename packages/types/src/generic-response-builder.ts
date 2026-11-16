@@ -6,6 +6,7 @@ import type { MediaType } from "./media-type.js";
 import type { OmitAll } from "./omit-all.js";
 import type { OmitValueWhenNever } from "./omit-value-when-never.js";
 import type { OpenApiResponse } from "./open-api-response.js";
+import type { SseEvent } from "./sse-event.js";
 import type { RandomFunction } from "./random-function.js";
 
 /**
@@ -21,6 +22,12 @@ type NeverIfEmpty<Record> = object extends Record ? never : Record;
 type SchemasOf<T extends { [key: string]: { schema: unknown } }> = {
   [K in keyof T]: T[K]["schema"];
 }[keyof T];
+
+/** Constrain both the stream and each schema-derived item to SSE envelopes. */
+type SseEvents<Schema> =
+  Schema extends AsyncIterable<infer Event>
+    ? AsyncIterable<Event & SseEvent & object>
+    : AsyncIterable<SseEvent> & Schema;
 
 /**
  * Produces a builder method for a shortcut (e.g. `.json()`, `.html()`) when
@@ -130,8 +137,35 @@ export type GenericResponseBuilderInner<
     : (name: ExampleNames<Response>) => COUNTERFACT_RESPONSE;
   text: MaybeShortcut<["text/plain"], Response>;
   xml: MaybeShortcut<["application/xml", "text/xml"], Response>;
+  sse: IfHasKey<
+    Response["content"],
+    ["text/event-stream"],
+    (
+      events: SseEvents<
+        SchemasOf<
+          Pick<
+            Response["content"],
+            Extract<keyof Response["content"], `text/event-stream${string}`>
+          >
+        >
+      >,
+    ) => GenericResponseBuilder<{
+      content: NeverIfEmpty<
+        OmitAll<Response["content"], ["text/event-stream"]>
+      >;
+      headers: Response["headers"];
+      requiredHeaders: Response["requiredHeaders"];
+    }>,
+    never
+  >;
   stream: MaybeShortcut<
-    ["text/event-stream", "application/jsonl", "application/json-seq"],
+    [
+      "text/event-stream",
+      "application/jsonl",
+      "application/x-ndjson",
+      "application/ndjson",
+      "application/json-seq",
+    ],
     Response
   >;
 }>;
