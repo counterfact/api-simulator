@@ -3904,15 +3904,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"catchmydrift@npm:0.2.0":
-  version: 0.2.0
-  resolution: "catchmydrift@npm:0.2.0"
+"catchmydrift@npm:0.2.1":
+  version: 0.2.1
+  resolution: "catchmydrift@npm:0.2.1"
   dependencies:
     minimatch: "npm:10.2.6"
     semver: "npm:7.8.5"
   bin:
     catchmydrift: index.js
-  checksum: 10c0/ade22917d5f9b9b3a67e549cfdbd4daa35e52183704c405b5d206730cf8ffaa91ed901500a42b4620408a7bcaa47c678f71daf0cbd8e92d25612d5e94c58a6a4
+  checksum: 10c0/a477f68df3af51f71bf928b138fb1992821d95687972f0c492441b8ef76307239f79f544ecd6d8b6754b9a3e4c2119614c86a5644dd24361130028c8fb66dd8d
   languageName: node
   linkType: hard
 
@@ -4218,7 +4218,7 @@ __metadata:
     "@types/node": "npm:22"
     "@typescript-eslint/eslint-plugin": "npm:8.72.1"
     "@typescript-eslint/parser": "npm:8.72.1"
-    catchmydrift: "npm:0.2.0"
+    catchmydrift: "npm:0.2.1"
     copyfiles: "npm:2.4.1"
     eslint: "npm:10.13.0"
     eslint-formatter-github-annotations: "npm:0.1.0"
