@@ -13,6 +13,10 @@ import {
   unknownType,
   valueExpression,
 } from "./ast.js";
+import {
+  clientSecurityRequirements,
+  clientSecuritySchemes,
+} from "./client-security.js";
 import { ClientResponseSchemas } from "./client-response-schemas.js";
 import { pathOperations } from "./path-operations.js";
 import { Repository } from "./repository.js";
@@ -202,6 +206,7 @@ function describe(
       parameters,
       body: selected && { mediaType: selected.type, required: bodyRequired },
       responses: Object.fromEntries(responseMetadata),
+      security: clientSecurityRequirements(operation),
       responseSchemas:
         responseSchemas.size > 0
           ? Object.fromEntries(responseSchemas)
@@ -226,6 +231,33 @@ export async function generateClient(
   const runtime = "@counterfact/client/fetch";
   const factory = script.importExternal("createFetchRoute", runtime);
   const options = script.importExternalType("FetchClientOptions", runtime);
+  const security = clientSecuritySchemes(specification);
+  const provider = security.length
+    ? script.importExternalType("CredentialProvider", runtime)
+    : undefined;
+  const cookie = security.some(
+    ({ scheme }) => scheme.type === "apiKey" && scheme.location === "cookie",
+  )
+    ? script.importExternalType("CookieCredential", runtime)
+    : undefined;
+  const auth = provider
+    ? typeLiteral(
+        security.map(({ name, scheme }) =>
+          typeProperty(
+            name,
+            typeReference(provider, [
+              scheme.type === "apiKey" && scheme.location === "cookie"
+                ? typeReference(cookie!)
+                : stringType(),
+            ]),
+            true,
+          ),
+        ),
+      )
+    : neverType();
+  const securityMetadata = Object.fromEntries(
+    security.map(({ name, scheme }) => [name, scheme]),
+  );
   const validation = new ClientResponseSchemas(specification);
   const paths =
     specification.getRequirement("#/paths")?.flatMap((pathItem, path) => {
@@ -289,7 +321,7 @@ export async function generateClient(
               undefined,
               "options",
               undefined,
-              typeReference(options),
+              typeReference(options, [auth]),
             ),
           ],
           undefined,
@@ -301,6 +333,7 @@ export async function generateClient(
               valueExpression(metadata),
               createIdentifier("options"),
               createIdentifier(validators),
+              ...(security.length ? [valueExpression(securityMetadata)] : []),
             ],
           ),
         ),

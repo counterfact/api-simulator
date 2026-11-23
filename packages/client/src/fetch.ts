@@ -2,7 +2,17 @@ import type {
   ClientOperations,
   ClientRouteFunction,
   ClientSendOptions,
+  ClientSecurityScheme,
 } from "@counterfact/types/client-route";
+
+import {
+  applyAuthentication,
+  type CredentialProvider,
+  type SecurityRequirement,
+} from "./fetch-auth.js";
+
+export { RequestAuthenticationError } from "./fetch-auth.js";
+export type { CookieCredential, CredentialProvider } from "./fetch-auth.js";
 
 export type {
   ClientOperations,
@@ -28,6 +38,7 @@ export interface FetchOperation {
   parameters: readonly FetchParameter[];
   body?: { required: boolean; mediaType: string };
   responses: Readonly<Record<string, readonly string[]>>;
+  security?: readonly SecurityRequirement[];
   responseSchemas?: Readonly<Record<string, Readonly<Record<string, string>>>>;
 }
 
@@ -37,7 +48,11 @@ type FetchOperations<Operations extends ClientOperations> = {
   };
 };
 
-export interface FetchClientOptions {
+export interface FetchClientOptions<
+  Auth extends Readonly<Record<string, CredentialProvider | undefined>> =
+    Readonly<Record<string, CredentialProvider | undefined>>,
+> {
+  auth?: Auth;
   baseUrl: string | URL;
   fetch?: typeof fetch;
   headers?: ConstructorParameters<typeof Headers>[0];
@@ -334,7 +349,7 @@ function buildRequest(
   operation: FetchOperation,
   inputs: Inputs,
   sendOptions: ClientSendOptions | undefined,
-): [URL, RequestInit] {
+): [URL, RequestInit & { headers: Headers }] {
   const headers = new Headers(options.headers);
   const query: string[] = [];
   const cookies: string[] = [];
@@ -394,7 +409,8 @@ function buildRequest(
       headers,
       body,
       signal: sendOptions?.signal,
-      credentials: options.credentials,
+      credentials: sendOptions?.credentials ?? options.credentials,
+      redirect: sendOptions?.redirect,
     },
   ];
 }
@@ -404,6 +420,7 @@ export function createFetchRoute<Operations extends ClientOperations>(
   operations: FetchOperations<Operations>,
   options: FetchClientOptions,
   validators: ResponseValidators = {},
+  securitySchemes: Readonly<Record<string, ClientSecurityScheme>> = {},
 ): ClientRouteFunction<Operations> {
   const routes = new Map(
     Object.entries<Record<string, FetchOperation>>(operations).map(
@@ -447,6 +464,16 @@ export function createFetchRoute<Operations extends ClientOperations>(
             inputs,
             sendOptions,
           );
+          if (operation.security || sendOptions?.authenticate !== undefined) {
+            await applyAuthentication(
+              url,
+              init,
+              operation.security ?? [],
+              securitySchemes,
+              options.auth ?? {},
+              sendOptions,
+            );
+          }
           return readResponse(
             await fetchRequest(url, init),
             method,

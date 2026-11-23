@@ -130,7 +130,16 @@ export type ClientResult<Operation extends ClientOperation> = {
   >;
 }[keyof Operation["responses"]];
 
-export type ClientSendOptions = Pick<RequestInit, "signal">;
+export type ClientSecurityScheme =
+  | { type: "bearer" }
+  | { type: "apiKey"; location: "header" | "query" | "cookie"; name: string };
+
+export type ClientSendOptions = Pick<
+  RequestInit,
+  "signal" | "credentials" | "redirect"
+> & {
+  authenticate?: boolean;
+};
 
 type CanSend<
   Operation extends ClientOperation,

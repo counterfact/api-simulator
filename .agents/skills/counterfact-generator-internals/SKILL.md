@@ -80,3 +80,5 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Generate Fetch client types and runtime metadata from the same operation traversal. Keep client contracts out of the copied simulator types. Compile a generated consumer that explicitly checks when required inputs enable `send()`.
 
 - Compile Fetch response validators during generation. Translate Ajv's standalone helper references to static ESM imports and exercise the generated client with string-to-code compilation disabled.
+
+- Preserve absent, empty, and anonymous OpenAPI security declarations when generating client metadata. Verify operation overrides, alternative requirements, and provider scopes through the generated client.

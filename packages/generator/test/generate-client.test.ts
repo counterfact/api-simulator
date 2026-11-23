@@ -24,16 +24,27 @@ it("generates and type-checks a reusable route prefix against inherited and oper
       JSON.stringify({
         openapi: "3.1.0",
         info: { title: "Orders", version: "1" },
+        security: [{ userToken: ["orders:read"] }],
         paths: {
           "/{tenantId}/v1/orders/{orderId}": {
             $ref: "#/components/pathItems/Orders",
           },
           "/{tenantId}/v1/customers": {
             parameters: [parameter("tenantId", "path")],
-            get: { responses: { 204: { description: "No content" } } },
+            get: {
+              security: [],
+              responses: { 204: { description: "No content" } },
+            },
           },
         },
         components: {
+          securitySchemes: {
+            userToken: {
+              type: "openIdConnect",
+              openIdConnectUrl: "https://example.test/oidc",
+            },
+            session: { type: "apiKey", in: "cookie", name: "session" },
+          },
           pathItems: {
             Orders: {
               parameters: [
@@ -95,12 +106,28 @@ it("generates and type-checks a reusable route prefix against inherited and oper
     expect(generated).toContain("responseSchemas:");
     expect(generated).toContain("./response-validators.js");
     expect(generated).not.toContain("$defs");
+    expect(generated).toContain('security: [{ userToken: ["orders:read"] }]');
+    expect(generated).toContain("security: []");
 
     await $.add(
       "consumer.ts",
       `
       import { createClient } from "./generated/v1/index.js";
-      const route = createClient({ baseUrl: "https://example.test" });
+      const route = createClient({
+        baseUrl: "https://example.test",
+        auth: {
+          userToken: async ({ scopes, signal }) => scopes.join(":") + String(signal?.aborted),
+          session: () => ({ credentials: "include" }),
+        },
+      });
+      createClient({ baseUrl: "https://example.test", auth: {
+        // @ts-expect-error auth providers must use declared scheme names
+        unknownScheme: () => "key",
+      } });
+      createClient({ baseUrl: "https://example.test", auth: {
+        // @ts-expect-error cookie auth uses the browser-managed credentials option
+        session: () => "cookie",
+      } });
       const base = route("/{tenantId}/v1");
       // @ts-expect-error prefixes without an operation do not expose methods
       base.method("get");
@@ -142,7 +169,7 @@ it("generates and type-checks a reusable route prefix against inherited and oper
       // @ts-expect-error undefined is not a body
       update.body(undefined);
       await update.body({ id: 42 }).send();
-      await tenant.segment("customers").method("get").send();
+      await tenant.segment("customers").method("get").send({ authenticate: false, redirect: "manual", credentials: "omit" });
     `,
     );
 
@@ -211,6 +238,7 @@ it.each([
         JSON.stringify({
           openapi,
           info: { title: "Orders", version: "1" },
+          security: [{ userToken: ["orders:read"] }],
           paths: {
             "/orders": {
               get: {
@@ -232,6 +260,17 @@ it.each([
             },
           },
           components: {
+            securitySchemes: {
+              userToken: {
+                type: "oauth2",
+                flows: {
+                  clientCredentials: {
+                    tokenUrl: "https://example.test/token",
+                    scopes: { "orders:read": "Read orders" },
+                  },
+                },
+              },
+            },
             schemas: {
               Order: {
                 type: "object",
@@ -277,8 +316,18 @@ it.each([
         import { createClient } from "./generated/index.js";
         const send = response => createClient({
           baseUrl: "https://example.test",
-          fetch: async () => response,
-        })("/orders").method("get").send();
+          auth: {
+            userToken: ({ scopes }) => {
+              assert.deepEqual(scopes, ["orders:read"]);
+              return "generated-client-token";
+            },
+          },
+          fetch: async (url, init) => {
+            assert.equal(init.headers.get("Authorization"), "Bearer generated-client-token");
+            assert.equal(init.redirect, "manual");
+            return response;
+          },
+        })("/orders").method("get").send({ authenticate: true, redirect: "manual" });
         const nested = { id: 1, items: [], child: { id: 2, items: [] } };
         assert.deepEqual((await send(Response.json(nested))).body, nested);
         const invalid = error => error instanceof InvalidResponseError && error.reason === "schema-mismatch";

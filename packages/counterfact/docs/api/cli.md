@@ -105,9 +105,50 @@ custom schema formats. Counterfact compiles the validators during generation,
 so browser clients can validate responses under a Content Security Policy that
 blocks dynamic code evaluation.
 
-You can supply default headers, Fetch credentials, or a custom `fetch` when
-creating the client, and an abort signal when sending. Browser cookie handling
-follows Fetch's credential rules.
+### Authentication and Fetch options
+
+Register providers by the names in `components.securitySchemes`. Counterfact
+passes the scopes from the selected security requirement and the request's
+abort signal to the provider. A provider may return a value or a promise.
+
+```ts
+const route = createClient({
+  baseUrl: "https://api.example.com",
+  auth: {
+    userToken: ({ scopes, signal }) => session.getAccessToken(scopes, signal),
+    tenantKey: () => config.apiKey,
+  },
+});
+
+await route("/orders").method("get").send({ authenticate: true, signal });
+```
+
+An operation inherits top-level security unless it declares its own.
+`security: []` makes the operation public. A request can satisfy any one
+security alternative, and it needs every scheme within that alternative.
+The client supports bearer tokens, OAuth 2.0 and OpenID Connect access
+tokens, and API keys in headers or query parameters. For a cookie scheme,
+a provider can return `{ credentials: "include" }` or
+`{ credentials: "same-origin" }` to use browser-managed cookies.
+
+- Omit `authenticate` to try the declared credential alternatives in order.
+  If no complete alternative is available and the operation allows anonymous
+  access, the client sends anonymously.
+- Set `authenticate: true` to require credentials. A missing credential
+  rejects before Fetch runs.
+- Set `authenticate: false` to opt out. An operation requiring credentials
+  rejects before Fetch runs. Otherwise the client omits browser credentials
+  and removes authentication headers and declared API keys from the request.
+
+Returning `undefined` from a provider lets the client try another alternative.
+A thrown provider error rejects the request. A documented HTTP 401 remains a
+typed response, with no anonymous retry.
+
+Supply default headers, credentials, or a custom `fetch` in `createClient()`.
+Each call to `send()` can set `signal`, `credentials`, and `redirect`.
+Per-request credentials override the client default. Anonymous opt-out
+always omits credentials. Requests that use a credential provider reject
+redirects by default. Set a redirect mode explicitly to override that default.
 
 Use a dedicated output folder for generated files. Grouped and versioned
 specifications produce separate entry points under
