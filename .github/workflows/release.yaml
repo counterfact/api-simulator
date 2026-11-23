@@ -8,6 +8,9 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+env:
+  RELEASE_NODE_VERSION: "24.x"
+
 jobs:
   prepare:
     name: Prepare Release
@@ -27,7 +30,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 26.x
+          node-version: ${{ env.RELEASE_NODE_VERSION }}
       - name: Enable Corepack
         run: |
           npm install --global --force corepack
@@ -66,7 +69,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 26.x
+          node-version: ${{ env.RELEASE_NODE_VERSION }}
       - name: Enable Corepack
         run: |
           npm install --global --force corepack
