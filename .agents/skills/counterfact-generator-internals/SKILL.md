@@ -76,3 +76,5 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 
 - External shared-type imports need collision-free aliases against reserved names, exports, and other imports. Binary multipart models must preserve the non-binary arms of type unions.
 - Resolve operation context imports from the logical endpoint, not the generated filename. The root endpoint uses index.types.ts but must not inherit a real /index child context.
+
+- Generate Fetch client types and runtime metadata from the same operation traversal. Keep client contracts out of the copied simulator types. Compile a generated consumer that explicitly checks when required inputs enable `send()`.

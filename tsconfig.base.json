@@ -22,6 +22,9 @@
       "@counterfact/runtime/msw": ["./packages/runtime/src/msw.ts"],
       "@counterfact/repl": ["./packages/repl/src/index.ts"],
       "@counterfact/types": ["./packages/types/src/index.ts"],
+      "@counterfact/types/client-route": [
+        "./packages/types/src/client-route.ts"
+      ],
       "@counterfact/types/streaming-content-types": [
         "./packages/types/src/streaming-content-types.ts"
       ]

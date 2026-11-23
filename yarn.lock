@@ -1055,6 +1055,8 @@ __metadata:
 "@counterfact/client@npm:0.2.1, @counterfact/client@workspace:packages/client":
   version: 0.0.0-use.local
   resolution: "@counterfact/client@workspace:packages/client"
+  dependencies:
+    "@counterfact/types": "npm:0.3.0"
   languageName: unknown
   linkType: soft
 

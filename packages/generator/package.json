@@ -46,7 +46,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rimraf dist && tsc --build --force && copyfiles -f \"../types/src/*.ts\" dist/templates/counterfact-types && rimraf dist/templates/counterfact-types/streaming-content-types.ts",
+    "build": "rimraf dist && tsc --build --force && copyfiles -f \"../types/src/*.ts\" dist/templates/counterfact-types && rimraf dist/templates/counterfact-types/streaming-content-types.ts dist/templates/counterfact-types/client-route.ts",
     "prepack": "yarn build",
     "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/generator/test",
     "test:packed-consumer": "node test/package/generator-consumer-smoke.mjs"

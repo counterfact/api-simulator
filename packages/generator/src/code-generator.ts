@@ -16,6 +16,8 @@ import {
 } from "./openapi-path.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
 import { pruneRoutes, pruneTypes } from "./prune.js";
+import { generateClient as writeClient } from "./generate-client.js";
+import { pathOperations } from "./path-operations.js";
 import { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
 import { Specification } from "./specification.js";
@@ -174,67 +176,23 @@ export class CodeGenerator extends EventTarget {
       (securityRequirement?.data as Record<string, unknown>) ?? {},
     ) as SecurityScheme[];
 
-    const HTTP_VERBS = new Set([
-      "get",
-      "put",
-      "post",
-      "delete",
-      "options",
-      "head",
-      "patch",
-      "trace",
-    ]);
-
-    const operationMethodsForPath = (
-      pathDefinition: Requirement,
-    ): Array<[Requirement, string]> => {
-      let resolved = pathDefinition;
-      while (resolved.isReference) resolved = resolved.reference();
-      return resolved.flatMap((operation, requestMethod) => {
-        if (requestMethod === "additionalOperations") {
-          return operation.map(
-            (additionalOperation, additionalMethod): [Requirement, string] => [
-              additionalOperation,
-              additionalMethod.toLowerCase(),
-            ],
-          );
-        }
-
-        if (!HTTP_VERBS.has(requestMethod)) {
-          return [];
-        }
-
-        return [[operation, requestMethod]];
-      });
-    };
-
     paths.forEach((pathDefinition, key: string) => {
       debug("processing path %s", key);
 
       const normalizedPath = normalizeOpenApiPath(key);
       const path = normalizedPath === "/" ? "/index" : normalizedPath;
-      operationMethodsForPath(pathDefinition).forEach(
-        ([operation, requestMethod]) => {
-          // Keep the logical route location when a Path Item is a reference or
-          // a method is declared under OpenAPI 3.2 additionalOperations.
-          const logicalOperation = new Requirement(
-            operation.data,
-            `${pathDefinition.url}/${requestMethod}`,
-            specification,
+      for (const [operation, requestMethod] of pathOperations(pathDefinition)) {
+        repository
+          .get(`routes${path}.ts`)
+          .export(
+            new OperationCoder(
+              operation,
+              this.version,
+              requestMethod,
+              securitySchemes,
+            ),
           );
-          logicalOperation.parent = pathDefinition;
-          repository
-            .get(`routes${path}.ts`)
-            .export(
-              new OperationCoder(
-                logicalOperation,
-                this.version,
-                requestMethod,
-                securitySchemes,
-              ),
-            );
-        },
-      );
+      }
     });
 
     if (this.generateOptions.prune && this.generateOptions.types) {
@@ -284,6 +242,15 @@ export class CodeGenerator extends EventTarget {
     ]);
 
     return repository.writeSchemas(this.destination, this.version);
+  }
+
+  /** Generate a standalone Fetch client for this spec. */
+  public async generateClient(): Promise<string[]> {
+    const specification = await Specification.fromFile(
+      this.openapiPath,
+      this.overlays,
+    );
+    return writeClient(specification, this.destination, this.version);
   }
 
   /**

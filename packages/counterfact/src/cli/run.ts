@@ -14,10 +14,10 @@ import { pathResolve } from "../util/forward-slash-path.js";
 import { loadConfigFile } from "../util/load-config-file.js";
 import { checkForUpdates } from "./check-for-updates.js";
 import {
-  generateSchemasOnly,
-  SCHEMAS_ONLY_CONFLICTING_OPTIONS,
-  validateSchemasOnlyOptions,
-} from "./generate-schemas-only.js";
+  generateStandalone,
+  STANDALONE_CONFLICTING_OPTIONS,
+  validateStandaloneOptions,
+} from "./generate-standalone.js";
 import { runIntro } from "./intro.js";
 import {
   createGeneratedArtifactsSummary,
@@ -182,6 +182,7 @@ function buildProgram(
       config?: string;
       generate?: boolean;
       generateRoutes?: boolean;
+      generateClient?: boolean;
       generateSchemasOnly?: boolean;
       generateTypes?: boolean;
       open?: boolean;
@@ -218,13 +219,15 @@ function buildProgram(
       options.port = selection.port;
     }
 
-    // A schemas-only run is a one-shot generation step; it never checks for updates.
+    // One-shot generation never checks for updates.
     const schemasOnly =
-      options.generateSchemasOnly === true ||
-      fileConfig["generateSchemasOnly"] === true;
+      (options.generateSchemasOnly ?? fileConfig["generateSchemasOnly"]) ===
+      true;
+    const clientOnly =
+      (options.generateClient ?? fileConfig["generateClient"]) === true;
 
     const updateCheckPromise =
-      options.updateCheck === false || schemasOnly
+      options.updateCheck === false || schemasOnly || clientOnly
         ? Promise.resolve()
         : checkForUpdates(version);
 
@@ -276,7 +279,8 @@ function buildProgram(
     const destinationPath = pathResolve(destination);
     const basePath = pathResolve(destinationPath);
 
-    if (schemasOnly) {
+    if (schemasOnly || clientOnly) {
+      const flag = clientOnly ? "--generate-client" : "--generate-schemas-only";
       const startupOutput = createStartupOutput(
         shouldUseColor({
           isTTY: process.stdout.isTTY,
@@ -286,7 +290,7 @@ function buildProgram(
       const conflictingOptions: string[] = [];
       const ignoredConfigOptions: string[] = [];
 
-      for (const option of SCHEMAS_ONLY_CONFLICTING_OPTIONS) {
+      for (const option of STANDALONE_CONFLICTING_OPTIONS) {
         // eslint-disable-next-line security/detect-object-injection -- option names come from the local allowlist above.
         if (!(options as Record<string, unknown>)[option]) continue;
 
@@ -299,7 +303,13 @@ function buildProgram(
       }
 
       try {
-        validateSchemasOnlyOptions({
+        if (schemasOnly && clientOnly) {
+          throw new Error(
+            "--generate-client cannot be combined with --generate-schemas-only.",
+          );
+        }
+        validateStandaloneOptions({
+          flag,
           conflictingOptions,
           destinationProvided:
             fileConfig["destination"] !== undefined ||
@@ -310,11 +320,12 @@ function buildProgram(
 
         if (ignoredConfigOptions.length > 0) {
           process.stderr.write(
-            `ℹ️  Ignoring config file options that do not apply to --generate-schemas-only: ${ignoredConfigOptions.join(", ")}\n`,
+            `ℹ️  Ignoring config file options that do not apply to ${flag}: ${ignoredConfigOptions.join(", ")}\n`,
           );
         }
 
-        const count = await generateSchemasOnly({
+        const count = await generateStandalone({
+          target: clientOnly ? "client" : "schemas",
           basePath,
           overlays: options.overlay ?? [],
           source,
@@ -323,11 +334,13 @@ function buildProgram(
 
         process.stdout.write(
           `${
-            count === 0
-              ? startupOutput.warning("No schemas found; nothing was written")
-              : startupOutput.success(
-                  `Generated ${count} schema type${count === 1 ? "" : "s"}`,
-                )
+            clientOnly
+              ? startupOutput.success(`Generated Fetch client (${count} files)`)
+              : count === 0
+                ? startupOutput.warning("No schemas found; nothing was written")
+                : startupOutput.success(
+                    `Generated ${count} schema type${count === 1 ? "" : "s"}`,
+                  )
           }\n`,
         );
       } catch (error) {
@@ -640,6 +653,10 @@ function buildProgram(
     .option(
       "--generate-schemas-only",
       "write only the #/components/schemas types, directly into [destination] (requires a destination; no routes, scenarios, or server)",
+    )
+    .option(
+      "--generate-client",
+      "generate a standalone Fetch client (requires a destination)",
     )
     .option("--generate-types", "generate types")
     .option("--generate-routes", "generate routes")

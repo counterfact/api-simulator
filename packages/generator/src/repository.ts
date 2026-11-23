@@ -284,12 +284,39 @@ export class Repository {
       script,
     }));
 
-    await Promise.all(
-      outputs.map(async ({ outputPath, script }) => {
-        const fullPath = resolveDestinationPath(destination, outputPath);
+    return this.writeOutputs(destination, outputs);
+  }
 
+  /** Write an isolated tree of generated scripts at their original paths. */
+  public async writeGeneratedScripts(
+    destination: string,
+    version: string,
+  ): Promise<string[]> {
+    await this.finished();
+    const outputPrefix = version === "" ? "" : `${version}/`;
+    return this.writeOutputs(
+      destination,
+      [...this.scripts].map(([path, script]) => ({
+        outputPath: outputPrefix + path,
+        script,
+      })),
+    );
+  }
+
+  private async writeOutputs(
+    destination: string,
+    outputs: readonly { outputPath: string; script: Script }[],
+  ): Promise<string[]> {
+    const files = await Promise.all(
+      outputs.map(async ({ outputPath, script }) => ({
+        fullPath: resolveDestinationPath(destination, outputPath),
+        contents: await script.contents(),
+      })),
+    );
+    await Promise.all(
+      files.map(async ({ fullPath, contents }) => {
         await ensureDirectoryExists(fullPath);
-        await fs.writeFile(fullPath, await script.contents());
+        await fs.writeFile(fullPath, contents);
       }),
     );
 

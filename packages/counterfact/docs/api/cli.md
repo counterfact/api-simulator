@@ -21,6 +21,7 @@ npx counterfact@latest [spec] [output] [options]
 | `--no-validate-response`    | —                  | Disable OpenAPI response validation                                   |
 | `--generate-types`          | `false`            | Generate types only                                                   |
 | `--generate-routes`         | `false`            | Generate routes only                                                  |
+| `--generate-client`         | `false`            | Generate a standalone Fetch client into `[output]`                    |
 | `--generate-schemas-only`   | `false`            | Write only the schema types into `[output]` (see below)               |
 | `--watch-types`             | `false`            | Watch and regenerate types only                                       |
 | `--watch-routes`            | `false`            | Watch and regenerate routes only                                      |
@@ -55,6 +56,61 @@ Output layout:
 | `group` and `version` | `<output>/<group>/<version>/<Name>.ts` |
 
 Groups and versions come from the `spec` list in a config file. Every spec in a multi-spec configuration needs a unique non-empty group, and one group cannot mix versioned and unversioned specs. A schema that depends on something other than another schema (for example a `$ref` to a parameter) fails with an error naming the schema, because the flat file could not import it.
+
+## Generate a typed Fetch client
+
+```sh
+npm install @counterfact/client
+npx counterfact@latest openapi.yaml ./src/api/generated --generate-client
+```
+
+The command writes a TypeScript entry point and the referenced schemas. Import
+`createClient` from the generated `index.ts`. Give it a `baseUrl` for the real
+backend or the Counterfact simulator, including any prefix used to serve the
+spec.
+
+```ts
+import { createClient } from "./api/generated/index.js";
+
+const route = createClient({ baseUrl: "http://localhost:3100" });
+const tenant = route("/{tenantId}/v1").path({ tenantId: "acme" });
+const order = tenant.segment("orders/{orderId}").method("get");
+const result = await order.path({ orderId: "123" }).send();
+
+if (result.matchedStatus === "200") {
+  console.log(result.body);
+}
+```
+
+`route()` accepts an OpenAPI path or one of its prefixes. `segment()` appends a
+relative fragment and carries over the path values you already set. After
+selecting a method, supply the operation's path, query, header, cookie, and body
+inputs. The typed builder exposes `send()` once all required inputs are set.
+Each step returns a new builder, so you can reuse a prefix or a prepared request.
+
+`send()` returns the HTTP `status`, `mediaType`, decoded `body`, and original
+Fetch `response`. Check `matchedStatus` to narrow the body for a declared
+status, range, or default response. An undocumented status or media type has
+`matchedStatus: undefined`. JSON decoding uses the declared schema for its
+TypeScript type. It does not validate the response body at runtime.
+You can supply default headers, Fetch credentials, or a custom `fetch` when
+creating the client, and an abort signal when sending. Browser cookie handling
+follows Fetch's credential rules.
+
+Use a dedicated output folder for generated files. Grouped and versioned
+specifications produce separate entry points under
+`<output>/<group>/<version>/index.ts`, omitting either directory when it is not
+configured. This one-shot mode applies configured overlays and does not start
+the simulator. It uses the same action restrictions as schema-only generation,
+and the two modes are mutually exclusive.
+
+The generator accepts OpenAPI 3.x. A request body uses the declared JSON media
+type if there is one, or the first media type otherwise. JSON bodies use
+generated schema types. Text, binary, multipart and URL-encoded bodies use
+`string`, `Blob | ArrayBuffer`, `FormData`, and `URLSearchParams` respectively.
+Response decoding supports exact declared media types, with non-JSON,
+non-text content returned as bytes. Fetch-forbidden HTTP methods are omitted
+from the generated client.
 
 ## YAML configuration
 

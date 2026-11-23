@@ -4,7 +4,26 @@ Counterfact's raw HTTP client and immutable, OpenAPI-aware request builder.
 Use it to construct, inspect, reuse, and send requests without starting the
 Counterfact REPL or simulator.
 
-## Reusable requests
+## Generate a typed Fetch client
+
+Run `npx counterfact@latest openapi.yaml ./generated --generate-client` and
+import `createClient` from `./generated/index.js`. The generated entry point
+uses the browser-compatible `@counterfact/client/fetch` export.
+
+```ts
+import { createClient } from "./generated/index.js";
+
+const route = createClient({ baseUrl: "https://example.com" });
+const tenant = route("/{tenantId}/v1").path({ tenantId: "acme" });
+const order = tenant.segment("orders/{orderId}").method("get");
+const result = await order.path({ orderId: "123" }).send();
+```
+
+A builder preserves path values as you append a segment. TypeScript offers
+`send()` once the selected operation's required inputs are present. The
+`matchedStatus` property identifies the declared response and narrows its body.
+
+## Reusable requests in Node
 
 ```js
 import {
