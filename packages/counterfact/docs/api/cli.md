@@ -64,7 +64,7 @@ npm install @counterfact/client
 npx counterfact@latest openapi.yaml ./src/api/generated --generate-client
 ```
 
-The command writes a TypeScript entry point and the referenced schemas. Import
+The command writes a TypeScript entry point, response validators, and the referenced schemas. Import
 `createClient` from the generated `index.ts`. Give it a `baseUrl` for the real
 backend or the Counterfact simulator, including any prefix used to serve the
 spec.
@@ -101,8 +101,9 @@ JSON or schema failures, it also exposes the received body as `unknown`.
 The client validates declared JSON and text body schemas at runtime.
 For other media types it checks the declared status and media type before
 returning bytes. Validation covers the response body, excluding headers and
-custom schema formats. In browsers, schema compilation requires a Content
-Security Policy that permits dynamic code evaluation.
+custom schema formats. Counterfact compiles the validators during generation,
+so browser clients can validate responses under a Content Security Policy that
+blocks dynamic code evaluation.
 
 You can supply default headers, Fetch credentials, or a custom `fetch` when
 creating the client, and an abort signal when sending. Browser cookie handling

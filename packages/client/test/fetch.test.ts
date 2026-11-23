@@ -384,42 +384,41 @@ it("rejects an encoded value that would be normalized into a different path", as
   await expect(request.send()).rejects.toThrow(/dot-segment path/u);
 });
 
+function hasAcceptedFlag(body: unknown): boolean {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "accepted" in body &&
+    typeof body.accepted === "boolean"
+  );
+}
+
 it.each([
   {
-    draft: "7",
     text: '{"accepted":true}',
     expected: { reason: undefined, body: { accepted: true } },
   },
   {
-    draft: "2020-12",
-    text: '{"accepted":true}',
-    expected: { reason: undefined, body: { accepted: true } },
-  },
-  {
-    draft: "2020-12",
     text: '{"accepted":"yes"}',
     expected: { reason: "schema-mismatch", body: { accepted: "yes" } },
   },
   {
-    draft: "2020-12",
     text: "{}",
     expected: { reason: "schema-mismatch", body: {} },
   },
   {
-    draft: "2020-12",
     text: '{"accepted":',
     expected: { reason: "malformed-json", body: '{"accepted":' },
   },
 ] as const)(
-  "validates draft $draft JSON response $text without losing its declaration",
-  async ({ draft, text, expected }) => {
-    const resource = "https://example.test/schemas";
+  "validates JSON response $text without losing its declaration",
+  async ({ text, expected }) => {
     const route = createFetchRoute<Operations>(
       {
         "/{tenantId}/v1/orders/{orderId}": {
           post: {
             ...operation,
-            responseSchemas: { 200: { "application/json": "0" } },
+            responseSchemas: { 200: { "application/json": "schema0" } },
           },
         },
       },
@@ -431,18 +430,7 @@ it.each([
           }),
       },
       {
-        draft,
-        schema: {
-          $id: resource,
-          $defs: {
-            "0": { $ref: resource + "#/$defs/1" },
-            "1": {
-              type: "object",
-              required: ["accepted"],
-              properties: { accepted: { type: "boolean" } },
-            },
-          },
-        },
+        schema0: hasAcceptedFlag,
       },
     );
     const outcome = await route("/{tenantId}/v1/orders/{orderId}")

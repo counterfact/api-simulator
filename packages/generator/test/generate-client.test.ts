@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import { expect, it } from "@jest/globals";
@@ -87,11 +88,13 @@ it("generates and type-checks a reusable route prefix against inherited and oper
     expect(await generator.generateClient()).toEqual([
       "v1/index.ts",
       "v1/types/components/schemas/Order.ts",
+      "v1/response-validators.ts",
     ]);
 
     const generated = await $.read("generated/v1/index.ts");
     expect(generated).toContain("responseSchemas:");
-    expect(generated).toContain('required: ["id"]');
+    expect(generated).toContain("./response-validators.js");
+    expect(generated).not.toContain("$defs");
 
     await $.add(
       "consumer.ts",
@@ -171,3 +174,129 @@ it("generates and type-checks a reusable route prefix against inherited and oper
     ).toEqual([]);
   });
 });
+
+it.each([
+  {
+    openapi: "3.0.3",
+    exclusiveMinimum: { minimum: 0, exclusiveMinimum: true },
+  },
+  { openapi: "3.1.0", exclusiveMinimum: { exclusiveMinimum: 0 } },
+])(
+  "runs generated OpenAPI $openapi validators with string-to-code compilation disabled",
+  async ({ openapi, exclusiveMinimum }) => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("package.json", '{"type":"module"}');
+      await $.add(
+        "node_modules/@counterfact/client/package.json",
+        JSON.stringify({
+          type: "module",
+          exports: {
+            "./fetch": "./fetch.js",
+            "./validation-helpers": "./validation-helpers.js",
+          },
+        }),
+      );
+      for (const module of ["fetch", "validation-helpers"]) {
+        const built = new URL(
+          `../../client/dist/${module}.js`,
+          import.meta.url,
+        );
+        await $.add(
+          `node_modules/@counterfact/client/${module}.js`,
+          `export * from ${JSON.stringify(built.href)};`,
+        );
+      }
+      await $.add(
+        "api.json",
+        JSON.stringify({
+          openapi,
+          info: { title: "Orders", version: "1" },
+          paths: {
+            "/orders": {
+              get: {
+                responses: {
+                  "200": {
+                    description: "Order",
+                    content: json({ $ref: "#/components/schemas/Order" }),
+                  },
+                  "4XX": {
+                    description: "Request failed",
+                    content: {
+                      "text/plain": {
+                        schema: { type: "string", minLength: 2 },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          components: {
+            schemas: {
+              Order: {
+                type: "object",
+                required: ["id", "items"],
+                properties: {
+                  id: { type: "integer", ...exclusiveMinimum },
+                  child: { $ref: "#/components/schemas/Order" },
+                  items: {
+                    type: "array",
+                    uniqueItems: true,
+                    items: { type: "object" },
+                  },
+                },
+              },
+            },
+          },
+        }),
+      );
+      const generator = new CodeGenerator(
+        $.path("api.json"),
+        $.path("generated"),
+        {},
+      );
+      await generator.generateClient();
+      const validators = await $.read("generated/response-validators.ts");
+      expect(validators).toContain("@counterfact/client/validation-helpers");
+      expect(validators).not.toContain("require(");
+      for (const module of ["index", "response-validators"]) {
+        const source = await $.read(`generated/${module}.ts`);
+        const { outputText } = ts.transpileModule(source, {
+          compilerOptions: {
+            module: ts.ModuleKind.ESNext,
+            target: ts.ScriptTarget.ES2022,
+          },
+        });
+        await $.add(`generated/${module}.js`, outputText);
+      }
+      await $.add(
+        "consumer.mjs",
+        `
+        import assert from "node:assert/strict";
+        import { InvalidResponseError } from "@counterfact/client/fetch";
+        import { createClient } from "./generated/index.js";
+        const send = response => createClient({
+          baseUrl: "https://example.test",
+          fetch: async () => response,
+        })("/orders").method("get").send();
+        const nested = { id: 1, items: [], child: { id: 2, items: [] } };
+        assert.deepEqual((await send(Response.json(nested))).body, nested);
+        const invalid = error => error instanceof InvalidResponseError && error.reason === "schema-mismatch";
+        await assert.rejects(send(Response.json({ ...nested, child: { id: 0, items: [] } })), invalid);
+        await assert.rejects(send(Response.json({ ...nested, items: [{ name: "same" }, { name: "same" }] })), invalid);
+        const throttled = await send(new Response("slow down", { status: 429 }));
+        assert.equal(throttled.status, 429);
+        assert.equal(throttled.matchedStatus, "4XX");
+        await assert.rejects(send(new Response("😀", { status: 429 })), invalid);
+        assert.equal((await send(new Response("😀😀", { status: 429 }))).body, "😀😀");
+      `,
+      );
+      // The subprocess reads only the generated fixture and the built client runtime.
+      execFileSync(
+        process.execPath,
+        ["--disallow-code-generation-from-strings", "consumer.mjs"],
+        { cwd: $.path(""), stdio: "pipe" },
+      );
+    });
+  },
+);

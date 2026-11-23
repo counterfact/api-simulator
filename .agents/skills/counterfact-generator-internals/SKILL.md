@@ -78,3 +78,5 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Resolve operation context imports from the logical endpoint, not the generated filename. The root endpoint uses index.types.ts but must not inherit a real /index child context.
 
 - Generate Fetch client types and runtime metadata from the same operation traversal. Keep client contracts out of the copied simulator types. Compile a generated consumer that explicitly checks when required inputs enable `send()`.
+
+- Compile Fetch response validators during generation. Translate Ajv's standalone helper references to static ESM imports and exercise the generated client with string-to-code compilation disabled.

@@ -13,6 +13,10 @@
     "./fetch": {
       "types": "./dist/fetch.d.ts",
       "import": "./dist/fetch.js"
+    },
+    "./validation-helpers": {
+      "types": "./dist/validation-helpers.d.ts",
+      "import": "./dist/validation-helpers.js"
     }
   },
   "files": [

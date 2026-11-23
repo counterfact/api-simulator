@@ -22,7 +22,8 @@ const result = await order.path({ orderId: "123" }).send();
 A builder preserves path values as you append a segment. TypeScript offers
 `send()` once the selected operation's required inputs are present. Check
 `matchedStatus` to narrow a response body. A response outside the contract
-rejects with `InvalidResponseError`.
+rejects with `InvalidResponseError`. Response validators are compiled during
+generation and run without dynamic code evaluation in the browser.
 
 ## Reusable requests in Node
 

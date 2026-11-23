@@ -281,7 +281,7 @@ export class Repository {
 
     const outputs = schemaScripts.map(([path, script]) => ({
       outputPath: outputPrefix + path.slice(schemaPrefix.length),
-      script,
+      contents: () => script.contents(),
     }));
 
     return this.writeOutputs(destination, outputs);
@@ -291,26 +291,34 @@ export class Repository {
   public async writeGeneratedScripts(
     destination: string,
     version: string,
+    extra: ReadonlyMap<string, string> = new Map(),
   ): Promise<string[]> {
     await this.finished();
     const outputPrefix = version === "" ? "" : `${version}/`;
-    return this.writeOutputs(
-      destination,
-      [...this.scripts].map(([path, script]) => ({
+    const outputs = [
+      ...[...this.scripts].map(([path, script]) => ({
         outputPath: outputPrefix + path,
-        script,
+        contents: () => script.contents(),
       })),
-    );
+      ...[...extra].map(([path, contents]) => ({
+        outputPath: outputPrefix + path,
+        contents: () => contents,
+      })),
+    ];
+    return this.writeOutputs(destination, outputs);
   }
 
   private async writeOutputs(
     destination: string,
-    outputs: readonly { outputPath: string; script: Script }[],
+    outputs: readonly {
+      outputPath: string;
+      contents: () => string | Promise<string>;
+    }[],
   ): Promise<string[]> {
     const files = await Promise.all(
-      outputs.map(async ({ outputPath, script }) => ({
+      outputs.map(async ({ outputPath, contents }) => ({
         fullPath: resolveDestinationPath(destination, outputPath),
-        contents: await script.contents(),
+        contents: await contents(),
       })),
     );
     await Promise.all(

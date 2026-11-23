@@ -4,17 +4,13 @@ import type {
   ClientSendOptions,
 } from "@counterfact/types/client-route";
 
-import {
-  createResponseValidator,
-  type FetchResponseSchemas,
-  type ValidateResponseBody,
-} from "./response-schemas.js";
-
 export type {
   ClientOperations,
   ClientResult,
   ClientRouteFunction,
 } from "@counterfact/types/client-route";
+
+type ResponseValidators = Readonly<Record<string, (body: unknown) => boolean>>;
 
 type Location = "path" | "query" | "headers" | "cookies";
 
@@ -246,7 +242,7 @@ async function readResponse(
   response: Response,
   method: string,
   operation: FetchOperation,
-  validate: ValidateResponseBody | undefined,
+  validators: ResponseValidators,
 ) {
   const { status } = response;
   const mediaType = mediaTypeOf(response.headers.get("content-type"));
@@ -303,8 +299,14 @@ async function readResponse(
 
   // eslint-disable-next-line security/detect-object-injection -- the status and media type were matched against declared values above.
   const schema = operation.responseSchemas?.[match]?.[mediaType];
-  if (schema !== undefined && validate?.(schema, body) !== true) {
-    throw new InvalidResponseError("schema-mismatch", response, match, body);
+  if (schema !== undefined) {
+    const validate = Object.hasOwn(validators, schema)
+      ? // eslint-disable-next-line security/detect-object-injection -- validator names come from the generated operation metadata.
+        validators[schema]
+      : undefined;
+    if (validate?.(body) !== true) {
+      throw new InvalidResponseError("schema-mismatch", response, match, body);
+    }
   }
   return { matchedStatus: match, status, mediaType, body, response };
 }
@@ -401,9 +403,8 @@ function buildRequest(
 export function createFetchRoute<Operations extends ClientOperations>(
   operations: FetchOperations<Operations>,
   options: FetchClientOptions,
-  schemas?: FetchResponseSchemas,
+  validators: ResponseValidators = {},
 ): ClientRouteFunction<Operations> {
-  const validate = schemas && createResponseValidator(schemas);
   const routes = new Map(
     Object.entries<Record<string, FetchOperation>>(operations).map(
       ([path, methods]) => [path, new Map(Object.entries(methods))],
@@ -450,7 +451,7 @@ export function createFetchRoute<Operations extends ClientOperations>(
             await fetchRequest(url, init),
             method,
             operation,
-            validate,
+            validators,
           );
         },
       }),

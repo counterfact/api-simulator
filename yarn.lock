@@ -1067,6 +1067,7 @@ __metadata:
   dependencies:
     "@counterfact/openapi": "npm:0.1.7"
     "@counterfact/types": "npm:0.3.0"
+    ajv: "npm:8.20.0"
     chokidar: "npm:6.0.0"
     debug: "npm:4.4.3"
     prettier: "npm:3.9.10"

@@ -31,6 +31,7 @@ const subschemas = new Set([
 /** Collect response schemas and their bundled references in one schema resource. */
 export class ClientResponseSchemas {
   private readonly definitions = new Map<string, unknown>();
+  private readonly validators = new Set<string>();
   private readonly keys = new Map<RequirementData, string>();
   private readonly draft: "7" | "2020-12";
   private readonly resource =
@@ -42,9 +43,15 @@ export class ClientResponseSchemas {
   }
 
   public add(schema: Requirement): string {
+    const key = this.addDefinition(schema);
+    this.validators.add(key);
+    return key;
+  }
+
+  private addDefinition(schema: Requirement): string {
     const previous = this.keys.get(schema.data);
     if (previous !== undefined) return previous;
-    const key = String(this.keys.size);
+    const key = `schema${this.keys.size}`;
     // Allocate the key before following references so recursive schemas can point back to it.
     this.keys.set(schema.data, key);
     this.definitions.set(key, this.visit(schema.data, false));
@@ -55,6 +62,9 @@ export class ClientResponseSchemas {
     if (this.definitions.size === 0) return undefined;
     return {
       draft: this.draft,
+      validators: Object.fromEntries(
+        [...this.validators].map((key) => [key, this.pointer(key)]),
+      ),
       schema: {
         $id: this.resource,
         $defs: Object.fromEntries(this.definitions),
@@ -65,7 +75,11 @@ export class ClientResponseSchemas {
   private reference(pointer: string): string | undefined {
     if (!pointer.startsWith("#/")) return undefined;
     const target = this.specification.getRequirement(pointer);
-    return target && this.resource + "#/$defs/" + this.add(target);
+    return target && this.pointer(this.addDefinition(target));
+  }
+
+  private pointer(key: string): string {
+    return this.resource + "#/$defs/" + key;
   }
 
   private visit(schema: unknown, nestedResource: boolean): unknown {
