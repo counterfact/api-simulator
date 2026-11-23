@@ -95,15 +95,17 @@ OpenAPI operation declares `operationId: getOrder`.
 
 ```ts
 const result = await route.operations.getOrder(
-  { path: { tenantId: "acme", orderId: "123" } },
+  { tenantId: "acme", orderId: "123" },
   { signal },
 );
 ```
 
-The first argument groups the operation's inputs under `path`, `query`,
-`headers`, `cookies`, and `body`. You can omit it when the operation has
-no required inputs. Pass `undefined` as the first argument when you only need
-request options. Both forms share the same auth, transport, and response checks.
+Pass parameters by name in the first argument. Counterfact puts each value in
+the path, query, headers, or cookies according to the OpenAPI declaration. If
+one name occurs in several locations, each receives the same value. Use
+`body` for a request payload. Omit the first argument when no input is required,
+or pass `undefined` when you only need request options. Named and fluent calls
+share auth, transport, and response checks.
 
 Operation IDs keep their exact spelling. Use bracket notation for IDs such as
 `route.operations["get-order"]`. Operations without an ID remain callable

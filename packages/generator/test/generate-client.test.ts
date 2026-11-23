@@ -80,7 +80,10 @@ it("generates and type-checks a reusable route prefix against inherited and oper
               ],
               get: {
                 operationId: "getOrder",
-                parameters: [parameter("locale", "query")],
+                parameters: [
+                  parameter("locale", "query"),
+                  parameter("orderId", "query", integer, false),
+                ],
                 responses: {
                   200: {
                     description: "Order",
@@ -204,27 +207,28 @@ it("generates and type-checks a reusable route prefix against inherited and oper
         const bytes: ArrayBuffer = buffered.body;
       }
       // @ts-expect-error only buffered direct calls are available for named operations
-      await route.operations.downloadReport.stream({ query: { format: "pdf" } });
+      await route.operations.downloadReport.stream({ format: "pdf" });
       // @ts-expect-error a JSON-only route cannot be streamed
       await identified.query({ locale: "en-US" }).stream();
       const namedResult = await route.operations.getOrder({
-        path: { tenantId: "acme", orderId: 42 },
-        query: { locale: "en-US" },
+        tenantId: "acme", orderId: 42, locale: "en-US",
       }, { authenticate: true });
       if (namedResult.matchedStatus === "200") {
         const id: number = namedResult.body.id;
       }
       // @ts-expect-error named calls require the locale query
-      await route.operations.getOrder({ path: { tenantId: "acme", orderId: 42 } });
+      await route.operations.getOrder({ tenantId: "acme", orderId: 42 });
+      // @ts-expect-error a repeated name must match the types at both locations
+      await route.operations.getOrder({ tenantId: "acme", orderId: "42", locale: "en-US" });
       // @ts-expect-error this operation requires a body
-      await route.operations["update-order"]({ path: { tenantId: "acme", orderId: 42 } });
+      await route.operations["update-order"]({ tenantId: "acme", orderId: 42 });
       await route.operations["update-order"]({
-        path: { tenantId: "acme", orderId: 42 }, body: { id: 42 },
+        tenantId: "acme", orderId: 42, body: { id: 42 },
       });
       await route.operations.health();
       await route.operations.health(undefined, { redirect: "manual" });
       await route.operations.search();
-      await route.operations.search({ query: { q: "books" } });
+      await route.operations.search({ q: "books" });
       // @ts-expect-error an undeclared ID does not receive a named function
       await route.operations.customers();
       const update = orders.method("post").path({ orderId: 42 });
@@ -307,7 +311,12 @@ it.each([
           security: [{ userToken: ["orders:read"] }],
           paths: {
             "/orders/{orderId}": {
-              parameters: [parameter("orderId", "path", integer)],
+              parameters: [
+                parameter("orderId", "path", integer),
+                parameter("orderId", "query", integer),
+                parameter("orderId", "header", integer),
+                parameter("orderId", "cookie", integer),
+              ],
               get: {
                 operationId: "__proto__",
                 responses: {
@@ -392,11 +401,14 @@ it.each([
           },
           fetch: async (url, init) => {
             assert.equal(url.pathname, "/orders/42");
+            assert.equal(url.searchParams.get("orderId"), "42");
+            assert.equal(init.headers.get("orderId"), "42");
+            assert.equal(init.headers.get("Cookie"), "orderId=42");
             assert.equal(init.headers.get("Authorization"), "Bearer generated-client-token");
             assert.equal(init.redirect, "manual");
             return response;
           },
-        }).operations["__proto__"]({ path: { orderId: 42 } }, { authenticate: true, redirect: "manual" });
+        }).operations["__proto__"]({ orderId: 42 }, { authenticate: true, redirect: "manual" });
         const nested = { id: 1, items: [], child: { id: 2, items: [] } };
         assert.deepEqual((await send(Response.json(nested))).body, nested);
         const invalid = error => error instanceof InvalidResponseError && error.reason === "schema-mismatch";

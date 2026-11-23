@@ -14,7 +14,7 @@ Generated clients apply OpenAPI security requirements and support per-request
 authentication, credentials, redirect handling, and cancellation.
 
 Call generated operations by their OpenAPI operation ID through the typed
-`route.operations` namespace.
+`route.operations` namespace. Pass named operation parameters in one flat object.
 
 Completed fluent requests can call `stream()` to read declared byte responses
 as they arrive.

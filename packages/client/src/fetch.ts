@@ -539,10 +539,7 @@ export function createFetchRoute<Operations extends ClientOperations>(
 
   const named = new Map<
     string,
-    (
-      input?: Partial<Inputs>,
-      sendOptions?: ClientSendOptions,
-    ) => Promise<unknown>
+    (input?: Values, sendOptions?: ClientSendOptions) => Promise<unknown>
   >();
   for (const [path, methods] of routes) {
     for (const [method, operation] of methods) {
@@ -550,13 +547,18 @@ export function createFetchRoute<Operations extends ClientOperations>(
       if (id === undefined) continue;
       if (named.has(id)) throw new Error(`Duplicate operationId "${id}"`);
       named.set(id, async (input, sendOptions) => {
+        const values = new Map(Object.entries(input ?? {}));
         const inputs = {
-          path: input?.path ?? empty.path,
-          query: input?.query ?? empty.query,
-          headers: input?.headers ?? empty.headers,
-          cookies: input?.cookies ?? empty.cookies,
-          body: input?.body,
+          path: Object.create(null) as Record<string, unknown>,
+          query: Object.create(null) as Record<string, unknown>,
+          headers: Object.create(null) as Record<string, unknown>,
+          cookies: Object.create(null) as Record<string, unknown>,
+          body: operation.body ? values.get("body") : undefined,
         };
+        for (const { location, name } of operation.parameters) {
+          // eslint-disable-next-line security/detect-object-injection -- name is a declared OpenAPI parameter; the input groups have no prototype.
+          inputs[location][name] = values.get(name);
+        }
         if (!isReady(operation, inputs)) {
           throw new TypeError(`Missing required inputs for operation "${id}"`);
         }

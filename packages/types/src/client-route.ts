@@ -232,19 +232,12 @@ export type ClientRoute<
         >;
       });
 
-type NamedInputs<Operation extends ClientOperation> = {
-  [
-    Kind in InputKind as EmptyFields extends Operation[Kind] ? never : Kind
-  ]: Operation[Kind];
-} & {
-  [
-    Kind in InputKind as keyof Operation[Kind] extends never
-      ? never
-      : EmptyFields extends Operation[Kind]
-        ? Kind
-        : never
-  ]?: Operation[Kind];
-} & (Operation["bodyRequired"] extends true
+// Intersect location types so a repeated name has to satisfy each declaration.
+type NamedInputs<Operation extends ClientOperation> = Operation["path"] &
+  Operation["query"] &
+  Operation["headers"] &
+  Operation["cookies"] &
+  (Operation["bodyRequired"] extends true
     ? { body: Operation["body"] & Defined }
     : [Operation["body"] & Defined] extends [never]
       ? EmptyFields
