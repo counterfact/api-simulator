@@ -23,6 +23,11 @@ export const SCHEMAS_ONLY_CONFLICTING_OPTIONS = [
 const toFlag = (option: string): string =>
   `--${option.replaceAll(/[A-Z]/gu, (letter) => `-${letter.toLowerCase()}`)}`;
 
+const outputDirectory = (...segments: string[]): string =>
+  pathJoin(...segments)
+    .replace(/\/+$/u, "")
+    .replace(/^\.$/u, "");
+
 export interface SchemasOnlyValidationInput {
   /** Conflicting options that were explicitly passed on the command line. */
   conflictingOptions: readonly string[];
@@ -71,17 +76,18 @@ export function validateSchemasOnlyOptions({
 
   for (const entry of entries) {
     const version = entry.version?.trim() ?? "";
-    const key = `${entry.group}@${version}`;
+    const directory = outputDirectory(entry.group, version);
 
-    if (seen.has(key)) {
+    if (seen.has(directory)) {
       throw new Error(
-        `--generate-schemas-only found more than one spec for group ${JSON.stringify(entry.group)} and version ${JSON.stringify(version)}; each group and version must be unique.`,
+        `--generate-schemas-only found more than one spec for group ${JSON.stringify(entry.group)} and version ${JSON.stringify(version)}; each group and version must write to a unique output directory (${JSON.stringify(directory)}).`,
       );
     }
 
-    seen.add(key);
+    seen.add(directory);
 
-    const wasVersioned = versionedByGroup.get(entry.group);
+    const group = outputDirectory(entry.group);
+    const wasVersioned = versionedByGroup.get(group);
 
     if (wasVersioned !== undefined && wasVersioned !== (version !== "")) {
       throw new Error(
@@ -89,7 +95,7 @@ export function validateSchemasOnlyOptions({
       );
     }
 
-    versionedByGroup.set(entry.group, version !== "");
+    versionedByGroup.set(group, version !== "");
   }
 }
 

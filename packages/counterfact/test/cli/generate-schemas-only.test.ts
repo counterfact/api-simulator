@@ -86,6 +86,46 @@ describe("validateSchemasOnlyOptions", () => {
     ).toThrow(/more than one spec for group "a" and version "v1"/u);
   });
 
+  it.each([
+    [
+      "trailing separators",
+      { group: "catalog" },
+      { group: "catalog/" },
+      '"catalog"',
+    ],
+    [
+      "relative segments",
+      { group: "catalog" },
+      { group: "./catalog" },
+      '"catalog"',
+    ],
+    [
+      "a version folded into the group",
+      { group: "catalog", version: "v1" },
+      { group: "catalog/v1" },
+      '"catalog/v1"',
+    ],
+    [
+      "a trailing separator before the version",
+      { group: "catalog", version: "v1" },
+      { group: "catalog/", version: "v1" },
+      '"catalog/v1"',
+    ],
+  ])(
+    "rejects specs that resolve to the same output directory through %s",
+    (_name, first, second, directory) => {
+      expect(() =>
+        validateSchemasOnlyOptions({
+          ...valid,
+          specs: [
+            { source: "a.yaml", ...first },
+            { source: "b.yaml", ...second },
+          ],
+        }),
+      ).toThrow(`unique output directory (${directory})`);
+    },
+  );
+
   it("rejects mixing versioned and unversioned specs in one group", () => {
     expect(() =>
       validateSchemasOnlyOptions({
