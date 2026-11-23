@@ -41,7 +41,7 @@ def written_files(root):
     if not root.exists():
         return []
     return sorted(
-        str(path.relative_to(root)) for path in root.rglob("*") if path.is_file()
+        path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()
     )
 
 
