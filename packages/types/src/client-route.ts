@@ -1,5 +1,6 @@
 /** One client-facing OpenAPI operation. Keys in the input maps retain their requiredness. */
 export interface ClientOperation {
+  operationId?: string;
   path: object;
   query: object;
   headers: object;
@@ -203,8 +204,51 @@ export type ClientRoute<
         >;
       });
 
-export type ClientRouteFunction<Operations extends ClientOperations> = <
-  Path extends ClientPath<Operations>,
->(
-  path: Path,
-) => ClientRoute<Operations, Path>;
+type NamedInputs<Operation extends ClientOperation> = {
+  [
+    Kind in InputKind as EmptyFields extends Operation[Kind] ? never : Kind
+  ]: Operation[Kind];
+} & {
+  [
+    Kind in InputKind as keyof Operation[Kind] extends never
+      ? never
+      : EmptyFields extends Operation[Kind]
+        ? Kind
+        : never
+  ]?: Operation[Kind];
+} & (Operation["bodyRequired"] extends true
+    ? { body: Operation["body"] & Defined }
+    : [Operation["body"] & Defined] extends [never]
+      ? EmptyFields
+      : { body?: Operation["body"] & Defined });
+
+type NamedCall<
+  Operation extends ClientOperation,
+  Inputs = NamedInputs<Operation>,
+> = (
+  ...args: keyof Inputs extends never
+    ? [input?: undefined, options?: ClientSendOptions]
+    : EmptyFields extends Inputs
+      ? [input?: Inputs, options?: ClientSendOptions]
+      : [input: Inputs, options?: ClientSendOptions]
+) => Promise<ClientResult<Operation>>;
+
+type AllOperations<Operations> = {
+  [Path in keyof Operations]: Operations[Path][keyof Operations[Path]];
+}[keyof Operations];
+
+export type ClientNamedOperations<Operations extends ClientOperations> = {
+  readonly [
+    Operation in Extract<
+      AllOperations<Operations>,
+      ClientOperation & { operationId: string }
+    > as Operation["operationId"]
+  ]: NamedCall<Operation>;
+};
+
+export type ClientRouteFunction<Operations extends ClientOperations> = {
+  <Path extends ClientPath<Operations>>(
+    path: Path,
+  ): ClientRoute<Operations, Path>;
+  readonly operations: ClientNamedOperations<Operations>;
+};

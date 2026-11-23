@@ -93,6 +93,11 @@ function describe(
   script: Script,
   schemas: ClientResponseSchemas,
 ) {
+  const declaredId = operation.get("operationId")?.data;
+  const operationId =
+    typeof declaredId === "string" && declaredId !== ""
+      ? declaredId
+      : undefined;
   const inputs = new Map<string, ts.TypeElement[]>(
     [...locations.values()].map((location) => [location, []]),
   );
@@ -195,6 +200,9 @@ function describe(
 
   return {
     type: typeLiteral([
+      ...(operationId === undefined
+        ? []
+        : [typeProperty("operationId", literalType(operationId))]),
       ...[...inputs].map(([name, properties]) =>
         typeProperty(name, typeLiteral(properties)),
       ),
@@ -203,6 +211,7 @@ function describe(
       typeProperty("responses", typeLiteral(responseTypes)),
     ]),
     metadata: {
+      operationId,
       parameters,
       body: selected && { mediaType: selected.type, required: bodyRequired },
       responses: Object.fromEntries(responseMetadata),
@@ -269,6 +278,21 @@ export async function generateClient(
         }));
       return operations.length ? [{ path, operations }] : [];
     }) ?? [];
+  const operationIds = new Map<string, string>();
+  for (const { path, operations } of paths) {
+    for (const { method, metadata } of operations) {
+      const id = metadata.operationId;
+      if (id === undefined) continue;
+      const endpoint = `${method.toUpperCase()} ${path}`;
+      const previous = operationIds.get(id);
+      if (previous !== undefined) {
+        throw new Error(
+          `Duplicate operationId "${id}" on ${previous} and ${endpoint}`,
+        );
+      }
+      operationIds.set(id, endpoint);
+    }
+  }
   const schemaMetadata = validation.output();
   // Always replace this generated module so removing response schemas doesn't leave old validators behind.
   const validators = script.importExternal(

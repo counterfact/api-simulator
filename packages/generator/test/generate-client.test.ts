@@ -26,6 +26,19 @@ it("generates and type-checks a reusable route prefix against inherited and oper
         info: { title: "Orders", version: "1" },
         security: [{ userToken: ["orders:read"] }],
         paths: {
+          "/health": {
+            get: {
+              operationId: "health",
+              responses: { 204: { description: "Healthy" } },
+            },
+          },
+          "/search": {
+            get: {
+              operationId: "search",
+              parameters: [parameter("q", "query", string, false)],
+              responses: { 204: { description: "No matches" } },
+            },
+          },
           "/{tenantId}/v1/orders/{orderId}": {
             $ref: "#/components/pathItems/Orders",
           },
@@ -53,6 +66,7 @@ it("generates and type-checks a reusable route prefix against inherited and oper
                 parameter("locale", "query", integer, false),
               ],
               get: {
+                operationId: "getOrder",
                 parameters: [parameter("locale", "query")],
                 responses: {
                   200: {
@@ -70,6 +84,7 @@ it("generates and type-checks a reusable route prefix against inherited and oper
                 },
               },
               post: {
+                operationId: "update-order",
                 requestBody: {
                   required: true,
                   content: json({ $ref: "#/components/schemas/Order" }),
@@ -161,6 +176,26 @@ it("generates and type-checks a reusable route prefix against inherited and oper
       if (result.matchedStatus === "404") {
         const error: string = result.body.error;
       }
+      const namedResult = await route.operations.getOrder({
+        path: { tenantId: "acme", orderId: 42 },
+        query: { locale: "en-US" },
+      }, { authenticate: true });
+      if (namedResult.matchedStatus === "200") {
+        const id: number = namedResult.body.id;
+      }
+      // @ts-expect-error named calls require the locale query
+      await route.operations.getOrder({ path: { tenantId: "acme", orderId: 42 } });
+      // @ts-expect-error this operation requires a body
+      await route.operations["update-order"]({ path: { tenantId: "acme", orderId: 42 } });
+      await route.operations["update-order"]({
+        path: { tenantId: "acme", orderId: 42 }, body: { id: 42 },
+      });
+      await route.operations.health();
+      await route.operations.health(undefined, { redirect: "manual" });
+      await route.operations.search();
+      await route.operations.search({ query: { q: "books" } });
+      // @ts-expect-error an undeclared ID does not receive a named function
+      await route.operations.customers();
       const update = orders.method("post").path({ orderId: 42 });
       // @ts-expect-error the post body is required
       update.send();
@@ -240,8 +275,10 @@ it.each([
           info: { title: "Orders", version: "1" },
           security: [{ userToken: ["orders:read"] }],
           paths: {
-            "/orders": {
+            "/orders/{orderId}": {
+              parameters: [parameter("orderId", "path", integer)],
               get: {
+                operationId: "__proto__",
                 responses: {
                   "200": {
                     description: "Order",
@@ -323,11 +360,12 @@ it.each([
             },
           },
           fetch: async (url, init) => {
+            assert.equal(url.pathname, "/orders/42");
             assert.equal(init.headers.get("Authorization"), "Bearer generated-client-token");
             assert.equal(init.redirect, "manual");
             return response;
           },
-        })("/orders").method("get").send({ authenticate: true, redirect: "manual" });
+        }).operations["__proto__"]({ path: { orderId: 42 } }, { authenticate: true, redirect: "manual" });
         const nested = { id: 1, items: [], child: { id: 2, items: [] } };
         assert.deepEqual((await send(Response.json(nested))).body, nested);
         const invalid = error => error instanceof InvalidResponseError && error.reason === "schema-mismatch";
@@ -349,3 +387,28 @@ it.each([
     });
   },
 );
+
+it("rejects duplicate operation IDs before writing the client", async () => {
+  await usingTemporaryFiles(async ($) => {
+    const get = {
+      operationId: "getOrder",
+      responses: { 204: { description: "OK" } },
+    };
+    await $.add(
+      "api.json",
+      JSON.stringify({
+        openapi: "3.1.0",
+        info: { title: "Orders", version: "1" },
+        paths: { "/orders": { get }, "/archived": { get } },
+      }),
+    );
+    const generator = new CodeGenerator(
+      $.path("api.json"),
+      $.path("generated"),
+      {},
+    );
+    await expect(generator.generateClient()).rejects.toThrow(
+      'Duplicate operationId "getOrder" on GET /orders and GET /archived',
+    );
+  });
+});

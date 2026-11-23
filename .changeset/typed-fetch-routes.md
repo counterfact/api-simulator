@@ -12,3 +12,6 @@ reject with an error. Response validators are compiled during generation.
 
 Generated clients apply OpenAPI security requirements and support per-request
 authentication, credentials, redirect handling, and cancellation.
+
+Call generated operations by their OpenAPI operation ID through the typed
+`route.operations` namespace.

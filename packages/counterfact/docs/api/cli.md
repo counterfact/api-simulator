@@ -88,6 +88,27 @@ selecting a method, supply the operation's path, query, header, cookie, and body
 inputs. The typed builder exposes `send()` once all required inputs are set.
 Each step returns a new builder, so you can reuse a prefix or a prepared request.
 
+### Call an operation by ID
+
+Create the client as usual and call `route.operations.getOrder()` if the
+OpenAPI operation declares `operationId: getOrder`.
+
+```ts
+const result = await route.operations.getOrder(
+  { path: { tenantId: "acme", orderId: "123" } },
+  { signal },
+);
+```
+
+The first argument groups the operation's inputs under `path`, `query`,
+`headers`, `cookies`, and `body`. You can omit it when the operation has
+no required inputs. Pass `undefined` as the first argument when you only need
+request options. Both forms share the same auth, transport, and response checks.
+
+Operation IDs keep their exact spelling. Use bracket notation for IDs such as
+`route.operations["get-order"]`. Operations without an ID remain callable
+through the fluent API. Duplicate operation IDs fail generation.
+
 `send()` resolves with the HTTP `status`, `matchedStatus`, `mediaType`,
 decoded `body`, and original Fetch `response`. Check `matchedStatus` to
 narrow the body for a declared status, range, or default response. A documented

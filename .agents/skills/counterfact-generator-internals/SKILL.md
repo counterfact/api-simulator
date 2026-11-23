@@ -82,3 +82,5 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Compile Fetch response validators during generation. Translate Ajv's standalone helper references to static ESM imports and exercise the generated client with string-to-code compilation disabled.
 
 - Preserve absent, empty, and anonymous OpenAPI security declarations when generating client metadata. Verify operation overrides, alternative requirements, and provider scopes through the generated client.
+
+- Keep OpenAPI operation IDs unchanged in the generated named-client namespace. Both named and fluent calls should use the same request transport and response validators.

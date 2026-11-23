@@ -15,6 +15,7 @@ export { RequestAuthenticationError } from "./fetch-auth.js";
 export type { CookieCredential, CredentialProvider } from "./fetch-auth.js";
 
 export type {
+  ClientNamedOperations,
   ClientOperations,
   ClientResult,
   ClientRouteFunction,
@@ -35,6 +36,7 @@ export interface FetchParameter {
 }
 
 export interface FetchOperation {
+  operationId?: string;
   parameters: readonly FetchParameter[];
   body?: { required: boolean; mediaType: string };
   responses: Readonly<Record<string, readonly string[]>>;
@@ -435,6 +437,39 @@ export function createFetchRoute<Operations extends ClientOperations>(
   }
   const fetchRequest = options.fetch ?? globalThis.fetch.bind(globalThis);
 
+  async function sendRequest(
+    path: string,
+    method: string,
+    operation: FetchOperation,
+    inputs: Inputs,
+    sendOptions?: ClientSendOptions,
+  ) {
+    const [url, init] = buildRequest(
+      options,
+      path,
+      method,
+      operation,
+      inputs,
+      sendOptions,
+    );
+    if (operation.security || sendOptions?.authenticate !== undefined) {
+      await applyAuthentication(
+        url,
+        init,
+        operation.security ?? [],
+        securitySchemes,
+        options.auth ?? {},
+        sendOptions,
+      );
+    }
+    return readResponse(
+      await fetchRequest(url, init),
+      method,
+      operation,
+      validators,
+    );
+  }
+
   function request(
     path: string,
     method: string,
@@ -455,32 +490,8 @@ export function createFetchRoute<Operations extends ClientOperations>(
       body: (body: unknown) =>
         request(path, method, operation, { ...inputs, body }),
       ...(isReady(operation, inputs) && {
-        async send(sendOptions?: ClientSendOptions) {
-          const [url, init] = buildRequest(
-            options,
-            path,
-            method,
-            operation,
-            inputs,
-            sendOptions,
-          );
-          if (operation.security || sendOptions?.authenticate !== undefined) {
-            await applyAuthentication(
-              url,
-              init,
-              operation.security ?? [],
-              securitySchemes,
-              options.auth ?? {},
-              sendOptions,
-            );
-          }
-          return readResponse(
-            await fetchRequest(url, init),
-            method,
-            operation,
-            validators,
-          );
-        },
+        send: (sendOptions?: ClientSendOptions) =>
+          sendRequest(path, method, operation, inputs, sendOptions),
       }),
     };
   }
@@ -501,7 +512,44 @@ export function createFetchRoute<Operations extends ClientOperations>(
     };
   }
 
-  // The generated types refine the runtime builder according to the same operation metadata.
-  return ((path: string) =>
-    branch(path, {})) as ClientRouteFunction<Operations>;
+  const named = new Map<
+    string,
+    (
+      input?: Partial<Inputs>,
+      sendOptions?: ClientSendOptions,
+    ) => Promise<unknown>
+  >();
+  for (const [path, methods] of routes) {
+    for (const [method, operation] of methods) {
+      const id = operation.operationId;
+      if (id === undefined) continue;
+      if (named.has(id)) throw new Error(`Duplicate operationId "${id}"`);
+      named.set(id, async (input, sendOptions) => {
+        const inputs = {
+          path: input?.path ?? empty.path,
+          query: input?.query ?? empty.query,
+          headers: input?.headers ?? empty.headers,
+          cookies: input?.cookies ?? empty.cookies,
+          body: input?.body,
+        };
+        if (!isReady(operation, inputs)) {
+          throw new TypeError(`Missing required inputs for operation "${id}"`);
+        }
+        return sendRequest(path, method, operation, inputs, sendOptions);
+      });
+    }
+  }
+
+  // A null prototype keeps operation IDs such as "__proto__" and "constructor" addressable.
+  const operationFunctions = Object.freeze(
+    Object.assign(
+      Object.create(null) as Record<string, unknown>,
+      Object.fromEntries(named),
+    ),
+  );
+  const route = (path: string) => branch(path, {});
+  // Generated types refine the callable builder and named operations from the same metadata.
+  return Object.assign(route, {
+    operations: operationFunctions,
+  }) as unknown as ClientRouteFunction<Operations>;
 }
