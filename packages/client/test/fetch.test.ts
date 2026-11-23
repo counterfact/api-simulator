@@ -452,3 +452,107 @@ it.each([
     expect(await outcome.response.text()).toBe(text);
   },
 );
+
+type Download = {
+  path: Record<never, never>;
+  query: { format: "pdf" };
+  headers: Record<never, never>;
+  cookies: Record<never, never>;
+  bodyRequired: false;
+  body: never;
+  operationId: "download";
+  responses: {
+    "200": { mediaType: "application/pdf"; body: ArrayBuffer };
+    "404": { mediaType: "application/json"; body: { message: string } };
+  };
+};
+
+function downloadFixture(response: Response) {
+  return createFetchRoute<{ "/report": { get: Download } }>(
+    {
+      "/report": {
+        get: {
+          operationId: "download",
+          parameters: [
+            {
+              location: "query",
+              name: "format",
+              required: true,
+              style: "form",
+              explode: true,
+            },
+          ],
+          responses: { 200: ["application/pdf"], 404: ["application/json"] },
+          responseSchemas: { 404: { "application/json": "error" } },
+        },
+      },
+    },
+    { baseUrl: "https://example.test", fetch: async () => response },
+    { error: isDownloadError },
+  );
+}
+
+function isDownloadError(body: unknown): boolean {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "message" in body &&
+    typeof body.message === "string"
+  );
+}
+
+it("returns the original byte stream before the server closes it", async () => {
+  const bytes = new Uint8Array([1, 2, 3]);
+  let controller!: ReadableStreamDefaultController<Uint8Array>;
+  const stream = new ReadableStream<Uint8Array>({
+    start(value) {
+      controller = value;
+      controller.enqueue(bytes);
+    },
+  });
+  const response = new Response(stream, {
+    headers: { "content-type": "application/pdf" },
+  });
+  const route = downloadFixture(response);
+  const incomplete = route("/report").method("get");
+  expect(incomplete).not.toHaveProperty("stream");
+  expect(route.operations.download).not.toHaveProperty("stream");
+  expect(route.operations.download).not.toHaveProperty("send");
+  try {
+    const result = await incomplete.query({ format: "pdf" }).stream();
+    expect(result).toMatchObject({
+      matchedStatus: "200",
+      mediaType: "application/pdf",
+      response,
+    });
+    expect(result.body).toBe(response.body);
+    const reader = stream.getReader();
+    await expect(reader.read()).resolves.toEqual({ value: bytes, done: false });
+    reader.releaseLock();
+  } finally {
+    controller.close();
+  }
+});
+
+it("decodes documented JSON responses from a streamed request", async () => {
+  const error = { message: "Missing report" };
+  const route = downloadFixture(Response.json(error, { status: 404 }));
+  const result = await route("/report")
+    .method("get")
+    .query({ format: "pdf" })
+    .stream();
+  expect(result).toMatchObject({ matchedStatus: "404", body: error });
+});
+
+it("validates documented JSON responses from a streamed request", async () => {
+  const route = downloadFixture(
+    Response.json({ message: false }, { status: 404 }),
+  );
+  await expect(
+    route("/report").method("get").query({ format: "pdf" }).stream(),
+  ).rejects.toMatchObject({
+    name: "InvalidResponseError",
+    reason: "schema-mismatch",
+    status: 404,
+  });
+});

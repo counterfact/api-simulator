@@ -26,6 +26,19 @@ it("generates and type-checks a reusable route prefix against inherited and oper
         info: { title: "Orders", version: "1" },
         security: [{ userToken: ["orders:read"] }],
         paths: {
+          "/download": {
+            get: {
+              operationId: "downloadReport",
+              parameters: [parameter("format", "query")],
+              responses: {
+                200: {
+                  description: "Report",
+                  content: { "application/pdf": {} },
+                },
+                404: { description: "Missing", content: json(string) },
+              },
+            },
+          },
           "/health": {
             get: {
               operationId: "health",
@@ -176,6 +189,24 @@ it("generates and type-checks a reusable route prefix against inherited and oper
       if (result.matchedStatus === "404") {
         const error: string = result.body.error;
       }
+      const download = route("/download").method("get");
+      // @ts-expect-error the stream method requires the operation's query
+      await download.stream();
+      const completed = download.query({ format: "pdf" });
+      const streamed = await completed.stream({ signal: new AbortController().signal });
+      if (streamed.matchedStatus === "200") {
+        const bytes: ReadableStream<Uint8Array> = streamed.body;
+      } else {
+        const message: string = streamed.body;
+      }
+      const buffered = await completed.send();
+      if (buffered.matchedStatus === "200") {
+        const bytes: ArrayBuffer = buffered.body;
+      }
+      // @ts-expect-error only buffered direct calls are available for named operations
+      await route.operations.downloadReport.stream({ query: { format: "pdf" } });
+      // @ts-expect-error a JSON-only route cannot be streamed
+      await identified.query({ locale: "en-US" }).stream();
       const namedResult = await route.operations.getOrder({
         path: { tenantId: "acme", orderId: 42 },
         query: { locale: "en-US" },

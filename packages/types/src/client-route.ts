@@ -131,6 +131,32 @@ export type ClientResult<Operation extends ClientOperation> = {
   >;
 }[keyof Operation["responses"]];
 
+type Streamable<Result> = Result extends { mediaType: infer MediaType }
+  ? MediaType extends string
+    ? MediaType extends "application/json" | `${string}+json` | `text/${string}`
+      ? never
+      : Result
+    : never
+  : never;
+
+type WithStreamBody<Result> =
+  Result extends Streamable<Result>
+    ? Omit<Result, "body"> & { body: ReadableStream<Uint8Array> }
+    : Result;
+
+export type ClientStreamResult<Operation extends ClientOperation> =
+  WithStreamBody<ClientResult<Operation>>;
+
+type StreamMethod<Operation extends ClientOperation> = [
+  Streamable<ClientResult<Operation>>,
+] extends [never]
+  ? unknown
+  : {
+      stream(
+        options?: ClientSendOptions,
+      ): Promise<ClientStreamResult<Operation>>;
+    };
+
 export type ClientSecurityScheme =
   | { type: "bearer" }
   | { type: "apiKey"; location: "header" | "query" | "cookie"; name: string };
@@ -148,7 +174,9 @@ type CanSend<
 > = State extends Pick<Operation, InputKind> & {
   hasBody: Operation["bodyRequired"] extends true ? true : boolean;
 }
-  ? { send(options?: ClientSendOptions): Promise<ClientResult<Operation>> }
+  ? {
+      send(options?: ClientSendOptions): Promise<ClientResult<Operation>>;
+    } & StreamMethod<Operation>
   : unknown;
 
 type Defined = NonNullable<unknown> | null;

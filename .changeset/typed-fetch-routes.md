@@ -15,3 +15,6 @@ authentication, credentials, redirect handling, and cancellation.
 
 Call generated operations by their OpenAPI operation ID through the typed
 `route.operations` namespace.
+
+Completed fluent requests can call `stream()` to read declared byte responses
+as they arrive.

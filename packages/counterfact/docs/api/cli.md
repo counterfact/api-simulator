@@ -126,6 +126,26 @@ custom schema formats. Counterfact compiles the validators during generation,
 so browser clients can validate responses under a Content Security Policy that
 blocks dynamic code evaluation.
 
+### Stream a download
+
+A completed fluent request exposes `stream()` when the operation declares a
+response that `send()` would return as bytes. Call it with the same request
+options as `send()`.
+
+```ts
+const result = await route("/report").method("get").stream({ signal });
+
+if (result.matchedStatus === "200") {
+  const reader = result.body.getReader();
+  // Read report bytes as they arrive.
+}
+```
+
+The result preserves the status, media type, and original Fetch response. For
+a byte response, `result.body` is the same stream as `result.response.body`.
+Read from one of them. Declared JSON and text responses, such as error bodies,
+are still decoded and validated. Named operation calls return buffered results.
+
 ### Authentication and Fetch options
 
 Register providers by the names in `components.securitySchemes`. Counterfact
@@ -166,7 +186,7 @@ A thrown provider error rejects the request. A documented HTTP 401 remains a
 typed response, with no anonymous retry.
 
 Supply default headers, credentials, or a custom `fetch` in `createClient()`.
-Each call to `send()` can set `signal`, `credentials`, and `redirect`.
+Each call to `send()` or `stream()` can set `signal`, `credentials`, and `redirect`.
 Per-request credentials override the client default. Anonymous opt-out
 always omits credentials. Requests that use a credential provider reject
 redirects by default. Set a redirect mode explicitly to override that default.

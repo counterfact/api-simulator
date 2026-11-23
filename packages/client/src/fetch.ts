@@ -18,6 +18,7 @@ export type {
   ClientNamedOperations,
   ClientOperations,
   ClientResult,
+  ClientStreamResult,
   ClientRouteFunction,
 } from "@counterfact/types/client-route";
 
@@ -201,6 +202,10 @@ function isJson(mediaType: string): boolean {
   return mediaType === "application/json" || mediaType.endsWith("+json");
 }
 
+function isStreamable(mediaType: string): boolean {
+  return !isJson(mediaType) && !mediaType.startsWith("text/");
+}
+
 function mediaTypeOf(value: string | null): string | undefined {
   return value?.split(";", 1)[0]?.trim().toLowerCase();
 }
@@ -260,6 +265,7 @@ async function readResponse(
   method: string,
   operation: FetchOperation,
   validators: ResponseValidators,
+  stream: boolean,
 ) {
   const { status } = response;
   const mediaType = mediaTypeOf(response.headers.get("content-type"));
@@ -273,10 +279,11 @@ async function readResponse(
   }
   // eslint-disable-next-line security/detect-object-injection -- match is an own response key selected above.
   const declared = operation.responses[match]!;
+  const responseBody = response.body;
   const emptyBody =
     method === "head" ||
     [204, 205, 304].includes(status) ||
-    response.body === null;
+    responseBody === null;
 
   if (declared.length === 0) {
     const bytes = emptyBody ? undefined : await response.clone().arrayBuffer();
@@ -297,6 +304,16 @@ async function readResponse(
   }
   if (mediaType === undefined || !declared.includes(mediaType)) {
     throw new InvalidResponseError("unexpected-media-type", response, match);
+  }
+
+  if (stream && isStreamable(mediaType)) {
+    return {
+      matchedStatus: match,
+      status,
+      mediaType,
+      body: responseBody,
+      response,
+    };
   }
 
   const content = response.clone();
@@ -443,6 +460,7 @@ export function createFetchRoute<Operations extends ClientOperations>(
     operation: FetchOperation,
     inputs: Inputs,
     sendOptions?: ClientSendOptions,
+    stream = false,
   ) {
     const [url, init] = buildRequest(
       options,
@@ -467,6 +485,7 @@ export function createFetchRoute<Operations extends ClientOperations>(
       method,
       operation,
       validators,
+      stream,
     );
   }
 
@@ -492,6 +511,12 @@ export function createFetchRoute<Operations extends ClientOperations>(
       ...(isReady(operation, inputs) && {
         send: (sendOptions?: ClientSendOptions) =>
           sendRequest(path, method, operation, inputs, sendOptions),
+        ...(Object.values(operation.responses).some((media) =>
+          media.some(isStreamable),
+        ) && {
+          stream: (sendOptions?: ClientSendOptions) =>
+            sendRequest(path, method, operation, inputs, sendOptions, true),
+        }),
       }),
     };
   }
