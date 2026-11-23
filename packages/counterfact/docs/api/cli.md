@@ -90,14 +90,13 @@ Each step returns a new builder, so you can reuse a prefix or a prepared request
 
 ### Call an operation by ID
 
-Create the client as usual and call `route.operations.getOrder()` if the
+Create the client as usual and call `route.operations().getOrder()` if the
 OpenAPI operation declares `operationId: getOrder`.
 
 ```ts
-const result = await route.operations.getOrder(
-  { tenantId: "acme", orderId: "123" },
-  { signal },
-);
+const result = await route
+  .operations()
+  .getOrder({ tenantId: "acme", orderId: "123" }, { signal });
 ```
 
 Pass parameters by name in the first argument. Counterfact puts each value in
@@ -107,8 +106,19 @@ one name occurs in several locations, each receives the same value. Use
 or pass `undefined` when you only need request options. Named and fluent calls
 share auth, transport, and response checks.
 
+Pass shared parameter values to `operations()` once and reuse the returned calls.
+
+```ts
+const acme = route.operations({ tenantId: "acme" });
+await acme.getOrder({ orderId: "123" });
+```
+
+A default must fit each named operation that declares the parameter. Each
+operation uses its own parameters and lets a defined call-specific value
+override a default. The request body and request options belong to each call.
+
 Operation IDs keep their exact spelling. Use bracket notation for IDs such as
-`route.operations["get-order"]`. Operations without an ID remain callable
+`route.operations()["get-order"]`. Operations without an ID remain callable
 through the fluent API. Duplicate operation IDs fail generation.
 
 `send()` resolves with the HTTP `status`, `matchedStatus`, `mediaType`,

@@ -233,10 +233,25 @@ export type ClientRoute<
       });
 
 // Intersect location types so a repeated name has to satisfy each declaration.
-type NamedInputs<Operation extends ClientOperation> = Operation["path"] &
+type NamedParameters<Operation extends ClientOperation> = Operation["path"] &
   Operation["query"] &
   Operation["headers"] &
-  Operation["cookies"] &
+  Operation["cookies"];
+
+type DefinedKeys<Defaults> = {
+  [Key in keyof Defaults]-?: undefined extends Defaults[Key] ? never : Key;
+}[keyof Defaults];
+
+type NamedInputs<
+  Operation extends ClientOperation,
+  Defaults,
+  Parameters = NamedParameters<Operation>,
+  Defaulted extends keyof Parameters = Extract<
+    DefinedKeys<Defaults>,
+    keyof Parameters
+  >,
+> = Omit<Parameters, Defaulted> &
+  Partial<Pick<Parameters, Defaulted>> &
   (Operation["bodyRequired"] extends true
     ? { body: Operation["body"] & Defined }
     : [Operation["body"] & Defined] extends [never]
@@ -245,7 +260,8 @@ type NamedInputs<Operation extends ClientOperation> = Operation["path"] &
 
 type NamedCall<
   Operation extends ClientOperation,
-  Inputs = NamedInputs<Operation>,
+  Defaults,
+  Inputs = NamedInputs<Operation, Defaults>,
 > = (
   ...args: keyof Inputs extends never
     ? [input?: undefined, options?: ClientSendOptions]
@@ -258,18 +274,58 @@ type AllOperations<Operations> = {
   [Path in keyof Operations]: Operations[Path][keyof Operations[Path]];
 }[keyof Operations];
 
-export type ClientNamedOperations<Operations extends ClientOperations> = {
+type NamedDefinitions<Operations> = Extract<
+  AllOperations<Operations>,
+  ClientOperation & { operationId: string }
+>;
+
+type NamedParameterSets<Operation extends ClientOperation> =
+  Operation extends ClientOperation ? NamedParameters<Operation> : never;
+
+type ParameterKeys<Parameters> = Parameters extends unknown
+  ? keyof Parameters
+  : never;
+
+type ParameterAcceptors<Parameters, Key> = Parameters extends unknown
+  ? Key extends keyof Parameters
+    ? (value: Parameters[Key]) => void
+    : never
+  : never;
+
+type OperationDefaults<
+  Operations,
+  Parameters = NamedParameterSets<NamedDefinitions<Operations>>,
+> = {
+  // A shared default must be valid for every named operation that declares it.
+  [Key in Exclude<ParameterKeys<Parameters>, "body">]?: ParameterAcceptors<
+    Parameters,
+    Key
+  > extends (value: infer Value) => void
+    ? Value
+    : never;
+};
+
+export type ClientNamedOperations<
+  Operations extends ClientOperations,
+  Defaults = EmptyFields,
+> = {
   readonly [
-    Operation in Extract<
-      AllOperations<Operations>,
-      ClientOperation & { operationId: string }
-    > as Operation["operationId"]
-  ]: NamedCall<Operation>;
+    Operation in NamedDefinitions<Operations> as Operation["operationId"]
+  ]: NamedCall<Operation, Defaults>;
 };
 
 export type ClientRouteFunction<Operations extends ClientOperations> = {
   <Path extends ClientPath<Operations>>(
     path: Path,
   ): ClientRoute<Operations, Path>;
-  readonly operations: ClientNamedOperations<Operations>;
+  readonly operations: {
+    (defaults?: undefined): ClientNamedOperations<Operations>;
+    <const Defaults extends OperationDefaults<Operations>>(
+      defaults: Defaults &
+        Record<
+          Exclude<keyof Defaults, keyof OperationDefaults<Operations>>,
+          never
+        >,
+    ): ClientNamedOperations<Operations, Defaults>;
+  };
 };

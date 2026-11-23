@@ -207,30 +207,48 @@ it("generates and type-checks a reusable route prefix against inherited and oper
         const bytes: ArrayBuffer = buffered.body;
       }
       // @ts-expect-error only buffered direct calls are available for named operations
-      await route.operations.downloadReport.stream({ format: "pdf" });
+      await route.operations().downloadReport.stream({ format: "pdf" });
       // @ts-expect-error a JSON-only route cannot be streamed
       await identified.query({ locale: "en-US" }).stream();
-      const namedResult = await route.operations.getOrder({
+      const acme = route.operations({ tenantId: "acme" });
+      await acme.getOrder({ orderId: 42, locale: "en-US" });
+      await acme.getOrder({ tenantId: "other", orderId: 42, locale: "en-US" });
+      await acme.health();
+      await acme["update-order"]({ orderId: 42, body: { id: 42 } });
+      // @ts-expect-error binding one parameter does not make other required inputs optional
+      await acme.getOrder({ locale: "en-US" });
+      // @ts-expect-error the body is still required
+      await acme["update-order"]({ orderId: 42 });
+      // @ts-expect-error only declared named parameters can be bound
+      route.operations({ unknownName: "value" });
+      // @ts-expect-error request payloads are supplied per call
+      route.operations({ body: { id: 42 } });
+      // @ts-expect-error the POST locale is a number and the GET locale is a string
+      route.operations({ locale: "en-US" });
+      const maybeTenant: { tenantId?: string } = {};
+      // @ts-expect-error an optional default cannot satisfy a required parameter
+      await route.operations(maybeTenant).getOrder({ orderId: 42, locale: "en-US" });
+      const namedResult = await route.operations().getOrder({
         tenantId: "acme", orderId: 42, locale: "en-US",
       }, { authenticate: true });
       if (namedResult.matchedStatus === "200") {
         const id: number = namedResult.body.id;
       }
       // @ts-expect-error named calls require the locale query
-      await route.operations.getOrder({ tenantId: "acme", orderId: 42 });
+      await route.operations().getOrder({ tenantId: "acme", orderId: 42 });
       // @ts-expect-error a repeated name must match the types at both locations
-      await route.operations.getOrder({ tenantId: "acme", orderId: "42", locale: "en-US" });
+      await route.operations().getOrder({ tenantId: "acme", orderId: "42", locale: "en-US" });
       // @ts-expect-error this operation requires a body
-      await route.operations["update-order"]({ tenantId: "acme", orderId: 42 });
-      await route.operations["update-order"]({
+      await route.operations()["update-order"]({ tenantId: "acme", orderId: 42 });
+      await route.operations()["update-order"]({
         tenantId: "acme", orderId: 42, body: { id: 42 },
       });
-      await route.operations.health();
-      await route.operations.health(undefined, { redirect: "manual" });
-      await route.operations.search();
-      await route.operations.search({ q: "books" });
+      await route.operations().health();
+      await route.operations().health(undefined, { redirect: "manual" });
+      await route.operations().search();
+      await route.operations().search({ q: "books" });
       // @ts-expect-error an undeclared ID does not receive a named function
-      await route.operations.customers();
+      await route.operations().customers();
       const update = orders.method("post").path({ orderId: 42 });
       // @ts-expect-error the post body is required
       update.send();
@@ -408,7 +426,7 @@ it.each([
             assert.equal(init.redirect, "manual");
             return response;
           },
-        }).operations["__proto__"]({ orderId: 42 }, { authenticate: true, redirect: "manual" });
+        }).operations({ orderId: 42 })["__proto__"](undefined, { authenticate: true, redirect: "manual" });
         const nested = { id: 1, items: [], child: { id: 2, items: [] } };
         assert.deepEqual((await send(Response.json(nested))).body, nested);
         const invalid = error => error instanceof InvalidResponseError && error.reason === "schema-mismatch";

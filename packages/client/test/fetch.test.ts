@@ -516,8 +516,8 @@ it("returns the original byte stream before the server closes it", async () => {
   const route = downloadFixture(response);
   const incomplete = route("/report").method("get");
   expect(incomplete).not.toHaveProperty("stream");
-  expect(route.operations.download).not.toHaveProperty("stream");
-  expect(route.operations.download).not.toHaveProperty("send");
+  expect(route.operations().download).not.toHaveProperty("stream");
+  expect(route.operations().download).not.toHaveProperty("send");
   try {
     const result = await incomplete.query({ format: "pdf" }).stream();
     expect(result).toMatchObject({
@@ -555,4 +555,51 @@ it("validates documented JSON responses from a streamed request", async () => {
     reason: "schema-mismatch",
     status: 404,
   });
+});
+
+it("binds independent named-operation defaults and lets call values override them", async () => {
+  const received: string[] = [];
+  type Report = Omit<Download, "query"> & {
+    query: { format: "pdf" | "print" };
+  };
+  const route = createFetchRoute<{ "/report": { get: Report } }>(
+    {
+      "/report": {
+        get: {
+          operationId: "download",
+          parameters: [
+            {
+              location: "query",
+              name: "format",
+              required: true,
+              style: "form",
+              explode: true,
+            },
+          ],
+          responses: { 200: ["application/pdf"] },
+        },
+      },
+    },
+    {
+      baseUrl: "https://example.test",
+      fetch: async (url) => {
+        received.push(String(url));
+        return new Response(new Uint8Array([1]), {
+          headers: { "content-type": "application/pdf" },
+        });
+      },
+    },
+  );
+  const first = route.operations({ format: "pdf" });
+  const second = route.operations({ format: "print" });
+  await first.download();
+  await second.download();
+  await first.download({ format: "print" });
+  await first.download({ format: undefined });
+  expect(received).toEqual([
+    "https://example.test/report?format=pdf",
+    "https://example.test/report?format=print",
+    "https://example.test/report?format=print",
+    "https://example.test/report?format=pdf",
+  ]);
 });

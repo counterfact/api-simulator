@@ -539,15 +539,32 @@ export function createFetchRoute<Operations extends ClientOperations>(
 
   const named = new Map<
     string,
-    (input?: Values, sendOptions?: ClientSendOptions) => Promise<unknown>
+    { path: string; method: string; operation: FetchOperation }
   >();
   for (const [path, methods] of routes) {
     for (const [method, operation] of methods) {
       const id = operation.operationId;
       if (id === undefined) continue;
       if (named.has(id)) throw new Error(`Duplicate operationId "${id}"`);
-      named.set(id, async (input, sendOptions) => {
-        const values = new Map(Object.entries(input ?? {}));
+      named.set(id, { path, method, operation });
+    }
+  }
+
+  function operationFunctions(defaults?: Values) {
+    const bound = new Map(Object.entries(defaults ?? {}));
+    bound.delete("body");
+    // A null prototype keeps every declared operation ID addressable.
+    const functions = Object.create(null) as Record<
+      string,
+      (input?: Values, sendOptions?: ClientSendOptions) => Promise<unknown>
+    >;
+    for (const [id, { path, method, operation }] of named) {
+      // eslint-disable-next-line security/detect-object-injection -- IDs come from the generated operations, and the namespace has no prototype.
+      functions[id] = async (input, sendOptions) => {
+        const values = new Map(bound);
+        for (const [key, value] of Object.entries(input ?? {})) {
+          if (value !== undefined) values.set(key, value);
+        }
         const inputs = {
           path: Object.create(null) as Record<string, unknown>,
           query: Object.create(null) as Record<string, unknown>,
@@ -563,17 +580,11 @@ export function createFetchRoute<Operations extends ClientOperations>(
           throw new TypeError(`Missing required inputs for operation "${id}"`);
         }
         return sendRequest(path, method, operation, inputs, sendOptions);
-      });
+      };
     }
+    return Object.freeze(functions);
   }
 
-  // A null prototype keeps operation IDs such as "__proto__" and "constructor" addressable.
-  const operationFunctions = Object.freeze(
-    Object.assign(
-      Object.create(null) as Record<string, unknown>,
-      Object.fromEntries(named),
-    ),
-  );
   const route = (path: string) => branch(path, {});
   // Generated types refine the callable builder and named operations from the same metadata.
   return Object.assign(route, {
