@@ -89,6 +89,10 @@ it("generates and type-checks a reusable route prefix against inherited and oper
       "v1/types/components/schemas/Order.ts",
     ]);
 
+    const generated = await $.read("generated/v1/index.ts");
+    expect(generated).toContain("responseSchemas:");
+    expect(generated).toContain('required: ["id"]');
+
     await $.add(
       "consumer.ts",
       `

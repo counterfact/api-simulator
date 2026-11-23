@@ -88,11 +88,22 @@ selecting a method, supply the operation's path, query, header, cookie, and body
 inputs. The typed builder exposes `send()` once all required inputs are set.
 Each step returns a new builder, so you can reuse a prefix or a prepared request.
 
-`send()` returns the HTTP `status`, `mediaType`, decoded `body`, and original
-Fetch `response`. Check `matchedStatus` to narrow the body for a declared
-status, range, or default response. An undocumented status or media type has
-`matchedStatus: undefined`. JSON decoding uses the declared schema for its
-TypeScript type. It does not validate the response body at runtime.
+`send()` resolves with the HTTP `status`, `matchedStatus`, `mediaType`,
+decoded `body`, and original Fetch `response`. Check `matchedStatus` to
+narrow the body for a declared status, range, or default response. A documented
+HTTP error such as a 404 also resolves when it matches the contract.
+
+An unexpected response rejects with `InvalidResponseError`, exported from
+`@counterfact/client/fetch`. The error includes a `reason`, the original
+`response`, and the matched status declaration if there is one. For malformed
+JSON or schema failures, it also exposes the received body as `unknown`.
+
+The client validates declared JSON and text body schemas at runtime.
+For other media types it checks the declared status and media type before
+returning bytes. Validation covers the response body, excluding headers and
+custom schema formats. In browsers, schema compilation requires a Content
+Security Policy that permits dynamic code evaluation.
+
 You can supply default headers, Fetch credentials, or a custom `fetch` when
 creating the client, and an abort signal when sending. Browser cookie handling
 follows Fetch's credential rules.

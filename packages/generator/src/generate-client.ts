@@ -13,6 +13,7 @@ import {
   unknownType,
   valueExpression,
 } from "./ast.js";
+import { ClientResponseSchemas } from "./client-response-schemas.js";
 import { pathOperations } from "./path-operations.js";
 import { Repository } from "./repository.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
@@ -85,6 +86,7 @@ function describe(
   path: string,
   method: string,
   script: Script,
+  schemas: ClientResponseSchemas,
 ) {
   const inputs = new Map<string, ts.TypeElement[]>(
     [...locations.values()].map((location) => [location, []]),
@@ -142,6 +144,7 @@ function describe(
     : neverType();
 
   const responseMetadata = new Map<string, string[]>();
+  const responseSchemas = new Map<string, Record<string, string>>();
   const responseTypes =
     operation.get("responses")?.map((response, key) => {
       const status =
@@ -158,6 +161,15 @@ function describe(
         status,
         content.map(({ type }) => type),
       );
+      const validation = content.flatMap(({ type, value }) => {
+        const schema = value.get("schema");
+        return schema && (isJson(type) || type.startsWith("text/"))
+          ? [[type, schemas.add(schema)] as const]
+          : [];
+      });
+      if (validation.length > 0)
+        responseSchemas.set(status, Object.fromEntries(validation));
+
       return typeProperty(
         status,
         content.length === 0
@@ -189,6 +201,10 @@ function describe(
       parameters,
       body: selected && { mediaType: selected.type, required: bodyRequired },
       responses: Object.fromEntries(responseMetadata),
+      responseSchemas:
+        responseSchemas.size > 0
+          ? Object.fromEntries(responseSchemas)
+          : undefined,
     },
   };
 }
@@ -209,13 +225,14 @@ export async function generateClient(
   const runtime = "@counterfact/client/fetch";
   const factory = script.importExternal("createFetchRoute", runtime);
   const options = script.importExternalType("FetchClientOptions", runtime);
+  const validation = new ClientResponseSchemas(specification);
   const paths =
     specification.getRequirement("#/paths")?.flatMap((pathItem, path) => {
       const operations = pathOperations(pathItem)
         .filter(([, method]) => !["trace", "connect", "track"].includes(method))
         .map(([operation, method]) => ({
           method,
-          ...describe(operation, path, method, script),
+          ...describe(operation, path, method, script, validation),
         }));
       return operations.length ? [{ path, operations }] : [];
     }) ?? [];
@@ -227,6 +244,7 @@ export async function generateClient(
       createParameterDeclaration,
       createToken,
     } = ts.factory;
+    const schemaMetadata = validation.output();
     const metadata = Object.fromEntries(
       paths.map(({ path, operations }) => [
         path,
@@ -270,7 +288,11 @@ export async function generateClient(
           createCallExpression(
             createIdentifier(factory),
             [typeReference("Operations")],
-            [valueExpression(metadata), createIdentifier("options")],
+            [
+              valueExpression(metadata),
+              createIdentifier("options"),
+              ...(schemaMetadata ? [valueExpression(schemaMetadata)] : []),
+            ],
           ),
         ),
       ),

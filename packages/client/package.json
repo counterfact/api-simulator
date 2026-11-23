@@ -56,6 +56,7 @@
     "test:packed-consumer": "node test/package/client-consumer-smoke.mjs"
   },
   "dependencies": {
-    "@counterfact/types": "0.3.0"
+    "@counterfact/types": "0.3.0",
+    "ajv": "8.20.0"
   }
 }

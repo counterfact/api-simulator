@@ -20,8 +20,9 @@ const result = await order.path({ orderId: "123" }).send();
 ```
 
 A builder preserves path values as you append a segment. TypeScript offers
-`send()` once the selected operation's required inputs are present. The
-`matchedStatus` property identifies the declared response and narrows its body.
+`send()` once the selected operation's required inputs are present. Check
+`matchedStatus` to narrow a response body. A response outside the contract
+rejects with `InvalidResponseError`.
 
 ## Reusable requests in Node
 

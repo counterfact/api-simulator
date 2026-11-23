@@ -1,6 +1,10 @@
 import { expect, it } from "@jest/globals";
 
-import { createFetchRoute, type FetchOperation } from "../src/fetch.js";
+import {
+  createFetchRoute,
+  InvalidResponseError,
+  type FetchOperation,
+} from "../src/fetch.js";
 
 type Post = {
   path: { tenantId: string; orderId: number };
@@ -133,13 +137,22 @@ it.each([
     status: 200,
     content: "wrong type",
     headers: { "Content-Type": "text/plain" },
-    expected: { matchedStatus: undefined, body: expect.any(ArrayBuffer) },
+    expected: {
+      name: "InvalidResponseError",
+      reason: "unexpected-media-type",
+      matchedStatus: "200",
+      mediaType: "text/plain",
+    },
   },
   {
     status: 500,
     content: "unexpected",
     headers: { "Content-Type": "text/plain" },
-    expected: { matchedStatus: undefined, body: expect.any(ArrayBuffer) },
+    expected: {
+      name: "InvalidResponseError",
+      reason: "undocumented-status",
+      matchedStatus: undefined,
+    },
   },
 ])(
   "reports declared and unexpected responses for HTTP $status",
@@ -155,14 +168,18 @@ it.each([
         });
       },
     });
-    const result = await route("/{tenantId}/v1/orders/{orderId}")
+    const outcome = await route("/{tenantId}/v1/orders/{orderId}")
       .method("post")
       .path({ tenantId: "acme", orderId: 42 })
       .query({ states: ["open"] })
       .headers({ "X-Request-Id": "test" })
       .body({ updated: true })
-      .send({ signal });
-    expect(result).toMatchObject({ status, ...expected });
+      .send({ signal })
+      .then(
+        (result) => result,
+        (error: InvalidResponseError) => error,
+      );
+    expect(outcome).toMatchObject({ status, ...expected });
   },
 );
 
@@ -366,3 +383,84 @@ it("rejects an encoded value that would be normalized into a different path", as
     .body({ updated: false });
   await expect(request.send()).rejects.toThrow(/dot-segment path/u);
 });
+
+it.each([
+  {
+    draft: "7",
+    text: '{"accepted":true}',
+    expected: { reason: undefined, body: { accepted: true } },
+  },
+  {
+    draft: "2020-12",
+    text: '{"accepted":true}',
+    expected: { reason: undefined, body: { accepted: true } },
+  },
+  {
+    draft: "2020-12",
+    text: '{"accepted":"yes"}',
+    expected: { reason: "schema-mismatch", body: { accepted: "yes" } },
+  },
+  {
+    draft: "2020-12",
+    text: "{}",
+    expected: { reason: "schema-mismatch", body: {} },
+  },
+  {
+    draft: "2020-12",
+    text: '{"accepted":',
+    expected: { reason: "malformed-json", body: '{"accepted":' },
+  },
+] as const)(
+  "validates draft $draft JSON response $text without losing its declaration",
+  async ({ draft, text, expected }) => {
+    const resource = "https://example.test/schemas";
+    const route = createFetchRoute<Operations>(
+      {
+        "/{tenantId}/v1/orders/{orderId}": {
+          post: {
+            ...operation,
+            responseSchemas: { 200: { "application/json": "0" } },
+          },
+        },
+      },
+      {
+        baseUrl: "https://example.test",
+        fetch: async () =>
+          new Response(text, {
+            headers: { "Content-Type": "application/json" },
+          }),
+      },
+      {
+        draft,
+        schema: {
+          $id: resource,
+          $defs: {
+            "0": { $ref: resource + "#/$defs/1" },
+            "1": {
+              type: "object",
+              required: ["accepted"],
+              properties: { accepted: { type: "boolean" } },
+            },
+          },
+        },
+      },
+    );
+    const outcome = await route("/{tenantId}/v1/orders/{orderId}")
+      .method("post")
+      .path({ tenantId: "acme", orderId: 42 })
+      .query({ states: ["open"] })
+      .headers({ "X-Request-Id": "test" })
+      .body({ updated: true })
+      .send()
+      .then(
+        (result) => ({ reason: undefined, ...result }),
+        (error: InvalidResponseError) => error,
+      );
+    expect(outcome).toMatchObject({
+      matchedStatus: "200",
+      status: 200,
+      ...expected,
+    });
+    expect(await outcome.response.text()).toBe(text);
+  },
+);

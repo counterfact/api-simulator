@@ -108,14 +108,6 @@ type InitialState<Path> = {
   hasBody: false;
 };
 
-interface UndocumentedResponse {
-  matchedStatus: undefined;
-  status: number;
-  mediaType: string | undefined;
-  body: unknown;
-  response: Response;
-}
-
 type StatusNumber<Status> = Status extends `${infer Code extends number}`
   ? Code
   : number;
@@ -131,14 +123,12 @@ type DeclaredResponse<Status, Content> = Content extends {
     }
   : never;
 
-export type ClientResult<Operation extends ClientOperation> =
-  | {
-      [Status in keyof Operation["responses"]]: DeclaredResponse<
-        Status,
-        Operation["responses"][Status]
-      >;
-    }[keyof Operation["responses"]]
-  | UndocumentedResponse;
+export type ClientResult<Operation extends ClientOperation> = {
+  [Status in keyof Operation["responses"]]: DeclaredResponse<
+    Status,
+    Operation["responses"][Status]
+  >;
+}[keyof Operation["responses"]];
 
 export type ClientSendOptions = Pick<RequestInit, "signal">;
 

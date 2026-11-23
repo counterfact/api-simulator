@@ -4,6 +4,12 @@ import type {
   ClientSendOptions,
 } from "@counterfact/types/client-route";
 
+import {
+  createResponseValidator,
+  type FetchResponseSchemas,
+  type ValidateResponseBody,
+} from "./response-schemas.js";
+
 export type {
   ClientOperations,
   ClientResult,
@@ -26,6 +32,7 @@ export interface FetchOperation {
   parameters: readonly FetchParameter[];
   body?: { required: boolean; mediaType: string };
   responses: Readonly<Record<string, readonly string[]>>;
+  responseSchemas?: Readonly<Record<string, Readonly<Record<string, string>>>>;
 }
 
 type FetchOperations<Operations extends ClientOperations> = {
@@ -207,10 +214,39 @@ function encodeBody(mediaType: string, value: unknown): RequestInit["body"] {
   throw new TypeError(`Unsupported request body for ${mediaType}`);
 }
 
+type InvalidResponseReason =
+  | "undocumented-status"
+  | "unexpected-media-type"
+  | "unexpected-body"
+  | "missing-body"
+  | "malformed-json"
+  | "schema-mismatch";
+
+/** A Fetch response whose status, media type, or body did not match the contract. */
+export class InvalidResponseError extends Error {
+  public readonly status: number;
+  public readonly mediaType: string | undefined;
+
+  public constructor(
+    public readonly reason: InvalidResponseReason,
+    public readonly response: Response,
+    public readonly matchedStatus: string | undefined,
+    public readonly body: unknown = undefined,
+  ) {
+    super(
+      `Invalid HTTP response ${response.status}: ${reason.replaceAll("-", " ")}`,
+    );
+    this.name = "InvalidResponseError";
+    this.status = response.status;
+    this.mediaType = mediaTypeOf(response.headers.get("content-type"));
+  }
+}
+
 async function readResponse(
   response: Response,
   method: string,
   operation: FetchOperation,
+  validate: ValidateResponseBody | undefined,
 ) {
   const { status } = response;
   const mediaType = mediaTypeOf(response.headers.get("content-type"));
@@ -219,44 +255,58 @@ async function readResponse(
     `${Math.floor(status / 100)}XX`,
     "default",
   ].find((candidate) => Object.hasOwn(operation.responses, candidate));
+  if (match === undefined) {
+    throw new InvalidResponseError("undocumented-status", response, undefined);
+  }
   // eslint-disable-next-line security/detect-object-injection -- match is an own response key selected above.
-  const declared = match === undefined ? undefined : operation.responses[match];
+  const declared = operation.responses[match]!;
   const emptyBody =
     method === "head" ||
     [204, 205, 304].includes(status) ||
     response.body === null;
 
-  if (declared?.length === 0) {
+  if (declared.length === 0) {
     const bytes = emptyBody ? undefined : await response.clone().arrayBuffer();
-    if (!bytes?.byteLength) {
-      return {
-        matchedStatus: match,
-        status,
-        mediaType: undefined,
-        body: undefined,
-        response,
-      };
+    if (bytes?.byteLength) {
+      throw new InvalidResponseError("unexpected-body", response, match, bytes);
     }
     return {
-      matchedStatus: undefined,
+      matchedStatus: match,
       status,
-      mediaType,
-      body: bytes,
+      mediaType: undefined,
+      body: undefined,
       response,
     };
   }
 
-  const matchedStatus =
-    !emptyBody && declared?.includes(mediaType ?? "") ? match : undefined;
-  let body: unknown;
-  if (!emptyBody) {
-    const content = response.clone();
-    if (matchedStatus && isJson(mediaType ?? "")) body = await content.json();
-    else if (matchedStatus && mediaType?.startsWith("text/"))
-      body = await content.text();
-    else body = await content.arrayBuffer();
+  if (emptyBody) {
+    throw new InvalidResponseError("missing-body", response, match);
   }
-  return { matchedStatus, status, mediaType, body, response };
+  if (mediaType === undefined || !declared.includes(mediaType)) {
+    throw new InvalidResponseError("unexpected-media-type", response, match);
+  }
+
+  const content = response.clone();
+  let body: unknown;
+  if (isJson(mediaType)) {
+    const text = await content.text();
+    try {
+      body = JSON.parse(text);
+    } catch {
+      throw new InvalidResponseError("malformed-json", response, match, text);
+    }
+  } else if (mediaType.startsWith("text/")) {
+    body = await content.text();
+  } else {
+    body = await content.arrayBuffer();
+  }
+
+  // eslint-disable-next-line security/detect-object-injection -- the status and media type were matched against declared values above.
+  const schema = operation.responseSchemas?.[match]?.[mediaType];
+  if (schema !== undefined && validate?.(schema, body) !== true) {
+    throw new InvalidResponseError("schema-mismatch", response, match, body);
+  }
+  return { matchedStatus: match, status, mediaType, body, response };
 }
 
 function inputValue(values: Values, name: string): unknown {
@@ -351,7 +401,9 @@ function buildRequest(
 export function createFetchRoute<Operations extends ClientOperations>(
   operations: FetchOperations<Operations>,
   options: FetchClientOptions,
+  schemas?: FetchResponseSchemas,
 ): ClientRouteFunction<Operations> {
+  const validate = schemas && createResponseValidator(schemas);
   const routes = new Map(
     Object.entries<Record<string, FetchOperation>>(operations).map(
       ([path, methods]) => [path, new Map(Object.entries(methods))],
@@ -394,7 +446,12 @@ export function createFetchRoute<Operations extends ClientOperations>(
             inputs,
             sendOptions,
           );
-          return readResponse(await fetchRequest(url, init), method, operation);
+          return readResponse(
+            await fetchRequest(url, init),
+            method,
+            operation,
+            validate,
+          );
         },
       }),
     };
