@@ -228,6 +228,18 @@ Use `$.minVersion("v2")` to narrow `$` to versions at or after `v2` in the
 configured order and access their version-specific fields. You do not need to
 import the internal versioned operation modules.
 
+## Generate only the schema types
+
+`--generate-schemas-only` writes just the `#/components/schemas` types directly into the output directory, with the same contents as `--generate-types`. Sibling schemas import each other as `./Other.js`.
+
+```
+schemas/
+  Pet.ts
+  Owner.ts
+```
+
+Versioned specs write to `<output>/<version>/`, and grouped specs to `<output>/<group>/`. See [CLI and configuration](../api/cli.md#generate-only-the-schema-types) for the rules.
+
 ## See also
 
 - [Routes](./routes.md) — writing route handlers, reading request data, building responses

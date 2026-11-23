@@ -170,8 +170,12 @@ class CentralTypes {
     );
   }
 
-  public addComponents(specification: Specification, version: string): void {
-    for (const category of CATEGORIES) {
+  public addComponents(
+    specification: Specification,
+    version: string,
+    categories: readonly (typeof CATEGORIES)[number][] = CATEGORIES,
+  ): void {
+    for (const category of categories) {
       specification
         .getRequirement(`#/components/${category}`)
         ?.forEach((component, name) => {

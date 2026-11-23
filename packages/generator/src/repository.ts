@@ -21,6 +21,7 @@ import {
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
 import {
   toForwardSlashPath,
+  pathJoin,
   pathRelative,
   pathDirname,
 } from "./forward-slash-path.js";
@@ -234,6 +235,65 @@ export class Repository {
       await this.createDefaultContextFile(destination);
     }
     if (types) await writeHelperTypes(destination, destination, true);
+  }
+
+  /**
+   * Waits for all scripts to finish, then writes only the schemas for
+   * `version` directly under `destination`, without the
+   * `types/<version>/components/schemas/` prefix. Versioned schemas are written
+   * to `<destination>/<version>/`.
+   *
+   * Every other script in the repository is left unwritten. Fails, naming the
+   * schema, when a schema imports anything that would not be written, because
+   * the flattened file would then contain a broken import.
+   *
+   * @param destination - Absolute path to the output directory.
+   * @param version - Version label of the schemas to write (`""` when unversioned).
+   * @returns The output paths written, relative to `destination`.
+   */
+  public async writeSchemas(
+    destination: string,
+    version = "",
+  ): Promise<string[]> {
+    await this.finished();
+
+    const schemaPrefix = `${pathJoin("types", version, "components", "schemas")}/`;
+    const outputPrefix = version === "" ? "" : `${version}/`;
+    const schemaScripts = Array.from(this.scripts).filter(([path]) =>
+      path.startsWith(schemaPrefix),
+    );
+
+    for (const [path, script] of schemaScripts) {
+      const unsupportedImport =
+        [...script.externalImport.values()].map((entry) =>
+          typeof entry.modulePath === "string" ? entry.modulePath : "context",
+        )[0] ??
+        [...script.imports.values()]
+          .map((entry) => entry.script.path)
+          .find((importedPath) => !importedPath.startsWith(schemaPrefix));
+
+      if (unsupportedImport !== undefined) {
+        throw new Error(
+          `Cannot generate schema ${JSON.stringify(path.slice(schemaPrefix.length).replace(/\.ts$/u, ""))} on its own: it depends on ${JSON.stringify(unsupportedImport)}, which is not a schema.`,
+        );
+      }
+    }
+
+    const outputs = schemaScripts.map(([path, script]) => ({
+      outputPath: outputPrefix + path.slice(schemaPrefix.length),
+      script,
+    }));
+
+    await Promise.all(
+      outputs.map(async ({ outputPath, script }) => {
+        const fullPath = resolveDestinationPath(destination, outputPath);
+
+        await ensureDirectoryExists(fullPath);
+        await fs.writeFile(fullPath, await script.contents());
+      }),
+    );
+
+    return outputs.map(({ outputPath }) => outputPath);
   }
 
   /**
