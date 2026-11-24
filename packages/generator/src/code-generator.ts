@@ -256,6 +256,37 @@ export class CodeGenerator extends EventTarget {
   }
 
   /**
+   * Writes only the schema types, directly into `destination`
+   * (or `destination/<version>` for a versioned spec), and nothing else.
+   *
+   * Unlike {@link generate}, this creates no `.cache`, routes, scenarios,
+   * helper types or central `types/index.ts`.
+   *
+   * @param repository - Injectable repository instance; defaults to a fresh one.
+   * @returns The written file paths, relative to `destination`.
+   */
+  public async generateSchemas(
+    repository = new Repository(),
+  ): Promise<string[]> {
+    const specification = await Specification.fromFile(
+      this.openapiPath,
+      this.overlays,
+    );
+
+    if (specification.getRequirement("#/swagger") !== undefined) {
+      throw new Error(
+        "Schema-only generation does not support Swagger 2.0 documents because their schemas live under #/definitions. Convert the document to OpenAPI 3.x first.",
+      );
+    }
+
+    centralTypes(repository).addComponents(specification, this.version, [
+      "schemas",
+    ]);
+
+    return repository.writeSchemas(this.destination, this.version);
+  }
+
+  /**
    * Starts watching the OpenAPI document and any overlay files for changes.
    *
    * Has no effect when neither source is watchable (for example, an HTTP

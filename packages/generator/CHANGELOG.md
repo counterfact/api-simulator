@@ -1,5 +1,21 @@
 # @counterfact/generator
 
+## 1.3.0
+
+### Minor Changes
+
+- 43770e6: Add `--generate-schemas-only`, which writes only the schema types directly into the destination directory (`<destination>/[<group>/][<version>/]<Name>.ts`) without routes, scenarios, helper types, a cache, or a server. It requires an explicit destination and rejects conflicting flags, Swagger 2.0 documents, and schemas that depend on non-schema components. Config-file action options are ignored with a notice.
+
+  `CodeGenerator` gains `generateSchemas()` and `Repository` gains `writeSchemas()` for the same behavior.
+
+## 1.2.1
+
+### Patch Changes
+
+- 2e52024: Include undefined in generated handler body types for optional OpenAPI 3 request bodies, including JSON, URL-encoded forms, and multipart forms. Preserve required and nullable body distinctions so strict TypeScript catches unguarded access to an absent body.
+- ba0649f: Preserve all versions in shared handler types when a watched OpenAPI specification changes. Regenerate the complete API group in declaration order so version guards retain the older branch and removed operations leave the version map.
+- 14b24e1: Emit operation argument types as plain object types, omitting unavailable request inputs during generation instead of wrapping them in `OmitValueWhenNever`. Apply the same pruning to versioned operation arguments.
+
 ## 1.2.0
 
 ### Minor Changes

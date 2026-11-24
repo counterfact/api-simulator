@@ -13,6 +13,11 @@ import { updateRouteTypes } from "../migrate/update-route-types.js";
 import { pathResolve } from "../util/forward-slash-path.js";
 import { loadConfigFile } from "../util/load-config-file.js";
 import { checkForUpdates } from "./check-for-updates.js";
+import {
+  generateSchemasOnly,
+  SCHEMAS_ONLY_CONFLICTING_OPTIONS,
+  validateSchemasOnlyOptions,
+} from "./generate-schemas-only.js";
 import { runIntro } from "./intro.js";
 import {
   createGeneratedArtifactsSummary,
@@ -177,6 +182,7 @@ function buildProgram(
       config?: string;
       generate?: boolean;
       generateRoutes?: boolean;
+      generateSchemasOnly?: boolean;
       generateTypes?: boolean;
       open?: boolean;
       overlay?: string[];
@@ -212,8 +218,13 @@ function buildProgram(
       options.port = selection.port;
     }
 
+    // A schemas-only run is a one-shot generation step; it never checks for updates.
+    const schemasOnly =
+      options.generateSchemasOnly === true ||
+      fileConfig["generateSchemasOnly"] === true;
+
     const updateCheckPromise =
-      options.updateCheck === false
+      options.updateCheck === false || schemasOnly
         ? Promise.resolve()
         : checkForUpdates(version);
 
@@ -264,6 +275,70 @@ function buildProgram(
 
     const destinationPath = pathResolve(destination);
     const basePath = pathResolve(destinationPath);
+
+    if (schemasOnly) {
+      const startupOutput = createStartupOutput(
+        shouldUseColor({
+          isTTY: process.stdout.isTTY,
+          noColor: process.env["NO_COLOR"],
+        }),
+      );
+      const conflictingOptions: string[] = [];
+      const ignoredConfigOptions: string[] = [];
+
+      for (const option of SCHEMAS_ONLY_CONFLICTING_OPTIONS) {
+        // eslint-disable-next-line security/detect-object-injection -- option names come from the local allowlist above.
+        if (!(options as Record<string, unknown>)[option]) continue;
+
+        // Flags typed on the command line are contradictory; config-file
+        // defaults for the normal workflow are simply not applicable here.
+        (program.getOptionValueSource(option) === "cli"
+          ? conflictingOptions
+          : ignoredConfigOptions
+        ).push(option);
+      }
+
+      try {
+        validateSchemasOnlyOptions({
+          conflictingOptions,
+          destinationProvided:
+            fileConfig["destination"] !== undefined ||
+            program.args.includes(destination),
+          source,
+          specs,
+        });
+
+        if (ignoredConfigOptions.length > 0) {
+          process.stderr.write(
+            `ℹ️  Ignoring config file options that do not apply to --generate-schemas-only: ${ignoredConfigOptions.join(", ")}\n`,
+          );
+        }
+
+        const count = await generateSchemasOnly({
+          basePath,
+          overlays: options.overlay ?? [],
+          source,
+          specs,
+        });
+
+        process.stdout.write(
+          `${
+            count === 0
+              ? startupOutput.warning("No schemas found; nothing was written")
+              : startupOutput.success(
+                  `Generated ${count} schema type${count === 1 ? "" : "s"}`,
+                )
+          }\n`,
+        );
+      } catch (error) {
+        process.stderr.write(
+          `\n${startupOutput.error(`❌ ${error instanceof Error ? error.message : String(error)}`)}\n\n`,
+        );
+        process.exit(1);
+      }
+
+      return;
+    }
 
     // If no action-related option is provided, default to all options.
     const actions = ["repl", "serve", "watch", "generate", "buildCache"];
@@ -562,6 +637,10 @@ function buildProgram(
     )
     .option("-o, --open", "open a browser")
     .option("-g, --generate", "generate all code for both routes and types")
+    .option(
+      "--generate-schemas-only",
+      "write only the #/components/schemas types, directly into [destination] (requires a destination; no routes, scenarios, or server)",
+    )
     .option("--generate-types", "generate types")
     .option("--generate-routes", "generate routes")
     .option("-w, --watch", "generate + watch all code for changes")
