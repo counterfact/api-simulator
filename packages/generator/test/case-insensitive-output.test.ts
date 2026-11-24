@@ -15,6 +15,10 @@ const SPEC = [
   "          content:",
   "            application/json:",
   "              schema: { $ref: '#/components/schemas/OutputType' }",
+  "  /Companies/summary:",
+  "    get:",
+  "      responses:",
+  "        '200': { description: ok }",
   "  /companies/{id}:",
   "    get:",
   "      parameters:",
@@ -120,9 +124,60 @@ describe("generated types on case-insensitive file systems", () => {
       expect(
         diagnostics([
           $.path("out/routes/Companies/list.ts"),
+          $.path("out/routes/Companies/summary.ts"),
           $.path("out/routes/companies/{id}.ts"),
+          $.path("out/types/helpers.ts"),
         ]),
       ).toEqual([]);
+
+      // Linux keeps both route directories, so their middleware types must
+      // not be imported through paths that differ only by case.
+      const helpers = await $.read("out/types/helpers.ts");
+      const imports = [...helpers.matchAll(/from "(?<path>[^"]+)"/gu)].map(
+        (match) => match.groups!.path!,
+      );
+
+      expect(lowerCaseDuplicates(imports)).toEqual([]);
+    });
+  });
+
+  it("prunes the old name of a file that becomes a case-insensitive twin", async () => {
+    await usingTemporaryFiles(async ($) => {
+      const schemas = (...lines: string[]) =>
+        [
+          "openapi: 3.0.3",
+          "info: { title: Prune, version: 1.0.0 }",
+          "paths: {}",
+          "components:",
+          "  schemas:",
+          ...lines,
+        ].join("\n");
+      const lower =
+        "    a: { type: object, properties: { lower: { type: string } } }";
+      const upper =
+        "    A: { type: object, properties: { upper: { type: string } } }";
+      const generate = () =>
+        new CodeGenerator($.path("openapi.yaml"), $.path("out"), {
+          prune: true,
+          routes: false,
+          types: true,
+        }).generate();
+      const schemaFile = (name: string) =>
+        $.read(`out/types/components/schemas/${name}`).catch(() => "");
+
+      await $.add("openapi.yaml", schemas(lower));
+      await generate();
+      expect(await schemaFile("a.ts")).toContain("lower");
+
+      await $.add("openapi.yaml", schemas(lower, upper));
+      await generate();
+      expect(await schemaFile("a.ts")).not.toContain("lower");
+      expect(await schemaFile("A.ts")).toContain("upper");
+      expect(await schemaFile("a_2.ts")).toContain("lower");
+
+      await generate();
+      expect(await schemaFile("a_2.ts")).toContain("lower");
+      expect(await schemaFile("A.ts")).toContain("upper");
     });
   });
 

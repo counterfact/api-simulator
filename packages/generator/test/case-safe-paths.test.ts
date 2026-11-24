@@ -56,17 +56,27 @@ describe("caseSafeOutputPaths", () => {
     );
   });
 
-  it("does not reuse a suffixed name that is already taken", () => {
+  it("keeps the name of a file that only looks like a suffixed twin", () => {
+    const outputPaths = caseSafeOutputPaths([
+      "schemas/A.ts",
+      "schemas/a.ts",
+      "schemas/a_2.ts",
+    ]);
+
+    expect(outputPaths.get("schemas/A.ts")).toBe("schemas/A.ts");
+    expect(outputPaths.get("schemas/a_2.ts")).toBe("schemas/a_2.ts");
+    expect(outputPaths.get("schemas/a.ts")).toBe("schemas/a_3.ts");
+  });
+
+  it("skips suffixes that a twin with another spelling already uses", () => {
     const outputPaths = caseSafeOutputPaths([
       "schemas/A.ts",
       "schemas/a.ts",
       "schemas/A_2.ts",
     ]);
 
-    expect(new Set(outputPaths.values()).size).toBe(3);
-    expect(
-      new Set([...outputPaths.values()].map((path) => path.toLowerCase())).size,
-    ).toBe(3);
+    expect(outputPaths.get("schemas/A_2.ts")).toBe("schemas/A_2.ts");
+    expect(outputPaths.get("schemas/a.ts")).toBe("schemas/a_3.ts");
   });
 
   it("does not depend on the order of the input", () => {

@@ -102,13 +102,14 @@ export class Repository {
    * Returns the path, relative to the destination, where the script at
    * `path` is written. Generated type files whose paths differ only by case
    * are kept apart (see {@link caseSafeOutputPaths}); route files keep their
-   * paths because the runtime maps them to URLs.
+   * paths because the runtime maps them to URLs. Valid after
+   * {@link finished} resolves.
    */
   public outputPath(path: string): string {
     return this.outputPaths.get(path) ?? path;
   }
 
-  /** Assigns case-safe output paths once every script is known. */
+  /** Assigns case-safe output paths; {@link finished} calls it once every script is known. */
   private assignOutputPaths(): void {
     this.outputPaths = caseSafeOutputPaths(
       [...this.scripts.keys()].filter((path) => !path.startsWith("routes")),
@@ -152,6 +153,8 @@ export class Repository {
         Array.from(this.scripts.values(), (script) => script.finished()),
       );
     }
+
+    this.assignOutputPaths();
   }
 
   /**
@@ -210,7 +213,6 @@ export class Repository {
     );
     await this.finished();
     debug("all %i scripts are finished", this.scripts.size);
-    this.assignOutputPaths();
 
     const writeFiles = Array.from(
       this.scripts.entries(),
@@ -280,7 +282,6 @@ export class Repository {
     version = "",
   ): Promise<string[]> {
     await this.finished();
-    this.assignOutputPaths();
 
     const schemaPrefix = `${pathJoin("types", version, "components", "schemas")}/`;
     const outputPrefix = version === "" ? "" : `${version}/`;

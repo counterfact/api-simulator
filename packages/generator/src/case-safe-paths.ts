@@ -10,7 +10,9 @@
  * - Directories whose names differ only by case are merged under one
  *   spelling.
  * - A file whose name differs only by case from another file in the same
- *   directory gets a numeric suffix (`OutputType_2.ts`).
+ *   directory gets the next free numeric suffix (`OutputType_2.ts`). Suffixes
+ *   skip names that another input path already uses, so a file without a
+ *   case-insensitive twin always keeps its name.
  *
  * Paths without a case-insensitive twin map to themselves. The first
  * spelling in code-unit order wins, so the result does not depend on the
@@ -20,10 +22,7 @@ export function caseSafeOutputPaths(
   paths: Iterable<string>,
 ): Map<string, string> {
   const directories = new Map<string, string>();
-  const taken = new Set<string>();
-  const outputPaths = new Map<string, string>();
-
-  for (const path of [...new Set(paths)].sort()) {
+  const entries = [...new Set(paths)].sort().map((path) => {
     const segments = path.split("/");
     const fileName = segments.pop()!;
     let directory = "";
@@ -35,7 +34,20 @@ export function caseSafeOutputPaths(
       directory = directories.get(key)!;
     }
 
-    const prefix = directory === "" ? "" : `${directory}/`;
+    return { fileName, path, prefix: directory === "" ? "" : `${directory}/` };
+  });
+  // Reserve every natural name first, so a suffixed file never displaces a
+  // file that has no case-insensitive twin.
+  const reserved = new Set(
+    entries.map(({ fileName, prefix }) => `${prefix}${fileName}`.toLowerCase()),
+  );
+  const taken = new Set<string>();
+  const outputPaths = new Map<string, string>();
+  const isFree = (candidate: string) =>
+    !taken.has(candidate.toLowerCase()) &&
+    !reserved.has(candidate.toLowerCase());
+
+  for (const { fileName, path, prefix } of entries) {
     const extensionStart = fileName.indexOf(".", 1);
     const stem =
       extensionStart === -1 ? fileName : fileName.slice(0, extensionStart);
@@ -44,7 +56,8 @@ export function caseSafeOutputPaths(
     let outputPath = `${prefix}${fileName}`;
 
     for (let suffix = 2; taken.has(outputPath.toLowerCase()); suffix += 1) {
-      outputPath = `${prefix}${stem}_${suffix}${extension}`;
+      const candidate = `${prefix}${stem}_${suffix}${extension}`;
+      if (isFree(candidate)) outputPath = candidate;
     }
 
     taken.add(outputPath.toLowerCase());

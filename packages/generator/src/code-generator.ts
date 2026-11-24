@@ -241,8 +241,12 @@ export class CodeGenerator extends EventTarget {
       debug("resolving the expected generated type files");
       await repository.finished();
       debug("pruning defunct generated type files");
+      // Prune by output path, so files renamed to stay distinct on
+      // case-insensitive file systems are kept and their old names removed.
       await pruneTypes(destination, [
-        ...repository.scripts.keys(),
+        ...Array.from(repository.scripts.keys(), (path) =>
+          repository.outputPath(path),
+        ),
         ...(this.version === "" ? [] : ["types/versions.ts"]),
       ]);
       debug("done pruning generated type files");
