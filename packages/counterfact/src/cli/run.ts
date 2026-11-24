@@ -3,6 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 /* eslint-disable security/detect-non-literal-fs-filename -- CLI migration cleanup operates on known child directories under config.basePath. */
 
+import type { ClientGenerationOptions } from "@counterfact/generator";
 import { Command } from "commander";
 import createDebug from "debug";
 import open from "open";
@@ -13,6 +14,7 @@ import { updateRouteTypes } from "../migrate/update-route-types.js";
 import { pathResolve } from "../util/forward-slash-path.js";
 import { loadConfigFile } from "../util/load-config-file.js";
 import { checkForUpdates } from "./check-for-updates.js";
+import { resolveClientOptions } from "./client-options.js";
 import {
   generateSchemasOnly,
   SCHEMAS_ONLY_CONFLICTING_OPTIONS,
@@ -105,6 +107,7 @@ type StartupTelemetryOptions = {
   alwaysFakeOptionals?: boolean;
   buildCache?: boolean;
   generate?: boolean;
+  generateClient?: boolean;
   generateRoutes?: boolean;
   generateTypes?: boolean;
   open?: boolean;
@@ -135,9 +138,13 @@ export function buildStartupTelemetryProperties(
     alwaysFakeOptionals: Boolean(options.alwaysFakeOptionals),
     apiFileLocationHashes,
     buildCache: Boolean(options.buildCache),
+    generateClient: Boolean(options.generateClient),
     generateRoutes:
       Boolean(options.generate) || Boolean(options.generateRoutes),
-    generateTypes: Boolean(options.generate) || Boolean(options.generateTypes),
+    generateTypes:
+      Boolean(options.generate) ||
+      Boolean(options.generateTypes) ||
+      Boolean(options.generateClient),
     mode:
       specs !== undefined
         ? "multi-spec"
@@ -178,12 +185,17 @@ function buildProgram(
       adminApi: boolean;
       adminApiToken?: string;
       alwaysFakeOptionals?: boolean;
+      apiClassName?: string;
       buildCache?: boolean;
       config?: string;
       generate?: boolean;
+      generateClient?: boolean;
       generateRoutes?: boolean;
       generateSchemasOnly?: boolean;
       generateTypes?: boolean;
+      moduleClassSuffix?: string;
+      moduleNameFirstTag?: boolean;
+      moduleNameIndex?: number;
       open?: boolean;
       overlay?: string[];
       port: number;
@@ -193,8 +205,11 @@ function buildProgram(
       repl?: boolean;
       serve?: boolean;
       spec?: SpecOption;
+      typePrefix?: string;
+      typeSuffix?: string;
       updateCheck: boolean;
       validateRequest: boolean;
+      unwrapResponseData?: boolean;
       validateResponse: boolean;
       watch?: boolean;
       watchRoutes?: boolean;
@@ -364,6 +379,19 @@ function buildProgram(
       specs,
     );
 
+    let clientOptions: ClientGenerationOptions | false = false;
+
+    if (options.generateClient) {
+      try {
+        clientOptions = resolveClientOptions(options);
+      } catch (error) {
+        process.stderr.write(
+          `\n❌ ${error instanceof Error ? error.message : String(error)}\n\n`,
+        );
+        process.exit(1);
+      }
+    }
+
     const openBrowser = options.open;
     const origin = `http://localhost:${options.port}`;
     const url = `${origin}${options.prefix}`;
@@ -388,11 +416,14 @@ function buildProgram(
         types:
           Boolean(options.generate) ||
           Boolean(options.generateTypes) ||
+          Boolean(options.generateClient) ||
           Boolean(options.watch) ||
           Boolean(options.watchTypes) ||
           Boolean(options.buildCache),
 
         prune: Boolean(options.prune),
+
+        client: clientOptions,
       },
 
       openApiPath: source,
@@ -643,6 +674,39 @@ function buildProgram(
     )
     .option("--generate-types", "generate types")
     .option("--generate-routes", "generate routes")
+    .option(
+      "--generate-client",
+      "generate a typed, fetch-based API client in client/ (also generates types)",
+    )
+    .option(
+      "--module-name-first-tag",
+      "group client operations into modules by their first tag",
+    )
+    .option(
+      "--module-name-index <number>",
+      "path segment used to group client operations into modules (default 0)",
+      (v) => Number(v),
+    )
+    .option(
+      "--unwrap-response-data",
+      "client methods resolve with the response body instead of the response",
+    )
+    .option(
+      "--api-class-name <name>",
+      "name of the class that combines every client module (default Api)",
+    )
+    .option(
+      "--module-class-suffix <suffix>",
+      "appended to every client module class name (e.g. Client for UsersClient)",
+    )
+    .option(
+      "--type-prefix <prefix>",
+      "prepended to every client data contract type name",
+    )
+    .option(
+      "--type-suffix <suffix>",
+      "appended to every client data contract type name (e.g. Dto for UserDto)",
+    )
     .option("-w, --watch", "generate + watch all code for changes")
     .option("--watch-types", "generate + watch types for changes")
     .option("--watch-routes", "generate + watch routes for changes")

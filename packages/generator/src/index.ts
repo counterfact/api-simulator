@@ -1,4 +1,8 @@
-export { CodeGenerator } from "./code-generator.js";
+export {
+  type ClientGenerationOptions,
+  generateClient,
+} from "./client-generator.js";
+export { CodeGenerator, type GenerateOptions } from "./code-generator.js";
 export {
   buildOperationTypeNameMapping,
   type OperationTypeNameMapping,

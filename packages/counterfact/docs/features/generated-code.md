@@ -9,6 +9,8 @@ See the [FAQ](../faq.md) for common questions about source control, editing, and
 
 No OpenAPI document? See [using Counterfact without OpenAPI](./without-openapi.md).
 
+Pass `--generate-client` to also generate a typed API client in `client/` that reuses these types. See [generated API client](./generated-client.md).
+
 ## Generated file structure
 
 The output directory is called `basePath` in library options and `destination` in the CLI YAML config. Counterfact creates `routes/_.context.ts` with a `[key: string]: any` index signature so you can add shared state immediately. Remove that signature and declare fields to enable strict typing. Existing context files are preserved. The context and optional store files below are yours to customize: a context shares behavior within a route subtree; a [store](../patterns/shared-store.md) shares state across separately configured [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes).

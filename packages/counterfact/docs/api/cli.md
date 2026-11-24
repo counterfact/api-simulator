@@ -22,6 +22,7 @@ npx counterfact@latest [spec] [output] [options]
 | `--generate-types`          | `false`            | Generate types only                                                   |
 | `--generate-routes`         | `false`            | Generate routes only                                                  |
 | `--generate-schemas-only`   | `false`            | Write only the schema types into `[output]` (see below)               |
+| `--generate-client`         | `false`            | Generate a typed, fetch-based API client in `client/` (and types)     |
 | `--watch-types`             | `false`            | Watch and regenerate types only                                       |
 | `--watch-routes`            | `false`            | Watch and regenerate routes only                                      |
 | `--always-fake-optionals`   | `false`            | Include optional fields in random responses                           |
@@ -34,6 +35,20 @@ npx counterfact@latest [spec] [output] [options]
 The action flags above default to false individually. When no action flag is supplied, the CLI enables generation, watching, serving, the REPL, and cache building together. Supplying an action flag selects the requested actions. CLI values override values loaded from `counterfact.yaml` or `--config`.
 
 Run `npx counterfact@latest --help` for the full list.
+
+## Generated client options
+
+These options shape the client written by `--generate-client`. See [generated API client](../features/generated-client.md).
+
+| Flag                             | Default  | Description                                                    |
+| -------------------------------- | -------- | -------------------------------------------------------------- |
+| `--module-name-index <number>`   | `0`      | Path segment used to group operations into modules             |
+| `--module-name-first-tag`        | `false`  | Group operations into modules by their first tag               |
+| `--module-class-suffix <suffix>` | _(none)_ | Appended to every module class name (`Client` → `UsersClient`) |
+| `--type-prefix <prefix>`         | _(none)_ | Prepended to every data contract type name                     |
+| `--type-suffix <suffix>`         | _(none)_ | Appended to every data contract type name (`Dto` → `UserDto`)  |
+| `--api-class-name <name>`        | `Api`    | Name of the class that combines every module                   |
+| `--unwrap-response-data`         | `false`  | Methods resolve with the response body instead of the response |
 
 ## Generate only the schema types
 

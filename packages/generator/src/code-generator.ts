@@ -9,12 +9,17 @@ import { getLocalOpenApiSourcePaths } from "@counterfact/openapi";
 
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
 import { centralTypes } from "./central-types.js";
+import {
+  type ClientGenerationOptions,
+  generateClient,
+} from "./client-generator.js";
 import { OperationCoder } from "./operation-coder.js";
 import {
   assertNoNormalizedPathCollisions,
   normalizeOpenApiPath,
 } from "./openapi-path.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
+import { operationMethodsForPath } from "./path-operations.js";
 import { pruneRoutes, pruneTypes } from "./prune.js";
 import { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
@@ -23,6 +28,18 @@ import { waitForEvent } from "./wait-for-event.js";
 import { CHOKIDAR_OPTIONS } from "./watch-options.js";
 
 const debug = createDebug("counterfact:typescript-generator:generate");
+
+/** Which artifacts {@link CodeGenerator.generate} writes. */
+export interface GenerateOptions {
+  /**
+   * Generate a typed API client in `client/`. `true` uses the default
+   * options. Requires `types`.
+   */
+  client?: ClientGenerationOptions | boolean;
+  prune?: boolean;
+  routes?: boolean;
+  types?: boolean;
+}
 
 /**
  * Orchestrates the code-generation pipeline and optional file-system watching.
@@ -40,18 +57,14 @@ export class CodeGenerator extends EventTarget {
 
   private readonly overlays: readonly string[];
 
-  private readonly generateOptions: {
-    prune?: boolean;
-    routes?: boolean;
-    types?: boolean;
-  };
+  private readonly generateOptions: GenerateOptions;
 
   private watcher: FSWatcher | undefined;
 
   public constructor(
     openApiPath: string,
     destination: string,
-    generateOptions: { prune?: boolean; routes?: boolean; types?: boolean },
+    generateOptions: GenerateOptions,
     version = "",
     overlays: readonly string[] = [],
   ) {
@@ -174,40 +187,6 @@ export class CodeGenerator extends EventTarget {
       (securityRequirement?.data as Record<string, unknown>) ?? {},
     ) as SecurityScheme[];
 
-    const HTTP_VERBS = new Set([
-      "get",
-      "put",
-      "post",
-      "delete",
-      "options",
-      "head",
-      "patch",
-      "trace",
-    ]);
-
-    const operationMethodsForPath = (
-      pathDefinition: Requirement,
-    ): Array<[Requirement, string]> => {
-      let resolved = pathDefinition;
-      while (resolved.isReference) resolved = resolved.reference();
-      return resolved.flatMap((operation, requestMethod) => {
-        if (requestMethod === "additionalOperations") {
-          return operation.map(
-            (additionalOperation, additionalMethod): [Requirement, string] => [
-              additionalOperation,
-              additionalMethod.toLowerCase(),
-            ],
-          );
-        }
-
-        if (!HTTP_VERBS.has(requestMethod)) {
-          return [];
-        }
-
-        return [[operation, requestMethod]];
-      });
-    };
-
     paths.forEach((pathDefinition, key: string) => {
       debug("processing path %s", key);
 
@@ -253,6 +232,28 @@ export class CodeGenerator extends EventTarget {
     await repository.writeFiles(destination, this.generateOptions);
 
     debug("finished writing the files");
+
+    const { client } = this.generateOptions;
+
+    if (client && this.generateOptions.types) {
+      if (this.version === "") {
+        debug("generating the API client");
+        // The generated types import the root context, which normally comes
+        // with the routes. Create it (only if missing) so a client-only
+        // generation still compiles.
+        await repository.createDefaultContextFile(destination);
+        await generateClient(
+          specification,
+          destination,
+          client === true ? {} : client,
+        );
+        debug("finished generating the API client");
+      } else {
+        process.stderr.write(
+          `Skipping client generation for version ${JSON.stringify(this.version)}: generated clients do not support versioned APIs yet.\n`,
+        );
+      }
+    }
   }
 
   /**
