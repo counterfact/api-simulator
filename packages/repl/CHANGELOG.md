@@ -1,5 +1,15 @@
 # @counterfact/repl
 
+## 0.1.13
+
+### Patch Changes
+
+- 0d35a14: Handle prototype-named cookie/query inputs as ordinary own data properties, preserve unchanged context initializers containing an own `__proto__` key, and ignore inherited names when completing scenario groups.
+- Updated dependencies [fb8c805]
+- Updated dependencies [0d35a14]
+  - @counterfact/runtime@0.5.0
+  - @counterfact/client@0.2.2
+
 ## 0.1.12
 
 ### Patch Changes
