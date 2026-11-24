@@ -7,7 +7,7 @@ const SPEC = [
   "openapi: 3.0.3",
   "info: { title: Case, version: 1.0.0 }",
   "paths:",
-  "  /Companies:",
+  "  /Companies/list:",
   "    get:",
   "      responses:",
   "        '200':",
@@ -83,7 +83,7 @@ describe("generated types on case-insensitive file systems", () => {
       const written = [
         "out/types/components/schemas/OutPutType.ts",
         "out/types/components/schemas/OutputType_2.ts",
-        "out/types/paths/Companies.types.ts",
+        "out/types/paths/Companies/list.types.ts",
         "out/types/paths/Companies/{id}.types.ts",
       ];
 
@@ -99,8 +99,8 @@ describe("generated types on case-insensitive file systems", () => {
       expect(
         await $.read("out/types/components/schemas/OutputType_2.ts"),
       ).toContain("first");
-      expect(await $.read("out/types/paths/Companies.types.ts")).toContain(
-        'from "../components/schemas/OutputType_2.js"',
+      expect(await $.read("out/types/paths/Companies/list.types.ts")).toContain(
+        'from "../../components/schemas/OutputType_2.js"',
       );
       expect(await $.read("out/types/paths/Companies/{id}.types.ts")).toContain(
         'from "../../components/schemas/OutPutType.js"',
@@ -119,7 +119,7 @@ describe("generated types on case-insensitive file systems", () => {
 
       expect(
         diagnostics([
-          $.path("out/routes/Companies.ts"),
+          $.path("out/routes/Companies/list.ts"),
           $.path("out/routes/companies/{id}.ts"),
         ]),
       ).toEqual([]);
