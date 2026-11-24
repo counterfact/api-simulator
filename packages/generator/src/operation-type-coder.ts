@@ -79,10 +79,14 @@ export class OperationTypeCoder extends TypeCoder {
     return buildJsDoc(this.requirement.data);
   }
 
+  public get logicalRoute(): string {
+    return this.requirement.parent?.url ?? this.requirement.url;
+  }
+
   public override get exportId(): string {
     return this.version === ""
       ? this.id
-      : `${this.constructor.name}@${this.modulePath()}:${this.requestMethod.toLowerCase()}`;
+      : `${this.constructor.name}@${this.logicalRoute}:${this.requestMethod.toLowerCase()}`;
   }
 
   public override names(): Generator<string> {
@@ -520,30 +524,38 @@ export class OperationTypeCoder extends TypeCoder {
     const versioned = script.importVersionsType("Versioned");
     const promise = script.importSharedType("MaybePromise");
     const response = script.importSharedType("COUNTERFACT_RESPONSE");
-    script.setVersionBuilder(this.getOperationBaseName(), (versions) => {
-      const mapName = `${name}_$_Versions`;
-      return [
-        typeAlias(
-          mapName,
-          typeLiteral(
-            [...versions].map(([version, type]) => typeProperty(version, type)),
-          ),
-          false,
-        ),
-        typeAlias(
-          name,
-          functionType(
-            [
-              parameter(
-                "$",
-                typeReference(versioned, [typeReference(mapName)]),
+    script.setVersionBuilder(
+      script.operationVersionKey(
+        this.getOperationBaseName(),
+        this.logicalRoute,
+      ),
+      (versions) => {
+        const mapName = `${name}_$_Versions`;
+        return [
+          typeAlias(
+            mapName,
+            typeLiteral(
+              [...versions].map(([version, type]) =>
+                typeProperty(version, type),
               ),
-            ],
-            typeReference(promise, [typeReference(response)]),
+            ),
+            false,
           ),
-        ),
-      ];
-    });
+          typeAlias(
+            name,
+            functionType(
+              [
+                parameter(
+                  "$",
+                  typeReference(versioned, [typeReference(mapName)]),
+                ),
+              ],
+              typeReference(promise, [typeReference(response)]),
+            ),
+          ),
+        ];
+      },
+    );
     return [];
   }
 
@@ -634,7 +646,7 @@ export class VersionedArgTypeCoder extends OperationTypeCoder {
   }
 
   public override write(script: Script): ts.TypeNode {
-    if (script.path === this.modulePath()) {
+    if (script === script.repository.get(this.modulePath())) {
       return this.writeCode(script);
     }
 

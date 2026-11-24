@@ -36,7 +36,7 @@ The output directory is called `basePath` in library options and `destination` i
 
 > **Note:** Files under `types/` are automatically regenerated whenever the OpenAPI spec changes. Never edit them by hand — your changes will be overwritten on the next regeneration.
 
-OpenAPI names are case-sensitive, but the file systems on macOS and Windows usually are not. When two generated type files would differ only by case, Counterfact merges directories that differ only by case under one spelling and adds a numeric suffix to the later file. For example, schemas named `OutPutType` and `OutputType` are written to `OutPutType.ts` and `OutputType_2.ts`. Mirrored middleware types for route directories that differ only by case get distinct directories, such as `types/companies_2/_.middleware.ts`; the `Middleware` map keys stay the route directory paths. Import types from `types/index.ts` rather than from these files directly. Route files under `routes/` keep their paths, because Counterfact maps them to URLs. After upgrading, regenerate once with `--prune` to replace spellings left by earlier runs.
+OpenAPI names are case-sensitive even on case-insensitive filesystems. Case-variant generated type filenames share a module, retaining distinct TypeScript exports. Import from `types/index.ts` where possible, and regenerate with `--prune` after upgrading to remove obsolete generated filenames.
 
 Generated types preserve literal names and enum values, including escaped characters. Nested `allOf`, `anyOf`, and `oneOf` schemas retain their grouping. Unsupported schema type strings produce `unknown`; use standard OpenAPI types and `$ref` references for named schemas.
 
@@ -255,3 +255,48 @@ JSON, URL-encoded forms, and multipart forms. In OpenAPI 3, a body is optional
 when `requestBody.required` is `false` or omitted. Guard or normalize `$.body`
 before accessing its properties, for example `const body = $.body ?? {};`.
 Required bodies exclude `undefined`; nullable schemas independently allow `null`.
+
+### Case-sensitive paths in shared route files
+
+Generated route directories and filenames retain their spelling. When paths
+differ only by case, they share the first spelling encountered during generation,
+segment by segment. A managed route keeps its existing canonical filename when
+the OpenAPI declarations get reordered. Exact-case route metadata preserves the
+URL spelling from the OpenAPI document.
+A generated singleton such
+as `/Reports` uses the normal `GET` function and declares its original path
+with `export const __counterfactPaths = ["/Reports"]`.
+
+When two paths would otherwise share a case-insensitive filename, each method export is
+an object keyed by the full, case-sensitive paths that support that method.
+For example, these declarations can live together in `routes/Pet.ts`:
+
+```ts
+import type { Routes } from "../types/index.js";
+
+export const __counterfactPaths = ["/Pet", "/pet"];
+
+export const GET: { "/Pet": Routes["/Pet"]["GET"] } = {
+  "/Pet": ($) => $.response.status(200).random(),
+};
+export const POST: { "/pet": Routes["/pet"]["POST"] } = {
+  "/pet": ($) => $.response.status(201).random(),
+};
+```
+
+Two variants can share a method export, too. Each key then receives its own
+handler type. A scoped middleware can use a similar object of callbacks keyed
+by exact route-prefix spellings, while an ordinary function keeps the
+existing file-derived prefix. Existing handwritten non-generated modules
+without route metadata retain their legacy lookup behavior.
+
+The first generation after upgrading can migrate direct TypeScript route
+handlers and scoped middleware. It writes them to private implementation modules
+beside the canonical route, rewrites recognized local imports, and stores a backup
+of the original route tree before swapping in the new tree. Commit or copy your
+work before upgrading; inspect the generated wrappers and verify your routes.
+Ambiguous layouts, computed imports that would move, and re-exported handlers
+require manual migration rather than overwriting authored code.
+After migration, route pruning is paused while the `routes/.counterfact-migrated-routes.json`
+record exists, to protect authored helper modules. Remove the record only after
+reviewing the preserved dependencies; generated type pruning remains available.

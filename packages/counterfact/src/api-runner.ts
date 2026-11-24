@@ -268,17 +268,26 @@ export class ApiRunner {
    *   when multiple versioned specs in the same group should merge their types
    *   into the same output tree.
    */
-  public async generate(repository?: Repository): Promise<void> {
+  public async generate(
+    repository?: Repository,
+    deferWrite = false,
+  ): Promise<void> {
     if (
       this.config.openApiPath !== "_" &&
       (this.config.generate.routes || this.config.generate.types)
     ) {
-      await this.codeGenerator.generate(repository);
+      await this.codeGenerator.generate(repository, deferWrite);
     }
 
-    if (this.config.generate.types) {
+    if (!deferWrite && this.config.generate.types) {
       await this.scenarioFileGenerator.generate();
     }
+  }
+
+  public async finishGeneration(repository: Repository): Promise<void> {
+    if (this.config.generate.routes || this.config.generate.types)
+      await this.codeGenerator.finishGeneration(repository);
+    if (this.config.generate.types) await this.scenarioFileGenerator.generate();
   }
 
   /**

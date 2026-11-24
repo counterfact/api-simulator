@@ -75,7 +75,7 @@ function lowerCaseDuplicates(paths: readonly string[]): string[] {
 }
 
 describe("generated types on case-insensitive file systems", () => {
-  it("writes each type file to a path that differs by more than case", async () => {
+  it("writes distinct schema exports in the first-spelled type file", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("openapi.yaml", SPEC);
 
@@ -85,8 +85,7 @@ describe("generated types on case-insensitive file systems", () => {
       }).generate();
 
       const written = [
-        "out/types/components/schemas/OutPutType.ts",
-        "out/types/components/schemas/OutputType_2.ts",
+        "out/types/components/schemas/OutputType.ts",
         "out/types/paths/Companies/list.types.ts",
         "out/types/paths/Companies/{id}.types.ts",
       ];
@@ -97,17 +96,16 @@ describe("generated types on case-insensitive file systems", () => {
         await expect($.read(path)).resolves.toBeDefined();
       }
 
-      expect(
-        await $.read("out/types/components/schemas/OutPutType.ts"),
-      ).toContain("second");
-      expect(
-        await $.read("out/types/components/schemas/OutputType_2.ts"),
-      ).toContain("first");
+      const models = await $.read("out/types/components/schemas/OutputType.ts");
+      expect(models).toContain("export type OutputType");
+      expect(models).toContain("export type OutPutType");
+      expect(models).toContain("first");
+      expect(models).toContain("second");
       expect(await $.read("out/types/paths/Companies/list.types.ts")).toContain(
-        'from "../../components/schemas/OutputType_2.js"',
+        'from "../../components/schemas/OutputType.js"',
       );
       expect(await $.read("out/types/paths/Companies/{id}.types.ts")).toContain(
-        'from "../../components/schemas/OutPutType.js"',
+        'from "../../components/schemas/OutputType.js"',
       );
     });
   });
@@ -125,13 +123,13 @@ describe("generated types on case-insensitive file systems", () => {
         diagnostics([
           $.path("out/routes/Companies/list.ts"),
           $.path("out/routes/Companies/summary.ts"),
-          $.path("out/routes/companies/{id}.ts"),
+          $.path("out/routes/Companies/{id}.ts"),
           $.path("out/types/helpers.ts"),
         ]),
       ).toEqual([]);
 
-      // Linux keeps both route directories, so their middleware types must
-      // not be imported through paths that differ only by case.
+      // The canonical route directory must not introduce duplicate
+      // case-insensitive middleware type imports.
       const helpers = await $.read("out/types/helpers.ts");
       const imports = [...helpers.matchAll(/from "(?<path>[^"]+)"/gu)].map(
         (match) => match.groups!.path!,
@@ -171,13 +169,12 @@ describe("generated types on case-insensitive file systems", () => {
 
       await $.add("openapi.yaml", schemas(lower, upper));
       await generate();
-      expect(await schemaFile("a.ts")).not.toContain("lower");
-      expect(await schemaFile("A.ts")).toContain("upper");
-      expect(await schemaFile("a_2.ts")).toContain("lower");
+      expect(await schemaFile("a.ts")).toContain("lower");
+      expect(await schemaFile("a.ts")).toContain("upper");
 
       await generate();
-      expect(await schemaFile("a_2.ts")).toContain("lower");
-      expect(await schemaFile("A.ts")).toContain("upper");
+      expect(await schemaFile("a.ts")).toContain("lower");
+      expect(await schemaFile("a.ts")).toContain("upper");
     });
   });
 
@@ -191,8 +188,8 @@ describe("generated types on case-insensitive file systems", () => {
         {},
       ).generateSchemas();
 
-      expect([...written].sort()).toEqual(["OutPutType.ts", "OutputType_2.ts"]);
-      expect(await $.read("out/OutputType_2.ts")).toContain("first");
+      expect([...written].sort()).toEqual(["OutputType.ts"]);
+      expect(await $.read("out/OutputType.ts")).toContain("first");
     });
   });
 });
