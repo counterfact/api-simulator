@@ -18,6 +18,7 @@ import {
   withComment,
 } from "./ast.js";
 
+import { caseSafeOutputPaths } from "./case-safe-paths.js";
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
 import {
   toForwardSlashPath,
@@ -91,8 +92,27 @@ interface WriteFilesOptions {
 export class Repository {
   public scripts: Map<string, Script>;
 
+  private outputPaths = new Map<string, string>();
+
   public constructor() {
     this.scripts = new Map();
+  }
+
+  /**
+   * Returns the path, relative to the destination, where the script at
+   * `path` is written. Generated type files whose paths differ only by case
+   * are kept apart (see {@link caseSafeOutputPaths}); route files keep their
+   * paths because the runtime maps them to URLs.
+   */
+  public outputPath(path: string): string {
+    return this.outputPaths.get(path) ?? path;
+  }
+
+  /** Assigns case-safe output paths once every script is known. */
+  private assignOutputPaths(): void {
+    this.outputPaths = caseSafeOutputPaths(
+      [...this.scripts.keys()].filter((path) => !path.startsWith("routes")),
+    );
   }
 
   /**
@@ -190,12 +210,16 @@ export class Repository {
     );
     await this.finished();
     debug("all %i scripts are finished", this.scripts.size);
+    this.assignOutputPaths();
 
     const writeFiles = Array.from(
       this.scripts.entries(),
 
       async ([path, script]) => {
-        const fullPath = resolveDestinationPath(destination, path);
+        const fullPath = resolveDestinationPath(
+          destination,
+          this.outputPath(path),
+        );
         const contents = await script.contents(
           this.findContextPath(destination, path, script.contextRoutePath),
         );
@@ -256,6 +280,7 @@ export class Repository {
     version = "",
   ): Promise<string[]> {
     await this.finished();
+    this.assignOutputPaths();
 
     const schemaPrefix = `${pathJoin("types", version, "components", "schemas")}/`;
     const outputPrefix = version === "" ? "" : `${version}/`;
@@ -280,7 +305,8 @@ export class Repository {
     }
 
     const outputs = schemaScripts.map(([path, script]) => ({
-      outputPath: outputPrefix + path.slice(schemaPrefix.length),
+      outputPath:
+        outputPrefix + this.outputPath(path).slice(schemaPrefix.length),
       script,
     }));
 

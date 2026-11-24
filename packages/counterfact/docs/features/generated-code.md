@@ -36,6 +36,8 @@ The output directory is called `basePath` in library options and `destination` i
 
 > **Note:** Files under `types/` are automatically regenerated whenever the OpenAPI spec changes. Never edit them by hand — your changes will be overwritten on the next regeneration.
 
+OpenAPI names are case-sensitive, but the file systems on macOS and Windows usually are not. When two generated type files would differ only by case, Counterfact merges directories that differ only by case under one spelling and adds a numeric suffix to the later file. For example, schemas named `OutPutType` and `OutputType` are written to `OutPutType.ts` and `OutputType_2.ts`. Import types from `types/index.ts` rather than from these files directly. Route files under `routes/` keep their paths, because Counterfact maps them to URLs.
+
 Generated types preserve literal names and enum values, including escaped characters. Nested `allOf`, `anyOf`, and `oneOf` schemas retain their grouping. Unsupported schema type strings produce `unknown`; use standard OpenAPI types and `$ref` references for named schemas.
 
 Schema types also preserve:

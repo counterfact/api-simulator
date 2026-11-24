@@ -301,8 +301,10 @@ export class Script {
     return Array.from(this.imports, ([name, entry]) => {
       const path = escapePathForWindows(
         pathRelative(
-          pathDirname(this.path),
-          entry.script.path.replace(/\.ts$/u, ".js"),
+          pathDirname(this.repository.outputPath(this.path)),
+          this.repository
+            .outputPath(entry.script.path)
+            .replace(/\.ts$/u, ".js"),
         ),
       );
       return importDeclaration(
