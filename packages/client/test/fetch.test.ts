@@ -611,3 +611,113 @@ it("sends a query parameter named body independently of the request payload", as
     },
   ]);
 });
+
+it("serializes a whole form query, replaces earlier values, and waits for required inputs", async () => {
+  type Search = {
+    path: object;
+    query: object;
+    querystring: {
+      required: true;
+      value: {
+        text: string;
+        tags?: string[];
+        ids?: string[];
+        filters?: { active: boolean };
+      };
+    };
+    headers: object;
+    cookies: object;
+    body: never;
+    bodyRequired: false;
+    responses: { "204": { mediaType: undefined; body: undefined } };
+  };
+  const searches: string[] = [];
+  const route = createFetchRoute<{ "/search": { get: Search } }>(
+    {
+      "/search": {
+        get: {
+          parameters: [],
+          querystring: {
+            required: true,
+            mediaType: "application/x-www-form-urlencoded",
+            encoding: { ids: { explode: false } },
+          },
+          responses: { 204: [] },
+        },
+      },
+    },
+    {
+      baseUrl: "https://example.test?base=old",
+      fetch: async (url) => {
+        searches.push(new URL(String(url)).search);
+        return new Response(null, { status: 204 });
+      },
+    },
+  );
+  const request = route("/search").method("get");
+  expect(request).not.toHaveProperty("send");
+  const prepared = request.query({
+    text: "red + shoes & hats",
+    tags: ["sale", "women"],
+    ids: ["one,two", "three"],
+    filters: { active: true },
+  });
+  await prepared.query({ text: "replacement" }).send();
+  await prepared.send();
+  expect(searches).toEqual([
+    "?text=replacement",
+    "?text=red+%2B+shoes+%26+hats&tags=sale&tags=women&ids=one%2Ctwo,three&filters=%7B%22active%22%3Atrue%7D",
+  ]);
+});
+
+it("encodes the entire JSON query once and uses a header auth alternative", async () => {
+  type Search = {
+    path: object;
+    query: object;
+    querystring: { required: false; value: string | null };
+    headers: object;
+    cookies: object;
+    body: never;
+    bodyRequired: false;
+    responses: { "204": { mediaType: undefined; body: undefined } };
+  };
+  const searches: string[] = [];
+  const route = createFetchRoute<{ "/search": { get: Search } }>(
+    {
+      "/search": {
+        get: {
+          parameters: [],
+          querystring: { required: false, mediaType: "application/json" },
+          security: [{ key: [] }, { token: [] }],
+          responses: { 204: [] },
+        },
+      },
+    },
+    {
+      baseUrl: "https://example.test?base=old",
+      auth: {
+        key: () => {
+          throw new Error("query authentication would alter the JSON query");
+        },
+        token: () => "local",
+      },
+      fetch: async (url, init) => {
+        searches.push(new URL(String(url)).search);
+        expect(new Headers(init?.headers).get("authorization")).toBe(
+          "Bearer local",
+        );
+        return new Response(null, { status: 204 });
+      },
+    },
+    {},
+    {
+      key: { type: "apiKey", location: "query", name: "api_key" },
+      token: { type: "bearer" },
+    },
+  );
+  const request = route("/search").method("get");
+  await request.send();
+  await request.query("%&+#").send();
+  await request.query(null).send();
+  expect(searches).toEqual(["", "?%22%25%26%2B%23%22", "?null"]);
+});

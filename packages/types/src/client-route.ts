@@ -2,6 +2,7 @@
 export interface ClientOperation {
   path: object;
   query: object;
+  querystring?: { value: unknown; required: boolean };
   headers: object;
   cookies: object;
   body: unknown;
@@ -93,12 +94,15 @@ type InputSetter<
       [Key in InputKind]: Key extends Kind
         ? Merge<State[Key], Values>
         : State[Key];
-    } & Pick<State, "hasBody">
+    } & Pick<State, "hasBody" | "hasQuerystring">
   >
 >;
 
 type InputKind = "path" | "query" | "headers" | "cookies";
-type RequestState = Record<InputKind, object> & { hasBody: boolean };
+type RequestState = Record<InputKind, object> & {
+  hasBody: boolean;
+  hasQuerystring: boolean;
+};
 type EmptyFields = Record<never, never>;
 type InitialState<Path> = {
   path: Path;
@@ -106,6 +110,7 @@ type InitialState<Path> = {
   headers: EmptyFields;
   cookies: EmptyFields;
   hasBody: false;
+  hasQuerystring: false;
 };
 
 type StatusNumber<Status> = Status extends `${infer Code extends number}`
@@ -172,6 +177,9 @@ type CanSend<
   State extends RequestState,
 > = State extends Pick<Operation, InputKind> & {
   hasBody: Operation["bodyRequired"] extends true ? true : boolean;
+  hasQuerystring: Operation["querystring"] extends { required: true }
+    ? true
+    : boolean;
 }
   ? {
       send(options?: ClientSendOptions): Promise<ClientResult<Operation>>;
@@ -180,11 +188,25 @@ type CanSend<
 
 type Defined = NonNullable<unknown> | null;
 
+type QuerySetter<
+  Operation extends ClientOperation,
+  State extends RequestState,
+> = Operation["querystring"] extends { value: infer Value }
+  ? {
+      query(
+        value: Value & Defined,
+      ): ClientRequest<
+        Operation,
+        Omit<State, "hasQuerystring"> & { hasQuerystring: true }
+      >;
+    }
+  : InputSetter<"query", Operation, State>;
+
 export type ClientRequest<
   Operation extends ClientOperation,
   State extends RequestState,
 > = InputSetter<"path", Operation, State> &
-  InputSetter<"query", Operation, State> &
+  QuerySetter<Operation, State> &
   InputSetter<"headers", Operation, State> &
   InputSetter<"cookies", Operation, State> &
   ([Operation["body"] & Defined] extends [never]

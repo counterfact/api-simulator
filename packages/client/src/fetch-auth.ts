@@ -54,6 +54,7 @@ function clearCredentials(
   url: URL,
   headers: Headers,
   schemes: SecuritySchemes,
+  allowQueryCredentials: boolean,
 ): void {
   headers.delete("authorization");
   headers.delete("cookie");
@@ -63,7 +64,8 @@ function clearCredentials(
     if (scheme.location === "header") headers.delete(scheme.name);
     if (scheme.location === "query") queryNames.add(scheme.name);
   }
-  if (queryNames.size > 0) applyQueryCredentials(url, queryNames);
+  if (allowQueryCredentials && queryNames.size > 0)
+    applyQueryCredentials(url, queryNames);
 }
 
 async function resolveAlternative(
@@ -72,6 +74,7 @@ async function resolveAlternative(
   providers: Providers,
   signal: AbortSignal | undefined,
   credentials: RequestInit["credentials"],
+  allowQueryCredentials: boolean,
 ) {
   const entries: {
     name: string;
@@ -86,8 +89,8 @@ async function resolveAlternative(
       !scheme ||
       !provider ||
       (scheme.type === "apiKey" &&
-        scheme.location === "cookie" &&
-        credentials === "omit")
+        ((scheme.location === "cookie" && credentials === "omit") ||
+          (scheme.location === "query" && !allowQueryCredentials)))
     )
       return undefined;
     entries.push({ name, scopes, scheme, provider });
@@ -152,6 +155,7 @@ export async function applyAuthentication(
   schemes: SecuritySchemes,
   providers: Providers,
   options: ClientSendOptions | undefined,
+  allowQueryCredentials: boolean,
 ): Promise<void> {
   const anonymous =
     security.length === 0 ||
@@ -161,7 +165,7 @@ export async function applyAuthentication(
       throw new RequestAuthenticationError(
         "This operation requires authentication",
       );
-    clearCredentials(url, init.headers, schemes);
+    clearCredentials(url, init.headers, schemes, allowQueryCredentials);
     init.credentials = "omit";
     return;
   }
@@ -174,6 +178,7 @@ export async function applyAuthentication(
       providers,
       options?.signal ?? undefined,
       init.credentials,
+      allowQueryCredentials,
     );
     if (!resolved) continue;
     for (const [key, value] of resolved.headers) init.headers.set(key, value);
@@ -194,7 +199,7 @@ export async function applyAuthentication(
     );
   }
   if (security.length > 0) {
-    clearCredentials(url, init.headers, schemes);
+    clearCredentials(url, init.headers, schemes, allowQueryCredentials);
     init.credentials = "omit";
   }
 }

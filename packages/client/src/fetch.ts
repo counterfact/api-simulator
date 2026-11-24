@@ -35,8 +35,22 @@ export interface FetchParameter {
   contentType?: string;
 }
 
+type FormFieldEncoding = {
+  style?: string;
+  explode?: boolean;
+  allowReserved?: boolean;
+  contentType?: string;
+};
+
+interface WholeQuery {
+  required: boolean;
+  mediaType: string;
+  encoding?: Readonly<Record<string, FormFieldEncoding>>;
+}
+
 export interface FetchOperation {
   parameters: readonly FetchParameter[];
+  querystring?: WholeQuery;
   body?: { required: boolean; mediaType: string };
   responses: Readonly<Record<string, readonly string[]>>;
   security?: readonly SecurityRequirement[];
@@ -61,13 +75,17 @@ export interface FetchClientOptions<
 }
 
 type Values = Readonly<Record<string, unknown>>;
-type Inputs = Record<Location, Values> & { body: unknown };
+type Inputs = Record<Location, Values> & {
+  body: unknown;
+  querystring: unknown;
+};
 const empty: Inputs = {
   path: {},
   query: {},
   headers: {},
   cookies: {},
   body: undefined,
+  querystring: undefined,
 };
 
 function scalar(value: unknown): string {
@@ -105,20 +123,27 @@ function pairs(value: unknown): [string, unknown][] | undefined {
     : undefined;
 }
 
+function formEncode(value: string): string {
+  return new URLSearchParams([["", value]]).toString().slice(1);
+}
+
 function serialize(
   parameter: FetchParameter,
   value: unknown,
+  encodeField = encode,
+  encodeParameterValue?: (text: string) => string,
 ): [string, string][] {
   const { name, location, style, explode } = parameter;
   const encodeValue =
     location === "headers"
       ? (text: string) => text
-      : (text: string) =>
+      : (encodeParameterValue ??
+        ((text: string) =>
           encodeQueryValue(
             text,
             location === "query" && parameter.allowReserved,
-          );
-  const key = location === "headers" ? name : encode(name);
+          )));
+  const key = location === "headers" ? name : encodeField(name);
   const stringify = (item: unknown) => encodeValue(scalar(item));
 
   if (parameter.contentType !== undefined) {
@@ -173,7 +198,7 @@ function serialize(
     case "deepObject":
       if (fields)
         return fields.map(([field, item]) => [
-          `${key}[${encode(field)}]`,
+          `${key}[${encodeField(field)}]`,
           stringify(item),
         ]);
       break;
@@ -198,6 +223,67 @@ function serialize(
 
 function isJson(mediaType: string): boolean {
   return mediaType === "application/json" || mediaType.endsWith("+json");
+}
+
+const formMediaType = "application/x-www-form-urlencoded";
+
+function queryJson(value: unknown): string {
+  const json = JSON.stringify(value);
+  if (json === undefined) throw new TypeError("Expected a JSON query value");
+  return json;
+}
+
+function serializeWholeQuery(
+  { mediaType, encoding }: WholeQuery,
+  value: unknown,
+): string {
+  if (isJson(mediaType)) return encode(queryJson(value));
+  const fields = pairs(value);
+  if (mediaType !== formMediaType || fields === undefined) {
+    throw new TypeError(`Unsupported whole-query value for ${mediaType}`);
+  }
+
+  const parts: [string, string][] = [];
+  for (const [name, field] of fields) {
+    if (field === undefined) continue;
+    const rules = encoding && inputValue(encoding, name);
+    if (
+      rules?.style !== undefined ||
+      rules?.explode !== undefined ||
+      rules?.allowReserved !== undefined
+    ) {
+      const style = rules.style ?? "form";
+      parts.push(
+        ...serialize(
+          {
+            name,
+            location: "query",
+            required: false,
+            style,
+            explode: rules.explode ?? style === "form",
+          },
+          field,
+          formEncode,
+          rules.allowReserved
+            ? (text) => encodeQueryValue(text, true).replaceAll("%20", "+")
+            : formEncode,
+        ),
+      );
+      continue;
+    }
+
+    const key = formEncode(name);
+    const items = Array.isArray(field) ? field : [field];
+    const contentType = rules?.contentType?.toLowerCase();
+    for (const item of items) {
+      const json =
+        contentType === undefined
+          ? item !== null && typeof item === "object"
+          : isJson(contentType);
+      parts.push([key, formEncode(json ? queryJson(item) : scalar(item))]);
+    }
+  }
+  return parts.map(([key, field]) => `${key}=${field}`).join("&");
 }
 
 function isStreamable(mediaType: string): boolean {
@@ -343,7 +429,10 @@ async function readResponse(
   return { matchedStatus: match, status, mediaType, body, response };
 }
 
-function inputValue(values: Values, name: string): unknown {
+function inputValue<Value>(
+  values: Readonly<Record<string, Value>>,
+  name: string,
+): Value | undefined {
   // eslint-disable-next-line security/detect-object-injection -- names come from OpenAPI and only own properties count as supplied inputs.
   return Object.hasOwn(values, name) ? values[name] : undefined;
 }
@@ -351,6 +440,7 @@ function inputValue(values: Values, name: string): unknown {
 function isReady(operation: FetchOperation, inputs: Inputs): boolean {
   return (
     (!operation.body?.required || inputs.body !== undefined) &&
+    (!operation.querystring?.required || inputs.querystring !== undefined) &&
     operation.parameters.every(
       ({ location, name, required }) =>
         // eslint-disable-next-line security/detect-object-injection -- location is a typed parameter location and only selects a request input map.
@@ -408,7 +498,12 @@ function buildRequest(
 
   const url = new URL(options.baseUrl);
   url.pathname = url.pathname.replace(/\/$/u, "") + path;
-  if (query.length > 0) {
+  if (operation.querystring) {
+    url.search =
+      inputs.querystring === undefined
+        ? ""
+        : serializeWholeQuery(operation.querystring, inputs.querystring);
+  } else if (query.length > 0) {
     url.search = [url.search.slice(1), ...query].filter(Boolean).join("&");
   }
 
@@ -476,6 +571,8 @@ export function createFetchRoute<Operations extends ClientOperations>(
         securitySchemes,
         options.auth ?? {},
         sendOptions,
+        !operation.querystring ||
+          operation.querystring.mediaType === formMediaType,
       );
     }
     return readResponse(
@@ -501,7 +598,10 @@ export function createFetchRoute<Operations extends ClientOperations>(
       });
     return {
       path: (values: Values) => next("path", values),
-      query: (values: Values) => next("query", values),
+      query: operation.querystring
+        ? (querystring: unknown) =>
+            request(path, method, operation, { ...inputs, querystring })
+        : (values: Values) => next("query", values),
       headers: (values: Values) => next("headers", values),
       cookies: (values: Values) => next("cookies", values),
       body: (body: unknown) =>

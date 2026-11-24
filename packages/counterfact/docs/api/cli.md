@@ -89,14 +89,35 @@ if (result.matchedStatus === "200") {
 }
 ```
 
-The Fetch client currently omits operations that use OpenAPI 3.2 whole-query
-parameters (`in: querystring`).
-
 `route()` accepts an OpenAPI path or one of its prefixes. `segment()` appends a
 relative fragment and carries over the path values you already set. After
 selecting a method, supply the operation's path, query, header, cookie, and body
 inputs. The typed builder exposes `send()` once all required inputs are set.
 Each step returns a new builder, so you can reuse a prefix or a prepared request.
+
+### Pass the whole query string
+
+For an OpenAPI 3.2 operation with an `in: querystring` parameter, pass its
+complete value to `.query()`. The client takes the input type and encoding
+from the parameter's `content`. A later `.query()` call replaces the earlier
+value. If the parameter is required, supply it before calling `.send()` or
+`.stream()`.
+
+```ts
+await route("/search").method("get")
+  .query({ term: "red shoes", tags: ["sale", "women"] })
+  .send();
+```
+
+Form encoding sends `?term=red+shoes&tags=sale&tags=women`. JSON encoding sends
+the percent-encoded JSON value as the whole query string. The whole-query
+value replaces any query in `baseUrl`. Use a header or cookie security scheme
+for JSON whole-query requests.
+
+The generated client supports JSON and URL-encoded form objects with
+named fields. The simulator exposes the parsed form fields through
+`$.querystring`. Positional and nested form encodings are outside the
+client's support.
 
 ### Read the response
 
@@ -135,7 +156,7 @@ if (result.matchedStatus === "200") {
 The result preserves the status, media type, and original Fetch response. For
 a byte response, `result.body` is the same stream as `result.response.body`.
 Read from one of them. Declared JSON and text responses, such as error bodies,
-are still decoded and validated. Named operation calls return buffered results.
+are still decoded and validated.
 
 ### Authentication and Fetch options
 

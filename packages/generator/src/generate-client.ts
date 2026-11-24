@@ -33,6 +33,8 @@ const locations = new Map([
   ["cookie", "cookies"],
 ]);
 
+const formMediaType = "application/x-www-form-urlencoded";
+
 const undefinedType = () =>
   ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword);
 const isJson = (mediaType: string) =>
@@ -56,13 +58,76 @@ function parametersFor(operation: Requirement) {
     });
   }
   const supported = [];
+  let wholeQuery: Requirement | undefined;
   for (const parameter of parameters.values()) {
     const place = String(parameter.get("in")?.data);
+    if (place === "querystring") {
+      if (wholeQuery !== undefined) return undefined;
+      wholeQuery = parameter;
+      continue;
+    }
     const location = locations.get(place);
     if (location === undefined) return undefined;
     supported.push({ parameter, place, location });
   }
-  return supported;
+  if (wholeQuery && supported.some(({ place }) => place === "query"))
+    return undefined;
+  return { fields: supported, wholeQuery };
+}
+
+function describeWholeQuery(parameter: Requirement, script: Script) {
+  const [content] =
+    parameter.get("content")?.map((media, type) => ({
+      media,
+      type: type.toLowerCase(),
+    })) ?? [];
+  if (!content || (!isJson(content.type) && content.type !== formMediaType))
+    return undefined;
+
+  const { media, type: mediaType } = content;
+  const encoding =
+    mediaType === formMediaType ? media.get("encoding") : undefined;
+  if (
+    mediaType === formMediaType &&
+    (media.has("prefixEncoding") ||
+      media.has("itemEncoding") ||
+      encoding?.find(
+        (field) =>
+          field.has("encoding") ||
+          field.has("prefixEncoding") ||
+          field.has("itemEncoding"),
+      ))
+  ) {
+    return undefined;
+  }
+
+  const required = parameter.get("required")?.data === true;
+  return {
+    type: typeProperty(
+      "querystring",
+      typeLiteral([
+        typeProperty("value", schemaType(media.get("schema"), script)),
+        typeProperty("required", literalType(required)),
+      ]),
+    ),
+    metadata: {
+      required,
+      mediaType,
+      encoding:
+        encoding &&
+        Object.fromEntries(
+          encoding.map((field, name) => [
+            name,
+            {
+              style: field.get("style")?.data,
+              explode: field.get("explode")?.data,
+              allowReserved: field.get("allowReserved")?.data,
+              contentType: field.get("contentType")?.data,
+            },
+          ]),
+        ),
+    },
+  };
 }
 
 function requestBodyType(
@@ -101,10 +166,15 @@ function describe(
 ) {
   const operationParameters = parametersFor(operation);
   if (operationParameters === undefined) return undefined;
+  const wholeQuery =
+    operationParameters.wholeQuery &&
+    describeWholeQuery(operationParameters.wholeQuery, script);
+  if (operationParameters.wholeQuery && !wholeQuery) return undefined;
+
   const inputs = new Map<string, ts.TypeElement[]>(
     [...locations.values()].map((location) => [location, []]),
   );
-  const parameters = operationParameters.map(
+  const parameters = operationParameters.fields.map(
     ({ parameter, place, location }) => {
       const name = String(parameter.get("name")?.data);
       const required =
@@ -203,12 +273,14 @@ function describe(
       ...[...inputs].map(([name, properties]) =>
         typeProperty(name, typeLiteral(properties)),
       ),
+      ...(wholeQuery ? [wholeQuery.type] : []),
       typeProperty("bodyRequired", literalType(bodyRequired)),
       typeProperty("body", bodyType),
       typeProperty("responses", typeLiteral(responseTypes)),
     ]),
     metadata: {
       parameters,
+      querystring: wholeQuery?.metadata,
       body: selected && { mediaType: selected.type, required: bodyRequired },
       responses: Object.fromEntries(responseMetadata),
       security: clientSecurityRequirements(operation),

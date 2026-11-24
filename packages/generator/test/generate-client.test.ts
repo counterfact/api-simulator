@@ -22,10 +22,52 @@ it("generates and type-checks a reusable route prefix against inherited and oper
     await $.add(
       "api.json",
       JSON.stringify({
-        openapi: "3.1.0",
+        openapi: "3.2.0",
         info: { title: "Orders", version: "1" },
         security: [{ userToken: ["orders:read"] }],
         paths: {
+          "/search": {
+            parameters: [
+              {
+                in: "querystring",
+                name: "filters",
+                required: true,
+                content: {
+                  "application/x-www-form-urlencoded": {
+                    schema: {
+                      type: "object",
+                      required: ["term"],
+                      properties: {
+                        term: string,
+                        tags: { type: "array", items: string },
+                      },
+                    },
+                    encoding: { tags: { explode: false } },
+                  },
+                },
+              },
+            ],
+            get: {
+              responses: {
+                200: {
+                  description: "Report",
+                  content: { "application/pdf": {} },
+                },
+              },
+            },
+          },
+          "/lookup": {
+            get: {
+              parameters: [
+                {
+                  in: "querystring",
+                  name: "search",
+                  content: json({ type: ["string", "null"] }),
+                },
+              ],
+              responses: { 204: { description: "Found" } },
+            },
+          },
           "/download": {
             get: {
               operationId: "downloadReport",
@@ -121,6 +163,7 @@ it("generates and type-checks a reusable route prefix against inherited and oper
 
     const generated = await $.read("generated/v1/index.ts");
     expect(generated).toContain("responseSchemas:");
+    expect(generated).toContain("explode: false");
     expect(generated).toContain("./response-validators.js");
     expect(generated).not.toContain("$defs");
     expect(generated).not.toContain("operationId");
@@ -179,6 +222,25 @@ it("generates and type-checks a reusable route prefix against inherited and oper
       if (result.matchedStatus === "404") {
         const error: string = result.body.error;
       }
+      const search = route("/search").method("get");
+      // @ts-expect-error required whole-query value is missing
+      search.send();
+      // @ts-expect-error streaming also needs the whole-query value
+      search.stream();
+      // @ts-expect-error .query() needs the complete value
+      search.query({ tags: ["sale"] });
+      // @ts-expect-error the Parameter Object's name is not a wrapper
+      search.query({ filters: { term: "boots" } });
+      await search.query({ term: "boots", tags: ["sale"] }).query({ term: "shoes" }).send();
+      await search.query({ term: "boots" }).stream();
+      const lookup = route("/lookup").method("get");
+      await lookup.send();
+      await lookup.query("shoes").send();
+      await lookup.query(null).send();
+      // @ts-expect-error undefined is not a supplied query value
+      lookup.query(undefined);
+      // @ts-expect-error the JSON query schema is a string or null
+      lookup.query({ search: "shoes" });
       const download = route("/download").method("get");
       // @ts-expect-error the stream method requires the operation's query
       await download.stream();

@@ -92,7 +92,10 @@ describe("end-to-end test", () => {
       }
 
       const client = await $.read("client/index.ts");
-      expect(client).not.toContain('"/search"');
+      expect(client).toContain('"/search"');
+      expect(client).toContain(
+        'mediaType: "application/x-www-form-urlencoded"',
+      );
 
       expect(await $.read(".gitignore")).toMatchSnapshot();
 

@@ -472,13 +472,13 @@ export class OperationTypeCoder extends TypeCoder {
     const querystringParam = parameters?.find(
       (parameter) => (parameter.get("in")?.data as string) === "querystring",
     );
-    const querystringType =
-      querystringParam?.has("schema") === true
-        ? new SchemaTypeCoder(
-            querystringParam.get("schema")!,
-            this.version,
-          ).write(script)
-        : neverType();
+    const [querystringMedia] =
+      querystringParam?.get("content")?.map((media) => media) ?? [];
+    const querystringSchema =
+      querystringMedia?.get("schema") ?? querystringParam?.get("schema");
+    const querystringType = querystringSchema
+      ? new SchemaTypeCoder(querystringSchema, this.version).write(script)
+      : neverType();
     const querystringTypeName = this.exportParameterType(
       script,
       "querystring",
