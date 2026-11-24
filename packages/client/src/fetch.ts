@@ -15,7 +15,6 @@ export { RequestAuthenticationError } from "./fetch-auth.js";
 export type { CookieCredential, CredentialProvider } from "./fetch-auth.js";
 
 export type {
-  ClientNamedOperations,
   ClientOperations,
   ClientResult,
   ClientStreamResult,
@@ -37,7 +36,6 @@ export interface FetchParameter {
 }
 
 export interface FetchOperation {
-  operationId?: string;
   parameters: readonly FetchParameter[];
   body?: { required: boolean; mediaType: string };
   responses: Readonly<Record<string, readonly string[]>>;
@@ -537,59 +535,6 @@ export function createFetchRoute<Operations extends ClientOperations>(
     };
   }
 
-  const named = new Map<
-    string,
-    { path: string; method: string; operation: FetchOperation }
-  >();
-  for (const [path, methods] of routes) {
-    for (const [method, operation] of methods) {
-      const id = operation.operationId;
-      if (id === undefined) continue;
-      if (named.has(id)) throw new Error(`Duplicate operationId "${id}"`);
-      named.set(id, { path, method, operation });
-    }
-  }
-
-  function operationFunctions(defaults?: Values) {
-    const bound = new Map(Object.entries(defaults ?? {}));
-    // A null prototype keeps every declared operation ID addressable.
-    const functions = Object.create(null) as Record<
-      string,
-      (
-        input?: Values,
-        options?: ClientSendOptions & { body?: unknown },
-      ) => Promise<unknown>
-    >;
-    for (const [id, { path, method, operation }] of named) {
-      // eslint-disable-next-line security/detect-object-injection -- IDs come from the generated operations, and the namespace has no prototype.
-      functions[id] = async (input, sendOptions) => {
-        const values = new Map(bound);
-        for (const [key, value] of Object.entries(input ?? {})) {
-          if (value !== undefined) values.set(key, value);
-        }
-        const inputs = {
-          path: Object.create(null) as Record<string, unknown>,
-          query: Object.create(null) as Record<string, unknown>,
-          headers: Object.create(null) as Record<string, unknown>,
-          cookies: Object.create(null) as Record<string, unknown>,
-          body: operation.body ? sendOptions?.body : undefined,
-        };
-        for (const { location, name } of operation.parameters) {
-          // eslint-disable-next-line security/detect-object-injection -- name is a declared OpenAPI parameter; the input groups have no prototype.
-          inputs[location][name] = values.get(name);
-        }
-        if (!isReady(operation, inputs)) {
-          throw new TypeError(`Missing required inputs for operation "${id}"`);
-        }
-        return sendRequest(path, method, operation, inputs, sendOptions);
-      };
-    }
-    return Object.freeze(functions);
-  }
-
-  const route = (path: string) => branch(path, {});
-  // Generated types refine the callable builder and named operations from the same metadata.
-  return Object.assign(route, {
-    operations: operationFunctions,
-  }) as unknown as ClientRouteFunction<Operations>;
+  return ((path: string) =>
+    branch(path, {})) as ClientRouteFunction<Operations>;
 }

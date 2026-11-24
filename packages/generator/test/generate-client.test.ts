@@ -39,29 +39,6 @@ it("generates and type-checks a reusable route prefix against inherited and oper
               },
             },
           },
-          "/health": {
-            get: {
-              operationId: "health",
-              responses: { 204: { description: "Healthy" } },
-            },
-            post: {
-              operationId: "healthNote",
-              requestBody: { content: json(string) },
-              responses: { 204: { description: "Updated" } },
-            },
-          },
-          "/search": {
-            get: {
-              operationId: "search",
-              parameters: [parameter("q", "query", string, false)],
-              responses: { 204: { description: "No matches" } },
-            },
-            post: {
-              operationId: "searchWithPayload",
-              requestBody: { required: true, content: json(string) },
-              responses: { 204: { description: "No matches" } },
-            },
-          },
           "/{tenantId}/v1/orders/{orderId}": {
             $ref: "#/components/pathItems/Orders",
           },
@@ -89,7 +66,6 @@ it("generates and type-checks a reusable route prefix against inherited and oper
                 parameter("locale", "query", integer, false),
               ],
               get: {
-                operationId: "getOrder",
                 parameters: [
                   parameter("locale", "query"),
                   parameter("orderId", "query", integer, false),
@@ -110,7 +86,6 @@ it("generates and type-checks a reusable route prefix against inherited and oper
                 },
               },
               post: {
-                operationId: "update-order",
                 parameters: [parameter("body", "query")],
                 requestBody: {
                   required: true,
@@ -148,6 +123,7 @@ it("generates and type-checks a reusable route prefix against inherited and oper
     expect(generated).toContain("responseSchemas:");
     expect(generated).toContain("./response-validators.js");
     expect(generated).not.toContain("$defs");
+    expect(generated).not.toContain("operationId");
     expect(generated).toContain('security: [{ userToken: ["orders:read"] }]');
     expect(generated).toContain("security: []");
 
@@ -217,64 +193,10 @@ it("generates and type-checks a reusable route prefix against inherited and oper
       if (buffered.matchedStatus === "200") {
         const bytes: ArrayBuffer = buffered.body;
       }
-      // @ts-expect-error only buffered direct calls are available for named operations
-      await route.operations().downloadReport.stream({ format: "pdf" });
+      // @ts-expect-error routes are selected by path and method
+      route.operations();
       // @ts-expect-error a JSON-only route cannot be streamed
       await identified.query({ locale: "en-US" }).stream();
-      const acme = route.operations({ tenantId: "acme" });
-      await acme.getOrder({ orderId: 42, locale: "en-US" });
-      await acme.getOrder({ tenantId: "other", orderId: 42, locale: "en-US" });
-      await acme.health();
-      await acme["update-order"]({ orderId: 42, body: "summary" }, { body: { id: 42 } });
-      const summary = route.operations({ tenantId: "acme", body: "summary" });
-      await summary["update-order"]({ orderId: 42 }, { body: { id: 42 }, signal: AbortSignal.timeout(1000) });
-      // @ts-expect-error the query parameter is required independently of the request payload
-      await acme["update-order"]({ orderId: 42 }, { body: { id: 42 } });
-      // @ts-expect-error the payload must match the request body schema
-      await acme["update-order"]({ orderId: 42, body: "summary" }, { body: "summary" });
-      // @ts-expect-error binding one parameter does not make other required inputs optional
-      await acme.getOrder({ locale: "en-US" });
-      // @ts-expect-error the body is still required
-      await acme["update-order"]({ orderId: 42, body: "summary" });
-      // @ts-expect-error only declared named parameters can be bound
-      route.operations({ unknownName: "value" });
-      // @ts-expect-error the body parameter default must match its declared type
-      route.operations({ body: { id: 42 } });
-      // @ts-expect-error the POST locale is a number and the GET locale is a string
-      route.operations({ locale: "en-US" });
-      const maybeTenant: { tenantId?: string } = {};
-      // @ts-expect-error an optional default cannot satisfy a required parameter
-      await route.operations(maybeTenant).getOrder({ orderId: 42, locale: "en-US" });
-      const namedResult = await route.operations().getOrder({
-        tenantId: "acme", orderId: 42, locale: "en-US",
-      }, { authenticate: true });
-      if (namedResult.matchedStatus === "200") {
-        const id: number = namedResult.body.id;
-      }
-      // @ts-expect-error named calls require the locale query
-      await route.operations().getOrder({ tenantId: "acme", orderId: 42 });
-      // @ts-expect-error a repeated name must match the types at both locations
-      await route.operations().getOrder({ tenantId: "acme", orderId: "42", locale: "en-US" });
-      // @ts-expect-error this operation requires a body
-      await route.operations()["update-order"]({ tenantId: "acme", orderId: 42, body: "summary" });
-      // @ts-expect-error the options must include the required payload
-      await route.operations()["update-order"]({ tenantId: "acme", orderId: 42, body: "summary" }, { redirect: "manual" });
-      await route.operations()["update-order"]({
-        tenantId: "acme", orderId: 42, body: "summary",
-      }, { body: { id: 42 } });
-      await route.operations().health();
-      await route.operations().health(undefined, { redirect: "manual" });
-      // @ts-expect-error this operation has no request body
-      await route.operations().health(undefined, { body: "note" });
-      await route.operations().healthNote();
-      await route.operations().healthNote(undefined, { body: "note" });
-      await route.operations().searchWithPayload(undefined, { body: "query" });
-      // @ts-expect-error a required payload still needs options when there are no parameters
-      await route.operations().searchWithPayload();
-      await route.operations().search();
-      await route.operations().search({ q: "books" });
-      // @ts-expect-error an undeclared ID does not receive a named function
-      await route.operations().customers();
       const update = orders.method("post").path({ orderId: 42 });
       // @ts-expect-error the post body is required
       update.send();
@@ -362,7 +284,6 @@ it.each([
                 parameter("orderId", "cookie", integer),
               ],
               get: {
-                operationId: "__proto__",
                 responses: {
                   "200": {
                     description: "Order",
@@ -452,7 +373,13 @@ it.each([
             assert.equal(init.redirect, "manual");
             return response;
           },
-        }).operations({ orderId: 42 })["__proto__"](undefined, { authenticate: true, redirect: "manual" });
+        })("/orders/{orderId}")
+          .method("get")
+          .path({ orderId: 42 })
+          .query({ orderId: 42 })
+          .headers({ orderId: 42 })
+          .cookies({ orderId: 42 })
+          .send({ authenticate: true, redirect: "manual" });
         const nested = { id: 1, items: [], child: { id: 2, items: [] } };
         assert.deepEqual((await send(Response.json(nested))).body, nested);
         const invalid = error => error instanceof InvalidResponseError && error.reason === "schema-mismatch";
@@ -474,28 +401,3 @@ it.each([
     });
   },
 );
-
-it("rejects duplicate operation IDs before writing the client", async () => {
-  await usingTemporaryFiles(async ($) => {
-    const get = {
-      operationId: "getOrder",
-      responses: { 204: { description: "OK" } },
-    };
-    await $.add(
-      "api.json",
-      JSON.stringify({
-        openapi: "3.1.0",
-        info: { title: "Orders", version: "1" },
-        paths: { "/orders": { get }, "/archived": { get } },
-      }),
-    );
-    const generator = new CodeGenerator(
-      $.path("api.json"),
-      $.path("generated"),
-      {},
-    );
-    await expect(generator.generateClient()).rejects.toThrow(
-      'Duplicate operationId "getOrder" on GET /orders and GET /archived',
-    );
-  });
-});

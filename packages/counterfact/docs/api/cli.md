@@ -88,48 +88,7 @@ selecting a method, supply the operation's path, query, header, cookie, and body
 inputs. The typed builder exposes `send()` once all required inputs are set.
 Each step returns a new builder, so you can reuse a prefix or a prepared request.
 
-### Call an operation by ID
-
-Create the client as usual and call `route.operations().getOrder()` if the
-OpenAPI operation declares `operationId: getOrder`.
-
-```ts
-const result = await route
-  .operations()
-  .getOrder({ tenantId: "acme", orderId: "123" }, { signal });
-```
-
-Pass parameters by name in the first argument. Counterfact puts each value in
-the path, query, headers, or cookies according to the OpenAPI declaration. If
-one name occurs in several locations, each receives the same value. Pass the request payload as `body` in the
-second argument, alongside options such as `signal`. A parameter named `body`
-still goes in the first argument.
-
-```ts
-await route.operations().updateOrder(
-  { tenantId: "acme", orderId: "123", body: "summary" },
-  { body: { quantity: 2 }, signal },
-);
-```
-
-If no parameters are required, omit the first argument or pass `undefined` to
-supply request options. Operations with a required request body require the
-second argument. Named and fluent calls share auth, transport, and response checks.
-
-Pass shared parameter values to `operations()` once and reuse the returned calls.
-
-```ts
-const acme = route.operations({ tenantId: "acme" });
-await acme.getOrder({ orderId: "123" });
-```
-
-A default must fit each named operation that declares the parameter. Each
-operation uses its own parameters and lets a defined call-specific value
-override a default. The request body and request options belong to each call.
-
-Operation IDs keep their exact spelling. Use bracket notation for IDs such as
-`route.operations()["get-order"]`. Operations without an ID remain callable
-through the fluent API. Duplicate operation IDs fail generation.
+### Read the response
 
 `send()` resolves with the HTTP `status`, `matchedStatus`, `mediaType`,
 decoded `body`, and original Fetch `response`. Check `matchedStatus` to

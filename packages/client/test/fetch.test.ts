@@ -460,7 +460,6 @@ type Download = {
   cookies: Record<never, never>;
   bodyRequired: false;
   body: never;
-  operationId: "download";
   responses: {
     "200": { mediaType: "application/pdf"; body: ArrayBuffer };
     "404": { mediaType: "application/json"; body: { message: string } };
@@ -472,7 +471,6 @@ function downloadFixture(response: Response) {
     {
       "/report": {
         get: {
-          operationId: "download",
           parameters: [
             {
               location: "query",
@@ -516,8 +514,6 @@ it("returns the original byte stream before the server closes it", async () => {
   const route = downloadFixture(response);
   const incomplete = route("/report").method("get");
   expect(incomplete).not.toHaveProperty("stream");
-  expect(route.operations().download).not.toHaveProperty("stream");
-  expect(route.operations().download).not.toHaveProperty("send");
   try {
     const result = await incomplete.query({ format: "pdf" }).stream();
     expect(result).toMatchObject({
@@ -557,56 +553,8 @@ it("validates documented JSON responses from a streamed request", async () => {
   });
 });
 
-it("binds independent named-operation defaults and lets call values override them", async () => {
-  const received: string[] = [];
-  type Report = Omit<Download, "query"> & {
-    query: { format: "pdf" | "print" };
-  };
-  const route = createFetchRoute<{ "/report": { get: Report } }>(
-    {
-      "/report": {
-        get: {
-          operationId: "download",
-          parameters: [
-            {
-              location: "query",
-              name: "format",
-              required: true,
-              style: "form",
-              explode: true,
-            },
-          ],
-          responses: { 200: ["application/pdf"] },
-        },
-      },
-    },
-    {
-      baseUrl: "https://example.test",
-      fetch: async (url) => {
-        received.push(String(url));
-        return new Response(new Uint8Array([1]), {
-          headers: { "content-type": "application/pdf" },
-        });
-      },
-    },
-  );
-  const first = route.operations({ format: "pdf" });
-  const second = route.operations({ format: "print" });
-  await first.download();
-  await second.download();
-  await first.download({ format: "print" });
-  await first.download({ format: undefined });
-  expect(received).toEqual([
-    "https://example.test/report?format=pdf",
-    "https://example.test/report?format=print",
-    "https://example.test/report?format=print",
-    "https://example.test/report?format=pdf",
-  ]);
-});
-
 it("sends a query parameter named body independently of the request payload", async () => {
   type Update = Pick<Post, "body" | "bodyRequired"> & {
-    operationId: "update";
     path: Record<never, never>;
     query: { body: string };
     headers: Record<never, never>;
@@ -618,7 +566,6 @@ it("sends a query parameter named body independently of the request payload", as
     {
       "/order": {
         post: {
-          operationId: "update",
           parameters: [
             {
               location: "query",
@@ -646,12 +593,11 @@ it("sends a query parameter named body independently of the request payload", as
       },
     },
   );
-  const operations = route.operations({ body: "summary" });
-  await operations.update(undefined, {
-    body: { updated: true },
+  const update = route("/order").method("post");
+  await update.query({ body: "summary" }).body({ updated: true }).send({
     redirect: "manual",
   });
-  await operations.update({ body: "detail" }, { body: { updated: false } });
+  await update.query({ body: "detail" }).body({ updated: false }).send();
   expect(received).toEqual([
     {
       url: "https://example.test/order?body=summary",

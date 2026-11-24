@@ -13,9 +13,5 @@ reject with an error. Response validators are compiled during generation.
 Generated clients apply OpenAPI security requirements and support per-request
 authentication, credentials, redirect handling, and cancellation.
 
-Call generated operations by their OpenAPI operation ID through `route.operations()`. Pass parameters in one flat object and bind
-optional defaults with `route.operations(defaults)`. Pass request payloads as
-`body` in the second argument alongside request options.
-
 Completed fluent requests can call `stream()` to read declared byte responses
 as they arrive.
