@@ -1,9 +1,10 @@
 # Generated Code
 
-Counterfact generates two directories from your OpenAPI document:
+Counterfact generates these directories from your OpenAPI document:
 
 - 📂 **`types/`** — fully typed request/response interfaces, auto-regenerated whenever the OpenAPI document changes. Don't edit these by hand.
 - 📂 **`routes/`** — one TypeScript file per API path. These are yours to edit. Out of the box each file returns a random, schema-valid response. You can leave them as-is or customize as much as you like.
+- **`client/`** contains the [generated Fetch client](../api/cli.md#generate-a-typed-fetch-client) for OpenAPI 3.x specs.
 
 See the [FAQ](../faq.md) for common questions about source control, editing, and regeneration.
 
@@ -16,6 +17,9 @@ The output directory is called `basePath` in library options and `destination` i
 ```
 <output-directory>/
 ├── _.store.ts                 # application-level state shared across API groups (optional)
+├── client/
+│   ├── index.ts               # Fetch client entry point
+│   └── response-validators.ts # precompiled response validators
 ├── routes/
 │   ├── _.context.ts           # shared in-memory state (optional)
 │   ├── _.middleware.ts        # Counterfact middleware (optional)

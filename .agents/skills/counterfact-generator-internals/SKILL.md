@@ -83,4 +83,4 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 
 - Preserve absent, empty, and anonymous OpenAPI security declarations when generating client metadata. Verify operation overrides, alternative requirements, and provider scopes through the generated client.
 
-- Keep OpenAPI operation IDs unchanged in the generated named-client namespace. Both named and fluent calls should use the same request transport and response validators.
+- Choose public validator export names that cannot collide with Ajv’s generated local bindings. Parse the validators generated from a full spec, since small fixtures may never reach a colliding name.

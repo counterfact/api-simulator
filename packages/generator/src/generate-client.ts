@@ -45,7 +45,7 @@ function schemaType(
   return schema ? new SchemaTypeCoder(schema).write(script) : unknownType();
 }
 
-function parametersFor(operation: Requirement): Requirement[] {
+function parametersFor(operation: Requirement) {
   const parameters = new Map<string, Requirement>();
   for (const scope of [operation.parent, operation]) {
     scope?.get("parameters")?.forEach((parameter) => {
@@ -55,7 +55,14 @@ function parametersFor(operation: Requirement): Requirement[] {
       );
     });
   }
-  return [...parameters.values()];
+  const supported = [];
+  for (const parameter of parameters.values()) {
+    const place = String(parameter.get("in")?.data);
+    const location = locations.get(place);
+    if (location === undefined) return undefined;
+    supported.push({ parameter, place, location });
+  }
+  return supported;
 }
 
 function requestBodyType(
@@ -88,53 +95,51 @@ function responseBodyType(
 
 function describe(
   operation: Requirement,
-  path: string,
   method: string,
   script: Script,
   schemas: ClientResponseSchemas,
 ) {
+  const operationParameters = parametersFor(operation);
+  if (operationParameters === undefined) return undefined;
   const inputs = new Map<string, ts.TypeElement[]>(
     [...locations.values()].map((location) => [location, []]),
   );
-  const parameters = parametersFor(operation).map((parameter) => {
-    const name = String(parameter.get("name")?.data);
-    const place = String(parameter.get("in")?.data);
-    const location = locations.get(place);
-    if (!location)
-      throw new Error(
-        `Unsupported client parameter "${place}" in ${method} ${path}`,
+  const parameters = operationParameters.map(
+    ({ parameter, place, location }) => {
+      const name = String(parameter.get("name")?.data);
+      const required =
+        place === "path" || parameter.get("required")?.data === true;
+      const style = String(
+        parameter.get("style")?.data ??
+          (place === "query" || place === "cookie" ? "form" : "simple"),
       );
-    const required =
-      place === "path" || parameter.get("required")?.data === true;
-    const style = String(
-      parameter.get("style")?.data ??
-        (place === "query" || place === "cookie" ? "form" : "simple"),
-    );
-    const explode =
-      (parameter.get("explode")?.data ?? style === "form") === true;
-    const [content] =
-      parameter.get("content")?.map((value, type) => ({ value, type })) ?? [];
-    const schema = content?.value.get("schema") ?? parameter.get("schema");
-    inputs
-      .get(location)
-      ?.push(
-        typeProperty(
-          name,
-          schemaType(schema, script),
-          !required,
-          parameter.data,
-        ),
-      );
-    return {
-      name,
-      location,
-      required,
-      style,
-      explode,
-      allowReserved: parameter.get("allowReserved")?.data === true || undefined,
-      contentType: content?.type.toLowerCase(),
-    };
-  });
+      const explode =
+        (parameter.get("explode")?.data ?? style === "form") === true;
+      const [content] =
+        parameter.get("content")?.map((value, type) => ({ value, type })) ?? [];
+      const schema = content?.value.get("schema") ?? parameter.get("schema");
+      inputs
+        .get(location)
+        ?.push(
+          typeProperty(
+            name,
+            schemaType(schema, script),
+            !required,
+            parameter.data,
+          ),
+        );
+      return {
+        name,
+        location,
+        required,
+        style,
+        explode,
+        allowReserved:
+          parameter.get("allowReserved")?.data === true || undefined,
+        contentType: content?.type.toLowerCase(),
+      };
+    },
+  );
 
   const requestBody = operation.get("requestBody");
   const bodyRequired = requestBody?.get("required")?.data === true;
@@ -261,12 +266,13 @@ export async function generateClient(
   const validation = new ClientResponseSchemas(specification);
   const paths =
     specification.getRequirement("#/paths")?.flatMap((pathItem, path) => {
-      const operations = pathOperations(pathItem)
-        .filter(([, method]) => !["trace", "connect", "track"].includes(method))
-        .map(([operation, method]) => ({
-          method,
-          ...describe(operation, path, method, script, validation),
-        }));
+      const operations = pathOperations(pathItem).flatMap(
+        ([operation, method]) => {
+          if (["trace", "connect", "track"].includes(method)) return [];
+          const description = describe(operation, method, script, validation);
+          return description ? [{ method, ...description }] : [];
+        },
+      );
       return operations.length ? [{ path, operations }] : [];
     }) ?? [];
   const schemaMetadata = validation.output();

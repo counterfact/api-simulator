@@ -21,7 +21,7 @@ npx counterfact@latest [spec] [output] [options]
 | `--no-validate-response`    | —                  | Disable OpenAPI response validation                                   |
 | `--generate-types`          | `false`            | Generate types only                                                   |
 | `--generate-routes`         | `false`            | Generate routes only                                                  |
-| `--generate-client`         | `false`            | Generate a standalone Fetch client into `[output]`                    |
+| `--generate-client`         | `false`            | Generate only a Fetch client into `[output]`                             |
 | `--generate-schemas-only`   | `false`            | Write only the schema types into `[output]` (see below)               |
 | `--watch-types`             | `false`            | Watch and regenerate types only                                       |
 | `--watch-routes`            | `false`            | Watch and regenerate routes only                                      |
@@ -59,18 +59,25 @@ Groups and versions come from the `spec` list in a config file. Every spec in a 
 
 ## Generate a typed Fetch client
 
+For OpenAPI 3.x specs, normal type generation includes a Fetch client. For
+example, `npx counterfact@latest openapi.yaml ./api` generates
+`./api/client/index.ts` alongside the simulator files. Spec watching
+regenerates the client when type generation is enabled. Grouped APIs place
+clients in each group directory, and versioned clients have an additional
+version directory under `client/`.
+
+To generate just the client, run:
+
 ```sh
-npm install @counterfact/client
 npx counterfact@latest openapi.yaml ./src/api/generated --generate-client
 ```
 
-The command writes a TypeScript entry point, response validators, and the referenced schemas. Import
-`createClient` from the generated `index.ts`. Give it a `baseUrl` for the real
-backend or the Counterfact simulator, including any prefix used to serve the
-spec.
+Install `@counterfact/client` in the application that uses the generated
+client. Import `createClient` from the generated entry point and set
+`baseUrl` to the backend or Counterfact simulator, including any API prefix.
 
 ```ts
-import { createClient } from "./api/generated/index.js";
+import { createClient } from "./api/client/index.js";
 
 const route = createClient({ baseUrl: "http://localhost:3100" });
 const tenant = route("/{tenantId}/v1").path({ tenantId: "acme" });
@@ -81,6 +88,9 @@ if (result.matchedStatus === "200") {
   console.log(result.body);
 }
 ```
+
+The Fetch client currently omits operations that use OpenAPI 3.2 whole-query
+parameters (`in: querystring`).
 
 `route()` accepts an OpenAPI path or one of its prefixes. `segment()` appends a
 relative fragment and carries over the path values you already set. After

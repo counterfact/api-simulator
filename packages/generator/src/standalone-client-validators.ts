@@ -83,6 +83,7 @@ export async function standaloneClientValidators(
     strict: false,
     ownProperties: true,
     strictNumbers: true,
+    validateFormats: false,
     code: { source: true, esm: true, lines: true },
   });
   ajv.addSchema(metadata.schema);
@@ -94,7 +95,21 @@ export async function standaloneClientValidators(
       );
     }
   }
-  const standalone = importHelpers(standaloneCode(ajv, metadata.validators));
+  // Ajv assigns its own bindings such as schema12. Give public exports
+  // a distinct prefix so a larger schema graph cannot redeclare them.
+  const entries = Object.entries(metadata.validators).map(
+    ([key, uri], index) => ({
+      key,
+      uri,
+      name: `validateResponse${index}`,
+    }),
+  );
+  const standalone = importHelpers(
+    standaloneCode(
+      ajv,
+      Object.fromEntries(entries.map(({ name, uri }) => [name, uri])),
+    ),
+  );
   const boolean = ts.factory.createKeywordTypeNode(
     ts.SyntaxKind.BooleanKeyword,
   );
@@ -105,10 +120,7 @@ export async function standaloneClientValidators(
   const registry = exportedConst(
     "responseValidators",
     objectExpression(
-      Object.keys(metadata.validators).map((key) => [
-        key,
-        ts.factory.createIdentifier(key),
-      ]),
+      entries.map(({ key, name }) => [key, ts.factory.createIdentifier(name)]),
     ),
     typeReference("Readonly", [
       typeReference("Record", [stringType(), validatorType]),

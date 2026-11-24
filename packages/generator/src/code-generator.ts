@@ -127,7 +127,8 @@ export class CodeGenerator extends EventTarget {
    *
    * Loads the OpenAPI spec from `openapiPath`, optionally prunes defunct route
    * files, registers all path operations as {@link OperationCoder} exports, and
-   * writes the resulting TypeScript files to `destination`.
+   * writes the resulting TypeScript files to `destination`. Type generation
+   * also writes a Fetch client for OpenAPI 3.x specs.
    *
    * @param repository - Injectable repository instance; defaults to a fresh one
    *   (primarily useful in tests).
@@ -209,6 +210,17 @@ export class CodeGenerator extends EventTarget {
     debug("telling the repository to write the files to %s", destination);
 
     await repository.writeFiles(destination, this.generateOptions);
+
+    if (
+      this.generateOptions.types &&
+      specification.getRequirement("#/swagger") === undefined
+    ) {
+      await writeClient(
+        specification,
+        nodePath.join(destination, "client"),
+        this.version,
+      );
+    }
 
     debug("finished writing the files");
   }
