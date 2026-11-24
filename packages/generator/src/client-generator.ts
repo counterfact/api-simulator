@@ -557,7 +557,7 @@ export async function generateClient(
 ): Promise<string[]> {
   const apiClassName = options.apiClassName ?? "Api";
   const modules = collectClientModules(specification, options).map((module) =>
-    module.name === apiClassName
+    module.name.toLowerCase() === apiClassName.toLowerCase()
       ? { ...module, name: `${module.name}Module` }
       : module,
   );

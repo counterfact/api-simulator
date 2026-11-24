@@ -191,6 +191,19 @@ describe("collectClientModules", () => {
     });
   });
 
+  it("merges modules whose names differ only by case, since they share a file name", () => {
+    expect(
+      operationNamesByModule({
+        paths: {
+          "/CompanyAccounts": { get: { operationId: "list", responses: ok } },
+          "/companyaccounts/nickNames": {
+            get: { operationId: "List", responses: ok },
+          },
+        },
+      }),
+    ).toEqual({ CompanyAccounts: ["list", "list2"] });
+  });
+
   it("describes path, query and body parameters, merging path-level parameters", () => {
     const [module] = modulesFor({
       paths: {

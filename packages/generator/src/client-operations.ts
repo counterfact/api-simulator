@@ -380,16 +380,20 @@ export function collectClientModules(
       if (RESERVED_MODULE_NAMES.has(moduleName))
         moduleName = `${moduleName}Module`;
 
-      const module = modules.get(moduleName) ?? {
+      // Module names become file names, which are case-insensitive on some
+      // file systems, so `/CompanyAccounts` and `/companyaccounts` share a
+      // module named after whichever comes first.
+      const moduleKey = moduleName.toLowerCase();
+      const module = modules.get(moduleKey) ?? {
         name: moduleName,
         operations: [],
       };
-      modules.set(moduleName, module);
+      modules.set(moduleKey, module);
 
       const taken =
-        takenNames.get(moduleName) ??
+        takenNames.get(moduleKey) ??
         new Set([...RESERVED_MEMBER_NAMES].map((name) => name.toLowerCase()));
-      takenNames.set(moduleName, taken);
+      takenNames.set(moduleKey, taken);
 
       const queryParameters = parameters.filter(
         (parameter) => parameter.in === "query",
