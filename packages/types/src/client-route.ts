@@ -242,7 +242,7 @@ type DefinedKeys<Defaults> = {
   [Key in keyof Defaults]-?: undefined extends Defaults[Key] ? never : Key;
 }[keyof Defaults];
 
-type NamedInputs<
+type NamedCallParameters<
   Operation extends ClientOperation,
   Defaults,
   Parameters = NamedParameters<Operation>,
@@ -250,24 +250,28 @@ type NamedInputs<
     DefinedKeys<Defaults>,
     keyof Parameters
   >,
-> = Omit<Parameters, Defaulted> &
-  Partial<Pick<Parameters, Defaulted>> &
+> = Omit<Parameters, Defaulted> & Partial<Pick<Parameters, Defaulted>>;
+
+type NamedCallOptions<Operation extends ClientOperation> = ClientSendOptions &
   (Operation["bodyRequired"] extends true
     ? { body: Operation["body"] & Defined }
-    : [Operation["body"] & Defined] extends [never]
-      ? EmptyFields
-      : { body?: Operation["body"] & Defined });
+    : { body?: Operation["body"] & Defined });
 
 type NamedCall<
   Operation extends ClientOperation,
   Defaults,
-  Inputs = NamedInputs<Operation, Defaults>,
+  Parameters = NamedCallParameters<Operation, Defaults>,
+  Input = keyof Parameters extends never ? undefined : Parameters,
+  Options = NamedCallOptions<Operation>,
 > = (
-  ...args: keyof Inputs extends never
-    ? [input?: undefined, options?: ClientSendOptions]
-    : EmptyFields extends Inputs
-      ? [input?: Inputs, options?: ClientSendOptions]
-      : [input: Inputs, options?: ClientSendOptions]
+  ...args: Operation["bodyRequired"] extends true
+    ? [
+        input: EmptyFields extends Parameters ? Input | undefined : Input,
+        options: Options,
+      ]
+    : EmptyFields extends Parameters
+      ? [input?: Input, options?: Options]
+      : [input: Input, options?: Options]
 ) => Promise<ClientResult<Operation>>;
 
 type AllOperations<Operations> = {
@@ -297,7 +301,7 @@ type OperationDefaults<
   Parameters = NamedParameterSets<NamedDefinitions<Operations>>,
 > = {
   // A shared default must be valid for every named operation that declares it.
-  [Key in Exclude<ParameterKeys<Parameters>, "body">]?: ParameterAcceptors<
+  [Key in ParameterKeys<Parameters>]?: ParameterAcceptors<
     Parameters,
     Key
   > extends (value: infer Value) => void

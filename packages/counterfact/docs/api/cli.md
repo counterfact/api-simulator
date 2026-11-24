@@ -101,10 +101,20 @@ const result = await route
 
 Pass parameters by name in the first argument. Counterfact puts each value in
 the path, query, headers, or cookies according to the OpenAPI declaration. If
-one name occurs in several locations, each receives the same value. Use
-`body` for a request payload. Omit the first argument when no input is required,
-or pass `undefined` when you only need request options. Named and fluent calls
-share auth, transport, and response checks.
+one name occurs in several locations, each receives the same value. Pass the request payload as `body` in the
+second argument, alongside options such as `signal`. A parameter named `body`
+still goes in the first argument.
+
+```ts
+await route.operations().updateOrder(
+  { tenantId: "acme", orderId: "123", body: "summary" },
+  { body: { quantity: 2 }, signal },
+);
+```
+
+If no parameters are required, omit the first argument or pass `undefined` to
+supply request options. Operations with a required request body require the
+second argument. Named and fluent calls share auth, transport, and response checks.
 
 Pass shared parameter values to `operations()` once and reuse the returned calls.
 

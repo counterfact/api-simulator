@@ -603,3 +603,65 @@ it("binds independent named-operation defaults and lets call values override the
     "https://example.test/report?format=pdf",
   ]);
 });
+
+it("sends a query parameter named body independently of the request payload", async () => {
+  type Update = Pick<Post, "body" | "bodyRequired"> & {
+    operationId: "update";
+    path: Record<never, never>;
+    query: { body: string };
+    headers: Record<never, never>;
+    cookies: Record<never, never>;
+    responses: { "204": { mediaType: undefined; body: undefined } };
+  };
+  const received: unknown[] = [];
+  const route = createFetchRoute<{ "/order": { post: Update } }>(
+    {
+      "/order": {
+        post: {
+          operationId: "update",
+          parameters: [
+            {
+              location: "query",
+              name: "body",
+              required: true,
+              style: "form",
+              explode: true,
+            },
+          ],
+          body: { mediaType: "application/json", required: true },
+          responses: { 204: [] },
+        },
+      },
+    },
+    {
+      baseUrl: "https://example.test",
+      fetch: async (url, init) => {
+        const request = new Request(url, init);
+        received.push({
+          url: request.url,
+          body: await request.json(),
+          redirect: request.redirect,
+        });
+        return new Response(null, { status: 204 });
+      },
+    },
+  );
+  const operations = route.operations({ body: "summary" });
+  await operations.update(undefined, {
+    body: { updated: true },
+    redirect: "manual",
+  });
+  await operations.update({ body: "detail" }, { body: { updated: false } });
+  expect(received).toEqual([
+    {
+      url: "https://example.test/order?body=summary",
+      body: { updated: true },
+      redirect: "manual",
+    },
+    {
+      url: "https://example.test/order?body=detail",
+      body: { updated: false },
+      redirect: "follow",
+    },
+  ]);
+});

@@ -552,11 +552,13 @@ export function createFetchRoute<Operations extends ClientOperations>(
 
   function operationFunctions(defaults?: Values) {
     const bound = new Map(Object.entries(defaults ?? {}));
-    bound.delete("body");
     // A null prototype keeps every declared operation ID addressable.
     const functions = Object.create(null) as Record<
       string,
-      (input?: Values, sendOptions?: ClientSendOptions) => Promise<unknown>
+      (
+        input?: Values,
+        options?: ClientSendOptions & { body?: unknown },
+      ) => Promise<unknown>
     >;
     for (const [id, { path, method, operation }] of named) {
       // eslint-disable-next-line security/detect-object-injection -- IDs come from the generated operations, and the namespace has no prototype.
@@ -570,7 +572,7 @@ export function createFetchRoute<Operations extends ClientOperations>(
           query: Object.create(null) as Record<string, unknown>,
           headers: Object.create(null) as Record<string, unknown>,
           cookies: Object.create(null) as Record<string, unknown>,
-          body: operation.body ? values.get("body") : undefined,
+          body: operation.body ? sendOptions?.body : undefined,
         };
         for (const { location, name } of operation.parameters) {
           // eslint-disable-next-line security/detect-object-injection -- name is a declared OpenAPI parameter; the input groups have no prototype.
