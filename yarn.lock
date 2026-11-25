@@ -2202,19 +2202,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@posthog/core@npm:^1.60.1":
-  version: 1.62.0
-  resolution: "@posthog/core@npm:1.62.0"
+"@posthog/core@npm:^1.68.0":
+  version: 1.69.2
+  resolution: "@posthog/core@npm:1.69.2"
   dependencies:
-    "@posthog/types": "npm:^1.418.0"
-  checksum: 10c0/b6f46ee816ec4d5dc503e76a9a08e22890710260da838cb9fbede730653757c3c53ac69dd3c0b39ca8be2be683f689934ce909d9cdf178f63a0c1aef1864e9a1
+    "@posthog/types": "npm:^1.427.0"
+  checksum: 10c0/daa7e85381a12226ef55478f028cb44c69d134afdea8d13337a8854b5d5a366fe3e84d7ae3844c15ac0cfd2f380b38d76e0143e5990ab3bec4ce21084d40bb09
   languageName: node
   linkType: hard
 
-"@posthog/types@npm:^1.418.0":
-  version: 1.419.0
-  resolution: "@posthog/types@npm:1.419.0"
-  checksum: 10c0/335d7da35e46f2cbe1bebb8bfaadfe5a34d561cf816b97bb3b33b7216158c44a2242069ac09d49c24e431348168a5c7e34f07245d79c503d8161a414bfa98672
+"@posthog/types@npm:^1.427.0":
+  version: 1.427.2
+  resolution: "@posthog/types@npm:1.427.2"
+  checksum: 10c0/4ca86d3b11d8394d3a79fe144c9cce79a0cb02068b76190639e9f89d8b21de332a07bbceb1f30574fb0dc4af719a5abb866ecdb4f5f37d0faac0f80924d0c54d
   languageName: node
   linkType: hard
 
@@ -4265,7 +4265,7 @@ __metadata:
     http-terminator: "npm:3.2.0"
     js-yaml: "npm:5.5.0"
     open: "npm:11.0.4"
-    posthog-node: "npm:5.57.2"
+    posthog-node: "npm:5.74.0"
     typescript: "npm:6.0.3"
   bin:
     counterfact: bin/counterfact.js
@@ -8660,20 +8660,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-node@npm:5.57.2":
-  version: 5.57.2
-  resolution: "posthog-node@npm:5.57.2"
+"posthog-node@npm:5.74.0":
+  version: 5.74.0
+  resolution: "posthog-node@npm:5.74.0"
   dependencies:
-    "@posthog/core": "npm:^1.60.1"
+    "@posthog/core": "npm:^1.68.0"
   peerDependencies:
     "@opentelemetry/api": ^1.2.0
+    "@react-email/render": ^2.1.0
     rxjs: ^7.0.0
   peerDependenciesMeta:
     "@opentelemetry/api":
       optional: true
+    "@react-email/render":
+      optional: true
     rxjs:
       optional: true
-  checksum: 10c0/c0c99aae1ebd6ec6d501508002027b8bf733daff300bb5fadbc6b3a2c708da9e17dd36f29d6f7fe84989d1a246fa92aaa668cbf981c2fd022e86c8507ab64c68
+  checksum: 10c0/a923591da11b176e3a31dd94087a3459201cbb261a4ee9a96f4b71e5599d9aad0d9b49c5bd9949c4f3180ab479200af04afbf7c56b15913ecc49da22f351d335
   languageName: node
   linkType: hard
 
