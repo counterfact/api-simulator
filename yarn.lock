@@ -1078,7 +1078,7 @@ __metadata:
     "@apidevtools/json-schema-ref-parser": "npm:16.0.5"
     "@types/json-schema": "npm:7.0.15"
     js-yaml: "npm:5.5.0"
-    jsonpath-plus: "npm:11.2.2"
+    jsonpath-plus: "npm:11.3.0"
     node-fetch: "npm:3.3.2"
   languageName: unknown
   linkType: soft
@@ -7482,9 +7482,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonpath-plus@npm:11.2.2":
-  version: 11.2.2
-  resolution: "jsonpath-plus@npm:11.2.2"
+"jsonpath-plus@npm:11.3.0":
+  version: 11.3.0
+  resolution: "jsonpath-plus@npm:11.3.0"
   dependencies:
     "@jsep-plugin/assignment": "npm:^1.4.0"
     "@jsep-plugin/regex": "npm:^1.1.0"
@@ -7492,7 +7492,7 @@ __metadata:
   bin:
     jsonpath: ./bin/jsonpath-cli.js
     jsonpath-plus: ./bin/jsonpath-cli.js
-  checksum: 10c0/52ca47072c8d9ae90a58a03b3bfb80ce00160efc94fb8e4f88d6c21d9212093c123e111c3122c17edad9a4579a3e6f72f820edb40eb0d8cf9e9e8c8b6259fe5f
+  checksum: 10c0/603d6dea93bf0e991b6eead06cc37d48c4bcb06ce6887c1469cb6bf3f8fbaac57ea039daa0a2f27bd55112401484d959717ade380f91425bf587574b5ecdb681
   languageName: node
   linkType: hard
 
