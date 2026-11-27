@@ -18,6 +18,7 @@ import {
   withComment,
 } from "./ast.js";
 
+import { adoptSpellings } from "./adopt-spellings.js";
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
 import {
   toForwardSlashPath,
@@ -28,12 +29,12 @@ import {
 import { writeHelperTypes } from "./scenario-file-generator.js";
 import { Script } from "./script.js";
 import {
+  collisionMethodContents,
   collisionRouteContents,
   CaseLayout,
   matchesRouteMapShape,
-  requiresPathMetadata,
+  missingRouteMapMethods,
   readRoutePaths,
-  routePathsStatement,
 } from "./route-file-layout.js";
 import { pruneRoutes, pruneTypes } from "./prune.js";
 import {
@@ -109,6 +110,9 @@ export class Repository {
   private readonly routesByPath = new Map<string, Script>();
   private readonly specRouteFiles = new Set<string>();
   private readonly typeLayout = new CaseLayout();
+  // Type scripts are found by case-folded path, because the spelling chosen
+  // for a type file can change until every type has been registered.
+  private readonly typeScripts = new Map<string, Script>();
   private routeLayout = new CaseLayout();
 
   public recordRouteFile(logicalFile: string): void {
@@ -149,12 +153,17 @@ export class Repository {
     debug("getting script at %s", path);
 
     assertSafeRepositoryPath(path);
+    const typeKey = path.startsWith("types/") ? path.toLowerCase() : undefined;
+    const existing =
+      typeKey === undefined
+        ? this.scripts.get(path)
+        : this.typeScripts.get(typeKey);
     path = this.outputPath(path);
 
-    if (this.scripts.has(path)) {
+    if (existing) {
       debug("already have script %s, returning it", path);
 
-      return this.scripts.get(path)!;
+      return existing;
     }
 
     debug("don't have %s, creating it", path);
@@ -162,6 +171,7 @@ export class Repository {
     const script = new Script(this, path);
 
     this.scripts.set(path, script);
+    if (typeKey !== undefined) this.typeScripts.set(typeKey, script);
 
     return script;
   }
@@ -247,10 +257,14 @@ export class Repository {
         destination,
         this.specRouteFiles,
       ))
-        layout.file(managed);
+        layout.pin(managed);
     }
+    for (const script of this.routesByPath.values()) layout.file(script.path);
+    for (const path of this.specRouteFiles) layout.file(path);
     const routeGroups = new Map<string, Array<readonly [string, Script]>>();
-    for (const [path, script] of this.routesByPath) {
+    for (const [path, script] of [...this.routesByPath].sort(([a], [b]) =>
+      a < b ? -1 : a > b ? 1 : 0,
+    )) {
       const target = layout.file(script.path);
       const group = routeGroups.get(target) ?? [];
       group.push([path, script]);
@@ -261,6 +275,14 @@ export class Repository {
       await migrateLegacyRoutes(destination, routeGroups);
       await this.assertSafeRouteLayout(destination, routeGroups);
     }
+
+    if (types)
+      await adoptSpellings(
+        destination,
+        Array.from(this.scripts.keys())
+          .filter((path) => path.startsWith("types/"))
+          .map((path) => this.outputPath(path)),
+      );
 
     await Promise.all([
       ...Array.from(this.scripts, async ([logical, script]) => {
@@ -286,22 +308,38 @@ export class Repository {
         ? Array.from(routeGroups, async ([target, group]) => {
             const fullPath = resolveDestinationPath(destination, target);
             const first = group[0]!;
-            const [path, script] = first;
-            // Colliding files are shape-checked, never rewritten. A singleton can
-            // continue using the existing AST-based method append pipeline.
+            const [, script] = first;
+            // Colliding files are shape-checked and never rewritten; methods the
+            // file lacks are appended. A singleton can continue using the
+            // existing AST-based method append pipeline.
             if (existsSync(fullPath)) {
-              if (group.length === 1)
+              if (group.length === 1) {
                 await this.appendNewHandlers(fullPath, script);
+                return;
+              }
+              const existing = await fs.readFile(fullPath, "utf8");
+              const missing = missingRouteMapMethods(
+                ts.createSourceFile(
+                  fullPath,
+                  existing,
+                  ts.ScriptTarget.Latest,
+                  true,
+                ),
+                group,
+              );
+              if (missing && missing.length > 0)
+                await fs.writeFile(
+                  fullPath,
+                  `${existing.trimEnd()}\n${await collisionMethodContents(
+                    group,
+                    new Set(missing),
+                  )}`,
+                );
               return;
             }
             await ensureDirectoryExists(fullPath);
             if (group.length > 1) {
-              await fs.writeFile(
-                fullPath,
-                await collisionRouteContents(
-                  [...group].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
-                ),
-              );
+              await fs.writeFile(fullPath, await collisionRouteContents(group));
               return;
             }
             const contents = await script.contents(
@@ -311,19 +349,9 @@ export class Repository {
                 script.contextRoutePath,
               ),
             );
-            const needsMetadata = requiresPathMetadata(
-              path,
-              script.path,
-              target,
-            );
-            await fs.writeFile(
-              fullPath,
-              needsMetadata
-                ? (await formatStatements([routePathsStatement([path])])) +
-                    "\n" +
-                    contents
-                : contents,
-            );
+            // Only routes that share a file declare their paths. Every other
+            // route keeps the historic layout and case-insensitive matching.
+            await fs.writeFile(fullPath, contents);
           })
         : []),
     ]);
@@ -341,7 +369,7 @@ export class Repository {
     }
     if (prune && types) {
       await pruneTypes(destination, [
-        ...this.scripts.keys(),
+        ...Array.from(this.scripts.keys(), (path) => this.outputPath(path)),
         ...(keepVersionsFile ? ["types/versions.ts"] : []),
       ]);
     }
@@ -377,15 +405,11 @@ export class Repository {
         true,
       );
       const declared = readRoutePaths(source);
-      const needsMetadata =
-        group.length > 1 ||
-        group.some(([route, script]) =>
-          requiresPathMetadata(route, script.path, target),
-        );
+      const needsMetadata = group.length > 1;
       if (declared === undefined && !needsMetadata) continue;
       if (JSON.stringify(declared?.sort()) !== JSON.stringify(paths))
         fail("existing route path metadata does not match");
-      if (group.length > 1 && !matchesRouteMapShape(source, group))
+      if (group.length > 1 && !missingRouteMapMethods(source, group))
         fail(
           "existing handler map does not match the OpenAPI methods and paths",
         );
@@ -437,9 +461,15 @@ export class Repository {
     }
 
     const outputs = schemaScripts.map(([path, script]) => ({
-      outputPath: outputPrefix + path.slice(schemaPrefix.length),
+      outputPath:
+        outputPrefix + this.outputPath(path).slice(schemaPrefix.length),
       script,
     }));
+
+    await adoptSpellings(
+      destination,
+      outputs.map(({ outputPath }) => outputPath),
+    );
 
     await Promise.all(
       outputs.map(async ({ outputPath, script }) => {

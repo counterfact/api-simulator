@@ -75,7 +75,7 @@ function lowerCaseDuplicates(paths: readonly string[]): string[] {
 }
 
 describe("generated types on case-insensitive file systems", () => {
-  it("writes distinct schema exports in the first-spelled type file", async () => {
+  it("writes distinct schema exports in the type file with the smallest spelling", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("openapi.yaml", SPEC);
 
@@ -85,7 +85,7 @@ describe("generated types on case-insensitive file systems", () => {
       }).generate();
 
       const written = [
-        "out/types/components/schemas/OutputType.ts",
+        "out/types/components/schemas/OutPutType.ts",
         "out/types/paths/Companies/list.types.ts",
         "out/types/paths/Companies/{id}.types.ts",
       ];
@@ -96,16 +96,16 @@ describe("generated types on case-insensitive file systems", () => {
         await expect($.read(path)).resolves.toBeDefined();
       }
 
-      const models = await $.read("out/types/components/schemas/OutputType.ts");
+      const models = await $.read("out/types/components/schemas/OutPutType.ts");
       expect(models).toContain("export type OutputType");
       expect(models).toContain("export type OutPutType");
       expect(models).toContain("first");
       expect(models).toContain("second");
       expect(await $.read("out/types/paths/Companies/list.types.ts")).toContain(
-        'from "../../components/schemas/OutputType.js"',
+        'from "../../components/schemas/OutPutType.js"',
       );
       expect(await $.read("out/types/paths/Companies/{id}.types.ts")).toContain(
-        'from "../../components/schemas/OutputType.js"',
+        'from "../../components/schemas/OutPutType.js"',
       );
     });
   });
@@ -167,14 +167,17 @@ describe("generated types on case-insensitive file systems", () => {
       await generate();
       expect(await schemaFile("a.ts")).toContain("lower");
 
+      // `A` sorts before `a`, so the shared module is renamed to A.ts. On a
+      // case-insensitive file system, writing A.ts over a.ts must not let the
+      // prune step delete the file it just wrote.
       await $.add("openapi.yaml", schemas(lower, upper));
       await generate();
-      expect(await schemaFile("a.ts")).toContain("lower");
-      expect(await schemaFile("a.ts")).toContain("upper");
+      expect(await schemaFile("A.ts")).toContain("lower");
+      expect(await schemaFile("A.ts")).toContain("upper");
 
       await generate();
-      expect(await schemaFile("a.ts")).toContain("lower");
-      expect(await schemaFile("a.ts")).toContain("upper");
+      expect(await schemaFile("A.ts")).toContain("lower");
+      expect(await schemaFile("A.ts")).toContain("upper");
     });
   });
 
@@ -188,8 +191,8 @@ describe("generated types on case-insensitive file systems", () => {
         {},
       ).generateSchemas();
 
-      expect([...written].sort()).toEqual(["OutputType.ts"]);
-      expect(await $.read("out/OutputType.ts")).toContain("first");
+      expect([...written].sort()).toEqual(["OutPutType.ts"]);
+      expect(await $.read("out/OutPutType.ts")).toContain("first");
     });
   });
 });

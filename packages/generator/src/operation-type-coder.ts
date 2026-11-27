@@ -79,8 +79,16 @@ export class OperationTypeCoder extends TypeCoder {
     return buildJsDoc(this.requirement.data);
   }
 
+  /**
+   * The OpenAPI path (e.g. `/Pet`). It tells apart case-variant paths that
+   * share a module, and stays the same across API versions, unlike the
+   * requirement URL, which includes the specification's location.
+   */
   public get logicalRoute(): string {
-    return this.requirement.parent?.url ?? this.requirement.url;
+    const pointer =
+      this.requirement.parent?.url.split("/").at(-1) ??
+      this.requirement.url.split("/").at(-2)!;
+    return pointer.replaceAll("~1", "/").replaceAll("~0", "~");
   }
 
   public override get exportId(): string {

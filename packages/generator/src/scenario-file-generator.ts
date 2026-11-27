@@ -25,6 +25,7 @@ import {
   withJsDoc,
 } from "./ast.js";
 
+import { adoptSpellings } from "./adopt-spellings.js";
 import { caseSafeOutputPaths } from "./case-safe-paths.js";
 import { pathRelative } from "./forward-slash-path.js";
 import { waitForEvent } from "./wait-for-event.js";
@@ -504,6 +505,15 @@ async function writeMiddlewareTypes(
   routeDirectories: MiddlewareTypeDirectory[],
 ): Promise<void> {
   const expectedFiles = new Set<string>();
+
+  // Keep the stale-file sweep below from deleting a file just written under an
+  // older spelling of its directory.
+  await adoptSpellings(
+    nodePath.join(destination, "types"),
+    routeDirectories.map(({ typePath }) =>
+      nodePath.posix.join(typePath, "_.middleware.ts"),
+    ),
+  );
 
   for (const routeDirectory of routeDirectories) {
     const filePath = nodePath.join(

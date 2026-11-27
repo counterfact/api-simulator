@@ -259,13 +259,12 @@ Required bodies exclude `undefined`; nullable schemas independently allow `null`
 ### Case-sensitive paths in shared route files
 
 Generated route directories and filenames retain their spelling. When paths
-differ only by case, they share the first spelling encountered during generation,
-segment by segment. A managed route keeps its existing canonical filename when
-the OpenAPI declarations get reordered. Exact-case route metadata preserves the
-URL spelling from the OpenAPI document.
-A generated singleton such
-as `/Reports` uses the normal `GET` function and declares its original path
-with `export const __counterfactPaths = ["/Reports"]`.
+differ only by case, they share the spelling that sorts first in code-unit order
+(uppercase before lowercase), segment by segment, so reordering the OpenAPI
+declarations does not rename files. A managed shared route file keeps its
+existing spelling. A route whose file no other path shares, such as
+`/reports/weekly` beside `/Reports/Daily`, lives in the shared `Reports`
+directory as an ordinary route module with no extra metadata.
 
 When two paths would otherwise share a case-insensitive filename, each method export is
 an object keyed by the full, case-sensitive paths that support that method.
@@ -295,6 +294,8 @@ handlers and scoped middleware. It writes them to private implementation modules
 beside the canonical route, rewrites recognized local imports, and stores a backup
 of the original route tree before swapping in the new tree. Commit or copy your
 work before upgrading; inspect the generated wrappers and verify your routes.
+A route module that no other path shares but sits in a directory spelled like a
+case variant moves to the chosen spelling unchanged.
 Ambiguous layouts, computed imports that would move, and re-exported handlers
 require manual migration rather than overwriting authored code.
 After migration, route pruning is paused while the `routes/.counterfact-migrated-routes.json`

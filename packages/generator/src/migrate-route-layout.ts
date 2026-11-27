@@ -10,9 +10,8 @@ import { formatStatements } from "./ast.js";
 import {
   CaseLayout,
   collisionRouteContents,
-  matchesRouteMapShape,
+  missingRouteMapMethods,
   readRoutePaths,
-  requiresPathMetadata,
 } from "./route-file-layout.js";
 import type { Script } from "./script.js";
 
@@ -69,13 +68,69 @@ function pathMatches(files: string[], expected: string[]): boolean {
   );
 }
 
-function originalPath(file: string, group: Group): string {
+/**
+ * Finds the route a legacy module was generated for. The generated `Route`
+ * type names it exactly; the file name can be spelled like a case variant,
+ * because a case-insensitive file system keeps the first spelling written.
+ */
+function originalPath(
+  file: string,
+  source: ts.SourceFile,
+  group: Group,
+): string {
+  const routes = group.map(([route]) => route);
+  const typed = routeTypePath(source);
+  if (typed !== undefined && routes.includes(typed)) return typed;
   const name = "/" + file.replace(SOURCE, "");
-  if (name !== "/index") return name;
-  const root = group.some(([route]) => route === "/");
-  if (root && group.some(([route]) => route === "/index"))
-    throw new Error("Legacy routes/index.ts is ambiguous between / and /index");
-  return root ? "/" : name;
+  if (name === "/index") {
+    const root = routes.includes("/");
+    if (root && routes.includes("/index"))
+      throw new Error(
+        "Legacy routes/index.ts is ambiguous between / and /index",
+      );
+    return root ? "/" : name;
+  }
+  if (routes.includes(name)) return name;
+  const variants = routes.filter(
+    (route) => route.toLowerCase() === name.toLowerCase(),
+  );
+  return variants.length === 1 ? variants[0]! : name;
+}
+
+/** Reads the path from `type Route = Routes["/a"]["/{b}"]`. */
+function routeTypePath(source: ts.SourceFile): string | undefined {
+  for (const statement of source.statements) {
+    if (
+      !ts.isTypeAliasDeclaration(statement) ||
+      statement.name.text !== "Route"
+    )
+      continue;
+    const segments: string[] = [];
+    let type: ts.TypeNode = statement.type;
+    while (ts.isIndexedAccessTypeNode(type)) {
+      const index = type.indexType;
+      if (!ts.isLiteralTypeNode(index) || !ts.isStringLiteral(index.literal))
+        return undefined;
+      segments.unshift(index.literal.text);
+      type = type.objectType;
+    }
+    if (
+      !ts.isTypeReferenceNode(type) ||
+      !ts.isIdentifier(type.typeName) ||
+      type.typeName.text !== "Routes" ||
+      segments.length === 0
+    )
+      return undefined;
+    return segments.join("") || "/";
+  }
+  return undefined;
+}
+
+/** Moves `file` to `target` (a `.ts` path) while keeping its own extension. */
+function retarget(file: string, target: string): string {
+  return target
+    .replace(/^routes\//u, "")
+    .replace(SOURCE, path.posix.extname(file));
 }
 
 function archive(file: File, destination: string): string {
@@ -109,7 +164,7 @@ function preservedHandlers(
     );
   const source = tsSource(file);
   const declared = readRoutePaths(source);
-  const physical = originalPath(file.name, group);
+  const physical = originalPath(file.name, source, group);
   const alias = `legacy${imports.size + 1}`;
   imports.set(alias, modulePath(wrapper, archive(file, wrapper)));
   const result: Array<readonly [string, string, ts.Expression]> = [];
@@ -426,22 +481,31 @@ export async function migrateLegacyRoutes(
   const migrateGroups = [...groups].filter(([target, group]) => {
     const candidates = caseFiles.get(target) ?? [];
     if (candidates.length === 0) return false;
-    const candidate = candidates[0]!;
-    if (candidates.length !== 1 || "routes/" + candidate.name !== target)
-      return true;
+    const candidate =
+      candidates.find((file) => file.name.endsWith(".ts")) ?? candidates[0]!;
     const source = tsSource(candidate);
     const declared = readRoutePaths(source);
     const expected = group.map(([route]) => route);
-    if (
-      !declared &&
-      group.length === 1 &&
-      !requiresPathMetadata(group[0]![0], group[0]![1].path, target)
-    )
+    // A route without a collision keeps its module as-is. When the module is
+    // spelled differently (it sits in a directory a case variant created), it
+    // only moves to the chosen spelling.
+    if (!declared && group.length === 1 && candidates.length === 1) {
+      outputs.set(candidate.name, retarget(candidate.name, target));
       return false;
+    }
+    // Files that differ only by extension (pet.js beside pet.ts) are not case
+    // variants and stay where they are.
+    if (
+      candidates.some(
+        (file) => "routes/" + file.name.replace(SOURCE, ".ts") !== target,
+      )
+    )
+      return true;
+    if (!declared && group.length === 1) return false;
     return (
       !declared ||
       !pathMatches(declared, expected) ||
-      (group.length > 1 && !matchesRouteMapShape(source, group))
+      (group.length > 1 && !missingRouteMapMethods(source, group))
     );
   });
   const shouldMoveDirectories = files.some(
@@ -486,7 +550,12 @@ export async function migrateLegacyRoutes(
     middleware.set(target, peers);
   }
   for (const [target, candidates] of middleware) {
-    if (candidates.length === 1 && candidates[0]!.name === target) continue;
+    if (candidates.every((file) => file.name.replace(SOURCE, ".ts") === target))
+      continue;
+    if (candidates.length === 1) {
+      outputs.set(candidates[0]!.name, retarget(candidates[0]!.name, target));
+      continue;
+    }
     for (const file of candidates)
       outputs.set(file.name, archive(file, target));
     wrappers.set(target, await middlewareWrapper(target, candidates));
@@ -546,6 +615,7 @@ export async function migrateLegacyRoutes(
         throw new AggregateError(
           [error, rollbackError],
           `Could not install or restore the migrated routes. Original files remain in ${backup}.`,
+          { cause: rollbackError },
         );
       }
       throw error;

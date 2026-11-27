@@ -89,7 +89,7 @@ export class Script {
         !this.reservedNames.has(name) &&
         (!this.imports.has(name) ||
           (this.imports.get(name)!.id === coder.exportId &&
-            this.imports.get(name)!.script.path ===
+            this.repository.outputPath(this.imports.get(name)!.script.path) ===
               this.repository.outputPath(coder.modulePath()) &&
             this.imports.get(name)!.isType === isType &&
             this.imports.get(name)!.isDefault === isDefault)) &&
