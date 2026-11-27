@@ -433,6 +433,39 @@ expectAssignable<(header: "x-request-id", value: string) => unknown>(
   optionalHeadersFactory[200].header,
 );
 
+// HAR lookups are synchronous completed responses; predicates cannot return promises.
+expectType<COUNTERFACT_RESPONSE | undefined>(middlewareRequest.har());
+expectType<COUNTERFACT_RESPONSE | undefined>(
+  middlewareRequest.har(
+    ({ request, entry }) => request.pathname === entry.request.pathname,
+  ),
+);
+expectError(middlewareRequest.har(async () => true));
+expectError(
+  middlewareRequest.har(({ request }) => {
+    request.pathname = "/changed";
+    return true;
+  }),
+);
+
+expectType<COUNTERFACT_RESPONSE | undefined>(
+  middlewareRequest.har(({ request, entry, match, defaultMatch }) => {
+    expectType<boolean>(defaultMatch);
+    expectType<boolean>(match("body"));
+    expectType<boolean>(match("pathname"));
+    expectType<boolean>(match("header", "X-ID"));
+    expectType<boolean>(match("query", "id"));
+    return defaultMatch && request.method === entry.request.method;
+  }),
+);
+expectError(middlewareRequest.har(({ match }) => match("header")));
+expectError(middlewareRequest.har(({ match }) => match("method", "GET")));
+expectError(middlewareRequest.har(({ match }) => match("unknown")));
+expectError(
+  middlewareRequest.har((_request: unknown, _entry: unknown) => true),
+);
+
+expectError(middlewareRequest.har(({ match }) => match("path")));
 // Function-based status selection retains the exact indexed builder type.
 expectType<(typeof generatedResponse)[200]>(generatedResponse.status(200));
 expectError(generatedResponse.status(404));

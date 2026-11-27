@@ -12,3 +12,7 @@ Look up options, arguments, methods, and lifecycle contracts. For explanations a
 - [REPL and HTTP client](./api/repl.md)
 - [HTTP Admin API](./api/admin-api.md)
 - [Public packages](./api/packages.md)
+
+## HAR lookup
+
+Handlers and route middleware can use `$.har(predicate?)` to synchronously select a recorded response, or receive `undefined` on a miss. Recordings load from each API project’s `har/` directory and reload as files change. See [HAR recordings](./features/har.md) for default matching, named predicate arguments, and middleware usage.

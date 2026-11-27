@@ -30,6 +30,16 @@ Each exported function handles one HTTP method. The single argument `$` gives yo
 > [!TIP]
 > If you know Express, think of `$` as a type-safe combination of `req` and `res`.
 
+## Using recorded responses
+
+Use `$.har()` to return the first matching response from your project’s `har/` directory, or `undefined` to take a fallback:
+
+```ts
+return $.har() ?? $.response[404].text("No recording matched");
+```
+
+See [HAR recordings](./har.md) for matching, predicates, supported formats, and live reload.
+
 ## Building responses with `$.response`
 
 `$.response` is a fluent builder for HTTP responses. Start by picking a status code, then chain one or more methods:

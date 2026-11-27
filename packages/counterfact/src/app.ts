@@ -13,6 +13,7 @@ import {
 import { generateVersionsTsContent, Repository } from "@counterfact/generator";
 import {
   ContextRegistry,
+  HarCollection,
   ScenarioRegistry,
   StoreLoader,
   resolveScenario,
@@ -347,6 +348,7 @@ export async function counterfact<TStore = unknown>(
       contextRegistry: ContextRegistry;
       scenarioRegistry: ScenarioRegistry;
       getStore: () => object | undefined;
+      harCollection: HarCollection;
     }
   >();
   for (const spec of normalizedSpecs) {
@@ -355,6 +357,9 @@ export async function counterfact<TStore = unknown>(
         contextRegistry: new ContextRegistry(),
         scenarioRegistry: new ScenarioRegistry(),
         getStore: () => storeLoader.store,
+        harCollection: new HarCollection(
+          nodePath.join(config.basePath, spec.group),
+        ),
       });
     }
   }

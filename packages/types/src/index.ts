@@ -7,6 +7,14 @@ export type {
   OperationQuery,
   OperationResponses,
 } from "./client-operation.js";
+export type {
+  HarEntry,
+  HarLookup,
+  HarMatch,
+  HarPredicate,
+  HarPredicateArguments,
+  HarRequest,
+} from "./har.js";
 export type { CookieOptions } from "./cookie-options.js";
 export type { COUNTERFACT_RESPONSE } from "./counterfact-response.js";
 export type { ExampleNames } from "./example-names.js";

@@ -434,6 +434,8 @@ export class OperationTypeCoder extends TypeCoder {
       openApi2MediaTypes,
     ).write(script);
 
+    const harType = script.importSharedType("HarLookup");
+
     const proxyType = functionType(
       [parameter("url", stringType())],
       typeReference("COUNTERFACT_RESPONSE"),
@@ -510,6 +512,7 @@ export class OperationTypeCoder extends TypeCoder {
         typeProperty("cookie", cookieTypeName),
         typeProperty("body", bodyType),
         typeProperty("context", typeReference(contextTypeImportName)),
+        typeProperty("har", typeReference(harType)),
         typeProperty("response", responseType),
         typeProperty("x", typeReference(xType)),
         typeProperty("proxy", proxyType),
