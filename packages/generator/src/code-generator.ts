@@ -293,6 +293,37 @@ export class CodeGenerator extends EventTarget {
   }
 
   /**
+   * Writes only a standalone API client into `destination/client`, and
+   * nothing else.
+   *
+   * Unlike {@link generate}, this creates no `.cache`, routes, scenarios or
+   * shared types: the client declares its own request, response and schema
+   * types (see {@link ClientGenerationOptions.standalone}).
+   *
+   * @returns The written file paths, relative to `destination`.
+   */
+  public async generateClientOnly(): Promise<string[]> {
+    if (this.version !== "") {
+      throw new Error(
+        "Client-only generation does not support versioned APIs yet.",
+      );
+    }
+
+    const specification = await Specification.fromFile(
+      this.openapiPath,
+      this.overlays,
+    );
+    specification.typeOptions = this.generateOptions.typeOptions ?? {};
+
+    const { client } = this.generateOptions;
+
+    return generateClient(specification, this.destination, {
+      ...(typeof client === "object" ? client : {}),
+      standalone: true,
+    });
+  }
+
+  /**
    * Starts watching the OpenAPI document and any overlay files for changes.
    *
    * Has no effect when neither source is watchable (for example, an HTTP

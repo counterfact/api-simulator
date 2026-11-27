@@ -19,6 +19,11 @@ import { loadConfigFile } from "../util/load-config-file.js";
 import { checkForUpdates } from "./check-for-updates.js";
 import { resolveClientOptions, resolveTypeOptions } from "./client-options.js";
 import {
+  CLIENT_ONLY_CONFLICTING_OPTIONS,
+  generateClientOnly,
+  validateClientOnlyOptions,
+} from "./generate-client-only.js";
+import {
   generateSchemasOnly,
   SCHEMAS_ONLY_CONFLICTING_OPTIONS,
   validateSchemasOnlyOptions,
@@ -194,6 +199,7 @@ function buildProgram(
       enumStyle?: string;
       generate?: boolean;
       generateClient?: boolean;
+      generateClientOnly?: boolean;
       generateRoutes?: boolean;
       generateSchemasOnly?: boolean;
       generateTypes?: boolean;
@@ -240,13 +246,17 @@ function buildProgram(
       options.port = selection.port;
     }
 
-    // A schemas-only run is a one-shot generation step; it never checks for updates.
+    // Schemas-only and client-only runs are one-shot generation steps; they
+    // never check for updates.
     const schemasOnly =
       options.generateSchemasOnly === true ||
       fileConfig["generateSchemasOnly"] === true;
+    const clientOnly =
+      options.generateClientOnly === true ||
+      fileConfig["generateClientOnly"] === true;
 
     const updateCheckPromise =
-      options.updateCheck === false || schemasOnly
+      options.updateCheck === false || schemasOnly || clientOnly
         ? Promise.resolve()
         : checkForUpdates(version);
 
@@ -309,27 +319,41 @@ function buildProgram(
       process.exit(1);
     }
 
-    if (schemasOnly) {
-      const startupOutput = createStartupOutput(
-        shouldUseColor({
-          isTTY: process.stdout.isTTY,
-          noColor: process.env["NO_COLOR"],
-        }),
-      );
+    const startupOutput = createStartupOutput(
+      shouldUseColor({
+        isTTY: process.stdout.isTTY,
+        noColor: process.env["NO_COLOR"],
+      }),
+    );
+
+    /**
+     * Splits the enabled options in `candidates` into flags typed on the
+     * command line, which contradict a one-shot run, and config-file defaults
+     * for the normal workflow, which simply do not apply to it.
+     */
+    function partitionOneShotConflicts(candidates: readonly string[]): {
+      conflictingOptions: string[];
+      ignoredConfigOptions: string[];
+    } {
       const conflictingOptions: string[] = [];
       const ignoredConfigOptions: string[] = [];
 
-      for (const option of SCHEMAS_ONLY_CONFLICTING_OPTIONS) {
-        // eslint-disable-next-line security/detect-object-injection -- option names come from the local allowlist above.
+      for (const option of candidates) {
+        // eslint-disable-next-line security/detect-object-injection -- option names come from a local allowlist.
         if (!(options as Record<string, unknown>)[option]) continue;
 
-        // Flags typed on the command line are contradictory; config-file
-        // defaults for the normal workflow are simply not applicable here.
         (program.getOptionValueSource(option) === "cli"
           ? conflictingOptions
           : ignoredConfigOptions
         ).push(option);
       }
+
+      return { conflictingOptions, ignoredConfigOptions };
+    }
+
+    if (schemasOnly) {
+      const { conflictingOptions, ignoredConfigOptions } =
+        partitionOneShotConflicts(SCHEMAS_ONLY_CONFLICTING_OPTIONS);
 
       try {
         validateSchemasOnlyOptions({
@@ -363,6 +387,43 @@ function buildProgram(
                   `Generated ${count} schema type${count === 1 ? "" : "s"}`,
                 )
           }\n`,
+        );
+      } catch (error) {
+        process.stderr.write(
+          `\n${startupOutput.error(`❌ ${error instanceof Error ? error.message : String(error)}`)}\n\n`,
+        );
+        process.exit(1);
+      }
+
+      return;
+    }
+
+    if (clientOnly) {
+      const { conflictingOptions, ignoredConfigOptions } =
+        partitionOneShotConflicts(CLIENT_ONLY_CONFLICTING_OPTIONS);
+
+      try {
+        validateClientOnlyOptions({ conflictingOptions, source, specs });
+
+        if (ignoredConfigOptions.length > 0) {
+          process.stderr.write(
+            `ℹ️  Ignoring config file options that do not apply to --generate-client-only: ${ignoredConfigOptions.join(", ")}\n`,
+          );
+        }
+
+        const written = await generateClientOnly({
+          basePath,
+          clientOptions: resolveClientOptions(options),
+          overlays: options.overlay ?? [],
+          source,
+          specs,
+          typeOptions,
+        });
+
+        process.stdout.write(
+          `${startupOutput.success(
+            `Generated a standalone client (${written.length} files)`,
+          )}\n`,
         );
       } catch (error) {
         process.stderr.write(
@@ -473,12 +534,6 @@ function buildProgram(
 
     debug("loading counterfact (%o)", configForLogging);
 
-    const startupOutput = createStartupOutput(
-      shouldUseColor({
-        isTTY: process.stdout.isTTY,
-        noColor: process.env["NO_COLOR"],
-      }),
-    );
     const startupReporter = createStartupReporter(
       startupOutput,
       process.stdout,
@@ -692,6 +747,10 @@ function buildProgram(
     .option(
       "--generate-schemas-only",
       "write only the #/components/schemas types, directly into [destination] (requires a destination; no routes, scenarios, or server)",
+    )
+    .option(
+      "--generate-client-only",
+      "write only a standalone API client to [destination]/client, with its own types (no routes, shared types, scenarios, or server)",
     )
     .option("--generate-types", "generate types")
     .option("--generate-routes", "generate routes")

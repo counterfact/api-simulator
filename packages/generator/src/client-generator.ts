@@ -13,8 +13,10 @@ import {
   parameter,
   typeAlias,
   typeReference,
+  unknownType,
   withComment,
 } from "./ast.js";
+import { DATA_CONTRACTS_DIRECTORY, DataContracts } from "./client-contracts.js";
 import {
   camelCase,
   type ClientGroupingOptions,
@@ -26,9 +28,11 @@ import {
   uniqueName,
 } from "./client-operations.js";
 import { toForwardSlashPath } from "./forward-slash-path.js";
+import { Repository } from "./repository.js";
 import { Requirement } from "./requirement.js";
 import { routeTypeReference } from "./route-type-tree.js";
 import { namedEnumMembers, SchemaTypeCoder } from "./schema-type-coder.js";
+import type { Script } from "./script.js";
 import type { Specification } from "./specification.js";
 
 const debug = createDebug("counterfact:typescript-generator:client");
@@ -45,6 +49,12 @@ export interface ClientGenerationOptions extends ClientGroupingOptions {
   typeSuffix?: string;
   /** Resolve each method with the response body instead of the response. */
   unwrapResponseData?: boolean;
+  /**
+   * Generate a client that does not depend on the rest of the generated
+   * project: request and response types are written inline, and every schema
+   * is declared in its own file under `client/data-contracts/`.
+   */
+  standalone?: boolean;
 }
 
 /** Directory, relative to the generated project, that holds the client. */
@@ -195,12 +205,57 @@ function pathExpression(
   return f.createTemplateExpression(f.createTemplateHead(parts[0]!), spans);
 }
 
+/** The types of one operation's inputs and results. */
+interface OperationTypes {
+  body: () => ts.TypeNode;
+  data: () => ts.TypeNode;
+  error: () => ts.TypeNode;
+  path: (name: string) => ts.TypeNode;
+  query: () => ts.TypeNode;
+}
+
+/** Types that refer to the operation in the generated `Routes` type. */
+function routeOperationTypes(operation: ClientOperation): OperationTypes {
+  const operationType = typeReference(operationTypeName(operation));
+  const helper = (name: string) => typeReference(name, [operationType]);
+  return {
+    body: () => helper("OperationBody"),
+    data: () => helper("OperationData"),
+    error: () => helper("OperationError"),
+    path: (name) =>
+      f.createIndexedAccessTypeNode(helper("OperationPath"), literalType(name)),
+    query: () => helper("OperationQuery"),
+  };
+}
+
+/** Types written from the operation's schemas into `script`. */
+function standaloneOperationTypes(
+  operation: ClientOperation,
+  script: Script,
+  contracts: DataContracts,
+): OperationTypes {
+  const { operation: requirement, pathItem } = operation.requirements;
+  const parameters = contracts.parameters(pathItem, requirement);
+  const located = (location: string) =>
+    [...parameters.values()].filter(
+      (parameter) => (parameter.data as { in: string }).in === location,
+    );
+  return {
+    body: () =>
+      contracts.bodyType(script, requirement, parameters) ?? unknownType(),
+    data: () => contracts.responseType(script, requirement, true),
+    error: () => contracts.responseType(script, requirement, false),
+    path: (name) =>
+      contracts.parameterType(script, parameters.get(`path:${name}`)!),
+    query: () => contracts.parameterObject(script, located("query")),
+  };
+}
+
 function operationMember(
   operation: ClientOperation,
   options: ClientGenerationOptions,
+  types: OperationTypes,
 ): ts.PropertyDeclaration {
-  const operationType = typeReference(operationTypeName(operation));
-  const helper = (name: string) => typeReference(name, [operationType]);
   const taken = new Set(["data", "params", "query"]);
   const identifiers = new Map<string, string>();
   const parameters: ts.ParameterDeclaration[] = [];
@@ -212,10 +267,7 @@ function operationMember(
       parameter(
         identifier,
         pathParameter.declared
-          ? f.createIndexedAccessTypeNode(
-              helper("OperationPath"),
-              literalType(pathParameter.name),
-            )
+          ? types.path(pathParameter.name)
           : f.createUnionTypeNode([
               f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
               f.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
@@ -228,16 +280,10 @@ function operationMember(
   const inputs = [
     ...(operation.query === undefined
       ? []
-      : [
-          parameter(
-            "query",
-            helper("OperationQuery"),
-            !operation.query.required,
-          ),
-        ]),
+      : [parameter("query", types.query(), !operation.query.required)]),
     ...(operation.body === undefined
       ? []
-      : [parameter("data", helper("OperationBody"), !operation.body.required)]),
+      : [parameter("data", types.body(), !operation.body.required)]),
   ];
 
   parameters.push(
@@ -304,7 +350,7 @@ function operationMember(
       f.createPropertyAccessExpression(f.createThis(), "http"),
       "request",
     ),
-    [helper("OperationData"), helper("OperationError")],
+    [types.data(), types.error()],
     [f.createObjectLiteralExpression(properties, true)],
   );
 
@@ -390,11 +436,109 @@ function moduleStatements(
       [
         ...providerMembers(),
         ...module.operations.map((operation) =>
-          operationMember(operation, options),
+          operationMember(operation, options, routeOperationTypes(operation)),
         ),
       ],
     ),
   ];
+}
+
+/**
+ * Generates the module, data contract and barrel files of a standalone
+ * client, keyed by their path inside the client directory.
+ */
+async function standaloneFiles(
+  specification: Specification,
+  modules: readonly ClientModule[],
+  options: ClientGenerationOptions,
+): Promise<Map<string, string>> {
+  const repository = new Repository();
+  const contracts = new DataContracts(specification, {
+    directory: CLIENT_DIRECTORY,
+    reserved: [
+      ...RESERVED_MODULE_NAMES,
+      options.apiClassName ?? "Api",
+      ...modules.map(({ name }) => name),
+    ],
+    typePrefix: options.typePrefix,
+    typeSuffix: options.typeSuffix,
+  });
+
+  // Declare every schema, including those no operation refers to.
+  for (const [name, refUrl] of contracts.entries) {
+    contracts.declare(
+      repository.get(
+        `${CLIENT_DIRECTORY}/${DATA_CONTRACTS_DIRECTORY}/${name}.ts`,
+      ),
+      refUrl,
+    );
+  }
+
+  for (const module of modules) {
+    const script = repository.get(`${CLIENT_DIRECTORY}/${module.name}.ts`);
+    script.reservedNames.add(module.name);
+    // Import the provider first so data contracts cannot claim its names.
+    if (module.operations.some(({ body }) => body?.contentType !== undefined)) {
+      script.importExternal("ContentType", "./http-client.js");
+    }
+    script.importExternal("HttpClient", "./http-client.js");
+    script.importExternalType("HttpProvider", "./http-client.js");
+    script.importExternalType("RequestParams", "./http-client.js");
+
+    const declaration = f.createClassDeclaration(
+      exportModifier(),
+      module.name,
+      undefined,
+      undefined,
+      [
+        ...providerMembers(),
+        ...module.operations.map((operation) =>
+          operationMember(
+            operation,
+            options,
+            standaloneOperationTypes(operation, script, contracts),
+          ),
+        ),
+      ],
+    );
+    script.statementBuilders.set(module.name, () => [declaration]);
+  }
+
+  await repository.finished();
+
+  const files = new Map<string, string>();
+  const contractNames: string[] = [];
+  const prefix = `${CLIENT_DIRECTORY}/`;
+
+  for (const [path, script] of repository.scripts) {
+    script.comments = GENERATED_COMMENTS;
+    const relativePath = path.slice(prefix.length);
+    if (relativePath.startsWith(`${DATA_CONTRACTS_DIRECTORY}/`)) {
+      contractNames.push(nodePath.posix.basename(relativePath, ".ts"));
+    }
+    files.set(relativePath, await script.contents());
+  }
+
+  if (contractNames.length > 0) {
+    files.set(
+      "data-contracts.ts",
+      await formatStatements(
+        contractNames
+          .sort()
+          .map((name) =>
+            f.createExportDeclaration(
+              undefined,
+              false,
+              undefined,
+              f.createStringLiteral(`./${DATA_CONTRACTS_DIRECTORY}/${name}.js`),
+            ),
+          ),
+        GENERATED_COMMENTS,
+      ),
+    );
+  }
+
+  return files;
 }
 
 function dataContractStatements(
@@ -579,8 +723,9 @@ async function isGeneratedClientFile(path: string): Promise<boolean> {
  * Generates a typed API client for `specification` in
  * `destination/client`, with one class per module.
  *
- * The client reuses Counterfact's generated `Routes` and `Schemas` types, so
- * it must be written alongside (and after) the generated `types` directory.
+ * By default the client reuses Counterfact's generated `Routes` and `Schemas`
+ * types, so it must be written alongside (and after) the generated `types`
+ * directory. A standalone client declares its own types instead.
  * Previously generated client files that no longer apply are removed; other
  * files in the directory are left alone.
  *
@@ -618,27 +763,46 @@ export async function generateClient(
   }
 
   const directory = nodePath.join(destination, CLIENT_DIRECTORY);
-  const dataContracts = dataContractStatements(specification, options);
   const files = new Map<string, string>();
 
   files.set("http-client.ts", await fs.readFile(templatePath(), "utf8"));
 
-  if (dataContracts.length > 0) {
-    files.set(
-      "data-contracts.ts",
-      await formatStatements(dataContracts, GENERATED_COMMENTS),
+  // Standalone contracts may declare enums, which are values.
+  let hasDataContractValues = options.standalone === true;
+
+  if (options.standalone) {
+    for (const [path, contents] of await standaloneFiles(
+      specification,
+      modules,
+      options,
+    )) {
+      files.set(path, contents);
+    }
+  } else {
+    const dataContracts = dataContractStatements(specification, options);
+    hasDataContractValues = dataContracts.some(
+      (statement) => ts.isExportDeclaration(statement) && !statement.isTypeOnly,
     );
+
+    if (dataContracts.length > 0) {
+      files.set(
+        "data-contracts.ts",
+        await formatStatements(dataContracts, GENERATED_COMMENTS),
+      );
+    }
+
+    for (const module of modules) {
+      files.set(
+        `${module.name}.ts`,
+        await formatStatements(
+          moduleStatements(module, options),
+          GENERATED_COMMENTS,
+        ),
+      );
+    }
   }
 
-  for (const module of modules) {
-    files.set(
-      `${module.name}.ts`,
-      await formatStatements(
-        moduleStatements(module, options),
-        GENERATED_COMMENTS,
-      ),
-    );
-  }
+  const hasDataContracts = files.has("data-contracts.ts");
 
   files.set(
     "index.ts",
@@ -646,34 +810,37 @@ export async function generateClient(
       apiClassStatements(
         modules,
         apiClassName,
-        dataContracts.length > 0,
-        dataContracts.some(
-          (statement) =>
-            ts.isExportDeclaration(statement) && !statement.isTypeOnly,
-        ),
+        hasDataContracts,
+        hasDataContractValues,
       ),
       GENERATED_COMMENTS,
     ),
   );
 
-  await fs.mkdir(directory, { recursive: true });
-
-  for (const entry of await fs.readdir(directory)) {
-    const path = nodePath.join(directory, entry);
-    if (
-      !files.has(entry) &&
-      entry.endsWith(".ts") &&
-      (await isGeneratedClientFile(path))
-    ) {
-      debug("removing stale client file %s", path);
-      await fs.rm(path);
+  for (const subdirectory of ["", DATA_CONTRACTS_DIRECTORY]) {
+    const entries = await fs
+      .readdir(nodePath.join(directory, subdirectory))
+      .catch(() => []);
+    for (const entry of entries) {
+      const fileName = nodePath.posix.join(subdirectory, entry);
+      const path = nodePath.join(directory, fileName);
+      if (
+        !files.has(fileName) &&
+        entry.endsWith(".ts") &&
+        (await isGeneratedClientFile(path))
+      ) {
+        debug("removing stale client file %s", path);
+        await fs.rm(path);
+      }
     }
   }
 
   await Promise.all(
-    [...files].map(([fileName, contents]) =>
-      fs.writeFile(nodePath.join(directory, fileName), contents),
-    ),
+    [...files].map(async ([fileName, contents]) => {
+      const path = nodePath.join(directory, fileName);
+      await fs.mkdir(nodePath.dirname(path), { recursive: true });
+      await fs.writeFile(path, contents);
+    }),
   );
 
   return [...files.keys()].map((fileName) => `${CLIENT_DIRECTORY}/${fileName}`);

@@ -39,6 +39,8 @@ export interface ClientOperation {
   pathParameters: Array<{ name: string; declared: boolean }>;
   /** Query parameters, when the operation declares any. */
   query?: { required: boolean };
+  /** The resolved path item and operation the description came from. */
+  requirements: { operation: Requirement; pathItem: Requirement };
   secure: boolean;
   summary?: string;
   tags: string[];
@@ -415,6 +417,7 @@ export function collectClientModules(
           taken,
         ),
         path,
+        requirements: { operation, pathItem },
         pathParameters: pathParameterNames.map((name) => ({
           name,
           declared: parameters.some(

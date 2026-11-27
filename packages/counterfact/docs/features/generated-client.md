@@ -28,6 +28,8 @@ Operations are grouped into modules by their first path segment: `/users` and `/
 
 Each method is named after its `operationId`, camel-cased (`Users_Search` becomes `usersSearch`). Without an `operationId`, it gets a name from its path and method: `usersList`, `usersCreate`, `usersDetail`, `usersUpdate`, `usersPartialUpdate`, and `usersDelete`.
 
+To generate only the client, without routes or the shared `types/`, see [standalone client](#standalone-client).
+
 Everything in `client/` is regenerated each time. Don't edit those files; Counterfact removes generated files that no longer apply and leaves any other files in the directory alone.
 
 ## Calling the API
@@ -118,3 +120,39 @@ typeSuffix: Dto
 ```
 
 To declare data contracts as interfaces and enums, see [customize schema declarations](./generated-code.md#customize-schema-declarations).
+
+## Standalone client
+
+To get a client and nothing else, use `--generate-client-only` (or `generateClientOnly: true` in `counterfact.yaml`):
+
+```sh
+npx counterfact@latest openapi.yaml ./api --generate-client-only --type-suffix Dto --module-class-suffix Client
+```
+
+```
+<output-directory>/
+└── client/
+    ├── http-client.ts
+    ├── data-contracts/
+    │   ├── UserDto.ts      # one file per schema, including unused ones
+    │   └── RoleDto.ts
+    ├── data-contracts.ts   # export * from each file in data-contracts/
+    ├── UsersClient.ts
+    └── index.ts
+```
+
+A standalone client does not import `types/` or `counterfact-types/`, so you can copy `client/` into another project. Each method's request and response types are written into the module itself:
+
+```ts
+getUser = (id: number, params: RequestParams = {}) =>
+  this.http.request<UserDto, ErrorDto>({
+    path: `/users/${encodeURIComponent(String(id))}`,
+    method: "GET",
+    format: "json",
+    ...params,
+  });
+```
+
+The response type is the union of the 2xx response bodies, and the error type is the union of the other responses, including `default`. When a response offers several media types, JSON is preferred. Swagger 2.0 documents are supported, with `#/definitions` as the data contracts. The [naming options](#naming-options) and [schema declaration options](./generated-code.md#customize-schema-declarations) apply. Versioned APIs are not supported yet.
+
+`--generate-client-only` runs once and exits. It cannot be combined with routes, types, watching, or the server.

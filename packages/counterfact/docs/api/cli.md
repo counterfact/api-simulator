@@ -23,6 +23,7 @@ npx counterfact@latest [spec] [output] [options]
 | `--generate-routes`         | `false`            | Generate routes only                                                  |
 | `--generate-schemas-only`   | `false`            | Write only the schema types into `[output]` (see below)               |
 | `--generate-client`         | `false`            | Generate a typed, fetch-based API client in `client/` (and types)     |
+| `--generate-client-only`    | `false`            | Write only a standalone API client into `[output]/client` (see below) |
 | `--watch-types`             | `false`            | Watch and regenerate types only                                       |
 | `--watch-routes`            | `false`            | Watch and regenerate routes only                                      |
 | `--always-fake-optionals`   | `false`            | Include optional fields in random responses                           |
@@ -38,7 +39,7 @@ Run `npx counterfact@latest --help` for the full list.
 
 ## Generated client options
 
-These options shape the client written by `--generate-client`. See [generated API client](../features/generated-client.md).
+These options shape the client written by `--generate-client` and `--generate-client-only`. See [generated API client](../features/generated-client.md).
 
 | Flag                             | Default  | Description                                                    |
 | -------------------------------- | -------- | -------------------------------------------------------------- |
@@ -52,7 +53,7 @@ These options shape the client written by `--generate-client`. See [generated AP
 
 ## Schema type options
 
-These options change how schema types are declared in `types/`, and therefore in the client's data contracts. They also apply to `--generate-schemas-only`. See [customize schema declarations](../features/generated-code.md#customize-schema-declarations).
+These options change how schema types are declared in `types/`, and therefore in the client's data contracts. They also apply to `--generate-schemas-only` and `--generate-client-only`. See [customize schema declarations](../features/generated-code.md#customize-schema-declarations).
 
 | Flag                   | Default | Description                                                                                        |
 | ---------------------- | ------- | -------------------------------------------------------------------------------------------------- |
@@ -83,6 +84,16 @@ Output layout:
 | `group` and `version` | `<output>/<group>/<version>/<Name>.ts` |
 
 Groups and versions come from the `spec` list in a config file. Every spec in a multi-spec configuration needs a unique non-empty group, and one group cannot mix versioned and unversioned specs. A schema that depends on something other than another schema (for example a `$ref` to a parameter) fails with an error naming the schema, because the flat file could not import it.
+
+## Generate only the client
+
+```sh
+npx counterfact@latest openapi.yaml ./api --generate-client-only --type-suffix Dto
+```
+
+`--generate-client-only` writes a [standalone API client](../features/generated-client.md#standalone-client) to `[output]/client` and nothing else: no routes, scenarios, `types/`, `counterfact-types/`, `.cache`, or server. The client declares its own types, one file per schema in `client/data-contracts/`. In `counterfact.yaml`, set `generateClientOnly: true`.
+
+It cannot be combined with `--generate`, `--generate-routes`, `--generate-types`, `--generate-schemas-only`, `--watch*`, `--serve`, `--repl`, `--build-cache`, or `--prune`. If your config file sets any of these, they are ignored with a notice. Versioned specs are not supported yet. In a multi-spec configuration, each spec's client goes in `<output>/<group>/client`.
 
 ## YAML configuration
 

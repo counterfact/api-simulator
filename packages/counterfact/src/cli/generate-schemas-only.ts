@@ -10,6 +10,7 @@ import { pathJoin } from "../util/forward-slash-path.js";
 export const SCHEMAS_ONLY_CONFLICTING_OPTIONS = [
   "generate",
   "generateClient",
+  "generateClientOnly",
   "generateRoutes",
   "generateTypes",
   "watch",
