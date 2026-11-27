@@ -8,6 +8,7 @@ import { koaSwagger } from "koa2-swagger-ui";
 import type {
   AdminApiAdapter,
   KoaRuntimeConfig,
+  RuntimeEventReporter,
 } from "../../runtime-config.js";
 import type { ContextRegistry } from "../context-registry.js";
 import type { Dispatcher } from "../dispatcher.js";
@@ -55,17 +56,43 @@ export function createKoaApp({
   runners,
   config,
   adminApi,
+  reportEvent = () => {},
   lifecycle,
 }: {
   runners: RuntimeRunner[];
   config: KoaRuntimeConfig;
   adminApi?: AdminApiAdapter;
+  reportEvent?: RuntimeEventReporter;
   lifecycle?: {
     enter(): boolean;
     leave(): void;
   };
 }) {
   const app = new Koa();
+  let firstApiRequestReported = false;
+  const reportFirstApiRequest: RuntimeEventReporter = (event, properties) => {
+    if (event === "first_api_request_served" && firstApiRequestReported) {
+      return;
+    }
+
+    if (
+      event === "first_api_request_served" &&
+      !["1xx", "2xx", "3xx", "4xx", "5xx"].includes(
+        String(properties?.statusClass),
+      )
+    ) {
+      return;
+    }
+
+    try {
+      reportEvent(event, properties);
+      if (event === "first_api_request_served") {
+        firstApiRequestReported = true;
+      }
+    } catch {
+      // Observability must never interrupt API request handling.
+    }
+  };
 
   if (lifecycle) {
     app.use(async (ctx, next) => {
@@ -203,17 +230,29 @@ export function createKoaApp({
   const [onlyRunner] = runners;
   if (runners.length === 1 && onlyRunner !== undefined) {
     app.use(
-      routesMiddleware(onlyRunner.prefix, onlyRunner.dispatcher, {
-        proxyPaths: config.proxyPaths,
-        proxyUrl: config.proxyUrl,
-      }),
+      routesMiddleware(
+        onlyRunner.prefix,
+        onlyRunner.dispatcher,
+        {
+          proxyPaths: config.proxyPaths,
+          proxyUrl: config.proxyUrl,
+        },
+        undefined,
+        undefined,
+        reportFirstApiRequest,
+      ),
     );
   } else {
     app.use(
-      routesMiddlewareForRunners(runners, {
-        proxyPaths: config.proxyPaths,
-        proxyUrl: config.proxyUrl,
-      }),
+      routesMiddlewareForRunners(
+        runners,
+        {
+          proxyPaths: config.proxyPaths,
+          proxyUrl: config.proxyUrl,
+        },
+        undefined,
+        reportFirstApiRequest,
+      ),
     );
   }
 

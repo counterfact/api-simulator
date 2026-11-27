@@ -39,9 +39,12 @@ import {
   shouldUseColor,
 } from "./startup-output.js";
 import {
+  getOrCreateTelemetryIdentity,
   hashTelemetryLocation,
   isTelemetryEnabled,
   sendTelemetry,
+  sendTelemetryAndWait,
+  type StartupTelemetryProperties,
 } from "./telemetry.js";
 
 const debug = createDebug("counterfact:cli:run");
@@ -135,12 +138,13 @@ export function buildStartupTelemetryProperties(
   options: StartupTelemetryOptions,
   source: string,
   version: string,
+  locationHashKey: string,
   specs?: SpecConfig[],
-): Record<string, unknown> {
+): StartupTelemetryProperties {
   const apiSources = specs?.map((spec) => spec.source) ?? [source];
   const apiFileLocationHashes = apiSources
     .filter((apiSource) => apiSource !== "_")
-    .map((apiSource) => hashTelemetryLocation(apiSource));
+    .map((apiSource) => hashTelemetryLocation(apiSource, locationHashKey));
 
   return {
     alwaysFakeOptionals: Boolean(options.alwaysFakeOptionals),
@@ -159,6 +163,15 @@ export function buildStartupTelemetryProperties(
         : source === "_"
           ? "without-openapi"
           : "single-spec",
+    sourceKind:
+      specs !== undefined
+        ? "multi-spec"
+        : source === "_"
+          ? "without-openapi"
+          : /^https?:\/\//u.test(source)
+            ? "remote"
+            : "local",
+    specCount: apiSources.length,
     openBrowser: Boolean(options.open),
     port: options.port,
     prune: Boolean(options.prune),
@@ -452,12 +465,16 @@ function buildProgram(
     debug("source: %s", source);
     debug("destination: %s", destination);
 
-    const startupTelemetryProperties = buildStartupTelemetryProperties(
-      options,
-      source,
-      version,
-      specs,
-    );
+    const telemetryEnabled = isTelemetryEnabled();
+    const startupTelemetryProperties = telemetryEnabled
+      ? buildStartupTelemetryProperties(
+          options,
+          source,
+          version,
+          getOrCreateTelemetryIdentity().locationHashKey,
+          specs,
+        )
+      : undefined;
 
     let clientOptions: ClientGenerationOptions | false = false;
 
@@ -556,6 +573,13 @@ function buildProgram(
     writeStartupLine(tagline);
     writeStartupLine("");
 
+    if (startupTelemetryProperties !== undefined) {
+      sendTelemetry({
+        event: "counterfact_start_attempted",
+        properties: startupTelemetryProperties,
+      });
+    }
+
     if (config.startAdminApi && !config.adminApiToken) {
       writeWarning(
         "⚠️  WARNING: The admin API is enabled without an authentication token.\n" +
@@ -596,6 +620,10 @@ function buildProgram(
           () => counterfact(config, specs),
         );
       } catch (error) {
+        await sendTelemetryAndWait({
+          event: "counterfact_start_failed",
+          properties: { failureCategory: "initialization" },
+        });
         process.stderr.write(
           `\n${startupOutput.error(`❌ ${error instanceof Error ? error.message : String(error)}`)}\n\n`,
         );
@@ -628,11 +656,9 @@ function buildProgram(
       writeStartupLine(startupOutput.success("Route type imports updated"));
     }
 
-    const isTelemetryDisabled = !isTelemetryEnabled();
-
-    if (!isTelemetryDisabled) {
+    if (telemetryEnabled) {
       writeWarning(
-        "⚠️  Telemetry will be enabled by default starting May 1, 2026.\n" +
+        "⚠️  Counterfact collects anonymous usage telemetry.\n" +
           "   Learn more and how to disable: https://counterfact.dev/telemetry-discussion",
       );
     }
@@ -644,6 +670,17 @@ function buildProgram(
         () => start(config),
       );
     } catch (error) {
+      await sendTelemetryAndWait({
+        event: "counterfact_start_failed",
+        properties: {
+          failureCategory:
+            error instanceof Error &&
+            "code" in error &&
+            error.code === "EADDRINUSE"
+              ? "port-in-use"
+              : "runtime-start",
+        },
+      });
       process.stderr.write(
         `\n${startupOutput.error(`❌ ${error instanceof Error ? error.message : String(error)}`)}\n\n`,
       );
@@ -671,7 +708,12 @@ function buildProgram(
       writeStartupLine(startupOutput.success(watchSummary));
     }
 
-    sendTelemetry("counterfact_started", startupTelemetryProperties);
+    if (startupTelemetryProperties !== undefined) {
+      sendTelemetry({
+        event: "counterfact_started",
+        properties: startupTelemetryProperties,
+      });
+    }
 
     await updateCheckPromise;
 

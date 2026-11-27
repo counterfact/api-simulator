@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: Profile states API
+  version: 1.0.0
+paths:
+  /profiles/{profileId}:
+    get:
+      operationId: getProfile
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Profile found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, name]
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+        "404":
+          description: Profile not found
+        "503":
+          description: Temporarily unavailable
+          content:
+            text/plain:
+              schema:
+                type: string

@@ -53,7 +53,7 @@ const installCommand =
           generated responses, then add the behavior your frontend needs.
         </p>
         <div class="actions">
-          <a class="button button-primary" href="/docs/getting-started">
+          <a class="button button-primary" href="/docs/getting-started" data-analytics-event="getting_started_opened">
             Start building →
           </a>
           <a class="button button-secondary" href="/docs/manual">
@@ -148,7 +148,7 @@ export const GET: Routes["/pets"]["GET"] = function ($) {
               set:text={installCommand}
             />
             <button
-              id="copy-btn"
+              id="copy-btn" data-analytics-event="quickstart_command_copied"
               class="copy-button"
               type="button"
               aria-label="Copy command"
@@ -288,7 +288,14 @@ export const GET: Routes["/pets"]["GET"] = function ($) {
         ))}
       </div>
     </section>
-  </main>
+      <section class="documentation-section wide-shell" aria-labelledby="examples-heading">
+      <h2 id="examples-heading">Build and test a frontend</h2>
+      <div class="documentation-grid">
+        <a href="/docs/examples/react-vite" data-analytics-event="ecosystem_example_opened" data-analytics-example="react-vite"><h3>React and Vite</h3><p>Run a profile screen against a local API with a complete two-terminal setup.</p></a>
+        <a href="/docs/examples/playwright-error-states" data-analytics-event="ecosystem_example_opened" data-analytics-example="playwright-error-states"><h3>Playwright error states</h3><p>Verify success, not-found, and temporary-failure browser states.</p></a>
+      </div>
+    </section>
+</main>
   <footer class="site-footer">
     <div class="wide-shell footer-content">
       <span>Counterfact</span>

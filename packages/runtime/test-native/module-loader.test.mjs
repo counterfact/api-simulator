@@ -13,7 +13,7 @@ describe("a module loader", () => {
         `export function GET() {
           return {
               body: "GET from a/b/c"
-          }; 
+          };
       }`,
       );
       await $.add(
@@ -42,7 +42,7 @@ describe("a module loader", () => {
         `export function GET() {
           return {
               body: "GET from a/b/c"
-          }; 
+          };
       }`,
       );
       await $.add("package.json", '{ "type": "module" }');

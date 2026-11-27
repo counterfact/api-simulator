@@ -1,5 +1,11 @@
 const copiedFeedbackDuration = 2000;
 
+function captureEvent(event, properties = {}) {
+  if (typeof window.posthog?.capture === "function") {
+    window.posthog.capture(event, properties);
+  }
+}
+
 async function copyText(text) {
   if (navigator.clipboard?.writeText) {
     try {
@@ -29,11 +35,16 @@ async function copyText(text) {
 
 function showCopyFeedback(button, copied) {
   const copyLabel =
-    button.dataset.copyLabel ?? button.getAttribute("aria-label") ?? "Copy code";
+    button.dataset.copyLabel ??
+    button.getAttribute("aria-label") ??
+    "Copy code";
   button.dataset.copyLabel = copyLabel;
   const label = copied ? "Copied" : "Copy failed";
   button.textContent = label;
-  button.setAttribute("aria-label", copied ? "Code copied" : `${copyLabel} failed`);
+  button.setAttribute(
+    "aria-label",
+    copied ? "Code copied" : `${copyLabel} failed`,
+  );
 
   window.setTimeout(() => {
     button.textContent = "Copy";
@@ -53,6 +64,11 @@ function addCodeCopyButton(code, container) {
   button.addEventListener("click", async () => {
     const copied = await copyText(code.textContent ?? "");
     showCopyFeedback(button, copied);
+    if (copied) {
+      captureEvent("code_example_copied", {
+        section: window.location.pathname,
+      });
+    }
   });
   container.append(button);
 }
@@ -68,8 +84,26 @@ function enhanceCodeExamples() {
     commandButton.addEventListener("click", async () => {
       const copied = await copyText(command.textContent?.trim() ?? "");
       showCopyFeedback(commandButton, copied);
+      if (copied) {
+        captureEvent("quickstart_command_copied", { section: "homepage" });
+      }
     });
   }
 }
 
+function trackIntentLinks() {
+  document.querySelectorAll("[data-analytics-event]").forEach((element) => {
+    if (element.id === "copy-btn") return;
+
+    element.addEventListener("click", () => {
+      captureEvent(element.dataset.analyticsEvent, {
+        example: element.dataset.analyticsExample,
+        href: element.getAttribute("href") ?? undefined,
+        section: "homepage",
+      });
+    });
+  });
+}
+
 enhanceCodeExamples();
+trackIntentLinks();
