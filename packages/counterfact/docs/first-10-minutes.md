@@ -1,8 +1,8 @@
-# Your first 10 minutes with Counterfact
+# A stateful Petstore example
 
-Start with [Getting Started](./getting-started.md) to run the API and make a
-browser request. Next, make the API remember a pet you create, return it when
-requested, and simulate a failure.
+After [Counterfact fundamentals](./getting-started.md), use this optional example
+to model a pet create/read workflow with context methods and an error flag.
+It uses a separate project and contract from the counter walkthrough.
 
 <span id="install-a-pinned-version"></span>
 
