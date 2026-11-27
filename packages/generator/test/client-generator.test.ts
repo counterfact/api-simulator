@@ -465,6 +465,49 @@ describe("generated API client", () => {
     });
   });
 
+  it("keeps every line of a multi-line summary inside the JSDoc", async () => {
+    const spec = {
+      openapi: "3.0.3",
+      info: { title: "Login", version: "1" },
+      paths: {
+        "/login": {
+          post: {
+            summary: "Starts a login.\r\nReturns the credentials.",
+            description: "First line.\nSecond line.",
+            responses: { 204: { description: "OK" } },
+          },
+        },
+      },
+    };
+
+    await usingTemporaryFiles(async ($) => {
+      await $.add("spec.json", JSON.stringify(spec));
+      const specification = await Specification.fromFile($.path("spec.json"));
+
+      for (const standalone of [false, true]) {
+        await generateClient(specification, $.path("api"), { standalone });
+
+        const module = await $.read("api/client/Login.ts");
+        const comment = module.slice(
+          module.indexOf("/**"),
+          module.indexOf("*/") + 2,
+        );
+
+        expect(comment).toContain("* @summary Starts a login.\n");
+        expect(comment).toMatch(/\n\s*\* Returns the credentials\.\n/u);
+        expect(comment).toMatch(/\n\s*\* Second line\.\n/u);
+        expect(comment).not.toContain("\r");
+        // Every line between the delimiters keeps its leading asterisk.
+        expect(
+          comment
+            .split("\n")
+            .slice(1, -1)
+            .every((line) => line.trimStart().startsWith("*")),
+        ).toBe(true);
+      }
+    });
+  });
+
   it("renames a module that would collide with the API class", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add(

@@ -144,7 +144,11 @@ function providerMembers(
 }
 
 function jsDoc(lines: readonly string[]): string {
-  return `/**\n${lines.map((line) => ` * ${line.replaceAll("*/", "* /")}`).join("\n")}\n */`;
+  // Values from the document, such as a summary, can span several lines.
+  return `/**\n${lines
+    .flatMap((line) => line.split(/\r?\n/u))
+    .map((line) => ` * ${line.replaceAll("*/", "* /")}`)
+    .join("\n")}\n */`;
 }
 
 function operationJsDoc(operation: ClientOperation): string {

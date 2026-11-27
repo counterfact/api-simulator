@@ -370,6 +370,41 @@ describe("DataContracts types", () => {
     );
   });
 
+  it("writes each distinct type once when responses or media types share a schema", () => {
+    const { contracts, script, specification } = contractsFor(OPENAPI);
+    const problem = {
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/Problem" },
+        },
+        "application/problem+json": {
+          schema: { $ref: "#/components/schemas/Problem" },
+        },
+      },
+    };
+    const operation = new Requirement(
+      {
+        responses: {
+          200: { description: "OK" },
+          204: { description: "No content" },
+          400: problem,
+          404: { $ref: "#/components/responses/NotFound" },
+          500: problem,
+          503: { content: { "text/plain": { schema: { type: "string" } } } },
+        },
+      },
+      "#/o",
+      specification,
+    );
+
+    expect(printNode(contracts.responseType(script, operation, true))).toBe(
+      "void",
+    );
+    expect(printNode(contracts.responseType(script, operation, false))).toBe(
+      "Problem | string",
+    );
+  });
+
   it("reads Swagger 2.0 response schemas and writes unknown without responses", () => {
     const { contracts, script, specification } = contractsFor({
       swagger: "2.0",

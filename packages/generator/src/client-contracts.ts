@@ -1,6 +1,12 @@
 import ts from "typescript";
 
-import { typeLiteral, typeProperty, unionType, unknownType } from "./ast.js";
+import {
+  printNode,
+  typeLiteral,
+  typeProperty,
+  unionType,
+  unknownType,
+} from "./ast.js";
 import { pascalCase, uniqueName } from "./client-operations.js";
 import { Requirement } from "./requirement.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
@@ -37,10 +43,16 @@ function isJsonMediaType(mediaType: string): boolean {
   );
 }
 
-/** `unknown` for no types, the type itself for one, otherwise their union. */
+/**
+ * `unknown` for no types, the type itself for one, otherwise the union of the
+ * distinct types (responses often share an error schema).
+ */
 function union(types: readonly ts.TypeNode[]): ts.TypeNode {
-  if (types.length === 0) return unknownType();
-  return types.length === 1 ? types[0]! : unionType(types);
+  const distinct = [
+    ...new Map(types.map((type) => [printNode(type), type])).values(),
+  ];
+  if (distinct.length === 0) return unknownType();
+  return distinct.length === 1 ? distinct[0]! : unionType(distinct);
 }
 
 function resolve(requirement: Requirement): Requirement {

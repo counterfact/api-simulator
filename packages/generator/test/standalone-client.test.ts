@@ -580,6 +580,55 @@ describe("standalone API client", () => {
     });
   });
 
+  it("names a shared error schema once in an operation's error type", async () => {
+    const error = {
+      description: "Error",
+      content: {
+        "application/json": {
+          schema: { $ref: "#/components/schemas/Problem" },
+        },
+      },
+    };
+
+    await usingTemporaryFiles(async ($) => {
+      await generate(
+        $,
+        {
+          openapi: "3.1.0",
+          info: { title: "Login", version: "1" },
+          paths: {
+            "/login": {
+              post: {
+                operationId: "login",
+                responses: {
+                  204: { description: "OK" },
+                  400: error,
+                  401: error,
+                  500: error,
+                },
+              },
+            },
+          },
+          components: {
+            schemas: {
+              Problem: {
+                type: "object",
+                properties: { message: { type: "string" } },
+              },
+            },
+          },
+        },
+        { client: true },
+      );
+
+      const module = await $.read("api/client/Login.ts");
+
+      expect(module).toContain("this.http.request<void, Problem>(");
+      expect(module).not.toContain("Problem | Problem");
+      expect(diagnostics($.path("api/client/index.ts"))).toEqual([]);
+    });
+  });
+
   it("rejects versioned APIs", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("spec.json", JSON.stringify(SPEC));
