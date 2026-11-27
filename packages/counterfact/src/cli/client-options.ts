@@ -1,4 +1,9 @@
-import type { ClientGenerationOptions } from "@counterfact/generator";
+import {
+  type ClientGenerationOptions,
+  ENUM_STYLES,
+  type EnumStyle,
+  type SchemaTypeOptions,
+} from "@counterfact/generator";
 
 /** CLI / counterfact.yaml options that configure the generated client. */
 export interface ClientCliOptions {
@@ -68,6 +73,40 @@ export function resolveClientOptions(
 
   if (options.moduleNameFirstTag) resolved.moduleNameFirstTag = true;
   if (options.unwrapResponseData) resolved.unwrapResponseData = true;
+
+  return resolved;
+}
+
+/** CLI / counterfact.yaml options that change how schema types are declared. */
+export interface TypeCliOptions {
+  enumStyle?: unknown;
+  ignoreNullable?: unknown;
+  preferInterfaces?: unknown;
+  validationJsdoc?: unknown;
+}
+
+/**
+ * Validates the schema type options from the command line or
+ * `counterfact.yaml` and converts them to {@link SchemaTypeOptions}.
+ *
+ * @throws When an option has an invalid value.
+ */
+export function resolveTypeOptions(options: TypeCliOptions): SchemaTypeOptions {
+  const resolved: SchemaTypeOptions = {};
+
+  if (options.enumStyle !== undefined) {
+    const style = String(options.enumStyle);
+    if (!ENUM_STYLES.includes(style as EnumStyle)) {
+      throw new Error(
+        `--enum-style must be one of ${ENUM_STYLES.join(", ")} (received ${JSON.stringify(style)}).`,
+      );
+    }
+    resolved.enumStyle = style as EnumStyle;
+  }
+
+  if (options.ignoreNullable) resolved.ignoreNullable = true;
+  if (options.preferInterfaces) resolved.preferInterfaces = true;
+  if (options.validationJsdoc) resolved.validationJsDoc = true;
 
   return resolved;
 }

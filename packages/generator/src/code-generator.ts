@@ -24,6 +24,7 @@ import { pruneRoutes, pruneTypes } from "./prune.js";
 import { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
 import { Specification } from "./specification.js";
+import type { SchemaTypeOptions } from "./type-options.js";
 import { waitForEvent } from "./wait-for-event.js";
 import { CHOKIDAR_OPTIONS } from "./watch-options.js";
 
@@ -39,6 +40,8 @@ export interface GenerateOptions {
   prune?: boolean;
   routes?: boolean;
   types?: boolean;
+  /** How schema types are declared in `types/` (and the client's data contracts). */
+  typeOptions?: SchemaTypeOptions;
 }
 
 /**
@@ -158,6 +161,7 @@ export class CodeGenerator extends EventTarget {
       this.openapiPath,
       this.overlays,
     );
+    specification.typeOptions = this.generateOptions.typeOptions ?? {};
 
     debug("created specification: $o", specification);
 
@@ -273,6 +277,7 @@ export class CodeGenerator extends EventTarget {
       this.openapiPath,
       this.overlays,
     );
+    specification.typeOptions = this.generateOptions.typeOptions ?? {};
 
     if (specification.getRequirement("#/swagger") !== undefined) {
       throw new Error(

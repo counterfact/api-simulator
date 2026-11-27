@@ -3,7 +3,10 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 /* eslint-disable security/detect-non-literal-fs-filename -- CLI migration cleanup operates on known child directories under config.basePath. */
 
-import type { ClientGenerationOptions } from "@counterfact/generator";
+import type {
+  ClientGenerationOptions,
+  SchemaTypeOptions,
+} from "@counterfact/generator";
 import { Command } from "commander";
 import createDebug from "debug";
 import open from "open";
@@ -14,7 +17,7 @@ import { updateRouteTypes } from "../migrate/update-route-types.js";
 import { pathResolve } from "../util/forward-slash-path.js";
 import { loadConfigFile } from "../util/load-config-file.js";
 import { checkForUpdates } from "./check-for-updates.js";
-import { resolveClientOptions } from "./client-options.js";
+import { resolveClientOptions, resolveTypeOptions } from "./client-options.js";
 import {
   generateSchemasOnly,
   SCHEMAS_ONLY_CONFLICTING_OPTIONS,
@@ -188,17 +191,20 @@ function buildProgram(
       apiClassName?: string;
       buildCache?: boolean;
       config?: string;
+      enumStyle?: string;
       generate?: boolean;
       generateClient?: boolean;
       generateRoutes?: boolean;
       generateSchemasOnly?: boolean;
       generateTypes?: boolean;
+      ignoreNullable?: boolean;
       moduleClassSuffix?: string;
       moduleNameFirstTag?: boolean;
       moduleNameIndex?: number;
       open?: boolean;
       overlay?: string[];
       port: number;
+      preferInterfaces?: boolean;
       prefix: string;
       prune?: boolean;
       proxyUrl?: string;
@@ -211,6 +217,7 @@ function buildProgram(
       validateRequest: boolean;
       unwrapResponseData?: boolean;
       validateResponse: boolean;
+      validationJsdoc?: boolean;
       watch?: boolean;
       watchRoutes?: boolean;
       watchTypes?: boolean;
@@ -291,6 +298,17 @@ function buildProgram(
     const destinationPath = pathResolve(destination);
     const basePath = pathResolve(destinationPath);
 
+    let typeOptions: SchemaTypeOptions;
+
+    try {
+      typeOptions = resolveTypeOptions(options);
+    } catch (error) {
+      process.stderr.write(
+        `\n❌ ${error instanceof Error ? error.message : String(error)}\n\n`,
+      );
+      process.exit(1);
+    }
+
     if (schemasOnly) {
       const startupOutput = createStartupOutput(
         shouldUseColor({
@@ -334,6 +352,7 @@ function buildProgram(
           overlays: options.overlay ?? [],
           source,
           specs,
+          typeOptions,
         });
 
         process.stdout.write(
@@ -424,6 +443,8 @@ function buildProgram(
         prune: Boolean(options.prune),
 
         client: clientOptions,
+
+        typeOptions,
       },
 
       openApiPath: source,
@@ -706,6 +727,19 @@ function buildProgram(
     .option(
       "--type-suffix <suffix>",
       "appended to every client data contract type name (e.g. Dto for UserDto)",
+    )
+    .option(
+      "--enum-style <style>",
+      "declare enums that name their members (x-enumNames) as a union (default), enum, or const",
+    )
+    .option("--ignore-nullable", "omit | null from nullable schema types")
+    .option(
+      "--prefer-interfaces",
+      "declare named object schemas as interfaces instead of type aliases",
+    )
+    .option(
+      "--validation-jsdoc",
+      "document schema constraints such as minLength and pattern in JSDoc",
     )
     .option("-w, --watch", "generate + watch all code for changes")
     .option("--watch-types", "generate + watch types for changes")

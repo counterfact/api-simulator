@@ -26,7 +26,9 @@ import {
   uniqueName,
 } from "./client-operations.js";
 import { toForwardSlashPath } from "./forward-slash-path.js";
+import { Requirement } from "./requirement.js";
 import { routeTypeReference } from "./route-type-tree.js";
+import { namedEnumMembers, SchemaTypeCoder } from "./schema-type-coder.js";
 import type { Specification } from "./specification.js";
 
 const debug = createDebug("counterfact:typescript-generator:client");
@@ -405,21 +407,54 @@ function dataContractStatements(
   );
   const statements: ts.Statement[] = [];
 
-  specification.getRequirement("#/components/schemas")?.forEach((_, name) => {
-    const typeName = uniqueName(
-      `${typePrefix}${pascalCase(name)}${typeSuffix}`,
-      taken,
-    );
-    statements.push(
-      typeAlias(
-        typeName,
-        f.createIndexedAccessTypeNode(
-          typeReference("Schemas"),
-          literalType(name),
+  const { enumStyle = "union" } = specification.typeOptions;
+
+  specification
+    .getRequirement("#/components/schemas")
+    ?.forEach((schema, name) => {
+      const typeName = uniqueName(
+        `${typePrefix}${pascalCase(name)}${typeSuffix}`,
+        taken,
+      );
+      if (enumStyle !== "union" && namedEnumMembers(schema.data)) {
+        // Re-export the declaration from types/ so both share one enum.
+        const coder = new SchemaTypeCoder(
+          new Requirement(
+            {
+              $ref: `#/components/schemas/${name.replaceAll("~", "~0").replaceAll("/", "~1")}`,
+            },
+            "",
+            specification,
+          ),
+        );
+        statements.push(
+          f.createExportDeclaration(
+            undefined,
+            false,
+            f.createNamedExports([
+              f.createExportSpecifier(
+                false,
+                coder.names().next().value!,
+                typeName,
+              ),
+            ]),
+            f.createStringLiteral(
+              `../${coder.modulePath().replace(/\.ts$/u, ".js")}`,
+            ),
+          ),
+        );
+        return;
+      }
+      statements.push(
+        typeAlias(
+          typeName,
+          f.createIndexedAccessTypeNode(
+            typeReference("Schemas"),
+            literalType(name),
+          ),
         ),
-      ),
-    );
-  });
+      );
+    });
 
   return statements.length === 0
     ? []
@@ -430,6 +465,7 @@ function apiClassStatements(
   modules: readonly ClientModule[],
   apiClassName: string,
   hasDataContracts: boolean,
+  hasDataContractValues = false,
 ): ts.Statement[] {
   const taken = new Set(["constructor", "http"]);
   const members = modules.map((module) => ({
@@ -448,7 +484,7 @@ function apiClassStatements(
       ? [
           f.createExportDeclaration(
             undefined,
-            true,
+            !hasDataContractValues,
             undefined,
             f.createStringLiteral("./data-contracts.js"),
           ),
@@ -607,7 +643,15 @@ export async function generateClient(
   files.set(
     "index.ts",
     await formatStatements(
-      apiClassStatements(modules, apiClassName, dataContracts.length > 0),
+      apiClassStatements(
+        modules,
+        apiClassName,
+        dataContracts.length > 0,
+        dataContracts.some(
+          (statement) =>
+            ts.isExportDeclaration(statement) && !statement.isTypeOnly,
+        ),
+      ),
       GENERATED_COMMENTS,
     ),
   );

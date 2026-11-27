@@ -1,6 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { resolveClientOptions } from "../../src/cli/client-options.js";
+import {
+  resolveClientOptions,
+  resolveTypeOptions,
+} from "../../src/cli/client-options.js";
 
 describe("resolveClientOptions", () => {
   it("uses the generator defaults when no client options are given", () => {
@@ -63,6 +66,44 @@ describe("resolveClientOptions", () => {
   ])("rejects a %s that is not made of identifier characters", (key, flag) => {
     expect(() => resolveClientOptions({ [key]: "-Dto" })).toThrow(
       `${flag} must contain only letters, digits, _ and $`,
+    );
+  });
+});
+
+describe("resolveTypeOptions", () => {
+  it("keeps the standard declarations when no type options are given", () => {
+    expect(resolveTypeOptions({})).toEqual({});
+  });
+
+  it("converts CLI and counterfact.yaml values", () => {
+    expect(
+      resolveTypeOptions({
+        enumStyle: "enum",
+        ignoreNullable: true,
+        preferInterfaces: true,
+        validationJsdoc: true,
+      }),
+    ).toEqual({
+      enumStyle: "enum",
+      ignoreNullable: true,
+      preferInterfaces: true,
+      validationJsDoc: true,
+    });
+  });
+
+  it("ignores switches that are turned off", () => {
+    expect(
+      resolveTypeOptions({
+        ignoreNullable: false,
+        preferInterfaces: false,
+        validationJsdoc: false,
+      }),
+    ).toEqual({});
+  });
+
+  it("rejects an unknown enum style", () => {
+    expect(() => resolveTypeOptions({ enumStyle: "string" })).toThrow(
+      /--enum-style must be one of union, enum, const/u,
     );
   });
 });

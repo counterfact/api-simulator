@@ -1,4 +1,7 @@
-import type { ClientGenerationOptions } from "@counterfact/generator";
+import type {
+  ClientGenerationOptions,
+  SchemaTypeOptions,
+} from "@counterfact/generator";
 
 /** Runtime configuration for a Counterfact server instance. */
 export interface Config {
@@ -23,6 +26,8 @@ export interface Config {
     routes: boolean;
     /** Generate TypeScript type files. */
     types: boolean;
+    /** How schema types are declared in `types/` and the client's data contracts. */
+    typeOptions?: SchemaTypeOptions;
   };
   /** Path or URL to the OpenAPI document. Use `"_"` to skip spec loading. */
   openApiPath: string;

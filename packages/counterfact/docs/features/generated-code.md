@@ -53,6 +53,35 @@ Generation does not replace runtime validation. TypeScript cannot express every 
 
 Generated operation argument types include only the request inputs available for that operation. For example, an operation without query parameters has no `$.query` property. Versioned arguments include their version literal; unversioned arguments omit `version`. These properties are selected during generation, so the emitted argument is a plain object type.
 
+## Customize schema declarations
+
+By default, enums are unions of their values and named object schemas are type aliases. These options change the declarations in `types/` (and so the client's data contracts):
+
+- `--enum-style enum` declares an enum whose schema names every value with `x-enumNames` (or `x-enum-varnames`) as a TypeScript enum. `--enum-style const` declares an object of the values plus a type of the same name. Enums without member names remain unions. The generated client re-exports these values from `data-contracts.ts`.
+- `--ignore-nullable` omits `| null` from nullable schemas, including OpenAPI 3.1 type unions with `null`.
+- `--prefer-interfaces` declares named object schemas as interfaces. Compositions such as `allOf` stay type aliases.
+- `--validation-jsdoc` adds `@minLength`, `@maxLength`, `@min`, `@max`, `@exclusiveMin`, `@exclusiveMax`, `@multipleOf`, `@pattern`, `@minItems`, and `@maxItems` to the JSDoc of schemas and properties.
+
+```yaml
+# counterfact.yaml
+generateClient: true
+typeSuffix: Dto
+enumStyle: enum
+ignoreNullable: true
+preferInterfaces: true
+validationJsdoc: true
+```
+
+```ts
+// types/components/schemas/ChallengeMethodType.ts
+export enum ChallengeMethodType {
+  None = 0,
+  OutOfBand = 1,
+}
+```
+
+Route handlers use the same types. With an enum style, string enum properties accept the enum members, not plain string literals. With `--ignore-nullable`, the types no longer admit `null` even though the specification and runtime validation do.
+
 ## Update a specification
 
 With specification watching enabled, save the OpenAPI document to regenerate the enabled artifacts. Types reflect the updated contract; existing route implementations retain your edits. Use your editor or TypeScript checks to find handlers whose assumptions no longer match the specification.

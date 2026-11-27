@@ -50,6 +50,19 @@ These options shape the client written by `--generate-client`. See [generated AP
 | `--api-class-name <name>`        | `Api`    | Name of the class that combines every module                   |
 | `--unwrap-response-data`         | `false`  | Methods resolve with the response body instead of the response |
 
+## Schema type options
+
+These options change how schema types are declared in `types/`, and therefore in the client's data contracts. They also apply to `--generate-schemas-only`. See [customize schema declarations](../features/generated-code.md#customize-schema-declarations).
+
+| Flag                   | Default | Description                                                                                        |
+| ---------------------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `--enum-style <style>` | `union` | `union`, `enum`, or `const` for enums that name their members with `x-enumNames`/`x-enum-varnames` |
+| `--ignore-nullable`    | `false` | Omit `\| null` from nullable schema types                                                          |
+| `--prefer-interfaces`  | `false` | Declare named object schemas as interfaces instead of type aliases                                 |
+| `--validation-jsdoc`   | `false` | Document `minLength`, `pattern`, `minimum`, and other constraints in JSDoc                         |
+
+In `counterfact.yaml`, use `enumStyle`, `ignoreNullable`, `preferInterfaces`, and `validationJsdoc`.
+
 ## Generate only the schema types
 
 ```sh

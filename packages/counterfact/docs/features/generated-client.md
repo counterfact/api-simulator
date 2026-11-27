@@ -116,3 +116,5 @@ generateClient: true
 moduleClassSuffix: Client
 typeSuffix: Dto
 ```
+
+To declare data contracts as interfaces and enums, see [customize schema declarations](./generated-code.md#customize-schema-declarations).

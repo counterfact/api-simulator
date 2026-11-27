@@ -1,4 +1,4 @@
-import { CodeGenerator } from "@counterfact/generator";
+import { CodeGenerator, type SchemaTypeOptions } from "@counterfact/generator";
 
 import type { SpecConfig } from "../app.js";
 import { pathJoin } from "../util/forward-slash-path.js";
@@ -36,6 +36,7 @@ export interface SchemasOnlyValidationInput {
   destinationProvided: boolean;
   source: string;
   specs?: SpecConfig[] | undefined;
+  typeOptions?: SchemaTypeOptions;
 }
 
 /**
@@ -105,6 +106,7 @@ export interface SchemasOnlyRunInput {
   overlays: readonly string[];
   source: string;
   specs?: SpecConfig[] | undefined;
+  typeOptions?: SchemaTypeOptions;
 }
 
 /**
@@ -117,6 +119,7 @@ export async function generateSchemasOnly({
   overlays,
   source,
   specs,
+  typeOptions = {},
 }: SchemasOnlyRunInput): Promise<number> {
   let count = 0;
 
@@ -124,7 +127,7 @@ export async function generateSchemasOnly({
     const generator = new CodeGenerator(
       spec.source,
       spec.group ? pathJoin(basePath, spec.group) : basePath,
-      {},
+      { typeOptions },
       spec.version?.trim() ?? "",
       spec.overlays ?? overlays,
     );
