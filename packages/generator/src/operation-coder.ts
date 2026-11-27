@@ -171,7 +171,10 @@ export class OperationCoder extends Coder {
 
       sharedScript.declareVersion(
         versionedArgCoder,
-        operationTypeCoder.getOperationBaseName(),
+        sharedScript.operationVersionKey(
+          operationTypeCoder.getOperationBaseName(),
+          operationTypeCoder.logicalRoute,
+        ),
       );
     }
 

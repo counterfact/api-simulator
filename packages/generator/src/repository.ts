@@ -18,15 +18,31 @@ import {
   withComment,
 } from "./ast.js";
 
+import { adoptSpellings } from "./adopt-spellings.js";
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
 import {
   toForwardSlashPath,
+  pathJoin,
   pathRelative,
   pathDirname,
 } from "./forward-slash-path.js";
 import { writeHelperTypes } from "./scenario-file-generator.js";
 import { Script } from "./script.js";
 import { type SchemaTypeTransform } from "./schema-type-transform.js";
+import {
+  collisionMethodContents,
+  collisionRouteContents,
+  CaseLayout,
+  matchesRouteMapShape,
+  missingRouteMapMethods,
+  readRoutePaths,
+} from "./route-file-layout.js";
+import { pruneRoutes, pruneTypes } from "./prune.js";
+import {
+  managedRouteSpellings,
+  migrateLegacyRoutes,
+  ROUTE_MIGRATION_RECORD,
+} from "./migrate-route-layout.js";
 import { escapePathForWindows } from "./windows-escape.js";
 
 const debug = createDebug("counterfact:server:repository");
@@ -77,6 +93,8 @@ function resolveDestinationPath(destination: string, path: string): string {
 interface WriteFilesOptions {
   routes?: boolean;
   types?: boolean;
+  prune?: boolean;
+  keepVersionsFile?: boolean;
 }
 
 /**
@@ -90,6 +108,37 @@ interface WriteFilesOptions {
  */
 export class Repository {
   public scripts: Map<string, Script>;
+  private readonly routesByPath = new Map<string, Script>();
+  private readonly specRouteFiles = new Set<string>();
+  private readonly typeLayout = new CaseLayout();
+  // Type scripts are found by case-folded path, because the spelling chosen
+  // for a type file can change until every type has been registered.
+  private readonly typeScripts = new Map<string, Script>();
+  private routeLayout = new CaseLayout();
+
+  public recordRouteFile(logicalFile: string): void {
+    this.specRouteFiles.add(logicalFile);
+  }
+
+  public route(logicalFile: string, path: string): Script {
+    const existing = this.routesByPath.get(path);
+    if (existing) return existing;
+    // The root and literal /index share the historic filename, but their
+    // logical modules must remain distinct until the physical layout is built.
+    const script = [...this.routesByPath.values()].some(
+      (entry) => entry.path === logicalFile,
+    )
+      ? new Script(this, logicalFile)
+      : this.get(logicalFile);
+    this.routesByPath.set(path, script);
+    return script;
+  }
+
+  public outputPath(logical: string): string {
+    return logical.startsWith("types/")
+      ? this.typeLayout.file(logical)
+      : logical;
+  }
 
   public constructor(
     public readonly options: { schemaTypeTransform?: SchemaTypeTransform } = {},
@@ -107,11 +156,17 @@ export class Repository {
     debug("getting script at %s", path);
 
     assertSafeRepositoryPath(path);
+    const typeKey = path.startsWith("types/") ? path.toLowerCase() : undefined;
+    const existing =
+      typeKey === undefined
+        ? this.scripts.get(path)
+        : this.typeScripts.get(typeKey);
+    path = this.outputPath(path);
 
-    if (this.scripts.has(path)) {
+    if (existing) {
       debug("already have script %s, returning it", path);
 
-      return this.scripts.get(path)!;
+      return existing;
     }
 
     debug("don't have %s, creating it", path);
@@ -119,6 +174,7 @@ export class Repository {
     const script = new Script(this, path);
 
     this.scripts.set(path, script);
+    if (typeKey !== undefined) this.typeScripts.set(typeKey, script);
 
     return script;
   }
@@ -126,12 +182,16 @@ export class Repository {
   /** Waits until all scripts have resolved all of their pending export promises. */
   public async finished(): Promise<void> {
     while (
-      Array.from(this.scripts.values()).some((script) => script.isInProgress())
+      [
+        ...new Set([...this.scripts.values(), ...this.routesByPath.values()]),
+      ].some((script) => script.isInProgress())
     ) {
       debug("waiting for %i scripts to finish", this.scripts.size);
 
       await Promise.all(
-        Array.from(this.scripts.values(), (script) => script.finished()),
+        [
+          ...new Set([...this.scripts.values(), ...this.routesByPath.values()]),
+        ].map((script) => script.finished()),
       );
     }
     for (const script of this.scripts.values())
@@ -186,7 +246,7 @@ export class Repository {
    */
   public async writeFiles(
     destination: string,
-    { routes, types }: WriteFilesOptions,
+    { routes, types, prune, keepVersionsFile }: WriteFilesOptions,
   ): Promise<void> {
     debug(
       "waiting for %i or more scripts to finish before writing files",
@@ -195,50 +255,237 @@ export class Repository {
     await this.finished();
     debug("all %i scripts are finished", this.scripts.size);
 
-    const writeFiles = Array.from(
-      this.scripts.entries(),
+    const layout = new CaseLayout();
+    this.routeLayout = layout;
+    if (routes) {
+      for (const managed of await managedRouteSpellings(
+        destination,
+        this.specRouteFiles,
+      ))
+        layout.pin(managed);
+    }
+    for (const script of this.routesByPath.values()) layout.file(script.path);
+    for (const path of this.specRouteFiles) layout.file(path);
+    const routeGroups = new Map<string, Array<readonly [string, Script]>>();
+    for (const [path, script] of [...this.routesByPath].sort(([a], [b]) =>
+      a < b ? -1 : a > b ? 1 : 0,
+    )) {
+      const target = layout.file(script.path);
+      const group = routeGroups.get(target) ?? [];
+      group.push([path, script]);
+      routeGroups.set(target, group);
+    }
 
-      async ([path, script]) => {
-        const fullPath = resolveDestinationPath(destination, path);
+    if (routes) {
+      await migrateLegacyRoutes(destination, routeGroups);
+      await this.assertSafeRouteLayout(destination, routeGroups);
+    }
+
+    if (types)
+      await adoptSpellings(
+        destination,
+        Array.from(this.scripts.keys())
+          .filter((path) => path.startsWith("types/"))
+          .map((path) => this.outputPath(path)),
+      );
+
+    await Promise.all([
+      ...Array.from(this.scripts, async ([logical, script]) => {
+        const routeScript = logical.startsWith("routes/");
+        if (
+          (routeScript && (!routes || routeGroups.has(layout.file(logical)))) ||
+          (!routeScript && !types)
+        )
+          return;
+        const output = this.outputPath(logical);
+        const fullPath = resolveDestinationPath(destination, output);
         const contents = await script.contents(
-          this.findContextPath(destination, path, script.contextRoutePath),
+          this.findContextPath(destination, output, script.contextRoutePath),
         );
-
         await ensureDirectoryExists(fullPath);
-
-        const shouldWriteRoutes = routes && path.startsWith("routes");
-        const shouldWriteTypes = types && !path.startsWith("routes");
-
-        if (shouldWriteRoutes) {
-          const fileExists = await fs
-            .stat(fullPath)
-            .then((stat) => stat.isFile())
-            .catch(() => false);
-
-          if (fileExists) {
-            debug(`route file exists, checking for new handlers: ${fullPath}`);
-            await this.appendNewHandlers(fullPath, script);
-
-            return;
-          }
-        }
-
-        if (shouldWriteRoutes || shouldWriteTypes) {
-          debug("about to write", fullPath);
+        if (routeScript && existsSync(fullPath)) {
+          await this.appendNewHandlers(fullPath, script);
+        } else {
           await fs.writeFile(fullPath, contents);
-          debug("did write", fullPath);
         }
-      },
-    );
+      }),
+      ...(routes
+        ? Array.from(routeGroups, async ([target, group]) => {
+            const fullPath = resolveDestinationPath(destination, target);
+            const first = group[0]!;
+            const [, script] = first;
+            // Colliding files are shape-checked and never rewritten; methods the
+            // file lacks are appended. A singleton can continue using the
+            // existing AST-based method append pipeline.
+            if (existsSync(fullPath)) {
+              if (group.length === 1) {
+                await this.appendNewHandlers(fullPath, script);
+                return;
+              }
+              const existing = await fs.readFile(fullPath, "utf8");
+              const missing = missingRouteMapMethods(
+                ts.createSourceFile(
+                  fullPath,
+                  existing,
+                  ts.ScriptTarget.Latest,
+                  true,
+                ),
+                group,
+              );
+              if (missing && missing.length > 0)
+                await fs.writeFile(
+                  fullPath,
+                  `${existing.trimEnd()}\n${await collisionMethodContents(
+                    group,
+                    new Set(missing),
+                  )}`,
+                );
+              return;
+            }
+            await ensureDirectoryExists(fullPath);
+            if (group.length > 1) {
+              await fs.writeFile(fullPath, await collisionRouteContents(group));
+              return;
+            }
+            const contents = await script.contents(
+              this.findContextPath(
+                destination,
+                target,
+                script.contextRoutePath,
+              ),
+            );
+            // Only routes that share a file declare their paths. Every other
+            // route keeps the historic layout and case-insensitive matching.
+            await fs.writeFile(fullPath, contents);
+          })
+        : []),
+    ]);
 
-    await Promise.all(writeFiles);
+    if (
+      prune &&
+      routes &&
+      !existsSync(nodePath.join(destination, "routes", ROUTE_MIGRATION_RECORD))
+    ) {
+      await pruneRoutes(
+        destination,
+        this.routesByPath.keys(),
+        [...this.specRouteFiles].map((path) => layout.file(path)),
+      );
+    }
+    if (prune && types) {
+      await pruneTypes(destination, [
+        ...Array.from(this.scripts.keys(), (path) => this.outputPath(path)),
+        ...(keepVersionsFile ? ["types/versions.ts"] : []),
+      ]);
+    }
 
     await this.copyCoreFiles(destination);
-
     if (routes) {
       await this.createDefaultContextFile(destination);
     }
     if (types) await writeHelperTypes(destination, destination, true);
+  }
+
+  private async assertSafeRouteLayout(
+    destination: string,
+    groups: ReadonlyMap<string, ReadonlyArray<readonly [string, Script]>>,
+  ): Promise<void> {
+    for (const [target, group] of groups) {
+      const paths = group.map(([path]) => path).sort();
+      const fail = (reason: string): never => {
+        throw new Error(
+          `Cannot generate ${target} for ${paths.join(", ")}: ${reason}. ` +
+            "Move or combine the existing handlers into the canonical file and " +
+            "declare __counterfactPaths and case-keyed method exports where required. " +
+            "Existing route files were left unchanged.",
+        );
+      };
+      const fullPath = resolveDestinationPath(destination, target);
+      if (!existsSync(fullPath)) continue;
+      const existing = await fs.readFile(fullPath, "utf8");
+      const source = ts.createSourceFile(
+        fullPath,
+        existing,
+        ts.ScriptTarget.Latest,
+        true,
+      );
+      const declared = readRoutePaths(source);
+      const needsMetadata = group.length > 1;
+      if (declared === undefined && !needsMetadata) continue;
+      if (JSON.stringify(declared?.sort()) !== JSON.stringify(paths))
+        fail("existing route path metadata does not match");
+      if (group.length > 1 && !missingRouteMapMethods(source, group))
+        fail(
+          "existing handler map does not match the OpenAPI methods and paths",
+        );
+      if (group.length === 1 && matchesRouteMapShape(source, group))
+        fail("existing handler map must be converted back to functions");
+    }
+  }
+
+  /**
+   * Waits for all scripts to finish, then writes only the schemas for
+   * `version` directly under `destination`, without the
+   * `types/<version>/components/schemas/` prefix. Versioned schemas are written
+   * to `<destination>/<version>/`.
+   *
+   * Every other script in the repository is left unwritten. Fails, naming the
+   * schema, when a schema imports anything that would not be written, because
+   * the flattened file would then contain a broken import.
+   *
+   * @param destination - Absolute path to the output directory.
+   * @param version - Version label of the schemas to write (`""` when unversioned).
+   * @returns The output paths written, relative to `destination`.
+   */
+  public async writeSchemas(
+    destination: string,
+    version = "",
+  ): Promise<string[]> {
+    await this.finished();
+
+    const schemaPrefix = `${pathJoin("types", version, "components", "schemas")}/`;
+    const outputPrefix = version === "" ? "" : `${version}/`;
+    const schemaScripts = Array.from(this.scripts).filter(([path]) =>
+      path.startsWith(schemaPrefix),
+    );
+
+    for (const [path, script] of schemaScripts) {
+      const unsupportedImport =
+        [...script.externalImport.values()].map((entry) =>
+          typeof entry.modulePath === "string" ? entry.modulePath : "context",
+        )[0] ??
+        [...script.imports.values()]
+          .map((entry) => entry.script.path)
+          .find((importedPath) => !importedPath.startsWith(schemaPrefix));
+
+      if (unsupportedImport !== undefined) {
+        throw new Error(
+          `Cannot generate schema ${JSON.stringify(path.slice(schemaPrefix.length).replace(/\.ts$/u, ""))} on its own: it depends on ${JSON.stringify(unsupportedImport)}, which is not a schema.`,
+        );
+      }
+    }
+
+    const outputs = schemaScripts.map(([path, script]) => ({
+      outputPath:
+        outputPrefix + this.outputPath(path).slice(schemaPrefix.length),
+      script,
+    }));
+
+    await adoptSpellings(
+      destination,
+      outputs.map(({ outputPath }) => outputPath),
+    );
+
+    await Promise.all(
+      outputs.map(async ({ outputPath, script }) => {
+        const fullPath = resolveDestinationPath(destination, outputPath);
+
+        await ensureDirectoryExists(fullPath);
+        await fs.writeFile(fullPath, await script.contents());
+      }),
+    );
+
+    return outputs.map(({ outputPath }) => outputPath);
   }
 
   /**
@@ -725,8 +972,8 @@ export class Repository {
         : parts.join("/");
 
     if (logicalPath !== undefined)
-      directory = ["routes", ...logicalPath.split("/").filter(Boolean)].join(
-        "/",
+      directory = this.routeLayout.file(
+        ["routes", ...logicalPath.split("/").filter(Boolean)].join("/"),
       );
 
     while (directory !== "." && directory !== "routes") {

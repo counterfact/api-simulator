@@ -58,6 +58,17 @@ export class Script {
   public localTypes = new Map<string, ts.TypeNode>();
   public statementBuilders = new Map<string, () => ts.Statement[]>();
 
+  private readonly primaryVersionPaths = new Map<string, string>();
+
+  public operationVersionKey(name: string, logicalPath: string): string {
+    const first = this.primaryVersionPaths.get(name);
+    if (first === undefined) {
+      this.primaryVersionPaths.set(name, logicalPath);
+      return name;
+    }
+    return first === logicalPath ? name : `${name}:${logicalPath}`;
+  }
+
   public constructor(
     repository: Repository,
     public path: string,
@@ -83,7 +94,8 @@ export class Script {
         !this.reservedNames.has(name) &&
         (!this.imports.has(name) ||
           (this.imports.get(name)!.id === coder.exportId &&
-            this.imports.get(name)!.script.path === coder.modulePath() &&
+            this.repository.outputPath(this.imports.get(name)!.script.path) ===
+              this.repository.outputPath(coder.modulePath()) &&
             this.imports.get(name)!.isType === isType &&
             this.imports.get(name)!.isDefault === isDefault)) &&
         (!this.exports.has(name) ||
@@ -147,7 +159,8 @@ export class Script {
     const modulePath = coder.modulePath();
     const key = `${coder.id}@${modulePath}:${isType}:${isDefault}`;
     if (this.cache.has(key)) return this.cache.get(key)!;
-    if (modulePath === this.path) return this.export(coder, isType, isDefault);
+    const script = this.repository.get(modulePath);
+    if (script === this) return this.export(coder, isType, isDefault);
     let name: string;
     if (preferredName) {
       name = preferredName;
@@ -161,7 +174,6 @@ export class Script {
         name = preferredName + suffix++;
     } else name = this.firstUniqueName(coder, isType, isDefault);
     this.cache.set(key, name);
-    const script = this.repository.get(modulePath);
     const exportedName = script.export(coder, isType, isDefault);
     this.imports.set(name, {
       id: coder.exportId,
@@ -348,8 +360,10 @@ export class Script {
     return Array.from(this.imports, ([name, entry]) => {
       const path = escapePathForWindows(
         pathRelative(
-          pathDirname(this.path),
-          entry.script.path.replace(/\.ts$/u, ".js"),
+          pathDirname(this.repository.outputPath(this.path)),
+          this.repository
+            .outputPath(entry.script.path)
+            .replace(/\.ts$/u, ".js"),
         ),
       );
       return importDeclaration(

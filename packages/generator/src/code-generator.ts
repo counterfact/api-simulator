@@ -15,7 +15,6 @@ import {
   normalizeOpenApiPath,
 } from "./openapi-path.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
-import { pruneRoutes, pruneTypes } from "./prune.js";
 import { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
 import type { SchemaTypeTransform } from "./schema-type-transform.js";
@@ -94,7 +93,7 @@ export class CodeGenerator extends EventTarget {
 
     debug("creating the .cache/README.md file");
 
-    ensureDirectoryExists(cacheReadmePath);
+    await ensureDirectoryExists(cacheReadmePath);
     await fs.writeFile(
       cacheReadmePath,
       "This directory contains compiled JS files from the paths directory. Do not edit these files directly.\n",
@@ -141,6 +140,7 @@ export class CodeGenerator extends EventTarget {
     repository = new Repository({
       schemaTypeTransform: this.generateOptions.schemaTypeTransform,
     }),
+    deferWrite = false,
   ): Promise<void> {
     if (
       this.generateOptions.schemaTypeTransform &&
@@ -179,12 +179,6 @@ export class CodeGenerator extends EventTarget {
     const openApiPaths = paths.map((_pathDefinition, key) => key);
 
     assertNoNormalizedPathCollisions(openApiPaths);
-
-    if (this.generateOptions.prune && this.generateOptions.routes) {
-      debug("pruning defunct route files");
-      await pruneRoutes(destination, openApiPaths);
-      debug("done pruning");
-    }
 
     const securityRequirement = specification.getRequirement(
       "#/components/securitySchemes",
@@ -233,6 +227,7 @@ export class CodeGenerator extends EventTarget {
 
       const normalizedPath = normalizeOpenApiPath(key);
       const path = normalizedPath === "/" ? "/index" : normalizedPath;
+      repository.recordRouteFile(`routes${path}.ts`);
       operationMethodsForPath(pathDefinition).forEach(
         ([operation, requestMethod]) => {
           // Keep the logical route location when a Path Item is a reference or
@@ -244,7 +239,7 @@ export class CodeGenerator extends EventTarget {
           );
           logicalOperation.parent = pathDefinition;
           repository
-            .get(`routes${path}.ts`)
+            .route(`routes${path}.ts`, normalizedPath)
             .export(
               new OperationCoder(
                 logicalOperation,
@@ -257,22 +252,50 @@ export class CodeGenerator extends EventTarget {
       );
     });
 
-    if (this.generateOptions.prune && this.generateOptions.types) {
-      debug("resolving the expected generated type files");
-      await repository.finished();
-      debug("pruning defunct generated type files");
-      await pruneTypes(destination, [
-        ...repository.scripts.keys(),
-        ...(this.version === "" ? [] : ["types/versions.ts"]),
-      ]);
-      debug("done pruning generated type files");
+    if (!deferWrite) {
+      await this.finishGeneration(repository);
     }
 
-    debug("telling the repository to write the files to %s", destination);
-
-    await repository.writeFiles(destination, this.generateOptions);
-
     debug("finished writing the files");
+  }
+
+  /** Write the complete shared route layout once all versions have registered. */
+  public async finishGeneration(repository: Repository): Promise<void> {
+    await repository.writeFiles(this.destination, {
+      ...this.generateOptions,
+      keepVersionsFile: this.version !== "",
+    });
+  }
+
+  /**
+   * Writes only the schema types, directly into `destination`
+   * (or `destination/<version>` for a versioned spec), and nothing else.
+   *
+   * Unlike {@link generate}, this creates no `.cache`, routes, scenarios,
+   * helper types or central `types/index.ts`.
+   *
+   * @param repository - Injectable repository instance; defaults to a fresh one.
+   * @returns The written file paths, relative to `destination`.
+   */
+  public async generateSchemas(
+    repository = new Repository(),
+  ): Promise<string[]> {
+    const specification = await Specification.fromFile(
+      this.openapiPath,
+      this.overlays,
+    );
+
+    if (specification.getRequirement("#/swagger") !== undefined) {
+      throw new Error(
+        "Schema-only generation does not support Swagger 2.0 documents because their schemas live under #/definitions. Convert the document to OpenAPI 3.x first.",
+      );
+    }
+
+    centralTypes(repository).addComponents(specification, this.version, [
+      "schemas",
+    ]);
+
+    return repository.writeSchemas(this.destination, this.version);
   }
 
   /**

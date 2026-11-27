@@ -21,6 +21,7 @@ npx counterfact@latest [spec] [output] [options]
 | `--no-validate-response`    | —                  | Disable OpenAPI response validation                                   |
 | `--generate-types`          | `false`            | Generate types only                                                   |
 | `--generate-routes`         | `false`            | Generate routes only                                                  |
+| `--generate-schemas-only`   | `false`            | Write only the schema types into `[output]` (see below)               |
 | `--watch-types`             | `false`            | Watch and regenerate types only                                       |
 | `--watch-routes`            | `false`            | Watch and regenerate routes only                                      |
 | `--always-fake-optionals`   | `false`            | Include optional fields in random responses                           |
@@ -33,6 +34,27 @@ npx counterfact@latest [spec] [output] [options]
 The action flags above default to false individually. When no action flag is supplied, the CLI enables generation, watching, serving, the REPL, and cache building together. Supplying an action flag selects the requested actions. CLI values override values loaded from `counterfact.yaml` or `--config`.
 
 Run `npx counterfact@latest --help` for the full list.
+
+## Generate only the schema types
+
+```sh
+npx counterfact@latest openapi.yaml ./schemas --generate-schemas-only
+```
+
+`--generate-schemas-only` writes the schema types and nothing else: no routes, scenarios, helper types, `types/index.ts`, `.cache`, or server. It needs an explicit `[output]` directory and an OpenAPI 3.x document (Swagger 2.0 is rejected).
+
+It cannot be combined with `--generate`, `--generate-routes`, `--generate-types`, `--watch*`, `--serve`, `--repl`, `--build-cache`, or `--prune`. If your config file sets any of these, they are ignored with a notice.
+
+Output layout:
+
+| Spec                  | Output                                 |
+| --------------------- | -------------------------------------- |
+| single spec           | `<output>/<Name>.ts`                   |
+| `group`               | `<output>/<group>/<Name>.ts`           |
+| `version`             | `<output>/<version>/<Name>.ts`         |
+| `group` and `version` | `<output>/<group>/<version>/<Name>.ts` |
+
+Groups and versions come from the `spec` list in a config file. Every spec in a multi-spec configuration needs a unique non-empty group, and one group cannot mix versioned and unversioned specs. A schema that depends on something other than another schema (for example a `$ref` to a parameter) fails with an error naming the schema, because the flat file could not import it.
 
 ## YAML configuration
 
