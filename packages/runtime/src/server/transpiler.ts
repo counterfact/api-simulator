@@ -1,6 +1,8 @@
 // Stryker disable all
 
 import { once } from "node:events";
+import { existsSync } from "node:fs";
+import nodePath from "node:path";
 import fs from "node:fs/promises";
 /* eslint-disable security/detect-non-literal-fs-filename -- transpiler consumes watched source files and writes paired outputs under configured directories. */
 
@@ -9,8 +11,10 @@ import createDebug from "debug";
 import ts from "typescript";
 
 import { ensureDirectoryExists } from "../util/ensure-directory-exists.js";
-import { toForwardSlashPath, pathJoin } from "../util/forward-slash-path.js";
+import { toForwardSlashPath } from "../util/forward-slash-path.js";
+import { writeFileAtomically } from "../util/write-file-atomically.js";
 import { CHOKIDAR_OPTIONS } from "./constants.js";
+import { FileDiscovery } from "./file-discovery.js";
 import { convertFileExtensionsToCjs } from "./convert-js-extensions-to-cjs.js";
 
 const debug = createDebug("counterfact:server:transpiler");
@@ -27,9 +31,9 @@ const debug = createDebug("counterfact:server:transpiler");
  * after a source file is removed, and `"error"` on write or compilation errors.
  */
 export class Transpiler extends EventTarget {
-  private readonly sourcePath: string;
+  private sourcePath: string;
 
-  private readonly destinationPath: string;
+  private destinationPath: string;
 
   private readonly moduleKind: string;
 
@@ -41,13 +45,44 @@ export class Transpiler extends EventTarget {
     moduleKind: string,
   ) {
     super();
-    this.sourcePath = sourcePath;
-    this.destinationPath = destinationPath;
+    this.sourcePath = toForwardSlashPath(sourcePath);
+    this.destinationPath = toForwardSlashPath(destinationPath);
     this.moduleKind = moduleKind;
   }
 
-  private get extension() {
-    return this.moduleKind.toLowerCase() === "commonjs" ? ".cjs" : ".js";
+  private async canonicalPath(path: string): Promise<string> {
+    try {
+      return toForwardSlashPath(await fs.realpath(path));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      const parent = nodePath.dirname(path);
+      if (parent === path) throw error;
+      return toForwardSlashPath(
+        nodePath.join(
+          await this.canonicalPath(parent),
+          nodePath.basename(path),
+        ),
+      );
+    }
+  }
+
+  private destinationFor(sourcePath: string): string {
+    const commonjs =
+      /\.(?:cjs|cts)$/u.test(sourcePath) ||
+      this.moduleKind.toLowerCase() !== "module";
+    const extension = commonjs
+      ? ".cjs"
+      : /\.(?:mjs|mts)$/u.test(sourcePath)
+        ? ".mjs"
+        : ".js";
+    return toForwardSlashPath(
+      nodePath
+        .join(
+          this.destinationPath,
+          nodePath.relative(this.sourcePath, sourcePath),
+        )
+        .replace(/\.[cm]?[jt]s$/u, extension),
+    );
   }
 
   /**
@@ -57,10 +92,13 @@ export class Transpiler extends EventTarget {
    */
   public async watch(): Promise<void> {
     debug("transpiler: watch");
+    await fs.mkdir(this.destinationPath, { recursive: true });
+    this.sourcePath = await this.canonicalPath(this.sourcePath);
+    this.destinationPath = await this.canonicalPath(this.destinationPath);
     this.watcher = chokidarWatch(this.sourcePath, {
       ...CHOKIDAR_OPTIONS,
       ignored: `${this.sourcePath}/js`,
-      ignoreInitial: false,
+      ignoreInitial: true,
     });
 
     const transpiles: Promise<void>[] = [];
@@ -71,7 +109,7 @@ export class Transpiler extends EventTarget {
       async (eventName: string, sourcePathOriginal: string) => {
         debug("transpiler event: %s <%s>", eventName, sourcePathOriginal);
 
-        const JS_EXTENSIONS = ["js", "mjs", "ts", "mts"];
+        const JS_EXTENSIONS = ["js", "mjs", "cjs", "ts", "mts", "cts"];
 
         if (
           !JS_EXTENSIONS.some((extension) =>
@@ -82,16 +120,10 @@ export class Transpiler extends EventTarget {
 
         const sourcePath = toForwardSlashPath(sourcePathOriginal);
 
-        const destinationPath = toForwardSlashPath(
-          sourcePath
-            .replace(this.sourcePath, this.destinationPath)
-            .replace(".ts", this.extension),
-        );
+        const destinationPath = this.destinationFor(sourcePath);
 
         if (["add", "change"].includes(eventName)) {
-          transpiles.push(
-            this.transpileFile(eventName, sourcePath, destinationPath),
-          );
+          transpiles.push(this.transpileFile(sourcePath, destinationPath));
         }
 
         if (eventName === "unlink") {
@@ -113,7 +145,24 @@ export class Transpiler extends EventTarget {
 
     await once(this.watcher, "ready");
 
-    await Promise.all(transpiles);
+    // Watcher readiness does not reliably deliver every initial add event on
+    // Windows. Enumerate the existing sources explicitly before publishing
+    // a usable cache; keep the watcher active to catch later edits.
+    let sources: string[] = [];
+    try {
+      await fs.access(this.sourcePath);
+      sources = await new FileDiscovery(this.sourcePath).findFiles();
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+    await Promise.all([
+      ...transpiles,
+      ...sources
+        .filter((source) => !source.startsWith(`${this.sourcePath}/js/`))
+        .map((source) =>
+          this.transpileFile(source, this.destinationFor(source)),
+        ),
+    ]);
   }
 
   /** Closes the file-system watcher. */
@@ -122,7 +171,6 @@ export class Transpiler extends EventTarget {
   }
 
   private async transpileFile(
-    eventName: string,
     sourcePath: string,
     destinationPath: string,
   ): Promise<void> {
@@ -134,7 +182,10 @@ export class Transpiler extends EventTarget {
       compilerOptions: {
         module:
           ts.ModuleKind[
-            this.moduleKind.toLowerCase() === "module" ? "ES2022" : "CommonJS"
+            /\.(?:cjs|cts)$/u.test(sourcePath) ||
+            this.moduleKind.toLowerCase() !== "module"
+              ? "CommonJS"
+              : "ES2022"
           ],
 
         target: ts.ScriptTarget.ES2015,
@@ -154,21 +205,35 @@ export class Transpiler extends EventTarget {
 
     const result: string = transpileOutput.outputText;
 
-    const fullDestination = pathJoin(
-      sourcePath
-        .replace(this.sourcePath, this.destinationPath)
-        .replace(".ts", this.extension),
+    const resultWithTransformedFileExtensions = convertFileExtensionsToCjs(
+      result,
+      (specifier) => {
+        const target = nodePath.resolve(
+          nodePath.dirname(sourcePath),
+          specifier,
+        );
+        // A dot in a basename is not necessarily an extension: ./my.helper
+        // can resolve my.helper.ts. Preserve actual assets such as data.json.
+        return (
+          !existsSync(target) &&
+          ["js", "ts", "cjs", "cts", "mjs", "mts"].some((extension) =>
+            existsSync(`${target}.${extension}`),
+          )
+        );
+      },
     );
 
-    const resultWithTransformedFileExtensions =
-      convertFileExtensionsToCjs(result);
-
     try {
-      await fs.writeFile(fullDestination, resultWithTransformedFileExtensions);
+      // Publish complete files even if duplicate watch events overlap. Readers
+      // must never observe the truncate/write window of an in-place update.
+      await writeFileAtomically(
+        destinationPath,
+        resultWithTransformedFileExtensions,
+      );
     } catch (error) {
       debug(
         "error writing transpiled output to %s: %o",
-        fullDestination,
+        destinationPath,
         error,
       );
       this.dispatchEvent(new Event("error"));

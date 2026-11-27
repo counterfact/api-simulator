@@ -309,11 +309,6 @@ export async function counterfact<TStore = unknown>(
     async onStoreChange(store) {
       const isActivation = !hasStore;
       hasStore = true;
-      exposeStore();
-      for (const replServer of replServers) {
-        replServer.context.store = store;
-      }
-
       if (isActivation) {
         const seenGroups = new Set<string>();
         for (const runner of runners) {
@@ -321,6 +316,11 @@ export async function counterfact<TStore = unknown>(
           seenGroups.add(runner.group);
           await runner.reloadContexts();
         }
+      }
+      // Publish activation only once every context can use the new store.
+      exposeStore();
+      for (const replServer of replServers) {
+        replServer.context.store = store;
       }
     },
   });
@@ -520,8 +520,13 @@ export async function counterfact<TStore = unknown>(
             const sharedRepository =
               bucket.length > 1 ? new Repository() : undefined;
             for (const runner of bucket) {
-              await runner.generate(sharedRepository);
+              await runner.generate(
+                sharedRepository,
+                sharedRepository !== undefined,
+              );
             }
+            if (sharedRepository)
+              await bucket[0]!.finishGeneration(sharedRepository);
             return undefined;
           });
           // A failed save must not prevent later edits from regenerating.

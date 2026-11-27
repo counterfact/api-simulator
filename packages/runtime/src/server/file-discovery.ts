@@ -30,18 +30,42 @@ export class FileDiscovery {
    * @throws When `basePath/directory` does not exist.
    */
   public async findFiles(directory = ""): Promise<string[]> {
+    return this.discover(directory, new Set());
+  }
+
+  private async discover(
+    directory: string,
+    ancestors: ReadonlySet<string>,
+  ): Promise<string[]> {
     const fullDir = pathJoin(this.basePath, directory);
 
     if (!existsSync(fullDir)) {
       throw new Error(`Directory does not exist ${fullDir}`);
     }
 
+    const realDirectory = await fs.realpath(fullDir);
+    if (ancestors.has(realDirectory)) return [];
+    const nextAncestors = new Set([...ancestors, realDirectory]);
     const entries = await fs.readdir(fullDir, { withFileTypes: true });
 
     const results = await Promise.all(
       entries.map(async (entry) => {
-        if (entry.isDirectory()) {
-          return this.findFiles(pathJoin(directory, entry.name));
+        const relativePath = pathJoin(directory, entry.name);
+        let isDirectory = entry.isDirectory();
+        if (entry.isSymbolicLink()) {
+          try {
+            isDirectory = (
+              await fs.stat(pathJoin(this.basePath, relativePath))
+            ).isDirectory();
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+            throw error;
+          }
+        }
+        if (isDirectory) {
+          // Follow aliases like the watcher does, but stop ancestor cycles.
+          // Keep logical paths so separate aliases get their own cache output.
+          return this.discover(relativePath, nextAncestors);
         }
 
         const extension = entry.name.split(".").at(-1);

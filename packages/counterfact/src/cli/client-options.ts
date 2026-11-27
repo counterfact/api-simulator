@@ -1,0 +1,118 @@
+import {
+  type ClientGenerationOptions,
+  ENUM_STYLES,
+  type EnumStyle,
+  isClassName,
+  type SchemaTypeOptions,
+} from "@counterfact/generator";
+
+/** CLI / counterfact.yaml options that configure the generated client. */
+export interface ClientCliOptions {
+  apiClassName?: unknown;
+  moduleClassSuffix?: unknown;
+  moduleNameFirstTag?: unknown;
+  moduleNameIndex?: unknown;
+  typePrefix?: unknown;
+  typeSuffix?: unknown;
+  unwrapResponseData?: unknown;
+}
+
+/** Validates a name prefix or suffix, which must keep generated names valid identifiers. */
+function identifierAffix(value: unknown, flag: string): string {
+  const affix = String(value);
+  if (!/^[\w$]*$/u.test(affix)) {
+    throw new Error(
+      `${flag} must contain only letters, digits, _ and $ (received ${JSON.stringify(affix)}).`,
+    );
+  }
+  return affix;
+}
+
+/**
+ * Validates the client options from the command line or `counterfact.yaml`
+ * and converts them to {@link ClientGenerationOptions}.
+ *
+ * @throws When an option has an invalid value.
+ */
+export function resolveClientOptions(
+  options: ClientCliOptions,
+): ClientGenerationOptions {
+  const resolved: ClientGenerationOptions = {};
+
+  if (options.moduleNameIndex !== undefined) {
+    const index = Number(options.moduleNameIndex);
+    if (!Number.isInteger(index) || index < 0) {
+      throw new Error(
+        `--module-name-index must be a non-negative integer (received ${JSON.stringify(options.moduleNameIndex)}).`,
+      );
+    }
+    resolved.moduleNameIndex = index;
+  }
+
+  if (options.apiClassName !== undefined) {
+    const name = String(options.apiClassName);
+    if (!isClassName(name)) {
+      throw new Error(
+        `--api-class-name must be a valid TypeScript class name, not a reserved word (received ${JSON.stringify(name)}).`,
+      );
+    }
+    resolved.apiClassName = name;
+  }
+
+  if (options.moduleClassSuffix !== undefined) {
+    resolved.moduleClassSuffix = identifierAffix(
+      options.moduleClassSuffix,
+      "--module-class-suffix",
+    );
+  }
+  if (options.typePrefix !== undefined) {
+    resolved.typePrefix = identifierAffix(options.typePrefix, "--type-prefix");
+    if (/^\d/u.test(resolved.typePrefix)) {
+      throw new Error(
+        `--type-prefix must not start with a digit (received ${JSON.stringify(resolved.typePrefix)}).`,
+      );
+    }
+  }
+  if (options.typeSuffix !== undefined) {
+    resolved.typeSuffix = identifierAffix(options.typeSuffix, "--type-suffix");
+  }
+
+  if (options.moduleNameFirstTag) resolved.moduleNameFirstTag = true;
+  if (options.unwrapResponseData) resolved.unwrapResponseData = true;
+
+  return resolved;
+}
+
+/** CLI / counterfact.yaml options that change how schema types are declared. */
+export interface TypeCliOptions {
+  enumStyle?: unknown;
+  ignoreNullable?: unknown;
+  preferInterfaces?: unknown;
+  validationJsdoc?: unknown;
+}
+
+/**
+ * Validates the schema type options from the command line or
+ * `counterfact.yaml` and converts them to {@link SchemaTypeOptions}.
+ *
+ * @throws When an option has an invalid value.
+ */
+export function resolveTypeOptions(options: TypeCliOptions): SchemaTypeOptions {
+  const resolved: SchemaTypeOptions = {};
+
+  if (options.enumStyle !== undefined) {
+    const style = String(options.enumStyle);
+    if (!ENUM_STYLES.includes(style as EnumStyle)) {
+      throw new Error(
+        `--enum-style must be one of ${ENUM_STYLES.join(", ")} (received ${JSON.stringify(style)}).`,
+      );
+    }
+    resolved.enumStyle = style as EnumStyle;
+  }
+
+  if (options.ignoreNullable) resolved.ignoreNullable = true;
+  if (options.preferInterfaces) resolved.preferInterfaces = true;
+  if (options.validationJsdoc) resolved.validationJsDoc = true;
+
+  return resolved;
+}

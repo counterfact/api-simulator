@@ -1,6 +1,6 @@
 {
   "name": "counterfact",
-  "version": "3.2.2",
+  "version": "3.3.0",
   "description": "Turn an OpenAPI document into a useful local API for frontend development in one command.",
   "type": "module",
   "main": "./dist/app.js",
@@ -79,7 +79,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js --testPathIgnorePatterns=black-box --testPathIgnorePatterns=examples",
+    "test": "yarn --cwd ../.. test:native && yarn test:jest",
     "test:packed-consumer": "node test/package/counterfact-consumer-smoke.mjs",
     "build": "yarn workspace @counterfact/generator build && yarn workspace @counterfact/runtime build && yarn workspace @counterfact/client build && yarn workspace @counterfact/repl build && rimraf dist && tsc --build --force",
     "prepack": "yarn build",
@@ -88,14 +88,15 @@
     "go:example": "yarn build && node ./bin/counterfact.js ./test/fixtures/openapi/example.yaml out",
     "go:multiple-apis": "yarn build && node ./bin/counterfact.js --config ./test/fixtures/config/multiple-apis.yaml",
     "go:multiple-versions": "yarn build && node ./bin/counterfact.js --config ./test/fixtures/config/multiple-versions.yaml",
-    "counterfact": "./bin/counterfact.js"
+    "counterfact": "./bin/counterfact.js",
+    "test:jest": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js --testPathIgnorePatterns=black-box --testPathIgnorePatterns=examples"
   },
   "dependencies": {
-    "@counterfact/client": "0.2.1",
-    "@counterfact/generator": "1.2.0",
+    "@counterfact/client": "0.2.2",
+    "@counterfact/generator": "1.3.0",
     "@counterfact/openapi": "0.1.7",
-    "@counterfact/repl": "0.1.12",
-    "@counterfact/runtime": "0.4.2",
+    "@counterfact/repl": "0.1.13",
+    "@counterfact/runtime": "0.5.0",
     "commander": "15.0.0",
     "debug": "4.4.3",
     "http-terminator": "3.2.0",

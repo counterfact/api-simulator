@@ -16,6 +16,7 @@
   "docs/examples/playwright-error-states.md",
   "docs/examples/react-vite.md",
   "docs/faq.md",
+  "docs/features/generated-client.md",
   "docs/features/generated-code.md",
   "docs/features/hot-reload.md",
   "docs/features/middleware.md",

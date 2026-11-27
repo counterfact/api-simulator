@@ -1,9 +1,11 @@
 import { fileURLToPath } from "node:url";
-
-import { jest } from "@jest/globals";
+import { afterEach, describe, it } from "node:test";
+import { expect } from "expect";
+import { ModuleMocker } from "jest-mock";
+const mocks = new ModuleMocker(globalThis);
+afterEach(() => mocks.restoreAllMocks());
 import { usingTemporaryFiles } from "using-temporary-files";
-
-import { ApiRunner } from "../src/api-runner.js";
+import { ApiRunner } from "../dist/api-runner.js";
 import { CodeGenerator, ScenarioFileGenerator } from "@counterfact/generator";
 import {
   ContextRegistry,
@@ -13,18 +15,16 @@ import {
   ScenarioRegistry,
   Transpiler,
 } from "@counterfact/runtime";
-
 const exampleOpenApiPath = fileURLToPath(
-  new URL("./fixtures/openapi/example.yaml", import.meta.url),
+  new URL("../test/fixtures/openapi/example.yaml", import.meta.url),
 );
-
 const baseConfig = {
   openApiPath: "_",
   basePath: ".",
   port: 1234,
   alwaysFakeOptionals: false,
   generate: { routes: false, types: false },
-  proxyPaths: new Map<string, boolean>(),
+  proxyPaths: new Map(),
   proxyUrl: "",
   startAdminApi: false,
   startRepl: false,
@@ -35,7 +35,6 @@ const baseConfig = {
   validateRequests: false,
   validateResponses: false,
 };
-
 describe("ApiRunner", () => {
   describe("create()", () => {
     it("returns an ApiRunner instance", async () => {
@@ -47,7 +46,6 @@ describe("ApiRunner", () => {
         expect(runner).toBeInstanceOf(ApiRunner);
       });
     });
-
     it("exposes registry as a public property", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -57,7 +55,6 @@ describe("ApiRunner", () => {
         expect(runner.registry).toBeInstanceOf(Registry);
       });
     });
-
     it("exposes contextRegistry as a public property", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -67,7 +64,6 @@ describe("ApiRunner", () => {
         expect(runner.contextRegistry).toBeInstanceOf(ContextRegistry);
       });
     });
-
     it("exposes scenarioRegistry as a public property", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -77,7 +73,6 @@ describe("ApiRunner", () => {
         expect(runner.scenarioRegistry).toBeInstanceOf(ScenarioRegistry);
       });
     });
-
     it("exposes scenarioFileGenerator as a public property", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -89,7 +84,6 @@ describe("ApiRunner", () => {
         );
       });
     });
-
     it("exposes codeGenerator as a public property", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -99,7 +93,6 @@ describe("ApiRunner", () => {
         expect(runner.codeGenerator).toBeInstanceOf(CodeGenerator);
       });
     });
-
     it("exposes dispatcher as a public property", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -109,7 +102,6 @@ describe("ApiRunner", () => {
         expect(runner.dispatcher).toBeInstanceOf(Dispatcher);
       });
     });
-
     it("exposes transpiler as a public property", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -119,7 +111,6 @@ describe("ApiRunner", () => {
         expect(runner.transpiler).toBeInstanceOf(Transpiler);
       });
     });
-
     it("exposes moduleLoader as a public property", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -129,7 +120,6 @@ describe("ApiRunner", () => {
         expect(runner.moduleLoader).toBeInstanceOf(ModuleLoader);
       });
     });
-
     it("sets openApiDocument to undefined in spec-less mode", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -139,7 +129,6 @@ describe("ApiRunner", () => {
         expect(runner.openApiDocument).toBeUndefined();
       });
     });
-
     it("sets nativeTs to a boolean", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -149,7 +138,6 @@ describe("ApiRunner", () => {
         expect(typeof runner.nativeTs).toBe("boolean");
       });
     });
-
     it("exposes openApiPath as a public property matching config", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -160,7 +148,6 @@ describe("ApiRunner", () => {
         expect(runner.openApiPath).toBe(exampleOpenApiPath);
       });
     });
-
     it("exposes prefix as a public property matching config", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -171,7 +158,6 @@ describe("ApiRunner", () => {
         expect(runner.prefix).toBe("/api/v1");
       });
     });
-
     it("exposes group as empty string by default", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -181,7 +167,6 @@ describe("ApiRunner", () => {
         expect(runner.group).toBe("");
       });
     });
-
     it("exposes group as the value passed to create()", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create(
@@ -191,7 +176,6 @@ describe("ApiRunner", () => {
         expect(runner.group).toBe("v2");
       });
     });
-
     it("subdirectory is empty string when group is empty", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -201,7 +185,6 @@ describe("ApiRunner", () => {
         expect(runner.subdirectory).toBe("");
       });
     });
-
     it("subdirectory is /group when group is set", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create(
@@ -211,7 +194,6 @@ describe("ApiRunner", () => {
         expect(runner.subdirectory).toBe("/pets");
       });
     });
-
     it("loads openApiDocument when openApiPath is set", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -223,7 +205,6 @@ describe("ApiRunner", () => {
       });
     });
   });
-
   describe("generate()", () => {
     it("does not throw when generate flags are false", async () => {
       await usingTemporaryFiles(async ($) => {
@@ -234,7 +215,6 @@ describe("ApiRunner", () => {
         await expect(runner.generate()).resolves.toBeUndefined();
       });
     });
-
     it("generates type files when config.generate.types is true", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
@@ -249,7 +229,6 @@ describe("ApiRunner", () => {
       });
     });
   });
-
   describe("load()", () => {
     it("loads modules into the registry from the routes directory", async () => {
       await usingTemporaryFiles(async ($) => {
@@ -261,13 +240,18 @@ describe("ApiRunner", () => {
           ...baseConfig,
           basePath: $.path("."),
         });
+        // Native Node may require the compiled cache; Jest previously resolved
+        // .js imports to TypeScript and accidentally bypassed this path.
+        await runner.start({
+          startServer: false,
+          buildCache: !runner.nativeTs,
+        });
         await runner.load();
         const routes = runner.registry.routes;
         expect(routes.some((r) => r.path === "/hello")).toBe(true);
       });
     });
   });
-
   describe("stopWatching()", () => {
     it("resolves without throwing even when nothing is watching", async () => {
       await usingTemporaryFiles(async ($) => {
@@ -278,7 +262,6 @@ describe("ApiRunner", () => {
         await expect(runner.stopWatching()).resolves.toBeUndefined();
       });
     });
-
     it("stops watchers that were started by start()", async () => {
       await usingTemporaryFiles(async ($) => {
         await $.addDirectory("routes");
@@ -290,26 +273,24 @@ describe("ApiRunner", () => {
         await expect(runner.stopWatching()).resolves.toBeUndefined();
       });
     });
-
     it("attempts every watcher shutdown when one fails", async () => {
       await usingTemporaryFiles(async ($) => {
         const runner = await ApiRunner.create({
           ...baseConfig,
           basePath: $.path("."),
         });
-        const codeGeneratorStop = jest
+        const codeGeneratorStop = mocks
           .spyOn(runner.codeGenerator, "stopWatching")
           .mockRejectedValue(new Error("code generator failed"));
-        const scenarioGeneratorStop = jest
+        const scenarioGeneratorStop = mocks
           .spyOn(runner.scenarioFileGenerator, "stopWatching")
           .mockResolvedValue(undefined);
-        const transpilerStop = jest
+        const transpilerStop = mocks
           .spyOn(runner.transpiler, "stopWatching")
           .mockResolvedValue(undefined);
-        const moduleLoaderStop = jest
+        const moduleLoaderStop = mocks
           .spyOn(runner.moduleLoader, "stopWatching")
           .mockResolvedValue(undefined);
-
         await expect(runner.stopWatching()).rejects.toThrow(AggregateError);
         expect(codeGeneratorStop).toHaveBeenCalledTimes(1);
         expect(scenarioGeneratorStop).toHaveBeenCalledTimes(1);
@@ -318,7 +299,6 @@ describe("ApiRunner", () => {
       });
     });
   });
-
   describe("start()", () => {
     it("does not throw when startServer and buildCache are both false", async () => {
       await usingTemporaryFiles(async ($) => {
@@ -331,7 +311,6 @@ describe("ApiRunner", () => {
         ).resolves.toBeUndefined();
       });
     });
-
     it("loads modules into the registry when startServer is true", async () => {
       await usingTemporaryFiles(async ($) => {
         await $.add(

@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+
 export default {
   collectCoverage: false,
 
@@ -12,6 +14,11 @@ export default {
     "packages/repl/src/**/*.{js,jsx,ts,tsx}",
     "!**/node_modules/**",
     "!**/*.d.ts",
+    // Native Node coverage enforces the module/application integration boundary.
+    "!packages/runtime/src/server/module-loader.ts",
+    "!packages/runtime/src/server/module-generation.ts",
+    "!packages/counterfact/src/app.ts",
+    "!packages/counterfact/src/api-runner.ts",
     "!packages/types/src/**",
     "!packages/counterfact/src/config.ts",
   ],
@@ -19,8 +26,14 @@ export default {
   coverageProvider: "v8",
 
   coverageThreshold: {
+    [fileURLToPath(
+      new URL(
+        "./packages/runtime/src/server/context-registry.ts",
+        import.meta.url,
+      ),
+    )]: { branches: 90 },
     global: {
-      branches: 80,
+      branches: 90,
       functions: 80,
       lines: 77,
       statements: 77,

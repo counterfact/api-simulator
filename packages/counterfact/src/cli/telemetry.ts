@@ -26,6 +26,7 @@ export type StartupTelemetryProperties = {
   alwaysFakeOptionals: boolean;
   apiFileLocationHashes: string[];
   buildCache: boolean;
+  generateClient: boolean;
   generateRoutes: boolean;
   generateTypes: boolean;
   mode: "multi-spec" | "single-spec" | "without-openapi";
@@ -219,6 +220,7 @@ function sanitizeStartupProperties(
       /^[a-f0-9]{64}$/u.test(hash),
     ),
     buildCache: properties.buildCache,
+    generateClient: properties.generateClient,
     generateRoutes: properties.generateRoutes,
     generateTypes: properties.generateTypes,
     mode: properties.mode,

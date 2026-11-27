@@ -16,6 +16,7 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 - [Hot reload](./features/hot-reload.md) — update handlers without restarting.
 - [Generated code](./features/generated-code.md) — understand editable routes and generated types.
 - [React and Vite example](./examples/react-vite.md) — run a frontend against a local API.
+- [Generated API client](./features/generated-client.md) — call your API from the frontend with a typed, fetch-based client.
 - [Failures, latency, and edge cases](./manual/edge-cases.md) — exercise error, empty, loading, and retry states.
 
 

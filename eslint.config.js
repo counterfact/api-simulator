@@ -127,7 +127,7 @@ export default [
     },
   },
   {
-    files: ["**/*.test.js", "**/*.test.ts"],
+    files: ["**/*.test.js", "**/*.test.ts", "**/test-native/*.test.mjs"],
     plugins: jestRecommended.plugins,
     languageOptions: {
       ...jestRecommended.languageOptions,
@@ -334,6 +334,17 @@ export default [
     rules: {
       "import/no-unresolved": "off",
       "n/no-missing-import": "off",
+    },
+  },
+  {
+    files: ["**/test-native/*.test.mjs"],
+    rules: {
+      ...Object.fromEntries(
+        Object.keys(jestRecommended.rules).map((rule) => [rule, "off"]),
+      ),
+      "jest/no-conditional-in-test": "off",
+      "jest/prefer-expect-assertions": "off",
+      "jest/unbound-method": "off",
     },
   },
 ];

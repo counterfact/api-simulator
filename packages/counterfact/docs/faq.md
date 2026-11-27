@@ -227,6 +227,12 @@ Yes. Use `--generate-types` or `--generate-routes` to generate only one or the o
 npx counterfact@latest my-api.yaml api --generate-types
 ```
 
+To write only the TypeScript types and interfaces for API schemas, use `--generate-schemas-only`. It writes `<output>/<SchemaName>.ts` and nothing else:
+
+```sh
+npx counterfact@latest my-api.yaml schemas --generate-schemas-only
+```
+
 ---
 
 ## Will regenerating overwrite my changes?

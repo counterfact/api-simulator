@@ -1052,13 +1052,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@counterfact/client@npm:0.2.1, @counterfact/client@workspace:packages/client":
+"@counterfact/client@npm:0.2.2, @counterfact/client@workspace:packages/client":
   version: 0.0.0-use.local
   resolution: "@counterfact/client@workspace:packages/client"
   languageName: unknown
   linkType: soft
 
-"@counterfact/generator@npm:1.2.0, @counterfact/generator@workspace:packages/generator":
+"@counterfact/generator@npm:1.3.0, @counterfact/generator@workspace:packages/generator":
   version: 0.0.0-use.local
   resolution: "@counterfact/generator@workspace:packages/generator"
   dependencies:
@@ -1083,16 +1083,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@counterfact/repl@npm:0.1.12, @counterfact/repl@workspace:packages/repl":
+"@counterfact/repl@npm:0.1.13, @counterfact/repl@workspace:packages/repl":
   version: 0.0.0-use.local
   resolution: "@counterfact/repl@workspace:packages/repl"
   dependencies:
-    "@counterfact/client": "npm:0.2.1"
-    "@counterfact/runtime": "npm:0.4.2"
+    "@counterfact/client": "npm:0.2.2"
+    "@counterfact/runtime": "npm:0.5.0"
   languageName: unknown
   linkType: soft
 
-"@counterfact/runtime@npm:0.4.2, @counterfact/runtime@workspace:packages/runtime":
+"@counterfact/runtime@npm:0.5.0, @counterfact/runtime@workspace:packages/runtime":
   version: 0.0.0-use.local
   resolution: "@counterfact/runtime@workspace:packages/runtime"
   dependencies:
@@ -4235,9 +4235,11 @@ __metadata:
     eslint-plugin-regexp: "npm:3.3.1"
     eslint-plugin-security: "npm:4.2.0"
     eslint-plugin-unused-imports: "npm:4.4.1"
+    expect: "npm:30.5.2"
     fs-extra: "npm:11.4.1"
     husky: "npm:9.1.7"
     jest: "npm:30.5.2"
+    jest-mock: "npm:30.5.2"
     jest-retries: "npm:1.0.1"
     node-mocks-http: "npm:1.18.1"
     prettier: "npm:3.9.10"
@@ -4253,11 +4255,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "counterfact@workspace:packages/counterfact"
   dependencies:
-    "@counterfact/client": "npm:0.2.1"
-    "@counterfact/generator": "npm:1.2.0"
+    "@counterfact/client": "npm:0.2.2"
+    "@counterfact/generator": "npm:1.3.0"
     "@counterfact/openapi": "npm:0.1.7"
-    "@counterfact/repl": "npm:0.1.12"
-    "@counterfact/runtime": "npm:0.4.2"
+    "@counterfact/repl": "npm:0.1.13"
+    "@counterfact/runtime": "npm:0.5.0"
     commander: "npm:15.0.0"
     debug: "npm:4.4.3"
     http-terminator: "npm:3.2.0"
@@ -10300,12 +10302,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:11.1.1":
-  version: 11.1.1
-  resolution: "uuid@npm:11.1.1"
+"uuid@npm:14.0.3":
+  version: 14.0.3
+  resolution: "uuid@npm:14.0.3"
   bin:
-    uuid: dist/esm/bin/uuid
-  checksum: 10c0/9e3af58eba872ece5a5e76f4773a94fc78a0ef2c2444c38dbe6b42f41dadf76c01850fd783604f27986f6195e6286aef064d45987d401b2a33127b98ddf7c0c5
+    uuid: dist-node/bin/uuid
+  checksum: 10c0/e56e610ae3bd1ca099244e01ee5eff502675ede4601d971b80fff993ad97236c80197340113f759e6ead501ee6a8d52648f6deef1332ce9f192c4720f4891f62
   languageName: node
   linkType: hard
 

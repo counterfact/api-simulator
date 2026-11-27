@@ -65,6 +65,18 @@ jobs:
           - { check: Public type tests, os: ubuntu-latest, build: true }
           - { check: Public type tests, os: windows-latest, build: true }
           - { check: Unit tests, os: ubuntu-latest, build: true }
+          - {
+              check: Native runtime tests,
+              os: ubuntu-latest,
+              build: true,
+              node: "22.22.0",
+            }
+          - {
+              check: Native runtime tests,
+              os: windows-latest,
+              build: true,
+              node: "24.x",
+            }
           - { check: Packaging, os: ubuntu-latest, build: false }
           - { check: Black-box tests, os: ubuntu-latest, build: true }
           - { check: Black-box tests, os: windows-latest, build: true }
@@ -73,7 +85,7 @@ jobs:
         uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 26.x
+          node-version: ${{ matrix.node || '26.x' }}
       - name: Enable Corepack
         run: |
           npm install --global --force corepack
@@ -131,6 +143,14 @@ jobs:
         env:
           COUNTERFACT_PACKAGE_CACHE: ${{ runner.temp }}/counterfact-package-npm-cache
         run: yarn test:package-closures
+      - name: Native Runtime Tests
+        if: matrix.check == 'Native runtime tests'
+        timeout-minutes: 5
+        run: yarn workspace @counterfact/runtime test:native:coverage
+      - name: Repeat Native Initialization Checks
+        if: matrix.check == 'Native runtime tests' && matrix.os == 'windows-latest'
+        timeout-minutes: 2
+        run: yarn workspace @counterfact/runtime test:native:run
       - name: Unit Tests
         if: matrix.check == 'Unit tests'
         timeout-minutes: 10

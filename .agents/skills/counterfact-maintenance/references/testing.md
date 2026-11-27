@@ -3,16 +3,26 @@
 Paths and commands below are relative to the repository root.
 
 - Use `yarn test` for routine unit tests and `yarn test:coverage` to collect
-  coverage and enforce the existing thresholds. Both use two workers by default;
-  CI must use the coverage command. Focused package test commands also omit
-  coverage unless explicitly enabled with `--coverage`.
+  coverage and enforce a 90% branch floor in both Jest and the native
+  module/application boundary. Other existing Jest thresholds are retained. Both commands first build workspaces
+  and run node:test integration tests, then run Jest (two workers by default).
+  Extra Jest flags are forwarded to the final Jest command. CI must use the
+  coverage command.
 
 - Await completed work, watcher events, or server shutdown instead of adding
-  fixed sleeps. `Transpiler.watch()` waits for its initial transpilation before
-  resolving. Explicitly control environment variables and mock external network
+  fixed sleeps. `Transpiler.watch()` explicitly enumerates and awaits its initial compilation
+  before resolving; do not rely on watcher initial-add events (which are
+  unreliable on Windows). Explicitly control environment variables and mock external network
   calls in unit tests; do not assume Jest sets `CI`.
 
-- Use `usingTemporaryFiles()` for filesystem-heavy tests.
+- Run module loading, simulator startup/reset, and versioned-spec watching under
+  `node:test` in each workspace's `test-native/` directory against built output.
+  Keep pure unit tests in `test/` under Jest. Use `yarn test:native` for both
+  native suites or `yarn workspace @counterfact/runtime test:native:coverage`
+  for the loader boundary. Native application tests retain standalone `expect`
+  assertions and `jest-mock` spies without running the Jest module sandbox;
+  restore all spies after each test. Do not mock away module-hook rejection.
+- Use `usingTemporaryFiles()` for filesystem-heavy tests in both frameworks.
 
 - When compiler-checking multiple files in one unchanged generated fixture,
   pass all root files to one TypeScript program rather than creating a fresh

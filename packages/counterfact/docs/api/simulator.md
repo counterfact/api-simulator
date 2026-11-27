@@ -40,6 +40,8 @@ Each specification entry accepts `source`, `group`, optional `version`, optional
 
 `start(options?)` accepts partial overrides for `port`, `startServer`, `buildCache`, `generate`, and `watch`. It awaits the HTTP listener. Use `port: 0` for an OS-assigned port and read the bound address from `status()`.
 
+Compiled cache updates are published as complete files. On Windows, startup and reload briefly retry file-sharing conflicts, including when multiple versions share a group's cache. If replacement still fails, the previous complete file remains intact and the error is reported.
+
 ## Reset and state identity
 
 `reset()` requires a started simulator. It reconstructs the store, contexts, and route modules, then awaits startup scenarios. The HTTP listener stays bound; requests receive 503 while state is unavailable. Concurrent resets share one operation. A failed reset leaves state unavailable until a successful reset.
@@ -52,9 +54,15 @@ Reacquire contexts with `loadContext()` and read `api.store` again after reset. 
 
 See the [programmatic manual](../features/programmatic-api.md) for complete test-suite examples.
 
-On initial load, ESM routes and contexts share the same canonical module URL, so imported classes, domain errors, and singletons have consistent identity. Hot reload continues to use cache-busted entry imports; unchanged static dependencies retain the normal Node module cache.
+Each explicit module load or retry creates a fresh ESM module generation. Watcher refreshes reuse unchanged local modules and invalidate changed modules together with their transitive importers. A failed route evaluation or temporary syntax error does not discard successfully loaded, unrelated contexts when the error is corrected. Modules containing dynamic imports are conservatively reevaluated because their future dependencies are not yet known. Routes, contexts, scenarios, and their local ESM dependencies share that generation, so a handler's context and custom-error imports agree. Separate simulator instances construct independent contexts and can have different class definitions. Reloads preserve live context values and update methods; retained objects from an older generation are not automatically converted to new classes.
 
-Canonical entry imports are used only on their first initial-load attempt. Recreated loaders, failed-initialization retries, and watcher updates refresh entries; unchanged static dependencies still follow Node’s module cache.
+Versioned runners in the same API group share both context state and the ESM generation. Refreshing one runner refreshes its loaded siblings before reporting completion. Adding another version preserves existing live context values.
+
+Nested user class instances (including subclasses of native containers) compare by identity, not constructor or method source. When a context is reconstructed, newly created class-backed fields replace the old instances; Counterfact does not attempt to migrate private fields, closure captures, or live mutations into them. Keep reload-persistent mutable data in plain objects, arrays, or supported native values such as Map/Set. An unchanged context graph is reused on unrelated route edits, preserving its existing instances, arrow-method receivers, and private-field brands. Direct context function fields refresh when the context module or one of its local dependencies changes. Explicit context-code reloads still cannot migrate root private fields or rebind root arrow closures on a retained context; use `reset()` to reconstruct it after changing such code. Other opaque values such as errors, promises and weak collections also compare by identity.
+
+A direct import outside a simulator belongs to a different generation. Do not use an externally imported context or error constructor to check objects created inside the simulator with `instanceof`. Compare classes within the same generation, or use an explicit error code when values cross generations. Builtins and bare package dependencies keep their normal Node behavior; the generation guarantee applies to local ESM graphs. Watcher refreshes also preserve unchanged CommonJS contexts and invalidate tracked local CommonJS dependencies, using Node’s process-global cache. Independent CommonJS simulators loading the same files in one process are not isolated: a loader or direct `require()` can replace entries used by another. Use separate processes when that isolation is needed. Explicit CommonJS loads and arbitrary delayed `require()` calls also retain Node’s shared dependency cache behavior.
+
+Native ESM loading uses Node module hooks. Integration tests that construct simulators or use `ModuleLoader` should run under Node's built-in `node:test` runner, or in a separate Node process. Jest's sandbox rejects these hooks; changing the assertion library does not change that limitation.
 
 Boolean query, header, and cookie parameters accept the case-sensitive wire values true and false. With request validation enabled, malformed text returns 400 before the handler executes. With validation disabled, malformed boolean text remains unchanged instead of becoming false.
 Versioned dispatchers only execute operations declared in their selected contract. An absent path returns 404; an absent method returns 405. Unversioned dispatchers continue to support custom routes.

@@ -221,4 +221,22 @@ describe("buildStartupTelemetryProperties", () => {
     expect(properties["sourceKind"]).toBe("remote");
     expect(JSON.stringify(properties)).not.toContain("example.com");
   });
+
+  it("tracks client generation, which also generates types", () => {
+    const properties = buildStartupTelemetryProperties(
+      {
+        generateClient: true,
+        port: 3100,
+        updateCheck: true,
+        validateRequest: true,
+        validateResponse: true,
+      },
+      "api.yaml",
+      "1.2.3",
+      LOCATION_HASH_KEY,
+    );
+
+    expect(properties["generateClient"]).toBe(true);
+    expect(properties["generateTypes"]).toBe(true);
+  });
 });
