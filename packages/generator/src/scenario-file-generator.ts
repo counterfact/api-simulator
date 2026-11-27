@@ -25,6 +25,8 @@ import {
   withJsDoc,
 } from "./ast.js";
 
+import { adoptSpellings } from "./adopt-spellings.js";
+import { caseSafeOutputPaths } from "./case-safe-paths.js";
 import { pathRelative } from "./forward-slash-path.js";
 import { waitForEvent } from "./wait-for-event.js";
 import { CHOKIDAR_OPTIONS } from "./watch-options.js";
@@ -39,6 +41,33 @@ interface ContextFileInfo {
 interface RouteDirectoryInfo {
   relativePath: string;
   contextFile?: string;
+}
+
+interface MiddlewareTypeDirectory extends RouteDirectoryInfo {
+  /** Directory below `types/` that holds this route directory's middleware type. */
+  typePath: string;
+}
+
+/**
+ * Route directories that differ only by case are distinct on case-sensitive
+ * file systems, so their mirrored middleware types need distinct directories
+ * (`companies_2/`) to stay apart elsewhere. `Middleware` map keys keep the
+ * route directory paths.
+ */
+function withMiddlewareTypePaths(
+  routeDirectories: RouteDirectoryInfo[],
+): MiddlewareTypeDirectory[] {
+  const typePaths = caseSafeOutputPaths(
+    routeDirectories
+      .map(({ relativePath }) => relativePath)
+      .filter((relativePath) => relativePath !== ""),
+  );
+
+  return routeDirectories.map((routeDirectory) => ({
+    ...routeDirectory,
+    typePath:
+      typePaths.get(routeDirectory.relativePath) ?? routeDirectory.relativePath,
+  }));
 }
 
 const GENERATED_FILE_COMMENT =
@@ -378,12 +407,12 @@ function ensureRelativeImportPath(path: string): string {
 
 async function buildMiddlewareTypeContent(
   destination: string,
-  routeDirectory: RouteDirectoryInfo,
+  routeDirectory: MiddlewareTypeDirectory,
 ): Promise<string> {
   const directory = nodePath.join(
     destination,
     "types",
-    routeDirectory.relativePath,
+    routeDirectory.typePath,
   );
   const sharedPath = ensureRelativeImportPath(
     pathRelative(
@@ -473,15 +502,24 @@ async function writeGeneratedType(
 
 async function writeMiddlewareTypes(
   destination: string,
-  routeDirectories: RouteDirectoryInfo[],
+  routeDirectories: MiddlewareTypeDirectory[],
 ): Promise<void> {
   const expectedFiles = new Set<string>();
+
+  // Keep the stale-file sweep below from deleting a file just written under an
+  // older spelling of its directory.
+  await adoptSpellings(
+    nodePath.join(destination, "types"),
+    routeDirectories.map(({ typePath }) =>
+      nodePath.posix.join(typePath, "_.middleware.ts"),
+    ),
+  );
 
   for (const routeDirectory of routeDirectories) {
     const filePath = nodePath.join(
       destination,
       "types",
-      routeDirectory.relativePath,
+      routeDirectory.typePath,
       "_.middleware.ts",
     );
     expectedFiles.add(nodePath.resolve(filePath));
@@ -614,13 +652,14 @@ export async function writeHelperTypes(
   const pending = (async () => {
     await previous.catch(() => undefined);
     await writeScenarioContextType(destination, rootDestination, preserveStore);
-    const directories = (await collectRouteDirectories(destination)).sort(
-      (a, b) =>
+    const directories = withMiddlewareTypePaths(
+      (await collectRouteDirectories(destination)).sort((a, b) =>
         a.relativePath < b.relativePath
           ? -1
           : a.relativePath > b.relativePath
             ? 1
             : 0,
+      ),
     );
     await writeMiddlewareTypes(destination, directories);
     const declarations: ts.Statement[] = [
@@ -638,7 +677,7 @@ export async function writeHelperTypes(
     const properties = directories.map((directory, index) => {
       const alias = `Middleware${index}`;
       const modulePath = ensureRelativeImportPath(
-        nodePath.posix.join(directory.relativePath, "_.middleware.js"),
+        nodePath.posix.join(directory.typePath, "_.middleware.js"),
       );
       declarations.push(
         importDeclaration(alias, modulePath, true, false, "Middleware"),

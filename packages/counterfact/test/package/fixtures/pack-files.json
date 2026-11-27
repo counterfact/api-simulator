@@ -13,6 +13,7 @@
   "docs/api/state.md",
   "docs/comparison.md",
   "docs/faq.md",
+  "docs/features/generated-client.md",
   "docs/features/generated-code.md",
   "docs/features/har.md",
   "docs/features/hot-reload.md",

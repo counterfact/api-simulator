@@ -243,6 +243,7 @@ export class Dispatcher {
 
   private contractPaths?: OpenApiDocument["paths"];
   private contractTree?: ModuleTree;
+  private exactContractTree?: ModuleTree;
 
   private selectedContractPath(path: string): string | undefined {
     const paths = this.openApiDocument?.paths;
@@ -250,10 +251,19 @@ export class Dispatcher {
     if (this.contractPaths !== paths) {
       this.contractPaths = paths;
       this.contractTree = new ModuleTree();
-      for (const pattern of Object.keys(paths))
-        this.contractTree.add(pattern, { __contract: () => ({ status: 200 }) });
+      this.exactContractTree = new ModuleTree(true);
+      const module = { __contract: () => ({ status: 200 }) };
+      for (const pattern of Object.keys(paths)) {
+        this.contractTree.add(pattern, module);
+        this.exactContractTree.add(pattern, module);
+      }
     }
-    return this.contractTree?.match(path, "__contract")?.matchedPath;
+    const exact = this.exactContractTree?.match(path, "__contract");
+    const legacy = this.contractTree?.match(path, "__contract");
+    if (exact) return exact.matchedPath;
+    if (legacy && !this.registry.requiresExactPath(legacy.matchedPath))
+      return legacy.matchedPath;
+    return undefined;
   }
 
   private withoutBasePath(path: string): string {
@@ -354,6 +364,12 @@ export class Dispatcher {
     if (!this.openApiDocument) {
       return undefined;
     }
+
+    const exact = Object.getOwnPropertyDescriptor(
+      this.openApiDocument.paths,
+      path,
+    );
+    if (exact) return exact.value as OpenApiDocument["paths"][string];
 
     for (const [key, pathItem] of Object.entries(this.openApiDocument.paths)) {
       if (key.toLowerCase() === path.toLowerCase()) {

@@ -171,6 +171,8 @@ function castParameters(
 export class Registry {
   private moduleTree = new ModuleTree();
 
+  private exactModuleTree = new ModuleTree(true);
+
   private middlewares: Map<string, MiddlewareFunction> = new Map();
   private readonly methodNames: Set<string> = new Set(DEFAULT_HTTP_METHODS);
 
@@ -181,6 +183,7 @@ export class Registry {
   /** Discards runtime routes and middleware before restoring source definitions. */
   public clear(): void {
     this.moduleTree = new ModuleTree();
+    this.exactModuleTree = new ModuleTree(true);
     this.middlewares.clear();
     this.methodNames.clear();
     for (const method of DEFAULT_HTTP_METHODS) this.methodNames.add(method);
@@ -192,7 +195,12 @@ export class Registry {
     methods: { [key: string]: string };
     path: string;
   }> {
-    return this.moduleTree.routes;
+    return [...this.moduleTree.routes, ...this.exactModuleTree.routes].sort(
+      (first, second) =>
+        first.path
+          .replaceAll(/\{|\}/gu, "")
+          .localeCompare(second.path.replaceAll(/\{|\}/gu, "")),
+    );
   }
 
   /**
@@ -201,8 +209,8 @@ export class Registry {
    * @param url - The URL pattern (e.g. `/pets/{petId}`).
    * @param module - The route-handler module exposing HTTP-method functions.
    */
-  public add(url: string, module: Module) {
-    this.moduleTree.add(url, module);
+  public add(url: string, module: Module, exact = false) {
+    (exact ? this.exactModuleTree : this.moduleTree).add(url, module);
     for (const methodName of Object.keys(module)) {
       this.methodNames.add(methodName.toUpperCase());
     }
@@ -221,13 +229,21 @@ export class Registry {
     this.middlewares.set(url === "/" ? "" : url, callback);
   }
 
+  public removeMiddleware(url: string): void {
+    this.middlewares.delete(url === "/" ? "" : url);
+  }
+
+  public requiresExactPath(pattern: string): boolean {
+    return this.exactModuleTree.matchPattern(pattern, pattern) !== undefined;
+  }
+
   /**
    * Removes the module registered at `url`.
    *
    * @param url - The URL pattern to deregister.
    */
-  public remove(url: string) {
-    this.moduleTree.remove(url);
+  public remove(url: string, exact = false) {
+    (exact ? this.exactModuleTree : this.moduleTree).remove(url);
   }
 
   /**
@@ -272,11 +288,27 @@ export class Registry {
   private methodsForPath(url: string): string[] {
     return [...this.methodNames].filter(
       (method) =>
-        this.methodFromModule(
-          this.moduleTree.match(url, method)?.module,
-          method,
-        ) !== undefined,
+        this.methodFromModule(this.matchRoute(url, method)?.module, method) !==
+        undefined,
     );
+  }
+
+  private matchRoute(url: string, method: string) {
+    const exact = this.exactModuleTree.match(url, method);
+    const legacy = this.moduleTree.match(url, method);
+    if (!legacy || !exact) return exact ?? legacy;
+    const exactParts = exact.matchedPath.split("/");
+    const legacyParts = legacy.matchedPath.split("/");
+    // Across the two trees, keep literal route segments ahead of wildcards.
+    for (const [index, segment] of exactParts.entries()) {
+      // eslint-disable-next-line security/detect-object-injection -- The positional index comes from exactParts.entries.
+      const legacySegment = legacyParts[index];
+      const exactWildcard = segment.startsWith("{");
+      const legacyWildcard = legacySegment?.startsWith("{");
+      if (exactWildcard !== legacyWildcard)
+        return exactWildcard ? legacy : exact;
+    }
+    return exact;
   }
 
   /**
@@ -291,8 +323,10 @@ export class Registry {
   public handler(url: string, method: string, pattern?: string) {
     const match =
       pattern === undefined
-        ? this.moduleTree.match(url, method)
-        : this.moduleTree.matchPattern(url, pattern);
+        ? this.matchRoute(url, method)
+        : this.requiresExactPath(pattern)
+          ? this.exactModuleTree.matchPattern(url, pattern)
+          : this.moduleTree.matchPattern(url, pattern);
 
     return {
       ambiguous: match?.ambiguous ?? false,

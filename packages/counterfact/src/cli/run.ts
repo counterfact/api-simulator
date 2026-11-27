@@ -3,6 +3,10 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 /* eslint-disable security/detect-non-literal-fs-filename -- CLI migration cleanup operates on known child directories under config.basePath. */
 
+import type {
+  ClientGenerationOptions,
+  SchemaTypeOptions,
+} from "@counterfact/generator";
 import { Command } from "commander";
 import createDebug from "debug";
 import open from "open";
@@ -13,6 +17,17 @@ import { updateRouteTypes } from "../migrate/update-route-types.js";
 import { pathResolve } from "../util/forward-slash-path.js";
 import { loadConfigFile } from "../util/load-config-file.js";
 import { checkForUpdates } from "./check-for-updates.js";
+import { resolveClientOptions, resolveTypeOptions } from "./client-options.js";
+import {
+  CLIENT_ONLY_CONFLICTING_OPTIONS,
+  generateClientOnly,
+  validateClientOnlyOptions,
+} from "./generate-client-only.js";
+import {
+  generateSchemasOnly,
+  SCHEMAS_ONLY_CONFLICTING_OPTIONS,
+  validateSchemasOnlyOptions,
+} from "./generate-schemas-only.js";
 import { runIntro } from "./intro.js";
 import {
   createGeneratedArtifactsSummary,
@@ -100,6 +115,7 @@ type StartupTelemetryOptions = {
   alwaysFakeOptionals?: boolean;
   buildCache?: boolean;
   generate?: boolean;
+  generateClient?: boolean;
   generateRoutes?: boolean;
   generateTypes?: boolean;
   open?: boolean;
@@ -130,9 +146,13 @@ export function buildStartupTelemetryProperties(
     alwaysFakeOptionals: Boolean(options.alwaysFakeOptionals),
     apiFileLocationHashes,
     buildCache: Boolean(options.buildCache),
+    generateClient: Boolean(options.generateClient),
     generateRoutes:
       Boolean(options.generate) || Boolean(options.generateRoutes),
-    generateTypes: Boolean(options.generate) || Boolean(options.generateTypes),
+    generateTypes:
+      Boolean(options.generate) ||
+      Boolean(options.generateTypes) ||
+      Boolean(options.generateClient),
     mode:
       specs !== undefined
         ? "multi-spec"
@@ -173,23 +193,37 @@ function buildProgram(
       adminApi: boolean;
       adminApiToken?: string;
       alwaysFakeOptionals?: boolean;
+      apiClassName?: string;
       buildCache?: boolean;
       config?: string;
+      enumStyle?: string;
       generate?: boolean;
+      generateClient?: boolean;
+      generateClientOnly?: boolean;
       generateRoutes?: boolean;
+      generateSchemasOnly?: boolean;
       generateTypes?: boolean;
+      ignoreNullable?: boolean;
+      moduleClassSuffix?: string;
+      moduleNameFirstTag?: boolean;
+      moduleNameIndex?: number;
       open?: boolean;
       overlay?: string[];
       port: number;
+      preferInterfaces?: boolean;
       prefix: string;
       prune?: boolean;
       proxyUrl?: string;
       repl?: boolean;
       serve?: boolean;
       spec?: SpecOption;
+      typePrefix?: string;
+      typeSuffix?: string;
       updateCheck: boolean;
       validateRequest: boolean;
+      unwrapResponseData?: boolean;
       validateResponse: boolean;
+      validationJsdoc?: boolean;
       watch?: boolean;
       watchRoutes?: boolean;
       watchTypes?: boolean;
@@ -212,8 +246,17 @@ function buildProgram(
       options.port = selection.port;
     }
 
+    // Schemas-only and client-only runs are one-shot generation steps; they
+    // never check for updates.
+    const schemasOnly =
+      options.generateSchemasOnly === true ||
+      fileConfig["generateSchemasOnly"] === true;
+    const clientOnly =
+      options.generateClientOnly === true ||
+      fileConfig["generateClientOnly"] === true;
+
     const updateCheckPromise =
-      options.updateCheck === false
+      options.updateCheck === false || schemasOnly || clientOnly
         ? Promise.resolve()
         : checkForUpdates(version);
 
@@ -265,6 +308,133 @@ function buildProgram(
     const destinationPath = pathResolve(destination);
     const basePath = pathResolve(destinationPath);
 
+    let typeOptions: SchemaTypeOptions;
+
+    try {
+      typeOptions = resolveTypeOptions(options);
+    } catch (error) {
+      process.stderr.write(
+        `\n❌ ${error instanceof Error ? error.message : String(error)}\n\n`,
+      );
+      process.exit(1);
+    }
+
+    const startupOutput = createStartupOutput(
+      shouldUseColor({
+        isTTY: process.stdout.isTTY,
+        noColor: process.env["NO_COLOR"],
+      }),
+    );
+
+    /**
+     * Splits the enabled options in `candidates` into flags typed on the
+     * command line, which contradict a one-shot run, and config-file defaults
+     * for the normal workflow, which simply do not apply to it.
+     */
+    function partitionOneShotConflicts(candidates: readonly string[]): {
+      conflictingOptions: string[];
+      ignoredConfigOptions: string[];
+    } {
+      const conflictingOptions: string[] = [];
+      const ignoredConfigOptions: string[] = [];
+
+      for (const option of candidates) {
+        // eslint-disable-next-line security/detect-object-injection -- option names come from a local allowlist.
+        if (!(options as Record<string, unknown>)[option]) continue;
+
+        (program.getOptionValueSource(option) === "cli"
+          ? conflictingOptions
+          : ignoredConfigOptions
+        ).push(option);
+      }
+
+      return { conflictingOptions, ignoredConfigOptions };
+    }
+
+    if (schemasOnly) {
+      const { conflictingOptions, ignoredConfigOptions } =
+        partitionOneShotConflicts(SCHEMAS_ONLY_CONFLICTING_OPTIONS);
+
+      try {
+        validateSchemasOnlyOptions({
+          conflictingOptions,
+          destinationProvided:
+            fileConfig["destination"] !== undefined ||
+            program.args.includes(destination),
+          source,
+          specs,
+        });
+
+        if (ignoredConfigOptions.length > 0) {
+          process.stderr.write(
+            `ℹ️  Ignoring config file options that do not apply to --generate-schemas-only: ${ignoredConfigOptions.join(", ")}\n`,
+          );
+        }
+
+        const count = await generateSchemasOnly({
+          basePath,
+          overlays: options.overlay ?? [],
+          source,
+          specs,
+          typeOptions,
+        });
+
+        process.stdout.write(
+          `${
+            count === 0
+              ? startupOutput.warning("No schemas found; nothing was written")
+              : startupOutput.success(
+                  `Generated ${count} schema file${count === 1 ? "" : "s"}`,
+                )
+          }\n`,
+        );
+      } catch (error) {
+        process.stderr.write(
+          `\n${startupOutput.error(`❌ ${error instanceof Error ? error.message : String(error)}`)}\n\n`,
+        );
+        process.exit(1);
+      }
+
+      return;
+    }
+
+    if (clientOnly) {
+      const { conflictingOptions, ignoredConfigOptions } =
+        partitionOneShotConflicts(CLIENT_ONLY_CONFLICTING_OPTIONS);
+
+      try {
+        validateClientOnlyOptions({ conflictingOptions, source, specs });
+
+        if (ignoredConfigOptions.length > 0) {
+          process.stderr.write(
+            `ℹ️  Ignoring config file options that do not apply to --generate-client-only: ${ignoredConfigOptions.join(", ")}\n`,
+          );
+        }
+
+        const written = await generateClientOnly({
+          basePath,
+          clientOptions: resolveClientOptions(options),
+          overlays: options.overlay ?? [],
+          source,
+          specs,
+          typeOptions,
+        });
+
+        process.stdout.write(
+          `${startupOutput.success(
+            `Generated a standalone client (${written.length} files)`,
+          )}\n`,
+        );
+      } catch (error) {
+        process.stderr.write(
+          `\n${startupOutput.error(`❌ ${error instanceof Error ? error.message : String(error)}`)}\n\n`,
+        );
+        process.exit(1);
+      }
+
+      return;
+    }
+
     // If no action-related option is provided, default to all options.
     const actions = ["repl", "serve", "watch", "generate", "buildCache"];
     if (
@@ -288,6 +458,19 @@ function buildProgram(
       version,
       specs,
     );
+
+    let clientOptions: ClientGenerationOptions | false = false;
+
+    if (options.generateClient) {
+      try {
+        clientOptions = resolveClientOptions(options);
+      } catch (error) {
+        process.stderr.write(
+          `\n❌ ${error instanceof Error ? error.message : String(error)}\n\n`,
+        );
+        process.exit(1);
+      }
+    }
 
     const openBrowser = options.open;
     const origin = `http://localhost:${options.port}`;
@@ -313,11 +496,16 @@ function buildProgram(
         types:
           Boolean(options.generate) ||
           Boolean(options.generateTypes) ||
+          Boolean(options.generateClient) ||
           Boolean(options.watch) ||
           Boolean(options.watchTypes) ||
           Boolean(options.buildCache),
 
         prune: Boolean(options.prune),
+
+        client: clientOptions,
+
+        typeOptions,
       },
 
       openApiPath: source,
@@ -346,12 +534,6 @@ function buildProgram(
 
     debug("loading counterfact (%o)", configForLogging);
 
-    const startupOutput = createStartupOutput(
-      shouldUseColor({
-        isTTY: process.stdout.isTTY,
-        noColor: process.env["NO_COLOR"],
-      }),
-    );
     const startupReporter = createStartupReporter(
       startupOutput,
       process.stdout,
@@ -562,8 +744,62 @@ function buildProgram(
     )
     .option("-o, --open", "open a browser")
     .option("-g, --generate", "generate all code for both routes and types")
+    .option(
+      "--generate-schemas-only",
+      "write only the #/components/schemas types, directly into [destination] (requires a destination; no routes, scenarios, or server)",
+    )
+    .option(
+      "--generate-client-only",
+      "write only a standalone API client to [destination]/client, with its own types (no routes, shared types, scenarios, or server)",
+    )
     .option("--generate-types", "generate types")
     .option("--generate-routes", "generate routes")
+    .option(
+      "--generate-client",
+      "generate a typed, fetch-based API client in client/ (also generates types)",
+    )
+    .option(
+      "--module-name-first-tag",
+      "group client operations into modules by their first tag",
+    )
+    .option(
+      "--module-name-index <number>",
+      "path segment used to group client operations into modules (default 0)",
+      (v) => Number(v),
+    )
+    .option(
+      "--unwrap-response-data",
+      "client methods resolve with the response body instead of the response",
+    )
+    .option(
+      "--api-class-name <name>",
+      "name of the class that combines every client module (default Api)",
+    )
+    .option(
+      "--module-class-suffix <suffix>",
+      "appended to every client module class name (e.g. Client for UsersClient)",
+    )
+    .option(
+      "--type-prefix <prefix>",
+      "prepended to every client data contract type name",
+    )
+    .option(
+      "--type-suffix <suffix>",
+      "appended to every client data contract type name (e.g. Dto for UserDto)",
+    )
+    .option(
+      "--enum-style <style>",
+      "declare enums that name their members (x-enumNames) as a union (default), enum, or const",
+    )
+    .option("--ignore-nullable", "omit | null from nullable schema types")
+    .option(
+      "--prefer-interfaces",
+      "declare named object schemas as interfaces instead of type aliases",
+    )
+    .option(
+      "--validation-jsdoc",
+      "document schema constraints such as minLength and pattern in JSDoc",
+    )
     .option("-w, --watch", "generate + watch all code for changes")
     .option("--watch-types", "generate + watch types for changes")
     .option("--watch-routes", "generate + watch routes for changes")

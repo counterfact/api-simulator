@@ -1,4 +1,13 @@
 export type {
+  OperationBody,
+  OperationData,
+  OperationError,
+  OperationHeaders,
+  OperationPath,
+  OperationQuery,
+  OperationResponses,
+} from "./client-operation.js";
+export type {
   HarEntry,
   HarLookup,
   HarMatch,

@@ -9,20 +9,39 @@ import { getLocalOpenApiSourcePaths } from "@counterfact/openapi";
 
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
 import { centralTypes } from "./central-types.js";
+import {
+  type ClientGenerationOptions,
+  generateClient,
+} from "./client-generator.js";
 import { OperationCoder } from "./operation-coder.js";
 import {
   assertNoNormalizedPathCollisions,
   normalizeOpenApiPath,
 } from "./openapi-path.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
-import { pruneRoutes, pruneTypes } from "./prune.js";
+import { operationMethodsForPath } from "./path-operations.js";
 import { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
 import { Specification } from "./specification.js";
+import type { SchemaTypeOptions } from "./type-options.js";
 import { waitForEvent } from "./wait-for-event.js";
 import { CHOKIDAR_OPTIONS } from "./watch-options.js";
 
 const debug = createDebug("counterfact:typescript-generator:generate");
+
+/** Which artifacts {@link CodeGenerator.generate} writes. */
+export interface GenerateOptions {
+  /**
+   * Generate a typed API client in `client/`. `true` uses the default
+   * options. Requires `types`.
+   */
+  client?: ClientGenerationOptions | boolean;
+  prune?: boolean;
+  routes?: boolean;
+  types?: boolean;
+  /** How schema types are declared in `types/` (and the client's data contracts). */
+  typeOptions?: SchemaTypeOptions;
+}
 
 /**
  * Orchestrates the code-generation pipeline and optional file-system watching.
@@ -40,18 +59,14 @@ export class CodeGenerator extends EventTarget {
 
   private readonly overlays: readonly string[];
 
-  private readonly generateOptions: {
-    prune?: boolean;
-    routes?: boolean;
-    types?: boolean;
-  };
+  private readonly generateOptions: GenerateOptions;
 
   private watcher: FSWatcher | undefined;
 
   public constructor(
     openApiPath: string,
     destination: string,
-    generateOptions: { prune?: boolean; routes?: boolean; types?: boolean },
+    generateOptions: GenerateOptions,
     version = "",
     overlays: readonly string[] = [],
   ) {
@@ -87,7 +102,7 @@ export class CodeGenerator extends EventTarget {
 
     debug("creating the .cache/README.md file");
 
-    ensureDirectoryExists(cacheReadmePath);
+    await ensureDirectoryExists(cacheReadmePath);
     await fs.writeFile(
       cacheReadmePath,
       "This directory contains compiled JS files from the paths directory. Do not edit these files directly.\n",
@@ -130,7 +145,10 @@ export class CodeGenerator extends EventTarget {
    * @param repository - Injectable repository instance; defaults to a fresh one
    *   (primarily useful in tests).
    */
-  public async generate(repository = new Repository()): Promise<void> {
+  public async generate(
+    repository = new Repository(),
+    deferWrite = false,
+  ): Promise<void> {
     const { destination } = this;
 
     debug("generating code from %s to %s", this.openapiPath, destination);
@@ -145,6 +163,7 @@ export class CodeGenerator extends EventTarget {
       this.openapiPath,
       this.overlays,
     );
+    specification.typeOptions = this.generateOptions.typeOptions ?? {};
 
     debug("created specification: $o", specification);
 
@@ -160,12 +179,6 @@ export class CodeGenerator extends EventTarget {
 
     assertNoNormalizedPathCollisions(openApiPaths);
 
-    if (this.generateOptions.prune && this.generateOptions.routes) {
-      debug("pruning defunct route files");
-      await pruneRoutes(destination, openApiPaths);
-      debug("done pruning");
-    }
-
     const securityRequirement = specification.getRequirement(
       "#/components/securitySchemes",
     );
@@ -174,45 +187,12 @@ export class CodeGenerator extends EventTarget {
       (securityRequirement?.data as Record<string, unknown>) ?? {},
     ) as SecurityScheme[];
 
-    const HTTP_VERBS = new Set([
-      "get",
-      "put",
-      "post",
-      "delete",
-      "options",
-      "head",
-      "patch",
-      "trace",
-    ]);
-
-    const operationMethodsForPath = (
-      pathDefinition: Requirement,
-    ): Array<[Requirement, string]> => {
-      let resolved = pathDefinition;
-      while (resolved.isReference) resolved = resolved.reference();
-      return resolved.flatMap((operation, requestMethod) => {
-        if (requestMethod === "additionalOperations") {
-          return operation.map(
-            (additionalOperation, additionalMethod): [Requirement, string] => [
-              additionalOperation,
-              additionalMethod.toLowerCase(),
-            ],
-          );
-        }
-
-        if (!HTTP_VERBS.has(requestMethod)) {
-          return [];
-        }
-
-        return [[operation, requestMethod]];
-      });
-    };
-
     paths.forEach((pathDefinition, key: string) => {
       debug("processing path %s", key);
 
       const normalizedPath = normalizeOpenApiPath(key);
       const path = normalizedPath === "/" ? "/index" : normalizedPath;
+      repository.recordRouteFile(`routes${path}.ts`);
       operationMethodsForPath(pathDefinition).forEach(
         ([operation, requestMethod]) => {
           // Keep the logical route location when a Path Item is a reference or
@@ -224,7 +204,7 @@ export class CodeGenerator extends EventTarget {
           );
           logicalOperation.parent = pathDefinition;
           repository
-            .get(`routes${path}.ts`)
+            .route(`routes${path}.ts`, normalizedPath)
             .export(
               new OperationCoder(
                 logicalOperation,
@@ -237,22 +217,104 @@ export class CodeGenerator extends EventTarget {
       );
     });
 
-    if (this.generateOptions.prune && this.generateOptions.types) {
-      debug("resolving the expected generated type files");
-      await repository.finished();
-      debug("pruning defunct generated type files");
-      await pruneTypes(destination, [
-        ...repository.scripts.keys(),
-        ...(this.version === "" ? [] : ["types/versions.ts"]),
-      ]);
-      debug("done pruning generated type files");
+    if (!deferWrite) {
+      await this.finishGeneration(repository);
     }
 
-    debug("telling the repository to write the files to %s", destination);
-
-    await repository.writeFiles(destination, this.generateOptions);
-
     debug("finished writing the files");
+
+    const { client } = this.generateOptions;
+
+    if (client && this.generateOptions.types) {
+      if (this.version === "") {
+        debug("generating the API client");
+        // The generated types import the root context, which normally comes
+        // with the routes. Create it (only if missing) so a client-only
+        // generation still compiles.
+        await repository.createDefaultContextFile(destination);
+        await generateClient(
+          specification,
+          destination,
+          client === true ? {} : client,
+        );
+        debug("finished generating the API client");
+      } else {
+        process.stderr.write(
+          `Skipping client generation for version ${JSON.stringify(this.version)}: generated clients do not support versioned APIs yet.\n`,
+        );
+      }
+    }
+  }
+
+  /** Write the complete shared route layout once all versions have registered. */
+  public async finishGeneration(repository: Repository): Promise<void> {
+    await repository.writeFiles(this.destination, {
+      ...this.generateOptions,
+      keepVersionsFile: this.version !== "",
+    });
+  }
+
+  /**
+   * Writes only the schema types, directly into `destination`
+   * (or `destination/<version>` for a versioned spec), and nothing else.
+   *
+   * Unlike {@link generate}, this creates no `.cache`, routes, scenarios,
+   * helper types or central `types/index.ts`.
+   *
+   * @param repository - Injectable repository instance; defaults to a fresh one.
+   * @returns The written file paths, relative to `destination`.
+   */
+  public async generateSchemas(
+    repository = new Repository(),
+  ): Promise<string[]> {
+    const specification = await Specification.fromFile(
+      this.openapiPath,
+      this.overlays,
+    );
+    specification.typeOptions = this.generateOptions.typeOptions ?? {};
+
+    if (specification.getRequirement("#/swagger") !== undefined) {
+      throw new Error(
+        "Schema-only generation does not support Swagger 2.0 documents because their schemas live under #/definitions. Convert the document to OpenAPI 3.x first.",
+      );
+    }
+
+    centralTypes(repository).addComponents(specification, this.version, [
+      "schemas",
+    ]);
+
+    return repository.writeSchemas(this.destination, this.version);
+  }
+
+  /**
+   * Writes only a standalone API client into `destination/client`, and
+   * nothing else.
+   *
+   * Unlike {@link generate}, this creates no `.cache`, routes, scenarios or
+   * shared types: the client declares its own request, response and schema
+   * types (see {@link ClientGenerationOptions.standalone}).
+   *
+   * @returns The written file paths, relative to `destination`.
+   */
+  public async generateClientOnly(): Promise<string[]> {
+    if (this.version !== "") {
+      throw new Error(
+        "Client-only generation does not support versioned APIs yet.",
+      );
+    }
+
+    const specification = await Specification.fromFile(
+      this.openapiPath,
+      this.overlays,
+    );
+    specification.typeOptions = this.generateOptions.typeOptions ?? {};
+
+    const { client } = this.generateOptions;
+
+    return generateClient(specification, this.destination, {
+      ...(typeof client === "object" ? client : {}),
+      standalone: true,
+    });
   }
 
   /**
