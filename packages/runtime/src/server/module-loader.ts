@@ -16,7 +16,7 @@ import {
   isMiddlewareModule,
 } from "./middleware-detector.js";
 import { ModuleGeneration } from "./module-generation.js";
-import type { Module, Registry } from "./registry.js";
+import type { MiddlewareFunction, Module, Registry } from "./registry.js";
 import { ScenarioRegistry } from "./scenario-registry.js";
 import { UpdateQueue } from "./update-queue.js";
 import type { RuntimeEventReporter } from "../runtime-config.js";
@@ -77,11 +77,13 @@ export class ModuleLoader extends EventTarget {
     ) => ReturnType<ContextRegistry["find"]>
   >();
 
-  private readonly sourceRoutes = new Map<string, Module>();
-
-  private readonly sourceMiddlewares = new Map<
+  private readonly sourceFiles = new Map<
     string,
-    Parameters<Registry["addMiddleware"]>[1]
+    {
+      routes: Map<string, Module>;
+      exact: boolean;
+      middlewares: Map<string, MiddlewareFunction>;
+    }
   >();
 
   /** Rebuilds contexts from loaded constructors, resolving dependencies on demand. */
@@ -126,10 +128,88 @@ export class ModuleLoader extends EventTarget {
   /** Removes runtime overrides and reinstalls the currently loaded source routes. */
   public resetRoutes(): void {
     this.registry.clear();
-    for (const [path, module] of this.sourceRoutes)
-      this.registry.add(path, { ...module });
-    for (const [path, middleware] of this.sourceMiddlewares)
+    for (const { routes, exact, middlewares } of this.sourceFiles.values()) {
+      for (const [path, module] of routes)
+        this.registry.add(path, { ...module }, exact);
+      for (const [path, middleware] of middlewares)
+        this.registry.addMiddleware(path, middleware);
+    }
+  }
+
+  private removeSourceFile(file: string): void {
+    const key = unescapePathForWindows(file);
+    const source = this.sourceFiles.get(key);
+    if (!source) return;
+    for (const path of source.routes.keys())
+      this.registry.remove(path, source.exact);
+    for (const path of source.middlewares.keys())
+      this.registry.removeMiddleware(path);
+    this.sourceFiles.delete(key);
+  }
+
+  private registerSourceFile(
+    file: string,
+    routes: Map<string, Module>,
+    exact = false,
+    middlewares = new Map<string, MiddlewareFunction>(),
+  ): void {
+    this.removeSourceFile(file);
+    this.sourceFiles.set(unescapePathForWindows(file), {
+      routes,
+      exact,
+      middlewares,
+    });
+    for (const [path, module] of routes)
+      this.registry.add(path, { ...module }, exact);
+    for (const [path, middleware] of middlewares)
       this.registry.addMiddleware(path, middleware);
+  }
+
+  private legacySourceRoutes(url: string, module: Module): Map<string, Module> {
+    const routes = new Map([[url, { ...module }]]);
+    if (url === "/index") routes.set("/", { ...module });
+    return routes;
+  }
+
+  private declaredSourceRoutes(
+    endpoint: object,
+  ): Map<string, Module> | undefined {
+    const declared = Object.getOwnPropertyDescriptor(
+      endpoint,
+      "__counterfactPaths",
+    );
+    if (!declared) return undefined;
+    const paths: unknown = declared.value;
+    if (
+      !Array.isArray(paths) ||
+      paths.length === 0 ||
+      !paths.every(
+        (path: unknown) => typeof path === "string" && path.startsWith("/"),
+      ) ||
+      new Set(paths).size !== paths.length
+    )
+      throw new Error(
+        "__counterfactPaths must be a nonempty array of distinct URL paths.",
+      );
+
+    const routes = new Map<string, Module>();
+    const exports = Object.entries(endpoint);
+    for (const path of paths as string[]) {
+      const entries = exports.flatMap(([key, value]: [string, unknown]) => {
+        if (key === "__counterfactPaths") return [];
+        if (typeof value === "function" && paths.length === 1)
+          return [[key, value as NonNullable<Module[string]>]];
+        const handler: unknown =
+          value && typeof value === "object"
+            ? Object.getOwnPropertyDescriptor(value, path)?.value
+            : undefined;
+        if (typeof handler === "function")
+          return [[key, handler as NonNullable<Module[string]>]];
+        return [];
+      });
+      if (entries.length > 0) routes.set(path, Object.fromEntries(entries));
+    }
+    return routes;
   }
 
   private readonly updates = new UpdateQueue();
@@ -240,30 +320,13 @@ export class ModuleLoader extends EventTarget {
               changeType: eventName,
               fileType: this.isContextFile(pathName) ? "context" : "route",
             });
-            const url = unescapePathForWindows(
-              toForwardSlashPath(`/${parts.dir}/${parts.name}`).replaceAll(
-                /\/+/gu,
-                "/",
-              ),
-            );
-
             if (eventName === "unlink") {
               await this.refreshGroup(
                 "",
                 () => {
                   for (const loader of this.group.loaders) {
                     if (loader.basePath !== this.basePath) continue;
-                    loader.registry.remove(url);
-                    loader.sourceRoutes.delete(url);
-                    if (basename(pathName).startsWith("_.middleware.")) {
-                      loader.sourceMiddlewares.delete(
-                        url.slice(0, url.lastIndexOf("/")) || "/",
-                      );
-                    }
-                    if (url === "/index") {
-                      loader.sourceRoutes.delete("/");
-                      loader.registry.remove("/");
-                    }
+                    loader.removeSourceFile(pathName);
                     if (this.isContextFile(pathName)) {
                       loader.group.contextConstructors.delete(
                         unescapePathForWindows(toForwardSlashPath(parts.dir)) ||
@@ -391,13 +454,23 @@ export class ModuleLoader extends EventTarget {
     if (!this.loaded) {
       this.contextFactories.clear();
     }
-    const discovered = await this.fileDiscovery.findFiles(directory);
+    // Migrated implementations are ordinary importable modules, not routes.
+    // Leave watcher events enabled: changing one must refresh its wrapper.
+    const discovered = (await this.fileDiscovery.findFiles(directory)).filter(
+      (file) => !basename(file).startsWith("_.counterfact-legacy-"),
+    );
     // A scoped refresh must also refresh previously loaded contexts/handlers;
     // otherwise it would mix constructors from different generations.
     const files =
       directory === ""
         ? discovered
         : [...new Set([...this.loadedFiles, ...discovered])];
+    if (directory === "") {
+      const present = new Set(files.map(unescapePathForWindows));
+      for (const file of this.sourceFiles.keys()) {
+        if (!present.has(file)) this.removeSourceFile(file);
+      }
+    }
     this.loadedFiles = new Set(files);
     const modules = files.map((file) => this.importModule(file));
     // Finish graph evaluation before registering its handlers and contexts.
@@ -541,11 +614,22 @@ export class ModuleLoader extends EventTarget {
           PUT: errorResponse,
           TRACE: errorResponse,
         };
-        this.sourceRoutes.set(url, { ...errorModule });
-        this.registry.add(url, errorModule);
-        if (url === "/index") {
-          this.sourceRoutes.set("/", { ...errorModule });
-          this.registry.add("/", errorModule);
+        const previous = this.sourceFiles.get(unescapePathForWindows(pathName));
+        if (previous?.exact) {
+          const errors = new Map<string, Module>();
+          for (const [path, module] of previous.routes)
+            errors.set(
+              path,
+              Object.fromEntries(
+                Object.keys(module).map((method) => [method, errorResponse]),
+              ),
+            );
+          this.registerSourceFile(pathName, errors, true);
+        } else {
+          this.registerSourceFile(
+            pathName,
+            this.legacySourceRoutes(url, errorModule),
+          );
         }
 
         return;
@@ -611,23 +695,44 @@ export class ModuleLoader extends EventTarget {
         return;
       }
 
-      if (
-        basename(pathName).startsWith("_.middleware.") &&
-        isMiddlewareModule(endpoint)
-      ) {
+      if (basename(pathName).startsWith("_.middleware.")) {
         const path = url.slice(0, url.lastIndexOf("/")) || "/";
-        this.sourceMiddlewares.set(path, endpoint.middleware);
-        this.registry.addMiddleware(path, endpoint.middleware);
+        if (isMiddlewareModule(endpoint)) {
+          this.registerSourceFile(
+            pathName,
+            new Map(),
+            false,
+            new Map([[path, endpoint.middleware]]),
+          );
+          return;
+        }
+        const middleware: unknown = Object.getOwnPropertyDescriptor(
+          endpoint,
+          "middleware",
+        )?.value;
+        if (middleware && typeof middleware === "object") {
+          const middlewares = new Map<string, MiddlewareFunction>();
+          for (const [key, value] of Object.entries(middleware)) {
+            if (
+              typeof value !== "function" ||
+              key.toLowerCase() !== path.toLowerCase()
+            )
+              throw new Error(
+                `Expected a middleware function at a case variant of "${path}", got "${key}".`,
+              );
+            middlewares.set(key, value as MiddlewareFunction);
+          }
+          this.registerSourceFile(pathName, new Map(), true, middlewares);
+          return;
+        }
       }
 
-      if (url === "/index") {
-        this.sourceRoutes.set("/", { ...endpoint } as Module);
-        this.registry.add("/", endpoint as Module);
-      }
-      this.sourceRoutes.set(url, { ...endpoint } as Module);
-
-      debug(`adding "${url}" to registry`);
-      this.registry.add(url, endpoint as Module);
+      const declaredRoutes = this.declaredSourceRoutes(endpoint);
+      this.registerSourceFile(
+        pathName,
+        declaredRoutes ?? this.legacySourceRoutes(url, endpoint as Module),
+        declaredRoutes !== undefined,
+      );
     } catch (error: unknown) {
       this.generation.markFailed(pathName);
       if (

@@ -249,8 +249,12 @@ export function unionType(types: readonly ts.TypeNode[]): ts.TypeNode {
     : ts.factory.createUnionTypeNode(types);
 }
 
-export function withJsDoc<T extends ts.Node>(node: T, data: unknown): T {
-  const comment = buildJsDoc(data);
+export function withJsDoc<T extends ts.Node>(
+  node: T,
+  data: unknown,
+  validation = false,
+): T {
+  const comment = buildJsDoc(data, validation);
   return withComment(node, comment);
 }
 
@@ -272,6 +276,7 @@ export function typeProperty(
   type: ts.TypeNode,
   optional = false,
   data?: unknown,
+  validation = false,
 ): ts.PropertySignature {
   return withJsDoc(
     ts.factory.createPropertySignature(
@@ -285,5 +290,6 @@ export function typeProperty(
       type,
     ),
     data,
+    validation,
   );
 }

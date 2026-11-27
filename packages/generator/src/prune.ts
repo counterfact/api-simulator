@@ -104,17 +104,27 @@ function openApiPathToRouteFile(openApiPath: string): string {
 export async function pruneRoutes(
   destination: string,
   openApiPaths: Iterable<string>,
+  outputPaths?: Iterable<string>,
 ): Promise<number> {
   const routesDir = nodePath.join(destination, "routes");
 
   const expectedFiles = new Set(
-    Array.from(openApiPaths).map(openApiPathToRouteFile),
+    outputPaths
+      ? Array.from(outputPaths, (path) => path.slice("routes/".length))
+      : Array.from(openApiPaths).map(openApiPathToRouteFile),
   );
 
   debug("expected route files: %o", Array.from(expectedFiles));
 
   const actualFiles = (await collectTypeScriptFiles(routesDir)).filter(
-    (file) => nodePath.basename(file) !== "_.context.ts",
+    (file) => {
+      const name = nodePath.basename(file);
+      return (
+        name !== "_.context.ts" &&
+        name !== "_.middleware.ts" &&
+        !name.startsWith("_.counterfact-legacy-")
+      );
+    },
   );
 
   debug("actual route files: %o", actualFiles);

@@ -15,6 +15,7 @@ For feature explanations, use the [user manual](./manual.md). For exact options 
 - [State](./features/state.md) — share small in-memory state across routes.
 - [Hot reload](./features/hot-reload.md) — update handlers without restarting.
 - [Generated code](./features/generated-code.md) — understand editable routes and generated types.
+- [Generated API client](./features/generated-client.md) — call your API from the frontend with a typed, fetch-based client.
 - [Failures, latency, and edge cases](./manual/edge-cases.md) — exercise error, empty, loading, and retry states.
 
 ## Team and test workflows

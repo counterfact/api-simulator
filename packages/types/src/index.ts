@@ -1,3 +1,12 @@
+export type {
+  OperationBody,
+  OperationData,
+  OperationError,
+  OperationHeaders,
+  OperationPath,
+  OperationQuery,
+  OperationResponses,
+} from "./client-operation.js";
 export type { CookieOptions } from "./cookie-options.js";
 export type { COUNTERFACT_RESPONSE } from "./counterfact-response.js";
 export type { ExampleNames } from "./example-names.js";

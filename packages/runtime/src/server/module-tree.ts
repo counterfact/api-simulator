@@ -47,6 +47,12 @@ function isDirectory(test: Directory | undefined): test is Directory {
  *   same level the match is flagged as `ambiguous` and an error is logged.
  */
 export class ModuleTree {
+  public constructor(private readonly exactCase = false) {}
+
+  private key(segment: string): string {
+    return this.exactCase ? segment : segment.toLowerCase();
+  }
+
   public readonly root: Directory = {
     directories: new Map(),
     files: new Map(),
@@ -66,10 +72,10 @@ export class ModuleTree {
       return directory;
     }
 
-    const isNewDirectory = !directory.directories.has(segment.toLowerCase());
+    const isNewDirectory = !directory.directories.has(this.key(segment));
 
     if (isNewDirectory) {
-      directory.directories.set(segment.toLowerCase(), {
+      directory.directories.set(this.key(segment), {
         directories: new Map(),
         files: new Map(),
         isWildcard: segment.startsWith("{"),
@@ -79,7 +85,7 @@ export class ModuleTree {
     }
 
     const nextDirectory = directory.directories.get(
-      segment.toLowerCase(),
+      this.key(segment),
     ) as Directory;
 
     if (isNewDirectory && segment.startsWith("{")) {
@@ -161,13 +167,13 @@ export class ModuleTree {
     }
 
     if (remainingSegments.length === 0) {
-      directory.files.delete(segment.toLowerCase());
+      directory.files.delete(segment);
 
       return;
     }
 
     this.removeModuleFromDirectory(
-      directory.directories.get(segment.toLowerCase()),
+      directory.directories.get(this.key(segment)),
       remainingSegments,
     );
   }
@@ -195,18 +201,11 @@ export class ModuleTree {
     matchedPath: string,
     method: string,
   ): Match | undefined {
-    function normalizedSegment(segment: string, directory: Directory) {
-      for (const file of directory.files.keys()) {
-        if (file.toLowerCase() === segment.toLowerCase()) {
-          return file;
-        }
-      }
-      return "";
-    }
-
-    const exactMatchFile = directory.files.get(
-      normalizedSegment(segment, directory),
-    );
+    const exactMatchFile = this.exactCase
+      ? directory.files.get(segment)
+      : [...directory.files.values()].find(
+          (file) => this.key(file.rawName) === this.key(segment),
+        );
 
     // If the URL segment literally matches a file key (e.g., requesting "/{x}"
     // as a literal URL value), exactMatchFile may be a wildcard file. In that
@@ -297,14 +296,14 @@ export class ModuleTree {
       );
     }
 
-    const exactMatch = directory.directories.get(segment.toLowerCase());
+    const exactMatch = directory.directories.get(this.key(segment));
 
     if (isDirectory(exactMatch)) {
       return this.matchWithinDirectory(
         exactMatch,
         remainingSegments,
         pathVariables,
-        `${matchedPath}/${segment}`,
+        `${matchedPath}/${exactMatch.rawName}`,
         method,
       );
     }
@@ -366,16 +365,29 @@ export class ModuleTree {
     const parts = pattern.split("/").slice(1);
     let directory = this.root;
     for (const part of parts.slice(0, -1)) {
-      const child = directory.directories.get(part.toLowerCase());
+      const child = directory.directories.get(this.key(part));
       if (!child) return undefined;
       directory = child;
     }
     const name = parts.at(-1) ?? "";
     const file = [...directory.files.values()].find(
-      (entry) => entry.rawName.toLowerCase() === name.toLowerCase(),
+      (entry) => this.key(entry.rawName) === this.key(name),
     );
     if (!file) return undefined;
     const values = url.split("/").slice(1);
+    if (
+      this.exactCase &&
+      (values.length < parts.length ||
+        values.length > parts.length + 1 ||
+        (values.length > parts.length && values.at(-1) !== "") ||
+        parts.some(
+          (part, index) =>
+            !(part.startsWith("{") && part.endsWith("}")) &&
+            // eslint-disable-next-line security/detect-object-injection -- The positional index comes from parts.some.
+            part !== values[index],
+        ))
+    )
+      return undefined;
     const pathVariables = Object.fromEntries(
       parts.flatMap((part, index) =>
         part.startsWith("{") && part.endsWith("}")

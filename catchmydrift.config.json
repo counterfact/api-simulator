@@ -820,6 +820,10 @@
       ]
     },
     {
+      "include": ["packages/counterfact/docs/features/generated-client.md"],
+      "groups": ["generator", "types", "counterfact"]
+    },
+    {
       "include": ["packages/counterfact/docs/features/generated-code.md"],
       "groups": ["generator", "types", "openapi", "hot-reload"]
     },
