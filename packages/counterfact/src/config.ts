@@ -1,4 +1,8 @@
-import type { SchemaTypeTransform } from "@counterfact/generator";
+import type {
+  ClientGenerationOptions,
+  SchemaTypeOptions,
+  SchemaTypeTransform,
+} from "@counterfact/generator";
 
 /** Runtime configuration for a Counterfact server instance. */
 export interface Config {
@@ -12,12 +16,19 @@ export interface Config {
   buildCache: boolean;
   /** Controls which artefacts are (re-)generated from the OpenAPI spec. */
   generate: {
+    /**
+     * Generate a typed API client in `client/`, with one class per module.
+     * `true` uses the default options.
+     */
+    client?: ClientGenerationOptions | boolean;
     /** Remove route files that no longer correspond to a spec path. */
     prune?: boolean;
     /** Generate route handler stubs. */
     routes: boolean;
     /** Generate TypeScript type files. */
     types: boolean;
+    /** How schema types are declared in `types/` and the client's data contracts. */
+    typeOptions?: SchemaTypeOptions;
   };
   /** Customize generated schema types without changing runtime validation. */
   schemaTypeTransform?: SchemaTypeTransform;

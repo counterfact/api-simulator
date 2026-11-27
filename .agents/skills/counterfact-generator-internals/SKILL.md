@@ -54,6 +54,7 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Resolve both `types/paths/` and `types/<version>/paths/` context references against the authored `routes/` tree. Generated `types/_.context.ts` exports helper interfaces, not the context class.
 - Keep context import aliases unique and valid even when path names sanitize to the same identifier or start with a digit. Build parameterized path types with template literal nodes.
 - Keep TypeScript's compiler API dependency explicit and pinned in `@counterfact/generator`; a sibling package's dependency does not satisfy the packed generator.
+- Source files the generator copies verbatim into user output (such as `templates/client/http-client.ts`) are not compiled by `tsc`; the build script must copy them into `dist/`, and template paths must resolve from both `src/` and `dist/`. Run `yarn test:generator-packed` to confirm they ship, and compile the generated consumer under `strict` rather than relying on snapshots.
 - Use the AST helpers for literal names, comments, and grouping. Preserve compact type-literal printing so Prettier does not introduce avoidable snapshot churn.
 - Validate generated syntax and assignment behavior for escaping and union/intersection precedence; snapshots alone do not establish type correctness.
 - When extending generated-output fixtures on an older PR branch, validate with current main integrated: CI tests the merge result, and newer handler type names or response APIs can invalidate newly added snapshots and compiler consumers.
