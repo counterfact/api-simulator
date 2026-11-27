@@ -2,6 +2,7 @@ import { bundleOpenApiDocument } from "@counterfact/openapi";
 import createDebug from "debug";
 
 import { Requirement, type RequirementData } from "./requirement.js";
+import type { SchemaTypeOptions } from "./type-options.js";
 
 const debug = createDebug("counterfact:typescript-generator:specification");
 
@@ -16,6 +17,8 @@ const debug = createDebug("counterfact:typescript-generator:specification");
 export class Specification {
   public cache: Map<string, Requirement>;
   public rootRequirement!: Requirement;
+  /** How schema types generated from this specification are declared. */
+  public typeOptions: SchemaTypeOptions = {};
 
   public constructor(rootRequirement?: Requirement) {
     this.cache = new Map();
