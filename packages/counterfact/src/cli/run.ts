@@ -384,7 +384,7 @@ function buildProgram(
             count === 0
               ? startupOutput.warning("No schemas found; nothing was written")
               : startupOutput.success(
-                  `Generated ${count} schema type${count === 1 ? "" : "s"}`,
+                  `Generated ${count} schema file${count === 1 ? "" : "s"}`,
                 )
           }\n`,
         );
