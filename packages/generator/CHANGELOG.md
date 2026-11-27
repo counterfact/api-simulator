@@ -1,5 +1,27 @@
 # @counterfact/generator
 
+## 2.0.0
+
+### Major Changes
+
+- 7cf6324: Coalesce case-variant generated paths using the spelling that sorts first, independent of declaration order, while preserving CamelCase and exact OpenAPI URLs. Only routes that share a file use case-keyed method exports and route metadata; other routes keep the ordinary layout, and generated types share the canonical module. Generation migrates supported authored handlers and middleware with a backup and rejects ambiguous migrations.
+
+### Minor Changes
+
+- 2655411: Add `--generate-client`, which writes a strongly typed, fetch-based API client to `client/` next to the generated types. It has one class per module (grouped by path segment, or by first tag with `--module-name-first-tag`), a `data-contracts.ts` with a type for every schema, and an `index.ts` that combines the modules into an `Api` class. Request arguments and response data come from the generated `Routes` types.
+
+  All transport configuration lives in an HTTP provider. The default `HttpClient` uses `fetch` and supports `baseUrl`, `baseApiParams`, `securityWorker`, and `customFetch`. Any object implementing `HttpProvider` can replace it. New options: `--module-name-index`, `--module-name-first-tag`, `--module-class-suffix`, `--type-prefix`, `--type-suffix`, `--api-class-name`, and `--unwrap-response-data`, also available as `counterfact.yaml` keys.
+
+  `@counterfact/generator` exports `generateClient()` and accepts a `client` option in `CodeGenerator`. `@counterfact/types` exports the `Operation*` helper types the client uses.
+
+- 05ce8e0: Add options that change how schema types are declared in `types/` and the generated client's data contracts: `--enum-style <union|enum|const>` declares enums that name their members with `x-enumNames` or `x-enum-varnames` as TypeScript enums or const objects, `--ignore-nullable` omits `| null`, `--prefer-interfaces` declares named object schemas as interfaces, and `--validation-jsdoc` documents constraints such as `minLength` and `pattern` in JSDoc. They are also available as `counterfact.yaml` keys and as the `typeOptions` option of `CodeGenerator`. The defaults keep the current output.
+- 3560e8c: Add `--generate-client-only` (`generateClientOnly` in `counterfact.yaml`), which writes a standalone API client to `client/` and nothing else: no routes, scenarios, `types/`, `counterfact-types/` or `.cache`. The client declares its own request and response types, and every schema gets its own file under `client/data-contracts/`, re-exported by `client/data-contracts.ts`. The client naming options and schema type options apply. Programmatically, use `CodeGenerator#generateClientOnly()` or the `standalone` client option.
+
+### Patch Changes
+
+- Updated dependencies [2655411]
+  - @counterfact/types@0.4.0
+
 ## 1.3.0
 
 ### Minor Changes
