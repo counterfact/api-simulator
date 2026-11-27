@@ -1,0 +1,143 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Independent generator compatibility",
+    "version": "1"
+  },
+  "paths": {
+    "/profile": {
+      "get": {
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "description": "A profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Profile": {
+        "type": "object",
+        "required": ["id", "created", "data", "encoded", "state", "details"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "data": {
+            "type": "string",
+            "format": "binary"
+          },
+          "encoded": {
+            "type": "string",
+            "format": "byte"
+          },
+          "state": {
+            "type": "string",
+            "enum": ["active", "inactive"]
+          },
+          "details": {
+            "$ref": "#/components/schemas/Details"
+          },
+          "note": {
+            "type": "string"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "dictionary": {
+            "$ref": "#/components/schemas/Dictionary"
+          },
+          "empty": {
+            "$ref": "#/components/schemas/EmptyObject"
+          }
+        }
+      },
+      "Details": {
+        "type": "object",
+        "required": ["label", "updated"],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "updated": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RecursiveNode": {
+        "type": "object",
+        "required": ["value"],
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "next": {
+            "$ref": "#/components/schemas/RecursiveNode"
+          }
+        }
+      },
+      "Combined": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Details"
+          },
+          {
+            "type": "object",
+            "required": ["flags"],
+            "properties": {
+              "flags": {
+                "type": "array",
+                "items": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Dictionary": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "EmptyObject": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "Defaulted": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "default": "ready"
+          }
+        }
+      }
+    }
+  }
+}

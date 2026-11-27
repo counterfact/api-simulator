@@ -1,0 +1,62 @@
+name: Generator compatibility
+
+on:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generator-compatibility-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    name: Compare ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - openapi-typescript
+          - hey-api
+          - orval
+          - openapi-generator-fetch
+          - openapi-generator-axios
+          - swagger-typescript-api
+          - openapi-typescript-codegen
+          - nswag
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install repository dependencies
+        run: yarn install --immutable
+      - name: Build generator and dependencies
+        run: yarn build
+      - uses: actions/setup-java@v5
+        if: startsWith(matrix.target, 'openapi-generator-')
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-dotnet@v5
+        if: matrix.target == 'nswag'
+        with:
+          dotnet-version: "8.0.x"
+      - name: Generate and compare real tool outputs
+        id: comparison
+        run: yarn test:generator-compatibility "${{ matrix.target }}"
+      - name: Preserve generated outputs and comparison report
+        if: always() && steps.comparison.outcome != 'skipped'
+        uses: actions/upload-artifact@v6
+        with:
+          name: generator-compatibility-${{ matrix.target }}
+          path: artifacts/generator-compatibility/${{ matrix.target }}/
+          if-no-files-found: error

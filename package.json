@@ -52,6 +52,7 @@
     "go:multiple-versions": "yarn workspace counterfact go:multiple-versions",
     "counterfact": "./packages/counterfact/bin/counterfact.js",
     "check:drift": "catchmydrift",
+    "test:generator-compatibility": "node packages/generator/test/compatibility/run.mjs",
     "test:native": "yarn build && yarn test:native:run",
     "test:native:run": "node --test --test-concurrency=1 --test-timeout=30000 \"packages/*/test-native/*.test.mjs\"",
     "test:native:coverage": "yarn build && node --test --test-concurrency=1 --test-timeout=30000 --experimental-test-coverage --test-coverage-lines=77 --test-coverage-functions=80 --test-coverage-branches=90 --test-coverage-include=\"**/packages/runtime/dist/server/module-loader.js\" --test-coverage-include=\"**/packages/runtime/dist/server/module-generation.js\" --test-coverage-include=\"**/packages/counterfact/dist/app.js\" --test-coverage-include=\"**/packages/counterfact/dist/api-runner.js\" \"packages/*/test-native/*.test.mjs\""
