@@ -28,6 +28,7 @@ import {
 } from "./forward-slash-path.js";
 import { writeHelperTypes } from "./scenario-file-generator.js";
 import { Script } from "./script.js";
+import { type SchemaTypeTransform } from "./schema-type-transform.js";
 import {
   collisionMethodContents,
   collisionRouteContents,
@@ -139,7 +140,9 @@ export class Repository {
       : logical;
   }
 
-  public constructor() {
+  public constructor(
+    public readonly options: { schemaTypeTransform?: SchemaTypeTransform } = {},
+  ) {
     this.scripts = new Map();
   }
 
@@ -191,6 +194,8 @@ export class Repository {
         ].map((script) => script.finished()),
       );
     }
+    for (const script of this.scripts.values())
+      script.assertTransformsSucceeded();
   }
 
   /**

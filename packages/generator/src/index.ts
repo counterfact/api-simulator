@@ -8,11 +8,16 @@ export {
   buildOperationTypeNameMapping,
   type OperationTypeNameMapping,
 } from "./operation-type-name-mapping.js";
-export { Repository } from "./repository.js";
-export { ScenarioFileGenerator } from "./scenario-file-generator.js";
-export { generateVersionsTsContent } from "./versions-ts-generator.js";
 export {
   ENUM_STYLES,
   type EnumStyle,
   type SchemaTypeOptions,
 } from "./type-options.js";
+export { Repository } from "./repository.js";
+export { ScenarioFileGenerator } from "./scenario-file-generator.js";
+export { generateVersionsTsContent } from "./versions-ts-generator.js";
+export type {
+  JsonSchema,
+  SchemaTypeScript,
+  SchemaTypeTransform,
+} from "./schema-type-transform.js";

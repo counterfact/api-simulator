@@ -22,6 +22,7 @@ import { type SecurityScheme } from "./operation-type-coder.js";
 import { operationMethodsForPath } from "./path-operations.js";
 import { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
+import type { SchemaTypeTransform } from "./schema-type-transform.js";
 import { Specification } from "./specification.js";
 import type { SchemaTypeOptions } from "./type-options.js";
 import { waitForEvent } from "./wait-for-event.js";
@@ -31,6 +32,7 @@ const debug = createDebug("counterfact:typescript-generator:generate");
 
 /** Which artifacts {@link CodeGenerator.generate} writes. */
 export interface GenerateOptions {
+  schemaTypeTransform?: SchemaTypeTransform;
   /**
    * Generate a typed API client in `client/`. `true` uses the default
    * options. Requires `types`.
@@ -146,9 +148,20 @@ export class CodeGenerator extends EventTarget {
    *   (primarily useful in tests).
    */
   public async generate(
-    repository = new Repository(),
+    repository = new Repository({
+      schemaTypeTransform: this.generateOptions.schemaTypeTransform,
+    }),
     deferWrite = false,
   ): Promise<void> {
+    if (
+      this.generateOptions.schemaTypeTransform &&
+      repository.options.schemaTypeTransform !==
+        this.generateOptions.schemaTypeTransform
+    ) {
+      throw new Error(
+        "Configure the same schemaTypeTransform on the supplied Repository, or omit the Repository argument.",
+      );
+    }
     const { destination } = this;
 
     debug("generating code from %s to %s", this.openapiPath, destination);

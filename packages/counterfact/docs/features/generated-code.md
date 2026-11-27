@@ -55,6 +55,20 @@ Generation does not replace runtime validation. TypeScript cannot express every 
 
 Generated operation argument types include only the request inputs available for that operation. For example, an operation without query parameters has no `$.query` property. Versioned arguments include their version literal; unversioned arguments omit `version`. These properties are selected during generation, so the emitted argument is a plain object type.
 
+## Customize schema types
+
+Set [`schema-type-transform` in `counterfact.yaml`](../api/cli.md#customize-generated-schema-types)
+to use a callback module from the CLI. The programmatic `@counterfact/generator`
+API accepts the same callback as `schemaTypeTransform`. The
+callback receives a JSON Schema, the default TypeScript type node, and a
+script facade for importing external types. Return the default type or a
+replacement. Inline schemas and referenced definitions are transformed; existing
+route edits remain preserved. This changes generated types, not runtime
+validation or conversion.
+
+See [Schema type transforms](../api/schema-types.md) for the full callback and
+facade reference, a complete example, and a TypeScript check of the generated model.
+
 ## Customize schema declarations
 
 By default, enums are unions of their values and named object schemas are type aliases. These options change the declarations in `types/` (and so the client's data contracts):

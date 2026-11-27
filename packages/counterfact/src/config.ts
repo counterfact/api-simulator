@@ -1,6 +1,7 @@
 import type {
   ClientGenerationOptions,
   SchemaTypeOptions,
+  SchemaTypeTransform,
 } from "@counterfact/generator";
 
 /** Runtime configuration for a Counterfact server instance. */
@@ -29,6 +30,8 @@ export interface Config {
     /** How schema types are declared in `types/` and the client's data contracts. */
     typeOptions?: SchemaTypeOptions;
   };
+  /** Customize generated schema types without changing runtime validation. */
+  schemaTypeTransform?: SchemaTypeTransform;
   /** Path or URL to the OpenAPI document. Use `"_"` to skip spec loading. */
   openApiPath: string;
   /**
