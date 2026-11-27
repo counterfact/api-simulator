@@ -9,6 +9,7 @@
     { "path": "./packages/runtime" },
     { "path": "./packages/repl" },
     { "path": "./packages/types" },
-    { "path": "./packages/counterfact" }
+    { "path": "./packages/counterfact" },
+    { "path": "./packages/playwright" }
   ]
 }
