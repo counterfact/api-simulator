@@ -1,0 +1,6 @@
+spec: ./openapi.yaml
+destination: ./src/simulation
+schema-type-transform: ./schema-type-transform.mjs
+serve: false
+watch: false
+repl: false

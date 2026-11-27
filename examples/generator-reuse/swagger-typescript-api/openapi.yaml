@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Pet client and Counterfact reuse example
+  version: 1.0.0
+paths:
+  /pets:
+    get:
+      operationId: listPets
+      tags: [Pets]
+      responses:
+        "200":
+          description: Pets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pet"
+components:
+  schemas:
+    PetStatus:
+      type: string
+      enum: [available, adopted]
+    Pet:
+      type: object
+      required: [id, name, status]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          $ref: "#/components/schemas/PetStatus"
+        friend:
+          $ref: "#/components/schemas/Pet"

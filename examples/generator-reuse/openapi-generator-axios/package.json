@@ -1,0 +1,21 @@
+{
+  "name": "counterfact-openapi-generator-axios-poc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:counterfact": "counterfact --config counterfact.yaml --generate",
+    "generate": "npm run generate:models && npm run generate:counterfact",
+    "typecheck": "tsc --noEmit",
+    "start": "node --import tsx ./node_modules/counterfact/bin/counterfact.js --config counterfact.yaml --serve --no-update-check",
+    "generate:models": "node generate-sdk.mjs",
+    "verify": "npm run generate && npm run typecheck"
+  },
+  "devDependencies": {
+    "counterfact": "file:../../../packages/counterfact",
+    "typescript": "6.0.3",
+    "tsx": "4.20.6"
+  },
+  "dependencies": {
+    "axios": "1.13.6"
+  }
+}

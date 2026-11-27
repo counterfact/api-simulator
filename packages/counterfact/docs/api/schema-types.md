@@ -21,7 +21,12 @@ type SchemaTypeTransform = (
   schema: JsonSchema,
   defaultType: ts.TypeNode,
   script: SchemaTypeScript,
+  location: SchemaTypeLocation,
 ) => ts.TypeNode;
+
+interface SchemaTypeLocation {
+  readonly schemaPath: string;
+}
 
 interface SchemaTypeScript {
   importType(
@@ -36,6 +41,10 @@ interface SchemaTypeScript {
 | `schema`      | The schema object being translated, after bundling and overlays, or a boolean schema. Schema properties have type `unknown`. | Inspect standard keywords such as `type`, `format`, and `enum`, or your own `x-*` extensions. Narrow values before using them. |
 | `defaultType` | Counterfact's generated TypeScript AST node, including changes already made to child schemas.                                | Return it unchanged, update it with TypeScript factories, or replace it with another type node.                                |
 | `script`      | A facade for the generated file receiving this type. It exposes `importType()` only.                                         | Register a named type import and return or compose the resulting reference.                                                    |
+
+`location.schemaPath` is the schema’s JSON Pointer in the bundled document,
+for example `#/components/schemas/Pet`. It identifies a definition rather than
+its reference site. Existing callbacks can keep accepting only three arguments.
 
 An **AST node** represents TypeScript syntax. Return a `ts.TypeNode`, not a source
 string, a runtime value, or a Promise. TypeScript's `ts.factory` constructs new
@@ -311,3 +320,124 @@ or convert request/response values. Existing route edits retain the usual
 [regeneration guarantees](../features/generated-code.md).
 
 Startup generate overrides retain the configured transform callback. The simulator status snapshot reports effective generation flags and the listener address; executable callbacks are excluded from that cloneable snapshot.
+
+## Built-in adapters for generated models
+
+Reuse models you already generated from the same OpenAPI document. These
+factories are exported from both `counterfact` and `@counterfact/generator`.
+They return ordinary `SchemaTypeTransform` callbacks; no other generator is
+installed or executed by Counterfact.
+
+| Generator                                                                               | Factory                             | Import target and model shape                                            |
+| --------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------ |
+| [openapi-typescript](https://openapi-ts.dev/examples)                                   | `openapiTypescriptTransform`        | `components["schemas"]["Pet"]` from its generated module; OpenAPI 3 only |
+| [Hey API](https://heyapi.dev/docs/openapi/typescript/plugins/typescript)                | `heyApiTransform`                   | Named `Pet` from `types.gen.ts` or a barrel                              |
+| [Orval](https://orval.dev/docs/reference/configuration/output/)                         | `orvalTransform`                    | Named `Pet` from the schemas barrel or a model file                      |
+| [OpenAPI Generator](https://openapi-generator.tech/docs/generators/typescript-fetch/)   | `openapiGeneratorTransform`         | Named model exports from TypeScript Fetch, Axios, or Angular output      |
+| [swagger-typescript-api](https://github.com/acacode/swagger-typescript-api)             | `swaggerTypescriptApiTransform`     | Named model exports from data contracts                                  |
+| [openapi-typescript-codegen](https://github.com/ferdikoomen/openapi-typescript-codegen) | `openapiTypescriptCodegenTransform` | Named model exports from the models barrel                               |
+| [NSwag](https://github.com/RicoSuter/NSwag/wiki/TypeScriptClientGenerator)              | `nswagTransform`                    | Exported DTO interfaces in module output, without a namespace            |
+
+Generate the other tool's types into your application's normal generated-files
+folder, for example `src/generated/schema.ts`. You do not need a separate SDK
+package. Give that local file a TypeScript path alias in your app's `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "paths": { "#api-models": ["./src/generated/schema.ts"] }
+  }
+}
+```
+
+Then create `schema-type-transform.mjs`:
+
+```js
+import { openapiTypescriptTransform } from "counterfact";
+
+export default openapiTypescriptTransform({
+  moduleSpecifier: "#api-models",
+});
+```
+
+The alias is a local compiler setting, not an installed package. Counterfact
+emits type-only imports, so those imports do not require a runtime alias.
+Generate the other tool's files before type-checking Counterfact's handlers.
+See the [eight runnable local SDK examples](https://github.com/counterfact/api-simulator/tree/codex/builtin-model-transformers/examples/generator-reuse)
+for normal file layouts, generator settings, handlers, and compiler checks.
+
+Select it with the existing configuration setting:
+
+```yaml
+spec: ./openapi.yaml
+destination: ./api
+generate: true
+schema-type-transform: ./schema-type-transform.mjs
+```
+
+A `Pet` definition now aliases the imported
+`components["schemas"]["Pet"]`. Handlers continue using Counterfact's generated
+route contracts. Imports remain type-only and collision-safe.
+
+All factories take `GeneratedModelTransformOptions`:
+
+```ts
+interface GeneratedModelTransformOptions {
+  readonly moduleSpecifier: string | ((schemaName: string) => string);
+  readonly typeName?: (schemaName: string) => string | undefined;
+}
+```
+
+`moduleSpecifier` is required. Use a local TypeScript path alias, a package
+name if your project already uses a shared package, or a resolver for
+one-file-per-model output. Relative
+paths resolve from each generated type file, not the configuration module.
+Prefer a stable local alias because generated files can have different depths.
+The resolver receives the original, JSON Pointer-unescaped schema key.
+
+The default exported name is the exact schema key. For flat exports, configure
+`typeName` when your generator changes casing, adds a prefix/suffix, escapes a
+reserved word, or sanitizes punctuation. The adapters deliberately do not guess
+generator-specific naming settings. Invalid named exports fail generation with
+the schema location. For openapi-typescript, `typeName` instead chooses the key
+inside `components["schemas"]`, including keys with punctuation.
+
+For example, configure Orval models published as separate files and reuse only
+models present in that package:
+
+```js
+import { orvalTransform } from "counterfact";
+
+const names = new Map([
+  ["pet-record", "PetRecord"],
+  ["Owner", "Owner"],
+]);
+export default orvalTransform({
+  moduleSpecifier: (name) => `@example/models/${name}`,
+  typeName: (name) => names.get(name),
+});
+```
+
+Returning `undefined` from `typeName` preserves Counterfact's type for that model.
+Inline schemas, nested properties, parameters, and responses continue using
+Counterfact's generation. Only direct `components.schemas` definitions (or
+Swagger 2 `definitions` for flat exports) are replaced. Recursive references keep
+using shared generated aliases. Schema titles are not used as model identities.
+
+Generate the external contracts first and regenerate them alongside your spec.
+Bundling external references can create additional component keys; map or skip
+those explicitly when the other generator uses a different layout. Versioned
+specs must share compatible external model exports, or use a custom callback
+that selects the appropriate package from schema metadata.
+
+These adapters reuse the selected TypeScript type exactly. They do not convert
+wire strings to `Date`, construct DTO classes, convert enums, or change runtime
+validation. Prefer wire-compatible models and NSwag interface DTO output;
+class models may require methods or hydrated values that HTTP payloads do not
+provide. Custom templates, namespaces, runtime validator exports, and types that
+are not exported need a barrel or a custom callback.

@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: Pet application
+  version: 1.0.0
+paths:
+  /:
+    get:
+      operationId: getDefaultPet
+      responses:
+        "200":
+          description: The default pet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+  /pets/{petId}:
+    get:
+      operationId: getPet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A pet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+components:
+  schemas:
+    Pet:
+      type: object
+      required: [id, name, status]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [available, adopted]
+        friend:
+          $ref: "#/components/schemas/Pet"

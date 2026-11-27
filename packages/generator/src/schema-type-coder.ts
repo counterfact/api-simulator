@@ -297,6 +297,11 @@ export class SchemaTypeCoder extends TypeCoder {
     )
       return defaultType;
     try {
+      const rootUrl = this.requirement.specification?.rootRequirement.url;
+      const schemaPath =
+        rootUrl !== undefined && this.requirement.url.startsWith(`${rootUrl}/`)
+          ? `#${this.requirement.url.slice(rootUrl.length)}`
+          : this.requirement.url;
       const result = transform(
         this.requirement.data as JsonSchema,
         defaultType,
@@ -304,6 +309,7 @@ export class SchemaTypeCoder extends TypeCoder {
           importType: (module: string, name: string) =>
             script.importSchemaType(module, name),
         }),
+        Object.freeze({ schemaPath }),
       );
       if (result instanceof Promise) {
         // Invalid JavaScript callbacks must not also leak unhandled rejections.

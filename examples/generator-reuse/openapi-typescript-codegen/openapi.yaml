@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: Local Pet SDK
+  version: 1.0.0
+paths:
+  /pet:
+    get:
+      operationId: getPet
+      tags: [Pets]
+      responses:
+        "200":
+          description: A pet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+components:
+  schemas:
+    PetStatus:
+      type: string
+      enum: [available, sold]
+    Pet:
+      type: object
+      required: [id, name, status]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          $ref: "#/components/schemas/PetStatus"
