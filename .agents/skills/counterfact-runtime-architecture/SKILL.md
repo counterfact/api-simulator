@@ -60,6 +60,16 @@ Use this skill when changing runtime orchestration, server dispatch flow, module
 - Breaking prefix/group/version routing derivation in `app.ts`.
 - Introducing restart-only behavior for changes currently handled by watch/reload paths.
 - Changing response defaults/content negotiation semantics unintentionally in `dispatcher` or Koa middleware.
+- Inferring SSE framing from payload property names: `.stream()` preserves JSON
+  data items, while `.sse()` explicitly selects event envelopes. Carry the
+  framing choice through response normalization and verify actual incremental
+  HTTP delivery, field validation, and producer cleanup on disconnect.
+- Keep fluent streaming shortcuts aligned with generated and wide handler types.
+  Preserve previously supplied representations when composing shortcuts and test
+  negotiation for each media type. Validate schema-derived SSE item types as well
+  as the async iterable container; iterable intersections can expose incompatible
+  iterator overloads. Declare incoming header parameters in lowercase because
+  generated types preserve names while Node normalizes request header keys.
 - Confusing the response factory's `status(code)` selector with the selected response's numeric `status` field. Keep selector changes aligned across generated, middleware, and wide-handler types. Type tests should verify rejected chains as well as successful chains, including headers before selection and explicit responses excluded despite a `default` response.
 
 ## How to validate the change

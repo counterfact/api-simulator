@@ -12,8 +12,9 @@ import type { ResponseBuilder } from "./response-builder.js";
 export interface MiddlewareResponseObject {
   appendedHeaders?: [string, string][];
   body?: AsyncIterable<unknown> | Uint8Array | string;
-  content?: { body: unknown; type: MediaType }[];
+  content?: { body: unknown; type: MediaType; streamFormat?: "sse" }[];
   contentType?: string;
+  streamFormat?: "sse";
   headers?: { [key: string]: number | string | string[] };
   status?: number;
 }
