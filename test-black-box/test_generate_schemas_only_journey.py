@@ -115,7 +115,7 @@ def serving_options_are_reported(journey):
     stderr = journey.command_results["cli"].stderr
     assert "Ignoring config file options" in stderr
     assert "serve" in stderr
-    assert "Generated 3 schema types" in journey.command_results["cli"].stdout
+    assert "Generated 3 schema files" in journey.command_results["cli"].stdout
 
 
 @given("a single contract with schemas")

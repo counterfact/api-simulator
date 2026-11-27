@@ -42,6 +42,10 @@ Paths and commands below are relative to the repository root.
 
 - A push to `main` with no remaining changesets publishes the merged package versions automatically; a manual Release workflow dispatch is the retry and recovery path.
 
+- Keep the Release workflow’s shared Node version aligned with the major
+  enforced by `scripts/release-preflight.mjs`. Update the two together and
+  keep the prepare and publish jobs on that same runtime.
+
 - Keep the `npm-publish` environment name, OIDC permission, and provenance setting aligned with the npm trusted-publisher configuration.
 
 - When splitting CI into independent jobs, use separate workspaces for commands

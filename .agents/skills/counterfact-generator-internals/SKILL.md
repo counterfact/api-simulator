@@ -35,6 +35,7 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Preserve regeneration contract: existing route files are not overwritten; generated types are overwritten.
 - Support OpenAPI features through typed coders and requirement traversal rather than ad-hoc string logic.
 - Keep generated output deterministic and formatted via existing script/repository pipeline.
+- Coalesce case-variant logical type paths into one physical Script and allocate distinct exports in that module. Import and prune using the canonical module path. Test case collisions on a case-sensitive filesystem as well as checking case-insensitive file identity. Middleware helper types for existing handwritten directory variants use a separate migration-safe mapping.
 - Omit unavailable operation argument properties while assembling their AST, including per-version arguments. Keep pruning at the argument boundary: nested schema properties and generic response-builder methods have separate contracts.
 - Type coders return `TypeNode`s and runtime coders return `Expression`s from `write()`. Compose nodes with TypeScript factories and the AST helpers; do not print and reparse fragments or interpolate TypeScript source text.
 - Assemble imports, exports, and version declarations as statements in `Script`. Resolve context module references before printing; do not replace placeholder tokens in generated source.
@@ -84,3 +85,5 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Preserve absent, empty, and anonymous OpenAPI security declarations when generating client metadata. Verify operation overrides, alternative requirements, and provider scopes through the generated client.
 
 - Choose public validator export names that cannot collide with Ajv’s generated local bindings. Parse the validators generated from a full spec, since small fixtures may never reach a colliding name.
+
+- Keep exact OpenAPI routes separate from their case-folded output identities and first-spelling filenames. Assemble all versions in a group before selecting function or case-keyed map exports. Prune against physical output paths, and reject ambiguous authored file migrations before writing or pruning handlers.

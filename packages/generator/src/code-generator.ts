@@ -15,7 +15,6 @@ import {
   normalizeOpenApiPath,
 } from "./openapi-path.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
-import { pruneRoutes, pruneTypes } from "./prune.js";
 import { generateClient as writeClient } from "./generate-client.js";
 import { pathOperations } from "./path-operations.js";
 import { Requirement } from "./requirement.js";
@@ -89,7 +88,7 @@ export class CodeGenerator extends EventTarget {
 
     debug("creating the .cache/README.md file");
 
-    ensureDirectoryExists(cacheReadmePath);
+    await ensureDirectoryExists(cacheReadmePath);
     await fs.writeFile(
       cacheReadmePath,
       "This directory contains compiled JS files from the paths directory. Do not edit these files directly.\n",
@@ -133,7 +132,10 @@ export class CodeGenerator extends EventTarget {
    * @param repository - Injectable repository instance; defaults to a fresh one
    *   (primarily useful in tests).
    */
-  public async generate(repository = new Repository()): Promise<void> {
+  public async generate(
+    repository = new Repository(),
+    deferWrite = false,
+  ): Promise<void> {
     const { destination } = this;
 
     debug("generating code from %s to %s", this.openapiPath, destination);
@@ -163,12 +165,6 @@ export class CodeGenerator extends EventTarget {
 
     assertNoNormalizedPathCollisions(openApiPaths);
 
-    if (this.generateOptions.prune && this.generateOptions.routes) {
-      debug("pruning defunct route files");
-      await pruneRoutes(destination, openApiPaths);
-      debug("done pruning");
-    }
-
     const securityRequirement = specification.getRequirement(
       "#/components/securitySchemes",
     );
@@ -182,9 +178,10 @@ export class CodeGenerator extends EventTarget {
 
       const normalizedPath = normalizeOpenApiPath(key);
       const path = normalizedPath === "/" ? "/index" : normalizedPath;
+      repository.recordRouteFile(`routes${path}.ts`);
       for (const [operation, requestMethod] of pathOperations(pathDefinition)) {
         repository
-          .get(`routes${path}.ts`)
+          .route(`routes${path}.ts`, normalizedPath)
           .export(
             new OperationCoder(
               operation,
@@ -196,20 +193,9 @@ export class CodeGenerator extends EventTarget {
       }
     });
 
-    if (this.generateOptions.prune && this.generateOptions.types) {
-      debug("resolving the expected generated type files");
-      await repository.finished();
-      debug("pruning defunct generated type files");
-      await pruneTypes(destination, [
-        ...repository.scripts.keys(),
-        ...(this.version === "" ? [] : ["types/versions.ts"]),
-      ]);
-      debug("done pruning generated type files");
+    if (!deferWrite) {
+      await this.finishGeneration(repository);
     }
-
-    debug("telling the repository to write the files to %s", destination);
-
-    await repository.writeFiles(destination, this.generateOptions);
 
     if (
       this.generateOptions.types &&
@@ -223,6 +209,14 @@ export class CodeGenerator extends EventTarget {
     }
 
     debug("finished writing the files");
+  }
+
+  /** Write the complete shared route layout once all versions have registered. */
+  public async finishGeneration(repository: Repository): Promise<void> {
+    await repository.writeFiles(this.destination, {
+      ...this.generateOptions,
+      keepVersionsFile: this.version !== "",
+    });
   }
 
   /**
