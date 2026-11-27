@@ -256,7 +256,7 @@ describe("collectClientModules", () => {
       }),
       expect.objectContaining({
         name: "createPost",
-        body: { contentType: "Json", required: false },
+        body: { contentType: "Json", required: false, routeTyped: true },
         query: { required: false },
       }),
     ]);
@@ -281,6 +281,7 @@ describe("collectClientModules", () => {
     expect(module?.operations[0]?.body).toEqual({
       contentType,
       required: false,
+      routeTyped: false,
     });
   });
 
@@ -304,6 +305,7 @@ describe("collectClientModules", () => {
     expect(module?.operations[0]?.body).toEqual({
       contentType: "FormData",
       required: true,
+      routeTyped: false,
     });
   });
 
@@ -388,11 +390,20 @@ describe("collectClientModules", () => {
         format,
       })),
     ).toEqual([
-      { body: { contentType: "Json", required: true }, format: "json" },
-      { body: { contentType: "FormData", required: false }, format: "text" },
-      { body: { contentType: "Json", required: false }, format: "json" },
       {
-        body: { contentType: "UrlEncoded", required: false },
+        body: { contentType: "Json", required: true, routeTyped: true },
+        format: "json",
+      },
+      {
+        body: { contentType: "FormData", required: false, routeTyped: false },
+        format: "text",
+      },
+      {
+        body: { contentType: "Json", required: false, routeTyped: true },
+        format: "json",
+      },
+      {
+        body: { contentType: "UrlEncoded", required: false, routeTyped: false },
         format: undefined,
       },
     ]);

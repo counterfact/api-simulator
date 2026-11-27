@@ -2,6 +2,7 @@ import {
   type ClientGenerationOptions,
   ENUM_STYLES,
   type EnumStyle,
+  isClassName,
   type SchemaTypeOptions,
 } from "@counterfact/generator";
 
@@ -50,9 +51,9 @@ export function resolveClientOptions(
 
   if (options.apiClassName !== undefined) {
     const name = String(options.apiClassName);
-    if (!/^[A-Z_$a-z][\w$]*$/u.test(name)) {
+    if (!isClassName(name)) {
       throw new Error(
-        `--api-class-name must be a valid TypeScript identifier (received ${JSON.stringify(name)}).`,
+        `--api-class-name must be a valid TypeScript class name, not a reserved word (received ${JSON.stringify(name)}).`,
       );
     }
     resolved.apiClassName = name;
@@ -66,6 +67,11 @@ export function resolveClientOptions(
   }
   if (options.typePrefix !== undefined) {
     resolved.typePrefix = identifierAffix(options.typePrefix, "--type-prefix");
+    if (/^\d/u.test(resolved.typePrefix)) {
+      throw new Error(
+        `--type-prefix must not start with a digit (received ${JSON.stringify(resolved.typePrefix)}).`,
+      );
+    }
   }
   if (options.typeSuffix !== undefined) {
     resolved.typeSuffix = identifierAffix(options.typeSuffix, "--type-suffix");

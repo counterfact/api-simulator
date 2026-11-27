@@ -85,7 +85,8 @@ describe("generated fetch HttpClient", () => {
 
     expect(calls[0]?.init.body).toBe('{"name":"Ada"}');
     expect(headersOf(calls[0])["content-type"]).toBe("application/json");
-    expect(calls[1]?.init.body).toBe('{"already":"json"}');
+    // A string is a JSON value too, so it is quoted rather than passed through.
+    expect(calls[1]?.init.body).toBe('"{\\"already\\":\\"json\\"}"');
     expect(headersOf(calls[1])["content-type"]).toBe(
       "application/vnd.api+json",
     );
@@ -315,6 +316,150 @@ describe("generated fetch HttpClient", () => {
 
     expect(signals[0]).toBe(signals[1]);
     expect(signals[2]).not.toBe(signals[0]);
+  });
+
+  it("serializes every defined JSON value, including strings and null", async () => {
+    const { calls, client } = recordingClient();
+
+    await client.request({ path: "/a", body: "Ada", type: ContentType.Json });
+    await client.request({ path: "/b", body: null, type: ContentType.Json });
+
+    expect(calls[0]?.init.body).toBe('"Ada"');
+    expect(calls[1]?.init.body).toBe("null");
+  });
+
+  it("uploads multipart files and byte arrays as binary parts", async () => {
+    const { calls, client } = recordingClient();
+
+    await client.request({
+      path: "/uploads",
+      method: "POST",
+      body: {
+        file: {
+          data: new Uint8Array([1, 2, 3]),
+          filename: "logo.png",
+          contentType: "image/png",
+          size: 3,
+        },
+        bytes: new Uint8Array([4, 5]),
+      },
+      type: ContentType.FormData,
+    });
+
+    const form = calls[0]?.init.body as FormData;
+    const file = form.get("file") as File;
+    const bytes = form.get("bytes") as Blob;
+
+    expect(file).toBeInstanceOf(Blob);
+    expect(file.name).toBe("logo.png");
+    expect(file.type).toBe("image/png");
+    expect([...new Uint8Array(await file.arrayBuffer())]).toEqual([1, 2, 3]);
+    expect(bytes).toBeInstanceOf(Blob);
+    expect([...new Uint8Array(await bytes.arrayBuffer())]).toEqual([4, 5]);
+  });
+
+  it("sends a single Content-Type header when defaults already set one", async () => {
+    const { calls, client } = recordingClient(undefined, {
+      baseApiParams: { headers: { "Content-Type": "text/plain" } },
+    });
+
+    await client.request({
+      path: "/a",
+      method: "POST",
+      body: { a: 1 },
+      type: ContentType.Json,
+    });
+
+    const keys = Object.keys(calls[0]?.init.headers ?? {}).filter(
+      (key) => key.toLowerCase() === "content-type",
+    );
+    expect(keys).toEqual(["content-type"]);
+    expect(headersOf(calls[0])["content-type"]).toBe("application/json");
+  });
+
+  it("parses an error by its own media type, not the success format", async () => {
+    const textSuccess = recordingClient(() =>
+      Response.json({ message: "bad" }, { status: 400 }),
+    );
+    const noContentSuccess = recordingClient(() =>
+      Response.json({ message: "missing" }, { status: 404 }),
+    );
+
+    const textFailure = (await textSuccess.client
+      .request({ path: "/report", format: "text" })
+      .catch((error: unknown) => error)) as HttpResponse<unknown, unknown>;
+    // An operation whose only success is a 204 has no format.
+    const noContentFailure = (await noContentSuccess.client
+      .request({ path: "/thing", method: "DELETE" })
+      .catch((error: unknown) => error)) as HttpResponse<unknown, unknown>;
+
+    expect(textFailure.error).toEqual({ message: "bad" });
+    expect(noContentFailure.error).toEqual({ message: "missing" });
+  });
+
+  it("reads a success without a format by its media type and skips empty bodies", async () => {
+    const { client } = recordingClient(
+      () => new Response("a,b", { headers: { "content-type": "text/csv" } }),
+    );
+    const empty = recordingClient(() => new Response(null, { status: 204 }), {
+      baseApiParams: { format: "json" },
+    });
+
+    expect((await client.request({ path: "/csv" })).data).toBe("a,b");
+    const response = await empty.client.request({ path: "/none" });
+    expect(response.data).toBeNull();
+    expect(response.error).toBeNull();
+  });
+
+  it("keeps a shared cancel token abortable until its last request finishes", async () => {
+    const signals: AbortSignal[] = [];
+    let releaseSecond!: () => void;
+    const client = new HttpClient({
+      customFetch: async (input, init) => {
+        signals.push(init!.signal!);
+        if (String(input).endsWith("/second")) {
+          await new Promise<void>((resolve) => {
+            releaseSecond = resolve;
+          });
+        }
+        return new Response(null, { status: 204 });
+      },
+    });
+
+    const second = client.request({ path: "/second", cancelToken: "t" });
+    await client.request({ path: "/first", cancelToken: "t" });
+    client.abortRequest("t");
+    releaseSecond();
+    await second;
+
+    expect(signals[0]).toBe(signals[1]);
+    expect(signals[0]?.aborted).toBe(true);
+  });
+
+  it("does not let an aborted request free the controller that replaced it", async () => {
+    const signals: AbortSignal[] = [];
+    const release: Array<() => void> = [];
+    const client = new HttpClient({
+      customFetch: async (_input, init) => {
+        signals.push(init!.signal!);
+        await new Promise<void>((resolve) => release.push(resolve));
+        return new Response(null, { status: 204 });
+      },
+    });
+
+    const old = client.request({ path: "/old", cancelToken: "t" });
+    await Promise.resolve();
+    client.abortRequest("t");
+    const replacement = client.request({ path: "/new", cancelToken: "t" });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    release[0]!();
+    await old;
+    client.abortRequest("t");
+    release[1]!();
+    await replacement;
+
+    expect(signals[1]).not.toBe(signals[0]);
+    expect(signals[1]?.aborted).toBe(true);
   });
 
   it("passes options it does not know to customFetch, so a wrapped HTTP stack can read them", async () => {

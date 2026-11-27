@@ -26,7 +26,10 @@ export interface FullRequestParams extends Omit<RequestInit, "body"> {
   type?: ContentType;
   /** Query string parameters. */
   query?: QueryParamsType;
-  /** How to read the response body into `data` / `error`. */
+  /**
+   * How to read a successful response body into `data`. Error bodies, and
+   * successful ones when this is unset, are read according to their media type.
+   */
   format?: ResponseFormat;
   /** Request body. */
   body?: unknown;
@@ -49,6 +52,18 @@ export interface ApiConfig<SecurityDataType = unknown> {
   ) => Promise<RequestParams | void> | RequestParams | void;
   customFetch?: typeof fetch;
 }
+
+/** A multipart form field: binary fields also accept a `Blob` or `File`. */
+export type MultipartField<T> = T extends Uint8Array
+  ? T | Blob
+  : T extends readonly (infer Item)[]
+    ? MultipartField<Item>[]
+    : T;
+
+/** A multipart form body whose binary fields also accept a `Blob` or `File`. */
+export type MultipartBody<T> = T extends object
+  ? { [Key in keyof T]: MultipartField<T[Key]> }
+  : T;
 
 export interface HttpResponse<Data, Error = unknown> extends Response {
   data: Data;
@@ -93,8 +108,79 @@ function readBody(
   }
 }
 
+/**
+ * How to read `response`: not at all for a status without content, by
+ * `format` for a success when it is set, and otherwise by its media type.
+ */
+function responseFormat(
+  response: Response,
+  format: ResponseFormat | undefined,
+): ResponseFormat | undefined {
+  if (
+    [204, 205, 304].includes(response.status) ||
+    response.headers.get("content-length") === "0"
+  ) {
+    return undefined;
+  }
+  if (response.ok && format !== undefined) return format;
+
+  const mediaType = (response.headers.get("content-type") ?? "")
+    .split(";")[0]!
+    .trim()
+    .toLowerCase();
+  if (mediaType === "") return format;
+  if (mediaType === "application/json" || mediaType.endsWith("+json")) {
+    return "json";
+  }
+  if (mediaType.startsWith("text/") || mediaType.endsWith("xml")) {
+    return "text";
+  }
+  return "blob";
+}
+
 function isBlob(value: unknown): value is Blob {
   return typeof Blob !== "undefined" && value instanceof Blob;
+}
+
+/** An in-memory file, as the generated route types describe multipart uploads. */
+interface MultipartFile {
+  data: Uint8Array;
+  filename: string;
+  contentType?: string;
+}
+
+function isMultipartFile(value: unknown): value is MultipartFile {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    (value as Partial<MultipartFile>).data instanceof Uint8Array &&
+    typeof (value as Partial<MultipartFile>).filename === "string"
+  );
+}
+
+function appendFormValue(formData: FormData, key: string, value: unknown) {
+  if (isMultipartFile(value)) {
+    formData.append(
+      key,
+      new Blob([value.data as BlobPart], { type: value.contentType ?? "" }),
+      value.filename,
+    );
+  } else if (isBlob(value)) {
+    formData.append(key, value);
+  } else if (value instanceof Uint8Array || value instanceof ArrayBuffer) {
+    formData.append(key, new Blob([value as BlobPart]));
+  } else {
+    formData.append(
+      key,
+      typeof value === "object" ? JSON.stringify(value) : String(value),
+    );
+  }
+}
+
+interface ActiveCancelToken {
+  controller: AbortController;
+  /** Requests still using the controller. */
+  pending: number;
 }
 
 /** The default {@link HttpProvider}, built on `fetch`. */
@@ -105,7 +191,7 @@ export class HttpClient<SecurityDataType = unknown> implements HttpProvider {
 
   private readonly securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
 
-  private readonly abortControllers = new Map<CancelToken, AbortController>();
+  private readonly abortControllers = new Map<CancelToken, ActiveCancelToken>();
 
   private readonly customFetch: typeof fetch = (...fetchParams) =>
     fetch(...fetchParams);
@@ -137,9 +223,9 @@ export class HttpClient<SecurityDataType = unknown> implements HttpProvider {
     this.securityData = data;
   };
 
-  /** Aborts the in-flight request started with `cancelToken`. */
+  /** Aborts every in-flight request started with `cancelToken`. */
   public abortRequest = (cancelToken: CancelToken): void => {
-    this.abortControllers.get(cancelToken)?.abort();
+    this.abortControllers.get(cancelToken)?.controller.abort();
     this.abortControllers.delete(cancelToken);
   };
 
@@ -161,13 +247,16 @@ export class HttpClient<SecurityDataType = unknown> implements HttpProvider {
   }
 
   protected serializeBody(body: unknown, type: ContentType | undefined) {
-    if (body === undefined || body === null) return null;
+    if (body === undefined) return null;
+
+    // Strings and null are JSON values too, so serialize them as well.
+    if (type === ContentType.Json || type === ContentType.JsonApi) {
+      return JSON.stringify(body);
+    }
+
+    if (body === null) return null;
 
     switch (type) {
-      case ContentType.Json:
-      case ContentType.JsonApi:
-        return typeof body === "string" ? body : JSON.stringify(body);
-
       case ContentType.Text:
         return typeof body === "string" ? body : JSON.stringify(body);
 
@@ -185,14 +274,7 @@ export class HttpClient<SecurityDataType = unknown> implements HttpProvider {
           if (value === undefined || value === null) continue;
 
           for (const item of Array.isArray(value) ? value : [value]) {
-            formData.append(
-              key,
-              isBlob(item)
-                ? item
-                : typeof item === "object"
-                  ? JSON.stringify(item)
-                  : String(item),
-            );
+            appendFormValue(formData, key, item);
           }
         }
 
@@ -219,13 +301,29 @@ export class HttpClient<SecurityDataType = unknown> implements HttpProvider {
     return { ...merged, headers };
   }
 
-  private createAbortSignal(cancelToken: CancelToken): AbortSignal {
-    const existing = this.abortControllers.get(cancelToken);
-    if (existing) return existing.signal;
+  /** The controller shared by every in-flight request with `cancelToken`. */
+  private acquireAbortController(cancelToken: CancelToken): AbortController {
+    let active = this.abortControllers.get(cancelToken);
+    if (active === undefined) {
+      active = { controller: new AbortController(), pending: 0 };
+      this.abortControllers.set(cancelToken, active);
+    }
+    active.pending += 1;
+    return active.controller;
+  }
 
-    const controller = new AbortController();
-    this.abortControllers.set(cancelToken, controller);
-    return controller.signal;
+  /**
+   * Forgets the controller once its last request finishes. A request that
+   * outlived an aborted controller leaves the replacement alone.
+   */
+  private releaseAbortController(
+    cancelToken: CancelToken,
+    controller: AbortController,
+  ): void {
+    const active = this.abortControllers.get(cancelToken);
+    if (active?.controller !== controller) return;
+    active.pending -= 1;
+    if (active.pending === 0) this.abortControllers.delete(cancelToken);
   }
 
   /**
@@ -257,13 +355,19 @@ export class HttpClient<SecurityDataType = unknown> implements HttpProvider {
       ...init
     } = this.mergeRequestParams(params, securityParams);
     const queryString = query ? this.toQueryString(query) : "";
-    const responseFormat = format ?? defaultFormat;
+    const requestedFormat = format ?? defaultFormat;
+    // Header names are lowercase here, so this replaces any default.
     const headers = headersToRecord(init.headers);
 
     // Let fetch add the multipart boundary itself.
     if (type !== undefined && type !== ContentType.FormData) {
-      headers["Content-Type"] = type;
+      headers["content-type"] = type;
     }
+
+    const controller =
+      cancelToken === undefined
+        ? undefined
+        : this.acquireAbortController(cancelToken);
 
     try {
       const response = await this.customFetch(
@@ -271,10 +375,7 @@ export class HttpClient<SecurityDataType = unknown> implements HttpProvider {
         {
           ...init,
           headers,
-          signal:
-            cancelToken === undefined
-              ? (init.signal ?? null)
-              : this.createAbortSignal(cancelToken),
+          signal: controller?.signal ?? init.signal ?? null,
           body: this.serializeBody(body, type),
         },
       );
@@ -283,9 +384,10 @@ export class HttpClient<SecurityDataType = unknown> implements HttpProvider {
       result.data = null as Data;
       result.error = null as Error;
 
-      if (responseFormat !== undefined) {
+      const bodyFormat = responseFormat(response, requestedFormat);
+      if (bodyFormat !== undefined) {
         try {
-          const parsed = await readBody(response.clone(), responseFormat);
+          const parsed = await readBody(response.clone(), bodyFormat);
           if (response.ok) result.data = parsed as Data;
           else result.error = parsed as Error;
         } catch (error) {
@@ -296,7 +398,9 @@ export class HttpClient<SecurityDataType = unknown> implements HttpProvider {
       if (!response.ok) throw result;
       return result;
     } finally {
-      if (cancelToken !== undefined) this.abortControllers.delete(cancelToken);
+      if (controller !== undefined) {
+        this.releaseAbortController(cancelToken!, controller);
+      }
     }
   };
 }

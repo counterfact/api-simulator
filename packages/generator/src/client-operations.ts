@@ -25,7 +25,15 @@ export type ClientResponseFormat = "blob" | "json" | "text";
 /** One OpenAPI operation, described the way the client generator needs it. */
 export interface ClientOperation {
   /** Request body, when the operation declares one. */
-  body?: { contentType?: ClientContentType; required: boolean };
+  body?: {
+    contentType?: ClientContentType;
+    required: boolean;
+    /**
+     * Whether the generated route types describe this body. They do only for
+     * the media types the mock server parses.
+     */
+    routeTyped: boolean;
+  };
   deprecated: boolean;
   description?: string;
   format?: ClientResponseFormat;
@@ -63,6 +71,8 @@ export const RESERVED_MODULE_NAMES = new Set([
   "HttpProvider",
   "HttpResponse",
   "Index",
+  "MultipartBody",
+  "MultipartField",
   "OperationBody",
   "OperationData",
   "OperationError",
@@ -74,6 +84,29 @@ export const RESERVED_MODULE_NAMES = new Set([
   "Routes",
   "Schemas",
 ]);
+
+/** TypeScript's predefined type names, which a class cannot use. */
+const PREDEFINED_TYPE_NAMES = new Set([
+  "any",
+  "bigint",
+  "boolean",
+  "never",
+  "number",
+  "object",
+  "string",
+  "symbol",
+  "undefined",
+  "unknown",
+]);
+
+/** Whether `name` can name a generated class. */
+export function isClassName(name: string): boolean {
+  return (
+    /^[A-Z_$a-z][\w$]*$/u.test(name) &&
+    !RESERVED_WORDS.has(name) &&
+    !PREDEFINED_TYPE_NAMES.has(name)
+  );
+}
 
 /** Members of every generated module class that operations must not shadow. */
 const RESERVED_MEMBER_NAMES = new Set(["constructor", "http"]);
@@ -280,6 +313,13 @@ function successResponses(operation: Requirement): Requirement[] {
   );
 }
 
+/** The request body media types that the generated route types describe. */
+const ROUTE_BODY_MEDIA_TYPES = [
+  "application/json",
+  "application/x-www-form-urlencoded",
+  "multipart/form-data",
+];
+
 function describeBody(
   specification: Specification,
   operation: Requirement,
@@ -295,6 +335,9 @@ function describeBody(
         content?.map((_, mediaType) => mediaType) ?? [],
       ),
       required: resolved.get("required")?.data === true,
+      routeTyped: ROUTE_BODY_MEDIA_TYPES.some(
+        (mediaType) => content?.get(mediaType)?.has("schema") === true,
+      ),
     };
   }
 
@@ -302,6 +345,14 @@ function describeBody(
   const consumes = operation.has("consumes")
     ? stringList(operation.get("consumes"))
     : stringList(specification.getRequirement("#/consumes"));
+  // Route types describe the first body or form parameter's schema, and only
+  // when the document declares `consumes`.
+  const routeTyped =
+    (operation.has("consumes") ||
+      specification.getRequirement("#/consumes") !== undefined) &&
+    parameters.find((parameter) =>
+      ["body", "formData"].includes(parameter.in),
+    )?.["schema"] !== undefined;
 
   const bodyParameters = parameters.filter(
     (parameter) => parameter.in === "body",
@@ -316,6 +367,7 @@ function describeBody(
     return {
       contentType: consumes.length === 0 ? "Json" : contentTypeFor(consumes),
       required: required(bodyParameters),
+      routeTyped,
     };
   }
 
@@ -327,6 +379,7 @@ function describeBody(
         ? "FormData"
         : "UrlEncoded",
       required: required(formParameters),
+      routeTyped,
     };
   }
 

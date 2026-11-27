@@ -46,6 +46,10 @@ Method arguments come in this order: path parameters, then the query object and 
 
 Methods resolve with the `fetch` `Response`, extended with typed `data` (a 2xx body) and `error` (any other body). A non-2xx response rejects with that same object. Pass `--unwrap-response-data` to resolve with `data` instead.
 
+Bodies are read by the response's own `Content-Type`: JSON as JSON, `text/*` and XML as text, anything else as a `Blob`. A 2xx response uses the operation's `format` when it has one. Empty bodies (204, 205, 304, or `Content-Length: 0`) leave both `data` and `error` null.
+
+JSON request bodies are always sent through `JSON.stringify`, so a string body is sent as a JSON string and `null` as `null`. Multipart bodies take `Blob` and `File` values, byte arrays, and the `MultipartFile` objects (`{ data, filename, contentType, size }`) that Counterfact's shared types use for binary fields. All of these are uploaded as binary parts. Requests that share a `cancelToken` share one abort signal, and `abortRequest(token)` cancels every one of them still in flight. A body media type that the route types don't describe (anything other than JSON, URL-encoded, or multipart form data) is typed `unknown`.
+
 You can also construct a single module: `new Users(http)`.
 
 ## HTTP providers
@@ -106,8 +110,8 @@ await api.jobs.jobsCreate(body, { preferAsync: true });
 ## Naming options
 
 - `--module-class-suffix <suffix>` appends a suffix to every module class name.
-- `--type-prefix <prefix>` and `--type-suffix <suffix>` add a prefix or suffix to every data contract type name.
-- `--api-class-name <name>` renames the class that combines every module.
+- `--type-prefix <prefix>` and `--type-suffix <suffix>` add a prefix or suffix to every data contract type name. A prefix cannot start with a digit.
+- `--api-class-name <name>` renames the class that combines every module. It must be a valid TypeScript class name that is not a reserved word. A module that would share its name gets a `Module` suffix.
 
 For example, to generate `UsersClient` classes and `UserDto` models:
 
@@ -152,6 +156,8 @@ getUser = (id: number, params: RequestParams = {}) =>
     ...params,
   });
 ```
+
+In multipart request bodies, binary fields also accept `Blob`, `File`, and `Uint8Array` values through the `MultipartBody` type. The data contract types themselves keep their JSON shape.
 
 The response type is the union of the 2xx response bodies, and the error type is the union of the other responses, including `default`. When a response offers several media types, JSON is preferred. Swagger 2.0 documents are supported, with `#/definitions` as the data contracts. The [naming options](#naming-options) and [schema declaration options](./generated-code.md#customize-schema-declarations) apply. Versioned APIs are not supported yet.
 

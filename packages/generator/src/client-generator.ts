@@ -23,6 +23,7 @@ import {
   type ClientModule,
   type ClientOperation,
   collectClientModules,
+  isClassName,
   pascalCase,
   RESERVED_MODULE_NAMES,
   uniqueName,
@@ -223,7 +224,11 @@ function routeOperationTypes(operation: ClientOperation): OperationTypes {
   const operationType = typeReference(operationTypeName(operation));
   const helper = (name: string) => typeReference(name, [operationType]);
   return {
-    body: () => helper("OperationBody"),
+    // Route types describe only bodies the mock parses; accept any other body.
+    body: () =>
+      operation.body?.routeTyped === false
+        ? unknownType()
+        : helper("OperationBody"),
     data: () => helper("OperationData"),
     error: () => helper("OperationError"),
     path: (name) =>
@@ -245,8 +250,17 @@ function standaloneOperationTypes(
       (parameter) => (parameter.data as { in: string }).in === location,
     );
   return {
-    body: () =>
-      contracts.bodyType(script, requirement, parameters) ?? unknownType(),
+    body: () => {
+      const body =
+        contracts.bodyType(script, requirement, parameters) ?? unknownType();
+      // Multipart uploads also accept a Blob or File for binary fields.
+      return operation.body?.contentType === "FormData"
+        ? typeReference(
+            script.importExternalType("MultipartBody", "./http-client.js"),
+            [body],
+          )
+        : body;
+    },
     data: () => contracts.responseType(script, requirement, true),
     error: () => contracts.responseType(script, requirement, false),
     path: (name) =>
@@ -488,6 +502,11 @@ async function standaloneFiles(
     script.importExternal("HttpClient", "./http-client.js");
     script.importExternalType("HttpProvider", "./http-client.js");
     script.importExternalType("RequestParams", "./http-client.js");
+    if (
+      module.operations.some(({ body }) => body?.contentType === "FormData")
+    ) {
+      script.importExternalType("MultipartBody", "./http-client.js");
+    }
 
     const declaration = f.createClassDeclaration(
       exportModifier(),
@@ -548,10 +567,12 @@ async function standaloneFiles(
 function dataContractStatements(
   specification: Specification,
   { typePrefix = "", typeSuffix = "" }: ClientGenerationOptions,
+  classNames: readonly string[],
 ): ts.Statement[] {
-  // `index.ts` re-exports these alongside the HTTP provider, so keep them apart.
+  // `index.ts` re-exports these alongside the HTTP provider and the module and
+  // API classes, whose explicit exports would shadow a contract of the same name.
   const taken = new Set(
-    [...RESERVED_MODULE_NAMES].map((name) => name.toLowerCase()),
+    [...RESERVED_MODULE_NAMES, ...classNames].map((name) => name.toLowerCase()),
   );
   const statements: ts.Statement[] = [];
 
@@ -724,6 +745,26 @@ async function isGeneratedClientFile(path: string): Promise<boolean> {
 }
 
 /**
+ * Renames the module that shares the API class's name, choosing a name no
+ * other module (or the API class) uses, since names are also file names.
+ */
+function renameApiCollision(
+  modules: ClientModule[],
+  apiClassName: string,
+): ClientModule[] {
+  const taken = new Set(
+    [apiClassName, ...modules.map((module) => module.name)].map((name) =>
+      name.toLowerCase(),
+    ),
+  );
+  return modules.map((module) =>
+    module.name.toLowerCase() === apiClassName.toLowerCase()
+      ? { ...module, name: uniqueName(`${module.name}Module`, taken) }
+      : module,
+  );
+}
+
+/**
  * Generates a typed API client for `specification` in
  * `destination/client`, with one class per module.
  *
@@ -741,11 +782,6 @@ export async function generateClient(
   options: ClientGenerationOptions = {},
 ): Promise<string[]> {
   const apiClassName = options.apiClassName ?? "Api";
-  const modules = collectClientModules(specification, options).map((module) =>
-    module.name.toLowerCase() === apiClassName.toLowerCase()
-      ? { ...module, name: `${module.name}Module` }
-      : module,
-  );
 
   const affixes = {
     moduleClassSuffix: options.moduleClassSuffix,
@@ -760,11 +796,29 @@ export async function generateClient(
     }
   }
 
+  // A prefix starts every type name, so it cannot start with a digit.
+  if (/^\d/u.test(options.typePrefix ?? "")) {
+    throw new Error(
+      `The client option typePrefix must not start with a digit (received ${JSON.stringify(options.typePrefix)}).`,
+    );
+  }
+
+  if (!isClassName(apiClassName)) {
+    throw new Error(
+      `The API class name ${JSON.stringify(apiClassName)} is not a valid TypeScript class name.`,
+    );
+  }
+
   if (RESERVED_MODULE_NAMES.has(apiClassName)) {
     throw new Error(
       `The API class name ${JSON.stringify(apiClassName)} is reserved by the generated client.`,
     );
   }
+
+  const modules = renameApiCollision(
+    collectClientModules(specification, options),
+    apiClassName,
+  );
 
   const directory = nodePath.join(destination, CLIENT_DIRECTORY);
   const files = new Map<string, string>();
@@ -783,7 +837,10 @@ export async function generateClient(
       files.set(path, contents);
     }
   } else {
-    const dataContracts = dataContractStatements(specification, options);
+    const dataContracts = dataContractStatements(specification, options, [
+      apiClassName,
+      ...modules.map((module) => module.name),
+    ]);
     hasDataContractValues = dataContracts.some(
       (statement) => ts.isExportDeclaration(statement) && !statement.isTypeOnly,
     );

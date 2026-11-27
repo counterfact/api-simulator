@@ -2,6 +2,7 @@ export {
   type ClientGenerationOptions,
   generateClient,
 } from "./client-generator.js";
+export { isClassName } from "./client-operations.js";
 export { CodeGenerator, type GenerateOptions } from "./code-generator.js";
 export {
   buildOperationTypeNameMapping,

@@ -478,7 +478,10 @@ describe("standalone API client", () => {
         'import { ContentType } from "./http-client.js";',
       );
       expect(module).toContain("type: ContentType.FormData,");
-      expect(module).toContain("data?: { name?: string }");
+      expect(module).toContain(
+        'import type { MultipartBody } from "./http-client.js";',
+      );
+      expect(module).toContain("data?: MultipartBody<{ name?: string }>");
       expect(await $.read("api/client/data-contracts/File.ts")).toContain(
         "export type File = { size: number };",
       );
@@ -640,6 +643,73 @@ describe("standalone API client", () => {
           "v1",
         ).generateClientOnly(),
       ).rejects.toThrow("does not support versioned APIs");
+    });
+  });
+
+  it("lets generated multipart methods upload Blobs and Files, including through references", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await generate(
+        $,
+        {
+          openapi: "3.1.0",
+          info: { title: "T", version: "1" },
+          paths: {
+            "/avatars": {
+              post: {
+                operationId: "upload",
+                requestBody: {
+                  required: true,
+                  content: {
+                    "multipart/form-data": {
+                      schema: { $ref: "#/components/schemas/Avatar" },
+                    },
+                  },
+                },
+                responses: { 204: { description: "OK" } },
+              },
+            },
+          },
+          components: {
+            schemas: {
+              Avatar: {
+                type: "object",
+                required: ["image"],
+                properties: {
+                  image: { type: "string", format: "binary" },
+                  extras: {
+                    type: "array",
+                    items: { type: "string", format: "binary" },
+                  },
+                  caption: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+        { client: true },
+      );
+      await $.add(
+        "consumer.ts",
+        `
+        import { Api, type Avatar } from "./api/client/index.js";
+
+        export async function consume(): Promise<void> {
+          const api = new Api();
+          await api.avatars.upload({
+            image: new File(["png"], "me.png", { type: "image/png" }),
+            extras: [new Blob(["a"]), new Uint8Array([1])],
+            caption: "me",
+          });
+          // The JSON representation of the contract is unchanged.
+          const json: Avatar = { image: "aGk=" };
+          void json;
+          // @ts-expect-error other fields keep their schema types
+          await api.avatars.upload({ image: new Blob([]), caption: 1 });
+        }
+        `,
+      );
+
+      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
     });
   });
 });

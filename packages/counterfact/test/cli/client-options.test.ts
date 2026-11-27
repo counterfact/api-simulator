@@ -50,11 +50,11 @@ describe("resolveClientOptions", () => {
     },
   );
 
-  it.each(["my-api", "1Api", ""])(
+  it.each(["my-api", "1Api", "", "class", "string"])(
     "rejects the API class name %p",
     (apiClassName) => {
       expect(() => resolveClientOptions({ apiClassName })).toThrow(
-        /--api-class-name must be a valid TypeScript identifier/u,
+        /--api-class-name must be a valid TypeScript class name/u,
       );
     },
   );
@@ -66,6 +66,15 @@ describe("resolveClientOptions", () => {
   ])("rejects a %s that is not made of identifier characters", (key, flag) => {
     expect(() => resolveClientOptions({ [key]: "-Dto" })).toThrow(
       `${flag} must contain only letters, digits, _ and $`,
+    );
+  });
+
+  it("rejects a type prefix that starts with a digit but allows digits later", () => {
+    expect(() => resolveClientOptions({ typePrefix: "1I" })).toThrow(
+      /--type-prefix must not start with a digit/u,
+    );
+    expect(resolveClientOptions({ typePrefix: "I1", typeSuffix: "2" })).toEqual(
+      { typePrefix: "I1", typeSuffix: "2" },
     );
   });
 });

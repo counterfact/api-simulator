@@ -544,6 +544,207 @@ describe("generated API client", () => {
     });
   });
 
+  it("gives every module a distinct name when renaming one away from the API class", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "spec.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "Api", version: "1" },
+          paths: {
+            "/api": { get: { responses: { 204: { description: "OK" } } } },
+            "/api-module": {
+              get: { responses: { 204: { description: "OK" } } },
+            },
+          },
+        }),
+      );
+      await new CodeGenerator($.path("spec.json"), $.path("api"), {
+        types: true,
+        client: true,
+      }).generate();
+
+      const index = await $.read("api/client/index.ts");
+      expect(index).toContain('from "./ApiModule.js"');
+      expect(index).toContain('from "./ApiModule2.js"');
+      expect(diagnostics($.path("api/client/index.ts"))).toEqual([]);
+    });
+  });
+
+  it("keeps a shared data contract named like a module importable from the barrel", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "spec.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "T", version: "1" },
+          paths: {
+            "/users": {
+              get: {
+                operationId: "listUsers",
+                responses: {
+                  200: {
+                    description: "OK",
+                    content: {
+                      "application/json": {
+                        schema: { $ref: "#/components/schemas/Users" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          components: {
+            schemas: {
+              Users: {
+                type: "object",
+                required: ["count"],
+                properties: { count: { type: "integer" } },
+              },
+            },
+          },
+        }),
+      );
+      await new CodeGenerator($.path("spec.json"), $.path("api"), {
+        types: true,
+        client: true,
+      }).generate();
+      await $.add(
+        "consumer.ts",
+        `
+        import { Api, Users, type Users2 } from "./api/client/index.js";
+
+        export async function consume(): Promise<number> {
+          const list: Users2 = (await new Api().users.listUsers()).data;
+          void new Users();
+          return list.count;
+        }
+        `,
+      );
+
+      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+    });
+  });
+
+  it("types bodies the route types do not describe as unknown, so they can be sent", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "spec.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "T", version: "1" },
+          paths: {
+            "/notes": {
+              post: {
+                operationId: "addNote",
+                requestBody: {
+                  required: true,
+                  content: { "text/plain": { schema: { type: "string" } } },
+                },
+                responses: { 204: { description: "OK" } },
+              },
+            },
+          },
+        }),
+      );
+      await new CodeGenerator($.path("spec.json"), $.path("api"), {
+        types: true,
+        client: true,
+      }).generate();
+      await $.add(
+        "consumer.ts",
+        `
+        import { Api } from "./api/client/index.js";
+
+        export async function consume(): Promise<void> {
+          await new Api().notes.addNote("remember the milk");
+        }
+        `,
+      );
+
+      expect(await $.read("api/client/Notes.ts")).toContain("data: unknown");
+      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+    });
+  });
+
+  it.each([
+    [{ typePrefix: "1" }, /typePrefix must not start with a digit/u],
+    [{ apiClassName: "class" }, /not a valid TypeScript class name/u],
+    [{ apiClassName: "my-api" }, /not a valid TypeScript class name/u],
+    [{ apiClassName: "string" }, /not a valid TypeScript class name/u],
+  ])("rejects the client options %j", async (options, message) => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add("spec.json", JSON.stringify(USERS_SPEC));
+
+      await expect(
+        generateClient(
+          await Specification.fromFile($.path("spec.json")),
+          $.path("out"),
+          options,
+        ),
+      ).rejects.toThrow(message);
+    });
+  });
+
+  it("accepts the shared multipart file type for binary form fields", async () => {
+    await usingTemporaryFiles(async ($) => {
+      await $.add(
+        "spec.json",
+        JSON.stringify({
+          openapi: "3.0.3",
+          info: { title: "T", version: "1" },
+          paths: {
+            "/avatars": {
+              post: {
+                operationId: "upload",
+                requestBody: {
+                  required: true,
+                  content: {
+                    "multipart/form-data": {
+                      schema: {
+                        type: "object",
+                        required: ["image"],
+                        properties: {
+                          image: { type: "string", format: "binary" },
+                        },
+                      },
+                    },
+                  },
+                },
+                responses: { 204: { description: "OK" } },
+              },
+            },
+          },
+        }),
+      );
+      await new CodeGenerator($.path("spec.json"), $.path("api"), {
+        types: true,
+        client: true,
+      }).generate();
+      await $.add(
+        "consumer.ts",
+        `
+        import { Api } from "./api/client/index.js";
+
+        export async function consume(): Promise<void> {
+          // HttpClient uploads this as a binary part named me.png.
+          await new Api().avatars.upload({
+            image: {
+              data: new Uint8Array([1, 2, 3]),
+              filename: "me.png",
+              contentType: "image/png",
+              size: 3,
+            },
+          });
+        }
+        `,
+      );
+
+      expect(diagnostics($.path("consumer.ts"))).toEqual([]);
+    });
+  });
+
   it("does not generate a client unless types are generated", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("spec.json", JSON.stringify(USERS_SPEC));
