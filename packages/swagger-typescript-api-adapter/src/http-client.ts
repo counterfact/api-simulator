@@ -158,8 +158,8 @@ class StaTransport<
     for (const source of [params.headers, security?.headers]) {
       new Headers(source).forEach((value, key) => headers.set(key, value));
     }
-    if (type && type !== ContentType.FormData)
-      headers.set("Content-Type", type);
+    if (type === ContentType.FormData) headers.delete("Content-Type");
+    else if (type) headers.set("Content-Type", type);
     const {
       secure: _secure,
       format: configuredFormat,

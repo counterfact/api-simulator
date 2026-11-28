@@ -53,6 +53,7 @@ const spec = {
           content: {
             "multipart/form-data": {
               schema: { $ref: "#/components/schemas/Upload" },
+              encoding: { file: { contentType: "image/png" } },
             },
           },
         },
@@ -156,10 +157,15 @@ const verifyMultipart = `
     fetch: (async (input, init) => {
       const request = new Request(input, init);
       assert.match(request.headers.get("content-type") ?? "", /^multipart\\/form-data; boundary=/);
+      if (calls < 2) {
+        assert.ok((await request.clone().text()).includes(
+          'Content-Disposition: form-data; name="metadata"\\r\\nContent-Type: application/json\\r\\n',
+        ));
+      }
       const form = await request.formData();
       const file = form.get("file");
       assert.ok(file instanceof Blob);
-      assert.equal(file.type, "application/octet-stream");
+      assert.equal(file.type, calls < 2 ? "image/png" : "application/octet-stream");
       assert.deepEqual([...new Uint8Array(await file.arrayBuffer())], [255, 0]);
       const [first, second] = form.getAll("attachments");
       assert.ok(first instanceof File);
@@ -167,6 +173,7 @@ const verifyMultipart = `
       assert.equal(first.type, "text/plain");
       assert.equal(await first.text(), "hello");
       assert.ok(second instanceof Blob);
+      assert.equal(second.type, "application/octet-stream");
       assert.deepEqual([...new Uint8Array(await second.arrayBuffer())], [128, 5]);
       assert.equal(form.get("metadata"), '{"count":2}');
       assert.equal(form.get("alternate"), "7");
@@ -185,7 +192,11 @@ const verifyMultipart = `
   const route = createClient(options)("/upload").method("post");
   const sdk = createSdk(options);
   const Api = wrapSta(createSdk);
-  const sta = new Api({ baseUrl: options.baseUrl, customFetch: options.fetch });
+  const sta = new Api({
+    baseUrl: options.baseUrl,
+    customFetch: options.fetch,
+    baseApiParams: { headers: { "Content-Type": "application/json" } },
+  });
   await route.body(body).send();
   await sdk.upload.uploadFiles({ body });
   await sta.upload.uploadFiles(body);
@@ -200,6 +211,23 @@ const verifyMultipart = `
     route.body({ ...body, metadata: { count: "2" } });
     // Explicit FormData is still accepted.
     route.body(new FormData());
+  }
+`;
+
+const verifyRawMultipartTypes = `
+  if (false) {
+    const raw = { ...body, attachment: new File(["file"], "file.txt") };
+    route.body(raw);
+    sdk.upload.uploadFiles({ body: raw });
+    sta.upload.uploadFiles(raw);
+    // @ts-expect-error a typeless OpenAPI 3.1+ raw part requires bytes or a Blob
+    route.body({ ...raw, attachment: 42 });
+    // @ts-expect-error the named SDK also checks the raw part
+    sdk.upload.uploadFiles({ body: { ...raw, attachment: 42 } });
+    // @ts-expect-error the adapter also checks the raw part
+    sta.upload.uploadFiles({ ...raw, attachment: 42 });
+    // @ts-expect-error a contentMediaType raw part requires bytes or a Blob in the adapter
+    sta.upload.uploadFiles({ ...raw, file: 42 });
   }
 `;
 
@@ -239,7 +267,15 @@ it.each([
                     ...spec.components,
                     schemas: {
                       ...spec.components.schemas,
-                      Binary: { contentMediaType: "application/octet-stream" },
+                      Binary: { contentMediaType: "application/pdf" },
+                      RawFile: {},
+                      Upload: {
+                        ...spec.components.schemas.Upload,
+                        properties: {
+                          ...spec.components.schemas.Upload.properties,
+                          attachment: { $ref: "#/components/schemas/RawFile" },
+                        },
+                      },
                     },
                   },
                 }
@@ -376,6 +412,7 @@ it.each([
         });
         await assert.rejects(api.users.getUser(99), { reason: "schema-mismatch" });
         ${swagger2 ? "" : verifyMultipart}
+        ${openapiVersion ? verifyRawMultipartTypes : ""}
       `,
       );
 

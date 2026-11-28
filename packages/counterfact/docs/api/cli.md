@@ -217,8 +217,10 @@ generated schema types. Text, binary, and URL-encoded bodies use `string`,
 
 For an OpenAPI 3.x multipart body, pass an object typed from the schema or a
 prepared `FormData`. File fields accept `File`, `Blob`, or `Uint8Array`. Array
-items are sent as separate parts under the same field name. Pass `FormData`
-directly to control serialization yourself.
+items are sent as separate parts under the same field name. Object parts use
+`application/json` by default. Use `encoding.<field>.contentType` to set a
+part's media type. For custom serialization such as an XML part, pass
+prepared `FormData` directly.
 Response decoding supports exact declared media types, with non-JSON,
 non-text content returned as bytes. Fetch-forbidden HTTP methods are omitted
 from the generated client.

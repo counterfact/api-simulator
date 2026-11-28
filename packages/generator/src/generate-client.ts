@@ -62,6 +62,16 @@ function schemaType(
   return schema ? new SchemaTypeCoder(schema).write(script) : unknownType();
 }
 
+function multipartContentTypes(media: Requirement | undefined) {
+  if (!media) return undefined;
+  const types = new Map<string, string>();
+  media.get("encoding")?.forEach((part, name) => {
+    const contentType = part.get("contentType")?.data;
+    if (typeof contentType === "string") types.set(name, contentType);
+  });
+  return types.size ? Object.fromEntries(types) : undefined;
+}
+
 function parametersFor(operation: Requirement) {
   const parameters = new Map<string, Requirement>();
   for (const scope of [operation.parent, operation]) {
@@ -267,6 +277,12 @@ function describe(
       ? new ClientMultipartSchemaTypeCoder(selected.schema).write(script)
       : undefined;
   const structuredBody = formType ?? multipartType;
+  const multipartMedia =
+    selected?.type === "multipart/form-data" && !swagger
+      ? requestBody
+          ?.get("content")
+          ?.find((_, type) => type.toLowerCase() === selected.type)
+      : undefined;
 
   const responseMetadata = new Map<string, string[]>();
   const responseSchemas = new Map<string, Record<string, string>>();
@@ -330,7 +346,15 @@ function describe(
         ? [
             typeProperty(
               "adapterBody",
-              formType ?? schemaType(selected.schema, script),
+              formType ??
+                (multipartType && selected.schema
+                  ? new ClientMultipartSchemaTypeCoder(
+                      selected.schema,
+                      "",
+                      "root",
+                      true,
+                    ).write(script)
+                  : schemaType(selected.schema, script)),
             ),
           ]
         : []),
@@ -343,6 +367,7 @@ function describe(
         mediaType: selected.type,
         required: bodyRequired,
         formFields: formFields?.map(({ schema: _schema, ...field }) => field),
+        multipartContentTypes: multipartContentTypes(multipartMedia),
       },
       responses: Object.fromEntries(responseMetadata),
       security: clientSecurityRequirements(operation),

@@ -15,7 +15,7 @@ import {
   type SecurityRequirement,
 } from "./fetch-auth.js";
 
-import { appendMultipartField } from "./multipart-form.js";
+import { encodeMultipartBody } from "./multipart-form.js";
 
 export { appendMultipartField } from "./multipart-form.js";
 export { RequestAuthenticationError } from "./fetch-auth.js";
@@ -76,6 +76,7 @@ export interface FetchOperation {
     required: boolean;
     mediaType: string;
     formFields?: readonly SwaggerFormField[];
+    multipartContentTypes?: Readonly<Record<string, string>>;
   };
   responses: Readonly<Record<string, readonly string[]>>;
   security?: readonly SecurityRequirement[];
@@ -404,7 +405,11 @@ function encodeSwaggerForm(
   return form;
 }
 
-function encodeBody(mediaType: string, value: unknown): RequestInit["body"] {
+function encodeBody(
+  mediaType: string,
+  value: unknown,
+  multipartContentTypes: Readonly<Record<string, string>> | undefined,
+): RequestInit["body"] {
   if (isJson(mediaType)) {
     const json = JSON.stringify(value);
     if (json !== undefined) return json;
@@ -419,13 +424,7 @@ function encodeBody(mediaType: string, value: unknown): RequestInit["body"] {
   if (mediaType === "multipart/form-data") {
     if (value instanceof FormData) return value;
     const fields = pairs(value);
-    if (fields) {
-      const form = new FormData();
-      for (const [name, field] of fields) {
-        if (field !== undefined) appendMultipartField(form, name, field, true);
-      }
-      return form;
-    }
+    if (fields) return encodeMultipartBody(fields, multipartContentTypes);
   }
   if (
     mediaType === "application/x-www-form-urlencoded" &&
@@ -628,10 +627,10 @@ function buildRequest(
 
   let body: RequestInit["body"];
   if (inputs.body !== undefined && operation.body) {
-    const { mediaType, formFields } = operation.body;
+    const { mediaType, formFields, multipartContentTypes } = operation.body;
     body = formFields
       ? encodeSwaggerForm(mediaType, formFields, inputs.body)
-      : encodeBody(mediaType, inputs.body);
+      : encodeBody(mediaType, inputs.body, multipartContentTypes);
     if (mediaType === "multipart/form-data") headers.delete("content-type");
     else headers.set("content-type", mediaType);
   }
