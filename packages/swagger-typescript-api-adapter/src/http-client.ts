@@ -5,6 +5,9 @@ export type CancelToken = symbol | string | number;
 export type ResponseFormat =
   "arrayBuffer" | "blob" | "bytes" | "formData" | "json" | "text";
 
+export const responseMediaTypes = Symbol("responseMediaTypes");
+type ResponseMediaTypes = Readonly<Record<string, readonly string[]>>;
+
 export enum ContentType {
   Json = "application/json",
   JsonApi = "application/vnd.api+json",
@@ -23,6 +26,10 @@ export interface FullRequestParams extends Omit<RequestInit, "body"> {
   baseUrl?: string;
   cancelToken?: CancelToken;
 }
+
+export type OperationRequestParams = FullRequestParams & {
+  [responseMediaTypes]?: ResponseMediaTypes;
+};
 
 export type RequestParams = Omit<
   FullRequestParams,
@@ -96,6 +103,43 @@ interface PendingRequests {
   count: number;
 }
 
+export function responseFormatForMediaType(
+  mediaType: string | undefined,
+): ResponseFormat | undefined {
+  if (mediaType === undefined) return undefined;
+  if (mediaType === "application/json" || mediaType.endsWith("+json"))
+    return "json";
+  if (mediaType.startsWith("image/")) return "blob";
+  if (mediaType.startsWith("text/")) return "text";
+  if (
+    mediaType === "multipart/form-data" ||
+    mediaType === "application/x-www-form-urlencoded"
+  )
+    return "formData";
+  return "arrayBuffer";
+}
+
+function operationResponseFormat(
+  responses: ResponseMediaTypes,
+  response: Response,
+): ResponseFormat | undefined {
+  const { status } = response;
+  const declared = [String(status), `${Math.floor(status / 100)}XX`, "default"]
+    .filter((key) => Object.hasOwn(responses, key))
+    // eslint-disable-next-line security/detect-object-injection -- Keys are matched to own properties above.
+    .map((key) => responses[key])[0];
+  const mediaType = response.headers
+    .get("content-type")
+    ?.split(";")[0]
+    ?.trim()
+    .toLowerCase();
+  const selected =
+    declared?.find((type) => type === mediaType) ??
+    declared?.[0] ??
+    (declared === undefined ? mediaType : undefined);
+  return responseFormatForMediaType(selected);
+}
+
 /** Fetch transport for STA-style requests and response handling. */
 class StaTransport<
   SecurityData = unknown,
@@ -145,11 +189,12 @@ class StaTransport<
     type,
     query,
     format,
+    [responseMediaTypes]: operationResponses,
     body,
     baseUrl,
     cancelToken,
     ...params
-  }: FullRequestParams): Promise<HttpResponse<Data, Error>> => {
+  }: OperationRequestParams): Promise<HttpResponse<Data, Error>> => {
     const security =
       (secure ?? this.defaults.secure)
         ? await this.securityWorker?.(this.securityData)
@@ -190,7 +235,11 @@ class StaTransport<
         data: null as Data,
         error: null as Error,
       });
-      const responseFormat = format ?? configuredFormat;
+      const responseFormat =
+        format ??
+        (operationResponses &&
+          operationResponseFormat(operationResponses, response)) ??
+        configuredFormat;
       if (responseFormat) {
         const copy = response.clone();
         try {

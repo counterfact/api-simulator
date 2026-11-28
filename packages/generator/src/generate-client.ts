@@ -272,17 +272,24 @@ function describe(
   const bodyType = selected
     ? requestBodyType(selected.type, selected.schema, script)
     : neverType();
-  const multipartType =
-    selected?.type === "multipart/form-data" && !swagger && selected.schema
-      ? new ClientMultipartSchemaTypeCoder(selected.schema).write(script)
-      : undefined;
-  const structuredBody = formType ?? multipartType;
   const multipartMedia =
     selected?.type === "multipart/form-data" && !swagger
       ? requestBody
           ?.get("content")
           ?.find((_, type) => type.toLowerCase() === selected.type)
       : undefined;
+  const multipartEncoding = multipartMedia?.get("encoding");
+  const multipartSchema = multipartMedia && selected?.schema;
+  const multipartType = multipartSchema
+    ? new ClientMultipartSchemaTypeCoder(
+        multipartSchema,
+        "",
+        "root",
+        false,
+        multipartEncoding,
+      ).write(script)
+    : undefined;
+  const structuredBody = formType ?? multipartType;
 
   const responseMetadata = new Map<string, string[]>();
   const responseSchemas = new Map<string, Record<string, string>>();
@@ -347,12 +354,13 @@ function describe(
             typeProperty(
               "adapterBody",
               formType ??
-                (multipartType && selected.schema
+                (multipartSchema
                   ? new ClientMultipartSchemaTypeCoder(
-                      selected.schema,
+                      multipartSchema,
                       "",
                       "root",
                       true,
+                      multipartEncoding,
                     ).write(script)
                   : schemaType(selected.schema, script)),
             ),

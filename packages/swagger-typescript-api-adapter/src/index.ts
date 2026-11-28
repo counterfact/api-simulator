@@ -12,7 +12,10 @@ import type {
 
 import {
   ContentType,
+  HttpClient,
   resolveHttpClient,
+  responseFormatForMediaType,
+  responseMediaTypes,
   type ApiConfig,
   type CancelToken,
   type FullRequestParams,
@@ -20,7 +23,7 @@ import {
   type HttpResponse,
   type QueryParamsType,
   type RequestParams,
-  type ResponseFormat,
+  type OperationRequestParams,
 } from "./http-client.js";
 
 export { ContentType, HttpClient } from "./http-client.js";
@@ -82,7 +85,17 @@ type OperationArguments<
 ];
 
 type SuccessStatus = `2${"XX" | `${number}${number}`}`;
-type ResultBody<Result> = Result extends { body: infer Body } ? Body : never;
+type ResultBody<Result> = Result extends {
+  body: infer Body;
+  mediaType: infer MediaType;
+}
+  ? MediaType extends `image/${string}`
+    ? Blob
+    : MediaType extends
+          "multipart/form-data" | "application/x-www-form-urlencoded"
+      ? FormData
+      : Body
+  : never;
 type BodyOr<Body, Fallback> = [Body] extends [never]
   ? Fallback
   : Body extends undefined
@@ -178,30 +191,12 @@ function contentTypeOf(operation: FetchOperation): ContentType | undefined {
   );
 }
 
-function responseFormatOf(
-  operation: FetchOperation,
-): ResponseFormat | undefined {
-  const success = Object.entries(operation.responses).find(([status]) =>
-    /^2(?:\d\d|XX)$/u.test(status),
-  );
-  const mediaType = success?.[1][0];
-  if (mediaType === undefined) return undefined;
-  if (mediaType === "application/json" || mediaType.endsWith("+json"))
-    return "json";
-  if (mediaType.startsWith("image/")) return "blob";
-  if (
-    mediaType === "multipart/form-data" ||
-    mediaType === "application/x-www-form-urlencoded"
-  )
-    return "formData";
-  return undefined;
-}
-
 function requestFor(
   operation: FetchOperation,
   { path, method, pathParameters }: NamedOperation,
   args: readonly unknown[],
-): FullRequestParams {
+  inferResponseFormat: boolean,
+): OperationRequestParams {
   for (const [index, key] of pathParameters.entries()) {
     const value = String(args.at(index));
     path = path.replaceAll(`{${key}}`, () => value);
@@ -225,7 +220,13 @@ function requestFor(
   const secure = operation.security?.some(
     (alternative) => Object.keys(alternative).length > 0,
   );
-  const format = responseFormatOf(operation);
+  const format = inferResponseFormat
+    ? undefined
+    : responseFormatForMediaType(
+        Object.entries(operation.responses).find(([status]) =>
+          /^2(?:\d\d|XX)$/u.test(status),
+        )?.[1][0],
+      );
   return {
     path,
     method: method.toUpperCase(),
@@ -233,6 +234,7 @@ function requestFor(
     ...(operation.body && { body, type: contentTypeOf(operation) }),
     ...(secure && { secure }),
     ...(format && { format }),
+    ...(inferResponseFormat && { [responseMediaTypes]: operation.responses }),
     ...params,
   };
 }
@@ -272,7 +274,14 @@ export function wrapSta<
             return [
               name,
               (...args: unknown[]) =>
-                this.request(requestFor(operation, entry, args)),
+                this.request(
+                  requestFor(
+                    operation,
+                    entry,
+                    args,
+                    this.http instanceof HttpClient,
+                  ),
+                ),
             ];
           }),
         );

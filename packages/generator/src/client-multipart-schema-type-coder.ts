@@ -13,27 +13,45 @@ export class ClientMultipartSchemaTypeCoder extends SchemaTypeCoder {
     version = "",
     private readonly position: "root" | "part" | "nested" = "root",
     private readonly legacyStrings = false,
+    private readonly encoding?: Requirement,
   ) {
     super(requirement, version);
   }
 
   protected override child(requirement: Requirement): SchemaTypeCoder {
-    const property = requirement.parent?.url.endsWith("/properties");
+    const properties = this.requirement.get("properties");
+    const property =
+      properties !== undefined && requirement.parent?.url === properties.url;
     const position = property
       ? this.position === "root"
         ? "part"
         : "nested"
       : this.position;
+    if (property && this.position === "root" && this.encoding) {
+      const name = requirement.unescapeJsonPointer(
+        requirement.url.slice(properties.url.length + 1),
+      );
+      const contentType = this.encoding.get(name)?.get("contentType")?.data;
+      if (
+        typeof contentType === "string" &&
+        contentType.split(",").every((type) => {
+          const essence = type.split(";")[0]?.trim().toLowerCase();
+          return essence === "application/json" || essence?.endsWith("+json");
+        })
+      )
+        return new SchemaTypeCoder(requirement, this.version);
+    }
     return new ClientMultipartSchemaTypeCoder(
       requirement,
       this.version,
       position,
       this.legacyStrings,
+      position === "root" ? this.encoding : undefined,
     );
   }
 
   public override get id(): string {
-    return `${super.id}:${this.position}:${this.legacyStrings}`;
+    return `${super.id}:${this.position}:${this.legacyStrings}:${this.encoding?.url ?? ""}`;
   }
 
   public override async delegate(): Promise<ClientMultipartSchemaTypeCoder> {
@@ -43,6 +61,7 @@ export class ClientMultipartSchemaTypeCoder extends SchemaTypeCoder {
           this.version,
           this.position,
           this.legacyStrings,
+          this.encoding,
         )
       : this;
   }

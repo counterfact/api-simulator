@@ -53,7 +53,11 @@ const spec = {
           content: {
             "multipart/form-data": {
               schema: { $ref: "#/components/schemas/Upload" },
-              encoding: { file: { contentType: "image/png" } },
+              encoding: {
+                file: { contentType: "image/png" },
+                metadata: { contentType: "application/xml, application/json" },
+                "extra/data": { contentType: "application/json" },
+              },
             },
           },
         },
@@ -64,6 +68,35 @@ const spec = {
       get: {
         parameters: [parameter("id", "path", integer)],
         responses: { 204: { description: "Empty" } },
+      },
+    },
+    "/downloads/image": {
+      get: {
+        operationId: "downloadImage",
+        security: [],
+        responses: {
+          200: {
+            description: "An image",
+            content: {
+              "image/png": { schema: { type: "string", format: "binary" } },
+            },
+          },
+        },
+      },
+    },
+    "/downloads/report": {
+      get: {
+        operationId: "downloadReport",
+        security: [],
+        responses: {
+          200: {
+            description: "A report",
+            content: {
+              "application/json": { schema: user },
+              "text/plain": { schema: text },
+            },
+          },
+        },
       },
     },
   },
@@ -86,6 +119,7 @@ const spec = {
             properties: { count: integer },
           },
           tags: { type: "array", items: text },
+          "extra/data": {},
           optional: text,
           alternate: {
             oneOf: [{ $ref: "#/components/schemas/Binary" }, integer],
@@ -176,6 +210,7 @@ const verifyMultipart = `
       assert.equal(second.type, "application/octet-stream");
       assert.deepEqual([...new Uint8Array(await second.arrayBuffer())], [128, 5]);
       assert.equal(form.get("metadata"), '{"count":2}');
+      assert.equal(form.get("extra/data"), '{"nested":true}');
       assert.equal(form.get("alternate"), "7");
       assert.deepEqual(form.getAll("tags"), calls < 2 ? ["a", "b"] : ['["a","b"]']);
       calls += 1;
@@ -186,6 +221,7 @@ const verifyMultipart = `
     file: new Uint8Array([9, 255, 0, 8]).subarray(1, 3),
     attachments: [new File(["hello"], "notes.txt", { type: "text/plain" }), new Uint8Array([128, 5])],
     metadata: { count: 2 },
+    "extra/data": { nested: true },
     tags: ["a", "b"],
     alternate: 7,
   };
@@ -212,6 +248,28 @@ const verifyMultipart = `
     // Explicit FormData is still accepted.
     route.body(new FormData());
   }
+`;
+
+const verifyAdapterResponseTypes = `
+  const DownloadApi = wrapSta(createSdk);
+  const downloads = new DownloadApi({
+    baseUrl: "https://example.test",
+    customFetch: async (input) => String(input).endsWith("/image")
+      ? new Response(new Uint8Array([137, 80]), { headers: { "content-type": "image/png" } })
+      : new Response("hello", { headers: { "content-type": "text/plain; charset=utf-8" } }),
+  }).downloads;
+  const image: Blob = (await downloads.downloadImage()).data;
+  assert.equal(image.type, "image/png");
+  assert.deepEqual([...new Uint8Array(await image.arrayBuffer())], [137, 80]);
+  const report: string | { id: number } = (await downloads.downloadReport()).data;
+  assert.equal(report, "hello");
+
+  const UnwrappedDownloadApi = wrapSta(createSdk, { unwrapResponseData: true });
+  const unwrapped = new UnwrappedDownloadApi({
+    baseUrl: "https://example.test",
+    customFetch: async () => new Response("hello", { headers: { "content-type": "text/plain" } }),
+  });
+  assert.equal(await unwrapped.downloads.downloadReport(), "hello");
 `;
 
 const verifyRawMultipartTypes = `
@@ -412,6 +470,7 @@ it.each([
         });
         await assert.rejects(api.users.getUser(99), { reason: "schema-mismatch" });
         ${swagger2 ? "" : verifyMultipart}
+        ${swagger2 ? "" : verifyAdapterResponseTypes}
         ${openapiVersion ? verifyRawMultipartTypes : ""}
       `,
       );
