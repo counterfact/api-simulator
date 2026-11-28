@@ -16,8 +16,14 @@ import {
 } from "./fetch-auth.js";
 
 import { encodeMultipartBody } from "./multipart-form.js";
+import {
+  isJsonMediaType as isJson,
+  matchMediaType,
+  mediaTypeOf,
+} from "./media-type.js";
 
 export { appendMultipartField } from "./multipart-form.js";
+export { isJsonMediaType, matchMediaType, mediaTypeOf } from "./media-type.js";
 export { RequestAuthenticationError } from "./fetch-auth.js";
 export type {
   BasicCredential,
@@ -280,10 +286,6 @@ function serialize(
   );
 }
 
-function isJson(mediaType: string): boolean {
-  return mediaType === "application/json" || mediaType.endsWith("+json");
-}
-
 const formMediaType = "application/x-www-form-urlencoded";
 
 function queryJson(value: unknown): string {
@@ -292,7 +294,7 @@ function queryJson(value: unknown): string {
   return json;
 }
 
-function serializeWholeQuery(
+export function serializeWholeQuery(
   { mediaType, encoding }: WholeQuery,
   value: unknown,
 ): string {
@@ -353,10 +355,6 @@ function canStream(operation: FetchOperation): boolean {
   return Object.values(operation.responses).some((media) =>
     media.some(isStreamable),
   );
-}
-
-function mediaTypeOf(value: string | null): string | undefined {
-  return value?.split(";", 1)[0]?.trim().toLowerCase();
 }
 
 function encodeSwaggerForm(
@@ -470,7 +468,6 @@ async function readResponse(
   stream: boolean,
 ) {
   const { status } = response;
-  const mediaType = mediaTypeOf(response.headers.get("content-type"));
   const match = [
     String(status),
     `${Math.floor(status / 100)}XX`,
@@ -504,7 +501,11 @@ async function readResponse(
   if (emptyBody) {
     throw new InvalidResponseError("missing-body", response, match);
   }
-  if (mediaType === undefined || !declared.includes(mediaType)) {
+  const mediaType = matchMediaType(
+    declared,
+    response.headers.get("content-type"),
+  );
+  if (mediaType === undefined) {
     throw new InvalidResponseError("unexpected-media-type", response, match);
   }
 

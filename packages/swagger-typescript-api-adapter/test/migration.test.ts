@@ -118,6 +118,59 @@ const spec = {
         },
       },
     },
+    "/media/patch": {
+      patch: {
+        operationId: "patchMedia",
+        security: [],
+        requestBody: {
+          required: true,
+          content: { "application/merge-patch+json": { schema: user } },
+        },
+        responses: { 204: { description: "Updated" } },
+      },
+    },
+    "/media/bytes": {
+      put: {
+        operationId: "putBytes",
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            "application/octet-stream": {
+              schema: { type: "string", format: "binary" },
+            },
+          },
+        },
+        responses: { 204: { description: "Uploaded" } },
+      },
+    },
+    "/media/text": {
+      get: {
+        operationId: "getText",
+        security: [],
+        responses: {
+          200: {
+            description: "Text",
+            content: { "text/plain; charset=utf-8": { schema: text } },
+          },
+        },
+      },
+    },
+    "/media/profile": {
+      get: {
+        operationId: "getProfile",
+        security: [],
+        responses: {
+          200: {
+            description: "Profile",
+            content: {
+              ...json(text),
+              'application/json; profile="Case;Sensitive"': { schema: user },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: { token: { type: "http", scheme: "bearer" } },
@@ -333,6 +386,57 @@ const verifyRawMultipartTypes = `
   }
 `;
 
+const verifyMediaContracts = `
+  const requests: Array<[string | null, string]> = [];
+  const mediaFetch: typeof fetch = async (input, init) => {
+    const request = new Request(input, init);
+    if (request.url.endsWith("/text")) {
+      return new Response("hello", { headers: { "content-type": 'Text/Plain; Charset="UTF-8"' } });
+    }
+    if (request.url.endsWith("/profile")) {
+      return new Response('{"id":42}', { headers: {
+        "content-type": 'application/json; charset=utf-8; profile="Case;Sensitive"',
+      } });
+    }
+    requests.push([request.headers.get("content-type"), await request.text()]);
+    return new Response(null, { status: 204 });
+  };
+  const MediaApi = wrapSta(createSdk);
+  const mediaAdapter = new MediaApi({ baseUrl: "https://example.test", customFetch: mediaFetch });
+  await mediaAdapter.media.patchMedia({ id: 42 });
+  await mediaAdapter.media.putBytes(new Blob(["raw bytes"]));
+  await mediaAdapter.media.putBytes(new TextEncoder().encode("buffer").buffer);
+  assert.deepEqual(requests, [
+    ["application/merge-patch+json", '{"id":42}'],
+    ["application/octet-stream", "raw bytes"],
+    ["application/octet-stream", "buffer"],
+  ]);
+  const mediaOptions = { baseUrl: "https://example.test", fetch: mediaFetch };
+  const native = createSdk(mediaOptions);
+  assert.equal((await native.media.getText()).body, "hello");
+  const fluent = createClient(mediaOptions);
+  const profile = await fluent("/media/profile").method("get").send();
+  if (profile.mediaType === 'application/json; profile="Case;Sensitive"') {
+    const id: number = profile.body.id;
+    assert.equal(id, 42);
+  } else {
+    assert.fail("The profile declaration should take precedence");
+  }
+  assert.deepEqual((await mediaAdapter.media.getProfile()).data, { id: 42 });
+`;
+
+const verifyWholeQuery = `
+  const QueryApi = wrapSta(createSdk);
+  const queryAdapter = new QueryApi({
+    baseUrl: "https://example.test",
+    customFetch: async (input) => {
+      assert.equal(decodeURIComponent(new URL(String(input)).search), '?{"level":2}');
+      return new Response(null, { status: 204 });
+    },
+  });
+  await queryAdapter.search.findMatches({ level: 2 });
+`;
+
 const dist = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 it.each([
@@ -365,6 +469,30 @@ it.each([
               ? {
                   ...spec,
                   openapi: openapiVersion,
+                  paths: {
+                    ...spec.paths,
+                    ...(openapiVersion === "3.2.0" && {
+                      "/search": {
+                        get: {
+                          operationId: "findMatches",
+                          security: [],
+                          parameters: [
+                            {
+                              name: "filter",
+                              in: "querystring",
+                              required: true,
+                              content: json({
+                                type: "object",
+                                required: ["level"],
+                                properties: { level: integer },
+                              }),
+                            },
+                          ],
+                          responses: { 204: { description: "Found" } },
+                        },
+                      },
+                    }),
+                  },
                   components: {
                     ...spec.components,
                     schemas: {
@@ -515,6 +643,8 @@ it.each([
         await assert.rejects(api.users.getUser(99), { reason: "schema-mismatch" });
         ${swagger2 ? "" : verifyMultipart}
         ${swagger2 ? "" : verifyAdapterResponseTypes}
+        ${swagger2 ? "" : verifyMediaContracts}
+        ${openapiVersion === "3.2.0" ? verifyWholeQuery : ""}
         ${openapiVersion ? verifyRawMultipartTypes : ""}
       `,
       );

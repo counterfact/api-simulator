@@ -1,4 +1,9 @@
-import { appendMultipartField } from "@counterfact/client/fetch";
+import {
+  appendMultipartField,
+  isJsonMediaType,
+  matchMediaType,
+  mediaTypeOf,
+} from "@counterfact/client/fetch";
 
 export type QueryParamsType = Record<string | number, unknown>;
 export type CancelToken = symbol | string | number;
@@ -19,7 +24,7 @@ export enum ContentType {
 export interface FullRequestParams extends Omit<RequestInit, "body"> {
   path: string;
   secure?: boolean;
-  type?: ContentType;
+  type?: string;
   query?: QueryParamsType;
   format?: ResponseFormat;
   body?: unknown;
@@ -73,9 +78,16 @@ function queryString(query: QueryParamsType = {}): string {
 
 function encodeBody(
   body: unknown,
-  contentType: ContentType | undefined,
+  mediaType: string | undefined,
 ): RequestInit["body"] {
   if (body === undefined || body === null) return null;
+  const contentType = mediaTypeOf(mediaType ?? null);
+  if (contentType?.startsWith("text/") && typeof body === "string") return body;
+  if (
+    contentType === "application/octet-stream" &&
+    (body instanceof Blob || body instanceof ArrayBuffer)
+  )
+    return body;
   switch (contentType) {
     case ContentType.FormData: {
       if (body instanceof FormData) return body;
@@ -91,8 +103,6 @@ function encodeBody(
       return body instanceof URLSearchParams
         ? body.toString()
         : queryString(body as QueryParamsType);
-    case ContentType.Text:
-      return typeof body === "string" ? body : JSON.stringify(body);
     default:
       return JSON.stringify(body);
   }
@@ -107,13 +117,13 @@ export function responseFormatForMediaType(
   mediaType: string | undefined,
 ): ResponseFormat | undefined {
   if (mediaType === undefined) return undefined;
-  if (mediaType === "application/json" || mediaType.endsWith("+json"))
-    return "json";
-  if (mediaType.startsWith("image/")) return "blob";
-  if (mediaType.startsWith("text/")) return "text";
+  if (isJsonMediaType(mediaType)) return "json";
+  const essence = mediaTypeOf(mediaType);
+  if (essence?.startsWith("image/")) return "blob";
+  if (essence?.startsWith("text/")) return "text";
   if (
-    mediaType === "multipart/form-data" ||
-    mediaType === "application/x-www-form-urlencoded"
+    essence === "multipart/form-data" ||
+    essence === "application/x-www-form-urlencoded"
   )
     return "formData";
   return "arrayBuffer";
@@ -128,15 +138,11 @@ function operationResponseFormat(
     .filter((key) => Object.hasOwn(responses, key))
     // eslint-disable-next-line security/detect-object-injection -- Keys are matched to own properties above.
     .map((key) => responses[key])[0];
-  const mediaType = response.headers
-    .get("content-type")
-    ?.split(";")[0]
-    ?.trim()
-    .toLowerCase();
+  const mediaType = response.headers.get("content-type");
   const selected =
-    declared?.find((type) => type === mediaType) ??
-    declared?.[0] ??
-    (declared === undefined ? mediaType : undefined);
+    declared === undefined
+      ? (mediaType ?? undefined)
+      : (matchMediaType(declared, mediaType) ?? declared[0]);
   return responseFormatForMediaType(selected);
 }
 
@@ -203,7 +209,8 @@ class StaTransport<
     for (const source of [params.headers, security?.headers]) {
       new Headers(source).forEach((value, key) => headers.set(key, value));
     }
-    if (type === ContentType.FormData) headers.delete("Content-Type");
+    if (mediaTypeOf(type ?? null) === ContentType.FormData)
+      headers.delete("Content-Type");
     else if (type) headers.set("Content-Type", type);
     const {
       secure: _secure,
@@ -222,7 +229,7 @@ class StaTransport<
       cancelToken === undefined ? undefined : this.acquire(cancelToken);
     try {
       const response = await this.fetchRequest(
-        `${baseUrl || this.baseUrl}${path}${search ? `?${search}` : ""}`,
+        `${baseUrl || this.baseUrl}${path}${search ? `${path.includes("?") ? "&" : "?"}${search}` : ""}`,
         {
           ...init,
           headers,

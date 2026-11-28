@@ -1,8 +1,9 @@
-import type {
-  FetchOperation,
-  FetchSdkDefinition,
-  NamedOperation,
-  NamedOperations,
+import {
+  serializeWholeQuery,
+  type FetchOperation,
+  type FetchSdkDefinition,
+  type NamedOperation,
+  type NamedOperations,
 } from "@counterfact/client/fetch";
 import type {
   ClientOperation,
@@ -11,7 +12,6 @@ import type {
 } from "@counterfact/types/client-route";
 
 import {
-  ContentType,
   HttpClient,
   resolveHttpClient,
   responseFormatForMediaType,
@@ -199,14 +199,6 @@ interface StaApiConstructor<
     StaCalls<Operations, Names, Unwrap>;
 }
 
-function contentTypeOf(operation: FetchOperation): ContentType | undefined {
-  const type = operation.body?.mediaType;
-  return (
-    Object.values(ContentType).find((candidate) => candidate === type) ??
-    (type?.endsWith("+json") ? ContentType.Json : undefined)
-  );
-}
-
 function requestFor(
   operation: FetchOperation,
   { path, method, pathParameters }: NamedOperation,
@@ -226,12 +218,10 @@ function requestFor(
     operation.querystring?.required ??
     queryFields.some(({ required }) => required);
   let index = pathParameters.length;
-  let query: QueryParamsType | undefined;
-  if (hasQuery && queryRequired)
-    query = args.at(index++) as QueryParamsType | undefined;
+  let query: unknown;
+  if (hasQuery && queryRequired) query = args.at(index++);
   const body = operation.body && args.at(index++);
-  if (hasQuery && !queryRequired)
-    query = args.at(index++) as QueryParamsType | undefined;
+  if (hasQuery && !queryRequired) query = args.at(index++);
   const params = args.at(index) as RequestParams | undefined;
   const secure = operation.security?.some(
     (alternative) => Object.keys(alternative).length > 0,
@@ -243,11 +233,18 @@ function requestFor(
           /^2(?:\d\d|XX)$/u.test(status),
         )?.[1][0],
       );
+  if (operation.querystring && query !== undefined) {
+    const search = serializeWholeQuery(operation.querystring, query);
+    if (search) path += `?${search}`;
+  }
   return {
     path,
     method: method.toUpperCase(),
-    ...(hasQuery && { query }),
-    ...(operation.body && { body, type: contentTypeOf(operation) }),
+    ...(hasQuery &&
+      !operation.querystring && {
+        query: query as QueryParamsType | undefined,
+      }),
+    ...(operation.body && { body, type: operation.body.mediaType }),
     ...(secure && { secure }),
     ...(format && { format }),
     ...(inferResponseFormat && { [responseMediaTypes]: operation.responses }),

@@ -52,8 +52,14 @@ const formMediaType = "application/x-www-form-urlencoded";
 
 const undefinedType = () =>
   ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword);
-const isJson = (mediaType: string) =>
-  mediaType === "application/json" || mediaType.endsWith("+json");
+const normalizeMediaType = (mediaType: string) =>
+  mediaType
+    .trim()
+    .replace(/^[^;]+/u, (essence) => essence.trimEnd().toLowerCase());
+const isJson = (mediaType: string) => {
+  const essence = mediaType.split(";", 1)[0];
+  return essence === "application/json" || essence?.endsWith("+json") === true;
+};
 
 function schemaType(
   schema: Requirement | undefined,
@@ -106,7 +112,7 @@ function describeWholeQuery(parameter: Requirement, script: Script) {
   const [content] =
     parameter.get("content")?.map((media, type) => ({
       media,
-      type: type.toLowerCase(),
+      type: normalizeMediaType(type),
     })) ?? [];
   if (!content || (!isJson(content.type) && content.type !== formMediaType))
     return undefined;
@@ -236,7 +242,7 @@ function describe(
         explode,
         allowReserved:
           parameter.get("allowReserved")?.data === true || undefined,
-        contentType: content?.type.toLowerCase(),
+        contentType: content && normalizeMediaType(content.type),
         collectionFormat: swagger ? swaggerCollection(parameter) : undefined,
       };
     },
@@ -252,7 +258,7 @@ function describe(
     legacyBody?.media ??
     requestBody?.get("content")?.map((value, type) => ({
       schema: value.get("schema"),
-      type: type.toLowerCase(),
+      type: normalizeMediaType(type),
     })) ??
     [];
   const selected = media.find(({ type }) => isJson(type)) ?? media[0];
@@ -276,7 +282,7 @@ function describe(
     selected?.type === "multipart/form-data" && !swagger
       ? requestBody
           ?.get("content")
-          ?.find((_, type) => type.toLowerCase() === selected.type)
+          ?.find((_, type) => normalizeMediaType(type) === selected.type)
       : undefined;
   const multipartEncoding = multipartMedia?.get("encoding");
   const multipartSchema = multipartMedia && selected?.schema;
@@ -304,7 +310,7 @@ function describe(
         : swagger
           ? swaggerResponse(operation, response)
           : (response.get("content")?.map((value, type) => ({
-              type: type.toLowerCase(),
+              type: normalizeMediaType(type),
               schema: value.get("schema"),
             })) ?? []);
       responseMetadata.set(
