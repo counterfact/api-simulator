@@ -15,6 +15,9 @@ import {
   type SecurityRequirement,
 } from "./fetch-auth.js";
 
+import { appendMultipartField } from "./multipart-form.js";
+
+export { appendMultipartField } from "./multipart-form.js";
 export { RequestAuthenticationError } from "./fetch-auth.js";
 export type {
   BasicCredential,
@@ -413,8 +416,17 @@ function encodeBody(mediaType: string, value: unknown): RequestInit["body"] {
   ) {
     return value;
   }
-  if (mediaType === "multipart/form-data" && value instanceof FormData)
-    return value;
+  if (mediaType === "multipart/form-data") {
+    if (value instanceof FormData) return value;
+    const fields = pairs(value);
+    if (fields) {
+      const form = new FormData();
+      for (const [name, field] of fields) {
+        if (field !== undefined) appendMultipartField(form, name, field, true);
+      }
+      return form;
+    }
+  }
   if (
     mediaType === "application/x-www-form-urlencoded" &&
     value instanceof URLSearchParams

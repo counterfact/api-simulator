@@ -212,8 +212,13 @@ and the two modes are mutually exclusive.
 
 A request body uses the declared JSON media
 type if there is one, or the first media type otherwise. JSON bodies use
-generated schema types. Text, binary, multipart and URL-encoded bodies use
-`string`, `Blob | ArrayBuffer`, `FormData`, and `URLSearchParams` respectively.
+generated schema types. Text, binary, and URL-encoded bodies use `string`,
+`Blob | ArrayBuffer`, and `URLSearchParams` respectively.
+
+For an OpenAPI 3.x multipart body, pass an object typed from the schema or a
+prepared `FormData`. File fields accept `File`, `Blob`, or `Uint8Array`. Array
+items are sent as separate parts under the same field name. Pass `FormData`
+directly to control serialization yourself.
 Response decoding supports exact declared media types, with non-JSON,
 non-text content returned as bytes. Fetch-forbidden HTTP methods are omitted
 from the generated client.

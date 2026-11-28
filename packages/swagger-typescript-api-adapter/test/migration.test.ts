@@ -44,6 +44,21 @@ const spec = {
         responses: { 200: { description: "User", content: json(user) } },
       },
     },
+    "/upload": {
+      post: {
+        operationId: "uploadFiles",
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            "multipart/form-data": {
+              schema: { $ref: "#/components/schemas/Upload" },
+            },
+          },
+        },
+        responses: { 204: { description: "Uploaded" } },
+      },
+    },
     "/users/sub/{id}": {
       get: {
         parameters: [parameter("id", "path", integer)],
@@ -55,6 +70,28 @@ const spec = {
     securitySchemes: { token: { type: "http", scheme: "bearer" } },
     schemas: {
       User: { type: "object", required: ["id"], properties: { id: integer } },
+      Upload: {
+        type: "object",
+        required: ["file", "attachments", "metadata"],
+        properties: {
+          file: { $ref: "#/components/schemas/Binary" },
+          attachments: {
+            type: "array",
+            items: { $ref: "#/components/schemas/Binary" },
+          },
+          metadata: {
+            type: "object",
+            required: ["count"],
+            properties: { count: integer },
+          },
+          tags: { type: "array", items: text },
+          optional: text,
+          alternate: {
+            oneOf: [{ $ref: "#/components/schemas/Binary" }, integer],
+          },
+        },
+      },
+      Binary: { type: "string", format: "binary" },
     },
   },
 };
@@ -72,7 +109,7 @@ const swagger = {
   securityDefinitions: {
     token: { type: "apiKey", in: "header", name: "Authorization" },
   },
-  definitions: spec.components.schemas,
+  definitions: { User: spec.components.schemas.User },
   paths: {
     "/": spec.paths["/"],
     "/users/{id}": {
@@ -112,6 +149,60 @@ const swagger = {
   },
 };
 
+const verifyMultipart = `
+  let calls = 0;
+  const options = {
+    baseUrl: "https://example.test",
+    fetch: (async (input, init) => {
+      const request = new Request(input, init);
+      assert.match(request.headers.get("content-type") ?? "", /^multipart\\/form-data; boundary=/);
+      const form = await request.formData();
+      const file = form.get("file");
+      assert.ok(file instanceof Blob);
+      assert.equal(file.type, "application/octet-stream");
+      assert.deepEqual([...new Uint8Array(await file.arrayBuffer())], [255, 0]);
+      const [first, second] = form.getAll("attachments");
+      assert.ok(first instanceof File);
+      assert.equal(first.name, "notes.txt");
+      assert.equal(first.type, "text/plain");
+      assert.equal(await first.text(), "hello");
+      assert.ok(second instanceof Blob);
+      assert.deepEqual([...new Uint8Array(await second.arrayBuffer())], [128, 5]);
+      assert.equal(form.get("metadata"), '{"count":2}');
+      assert.equal(form.get("alternate"), "7");
+      assert.deepEqual(form.getAll("tags"), calls < 2 ? ["a", "b"] : ['["a","b"]']);
+      calls += 1;
+      return new Response(null, { status: 204 });
+    }) satisfies typeof fetch,
+  };
+  const body = {
+    file: new Uint8Array([9, 255, 0, 8]).subarray(1, 3),
+    attachments: [new File(["hello"], "notes.txt", { type: "text/plain" }), new Uint8Array([128, 5])],
+    metadata: { count: 2 },
+    tags: ["a", "b"],
+    alternate: 7,
+  };
+  const route = createClient(options)("/upload").method("post");
+  const sdk = createSdk(options);
+  const Api = wrapSta(createSdk);
+  const sta = new Api({ baseUrl: options.baseUrl, customFetch: options.fetch });
+  await route.body(body).send();
+  await sdk.upload.uploadFiles({ body });
+  await sta.upload.uploadFiles(body);
+  assert.equal(calls, 3);
+
+  if (false) {
+    // @ts-expect-error the named SDK requires the file
+    sdk.upload.uploadFiles({ body: { attachments: [], metadata: { count: 0 } } });
+    // @ts-expect-error binary parts must be bytes or a Blob
+    route.body({ ...body, file: 42 });
+    // @ts-expect-error multipart metadata is typed too
+    route.body({ ...body, metadata: { count: "2" } });
+    // Explicit FormData is still accepted.
+    route.body(new FormData());
+  }
+`;
+
 const dist = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 it.each([
@@ -120,12 +211,41 @@ it.each([
   { singleHttpClient: false, unwrapResponseData: true },
   { singleHttpClient: true, unwrapResponseData: true },
   { singleHttpClient: false, unwrapResponseData: false, swagger2: true },
+  {
+    singleHttpClient: false,
+    unwrapResponseData: false,
+    openapiVersion: "3.1.0",
+  },
+  {
+    singleHttpClient: false,
+    unwrapResponseData: false,
+    openapiVersion: "3.2.0",
+  },
 ])(
   "runs the same STA consumer with %j",
-  async ({ swagger2, ...options }) => {
+  async ({ swagger2, openapiVersion, ...options }) => {
     await usingTemporaryFiles(async ($) => {
       await $.add("package.json", '{"type":"module"}');
-      await $.add("spec.json", JSON.stringify(swagger2 ? swagger : spec));
+      await $.add(
+        "spec.json",
+        JSON.stringify(
+          swagger2
+            ? swagger
+            : openapiVersion
+              ? {
+                  ...spec,
+                  openapi: openapiVersion,
+                  components: {
+                    ...spec.components,
+                    schemas: {
+                      ...spec.components.schemas,
+                      Binary: { contentMediaType: "application/octet-stream" },
+                    },
+                  },
+                }
+              : spec,
+        ),
+      );
       const { files } = await generateApi({
         input: $.path("spec.json"),
         output: false,
@@ -247,13 +367,15 @@ it.each([
         "validated.ts",
         `
         import assert from "node:assert/strict";
-        import { createSdk } from "./native/index.js";
+        import { createClient, createSdk } from "./native/index.js";
+        import { wrapSta } from "swagger-typescript-api-adapter";
         const api = createSdk({
           baseUrl: "https://example.test",
           auth: { token: () => "secret" },
           fetch: async () => Response.json({ id: "wrong type" }),
         });
         await assert.rejects(api.users.getUser(99), { reason: "schema-mismatch" });
+        ${swagger2 ? "" : verifyMultipart}
       `,
       );
 

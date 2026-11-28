@@ -1,3 +1,5 @@
+import { appendMultipartField } from "@counterfact/client/fetch";
+
 export type QueryParamsType = Record<string | number, unknown>;
 export type CancelToken = symbol | string | number;
 export type ResponseFormat =
@@ -74,14 +76,7 @@ function encodeBody(
       for (const [key, value] of Object.entries(
         body as Record<string, unknown>,
       )) {
-        fields.append(
-          key,
-          value instanceof Blob
-            ? value
-            : typeof value === "object" && value !== null
-              ? JSON.stringify(value)
-              : String(value),
-        );
+        appendMultipartField(fields, key, value);
       }
       return fields;
     }

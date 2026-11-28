@@ -18,6 +18,7 @@ import {
   clientSecurityRequirements,
   clientSecuritySchemes,
 } from "./client-security.js";
+import { ClientMultipartSchemaTypeCoder } from "./client-multipart-schema-type-coder.js";
 import { ClientResponseSchemas } from "./client-response-schemas.js";
 import {
   namedOperations,
@@ -261,6 +262,11 @@ function describe(
   const bodyType = selected
     ? requestBodyType(selected.type, selected.schema, script)
     : neverType();
+  const multipartType =
+    selected?.type === "multipart/form-data" && !swagger && selected.schema
+      ? new ClientMultipartSchemaTypeCoder(selected.schema).write(script)
+      : undefined;
+  const structuredBody = formType ?? multipartType;
 
   const responseMetadata = new Map<string, string[]>();
   const responseSchemas = new Map<string, Record<string, string>>();
@@ -317,7 +323,7 @@ function describe(
       typeProperty("bodyRequired", literalType(bodyRequired)),
       typeProperty(
         "body",
-        formType ? unionType([formType, bodyType]) : bodyType,
+        structuredBody ? unionType([structuredBody, bodyType]) : bodyType,
       ),
       ...(selected &&
       ["multipart/form-data", formMediaType].includes(selected.type)
