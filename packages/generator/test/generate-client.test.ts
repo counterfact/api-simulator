@@ -71,6 +71,7 @@ it("generates and type-checks a reusable route prefix against inherited and oper
           "/download": {
             get: {
               operationId: "downloadReport",
+              tags: ["reports"],
               parameters: [parameter("format", "query")],
               responses: {
                 200: {
@@ -166,14 +167,14 @@ it("generates and type-checks a reusable route prefix against inherited and oper
     expect(generated).toContain("explode: false");
     expect(generated).toContain("./response-validators.js");
     expect(generated).not.toContain("$defs");
-    expect(generated).not.toContain("operationId");
+    expect(generated).toContain("downloadReport:");
     expect(generated).toContain('security: [{ userToken: ["orders:read"] }]');
     expect(generated).toContain("security: []");
 
     await $.add(
       "consumer.ts",
       `
-      import { createClient } from "./generated/v1/index.js";
+      import { createClient, createSdk } from "./generated/v1/index.js";
       const route = createClient({
         baseUrl: "https://example.test",
         auth: {
@@ -189,6 +190,33 @@ it("generates and type-checks a reusable route prefix against inherited and oper
         // @ts-expect-error cookie auth uses the browser-managed credentials option
         session: () => "cookie",
       } });
+      const api = createSdk({ baseUrl: "https://example.test" });
+      // @ts-expect-error the path parameter must be a number
+      await api.tenantId.v1OrdersDetail("acme", "42", { query: { locale: "en" } });
+      // @ts-expect-error the required query is missing
+      await api.tenantId.v1OrdersDetail("acme", 42);
+      const named = await api.tenantId.v1OrdersDetail("acme", 42, { query: { locale: "en" } });
+      if (named.matchedStatus === "404") {
+        const error: string = named.body.error;
+        // @ts-expect-error the error body has no order id
+        named.body.id;
+      } else {
+        const id: number = named.body.id;
+      }
+      await api.lookup.lookupList();
+      await api.lookup.lookupList({ query: null });
+      // @ts-expect-error whole-query value is required
+      await api.search.searchList();
+      await api.search.searchList({ query: { term: "boots" } });
+      const namedStream = await api.download.downloadReport.stream({ query: { format: "pdf" } });
+      if (namedStream.matchedStatus === "200") {
+        const bytes: ReadableStream<Uint8Array> = namedStream.body;
+      }
+      // @ts-expect-error a JSON-only response cannot be streamed
+      api.tenantId.v1OrdersDetail.stream;
+      // @ts-expect-error query and payload are separate required inputs
+      await api.tenantId.v1OrdersCreate("acme", 42, { query: { body: "summary" } });
+      await api.tenantId.v1OrdersCreate("acme", 42, { query: { body: "summary" }, body: { id: 42 } });
       const base = route("/{tenantId}/v1");
       // @ts-expect-error prefixes without an operation do not expose methods
       base.method("get");
@@ -270,6 +298,16 @@ it("generates and type-checks a reusable route prefix against inherited and oper
       await tenant.segment("customers").method("get").send({ authenticate: false, redirect: "manual", credentials: "omit" });
     `,
     );
+
+    const grouped = new CodeGenerator($.path("api.json"), $.path("grouped"), {
+      moduleNameFirstTag: true,
+      moduleNameIndex: 2,
+    });
+    await grouped.generateClient();
+    const groupedSource = await $.read("grouped/index.ts");
+    expect(groupedSource).toContain("reports: {");
+    expect(groupedSource).toContain("orders: {");
+    expect(groupedSource).not.toContain("tenantId: {\n");
 
     const program = ts.createProgram([$.path("consumer.ts")], {
       strict: true,
@@ -417,8 +455,8 @@ it.each([
         `
         import assert from "node:assert/strict";
         import { InvalidResponseError } from "@counterfact/client/fetch";
-        import { createClient } from "./generated/index.js";
-        const send = response => createClient({
+        import { createClient, createSdk } from "./generated/index.js";
+        const config = response => ({
           baseUrl: "https://example.test",
           auth: {
             userToken: ({ scopes }) => {
@@ -435,7 +473,8 @@ it.each([
             assert.equal(init.redirect, "manual");
             return response;
           },
-        })("/orders/{orderId}")
+        });
+        const send = response => createClient(config(response))("/orders/{orderId}")
           .method("get")
           .path({ orderId: 42 })
           .query({ orderId: 42 })
@@ -452,6 +491,19 @@ it.each([
         assert.equal(throttled.matchedStatus, "4XX");
         await assert.rejects(send(new Response("😀", { status: 429 })), invalid);
         assert.equal((await send(new Response("😀😀", { status: 429 }))).body, "😀😀");
+        const sendNamed = response => createSdk(config(response)).orders.ordersDetail(42, {
+          query: { orderId: 42 },
+          headers: { orderId: 42 },
+          cookies: { orderId: 42 },
+          authenticate: true,
+          redirect: "manual",
+        });
+        assert.deepEqual((await sendNamed(Response.json(nested))).body, nested);
+        assert.equal((await sendNamed(new Response("slow down", { status: 429 }))).matchedStatus, "4XX");
+        await assert.rejects(sendNamed(Response.json({ ...nested, id: 0 })), invalid);
+        await assert.rejects(createSdk(config(Response.json(nested))).orders.ordersDetail(42), {
+          message: "Missing required inputs for OpenAPI operation: get /orders/{orderId}",
+        });
       `,
       );
       // The subprocess reads only the generated fixture and the built client runtime.

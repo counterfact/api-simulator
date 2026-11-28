@@ -3,7 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 /* eslint-disable security/detect-non-literal-fs-filename -- CLI migration cleanup operates on known child directories under config.basePath. */
 
-import { Command } from "commander";
+import { Command, InvalidArgumentError } from "commander";
 import createDebug from "debug";
 import open from "open";
 
@@ -185,6 +185,8 @@ function buildProgram(
       generateClient?: boolean;
       generateSchemasOnly?: boolean;
       generateTypes?: boolean;
+      moduleNameFirstTag?: boolean;
+      moduleNameIndex?: number;
       open?: boolean;
       overlay?: string[];
       port: number;
@@ -328,6 +330,8 @@ function buildProgram(
           target: clientOnly ? "client" : "schemas",
           basePath,
           overlays: options.overlay ?? [],
+          moduleNameFirstTag: options.moduleNameFirstTag,
+          moduleNameIndex: options.moduleNameIndex,
           source,
           specs,
         });
@@ -391,6 +395,8 @@ function buildProgram(
       basePath,
 
       generate: {
+        moduleNameFirstTag: options.moduleNameFirstTag,
+        moduleNameIndex: options.moduleNameIndex,
         routes:
           Boolean(options.generate) ||
           Boolean(options.generateRoutes) ||
@@ -657,6 +663,22 @@ function buildProgram(
     .option(
       "--generate-client",
       "generate a standalone Fetch client (requires a destination)",
+    )
+    .option(
+      "--module-name-first-tag",
+      "group named SDK operations by their first tag",
+    )
+    .option(
+      "--module-name-index <index>",
+      "group named SDK operations by a zero-based path segment",
+      (value) => {
+        if (!/^\d+$/u.test(value) || !Number.isSafeInteger(Number(value))) {
+          throw new InvalidArgumentError(
+            "expected a non-negative safe integer",
+          );
+        }
+        return Number(value);
+      },
     )
     .option("--generate-types", "generate types")
     .option("--generate-routes", "generate routes")

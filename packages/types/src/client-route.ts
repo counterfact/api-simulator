@@ -135,7 +135,7 @@ export type ClientResult<Operation extends ClientOperation> = {
   >;
 }[keyof Operation["responses"]];
 
-type Streamable<Result> = Result extends { mediaType: infer MediaType }
+export type Streamable<Result> = Result extends { mediaType: infer MediaType }
   ? MediaType extends string
     ? MediaType extends "application/json" | `${string}+json` | `text/${string}`
       ? never

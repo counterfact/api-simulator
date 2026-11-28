@@ -16,6 +16,7 @@ import {
 } from "./openapi-path.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
 import { generateClient as writeClient } from "./generate-client.js";
+import type { ClientGroupingOptions } from "./named-client-operations.js";
 import { pathOperations } from "./path-operations.js";
 import { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
@@ -41,7 +42,7 @@ export class CodeGenerator extends EventTarget {
 
   private readonly overlays: readonly string[];
 
-  private readonly generateOptions: {
+  private readonly generateOptions: ClientGroupingOptions & {
     prune?: boolean;
     routes?: boolean;
     types?: boolean;
@@ -52,7 +53,11 @@ export class CodeGenerator extends EventTarget {
   public constructor(
     openApiPath: string,
     destination: string,
-    generateOptions: { prune?: boolean; routes?: boolean; types?: boolean },
+    generateOptions: ClientGroupingOptions & {
+      prune?: boolean;
+      routes?: boolean;
+      types?: boolean;
+    },
     version = "",
     overlays: readonly string[] = [],
   ) {
@@ -205,6 +210,7 @@ export class CodeGenerator extends EventTarget {
         specification,
         nodePath.join(destination, "client"),
         this.version,
+        this.generateOptions,
       );
     }
 
@@ -256,7 +262,12 @@ export class CodeGenerator extends EventTarget {
       this.openapiPath,
       this.overlays,
     );
-    return writeClient(specification, this.destination, this.version);
+    return writeClient(
+      specification,
+      this.destination,
+      this.version,
+      this.generateOptions,
+    );
   }
 
   /**

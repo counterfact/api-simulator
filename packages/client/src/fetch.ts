@@ -1,8 +1,12 @@
 import type {
+  ClientOperation,
   ClientOperations,
+  ClientResult,
   ClientRouteFunction,
-  ClientSendOptions,
   ClientSecurityScheme,
+  ClientSendOptions,
+  ClientStreamResult,
+  Streamable,
 } from "@counterfact/types/client-route";
 
 import {
@@ -57,7 +61,7 @@ export interface FetchOperation {
   responseSchemas?: Readonly<Record<string, Readonly<Record<string, string>>>>;
 }
 
-type FetchOperations<Operations extends ClientOperations> = {
+export type FetchOperations<Operations extends ClientOperations> = {
   [Path in keyof Operations]: {
     [Method in keyof Operations[Path]]: FetchOperation;
   };
@@ -288,6 +292,12 @@ function serializeWholeQuery(
 
 function isStreamable(mediaType: string): boolean {
   return !isJson(mediaType) && !mediaType.startsWith("text/");
+}
+
+function canStream(operation: FetchOperation): boolean {
+  return Object.values(operation.responses).some((media) =>
+    media.some(isStreamable),
+  );
 }
 
 function mediaTypeOf(value: string | null): string | undefined {
@@ -527,27 +537,14 @@ function buildRequest(
   ];
 }
 
-/** Creates a browser-compatible route function from generated operation metadata. */
-export function createFetchRoute<Operations extends ClientOperations>(
-  operations: FetchOperations<Operations>,
+function createSendRequest(
   options: FetchClientOptions,
-  validators: ResponseValidators = {},
-  securitySchemes: Readonly<Record<string, ClientSecurityScheme>> = {},
-): ClientRouteFunction<Operations> {
-  const routes = new Map(
-    Object.entries<Record<string, FetchOperation>>(operations).map(
-      ([path, methods]) => [path, new Map(Object.entries(methods))],
-    ),
-  );
-  const prefixes = new Set<string>(["/"]);
-  for (const path of routes.keys()) {
-    const segments = path.split("/");
-    for (let i = 2; i <= segments.length; i++)
-      prefixes.add(segments.slice(0, i).join("/"));
-  }
+  validators: ResponseValidators,
+  securitySchemes: Readonly<Record<string, ClientSecurityScheme>>,
+) {
   const fetchRequest = options.fetch ?? globalThis.fetch.bind(globalThis);
 
-  async function sendRequest(
+  return async function sendRequest(
     path: string,
     method: string,
     operation: FetchOperation,
@@ -582,7 +579,28 @@ export function createFetchRoute<Operations extends ClientOperations>(
       validators,
       stream,
     );
+  };
+}
+
+/** Creates a browser-compatible route function from generated operation metadata. */
+export function createFetchRoute<Operations extends ClientOperations>(
+  operations: FetchOperations<Operations>,
+  options: FetchClientOptions,
+  validators: ResponseValidators = {},
+  securitySchemes: Readonly<Record<string, ClientSecurityScheme>> = {},
+): ClientRouteFunction<Operations> {
+  const routes = new Map(
+    Object.entries<Record<string, FetchOperation>>(operations).map(
+      ([path, methods]) => [path, new Map(Object.entries(methods))],
+    ),
+  );
+  const prefixes = new Set<string>(["/"]);
+  for (const path of routes.keys()) {
+    const segments = path.split("/");
+    for (let i = 2; i <= segments.length; i++)
+      prefixes.add(segments.slice(0, i).join("/"));
   }
+  const sendRequest = createSendRequest(options, validators, securitySchemes);
 
   function request(
     path: string,
@@ -609,9 +627,7 @@ export function createFetchRoute<Operations extends ClientOperations>(
       ...(isReady(operation, inputs) && {
         send: (sendOptions?: ClientSendOptions) =>
           sendRequest(path, method, operation, inputs, sendOptions),
-        ...(Object.values(operation.responses).some((media) =>
-          media.some(isStreamable),
-        ) && {
+        ...(canStream(operation) && {
           stream: (sendOptions?: ClientSendOptions) =>
             sendRequest(path, method, operation, inputs, sendOptions, true),
         }),
@@ -637,4 +653,175 @@ export function createFetchRoute<Operations extends ClientOperations>(
 
   return ((path: string) =>
     branch(path, {})) as ClientRouteFunction<Operations>;
+}
+
+interface NamedOperation {
+  readonly path: string;
+  readonly method: string;
+  readonly pathParameters: readonly string[];
+}
+
+type NamedOperations = Readonly<
+  Record<string, Readonly<Record<string, NamedOperation>>>
+>;
+
+type EmptyFields = Record<never, never>;
+
+type RequiredKeys<Fields> = {
+  [Key in keyof Fields]-?: EmptyFields extends Pick<Fields, Key> ? never : Key;
+}[keyof Fields];
+
+type NamedField<Name extends string, Value> = [keyof Value] extends [never]
+  ? object
+  : [RequiredKeys<Value>] extends [never]
+    ? { [Key in Name]?: Value }
+    : { [Key in Name]: Value };
+
+type NamedRequest<Operation extends ClientOperation> = ClientSendOptions &
+  (Operation["querystring"] extends {
+    value: infer Value;
+    required: infer Required;
+  }
+    ? Required extends true
+      ? { query: Value }
+      : { query?: Value }
+    : NamedField<"query", Operation["query"]>) &
+  NamedField<"headers", Operation["headers"]> &
+  NamedField<"cookies", Operation["cookies"]> &
+  (Operation["bodyRequired"] extends true
+    ? { body: Operation["body"] }
+    : [Operation["body"]] extends [never]
+      ? object
+      : { body?: Operation["body"] });
+
+type NamedArguments<
+  Operation extends ClientOperation,
+  Parameters extends readonly string[],
+  Options = NamedRequest<Operation>,
+> = [
+  ...{
+    [Index in keyof Parameters]: Operation["path"][Parameters[Index] &
+      keyof Operation["path"]];
+  },
+  ...(EmptyFields extends Options ? [options?: Options] : [options: Options]),
+];
+
+type NamedMethod<
+  Operations extends ClientOperations,
+  Entry extends NamedOperation,
+> = Entry["path"] extends keyof Operations
+  ? Entry["method"] extends keyof Operations[Entry["path"]]
+    ? NamedCall<
+        Operations[Entry["path"]][Entry["method"]],
+        Entry["pathParameters"]
+      >
+    : never
+  : never;
+
+type NamedCall<
+  Operation extends ClientOperation,
+  Parameters extends readonly string[],
+> = ((
+  ...args: NamedArguments<Operation, Parameters>
+) => Promise<ClientResult<Operation>>) &
+  ([Streamable<ClientResult<Operation>>] extends [never]
+    ? object
+    : {
+        stream(
+          ...args: NamedArguments<Operation, Parameters>
+        ): Promise<ClientStreamResult<Operation>>;
+      });
+
+type NamedSdk<
+  Operations extends ClientOperations,
+  Names extends NamedOperations,
+> = {
+  [Group in keyof Names]: {
+    [Name in keyof Names[Group]]: NamedMethod<Operations, Names[Group][Name]>;
+  };
+};
+
+type RawNamedRequest = ClientSendOptions & {
+  query?: unknown;
+  headers?: Values;
+  cookies?: Values;
+  body?: unknown;
+};
+
+/** Creates grouped, named methods that use the same contract as the fluent client. */
+export function createFetchSdk<
+  Operations extends ClientOperations,
+  Names extends NamedOperations,
+>(
+  operations: FetchOperations<Operations>,
+  names: Names,
+  options: FetchClientOptions,
+  validators: ResponseValidators = {},
+  securitySchemes: Readonly<Record<string, ClientSecurityScheme>> = {},
+): NamedSdk<Operations, Names> {
+  const sendRequest = createSendRequest(options, validators, securitySchemes);
+  const metadata: Readonly<
+    Record<string, Readonly<Record<string, FetchOperation>>>
+  > = operations;
+
+  return Object.fromEntries(
+    Object.entries(names).map(([group, methods]) => [
+      group,
+      Object.fromEntries(
+        Object.entries(methods).map(
+          ([name, { path, method, pathParameters }]) => {
+            const operation = inputValue(
+              inputValue(metadata, path) ?? {},
+              method,
+            );
+            if (!operation)
+              throw new TypeError(
+                `Unknown OpenAPI operation: ${method} ${path}`,
+              );
+            const invoke =
+              (stream: boolean) =>
+              async (...args: unknown[]) => {
+                const request = args.at(pathParameters.length) as
+                  RawNamedRequest | undefined;
+                const inputs: Inputs = {
+                  ...empty,
+                  path: Object.fromEntries(
+                    pathParameters.map((key, index) => [key, args.at(index)]),
+                  ),
+                  headers: request?.headers ?? empty.headers,
+                  cookies: request?.cookies ?? empty.cookies,
+                  query: operation.querystring
+                    ? empty.query
+                    : ((request?.query as Values | undefined) ?? empty.query),
+                  querystring: operation.querystring
+                    ? request?.query
+                    : undefined,
+                  body: request?.body,
+                };
+                if (!isReady(operation, inputs)) {
+                  throw new TypeError(
+                    `Missing required inputs for OpenAPI operation: ${method} ${path}`,
+                  );
+                }
+                return sendRequest(
+                  path,
+                  method,
+                  operation,
+                  inputs,
+                  request,
+                  stream,
+                );
+              };
+            const send = invoke(false);
+            return [
+              name,
+              canStream(operation)
+                ? Object.assign(send, { stream: invoke(true) })
+                : send,
+            ];
+          },
+        ),
+      ),
+    ]),
+  ) as NamedSdk<Operations, Names>;
 }

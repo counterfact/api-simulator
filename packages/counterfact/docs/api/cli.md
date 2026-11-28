@@ -218,6 +218,36 @@ Response decoding supports exact declared media types, with non-JSON,
 non-text content returned as bytes. Fetch-forbidden HTTP methods are omitted
 from the generated client.
 
+### Named SDK
+
+Import `createSdk` from the same generated entry point. It accepts the same
+client configuration as `createClient`.
+
+```ts
+import { createSdk } from "./api/client/index.js";
+
+const api = createSdk({ baseUrl: "http://localhost:3100" });
+const result = await api.users.getUser(42);
+
+if (result.matchedStatus === "200") {
+  console.log(result.body);
+}
+```
+
+Methods use `operationId` when present. For example, a GET on
+`/users/{id}` with no operation ID becomes `api.users.usersDetail(id)`.
+Groups default to the first path segment. Use `--module-name-index <index>`
+(or `moduleNameIndex` in `counterfact.yaml`) to select a zero-based segment.
+Use `--module-name-first-tag` (or `moduleNameFirstTag`) to prefer the first
+OpenAPI tag, falling back to the selected path segment for untagged operations.
+
+Path arguments follow their order in the path. The final argument holds
+`query`, `headers`, `cookies`, `body`, and request options, as applicable.
+It is required when the operation has required inputs in those locations.
+Responses use the same validated result contract as fluent `send()`. Named
+methods that declare byte responses also expose `.stream()` with the same
+arguments.
+
 ## YAML configuration
 
 Save `counterfact.yaml` in the directory where you run the CLI, or select another file with `--config <path>`. For example:

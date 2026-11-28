@@ -10,6 +10,10 @@ export interface Config {
   buildCache: boolean;
   /** Controls which artefacts are (re-)generated from the OpenAPI spec. */
   generate: {
+    /** Group named client operations by their first OpenAPI tag when present. */
+    moduleNameFirstTag?: boolean | undefined;
+    /** Zero-based path segment used to group named client operations. */
+    moduleNameIndex?: number | undefined;
     /** Remove route files that no longer correspond to a spec path. */
     prune?: boolean;
     /** Generate route handler stubs. */

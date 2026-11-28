@@ -105,6 +105,8 @@ export interface StandaloneRunInput {
   basePath: string;
   target?: "schemas" | "client";
   overlays: readonly string[];
+  moduleNameFirstTag?: boolean | undefined;
+  moduleNameIndex?: number | undefined;
   source: string;
   specs?: SpecConfig[] | undefined;
 }
@@ -117,6 +119,8 @@ export async function generateStandalone({
   basePath,
   target = "schemas",
   overlays,
+  moduleNameFirstTag,
+  moduleNameIndex,
   source,
   specs,
 }: StandaloneRunInput): Promise<number> {
@@ -126,7 +130,7 @@ export async function generateStandalone({
     const generator = new CodeGenerator(
       spec.source,
       spec.group ? pathJoin(basePath, spec.group) : basePath,
-      {},
+      { moduleNameFirstTag, moduleNameIndex },
       spec.version?.trim() ?? "",
       spec.overlays ?? overlays,
     );
