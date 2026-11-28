@@ -8,8 +8,8 @@ const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 const elapsed = (start) =>
   `${((performance.now() - start) / 1000).toFixed(1)}s`;
 
-// Keep this order aligned with the counterfact workspace's build script.
-// That script remains self-contained for prepack and published-package builds.
+// Build dependencies before consumers. The CLI's separate prepack build
+// covers its own dependencies; the adapter is an independent workspace.
 const stages = [
   {
     label: "Generator (including shared types and OpenAPI)",
@@ -22,6 +22,11 @@ const stages = [
     commands: [["build"]],
   },
   { label: "Client", workspace: "@counterfact/client", commands: [["build"]] },
+  {
+    label: "STA adapter",
+    workspace: "swagger-typescript-api-adapter",
+    commands: [["build"]],
+  },
   { label: "REPL", workspace: "@counterfact/repl", commands: [["build"]] },
   {
     label: "Counterfact CLI",

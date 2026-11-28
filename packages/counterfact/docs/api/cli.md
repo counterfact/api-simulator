@@ -21,9 +21,8 @@ npx counterfact@latest [spec] [output] [options]
 | `--no-validate-response`    | —                  | Disable OpenAPI response validation                                   |
 | `--generate-types`          | `false`            | Generate types only                                                   |
 | `--generate-routes`         | `false`            | Generate routes only                                                  |
+| `--generate-client`         | `false`            | Generate only a Fetch client into `[output]`                             |
 | `--generate-schemas-only`   | `false`            | Write only the schema types into `[output]` (see below)               |
-| `--generate-client`         | `false`            | Generate a typed, fetch-based API client in `client/` (and types)     |
-| `--generate-client-only`    | `false`            | Write only a standalone API client into `[output]/client` (see below) |
 | `--watch-types`             | `false`            | Watch and regenerate types only                                       |
 | `--watch-routes`            | `false`            | Watch and regenerate routes only                                      |
 | `--always-fake-optionals`   | `false`            | Include optional fields in random responses                           |
@@ -36,33 +35,6 @@ npx counterfact@latest [spec] [output] [options]
 The action flags above default to false individually. When no action flag is supplied, the CLI enables generation, watching, serving, the REPL, and cache building together. Supplying an action flag selects the requested actions. CLI values override values loaded from `counterfact.yaml` or `--config`.
 
 Run `npx counterfact@latest --help` for the full list.
-
-## Generated client options
-
-These options shape the client written by `--generate-client` and `--generate-client-only`. See [generated API client](../features/generated-client.md).
-
-| Flag                             | Default  | Description                                                    |
-| -------------------------------- | -------- | -------------------------------------------------------------- |
-| `--module-name-index <number>`   | `0`      | Path segment used to group operations into modules             |
-| `--module-name-first-tag`        | `false`  | Group operations into modules by their first tag               |
-| `--module-class-suffix <suffix>` | _(none)_ | Appended to every module class name (`Client` → `UsersClient`) |
-| `--type-prefix <prefix>`         | _(none)_ | Prepended to every data contract type name                     |
-| `--type-suffix <suffix>`         | _(none)_ | Appended to every data contract type name (`Dto` → `UserDto`)  |
-| `--api-class-name <name>`        | `Api`    | Name of the class that combines every module                   |
-| `--unwrap-response-data`         | `false`  | Methods resolve with the response body instead of the response |
-
-## Schema type options
-
-These options change how schema types are declared in `types/`, and therefore in the client's data contracts. They also apply to `--generate-schemas-only` and `--generate-client-only`. See [customize schema declarations](../features/generated-code.md#customize-schema-declarations).
-
-| Flag                   | Default | Description                                                                                        |
-| ---------------------- | ------- | -------------------------------------------------------------------------------------------------- |
-| `--enum-style <style>` | `union` | `union`, `enum`, or `const` for enums that name their members with `x-enumNames`/`x-enum-varnames` |
-| `--ignore-nullable`    | `false` | Omit `\| null` from nullable schema types                                                          |
-| `--prefer-interfaces`  | `false` | Declare named object schemas as interfaces instead of type aliases                                 |
-| `--validation-jsdoc`   | `false` | Document `minLength`, `pattern`, `minimum`, and other constraints in JSDoc                         |
-
-In `counterfact.yaml`, use `enumStyle`, `ignoreNullable`, `preferInterfaces`, and `validationJsdoc`.
 
 ## Generate only the schema types
 
@@ -85,15 +57,250 @@ Output layout:
 
 Groups and versions come from the `spec` list in a config file. Every spec in a multi-spec configuration needs a unique non-empty group, and one group cannot mix versioned and unversioned specs. A schema that depends on something other than another schema (for example a `$ref` to a parameter) fails with an error naming the schema, because the flat file could not import it.
 
-## Generate only the client
+## Generate a typed Fetch client
+
+For Swagger 2.0 and OpenAPI 3.x, normal type generation includes a Fetch client. For
+example, `npx counterfact@latest openapi.yaml ./api` generates
+`./api/client/index.ts` alongside the simulator files. Spec watching
+regenerates the client when type generation is enabled. Grouped APIs place
+clients in each group directory, and versioned clients have an additional
+version directory under `client/`.
+
+To generate just the client, run:
 
 ```sh
-npx counterfact@latest openapi.yaml ./api --generate-client-only --type-suffix Dto
+npx counterfact@latest openapi.yaml ./src/api/generated --generate-client
 ```
 
-`--generate-client-only` writes a [standalone API client](../features/generated-client.md#standalone-client) to `[output]/client` and nothing else: no routes, scenarios, `types/`, `counterfact-types/`, `.cache`, or server. The client declares its own types, one file per schema in `client/data-contracts/`. In `counterfact.yaml`, set `generateClientOnly: true`.
+Install `@counterfact/client` in the application that uses the generated
+client. Import `createClient` from the generated entry point and set
+`baseUrl` to the backend or Counterfact simulator, including any API prefix.
 
-It cannot be combined with `--generate`, `--generate-routes`, `--generate-types`, `--generate-schemas-only`, `--watch*`, `--serve`, `--repl`, `--build-cache`, or `--prune`. If your config file sets any of these, they are ignored with a notice. Versioned specs are not supported yet. In a multi-spec configuration, each spec's client goes in `<output>/<group>/client`.
+```ts
+import { createClient } from "./api/client/index.js";
+
+const route = createClient({ baseUrl: "http://localhost:3100" });
+const tenant = route("/{tenantId}/v1").path({ tenantId: "acme" });
+const order = tenant.segment("orders/{orderId}").method("get");
+const result = await order.path({ orderId: "123" }).send();
+
+if (result.matchedStatus === "200") {
+  console.log(result.body);
+}
+```
+
+`route()` accepts an OpenAPI path or one of its prefixes. `segment()` appends a
+relative fragment and carries over the path values you already set. After
+selecting a method, supply the operation's path, query, header, cookie, and body
+inputs. The typed builder exposes `send()` once all required inputs are set.
+Each step returns a new builder, so you can reuse a prefix or a prepared request.
+
+### Pass the whole query string
+
+For an OpenAPI 3.2 operation with an `in: querystring` parameter, pass its
+complete value to `.query()`. The client takes the input type and encoding
+from the parameter's `content`. A later `.query()` call replaces the earlier
+value. If the parameter is required, supply it before calling `.send()` or
+`.stream()`.
+
+```ts
+await route("/search").method("get")
+  .query({ term: "red shoes", tags: ["sale", "women"] })
+  .send();
+```
+
+Form encoding sends `?term=red+shoes&tags=sale&tags=women`. JSON encoding sends
+the percent-encoded JSON value as the whole query string. The whole-query
+value replaces any query in `baseUrl`. Use a header or cookie security scheme
+for JSON whole-query requests.
+
+The generated client supports JSON and URL-encoded form objects with
+named fields. The simulator exposes the parsed form fields through
+`$.querystring`. Positional and nested form encodings are outside the
+client's support.
+
+### Read the response
+
+`send()` resolves with the HTTP `status`, `matchedStatus`, `mediaType`,
+decoded `body`, and original Fetch `response`. Check `matchedStatus` to
+narrow the body for a declared status, range, or default response. A documented
+HTTP error such as a 404 also resolves when it matches the contract.
+
+An unexpected response rejects with `InvalidResponseError`, exported from
+`@counterfact/client/fetch`. The error includes a `reason`, the original
+`response`, and the matched status declaration if there is one. For malformed
+JSON or schema failures, it also exposes the received body as `unknown`.
+
+The client validates declared JSON and text body schemas at runtime.
+For other media types it checks the declared status and media type before
+returning bytes. Validation covers the response body, excluding headers and
+custom schema formats. Counterfact compiles the validators during generation,
+so browser clients can validate responses under a Content Security Policy that
+blocks dynamic code evaluation.
+
+### Stream a download
+
+A completed fluent request exposes `stream()` when the operation declares a
+response that `send()` would return as bytes. Call it with the same request
+options as `send()`.
+
+```ts
+const result = await route("/report").method("get").stream({ signal });
+
+if (result.matchedStatus === "200") {
+  const reader = result.body.getReader();
+  // Read report bytes as they arrive.
+}
+```
+
+The result preserves the status, media type, and original Fetch response. For
+a byte response, `result.body` is the same stream as `result.response.body`.
+Read from one of them. Declared JSON and text responses, such as error bodies,
+are still decoded and validated.
+
+### Authentication and Fetch options
+
+Register providers by the names in `components.securitySchemes`. Counterfact
+passes the scopes from the selected security requirement and the request's
+abort signal to the provider. A provider may return a value or a promise.
+
+```ts
+const route = createClient({
+  baseUrl: "https://api.example.com",
+  auth: {
+    userToken: ({ scopes, signal }) => session.getAccessToken(scopes, signal),
+    tenantKey: () => config.apiKey,
+  },
+});
+
+await route("/orders").method("get").send({ authenticate: true, signal });
+```
+
+An operation inherits top-level security unless it declares its own.
+`security: []` makes the operation public. A request can satisfy any one
+security alternative, and it needs every scheme within that alternative.
+The client supports bearer tokens, OAuth 2.0 and OpenID Connect access
+tokens, and API keys in headers or query parameters. For a cookie scheme,
+a provider can return `{ credentials: "include" }` or
+`{ credentials: "same-origin" }` to use browser-managed cookies.
+
+- Omit `authenticate` to try the declared credential alternatives in order.
+  If no complete alternative is available and the operation allows anonymous
+  access, the client sends anonymously.
+- Set `authenticate: true` to require credentials. A missing credential
+  rejects before Fetch runs.
+- Set `authenticate: false` to opt out. An operation requiring credentials
+  rejects before Fetch runs. Otherwise the client omits browser credentials
+  and removes authentication headers and declared API keys from the request.
+
+Returning `undefined` from a provider lets the client try another alternative.
+A thrown provider error rejects the request. A documented HTTP 401 remains a
+typed response, with no anonymous retry.
+
+Supply default headers, credentials, or a custom `fetch` in `createClient()`.
+Each call to `send()` or `stream()` can set `signal`, `credentials`, and `redirect`.
+Per-request credentials override the client default. Anonymous opt-out
+always omits credentials. Requests that use a credential provider reject
+redirects by default. Set a redirect mode explicitly to override that default.
+
+Use a dedicated output folder for generated files. Grouped and versioned
+specifications produce separate entry points under
+`<output>/<group>/<version>/index.ts`, omitting either directory when it is not
+configured. This one-shot mode applies configured overlays and does not start
+the simulator. It uses the same action restrictions as schema-only generation,
+and the two modes are mutually exclusive.
+
+A request body uses the declared JSON media
+type if there is one, or the first media type otherwise. JSON bodies use
+generated schema types. Text, binary, and URL-encoded bodies use `string`,
+`Blob | ArrayBuffer`, and `URLSearchParams` respectively.
+
+For an OpenAPI 3.x multipart body, pass an object typed from the schema or a
+prepared `FormData`. File fields accept `File`, `Blob`, or `Uint8Array`. Array
+items are sent as separate parts under the same field name. Object parts use
+`application/json` by default. Use `encoding.<field>.contentType` to set a
+part's media type. For an image field declared as `image/*`, pass a
+`File` or `Blob` with a concrete type such as `image/png`. For custom
+serialization such as an XML part, pass
+prepared `FormData` directly.
+Response decoding supports exact declared media types, with non-JSON,
+non-text content returned as bytes. Fetch-forbidden HTTP methods are omitted
+from the generated client.
+
+### Swagger 2.0
+
+Swagger 2.0 clients use `definitions` for models, `consumes` for request
+media types, and `produces` for response media types. Operation-level media
+types override document defaults. With no media type declared, the generator
+uses JSON for schema bodies, bytes for file responses, and the appropriate form
+encoding for form data.
+
+The fluent client and named SDK honor `collectionFormat` for arrays. Pass a
+typed object for Swagger form fields, or supply a prepared `FormData` or
+`URLSearchParams` object. A multipart file field accepts a `Blob` or `File`.
+For Basic authentication, the provider returns a username and a password:
+
+```ts
+const api = createSdk({
+  auth: {
+    basicAuth: () => ({ username, password }),
+  },
+});
+```
+
+Use the security scheme name from `securityDefinitions` as the key. API key
+and OAuth 2.0 providers work the same way as they do for OpenAPI 3.x.
+The default URL comes from the Swagger document's `schemes`, `host`, and
+`basePath`. Pass `baseUrl` to override it or when generation from a local
+document has no host.
+
+### Named SDK
+
+Import `createSdk` from the same generated entry point. It accepts the same
+client configuration as `createClient`.
+
+```ts
+import { createSdk } from "./api/client/index.js";
+
+const api = createSdk({ baseUrl: "http://localhost:3100" });
+const result = await api.users.getUser(42);
+
+if (result.matchedStatus === "200") {
+  console.log(result.body);
+}
+```
+
+Methods use `operationId` when present. For example, a GET on
+`/users/{id}` with no operation ID becomes `api.users.usersDetail(id)`.
+Groups default to the first path segment. Use `--module-name-index <index>`
+(or `moduleNameIndex` in `counterfact.yaml`) to select a zero-based segment.
+Use `--module-name-first-tag` (or `moduleNameFirstTag`) to prefer the first
+OpenAPI tag, falling back to the selected path segment for untagged operations.
+
+Path arguments follow their order in the path. The final argument holds
+`query`, `headers`, `cookies`, `body`, and request options, as applicable.
+It is required when the operation has required inputs in those locations.
+Responses use the same validated result contract as fluent `send()`. Named
+methods that declare byte responses also expose `.stream()` with the same
+arguments.
+
+### Migrating from swagger-typescript-api
+
+Install `swagger-typescript-api-adapter` and apply it to the generated SDK
+factory:
+
+```ts
+import { createSdk } from "./api/client/index.js";
+import { wrapSta } from "swagger-typescript-api-adapter";
+
+const Api = wrapSta(createSdk);
+const api = new Api({ baseUrl: "https://api.example.com" });
+const { data } = await api.users.getUser(42);
+```
+
+If your STA Fetch client used `--single-http-client`, import `HttpClient` from
+the adapter package and continue passing the instance to `new Api(http)`.
+To keep body-only responses, use `wrapSta(createSdk, { unwrapResponseData: true })`.
 
 ## YAML configuration
 

@@ -46,7 +46,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rimraf dist && tsc --build --force && copyfiles -f \"../types/src/*.ts\" dist/templates/counterfact-types && rimraf dist/templates/counterfact-types/streaming-content-types.ts && copyfiles -f \"templates/client/*.ts\" dist/templates/client",
+    "build": "rimraf dist && tsc --build --force && copyfiles -f \"../types/src/*.ts\" dist/templates/counterfact-types && rimraf dist/templates/counterfact-types/streaming-content-types.ts dist/templates/counterfact-types/client-route.ts",
     "prepack": "yarn build",
     "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/generator/test",
     "test:packed-consumer": "node test/package/generator-consumer-smoke.mjs"
@@ -54,6 +54,7 @@
   "dependencies": {
     "@counterfact/openapi": "0.1.7",
     "@counterfact/types": "0.3.0",
+    "ajv": "8.20.0",
     "chokidar": "6.0.0",
     "debug": "4.4.3",
     "prettier": "3.9.10",

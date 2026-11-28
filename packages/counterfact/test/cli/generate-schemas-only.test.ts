@@ -2,9 +2,9 @@ import { describe, expect, it } from "@jest/globals";
 import { usingTemporaryFiles } from "using-temporary-files";
 
 import {
-  generateSchemasOnly,
-  validateSchemasOnlyOptions,
-} from "../../src/cli/generate-schemas-only.js";
+  generateStandalone,
+  validateStandaloneOptions,
+} from "../../src/cli/generate-standalone.js";
 
 const valid = {
   conflictingOptions: [],
@@ -12,14 +12,14 @@ const valid = {
   source: "openapi.yaml",
 };
 
-describe("validateSchemasOnlyOptions", () => {
+describe("validateStandaloneOptions", () => {
   it("accepts a single spec with a destination", () => {
-    expect(() => validateSchemasOnlyOptions(valid)).not.toThrow();
+    expect(() => validateStandaloneOptions(valid)).not.toThrow();
   });
 
   it("rejects explicit conflicting options by flag name", () => {
     expect(() =>
-      validateSchemasOnlyOptions({
+      validateStandaloneOptions({
         ...valid,
         conflictingOptions: ["generateTypes", "watchRoutes", "buildCache"],
       }),
@@ -30,28 +30,28 @@ describe("validateSchemasOnlyOptions", () => {
 
   it("requires a destination", () => {
     expect(() =>
-      validateSchemasOnlyOptions({ ...valid, destinationProvided: false }),
+      validateStandaloneOptions({ ...valid, destinationProvided: false }),
     ).toThrow(/requires a destination directory/u);
   });
 
   it("requires an OpenAPI document", () => {
-    expect(() => validateSchemasOnlyOptions({ ...valid, source: "_" })).toThrow(
+    expect(() => validateStandaloneOptions({ ...valid, source: "_" })).toThrow(
       /requires an OpenAPI document/u,
     );
     expect(() =>
-      validateSchemasOnlyOptions({
+      validateStandaloneOptions({
         ...valid,
         specs: [{ source: "_", group: "" }],
       }),
     ).toThrow(/requires an OpenAPI document/u);
-    expect(() => validateSchemasOnlyOptions({ ...valid, specs: [] })).toThrow(
+    expect(() => validateStandaloneOptions({ ...valid, specs: [] })).toThrow(
       /requires an OpenAPI document/u,
     );
   });
 
   it("accepts several specs with distinct groups and versions", () => {
     expect(() =>
-      validateSchemasOnlyOptions({
+      validateStandaloneOptions({
         ...valid,
         specs: [
           { source: "a.yaml", group: "a", version: "v1" },
@@ -64,7 +64,7 @@ describe("validateSchemasOnlyOptions", () => {
 
   it("rejects multiple specs when one has no group", () => {
     expect(() =>
-      validateSchemasOnlyOptions({
+      validateStandaloneOptions({
         ...valid,
         specs: [
           { source: "a.yaml", group: "" },
@@ -76,7 +76,7 @@ describe("validateSchemasOnlyOptions", () => {
 
   it("rejects duplicate group and version pairs", () => {
     expect(() =>
-      validateSchemasOnlyOptions({
+      validateStandaloneOptions({
         ...valid,
         specs: [
           { source: "a.yaml", group: "a", version: "v1" },
@@ -115,7 +115,7 @@ describe("validateSchemasOnlyOptions", () => {
     "rejects specs that resolve to the same output directory through %s",
     (_name, first, second, directory) => {
       expect(() =>
-        validateSchemasOnlyOptions({
+        validateStandaloneOptions({
           ...valid,
           specs: [
             { source: "a.yaml", ...first },
@@ -128,7 +128,7 @@ describe("validateSchemasOnlyOptions", () => {
 
   it("rejects mixing versioned and unversioned specs in one group", () => {
     expect(() =>
-      validateSchemasOnlyOptions({
+      validateStandaloneOptions({
         ...valid,
         specs: [
           { source: "a.yaml", group: "a" },
@@ -150,12 +150,12 @@ function spec(schemaName: string): string {
   ].join("\n");
 }
 
-describe("generateSchemasOnly", () => {
+describe("generateStandalone", () => {
   it("writes a single spec directly into the destination", async () => {
     await usingTemporaryFiles(async ($) => {
       await $.add("openapi.yaml", spec("Pet"));
 
-      const count = await generateSchemasOnly({
+      const count = await generateStandalone({
         basePath: $.path("out"),
         overlays: [],
         source: $.path("openapi.yaml"),
@@ -172,7 +172,7 @@ describe("generateSchemasOnly", () => {
       await $.add("pets-v2.yaml", spec("Pet"));
       await $.add("billing.yaml", spec("Invoice"));
 
-      const count = await generateSchemasOnly({
+      const count = await generateStandalone({
         basePath: $.path("out"),
         overlays: [],
         source: "_",

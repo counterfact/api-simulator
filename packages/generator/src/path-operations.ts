@@ -1,6 +1,6 @@
-import type { Requirement } from "./requirement.js";
+import { Requirement } from "./requirement.js";
 
-const HTTP_VERBS = new Set([
+const methods = new Set([
   "get",
   "put",
   "post",
@@ -11,32 +11,30 @@ const HTTP_VERBS = new Set([
   "trace",
 ]);
 
-/**
- * Lists the operations declared by a Path Item as `[operation, method]` pairs
- * with lower-case methods.
- *
- * Follows a referenced Path Item and includes OpenAPI 3.2
- * `additionalOperations`.
- */
-export function operationMethodsForPath(
-  pathDefinition: Requirement,
-): Array<[Requirement, string]> {
-  let resolved = pathDefinition;
+export function pathOperations(pathItem: Requirement): [Requirement, string][] {
+  let resolved = pathItem;
   while (resolved.isReference) resolved = resolved.reference();
-  return resolved.flatMap((operation, requestMethod) => {
-    if (requestMethod === "additionalOperations") {
-      return operation.map(
-        (additionalOperation, additionalMethod): [Requirement, string] => [
-          additionalOperation,
-          additionalMethod.toLowerCase(),
-        ],
-      );
-    }
 
-    if (!HTTP_VERBS.has(requestMethod)) {
-      return [];
-    }
+  const operations = resolved.flatMap(
+    (operation, name): [Requirement, string][] => {
+      if (name === "additionalOperations") {
+        return operation.map((additional, method) => [
+          additional,
+          method.toLowerCase(),
+        ]);
+      }
+      return methods.has(name) ? [[operation, name]] : [];
+    },
+  );
 
-    return [[operation, requestMethod]];
+  return operations.map(([operation, method]) => {
+    // A referenced operation still belongs to the endpoint and its path-item parameters.
+    const logical = new Requirement(
+      operation.data,
+      `${pathItem.url}/${method}`,
+      pathItem.specification,
+    );
+    logical.parent = pathItem;
+    return [logical, method];
   });
 }

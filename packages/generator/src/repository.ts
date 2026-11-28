@@ -463,20 +463,54 @@ export class Repository {
     const outputs = schemaScripts.map(([path, script]) => ({
       outputPath:
         outputPrefix + this.outputPath(path).slice(schemaPrefix.length),
-      script,
+      contents: () => script.contents(),
     }));
 
+    return this.writeOutputs(destination, outputs);
+  }
+
+  /** Write an isolated tree of generated scripts at their original paths. */
+  public async writeGeneratedScripts(
+    destination: string,
+    version: string,
+    extra: ReadonlyMap<string, string> = new Map(),
+  ): Promise<string[]> {
+    await this.finished();
+    const outputPrefix = version === "" ? "" : `${version}/`;
+    const outputs = [
+      ...[...this.scripts].map(([path, script]) => ({
+        outputPath: outputPrefix + this.outputPath(path),
+        contents: () => script.contents(),
+      })),
+      ...[...extra].map(([path, contents]) => ({
+        outputPath: outputPrefix + path,
+        contents: () => contents,
+      })),
+    ];
+    return this.writeOutputs(destination, outputs);
+  }
+
+  private async writeOutputs(
+    destination: string,
+    outputs: readonly {
+      outputPath: string;
+      contents: () => string | Promise<string>;
+    }[],
+  ): Promise<string[]> {
+    const files = await Promise.all(
+      outputs.map(async ({ outputPath, contents }) => ({
+        fullPath: resolveDestinationPath(destination, outputPath),
+        contents: await contents(),
+      })),
+    );
     await adoptSpellings(
       destination,
       outputs.map(({ outputPath }) => outputPath),
     );
-
     await Promise.all(
-      outputs.map(async ({ outputPath, script }) => {
-        const fullPath = resolveDestinationPath(destination, outputPath);
-
+      files.map(async ({ fullPath, contents }) => {
         await ensureDirectoryExists(fullPath);
-        await fs.writeFile(fullPath, await script.contents());
+        await fs.writeFile(fullPath, contents);
       }),
     );
 

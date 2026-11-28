@@ -7,5 +7,10 @@
     "outDir": "dist",
     "tsBuildInfoFile": "../../node_modules/.cache/counterfact/client.tsbuildinfo"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../types"
+    }
+  ]
 }

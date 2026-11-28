@@ -5,12 +5,16 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
 export const ADR_DEPENDENCY_ALLOWLIST = Object.freeze({
-  "@counterfact/client": ["@counterfact/openapi"],
+  "@counterfact/client": ["@counterfact/openapi", "@counterfact/types"],
   "@counterfact/generator": ["@counterfact/openapi", "@counterfact/types"],
   "@counterfact/openapi": ["@counterfact/types"],
   "@counterfact/repl": ["@counterfact/client", "@counterfact/runtime"],
   "@counterfact/runtime": ["@counterfact/openapi", "@counterfact/types"],
   "@counterfact/types": [],
+  "swagger-typescript-api-adapter": [
+    "@counterfact/client",
+    "@counterfact/types",
+  ],
   counterfact: [
     "@counterfact/client",
     "@counterfact/generator",

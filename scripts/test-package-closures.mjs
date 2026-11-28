@@ -454,7 +454,7 @@ try {
     recursive: true,
   });
   process.stdout.write(
-    "Packing counterfact with its prepack lifecycle (builds all workspaces)...\n",
+    "Packing counterfact with its prepack lifecycle (builds its dependencies)...\n",
   );
 
   const tarballs = new Map();
@@ -473,7 +473,12 @@ try {
     assert(workspace);
     tarballs.set(
       name,
-      await packWorkspace(workspace, tarballDirectory, cacheDirectory),
+      await packWorkspace(
+        workspace,
+        tarballDirectory,
+        cacheDirectory,
+        name === "swagger-typescript-api-adapter",
+      ),
     );
   }
 

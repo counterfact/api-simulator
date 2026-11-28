@@ -86,6 +86,11 @@ try {
     mkdir(tarballDirectory),
   ]);
 
+  const typesTarball = await pack(
+    path.resolve(packageRoot, "../types"),
+    tarballDirectory,
+    cacheDirectory,
+  );
   const clientTarball = await pack(
     packageRoot,
     tarballDirectory,
@@ -107,6 +112,7 @@ try {
       "--package-lock=false",
       "--cache",
       cacheDirectory,
+      typesTarball,
       clientTarball,
     ],
     consumerDirectory,
@@ -117,6 +123,7 @@ try {
     path.join(consumerDirectory, "consume.mjs"),
     `import assert from "node:assert/strict";
 import http from "node:http";
+import { createFetchRoute } from "@counterfact/client/fetch";
 import { createOpenApiRouteCatalog, createRouteFunction } from "@counterfact/client";
 
 let captured;
@@ -185,6 +192,22 @@ try {
     method: "POST",
     url: "/pets/42?notify=true",
   });
+  const fetchRoute = createFetchRoute({
+    "/pets/{petId}": {
+      post: {
+        parameters: [{ name: "petId", location: "path", required: true, style: "simple", explode: false }],
+        body: { mediaType: "application/json", required: true },
+        responses: { 200: ["application/json"] },
+      },
+    },
+  }, { baseUrl: \`http://127.0.0.1:\${address.port}\` });
+  const pet = fetchRoute("/").segment("pets/{petId}").method("post").path({ petId: 43 });
+  assert.equal("send" in pet, false);
+  const result = await pet.body({ status: "available" }).send();
+  assert.equal(result.matchedStatus, "200");
+  assert.deepEqual(result.body, { accepted: true });
+  assert.equal(captured.body, '{"status":"available"}');
+  assert.equal(captured.url, "/pets/43");
 } finally {
   await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
 }

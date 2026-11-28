@@ -163,3 +163,42 @@ def destination_is_required(journey):
     assert "requires a destination directory" in result.stderr
     assert written_files(journey.project / "types") == []
     assert not (journey.project / "Widget.ts").exists()
+
+
+@scenario(
+    "features/generate_client.feature",
+    "Generate a Fetch client for a configured portfolio",
+)
+def test_generate_clients_for_configured_portfolio():
+    """Bind the configured Fetch client journey to its steps."""
+
+
+@when("I generate only the Fetch clients")
+def generate_only_clients(journey):
+    result = journey.run_cli(
+        "--config",
+        journey.config_path,
+        "--generate-client",
+    )
+    assert result.returncode == 0, f"{result.stdout}\n{result.stderr}"
+    assert "Generated Fetch client" in result.stdout
+    assert "Ignoring config file options" in result.stderr
+
+
+@then("only the client entry points, validators and referenced schemas are generated")
+def only_clients_are_written(journey):
+    assert written_files(journey.output) == [
+        "billing/index.ts",
+        "billing/response-validators.ts",
+        "billing/types/components/schemas/Invoice.ts",
+        "catalog/v1/index.ts",
+        "catalog/v1/response-validators.ts",
+        "catalog/v1/types/components/schemas/Item.ts",
+        "catalog/v2/index.ts",
+        "catalog/v2/response-validators.ts",
+        "catalog/v2/types/components/schemas/Item.ts",
+    ]
+    for entry in ("billing", "catalog/v1", "catalog/v2"):
+        assert "@counterfact/client/fetch" in (
+            journey.output / entry / "index.ts"
+        ).read_text()

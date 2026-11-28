@@ -1,15 +1,14 @@
 # Generated Code
 
-Counterfact generates two directories from your OpenAPI document:
+Counterfact generates these directories from your OpenAPI document:
 
 - 📂 **`types/`** — fully typed request/response interfaces, auto-regenerated whenever the OpenAPI document changes. Don't edit these by hand.
 - 📂 **`routes/`** — one TypeScript file per API path. These are yours to edit. Out of the box each file returns a random, schema-valid response. You can leave them as-is or customize as much as you like.
+- **`client/`** contains the [generated Fetch client](../api/cli.md#generate-a-typed-fetch-client) for Swagger 2.0 and OpenAPI 3.x specs.
 
 See the [FAQ](../faq.md) for common questions about source control, editing, and regeneration.
 
 No OpenAPI document? See [using Counterfact without OpenAPI](./without-openapi.md).
-
-Pass `--generate-client` to also generate a typed API client in `client/` that reuses these types. See [generated API client](./generated-client.md).
 
 ## Generated file structure
 
@@ -18,6 +17,9 @@ The output directory is called `basePath` in library options and `destination` i
 ```
 <output-directory>/
 ├── _.store.ts                 # application-level state shared across API groups (optional)
+├── client/
+│   ├── index.ts               # Fetch client entry point
+│   └── response-validators.ts # precompiled response validators
 ├── routes/
 │   ├── _.context.ts           # shared in-memory state (optional)
 │   ├── _.middleware.ts        # Counterfact middleware (optional)
@@ -54,35 +56,6 @@ Schema types also preserve:
 Generation does not replace runtime validation. TypeScript cannot express every JSON Schema constraint. In particular, `oneOf` is represented as a union rather than a guarantee that exactly one branch validates.
 
 Generated operation argument types include only the request inputs available for that operation. For example, an operation without query parameters has no `$.query` property. Versioned arguments include their version literal; unversioned arguments omit `version`. These properties are selected during generation, so the emitted argument is a plain object type.
-
-## Customize schema declarations
-
-By default, enums are unions of their values and named object schemas are type aliases. These options change the declarations in `types/` (and so the client's data contracts):
-
-- `--enum-style enum` declares an enum whose schema names every value with `x-enumNames` (or `x-enum-varnames`) as a TypeScript enum. `--enum-style const` declares an object of the values plus a type of the same name. Enums without member names remain unions. The generated client re-exports these values from `data-contracts.ts`.
-- `--ignore-nullable` omits `| null` from nullable schemas, including OpenAPI 3.1 type unions with `null`.
-- `--prefer-interfaces` declares named object schemas as interfaces. Compositions such as `allOf` stay type aliases.
-- `--validation-jsdoc` adds `@minLength`, `@maxLength`, `@min`, `@max`, `@exclusiveMin`, `@exclusiveMax`, `@multipleOf`, `@pattern`, `@minItems`, and `@maxItems` to the JSDoc of schemas and properties.
-
-```yaml
-# counterfact.yaml
-generateClient: true
-typeSuffix: Dto
-enumStyle: enum
-ignoreNullable: true
-preferInterfaces: true
-validationJsdoc: true
-```
-
-```ts
-// types/components/schemas/ChallengeMethodType.ts
-export enum ChallengeMethodType {
-  None = 0,
-  OutOfBand = 1,
-}
-```
-
-Route handlers use the same types. With an enum style, string enum properties accept the enum members, not plain string literals. With `--ignore-nullable`, the types no longer admit `null` even though the specification and runtime validation do.
 
 ## Update a specification
 

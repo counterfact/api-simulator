@@ -1,0 +1,39 @@
+{
+  "name": "swagger-typescript-api-adapter",
+  "version": "0.0.0",
+  "description": "Adapt a generated Counterfact SDK factory to swagger-typescript-api's Fetch interface.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "License.md"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/counterfact/api-simulator.git",
+    "directory": "packages/swagger-typescript-api-adapter"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc --build --force",
+    "prepack": "yarn build"
+  },
+  "devDependencies": {
+    "swagger-typescript-api": "13.13.0"
+  },
+  "dependencies": {
+    "@counterfact/client": "0.2.2",
+    "@counterfact/types": "0.3.0"
+  }
+}

@@ -1,23 +1,8 @@
-const VALIDATION_TAGS = [
-  ["minLength", "minLength"],
-  ["maxLength", "maxLength"],
-  ["minimum", "min"],
-  ["maximum", "max"],
-  ["exclusiveMinimum", "exclusiveMin"],
-  ["exclusiveMaximum", "exclusiveMax"],
-  ["multipleOf", "multipleOf"],
-  ["pattern", "pattern"],
-  ["minItems", "minItems"],
-  ["maxItems", "maxItems"],
-] as const;
-
 /**
  * Builds a JSDoc comment string from OpenAPI schema metadata.
  * Returns an empty string if there is no relevant metadata.
- *
- * @param validation - Also document the schema's validation constraints.
  */
-export function buildJsDoc(data: unknown, validation = false): string {
+export function buildJsDoc(data: unknown): string {
   if (typeof data !== "object" || data === null) {
     return "";
   }
@@ -48,16 +33,6 @@ export function buildJsDoc(data: unknown, validation = false): string {
 
   if (format !== undefined) {
     lines.push(` * @format ${format}`);
-  }
-
-  if (validation) {
-    for (const [keyword, tag] of VALIDATION_TAGS) {
-      const value = record[keyword];
-      // OpenAPI 3.0 exclusive bounds are booleans that modify minimum/maximum.
-      if (typeof value === "number" || typeof value === "string") {
-        lines.push(` * @${tag} ${String(value).replace(/\*\//gu, "* /")}`);
-      }
-    }
   }
 
   if (defaultValue !== undefined) {

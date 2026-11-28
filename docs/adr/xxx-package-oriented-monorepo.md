@@ -142,6 +142,15 @@ by the REPL and scenarios. It accepts a narrow route-catalog interface instead
 of importing the runtime dispatcher. This package becomes the natural home for
 future generated-client work, but generating an SDK is outside this migration.
 
+The generated Fetch client uses a browser-compatible entry point and imports
+its TypeScript contracts from `@counterfact/types/client-route`.
+
+#### `swagger-typescript-api-adapter`
+
+Provides an STA Fetch migration path for generated Counterfact SDK factories.
+It uses the generated client and its shared type contracts. Consumers import
+the adapter directly.
+
 #### `@counterfact/repl`
 
 Node REPL integration, completion, grouped API bindings, and scenario commands.
@@ -168,8 +177,9 @@ reason to create a generic `core` package.
 | `@counterfact/openapi`   | `types`                                   |
 | `@counterfact/generator` | `types`, `openapi`                        |
 | `@counterfact/runtime`   | `types`, `openapi`                        |
-| `@counterfact/client`    | `openapi`                                 |
+| `@counterfact/client`    | `openapi`, `types`                        |
 | `@counterfact/repl`      | `client`, narrow contracts from `runtime` |
+| `swagger-typescript-api-adapter` | `client`, `types`                |
 | `counterfact`            | all focused packages                      |
 
 The important rules are that leaf packages do not import orchestration

@@ -9,6 +9,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./fetch": {
+      "types": "./dist/fetch.d.ts",
+      "import": "./dist/fetch.js"
+    },
+    "./validation-helpers": {
+      "types": "./dist/validation-helpers.d.ts",
+      "import": "./dist/validation-helpers.js"
     }
   },
   "files": [
@@ -50,5 +58,9 @@
     "prepack": "yarn build",
     "test": "node --experimental-vm-modules ../../node_modules/jest-cli/bin/jest.js --config ../../jest.config.js packages/client/test",
     "test:packed-consumer": "node test/package/client-consumer-smoke.mjs"
+  },
+  "dependencies": {
+    "@counterfact/types": "0.3.0",
+    "ajv": "8.20.0"
   }
 }

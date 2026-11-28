@@ -54,7 +54,6 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Resolve both `types/paths/` and `types/<version>/paths/` context references against the authored `routes/` tree. Generated `types/_.context.ts` exports helper interfaces, not the context class.
 - Keep context import aliases unique and valid even when path names sanitize to the same identifier or start with a digit. Build parameterized path types with template literal nodes.
 - Keep TypeScript's compiler API dependency explicit and pinned in `@counterfact/generator`; a sibling package's dependency does not satisfy the packed generator.
-- Source files the generator copies verbatim into user output (such as `templates/client/http-client.ts`) are not compiled by `tsc`; the build script must copy them into `dist/`, and template paths must resolve from both `src/` and `dist/`. Run `yarn test:generator-packed` to confirm they ship, and compile the generated consumer under `strict` rather than relying on snapshots.
 - Use the AST helpers for literal names, comments, and grouping. Preserve compact type-literal printing so Prettier does not introduce avoidable snapshot churn.
 - Validate generated syntax and assignment behavior for escaping and union/intersection precedence; snapshots alone do not establish type correctness.
 - When extending generated-output fixtures on an older PR branch, validate with current main integrated: CI tests the merge result, and newer handler type names or response APIs can invalidate newly added snapshots and compiler consumers.
@@ -79,4 +78,14 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - External shared-type imports need collision-free aliases against reserved names, exports, and other imports. Binary multipart models must preserve the non-binary arms of type unions.
 - Resolve operation context imports from the logical endpoint, not the generated filename. The root endpoint uses index.types.ts but must not inherit a real /index child context.
 
+- Generate Fetch client types and runtime metadata from the same operation traversal. Keep client contracts out of the copied simulator types. Compile a generated consumer that explicitly checks when required inputs enable `send()`.
+
+- Compile Fetch response validators during generation. Translate Ajv's standalone helper references to static ESM imports and exercise the generated client with string-to-code compilation disabled.
+
+- Preserve absent, empty, and anonymous OpenAPI security declarations when generating client metadata. Verify operation overrides, alternative requirements, and provider scopes through the generated client.
+
+- Choose public validator export names that cannot collide with Ajv’s generated local bindings. Parse the validators generated from a full spec, since small fixtures may never reach a colliding name.
+
 - Keep exact OpenAPI routes separate from their case-folded output identities and first-spelling filenames. Assemble all versions in a group before selecting function or case-keyed map exports. Prune against physical output paths, and reject ambiguous authored file migrations before writing or pruning handlers.
+
+- Keep Swagger 2.0 differences at the client generator boundary. Read legacy parameter, form, response, and security definitions into the same operation metadata used by OpenAPI 3.x. Compiler-check and exercise the generated client from a bundled legacy spec, including legacy array separators and response schema references.

@@ -1,8 +1,3 @@
-import type {
-  ClientGenerationOptions,
-  SchemaTypeOptions,
-} from "@counterfact/generator";
-
 /** Runtime configuration for a Counterfact server instance. */
 export interface Config {
   /** Optional bearer token that protects the Admin API endpoints. */
@@ -15,19 +10,16 @@ export interface Config {
   buildCache: boolean;
   /** Controls which artefacts are (re-)generated from the OpenAPI spec. */
   generate: {
-    /**
-     * Generate a typed API client in `client/`, with one class per module.
-     * `true` uses the default options.
-     */
-    client?: ClientGenerationOptions | boolean;
+    /** Group named client operations by their first OpenAPI tag when present. */
+    moduleNameFirstTag?: boolean | undefined;
+    /** Zero-based path segment used to group named client operations. */
+    moduleNameIndex?: number | undefined;
     /** Remove route files that no longer correspond to a spec path. */
     prune?: boolean;
     /** Generate route handler stubs. */
     routes: boolean;
     /** Generate TypeScript type files. */
     types: boolean;
-    /** How schema types are declared in `types/` and the client's data contracts. */
-    typeOptions?: SchemaTypeOptions;
   };
   /** Path or URL to the OpenAPI document. Use `"_"` to skip spec loading. */
   openApiPath: string;

@@ -61,7 +61,7 @@ One command:
 npx counterfact@latest https://petstore3.swagger.io/api/v3/openapi.json api
 ```
 
-Replace the Petstore URL with your own spec. A `routes/` directory and `types/` directory appear in `api/`, and a server starts at `http://localhost:3100`. No config file required.
+Replace the Petstore URL with your own spec. The `routes/`, `types/`, and `client/` directories appear in `api/`, and a server starts at `http://localhost:3100`. No config file required.
 
 > **Requires Node ≥ 22.0.0**
 

@@ -1,3 +1,5 @@
+import { execFileSync } from "node:child_process";
+import { stripTypeScriptTypes } from "node:module";
 import { fileURLToPath } from "node:url";
 
 import { jest } from "@jest/globals";
@@ -55,6 +57,14 @@ describe("end-to-end test", () => {
         expect(`${scriptPath}:${await script.contents()}`).toMatchSnapshot();
       }
 
+      await expect($.read("client/index.ts")).resolves.toContain(
+        '"/pet/{petId}"',
+      );
+      const validators = await $.read("client/response-validators.ts");
+      execFileSync(process.execPath, ["--input-type=module", "--check"], {
+        input: stripTypeScriptTypes(validators),
+      });
+
       expect(await $.read(".gitignore")).toMatchSnapshot();
 
       expect(await $.read(".cache/README.md")).toMatchSnapshot();
@@ -81,6 +91,12 @@ describe("end-to-end test", () => {
       for (const [scriptPath, script] of repository.scripts.entries()) {
         expect(`${scriptPath}:${await script.contents()}`).toMatchSnapshot();
       }
+
+      const client = await $.read("client/index.ts");
+      expect(client).toContain('"/search"');
+      expect(client).toContain(
+        'mediaType: "application/x-www-form-urlencoded"',
+      );
 
       expect(await $.read(".gitignore")).toMatchSnapshot();
 
@@ -132,6 +148,9 @@ describe("end-to-end test", () => {
       await expect($.read("out/types/paths/new.types.ts")).resolves.toContain(
         "export type HTTP_GET",
       );
+      const client = await $.read("out/client/index.ts");
+      expect(client).toContain('"/new"');
+      expect(client).not.toContain('"/old"');
       await expect($.read("out/routes/old.ts")).rejects.toThrow();
     });
   });
@@ -332,6 +351,12 @@ describe("OpenAPI paths with trailing slashes", () => {
 
       await expect($.read("types/paths/customers.types.ts")).resolves.toContain(
         "HTTP_GET",
+      );
+      await expect($.read("client/v1/index.ts")).resolves.toContain(
+        '"/customers"',
+      );
+      await expect($.read("client/v2/index.ts")).resolves.toContain(
+        '"/orders"',
       );
       await expect($.read("types/paths/orders.types.ts")).resolves.toContain(
         "HTTP_GET",
