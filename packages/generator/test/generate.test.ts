@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { stripTypeScriptTypes } from "node:module";
 import { fileURLToPath } from "node:url";
 
 import { jest } from "@jest/globals";
@@ -59,10 +60,10 @@ describe("end-to-end test", () => {
       await expect($.read("client/index.ts")).resolves.toContain(
         '"/pet/{petId}"',
       );
-      execFileSync(process.execPath, [
-        "--check",
-        $.path("client/response-validators.ts"),
-      ]);
+      const validators = await $.read("client/response-validators.ts");
+      execFileSync(process.execPath, ["--input-type=module", "--check"], {
+        input: stripTypeScriptTypes(validators),
+      });
 
       expect(await $.read(".gitignore")).toMatchSnapshot();
 
