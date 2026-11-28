@@ -4,7 +4,7 @@ Counterfact generates these directories from your OpenAPI document:
 
 - 📂 **`types/`** — fully typed request/response interfaces, auto-regenerated whenever the OpenAPI document changes. Don't edit these by hand.
 - 📂 **`routes/`** — one TypeScript file per API path. These are yours to edit. Out of the box each file returns a random, schema-valid response. You can leave them as-is or customize as much as you like.
-- **`client/`** contains the [generated Fetch client](../api/cli.md#generate-a-typed-fetch-client) for OpenAPI 3.x specs.
+- **`client/`** contains the [generated Fetch client](../api/cli.md#generate-a-typed-fetch-client) for Swagger 2.0 and OpenAPI 3.x specs.
 
 See the [FAQ](../faq.md) for common questions about source control, editing, and regeneration.
 

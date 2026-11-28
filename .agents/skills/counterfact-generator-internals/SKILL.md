@@ -87,3 +87,5 @@ Use this skill when changing OpenAPI loading/bundling, schema-to-type generation
 - Choose public validator export names that cannot collide with Ajv’s generated local bindings. Parse the validators generated from a full spec, since small fixtures may never reach a colliding name.
 
 - Keep exact OpenAPI routes separate from their case-folded output identities and first-spelling filenames. Assemble all versions in a group before selecting function or case-keyed map exports. Prune against physical output paths, and reject ambiguous authored file migrations before writing or pruning handlers.
+
+- Keep Swagger 2.0 differences at the client generator boundary. Read legacy parameter, form, response, and security definitions into the same operation metadata used by OpenAPI 3.x. Compiler-check and exercise the generated client from a bundled legacy spec, including legacy array separators and response schema references.

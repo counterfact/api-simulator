@@ -7,7 +7,12 @@ export interface CookieCredential {
   credentials: "include" | "same-origin";
 }
 
-type Credential = string | CookieCredential;
+export interface BasicCredential {
+  username: string;
+  password: string;
+}
+
+type Credential = string | CookieCredential | BasicCredential;
 
 export type CredentialProvider<Value extends Credential = Credential> =
   (context: {
@@ -68,6 +73,42 @@ function clearCredentials(
     applyQueryCredentials(url, queryNames);
 }
 
+// eslint-disable-next-line no-control-regex -- HTTP Basic forbids these control characters.
+const basicControls = /[\x00-\x1F\x7F]/u;
+
+function authorizationValue(
+  scheme: ClientSecurityScheme,
+  value: Credential,
+  name: string,
+): string {
+  if (scheme.type === "basic") {
+    if (
+      typeof value !== "object" ||
+      value === null ||
+      !("username" in value) ||
+      typeof value.username !== "string" ||
+      typeof value.password !== "string" ||
+      value.username.includes(":") ||
+      basicControls.test(value.username) ||
+      basicControls.test(value.password)
+    ) {
+      throw new RequestAuthenticationError(
+        `Invalid Basic credentials for security scheme "${name}"`,
+      );
+    }
+    const bytes = new TextEncoder().encode(
+      `${value.username}:${value.password}`,
+    );
+    return `Basic ${btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(""))}`;
+  }
+  if (typeof value !== "string") {
+    throw new RequestAuthenticationError(
+      `Expected a credential string for security scheme "${name}"`,
+    );
+  }
+  return scheme.type === "bearer" ? `Bearer ${value}` : value;
+}
+
 async function resolveAlternative(
   requirement: SecurityRequirement,
   schemes: SecuritySchemes,
@@ -106,7 +147,9 @@ async function resolveAlternative(
     if (value === undefined || value === "") return undefined;
     if (scheme.type === "apiKey" && scheme.location === "cookie") {
       if (
-        typeof value === "string" ||
+        typeof value !== "object" ||
+        value === null ||
+        !("credentials" in value) ||
         !["include", "same-origin"].includes(value.credentials)
       ) {
         throw new RequestAuthenticationError(
@@ -124,20 +167,15 @@ async function resolveAlternative(
       cookieCredentials = value.credentials;
       continue;
     }
-    if (typeof value !== "string") {
-      throw new RequestAuthenticationError(
-        `Expected a credential string for security scheme "${name}"`,
-      );
-    }
     const target =
       scheme.type === "apiKey" && scheme.location === "query" ? query : headers;
     const key =
-      scheme.type === "bearer"
+      scheme.type !== "apiKey"
         ? "authorization"
         : target === headers
           ? scheme.name.toLowerCase()
           : scheme.name;
-    const credential = scheme.type === "bearer" ? `Bearer ${value}` : value;
+    const credential = authorizationValue(scheme, value, name);
     if (target.has(key) && target.get(key) !== credential) {
       throw new RequestAuthenticationError(
         `Conflicting credentials for security scheme "${name}"`,

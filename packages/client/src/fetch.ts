@@ -16,7 +16,11 @@ import {
 } from "./fetch-auth.js";
 
 export { RequestAuthenticationError } from "./fetch-auth.js";
-export type { CookieCredential, CredentialProvider } from "./fetch-auth.js";
+export type {
+  BasicCredential,
+  CookieCredential,
+  CredentialProvider,
+} from "./fetch-auth.js";
 
 export type {
   ClientOperations,
@@ -29,6 +33,15 @@ type ResponseValidators = Readonly<Record<string, (body: unknown) => boolean>>;
 
 type Location = "path" | "query" | "headers" | "cookies";
 
+type CollectionFormat = "csv" | "ssv" | "tsv" | "pipes" | "multi";
+
+interface SwaggerFormField {
+  name: string;
+  required: boolean;
+  file: boolean;
+  collectionFormat?: CollectionFormat;
+}
+
 export interface FetchParameter {
   name: string;
   location: Location;
@@ -37,6 +50,7 @@ export interface FetchParameter {
   explode: boolean;
   allowReserved?: boolean;
   contentType?: string;
+  collectionFormat?: CollectionFormat;
 }
 
 type FormFieldEncoding = {
@@ -55,7 +69,11 @@ interface WholeQuery {
 export interface FetchOperation {
   parameters: readonly FetchParameter[];
   querystring?: WholeQuery;
-  body?: { required: boolean; mediaType: string };
+  body?: {
+    required: boolean;
+    mediaType: string;
+    formFields?: readonly SwaggerFormField[];
+  };
   responses: Readonly<Record<string, readonly string[]>>;
   security?: readonly SecurityRequirement[];
   responseSchemas?: Readonly<Record<string, Readonly<Record<string, string>>>>;
@@ -77,6 +95,12 @@ export interface FetchClientOptions<
   headers?: ConstructorParameters<typeof Headers>[0];
   credentials?: RequestInit["credentials"];
 }
+
+export type FetchClientOptionsWithDefault<
+  Auth extends Readonly<Record<string, CredentialProvider | undefined>>,
+> = Omit<FetchClientOptions<Auth>, "baseUrl"> & {
+  baseUrl?: FetchClientOptions["baseUrl"];
+};
 
 type Values = Readonly<Record<string, unknown>>;
 type Inputs = Record<Location, Values> & {
@@ -131,6 +155,21 @@ function formEncode(value: string): string {
   return new URLSearchParams([["", value]]).toString().slice(1);
 }
 
+const delimiters = { csv: ",", ssv: " ", tsv: "\t", pipes: "|" } as const;
+
+function collectionItems(
+  values: readonly unknown[],
+  format: CollectionFormat,
+  stringify: (value: unknown) => string,
+  encodeDelimiter: (delimiter: string) => string = (delimiter) => delimiter,
+): string[] {
+  const items = values.map(stringify);
+  if (format === "multi") return items;
+  // eslint-disable-next-line security/detect-object-injection -- the key is a declared Swagger collection format.
+  const delimiter = delimiters[format];
+  return [items.join(encodeDelimiter(delimiter))];
+}
+
 function serialize(
   parameter: FetchParameter,
   value: unknown,
@@ -157,6 +196,18 @@ function serialize(
       );
     }
     return [[key, encodeValue(JSON.stringify(value))]];
+  }
+
+  if (parameter.collectionFormat && Array.isArray(value)) {
+    return collectionItems(
+      value,
+      parameter.collectionFormat,
+      stringify,
+      (delimiter) =>
+        /\s/u.test(delimiter) && location !== "headers"
+          ? encodeValue(delimiter)
+          : delimiter,
+    ).map((item) => [key, item]);
   }
 
   const fields = pairs(value);
@@ -302,6 +353,52 @@ function canStream(operation: FetchOperation): boolean {
 
 function mediaTypeOf(value: string | null): string | undefined {
   return value?.split(";", 1)[0]?.trim().toLowerCase();
+}
+
+function encodeSwaggerForm(
+  mediaType: string,
+  fields: readonly SwaggerFormField[],
+  value: unknown,
+) {
+  const form =
+    mediaType === formMediaType ? new URLSearchParams() : new FormData();
+  if (
+    (form instanceof FormData && value instanceof FormData) ||
+    (form instanceof URLSearchParams && value instanceof URLSearchParams)
+  ) {
+    for (const field of fields) {
+      if (field.required && !value.has(field.name)) {
+        throw new TypeError(
+          `Missing required Swagger form field "${field.name}"`,
+        );
+      }
+    }
+    return value;
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new TypeError("Expected a Swagger form body");
+  }
+  for (const { name, required, file, collectionFormat } of fields) {
+    const input = inputValue(value as Values, name);
+    if (input === undefined) {
+      if (required)
+        throw new TypeError(`Missing required Swagger form field "${name}"`);
+      continue;
+    }
+    if (file) {
+      if (!(form instanceof FormData) || !(input instanceof Blob)) {
+        throw new TypeError(`Expected a file for Swagger form field "${name}"`);
+      }
+      form.append(name, input);
+      continue;
+    }
+    const items =
+      collectionFormat && Array.isArray(input)
+        ? collectionItems(input, collectionFormat, scalar)
+        : [scalar(input)];
+    for (const item of items) form.append(name, item);
+  }
+  return form;
 }
 
 function encodeBody(mediaType: string, value: unknown): RequestInit["body"] {
@@ -519,8 +616,10 @@ function buildRequest(
 
   let body: RequestInit["body"];
   if (inputs.body !== undefined && operation.body) {
-    const { mediaType } = operation.body;
-    body = encodeBody(mediaType, inputs.body);
+    const { mediaType, formFields } = operation.body;
+    body = formFields
+      ? encodeSwaggerForm(mediaType, formFields, inputs.body)
+      : encodeBody(mediaType, inputs.body);
     if (mediaType === "multipart/form-data") headers.delete("content-type");
     else headers.set("content-type", mediaType);
   }
@@ -844,21 +943,30 @@ export function defineFetchSdk<
   Names extends NamedOperations,
   AdapterNames extends NamedOperations,
   Auth extends Readonly<Record<string, CredentialProvider | undefined>>,
+  Default extends string | undefined = undefined,
 >(
-  definition: FetchSdkDefinition<Operations, AdapterNames>,
+  definition: FetchSdkDefinition<Operations, AdapterNames> & {
+    nativeBaseUrl?: Default;
+  },
   names: Names,
   validators: ResponseValidators,
   securitySchemes: Readonly<Record<string, ClientSecurityScheme>> = {},
 ) {
+  type Options = Default extends string
+    ? [options?: FetchClientOptionsWithDefault<Auth>]
+    : [options: FetchClientOptions<Auth>];
   return Object.assign(
-    (options: FetchClientOptions<Auth>) =>
-      createFetchSdk<Operations, Names>(
+    (...[options]: Options) => {
+      const baseUrl = options?.baseUrl ?? definition.nativeBaseUrl;
+      if (baseUrl === undefined) throw new TypeError("Missing API baseUrl");
+      return createFetchSdk<Operations, Names>(
         definition.operations,
         names,
-        options,
+        { ...options, baseUrl },
         validators,
         securitySchemes,
-      ),
+      );
+    },
     { definition },
   );
 }

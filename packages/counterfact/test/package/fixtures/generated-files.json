@@ -1,7 +1,7 @@
 {
   ".cache/README.md": "7d7082aa96316da3b074a5b11e50226c51ca9fa71f3c6b5f1f3b8bdba063ffc0",
   ".gitignore": "5ba8073033169c2f91af809db3ecca6f2ff3c67987d4c5d134aed86fd99af8e5",
-  "client/index.ts": "a5f74fd213504e9dc1de15b5f07fe5aaafbf0872ba24de110d5afd6dd2c4fe4d",
+  "client/index.ts": "87b9cb084c4e01e9506f768ea8359bc5c7f7dadc60f6540dcdff0f1400105aa9",
   "client/response-validators.ts": "9fea6cbcc4ae15497864e244b343e570208f3866194aae7fcadabe38544a2b71",
   "counterfact-types/cookie-options.ts": "74797dffa525d6493bbce6451a439de152db83e60abe00a29cd8cc985a737631",
   "counterfact-types/counterfact-response.ts": "e7a55fd361699efb608e3323e976c4df3c7cc0bfd05078f5193832c19b25e358",

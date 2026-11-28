@@ -1,3 +1,5 @@
+import { isSwagger2 } from "./swagger2-client.js";
+
 import type { Requirement, RequirementData } from "./requirement.js";
 import type { Specification } from "./specification.js";
 
@@ -39,7 +41,8 @@ export class ClientResponseSchemas {
 
   public constructor(private readonly specification: Specification) {
     const version = String(specification.getRequirement("#/openapi")?.data);
-    this.draft = version.startsWith("3.0.") ? "7" : "2020-12";
+    this.draft =
+      isSwagger2(specification) || version.startsWith("3.0.") ? "7" : "2020-12";
   }
 
   public add(schema: Requirement): string {
@@ -93,7 +96,7 @@ export class ClientResponseSchemas {
     const keywords = new Map(entries);
     return Object.fromEntries(
       entries.flatMap(([key, value]): [string, unknown][] => {
-        // OpenAPI 3.0 expresses exclusive limits as booleans beside the limit.
+        // Swagger 2.0 and OpenAPI 3.0 express exclusive limits as booleans beside the limit.
         if (this.draft === "7" && typeof value === "boolean") {
           const limit =
             key === "exclusiveMinimum"

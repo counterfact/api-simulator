@@ -59,6 +59,59 @@ const spec = {
   },
 };
 
+const legacyUser = { $ref: "#/definitions/User" };
+const swagger = {
+  swagger: "2.0",
+  info: spec.info,
+  host: "example.test",
+  schemes: ["https"],
+  basePath: "/api",
+  consumes: ["application/json"],
+  produces: ["application/json"],
+  security: spec.security,
+  securityDefinitions: {
+    token: { type: "apiKey", in: "header", name: "Authorization" },
+  },
+  definitions: spec.components.schemas,
+  paths: {
+    "/": spec.paths["/"],
+    "/users/{id}": {
+      parameters: [{ name: "id", in: "path", required: true, ...integer }],
+      get: {
+        operationId: "getUser",
+        parameters: [
+          {
+            name: "tag",
+            in: "query",
+            type: "array",
+            items: text,
+            collectionFormat: "multi",
+          },
+        ],
+        responses: {
+          200: { description: "User", schema: legacyUser },
+          404: { description: "Error", schema: text },
+        },
+      },
+    },
+    "/users": {
+      post: {
+        parameters: [
+          { name: "unit", in: "query", ...text },
+          { name: "body", in: "body", required: true, schema: legacyUser },
+        ],
+        responses: { 200: { description: "User", schema: legacyUser } },
+      },
+    },
+    "/users/sub/{id}": {
+      get: {
+        parameters: [{ name: "id", in: "path", required: true, ...integer }],
+        responses: spec.paths["/users/sub/{id}"].get.responses,
+      },
+    },
+  },
+};
+
 const dist = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 it.each([
@@ -66,12 +119,13 @@ it.each([
   { singleHttpClient: true, unwrapResponseData: false },
   { singleHttpClient: false, unwrapResponseData: true },
   { singleHttpClient: true, unwrapResponseData: true },
+  { singleHttpClient: false, unwrapResponseData: false, swagger2: true },
 ])(
   "runs the same STA consumer with %j",
-  async (options) => {
+  async ({ swagger2, ...options }) => {
     await usingTemporaryFiles(async ($) => {
       await $.add("package.json", '{"type":"module"}');
-      await $.add("spec.json", JSON.stringify(spec));
+      await $.add("spec.json", JSON.stringify(swagger2 ? swagger : spec));
       const { files } = await generateApi({
         input: $.path("spec.json"),
         output: false,

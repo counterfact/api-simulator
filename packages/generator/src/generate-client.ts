@@ -28,6 +28,14 @@ import { pathOperations } from "./path-operations.js";
 import { Repository } from "./repository.js";
 import { standaloneClientValidators } from "./standalone-client-validators.js";
 import { SchemaTypeCoder } from "./schema-type-coder.js";
+import {
+  isSwagger2,
+  swaggerBody,
+  swaggerCollection,
+  swaggerParameterSchema,
+  swaggerResponse,
+  swaggerServer,
+} from "./swagger2-client.js";
 import type { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
 import type { Specification } from "./specification.js";
@@ -64,6 +72,7 @@ function parametersFor(operation: Requirement) {
     });
   }
   const supported = [];
+  const swagger = isSwagger2(operation.specification);
   let wholeQuery: Requirement | undefined;
   for (const parameter of parameters.values()) {
     const place = String(parameter.get("in")?.data);
@@ -72,13 +81,14 @@ function parametersFor(operation: Requirement) {
       wholeQuery = parameter;
       continue;
     }
+    if (swagger && (place === "body" || place === "formData")) continue;
     const location = locations.get(place);
     if (location === undefined) return undefined;
     supported.push({ parameter, place, location });
   }
   if (wholeQuery && supported.some(({ place }) => place === "query"))
     return undefined;
-  return { fields: supported, wholeQuery };
+  return { fields: supported, wholeQuery, swagger, parameters };
 }
 
 function describeWholeQuery(parameter: Requirement, script: Script) {
@@ -138,11 +148,11 @@ function describeWholeQuery(parameter: Requirement, script: Script) {
 
 function requestBodyType(
   mediaType: string,
-  media: Requirement,
+  schema: Requirement | undefined,
   script: Script,
 ): ts.TypeNode {
   if (isJson(mediaType)) {
-    return schemaType(media.get("schema"), script);
+    return schemaType(schema, script);
   }
   if (mediaType.startsWith("text/")) return stringType();
   if (mediaType === "application/octet-stream") {
@@ -156,10 +166,10 @@ function requestBodyType(
 
 function responseBodyType(
   mediaType: string,
-  media: Requirement,
+  schema: Requirement | undefined,
   script: Script,
 ): ts.TypeNode {
-  if (isJson(mediaType)) return schemaType(media.get("schema"), script);
+  if (isJson(mediaType)) return schemaType(schema, script);
   if (mediaType.startsWith("text/")) return stringType();
   return typeReference("ArrayBuffer");
 }
@@ -172,6 +182,7 @@ function describe(
 ) {
   const operationParameters = parametersFor(operation);
   if (operationParameters === undefined) return undefined;
+  const { swagger } = operationParameters;
   const wholeQuery =
     operationParameters.wholeQuery &&
     describeWholeQuery(operationParameters.wholeQuery, script);
@@ -193,7 +204,9 @@ function describe(
         (parameter.get("explode")?.data ?? style === "form") === true;
       const [content] =
         parameter.get("content")?.map((value, type) => ({ value, type })) ?? [];
-      const schema = content?.value.get("schema") ?? parameter.get("schema");
+      const schema = swagger
+        ? swaggerParameterSchema(parameter)
+        : (content?.value.get("schema") ?? parameter.get("schema"));
       inputs
         .get(location)
         ?.push(
@@ -213,20 +226,40 @@ function describe(
         allowReserved:
           parameter.get("allowReserved")?.data === true || undefined,
         contentType: content?.type.toLowerCase(),
+        collectionFormat: swagger ? swaggerCollection(parameter) : undefined,
       };
     },
   );
 
+  const legacyBody = swagger
+    ? swaggerBody(operation, [...operationParameters.parameters.values()])
+    : undefined;
   const requestBody = operation.get("requestBody");
-  const bodyRequired = requestBody?.get("required")?.data === true;
+  const bodyRequired =
+    legacyBody?.required ?? requestBody?.get("required")?.data === true;
   const media =
+    legacyBody?.media ??
     requestBody?.get("content")?.map((value, type) => ({
-      value,
+      schema: value.get("schema"),
       type: type.toLowerCase(),
-    })) ?? [];
+    })) ??
+    [];
   const selected = media.find(({ type }) => isJson(type)) ?? media[0];
+  const formFields = legacyBody?.fields;
+  const formType =
+    formFields &&
+    typeLiteral(
+      formFields.map(({ name, file, required, schema }) =>
+        typeProperty(
+          name,
+          file ? typeReference("Blob") : schemaType(schema, script),
+          !required,
+          schema.data,
+        ),
+      ),
+    );
   const bodyType = selected
-    ? requestBodyType(selected.type, selected.value, script)
+    ? requestBodyType(selected.type, selected.schema, script)
     : neverType();
 
   const responseMetadata = new Map<string, string[]>();
@@ -239,16 +272,17 @@ function describe(
         method === "head" || ["204", "205", "304"].includes(status);
       const content = noBody
         ? []
-        : (response.get("content")?.map((value, type) => ({
-            type: type.toLowerCase(),
-            value,
-          })) ?? []);
+        : swagger
+          ? swaggerResponse(operation, response)
+          : (response.get("content")?.map((value, type) => ({
+              type: type.toLowerCase(),
+              schema: value.get("schema"),
+            })) ?? []);
       responseMetadata.set(
         status,
         content.map(({ type }) => type),
       );
-      const validation = content.flatMap(({ type, value }) => {
-        const schema = value.get("schema");
+      const validation = content.flatMap(({ type, schema }) => {
         return schema && (isJson(type) || type.startsWith("text/"))
           ? [[type, schemas.add(schema)] as const]
           : [];
@@ -264,10 +298,10 @@ function describe(
               typeProperty("body", undefinedType()),
             ])
           : unionType(
-              content.map(({ type, value }) =>
+              content.map(({ type, schema }) =>
                 typeLiteral([
                   typeProperty("mediaType", literalType(type)),
-                  typeProperty("body", responseBodyType(type, value, script)),
+                  typeProperty("body", responseBodyType(type, schema, script)),
                 ]),
               ),
             ),
@@ -281,13 +315,16 @@ function describe(
       ),
       ...(wholeQuery ? [wholeQuery.type] : []),
       typeProperty("bodyRequired", literalType(bodyRequired)),
-      typeProperty("body", bodyType),
+      typeProperty(
+        "body",
+        formType ? unionType([formType, bodyType]) : bodyType,
+      ),
       ...(selected &&
       ["multipart/form-data", formMediaType].includes(selected.type)
         ? [
             typeProperty(
               "adapterBody",
-              schemaType(selected.value.get("schema"), script),
+              formType ?? schemaType(selected.schema, script),
             ),
           ]
         : []),
@@ -296,7 +333,11 @@ function describe(
     metadata: {
       parameters,
       querystring: wholeQuery?.metadata,
-      body: selected && { mediaType: selected.type, required: bodyRequired },
+      body: selected && {
+        mediaType: selected.type,
+        required: bodyRequired,
+        formFields: formFields?.map(({ schema: _schema, ...field }) => field),
+      },
       responses: Object.fromEntries(responseMetadata),
       security: clientSecurityRequirements(operation),
       responseSchemas:
@@ -313,9 +354,16 @@ export async function generateClient(
   version: string,
   grouping: ClientGroupingOptions = {},
 ): Promise<string[]> {
-  if (specification.getRequirement("#/swagger") !== undefined) {
-    throw new Error("Fetch client generation requires an OpenAPI 3.x document");
+  const swagger = isSwagger2(specification);
+  if (!swagger && specification.getRequirement("#/swagger")) {
+    throw new Error(
+      "Fetch client generation supports Swagger 2.0 and OpenAPI 3.x",
+    );
   }
+  const version2Server = swagger ? swaggerServer(specification) : undefined;
+  const defaultBaseUrl = version2Server?.startsWith("http")
+    ? version2Server
+    : undefined;
   const repository = new Repository();
   const script = repository.get("index.ts");
   for (const name of [
@@ -333,7 +381,10 @@ export async function generateClient(
   const factory = script.importExternal("createFetchRoute", runtime);
   const sdkFactory = script.importExternal("defineFetchSdk", runtime);
   const fetchOperations = script.importExternalType("FetchOperations", runtime);
-  const options = script.importExternalType("FetchClientOptions", runtime);
+  const options = script.importExternalType(
+    defaultBaseUrl ? "FetchClientOptionsWithDefault" : "FetchClientOptions",
+    runtime,
+  );
   const security = clientSecuritySchemes(specification);
   const provider = security.length
     ? script.importExternalType("CredentialProvider", runtime)
@@ -343,6 +394,9 @@ export async function generateClient(
   )
     ? script.importExternalType("CookieCredential", runtime)
     : undefined;
+  const basic = security.some(({ scheme }) => scheme.type === "basic")
+    ? script.importExternalType("BasicCredential", runtime)
+    : undefined;
   const auth = provider
     ? typeLiteral(
         security.map(({ name, scheme }) =>
@@ -351,7 +405,9 @@ export async function generateClient(
             typeReference(provider, [
               scheme.type === "apiKey" && scheme.location === "cookie"
                 ? typeReference(cookie!)
-                : stringType(),
+                : scheme.type === "basic"
+                  ? typeReference(basic!)
+                  : stringType(),
             ]),
             true,
           ),
@@ -415,29 +471,27 @@ export async function generateClient(
     const identifier = createIdentifier("operations");
     const sdkIdentifier = createIdentifier("sdkOperations");
     const adapterIdentifier = createIdentifier("adapterOperations");
-    const serverUrl = specification.getRequirement("#/servers/0/url")?.data;
+    const serverUrl =
+      version2Server ?? specification.getRequirement("#/servers/0/url")?.data;
     const constExpression = (value: unknown) =>
       ts.factory.createAsExpression(
         valueExpression(value),
         typeReference("const"),
       );
+    const optionsIdentifier = createIdentifier("options");
     const sharedArgs = [
-      createIdentifier("options"),
       createIdentifier(validators),
       ...(security.length ? [valueExpression(securityMetadata)] : []),
     ];
-    const declareConst = (name: ts.Identifier, value: ts.Expression) =>
+    const declareConst = (
+      name: ts.Identifier,
+      value: ts.Expression,
+      type?: ts.TypeNode,
+    ) =>
       ts.factory.createVariableStatement(
         undefined,
         ts.factory.createVariableDeclarationList(
-          [
-            ts.factory.createVariableDeclaration(
-              name,
-              undefined,
-              undefined,
-              value,
-            ),
-          ],
+          [ts.factory.createVariableDeclaration(name, undefined, type, value)],
           ts.NodeFlags.Const,
         ),
       );
@@ -456,8 +510,10 @@ export async function generateClient(
             createParameterDeclaration(
               undefined,
               undefined,
-              "options",
-              undefined,
+              optionsIdentifier,
+              defaultBaseUrl
+                ? createToken(ts.SyntaxKind.QuestionToken)
+                : undefined,
               typeReference(options, [auth]),
             ),
           ],
@@ -488,10 +544,8 @@ export async function generateClient(
       ),
       declareConst(
         identifier,
-        ts.factory.createSatisfiesExpression(
-          valueExpression(metadata),
-          typeReference(fetchOperations, [operationType]),
-        ),
+        valueExpression(metadata),
+        typeReference(fetchOperations, [operationType]),
       ),
       declareConst(
         sdkIdentifier,
@@ -505,7 +559,27 @@ export async function generateClient(
         "createClient",
         factory,
         [operationType],
-        [identifier, ...sharedArgs],
+        [
+          identifier,
+          defaultBaseUrl
+            ? ts.factory.createObjectLiteralExpression([
+                ts.factory.createSpreadAssignment(optionsIdentifier),
+                ts.factory.createPropertyAssignment(
+                  "baseUrl",
+                  ts.factory.createBinaryExpression(
+                    ts.factory.createPropertyAccessChain(
+                      optionsIdentifier,
+                      createToken(ts.SyntaxKind.QuestionDotToken),
+                      "baseUrl",
+                    ),
+                    createToken(ts.SyntaxKind.QuestionQuestionToken),
+                    valueExpression(defaultBaseUrl),
+                  ),
+                ),
+              ])
+            : optionsIdentifier,
+          ...sharedArgs,
+        ],
       ),
       exportedConst(
         "createSdk",
@@ -516,6 +590,7 @@ export async function generateClient(
             ts.factory.createTypeQueryNode(sdkIdentifier),
             ts.factory.createTypeQueryNode(adapterIdentifier),
             auth,
+            ...(defaultBaseUrl ? [literalType(defaultBaseUrl)] : []),
           ],
           [
             objectExpression([
@@ -525,9 +600,12 @@ export async function generateClient(
                 "baseUrl",
                 valueExpression(typeof serverUrl === "string" ? serverUrl : ""),
               ],
+              ...(defaultBaseUrl
+                ? [["nativeBaseUrl", valueExpression(defaultBaseUrl)] as const]
+                : []),
             ]),
             sdkIdentifier,
-            ...sharedArgs.slice(1),
+            ...sharedArgs,
           ],
         ),
       ),

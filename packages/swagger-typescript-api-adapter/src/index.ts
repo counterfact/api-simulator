@@ -51,7 +51,7 @@ type PositionalQuery<Operation extends ClientOperation> =
         ? [query?: Operation["query"]]
         : [query: Operation["query"]];
 
-type FormPayload<Body> = Body extends Uint8Array
+type FormPayload<Body> = Body extends Blob | Uint8Array
   ? File | Blob | Uint8Array
   : Body extends readonly unknown[]
     ? { [Key in keyof Body]: FormPayload<Body[Key]> }

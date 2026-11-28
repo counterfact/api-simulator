@@ -59,7 +59,7 @@ Groups and versions come from the `spec` list in a config file. Every spec in a 
 
 ## Generate a typed Fetch client
 
-For OpenAPI 3.x specs, normal type generation includes a Fetch client. For
+For Swagger 2.0 and OpenAPI 3.x, normal type generation includes a Fetch client. For
 example, `npx counterfact@latest openapi.yaml ./api` generates
 `./api/client/index.ts` alongside the simulator files. Spec watching
 regenerates the client when type generation is enabled. Grouped APIs place
@@ -210,13 +210,40 @@ configured. This one-shot mode applies configured overlays and does not start
 the simulator. It uses the same action restrictions as schema-only generation,
 and the two modes are mutually exclusive.
 
-The generator accepts OpenAPI 3.x. A request body uses the declared JSON media
+A request body uses the declared JSON media
 type if there is one, or the first media type otherwise. JSON bodies use
 generated schema types. Text, binary, multipart and URL-encoded bodies use
 `string`, `Blob | ArrayBuffer`, `FormData`, and `URLSearchParams` respectively.
 Response decoding supports exact declared media types, with non-JSON,
 non-text content returned as bytes. Fetch-forbidden HTTP methods are omitted
 from the generated client.
+
+### Swagger 2.0
+
+Swagger 2.0 clients use `definitions` for models, `consumes` for request
+media types, and `produces` for response media types. Operation-level media
+types override document defaults. With no media type declared, the generator
+uses JSON for schema bodies, bytes for file responses, and the appropriate form
+encoding for form data.
+
+The fluent client and named SDK honor `collectionFormat` for arrays. Pass a
+typed object for Swagger form fields, or supply a prepared `FormData` or
+`URLSearchParams` object. A multipart file field accepts a `Blob` or `File`.
+For Basic authentication, the provider returns a username and a password:
+
+```ts
+const api = createSdk({
+  auth: {
+    basicAuth: () => ({ username, password }),
+  },
+});
+```
+
+Use the security scheme name from `securityDefinitions` as the key. API key
+and OAuth 2.0 providers work the same way as they do for OpenAPI 3.x.
+The default URL comes from the Swagger document's `schemes`, `host`, and
+`basePath`. Pass `baseUrl` to override it or when generation from a local
+document has no host.
 
 ### Named SDK
 

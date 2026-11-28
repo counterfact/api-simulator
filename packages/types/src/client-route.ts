@@ -162,6 +162,7 @@ type StreamMethod<Operation extends ClientOperation> = [
     };
 
 export type ClientSecurityScheme =
+  | { type: "basic" }
   | { type: "bearer" }
   | { type: "apiKey"; location: "header" | "query" | "cookie"; name: string };
 
