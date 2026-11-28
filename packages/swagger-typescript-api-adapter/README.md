@@ -21,6 +21,9 @@ const sharedApi = new Api(http);
 is passed to `new Api(http)`. Each adapted API using that instance shares its
 transport and security data. You can also pass config directly to `new Api`.
 Without a base URL override, the adapter uses the first server in the spec.
+If the spec generates an `http` group, `api.http` exposes that group's
+operations. Keep a reference to the `HttpClient` you pass to the constructor
+if you need to access the transport directly.
 
 For clients previously generated with STA's `--unwrap-response-data` flag,
 pass the option to the adapter declaration:

@@ -10,6 +10,7 @@ function escapeParameter(value: string): string {
 }
 
 function partContentType(
+  name: string,
   declared: string | undefined,
   blobType: string,
   fallback: string | undefined,
@@ -19,23 +20,28 @@ function partContentType(
   // type, preferring the type we can infer from the value.
   const choices = declared.split(",").map((choice) => choice.trim());
   const inferred = blobType || fallback || "text/plain";
-  const essence = inferred.split(";")[0]?.trim().toLowerCase();
-  const matched = choices.find((choice) => {
-    const range = choice.split(";")[0]?.trim().toLowerCase();
-    return (
-      range === essence ||
-      range === "*/*" ||
-      (range?.endsWith("/*") && essence?.startsWith(range.slice(0, -1)))
-    );
-  });
+  const essence = inferred.split(";", 1)[0]?.trim().toLowerCase() ?? "";
+  const matched = /^[\w!#$%&'+.^`|~-]+\/[\w!#$%&'+.^`|~-]+$/u.test(essence)
+    ? choices.find((choice) => {
+        const range = choice.split(";")[0]?.trim().toLowerCase();
+        return (
+          range === essence ||
+          range === "*/*" ||
+          (range?.endsWith("/*") && essence.startsWith(range.slice(0, -1)))
+        );
+      })
+    : undefined;
   if (matched) return matched.split(";")[0]?.includes("*") ? inferred : matched;
   if (fallback === "application/json") {
     const json = choices.find(isJsonContentType);
     if (json) return json;
   }
-  return (
-    choices.find((choice) => choice && !choice.split(";")[0]?.includes("*")) ??
-    (blobType || fallback)
+  const concrete = choices.find(
+    (choice) => choice && !choice.split(";")[0]?.includes("*"),
+  );
+  if (concrete) return concrete;
+  throw new TypeError(
+    `Multipart field "${name}" requires a content type matching ${declared} but received ${inferred}`,
   );
 }
 
@@ -67,6 +73,7 @@ export function encodeMultipartBody(
       const object =
         typeof part === "object" && part !== null && filename === undefined;
       const contentType = partContentType(
+        name,
         declaredTypes.get(name),
         blob?.type ?? "",
         filename === undefined

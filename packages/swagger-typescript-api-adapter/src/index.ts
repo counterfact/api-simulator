@@ -84,7 +84,16 @@ type OperationArguments<
   params?: RequestParams,
 ];
 
-type SuccessStatus = `2${"XX" | `${number}${number}`}`;
+type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+type SuccessCode = `2${Digit}${Digit}`;
+type SuccessStatus = SuccessCode | "2XX";
+type SuccessStatusFor<Operation extends ClientOperation> = [
+  Exclude<SuccessCode, keyof Operation["responses"]>,
+] extends [never]
+  ? SuccessStatus
+  : "2XX" extends keyof Operation["responses"]
+    ? SuccessStatus
+    : SuccessStatus | "default";
 type ResultBody<Result> = Result extends {
   body: infer Body;
   mediaType: infer MediaType;
@@ -129,7 +138,10 @@ type StaCall<
   ResponseFor<
     BodyOr<
       ResultBody<
-        Extract<ClientResult<Operation>, { matchedStatus: SuccessStatus }>
+        Extract<
+          ClientResult<Operation>,
+          { matchedStatus: SuccessStatusFor<Operation> }
+        >
       >,
       void
     >,
@@ -180,7 +192,11 @@ interface StaApiConstructor<
 > {
   new <SecurityData = unknown>(
     configOrHttp?: ApiConfig<SecurityData> | HttpProvider<SecurityData>,
-  ): StaApi<SecurityData, Unwrap> & StaCalls<Operations, Names, Unwrap>;
+  ): Omit<
+    StaApi<SecurityData, Unwrap>,
+    keyof StaCalls<Operations, Names, Unwrap>
+  > &
+    StaCalls<Operations, Names, Unwrap>;
 }
 
 function contentTypeOf(operation: FetchOperation): ContentType | undefined {
@@ -256,12 +272,12 @@ export function wrapSta<
   > = definition.operations;
 
   class Api<SecurityData = unknown> {
-    public readonly http: HttpProvider<SecurityData>;
+    #transport: HttpProvider<SecurityData>;
 
     public constructor(
       configOrHttp: ApiConfig<SecurityData> | HttpProvider<SecurityData> = {},
     ) {
-      this.http = resolveHttpClient(configOrHttp, definition.baseUrl);
+      this.#transport = resolveHttpClient(configOrHttp, definition.baseUrl);
 
       for (const [group, entries] of Object.entries(definition.names)) {
         const methods = Object.fromEntries(
@@ -274,46 +290,56 @@ export function wrapSta<
             return [
               name,
               (...args: unknown[]) =>
-                this.request(
+                this.#request(
                   requestFor(
                     operation,
                     entry,
                     args,
-                    this.http instanceof HttpClient,
+                    this.#transport instanceof HttpClient,
                   ),
                 ),
             ];
           }),
         );
-        if (group === "") Object.assign(this, methods);
-        else
-          Object.defineProperty(this, group, {
-            value: methods,
+        const members = group === "" ? methods : { [group]: methods };
+        for (const [name, value] of Object.entries(members)) {
+          Object.defineProperty(this, name, {
+            value,
             enumerable: true,
             configurable: true,
             writable: true,
           });
+        }
       }
     }
 
+    public get http(): HttpProvider<SecurityData> {
+      return this.#transport;
+    }
+    public set http(value: HttpProvider<SecurityData>) {
+      this.#transport = value;
+    }
+
     public get baseUrl(): string {
-      return this.http.baseUrl;
+      return this.#transport.baseUrl;
     }
     public set baseUrl(value: string) {
-      this.http.baseUrl = value;
+      this.#transport.baseUrl = value;
     }
 
     public setSecurityData = (data: SecurityData | null): void =>
-      this.http.setSecurityData(data);
+      this.#transport.setSecurityData(data);
     public abortRequest = (token: CancelToken): void =>
-      this.http.abortRequest(token);
+      this.#transport.abortRequest(token);
 
-    public request = async <Data = unknown, Error = unknown>(
+    public request = <Data = unknown, Error = unknown>(
       params: FullRequestParams,
-    ) => {
-      const response = await this.http.request<Data, Error>(params);
+    ) => this.#request<Data, Error>(params);
+
+    async #request<Data = unknown, Error = unknown>(params: FullRequestParams) {
+      const response = await this.#transport.request<Data, Error>(params);
       return unwrap ? response.data : response;
-    };
+    }
   }
 
   return Api as unknown as StaApiConstructor<Operations, Names, Unwrap>;

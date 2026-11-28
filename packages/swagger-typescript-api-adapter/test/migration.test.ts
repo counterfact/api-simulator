@@ -99,6 +99,25 @@ const spec = {
         },
       },
     },
+    "/downloads/fallback": {
+      get: {
+        operationId: "downloadFallback",
+        security: [],
+        responses: {
+          default: { description: "Default report", content: json(user) },
+        },
+      },
+    },
+    "/downloads/range": {
+      get: {
+        operationId: "downloadRange",
+        security: [],
+        responses: {
+          "2XX": { description: "Report", content: json(user) },
+          default: { description: "Unexpected result", content: json(text) },
+        },
+      },
+    },
   },
   components: {
     securitySchemes: { token: { type: "http", scheme: "bearer" } },
@@ -252,24 +271,49 @@ const verifyMultipart = `
 
 const verifyAdapterResponseTypes = `
   const DownloadApi = wrapSta(createSdk);
+  const customFetch: typeof fetch = async (input) => {
+    const url = String(input);
+    if (url.endsWith("/image"))
+      return new Response(new Uint8Array([137, 80]), { headers: { "content-type": "image/png" } });
+    if (url.endsWith("/report"))
+      return new Response("hello", { headers: { "content-type": "text/plain; charset=utf-8" } });
+    return Response.json({ id: 42 }, { status: 202 });
+  };
   const downloads = new DownloadApi({
     baseUrl: "https://example.test",
-    customFetch: async (input) => String(input).endsWith("/image")
-      ? new Response(new Uint8Array([137, 80]), { headers: { "content-type": "image/png" } })
-      : new Response("hello", { headers: { "content-type": "text/plain; charset=utf-8" } }),
+    customFetch,
   }).downloads;
   const image: Blob = (await downloads.downloadImage()).data;
   assert.equal(image.type, "image/png");
   assert.deepEqual([...new Uint8Array(await image.arrayBuffer())], [137, 80]);
   const report: string | { id: number } = (await downloads.downloadReport()).data;
   assert.equal(report, "hello");
+  const fallback: { id: number } = (await downloads.downloadFallback()).data;
+  assert.equal(fallback.id, 42);
+  const range: { id: number } = (await downloads.downloadRange()).data;
+  assert.equal(range.id, 42);
+
+  const { definition } = createSdk;
+  const CollisionApi = wrapSta({ definition: {
+    ...definition,
+    names: { ...definition.names, http: definition.names.downloads, request: definition.names.downloads },
+  }});
+  const colliding = new CollisionApi({ baseUrl: "https://example.test", customFetch });
+  assert.equal((await colliding.http.downloadFallback()).data.id, 42);
+  assert.equal((await colliding.request.downloadFallback()).data.id, 42);
+  assert.equal((await colliding.downloads.downloadFallback()).data.id, 42);
+  if (false) {
+    // @ts-expect-error the generated http group replaces the public transport accessor
+    colliding.http.abortRequest("token");
+  }
 
   const UnwrappedDownloadApi = wrapSta(createSdk, { unwrapResponseData: true });
   const unwrapped = new UnwrappedDownloadApi({
     baseUrl: "https://example.test",
-    customFetch: async () => new Response("hello", { headers: { "content-type": "text/plain" } }),
+    customFetch,
   });
   assert.equal(await unwrapped.downloads.downloadReport(), "hello");
+  assert.equal((await unwrapped.downloads.downloadFallback()).id, 42);
 `;
 
 const verifyRawMultipartTypes = `

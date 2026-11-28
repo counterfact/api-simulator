@@ -21,6 +21,63 @@ type Post = {
 };
 
 type Operations = { "/{tenantId}/v1/orders/{orderId}": { post: Post } };
+
+it("requires a concrete content type within a multipart media range", async () => {
+  type Upload = Omit<Post, "path" | "query" | "headers" | "body"> & {
+    path: Record<never, never>;
+    query: Record<never, never>;
+    headers: Record<never, never>;
+    body: { photo: Blob | Uint8Array };
+  };
+  const contentTypes: string[] = [];
+  const route = createFetchRoute<{ "/": { post: Upload } }>(
+    {
+      "/": {
+        post: {
+          parameters: [],
+          body: {
+            required: true,
+            mediaType: "multipart/form-data",
+            multipartContentTypes: { photo: "image/*" },
+          },
+          responses: { 204: [] },
+        },
+      },
+    },
+    {
+      baseUrl: "https://example.test",
+      fetch: async (url, init) => {
+        const form = await new Request(url, init).formData();
+        const photo = form.get("photo");
+        if (!(photo instanceof Blob)) throw new TypeError("Expected a file");
+        contentTypes.push(photo.type);
+        return new Response(null, { status: 204 });
+      },
+    },
+  )("/").method("post");
+  await expect(
+    route.body({ photo: new Uint8Array([137, 80]) }).send(),
+  ).rejects.toThrow(
+    'Multipart field "photo" requires a content type matching image/* but received application/octet-stream',
+  );
+  await expect(
+    route.body({ photo: new Blob(["text"], { type: "text/plain" }) }).send(),
+  ).rejects.toThrow(
+    'Multipart field "photo" requires a content type matching image/* but received text/plain',
+  );
+  await expect(
+    route.body({ photo: new Blob(["image"], { type: "image/*" }) }).send(),
+  ).rejects.toThrow(
+    'Multipart field "photo" requires a content type matching image/*',
+  );
+  await route
+    .body({
+      photo: new Blob([new Uint8Array([137, 80])], { type: "image/png" }),
+    })
+    .send();
+  expect(contentTypes).toEqual(["image/png"]);
+});
+
 const operation: FetchOperation = {
   parameters: [
     {
