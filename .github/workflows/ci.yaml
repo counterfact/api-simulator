@@ -64,17 +64,18 @@ jobs:
           - { check: TypeScript, os: ubuntu-latest, build: true }
           - { check: Public type tests, os: ubuntu-latest, build: true }
           - { check: Public type tests, os: windows-latest, build: true }
-          - { check: Unit tests, os: ubuntu-latest, build: true }
+          # Coverage scripts build their own workspaces.
+          - { check: Unit tests, os: ubuntu-latest, build: false }
           - {
               check: Native runtime tests,
               os: ubuntu-latest,
-              build: true,
+              build: false,
               node: "22.22.0",
             }
           - {
               check: Native runtime tests,
               os: windows-latest,
-              build: true,
+              build: false,
               node: "24.x",
             }
           - { check: Packaging, os: ubuntu-latest, build: false }

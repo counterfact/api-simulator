@@ -3,6 +3,7 @@ import { expect, it } from "@jest/globals";
 import {
   createFetchRoute,
   InvalidResponseError,
+  serializeWholeQuery,
   type FetchOperation,
 } from "../src/fetch.js";
 
@@ -777,4 +778,34 @@ it("encodes the entire JSON query once and uses a header auth alternative", asyn
   await request.query("%&+#").send();
   await request.query(null).send();
   expect(searches).toEqual(["", "?%22%25%26%2B%23%22", "?null"]);
+});
+
+it("honors whole-form field encodings without turning a value into extra query parameters", () => {
+  const encoding = {
+    path: { allowReserved: true },
+    data: { contentType: "Application/Problem+JSON" },
+    label: { contentType: "text/plain" },
+  };
+  expect(
+    serializeWholeQuery(
+      {
+        required: true,
+        mediaType: "application/x-www-form-urlencoded",
+        encoding,
+      },
+      { path: "a/b c&x=y", data: "text", label: null, omit: undefined },
+    ),
+  ).toBe("path=a/b+c%26x%3Dy&data=%22text%22&label=");
+  expect(() =>
+    serializeWholeQuery(
+      { required: true, mediaType: "application/x-www-form-urlencoded" },
+      "not an object",
+    ),
+  ).toThrow("Unsupported whole-query value");
+  expect(() =>
+    serializeWholeQuery(
+      { required: true, mediaType: "application/json" },
+      undefined,
+    ),
+  ).toThrow("Expected a JSON query value");
 });
