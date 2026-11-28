@@ -53,6 +53,7 @@ export default {
     "<rootDir>/packages/openapi/test",
     "<rootDir>/packages/runtime/test",
     "<rootDir>/packages/repl/test",
+    "<rootDir>/packages/swagger-typescript-api-adapter/test",
   ],
 
   testEnvironment: "node",

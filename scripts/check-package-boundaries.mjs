@@ -11,6 +11,10 @@ export const ADR_DEPENDENCY_ALLOWLIST = Object.freeze({
   "@counterfact/repl": ["@counterfact/client", "@counterfact/runtime"],
   "@counterfact/runtime": ["@counterfact/openapi", "@counterfact/types"],
   "@counterfact/types": [],
+  "swagger-typescript-api-adapter": [
+    "@counterfact/client",
+    "@counterfact/types",
+  ],
   counterfact: [
     "@counterfact/client",
     "@counterfact/generator",

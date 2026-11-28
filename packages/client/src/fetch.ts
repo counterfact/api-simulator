@@ -655,13 +655,13 @@ export function createFetchRoute<Operations extends ClientOperations>(
     branch(path, {})) as ClientRouteFunction<Operations>;
 }
 
-interface NamedOperation {
+export interface NamedOperation {
   readonly path: string;
   readonly method: string;
   readonly pathParameters: readonly string[];
 }
 
-type NamedOperations = Readonly<
+export type NamedOperations = Readonly<
   Record<string, Readonly<Record<string, NamedOperation>>>
 >;
 
@@ -824,4 +824,41 @@ export function createFetchSdk<
       ),
     ]),
   ) as NamedSdk<Operations, Names>;
+}
+
+/** Operation definitions attached to a generated SDK factory for adapters. */
+export interface FetchSdkDefinition<
+  Operations extends ClientOperations = ClientOperations,
+  Names extends NamedOperations = NamedOperations,
+> {
+  readonly operations: FetchOperations<Operations>;
+  readonly names: Names;
+  readonly baseUrl: string;
+  /** Carries the generated operation types without emitting schema values. */
+  readonly contracts?: Operations;
+}
+
+/** Binds the generated contract and naming metadata to its public SDK factory. */
+export function defineFetchSdk<
+  Operations extends ClientOperations,
+  Names extends NamedOperations,
+  AdapterNames extends NamedOperations,
+  Auth extends Readonly<Record<string, CredentialProvider | undefined>>,
+>(
+  definition: FetchSdkDefinition<Operations, AdapterNames>,
+  names: Names,
+  validators: ResponseValidators,
+  securitySchemes: Readonly<Record<string, ClientSecurityScheme>> = {},
+) {
+  return Object.assign(
+    (options: FetchClientOptions<Auth>) =>
+      createFetchSdk<Operations, Names>(
+        definition.operations,
+        names,
+        options,
+        validators,
+        securitySchemes,
+      ),
+    { definition },
+  );
 }

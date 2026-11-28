@@ -248,6 +248,24 @@ Responses use the same validated result contract as fluent `send()`. Named
 methods that declare byte responses also expose `.stream()` with the same
 arguments.
 
+### Migrating from swagger-typescript-api
+
+Install `swagger-typescript-api-adapter` and apply it to the generated SDK
+factory:
+
+```ts
+import { createSdk } from "./api/client/index.js";
+import { wrapSta } from "swagger-typescript-api-adapter";
+
+const Api = wrapSta(createSdk);
+const api = new Api({ baseUrl: "https://api.example.com" });
+const { data } = await api.users.getUser(42);
+```
+
+If your STA Fetch client used `--single-http-client`, import `HttpClient` from
+the adapter package and continue passing the instance to `new Api(http)`.
+To keep body-only responses, use `wrapSta(createSdk, { unwrapResponseData: true })`.
+
 ## YAML configuration
 
 Save `counterfact.yaml` in the directory where you run the CLI, or select another file with `--config <path>`. For example:

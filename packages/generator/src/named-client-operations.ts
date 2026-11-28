@@ -100,15 +100,17 @@ function moduleNameFor(
     : pascalCase(segment.replaceAll(/[{}]/gu, ""), "Root");
 }
 
+type ClientPaths = readonly {
+  path: string;
+  operations: readonly {
+    method: string;
+    operationId: string | undefined;
+    tags: string[];
+  }[];
+}[];
+
 export function namedOperations(
-  paths: readonly {
-    path: string;
-    operations: readonly {
-      method: string;
-      operationId: string | undefined;
-      tags: string[];
-    }[];
-  }[],
+  paths: ClientPaths,
   options: ClientGroupingOptions,
 ): Record<string, Record<string, NamedOperation>> {
   const groups = new Map<
@@ -145,6 +147,81 @@ export function namedOperations(
   return Object.fromEntries(
     Array.from(groups.values(), ({ name, operations }) => [
       name,
+      Object.fromEntries(operations),
+    ]),
+  );
+}
+
+function staCase(value: string): string {
+  return words(
+    value
+      .normalize("NFD")
+      .replaceAll(/\p{M}/gu, "")
+      .replaceAll(
+        /(?<acronym>[A-Z])(?<next>[A-Z][a-z])/gu,
+        "$<acronym> $<next>",
+      ),
+  )
+    .map((word, index) =>
+      index === 0 ? word.toLowerCase() : capitalize(word.toLowerCase()),
+    )
+    .join("");
+}
+
+function staFallback(path: string, method: string, group: string): string {
+  if (path === "/") return staCase(`${method} Root`);
+  const segments = path
+    .replaceAll(/\{\w+\}/gu, "")
+    .split("/")
+    .filter(Boolean);
+  const routeName = (segments.length > 1 ? segments.slice(1) : segments).join(
+    "_",
+  );
+  if (
+    routeName.length > 3 &&
+    ["get", "post", "put", "patch", "delete"].includes(method)
+  ) {
+    return fallbackOperationName(
+      `/${routeName}${/\{\w+\}$/u.test(path) ? "/{id}" : ""}`,
+      method,
+    );
+  }
+  return staCase(`${method} ${group}`);
+}
+
+/** STA names differ from native names for root operations and nested paths. */
+export function staOperations(
+  paths: ClientPaths,
+  options: ClientGroupingOptions,
+): Record<string, Record<string, NamedOperation>> {
+  const groups = new Map<string, Map<string, NamedOperation>>();
+
+  for (const { path, operations } of paths) {
+    const pathParameters = Array.from(
+      path.matchAll(/\{(?<name>[^}]+)\}/gu),
+      (match) => match.groups!["name"]!,
+    );
+    for (const { method, operationId, tags } of operations) {
+      const segments = path.split("/").filter(Boolean);
+      const group =
+        (options.moduleNameFirstTag && staCase(tags[0] ?? "")) ||
+        staCase(segments.at(options.moduleNameIndex ?? 0) ?? "");
+      let names = groups.get(group);
+      if (!names) {
+        names = new Map();
+        groups.set(group, names);
+      }
+      const base =
+        staCase(operationId ?? "") || staFallback(path, method, group);
+      let name = base;
+      for (let index = 2; names.has(name); index += 1) name = `${base}${index}`;
+      names.set(name, { path, method, pathParameters });
+    }
+  }
+
+  return Object.fromEntries(
+    Array.from(groups, ([group, operations]) => [
+      group,
       Object.fromEntries(operations),
     ]),
   );
