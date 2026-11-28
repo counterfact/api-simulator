@@ -84,30 +84,4 @@ describe("buildJsDoc", () => {
       "/**\n * line one\n * line two\n */\n",
     );
   });
-
-  it("omits validation constraints unless asked", () => {
-    expect(buildJsDoc({ minLength: 1, pattern: "^a" })).toBe("");
-  });
-
-  it("documents validation constraints when asked", () => {
-    expect(
-      buildJsDoc(
-        {
-          description: "A code",
-          minLength: 1,
-          maxLength: 8,
-          minimum: 0,
-          maximum: 10,
-          exclusiveMinimum: true,
-          multipleOf: 2,
-          pattern: "^[a-z]*/x$",
-          minItems: 1,
-          maxItems: 3,
-        },
-        true,
-      ),
-    ).toBe(
-      "/**\n * A code\n * @minLength 1\n * @maxLength 8\n * @min 0\n * @max 10\n * @multipleOf 2\n * @pattern ^[a-z]* /x$\n * @minItems 1\n * @maxItems 3\n */\n",
-    );
-  });
 });

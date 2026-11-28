@@ -9,8 +9,6 @@ See the [FAQ](../faq.md) for common questions about source control, editing, and
 
 No OpenAPI document? See [using Counterfact without OpenAPI](./without-openapi.md).
 
-Pass `--generate-client` to also generate a typed API client in `client/` that reuses these types. See [generated API client](./generated-client.md).
-
 ## Generated file structure
 
 The output directory is called `basePath` in library options and `destination` in the CLI YAML config. Counterfact creates `routes/_.context.ts` with a `[key: string]: any` index signature so you can add shared state immediately. Remove that signature and declare fields to enable strict typing. Existing context files are preserved. The context and optional store files below are yours to customize: a context shares behavior within a route subtree; a [store](../patterns/shared-store.md) shares state across separately configured [API groups](../manual/concepts.md#api-groups-versions-and-url-prefixes).
@@ -54,35 +52,6 @@ Schema types also preserve:
 Generation does not replace runtime validation. TypeScript cannot express every JSON Schema constraint. In particular, `oneOf` is represented as a union rather than a guarantee that exactly one branch validates.
 
 Generated operation argument types include only the request inputs available for that operation. For example, an operation without query parameters has no `$.query` property. Versioned arguments include their version literal; unversioned arguments omit `version`. These properties are selected during generation, so the emitted argument is a plain object type.
-
-## Customize schema declarations
-
-By default, enums are unions of their values and named object schemas are type aliases. These options change the declarations in `types/` (and so the client's data contracts):
-
-- `--enum-style enum` declares an enum whose schema names every value with `x-enumNames` (or `x-enum-varnames`) as a TypeScript enum. `--enum-style const` declares an object of the values plus a type of the same name. Enums without member names remain unions. The generated client re-exports these values from `data-contracts.ts`.
-- `--ignore-nullable` omits `| null` from nullable schemas, including OpenAPI 3.1 type unions with `null`.
-- `--prefer-interfaces` declares named object schemas as interfaces. Compositions such as `allOf` stay type aliases.
-- `--validation-jsdoc` adds `@minLength`, `@maxLength`, `@min`, `@max`, `@exclusiveMin`, `@exclusiveMax`, `@multipleOf`, `@pattern`, `@minItems`, and `@maxItems` to the JSDoc of schemas and properties.
-
-```yaml
-# counterfact.yaml
-generateClient: true
-typeSuffix: Dto
-enumStyle: enum
-ignoreNullable: true
-preferInterfaces: true
-validationJsdoc: true
-```
-
-```ts
-// types/components/schemas/ChallengeMethodType.ts
-export enum ChallengeMethodType {
-  None = 0,
-  OutOfBand = 1,
-}
-```
-
-Route handlers use the same types. With an enum style, string enum properties accept the enum members, not plain string literals. With `--ignore-nullable`, the types no longer admit `null` even though the specification and runtime validation do.
 
 ## Update a specification
 

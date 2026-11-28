@@ -1,14 +1,12 @@
 import ts from "typescript";
 
 import {
-  typeAlias,
   typeLiteral,
   typeProperty,
   typeReference,
   unionType,
   unknownType,
   neverType,
-  withComment,
 } from "./ast.js";
 import { requireProperties } from "./schema-required-properties.js";
 import { TypeCoder } from "./type-coder.js";
@@ -16,55 +14,6 @@ import { pathJoin } from "./forward-slash-path.js";
 import { buildJsDoc } from "./jsdoc.js";
 import { Requirement } from "./requirement.js";
 import type { Script } from "./script.js";
-import type { SchemaTypeOptions } from "./type-options.js";
-
-const EXPORT = [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)];
-
-/**
- * Returns the member names and values of an enum schema that declares a name
- * for every value (`x-enumNames` or `x-enum-varnames`), or `undefined` when it
- * must remain a union.
- */
-export function namedEnumMembers(
-  data: unknown,
-): [name: string, value: number | string][] | undefined {
-  const schema = data as Record<string, unknown> | null;
-  const values = schema?.["enum"];
-  const names = schema?.["x-enumNames"] ?? schema?.["x-enum-varnames"];
-  if (
-    !Array.isArray(values) ||
-    !Array.isArray(names) ||
-    values.length === 0 ||
-    names.length !== values.length ||
-    names.some((name) => typeof name !== "string" || name === "") ||
-    new Set(names).size !== names.length ||
-    values.some(
-      (value) =>
-        typeof value !== "string" &&
-        (typeof value !== "number" || !Number.isFinite(value)),
-    )
-  ) {
-    return undefined;
-  }
-  return names.map((name, index) => [
-    name as string,
-    values[index] as number | string,
-  ]);
-}
-
-function memberName(name: string): ts.Identifier | ts.StringLiteral {
-  return /^[A-Za-z_$][\w$]*$/u.test(name)
-    ? ts.factory.createIdentifier(name)
-    : ts.factory.createStringLiteral(name);
-}
-
-function valueExpression(value: number | string): ts.Expression {
-  if (typeof value === "string") return ts.factory.createStringLiteral(value);
-  const literal = ts.factory.createNumericLiteral(Math.abs(value));
-  return value < 0
-    ? ts.factory.createPrefixUnaryExpression(ts.SyntaxKind.MinusToken, literal)
-    : literal;
-}
 
 export class SchemaTypeCoder extends TypeCoder {
   protected child(requirement: Requirement): SchemaTypeCoder {
@@ -76,103 +25,7 @@ export class SchemaTypeCoder extends TypeCoder {
   }
 
   public override jsdoc(): string {
-    return buildJsDoc(this.requirement.data, this.options.validationJsDoc);
-  }
-
-  protected get options(): SchemaTypeOptions {
-    return this.requirement.specification?.typeOptions ?? {};
-  }
-
-  /** Declares named enums and, optionally, object interfaces. */
-  public override exportDeclarations(
-    script: Script,
-    name: string,
-  ): ts.Statement[] | undefined {
-    const { enumStyle = "union", preferInterfaces } = this.options;
-    const members =
-      enumStyle === "union"
-        ? undefined
-        : namedEnumMembers(this.requirement.data);
-    if (members) {
-      const [first, ...rest] = this.enumDeclarations(name, members);
-      return [withComment(first!, this.jsdoc()), ...rest];
-    }
-    if (!preferInterfaces) return undefined;
-    const type = this.write(script);
-    if (!ts.isTypeLiteralNode(type)) return undefined;
-    return [
-      withComment(
-        ts.factory.createInterfaceDeclaration(
-          EXPORT,
-          name,
-          undefined,
-          undefined,
-          type.members,
-        ),
-        this.jsdoc(),
-      ),
-    ];
-  }
-
-  private enumDeclarations(
-    name: string,
-    members: [string, number | string][],
-  ): ts.Statement[] {
-    if (this.options.enumStyle === "enum") {
-      return [
-        ts.factory.createEnumDeclaration(
-          EXPORT,
-          name,
-          members.map(([member, value]) =>
-            ts.factory.createEnumMember(
-              memberName(member),
-              valueExpression(value),
-            ),
-          ),
-        ),
-      ];
-    }
-    const values = ts.factory.createVariableStatement(
-      EXPORT,
-      ts.factory.createVariableDeclarationList(
-        [
-          ts.factory.createVariableDeclaration(
-            name,
-            undefined,
-            undefined,
-            ts.factory.createAsExpression(
-              ts.factory.createObjectLiteralExpression(
-                members.map(([member, value]) =>
-                  ts.factory.createPropertyAssignment(
-                    memberName(member),
-                    valueExpression(value),
-                  ),
-                ),
-                true,
-              ),
-              typeReference("const"),
-            ),
-          ),
-        ],
-        ts.NodeFlags.Const,
-      ),
-    );
-    const valuesType = ts.factory.createTypeQueryNode(
-      ts.factory.createIdentifier(name),
-    );
-    return [
-      values,
-      typeAlias(
-        name,
-        ts.factory.createIndexedAccessTypeNode(
-          valuesType,
-          ts.factory.createTypeOperatorNode(
-            ts.SyntaxKind.KeyOfKeyword,
-            valuesType,
-          ),
-        ),
-      ),
-    ];
+    return buildJsDoc(this.requirement.data);
   }
 
   public additionalPropertiesType(script: Script): ts.TypeNode {
@@ -216,7 +69,6 @@ export class SchemaTypeCoder extends TypeCoder {
           this.child(property).write(script),
           !isRequired,
           property.data,
-          this.options.validationJsDoc,
         );
       },
     );
@@ -320,12 +172,8 @@ export class SchemaTypeCoder extends TypeCoder {
 
   public writeType(script: Script, type: unknown): ts.TypeNode {
     if (Array.isArray(type)) {
-      const types =
-        this.options.ignoreNullable && type.some((item) => item !== "null")
-          ? type.filter((item) => item !== "null")
-          : type;
       return unionType(
-        types.map((item: unknown) => this.writeType(script, item)),
+        type.map((item: unknown) => this.writeType(script, item)),
       );
     }
 
@@ -445,7 +293,6 @@ export class SchemaTypeCoder extends TypeCoder {
     };
     // nullable expands the declared type; enum/const remain independent constraints.
     return data.nullable === true &&
-      !this.options.ignoreNullable &&
       data.type !== undefined &&
       !this.requirement.has("enum") &&
       !this.requirement.has("const")

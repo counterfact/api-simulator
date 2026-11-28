@@ -9,39 +9,19 @@ import { getLocalOpenApiSourcePaths } from "@counterfact/openapi";
 
 import { ensureDirectoryExists } from "./ensure-directory-exists.js";
 import { centralTypes } from "./central-types.js";
-import {
-  type ClientGenerationOptions,
-  generateClient,
-} from "./client-generator.js";
 import { OperationCoder } from "./operation-coder.js";
 import {
   assertNoNormalizedPathCollisions,
   normalizeOpenApiPath,
 } from "./openapi-path.js";
 import { type SecurityScheme } from "./operation-type-coder.js";
-import { operationMethodsForPath } from "./path-operations.js";
 import { Requirement } from "./requirement.js";
 import { Repository } from "./repository.js";
 import { Specification } from "./specification.js";
-import type { SchemaTypeOptions } from "./type-options.js";
 import { waitForEvent } from "./wait-for-event.js";
 import { CHOKIDAR_OPTIONS } from "./watch-options.js";
 
 const debug = createDebug("counterfact:typescript-generator:generate");
-
-/** Which artifacts {@link CodeGenerator.generate} writes. */
-export interface GenerateOptions {
-  /**
-   * Generate a typed API client in `client/`. `true` uses the default
-   * options. Requires `types`.
-   */
-  client?: ClientGenerationOptions | boolean;
-  prune?: boolean;
-  routes?: boolean;
-  types?: boolean;
-  /** How schema types are declared in `types/` (and the client's data contracts). */
-  typeOptions?: SchemaTypeOptions;
-}
 
 /**
  * Orchestrates the code-generation pipeline and optional file-system watching.
@@ -59,14 +39,18 @@ export class CodeGenerator extends EventTarget {
 
   private readonly overlays: readonly string[];
 
-  private readonly generateOptions: GenerateOptions;
+  private readonly generateOptions: {
+    prune?: boolean;
+    routes?: boolean;
+    types?: boolean;
+  };
 
   private watcher: FSWatcher | undefined;
 
   public constructor(
     openApiPath: string,
     destination: string,
-    generateOptions: GenerateOptions,
+    generateOptions: { prune?: boolean; routes?: boolean; types?: boolean },
     version = "",
     overlays: readonly string[] = [],
   ) {
@@ -163,7 +147,6 @@ export class CodeGenerator extends EventTarget {
       this.openapiPath,
       this.overlays,
     );
-    specification.typeOptions = this.generateOptions.typeOptions ?? {};
 
     debug("created specification: $o", specification);
 
@@ -186,6 +169,40 @@ export class CodeGenerator extends EventTarget {
     const securitySchemes = Object.values(
       (securityRequirement?.data as Record<string, unknown>) ?? {},
     ) as SecurityScheme[];
+
+    const HTTP_VERBS = new Set([
+      "get",
+      "put",
+      "post",
+      "delete",
+      "options",
+      "head",
+      "patch",
+      "trace",
+    ]);
+
+    const operationMethodsForPath = (
+      pathDefinition: Requirement,
+    ): Array<[Requirement, string]> => {
+      let resolved = pathDefinition;
+      while (resolved.isReference) resolved = resolved.reference();
+      return resolved.flatMap((operation, requestMethod) => {
+        if (requestMethod === "additionalOperations") {
+          return operation.map(
+            (additionalOperation, additionalMethod): [Requirement, string] => [
+              additionalOperation,
+              additionalMethod.toLowerCase(),
+            ],
+          );
+        }
+
+        if (!HTTP_VERBS.has(requestMethod)) {
+          return [];
+        }
+
+        return [[operation, requestMethod]];
+      });
+    };
 
     paths.forEach((pathDefinition, key: string) => {
       debug("processing path %s", key);
@@ -222,28 +239,6 @@ export class CodeGenerator extends EventTarget {
     }
 
     debug("finished writing the files");
-
-    const { client } = this.generateOptions;
-
-    if (client && this.generateOptions.types) {
-      if (this.version === "") {
-        debug("generating the API client");
-        // The generated types import the root context, which normally comes
-        // with the routes. Create it (only if missing) so a client-only
-        // generation still compiles.
-        await repository.createDefaultContextFile(destination);
-        await generateClient(
-          specification,
-          destination,
-          client === true ? {} : client,
-        );
-        debug("finished generating the API client");
-      } else {
-        process.stderr.write(
-          `Skipping client generation for version ${JSON.stringify(this.version)}: generated clients do not support versioned APIs yet.\n`,
-        );
-      }
-    }
   }
 
   /** Write the complete shared route layout once all versions have registered. */
@@ -271,7 +266,6 @@ export class CodeGenerator extends EventTarget {
       this.openapiPath,
       this.overlays,
     );
-    specification.typeOptions = this.generateOptions.typeOptions ?? {};
 
     if (specification.getRequirement("#/swagger") !== undefined) {
       throw new Error(
@@ -284,37 +278,6 @@ export class CodeGenerator extends EventTarget {
     ]);
 
     return repository.writeSchemas(this.destination, this.version);
-  }
-
-  /**
-   * Writes only a standalone API client into `destination/client`, and
-   * nothing else.
-   *
-   * Unlike {@link generate}, this creates no `.cache`, routes, scenarios or
-   * shared types: the client declares its own request, response and schema
-   * types (see {@link ClientGenerationOptions.standalone}).
-   *
-   * @returns The written file paths, relative to `destination`.
-   */
-  public async generateClientOnly(): Promise<string[]> {
-    if (this.version !== "") {
-      throw new Error(
-        "Client-only generation does not support versioned APIs yet.",
-      );
-    }
-
-    const specification = await Specification.fromFile(
-      this.openapiPath,
-      this.overlays,
-    );
-    specification.typeOptions = this.generateOptions.typeOptions ?? {};
-
-    const { client } = this.generateOptions;
-
-    return generateClient(specification, this.destination, {
-      ...(typeof client === "object" ? client : {}),
-      standalone: true,
-    });
   }
 
   /**

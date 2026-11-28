@@ -1,9 +1,4 @@
-export {
-  type ClientGenerationOptions,
-  generateClient,
-} from "./client-generator.js";
-export { isClassName } from "./client-operations.js";
-export { CodeGenerator, type GenerateOptions } from "./code-generator.js";
+export { CodeGenerator } from "./code-generator.js";
 export {
   buildOperationTypeNameMapping,
   type OperationTypeNameMapping,
@@ -11,8 +6,3 @@ export {
 export { Repository } from "./repository.js";
 export { ScenarioFileGenerator } from "./scenario-file-generator.js";
 export { generateVersionsTsContent } from "./versions-ts-generator.js";
-export {
-  ENUM_STYLES,
-  type EnumStyle,
-  type SchemaTypeOptions,
-} from "./type-options.js";
